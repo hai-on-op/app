@@ -264,14 +264,6 @@ export function useSafeInfo(type: SafeTypes = 'create') {
             error = error ?? `HAI to repay cannot exceed owed amount`
         }
 
-        if (!rightInputBN.isZero()) {
-            const repayPercent = returnPercentAmount(rightInput, availableHai as string)
-
-            if (rightInputBN.add(ONE_DAY_WORTH_SF).lt(BigNumber.from(availableHaiBN)) && repayPercent > 95) {
-                error = error ?? `You can only repay a minimum of ${availableHai} HAI to avoid leaving residual values`
-            }
-        }
-
         if (!rightInputBN.isZero() && rightInputBN.gt(haiBalanceBN)) {
             error = error ?? `balance_issue`
         }

@@ -2128,7 +2128,7 @@
 
 "@hai-on-op/sdk@1.2.0-rc.1":
   version "1.2.0-rc.1"
-  resolved "https://registry.yarnpkg.com/@hai-on-op/sdk/-/sdk-1.2.0-rc.1.tgz#2c5e42fcaf78107bdb8287b99080a499ab623489"
+  resolved "https://registry.npmjs.org/@hai-on-op/sdk/-/sdk-1.2.0-rc.1.tgz#2c5e42fcaf78107bdb8287b99080a499ab623489"
   integrity sha512-NTpqRqcdgL2sL8lhcJtztbsBRHJKKud24hxRxs9ovsVlJrYipdqX9lc7Oh7pjvBBAhOr8Rtzk+84gvvLKW1pTw==
   dependencies:
     ethers "5.4.7"

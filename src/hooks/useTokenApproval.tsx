@@ -55,13 +55,23 @@ export function useTokenApproval(
     const pendingApproval = useHasPendingApproval(tokenAddress, spender)
     const tokenDecimals = BigNumber.from(10).pow(decimals)
 
+    // Formatted approval amount (with 18 decimals)
+    const approvalAmount = useMemo(() => {
+        if (!amount) return BigNumber.from(0)
+
+        // Format the amount to 18 decimals
+        const approvalAmount = ethers.utils.parseEther(amount).mul(tokenDecimals).div(decimals18)
+
+        // Add 1% to the approval amount in case that the debt increses
+        return approvalAmount.mul(101).div(100)
+    }, [amount, tokenDecimals])
+
     // check the current approval status
     const approvalState: ApprovalState = useMemo(() => {
         if (!amount || !tokenAddress || !spender || !geb) {
             return ApprovalState.UNKNOWN
         }
 
-        const approvalAmount = ethers.utils.parseEther(amount).mul(tokenDecimals).div(decimals18)
         // we might not have enough data to know whether or not we need to approve
         if (!currentAllowance) return ApprovalState.UNKNOWN
 
@@ -71,7 +81,7 @@ export function useTokenApproval(
                 ? ApprovalState.PENDING
                 : ApprovalState.NOT_APPROVED
             : ApprovalState.APPROVED
-    }, [amount, tokenAddress, spender, geb, tokenDecimals, currentAllowance, pendingApproval, pendingAllowance])
+    }, [amount, tokenAddress, spender, geb, currentAllowance, approvalAmount, pendingApproval, pendingAllowance])
 
     const tokenContract = useTokenContract(tokenAddress)
 
@@ -107,8 +117,6 @@ export function useTokenApproval(
             text: 'Confirm this transaction in your wallet',
             status: 'loading',
         })
-
-        const approvalAmount = ethers.utils.parseEther(amount).mul(tokenDecimals).div(decimals18)
 
         let useExact = exactApproval
         const estimatedGas = await tokenContract.estimateGas.approve(spender, MaxUint256).catch(() => {
@@ -149,7 +157,7 @@ export function useTokenApproval(
                 console.debug('Failed to approve token', error)
                 handleTransactionError(error)
             })
-    }, [approvalState, tokenAddress, tokenContract, amount, spender, tokenDecimals, exactApproval, updateAllowance])
+    }, [approvalState, tokenAddress, tokenContract, amount, spender, exactApproval, approvalAmount, updateAllowance])
 
     return [approvalState, approve]
 }

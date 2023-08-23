@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { BigNumber, ethers } from 'ethers'
 import styled from 'styled-components'
 
-import { formatNumber, TOKEN_LOGOS, DEFAULT_SAFE_STATE } from '~/utils'
+import { formatNumber, TOKEN_LOGOS, DEFAULT_SAFE_STATE, toFixedString, sanitizeDecimals, RAY } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import TokenInput from '~/components/TokenInput'
 import Modal from '~/components/Modals/Modal'
@@ -61,6 +61,13 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
         (Number(collateralUnitPriceUSD) * Number(leftInputBalance)).toString(),
         2
     )
+    const debtFloorBN = BigNumber.from(
+        toFixedString(safeState.liquidationData!.collateralLiquidationData[singleSafe!.collateralName].debtFloor, 'WAD')
+    )
+
+    const safetyRatio = safeState.liquidationData!.collateralLiquidationData[singleSafe!.collateralName].safetyCRatio
+    const safetyRatioBN = BigNumber.from(Number(safetyRatio) * 100)
+
     const selectedTokenDecimals = singleSafe ? tokenBalances[singleSafe.collateralName].decimals : '18'
 
     const [unlockState, approveUnlock] = useTokenApproval(
@@ -78,6 +85,8 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
         selectedTokenDecimals,
         true
     )
+
+    const currentRedemptionPrice = safeState.singleSafe!.currentRedemptionPrice
 
     const { onLeftInput, onRightInput, onClearAll } = useInputsHandlers()
 
@@ -97,7 +106,33 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
         if (isDeposit) {
             onLeftInput(depositTokenBalance.toString())
         } else {
-            onLeftInput(availableCollateral as string)
+            // Getting the max amount of collateral that the user can withdraw
+
+            const totalDebtBN = ethers.utils.parseEther(availableHai)
+
+            // Add the safety ratio to the total debt
+            const safetyColAmount = totalDebtBN.mul(safetyRatioBN).div(100)
+
+            // Format current price of Hai
+            //  - we parse it with 28 decimals because the redemption price can be  decimal (i.e. 0.9e27)
+            //  - we'll divide by 10 later to get the correct value*
+            const currentRedemptionPriceBN = ethers.utils.parseUnits(currentRedemptionPrice, 28)
+
+            // Multiply the safety collateral amount by the currentRedemptionPrice
+            const safetyColatWithHaiRatio = ethers.utils.formatEther(
+                safetyColAmount.mul(currentRedemptionPriceBN).div(RAY)
+            )
+
+            // Divide the safety collateral amount by the collateral price in USD
+            const numerator = Number(sanitizeDecimals(safetyColatWithHaiRatio, 10)) / 10 //*return the decimal we added before
+            const denominator = Number(sanitizeDecimals(collateralUnitPriceUSD.toString(), 10))
+            // Note: add 1% to the result to handle rounding errors
+            const result = (numerator * 1.01) / denominator
+
+            // Subtract the result from the total collateral balance
+            // to get the max amount of collateral that the user can withdraw
+            const collateralLeft = Number(leftInputBalance) - result
+            onLeftInput(collateralLeft.toString())
         }
     }
 
@@ -105,13 +140,21 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
         if (isDeposit) {
             onRightInput(availableHai)
         } else {
-            const availableHaiBN = ethers.utils.parseEther(availableHai)
+            const totalDebtBN = ethers.utils.parseEther(availableHai)
 
-            const haiBalanceBN = tokenBalances.HAI.balanceE18 ? tokenBalances.HAI.balanceE18 : BigNumber.from('0')
+            const haiBalanceBN = tokenBalances.HAI.balanceE18
+                ? BigNumber.from(tokenBalances.HAI.balanceE18)
+                : BigNumber.from('0')
 
-            const isMoreDebt = availableHaiBN.gt(haiBalanceBN)
+            const isMoreDebt = totalDebtBN.gt(haiBalanceBN)
 
-            onRightInput(isMoreDebt ? ethers.utils.formatEther(haiBalanceBN) : availableHai)
+            onRightInput(
+                isMoreDebt
+                    ? // if debt is greater than the user balance,
+                      // then set the difference between the haiBalanceBN and the debt floor
+                      ethers.utils.formatEther(haiBalanceBN.sub(debtFloorBN))
+                    : ethers.utils.formatEther(haiBalanceBN)
+            )
         }
     }
 
