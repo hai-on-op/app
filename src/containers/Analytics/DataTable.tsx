@@ -51,7 +51,7 @@ export const DataTable = ({ title, colums, rows }: TableProps) => {
     )
 }
 
-const columnWidth = 150
+const columnWidth = 170
 const tableWidth = 990
 
 export const Container = styled.div`

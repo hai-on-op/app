@@ -71,8 +71,7 @@ const Analytics = () => {
         title: 'Collaterals',
         colums: [
             { name: 'Collateral' },
-            { name: 'ERC-20', description: 'Address of the ERC20 collateral token.' },
-            { name: 'Oracle', description: 'Delayed oracle address for the collateral.' },
+
             {
                 name: 'Delayed Price',
                 description:
@@ -109,6 +108,10 @@ const Analytics = () => {
                 description:
                     'Comparison between the value of the minted HAI (in USD) vs the value of the locked collateral (in USD).',
             },
+            { name: 'ERC-20', description: 'Address of the ERC20 collateral token.' },
+            { name: 'Oracle', description: 'Delayed oracle address for the collateral.' },
+            { name: 'Collateral Join', description: 'Address of the Collateral Join.' },
+            { name: 'Auction House', description: 'Address of the Collateral Auction House.' },
         ],
         rows: colRows,
     }
@@ -225,8 +228,6 @@ const Analytics = () => {
                         key,
                         [
                             key, // Symbol
-                            <AddressLink address={geb.tokenList[key].address} chainId={chainId || 420} />, // ERC20 address + link to etherscan
-                            <AddressLink address={value?.delayedOracle} chainId={chainId || 420} />, // ERC20 address + link to etherscan
                             formatDataNumber(value?.currentPrice?.toString() || '0', 18, 2, true), // Current price
                             formatDataNumber(value?.nextPrice?.toString() || '0', 18, 2, true), // Next price
                             transformToAnnualRate(value?.stabilityFee?.toString() || '0', 27), // Stability fee
@@ -249,6 +250,13 @@ const Analytics = () => {
                                 multiplyWad(value?.debtAmount?.toString(), result?.redemptionPrice?.toString()),
                                 multiplyWad(value?.lockedAmount?.toString(), value?.currentPrice?.toString())
                             ), // Debt amount / locked amount in USD
+                            <AddressLink address={geb.tokenList[key].address} chainId={chainId || 420} />, // ERC20 address + link to etherscan
+                            <AddressLink address={value?.delayedOracle} chainId={chainId || 420} />, // ERC20 address + link to etherscan
+                            <AddressLink address={geb.tokenList[key].collateralJoin} chainId={chainId || 420} />, // CollateralJoin + link to etherscan
+                            <AddressLink
+                                address={geb.tokenList[key].collateralAuctionHouse}
+                                chainId={chainId || 420}
+                            />, // CollateralAuctionHouse + link to etherscan
                         ],
                     ])
                 )
