@@ -1,6 +1,5 @@
 import { useWeb3React } from '@web3-react/core'
 import styled from 'styled-components'
-import ReactTooltip from 'react-tooltip'
 
 import {
     Container,
@@ -39,7 +38,7 @@ export const ContractsTable = ({ title, colums, rows }: ContractsTableProps) => 
                     <SHeads>
                         {colums?.map((colName, index) => (
                             <SHeadsContainer key={title + '-column-' + index}>
-                                <Head>{colName}</Head>
+                                <SHead>{colName}</SHead>
                             </SHeadsContainer>
                         ))}
                     </SHeads>
@@ -63,17 +62,38 @@ export const ContractsTable = ({ title, colums, rows }: ContractsTableProps) => 
     )
 }
 
+// Contract Name column width variable
+const contractNamecolumnWidth = 244
 // Description column width variable
-const descriptionColumnWidth = '500px'
+const descriptionColumnWidth = 554
 
 const SHeads = styled(Heads)`
+    div:first-child {
+        width: ${contractNamecolumnWidth}px;
+    }
     div:last-child {
-        width: ${descriptionColumnWidth};
+        width: ${descriptionColumnWidth}px;
+    }
+
+    @media (max-width: 768px) {
+        div:last-child {
+            width: 80vw;
+        }
     }
 `
 const SList = styled(List)`
+    align-items: center;
+    div:first-child div {
+        width: ${contractNamecolumnWidth}px;
+    }
     div:last-child div {
-        width: ${descriptionColumnWidth};
+        width: ${descriptionColumnWidth}px;
+    }
+
+    @media (max-width: 768px) {
+        div:last-child div {
+            width: 80vw;
+        }
     }
 `
 
@@ -84,3 +104,4 @@ const SListItem = styled(ListItem)`
     text-align: start;
     text-overflow: ellipsis;
 `
+const SHead = styled(Head)``

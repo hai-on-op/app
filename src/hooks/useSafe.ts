@@ -17,7 +17,8 @@ import {
     returnTotalValue,
     safeIsSafe,
     toFixedString,
-} from '~/utils/helper'
+    toPercentage,
+} from '~/utils'
 
 export const LIQUIDATION_RATIO = 135 // percent
 export const ONE_DAY_WORTH_SF = ethers.utils.parseEther('0.00001')
@@ -131,7 +132,10 @@ export function useSafeInfo(type: SafeTypes = 'create') {
         return '0.00'
     }, [collateralLiquidationData, leftInput, singleSafe, type])
 
-    const liquidationPenaltyPercentage = '18-20'
+    const liquidationPenaltyPercentage =
+        Number(liquidationData?.collateralLiquidationData[collateralName].liquidationPenalty) - 1
+
+    const formattedLiquidationPenaltyPercentage = toPercentage(liquidationPenaltyPercentage || 0.2, 0)
 
     const stabilityFeePercentage = useMemo(() => {
         return collateralLiquidationData
@@ -202,7 +206,7 @@ export function useSafeInfo(type: SafeTypes = 'create') {
             info: [
                 {
                     label: 'Total Liquidation Penalty',
-                    value: liquidationPenaltyPercentage + '%',
+                    value: formattedLiquidationPenaltyPercentage,
                     tip: t('liquidation_penalty_tip'),
                 },
                 {
@@ -217,6 +221,7 @@ export function useSafeInfo(type: SafeTypes = 'create') {
         collateralName,
         collateralRatio,
         liquidationData,
+        formattedLiquidationPenaltyPercentage,
         liquidationPrice,
         stabilityFeePercentage,
         t,

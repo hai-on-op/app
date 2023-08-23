@@ -51,12 +51,16 @@ export const DataTable = ({ title, colums, rows }: TableProps) => {
     )
 }
 
+const columnWidth = 150
+const tableWidth = 990
+
 export const Container = styled.div`
     border-radius: 15px;
     margin-bottom: 15px;
     background: #031f3a;
 
-    width: fit-content;
+    max-width: ${tableWidth}px;
+    width: 100%;
     height: fit-content;
     margin: 10px;
 `
@@ -103,7 +107,7 @@ export const Content = styled.div`
     border-radius: 0 0 15px 15px;
     width: fit-content;
 
-    max-width: 1180px;
+    max-width: ${tableWidth - 40}px;
     overflow-x: auto;
 
     &::-webkit-scrollbar {
@@ -180,6 +184,7 @@ export const ListContainer = styled.div`
         z-index: 0;
     }
     & :nth-child(1) {
+        border-radius: 10px;
         position: -webkit-sticky;
         position: sticky;
         left: 0;
@@ -191,7 +196,7 @@ export const ListContainer = styled.div`
 export const Head = styled.p`
     /* flex: 0 0 16.6%; */
     font-size: 12px;
-    width: 174px;
+    width: ${columnWidth}px;
     font-weight: bold;
     text-transform: uppercase;
     color: ${(props) => props.theme.colors.secondary};
@@ -221,9 +226,11 @@ export const List = styled.div`
     justify-content: space-between;
     &:nth-child(even) {
         background: #12385e;
+        align-items: center;
     }
     &:nth-child(odd) {
         background: #031f3a;
+        align-items: center;
     }
 
     & div:nth-child(1) div {
@@ -245,7 +252,7 @@ export const List = styled.div`
 
 export const ListItem = styled.div`
     /* flex: 0 0 16.6%; */
-    width: 174px;
+    width: ${columnWidth}px;
     color: ${(props) => props.theme.colors.customSecondary};
     font-size: ${(props) => props.theme.font.extraSmall};
     padding: 15px 10px;
@@ -261,9 +268,9 @@ export const ListItem = styled.div`
     }
     padding: 15px 20px;
     text-align: start;
-
+    width: 200px;
     flex: 0 0 50%;
-    min-width:50%;
+    min-width:100%;
     font-size: ${(props) => props.theme.font.extraSmall};
     font-weight:900;
   `}

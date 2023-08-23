@@ -175,7 +175,7 @@ const Auctions = ({
                 </Tab>
             </Switcher>
 
-            {type === 'SURPLUS' && account ? (
+            {type === 'SURPLUS' ? (
                 <StartAuctionContainer>
                     <Box style={{ justifyContent: 'space-between' }}>
                         <div>
@@ -204,7 +204,7 @@ const Auctions = ({
                 </StartAuctionContainer>
             ) : null}
 
-            {type === 'DEBT' && account ? (
+            {type === 'DEBT' ? (
                 <StartAuctionContainer>
                     <Box style={{ justifyContent: 'space-between' }}>
                         <div>
