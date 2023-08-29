@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useWeb3React } from '@web3-react/core'
 import ReactTooltip from 'react-tooltip'
 import styled from 'styled-components'
+import { useNetwork } from 'wagmi'
 
 import DataCard, { DataCardProps } from './DataCard'
 import { DataTable, TableProps } from './DataTable'
@@ -17,7 +17,7 @@ import {
     transformToAnnualRate,
     transformToEightHourlyRate,
 } from '~/utils'
-import useGeb from '~/hooks/useGeb'
+import { usePublicGeb } from '~/hooks'
 
 interface AnalyticsStateProps {
     erc20Supply: string
@@ -35,8 +35,10 @@ interface AnalyticsStateProps {
 }
 
 const Analytics = () => {
-    const geb = useGeb()
-    const { chainId } = useWeb3React()
+    const geb = usePublicGeb()
+    const { chain } = useNetwork()
+    const chainId = chain?.id
+
     const [state, setState] = useState<AnalyticsStateProps>({
         erc20Supply: '',
         globalDebt: '',

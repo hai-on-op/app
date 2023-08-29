@@ -3,11 +3,11 @@ import { AlertTriangle, ArrowUpCircle, CheckCircle } from 'react-feather'
 import { utils as gebUtils } from '@hai-on-op/sdk'
 import { utils as ethersUtils } from 'ethers'
 import styled from 'styled-components'
+import { useAccount } from 'wagmi'
 
-import { useActiveWeb3React, useTokenContract, useTransactionAdder } from '~/hooks'
+import { useTokenContract, useTransactionAdder, useGeb } from '~/hooks'
 import { useStoreActions, useStoreState } from '~/store'
 import { AuctionEventType, IAuctionBidder } from '~/types'
-import useGeb from '~/hooks/useGeb'
 import { timeout } from '~/utils'
 import Button from './Button'
 import Loader from './Loader'
@@ -35,8 +35,7 @@ const ApproveToken = ({ bids, amount, handleBackBtn, handleSuccess, methodName, 
     const geb = useGeb()
     const tokenContract = useTokenContract(geb?.contracts[methodName].address)
     const [textPayload, setTextPayload] = useState(TEXT_PAYLOAD_DEFAULT_STATE)
-
-    const { library, account } = useActiveWeb3React()
+    const { address: account } = useAccount()
 
     const addTransaction = useTransactionAdder()
     const { connectWalletModel: connectWalletState, popupsModel: popupsState } = useStoreState((state) => state)
@@ -78,7 +77,7 @@ const ApproveToken = ({ bids, amount, handleBackBtn, handleSuccess, methodName, 
 
     const unlockRAI = async () => {
         try {
-            if (!account || !library || !tokenContract) return false
+            if (!account || !tokenContract) return false
             if (!proxyAddress) {
                 throw new Error('No proxy address, disconnect your wallet and reconnect it again')
             }
@@ -122,7 +121,7 @@ const ApproveToken = ({ bids, amount, handleBackBtn, handleSuccess, methodName, 
                 return
             }
             setTextPayload({
-                title: e.message.includes('proxy') ? 'No Reflexer Account' : 'Transaction Failed.',
+                title: e.message.includes('proxy') ? 'No Proxy Contract' : 'Transaction Failed.',
                 text: '',
                 status: 'error',
             })

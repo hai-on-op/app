@@ -2,18 +2,18 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 import { Plus } from 'react-feather'
+import { useAccount } from 'wagmi'
 
 import { useStoreState } from '~/store'
 import LinkButton from '~/components/LinkButton'
 import SafeBlock from '~/components/SafeBlock'
 import CheckBox from '~/components/CheckBox'
 import { returnState, ISafe } from '~/utils'
-import { useActiveWeb3React } from '~/hooks'
 
 const SafeList = ({ address }: { address?: string }) => {
     const [showEmpty, setShowEmpty] = useState(true)
 
-    const { account } = useActiveWeb3React()
+    const { address: account } = useAccount()
 
     const { t } = useTranslation()
 

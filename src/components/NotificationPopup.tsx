@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import Scrollbars from 'react-custom-scrollbars'
 import styled from 'styled-components'
 import BellIcon from './Icons/BellIcon'
+import caretUp from '../assets/caret-up.svg'
+import arrowUp from '../assets/arrow-up.svg'
 
 const NotificationPopup = () => {
     const wrapperRef = useRef(null)
@@ -30,7 +32,7 @@ const NotificationPopup = () => {
             </BellBtn>
             {isOpen ? (
                 <>
-                    <CaretImg src={require('../assets/caret-up.svg').default} />
+                    <CaretImg src={caretUp} />
 
                     <Menu>
                         <Scrollbars autoHide style={{ width: '100%' }} autoHeight autoHeightMax={'calc(100vh - 100px)'}>
@@ -43,7 +45,7 @@ const NotificationPopup = () => {
                                     <Right>
                                         <Value>0.000</Value>
                                         <ExternalLink href="">
-                                            Etherscan <img src={require('../assets/arrow-up.svg').default} alt="" />
+                                            Etherscan <img src={arrowUp} alt="" />
                                         </ExternalLink>
                                     </Right>
                                 </NotificationItem>

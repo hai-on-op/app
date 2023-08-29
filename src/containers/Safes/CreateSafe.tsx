@@ -5,9 +5,11 @@ import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router'
 import ReactTooltip from 'react-tooltip'
 import styled from 'styled-components'
-import { ethers } from 'ethers'
+import { ethers, utils } from 'ethers'
+import { useEthersSigner } from '~/hooks/useEthersAdapters'
+import { useAccount, useNetwork } from 'wagmi'
 
-import { DEFAULT_SAFE_STATE, TOKEN_LOGOS, formatNumber } from '~/utils'
+import { DEFAULT_SAFE_STATE, NETWORK_ID, TOKEN_LOGOS, formatNumber } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import TokenInput from '~/components/TokenInput'
 import Modal from '~/components/Modals/Modal'
@@ -17,7 +19,6 @@ import Review from './Review'
 import {
     handleTransactionError,
     useTokenBalanceInUSD,
-    useActiveWeb3React,
     useInputsHandlers,
     useTokenApproval,
     ApprovalState,
@@ -36,8 +37,11 @@ const CreateSafe = ({
 }) => {
     const { stats, error, availableHai, parsedAmounts, totalCollateral, totalDebt, collateralRatio, liquidationPrice } =
         useSafeInfo('create')
-    const { library, account } = useActiveWeb3React()
+
+    const { address: account } = useAccount()
+    const signer = useEthersSigner()
     const [showPreview, setShowPreview] = useState(false)
+
     const {
         safeModel: safeState,
         connectWalletModel: { proxyAddress, tokensData, tokensFetchedData },
@@ -131,7 +135,7 @@ const CreateSafe = ({
     }
 
     const handleConfirm = async () => {
-        if (account && library) {
+        if (account && signer) {
             safeActions.setIsSuccessfulTx(false)
             setShowPreview(false)
             popupsActions.setIsWaitingModalOpen(true)
@@ -148,7 +152,6 @@ const CreateSafe = ({
                 totalCollateral,
                 totalDebt,
             })
-            const signer = library.getSigner(account)
             try {
                 connectWalletActions.setIsStepLoading(true)
                 await safeActions.depositAndBorrow({
@@ -174,6 +177,17 @@ const CreateSafe = ({
         selectedCollateralDecimals,
         true
     )
+
+    useEffect(() => {
+        if (signer) {
+            signer.getBalance().then((balance) => {
+                connectWalletActions.updateEthBalance({
+                    chainId: NETWORK_ID,
+                    balance: Number(utils.formatEther(balance)),
+                })
+            })
+        }
+    }, [account])
 
     return (
         <>
@@ -303,13 +317,15 @@ const CreateSafe = ({
                             <span>Note:</span>
                             {` The minimum amount to mint per safe is ${debtFloor} HAI`}
                         </Note>
-                        {approvalState === ApprovalState.APPROVED ? (
+                        {approvalState === ApprovalState.APPROVED && (
                             <Button onClick={handleSubmit} disabled={!isValid}>
                                 {error ?? 'Review Transaction'}
                             </Button>
-                        ) : approvalState === ApprovalState.PENDING ? (
-                            <Button disabled={true}>Pending Approval..</Button>
-                        ) : (
+                        )}
+
+                        {approvalState === ApprovalState.PENDING && <Button disabled={true}>Pending Approval..</Button>}
+
+                        {(approvalState === ApprovalState.NOT_APPROVED || approvalState === ApprovalState.UNKNOWN) && (
                             <Button onClick={approve} disabled={!isValid}>
                                 {error ?? `Approve ${selectedItem}`}
                             </Button>

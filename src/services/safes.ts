@@ -30,7 +30,7 @@ export const fetchUserSafes = async (config: IFetchSafesPayload) => {
 export const fetchUserSafesRaw = async (config: IFetchSafesPayload) => {
     const { address, geb } = config
 
-    if (!geb) return
+    if (!geb || !config.tokensData) return
     let response = await gebManager.getUserSafesRpc({
         address: address.toLowerCase(),
         geb,

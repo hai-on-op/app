@@ -1,5 +1,5 @@
-import { useWeb3React } from '@web3-react/core'
 import styled from 'styled-components'
+import { useNetwork } from 'wagmi'
 
 import {
     Container,
@@ -23,7 +23,9 @@ interface ContractsTableProps {
 }
 
 export const ContractsTable = ({ title, colums, rows }: ContractsTableProps) => {
-    const { chainId } = useWeb3React()
+    const { chain } = useNetwork()
+    const chainId = chain?.id
+
     return (
         <Container>
             <Header>

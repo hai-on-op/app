@@ -1,10 +1,8 @@
 import { action, Action, thunk, Thunk } from 'easy-peasy'
 import { StoreModel } from '~/model'
-import { NETWORK_ID } from '~/connectors'
 import { handleDepositAndBorrow, handleRepayAndWithdraw } from '~/services/blockchain'
 import { fetchUserSafes } from '~/services/safes'
 import {
-    DEFAULT_SAFE_STATE,
     timeout,
     handleWrapEther,
     WrapEtherProps,
@@ -13,7 +11,18 @@ import {
     ISafe,
     ISafeData,
     ISafePayload,
+    NETWORK_ID,
 } from '~/utils'
+
+export const DEFAULT_SAFE_STATE = {
+    totalCollateral: '',
+    totalDebt: '',
+    leftInput: '',
+    rightInput: '',
+    collateralRatio: 0,
+    liquidationPrice: 0,
+    collateral: '',
+}
 
 export interface SafeModel {
     list: Array<ISafe>

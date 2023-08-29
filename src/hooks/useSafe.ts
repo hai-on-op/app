@@ -2,8 +2,9 @@ import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BigNumber, ethers } from 'ethers'
 import numeral from 'numeral'
+import { useAccount } from 'wagmi'
 
-import { useActiveWeb3React, useProxyAddress } from '~/hooks'
+import { useProxyAddress } from '~/hooks'
 import { useStoreActions, useStoreState } from '~/store'
 import { DEFAULT_SAFE_STATE } from '~/utils/constants'
 import {
@@ -12,7 +13,6 @@ import {
     getLiquidationPrice,
     getRatePercentage,
     returnAvaiableDebt,
-    returnPercentAmount,
     returnTotalDebt,
     returnTotalValue,
     safeIsSafe,
@@ -41,7 +41,7 @@ export function useSafeState() {
 
 // returns all safe info from amounts, debt, collateral and other helper attributes
 export function useSafeInfo(type: SafeTypes = 'create') {
-    const { account } = useActiveWeb3React()
+    const { address: account } = useAccount()
     const proxyAddress = useProxyAddress()
     const { t } = useTranslation()
     const {
@@ -236,7 +236,7 @@ export function useSafeInfo(type: SafeTypes = 'create') {
     }
 
     if (!proxyAddress) {
-        error = error ?? 'Create a Reflexer Account to continue'
+        error = error ?? 'Create a Proxy Contract to continue'
     }
 
     if (type === 'deposit_borrow') {

@@ -1,19 +1,20 @@
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
+import { useAccount } from 'wagmi'
 
-import { useActiveWeb3React, handleTransactionError } from '~/hooks'
+import { handleTransactionError, useGeb, useEthersSigner } from '~/hooks'
 import TransactionOverview from '~/components/TransactionOverview'
-import { returnConnectorName, COIN_TICKER } from '~/utils'
+import { COIN_TICKER } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { AuctionEventType } from '~/types'
 import Button from '~/components/Button'
 import Results from './Results'
 import _ from '~/utils/lodash'
-import useGeb from '~/hooks/useGeb'
 
 const AuctionsTransactions = () => {
     const { t } = useTranslation()
-    const { connector, account, library } = useActiveWeb3React()
+    const { address: account } = useAccount()
+    const signer = useEthersSigner()
     const geb = useGeb()
 
     const { auctionModel: auctionsActions, popupsModel: popupsActions } = useStoreActions((state) => state)
@@ -78,7 +79,7 @@ const AuctionsTransactions = () => {
 
     const handleConfirm = async () => {
         try {
-            if (account && library) {
+            if (account && signer) {
                 popupsActions.setAuctionOperationPayload({
                     isOpen: false,
                     type: '',
@@ -91,7 +92,6 @@ const AuctionsTransactions = () => {
                     hint: 'Confirm this transaction in your wallet',
                     status: 'loading',
                 })
-                const signer = library.getSigner(account)
 
                 if (isBuy) {
                     await auctionsActions.auctionBuy({
@@ -142,10 +142,7 @@ const AuctionsTransactions = () => {
                 <Body>
                     <TransactionOverview
                         title={t('confirm_transaction_details')}
-                        description={
-                            t('confirm_details_text') +
-                            (returnConnectorName(connector) ? 'on ' + returnConnectorName(connector) : '')
-                        }
+                        description={t('confirm_details_text')}
                     />
                     <Results />
                 </Body>

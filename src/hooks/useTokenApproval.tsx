@@ -2,12 +2,13 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { TransactionResponse } from '@ethersproject/providers'
 import { MaxUint256 } from '@ethersproject/constants'
 import { BigNumber, ethers } from 'ethers'
+import { useAccount } from 'wagmi'
 
-import { calculateGasMargin, handleTransactionError, useHasPendingApproval } from './TransactionHooks'
+import { calculateGasMargin, handleTransactionError } from './TransactionHooks'
 import { useTokenContract } from './useContract'
-import { useActiveWeb3React } from '~/hooks'
-import useGeb from './useGeb'
+import { useGeb } from './useGeb'
 import store from '~/store'
+import { sanitizeDecimals } from '~/utils'
 
 const decimals18 = BigNumber.from(10).pow(18)
 
@@ -45,22 +46,24 @@ export function useTokenApproval(
     decimals: string = '18',
     exactApproval: boolean = false
 ): [ApprovalState, () => Promise<void>] {
-    const { account } = useActiveWeb3React()
+    const { address: account } = useAccount()
     const geb = useGeb()
     const {
         allowance: currentAllowance,
         updateAllowance,
         loading: pendingAllowance,
     } = useTokenAllowance(tokenAddress, account ?? undefined, spender)
-    const pendingApproval = useHasPendingApproval(tokenAddress, spender)
     const tokenDecimals = BigNumber.from(10).pow(decimals)
+    const [loading, setLoading] = useState(false)
 
     // Formatted approval amount (with 18 decimals)
     const approvalAmount = useMemo(() => {
         if (!amount) return BigNumber.from(0)
 
+        // cut decimals to avoid underflow error
+        const formattedAmount = sanitizeDecimals(amount, 18)
         // Format the amount to 18 decimals
-        const approvalAmount = ethers.utils.parseEther(amount).mul(tokenDecimals).div(decimals18)
+        const approvalAmount = ethers.utils.parseEther(formattedAmount).mul(tokenDecimals).div(decimals18)
 
         // Add 1% to the approval amount in case that the debt increses
         return approvalAmount.mul(101).div(100)
@@ -77,11 +80,11 @@ export function useTokenApproval(
 
         // amountToApprove will be defined if currentAllowance is
         return currentAllowance.lt(approvalAmount)
-            ? pendingApproval || pendingAllowance
+            ? pendingAllowance || loading
                 ? ApprovalState.PENDING
                 : ApprovalState.NOT_APPROVED
             : ApprovalState.APPROVED
-    }, [amount, tokenAddress, spender, geb, currentAllowance, approvalAmount, pendingApproval, pendingAllowance])
+    }, [amount, tokenAddress, spender, geb, currentAllowance, approvalAmount, pendingAllowance, loading])
 
     const tokenContract = useTokenContract(tokenAddress)
 
@@ -124,7 +127,7 @@ export function useTokenApproval(
             useExact = true
             return tokenContract.estimateGas.approve(spender, approvalAmount.toString())
         })
-
+        setLoading(true)
         return tokenContract
             .approve(spender, useExact ? approvalAmount.toString() : MaxUint256, {
                 gasLimit: calculateGasMargin(estimatedGas),
@@ -151,11 +154,13 @@ export function useTokenApproval(
                 // we need to wait until the transaction is mined to fetch the new allowance
                 txResponse.wait().then(() => {
                     updateAllowance()
+                    setLoading(false)
                 })
             })
             .catch((error: Error) => {
                 console.debug('Failed to approve token', error)
                 handleTransactionError(error)
+                setLoading(false)
             })
     }, [approvalState, tokenAddress, tokenContract, amount, spender, exactApproval, approvalAmount, updateAllowance])
 

@@ -1,28 +1,29 @@
 import { useEffect, useState } from 'react'
 import { BigNumber, ethers } from 'ethers'
 import styled from 'styled-components'
+import { useAccount } from 'wagmi'
 
 import { formatNumber, TOKEN_LOGOS, DEFAULT_SAFE_STATE, toFixedString, sanitizeDecimals, RAY } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import TokenInput from '~/components/TokenInput'
 import Modal from '~/components/Modals/Modal'
-import { gnosisSafe } from '~/connectors'
 import Button from '~/components/Button'
-import useGeb from '~/hooks/useGeb'
 import Review from './Review'
 import {
     handleTransactionError,
     useTokenBalanceInUSD,
-    useActiveWeb3React,
     useInputsHandlers,
     useTokenApproval,
     useProxyAddress,
+    useEthersSigner,
     ApprovalState,
     useSafeInfo,
+    useGeb,
 } from '~/hooks'
 
 const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boolean }) => {
-    const { library, account, connector } = useActiveWeb3React()
+    const { address: account } = useAccount()
+    const signer = useEthersSigner()
     const geb = useGeb()
     const proxyAddress = useProxyAddress()
     const [showPreview, setShowPreview] = useState(false)
@@ -153,7 +154,7 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
                     ? // if debt is greater than the user balance,
                       // then set the difference between the haiBalanceBN and the debt floor
                       ethers.utils.formatEther(haiBalanceBN.sub(debtFloorBN))
-                    : ethers.utils.formatEther(haiBalanceBN)
+                    : ethers.utils.formatEther(totalDebtBN)
             )
         }
     }
@@ -189,7 +190,7 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
     }
 
     const handleConfirm = async () => {
-        if (account && library) {
+        if (account && signer) {
             safeActions.setIsSuccessfulTx(false)
             setShowPreview(false)
             popupsActions.setIsWaitingModalOpen(true)
@@ -200,7 +201,6 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
                 status: 'loading',
             })
 
-            const signer = library.getSigner(account)
             try {
                 connectWalletActions.setIsStepLoading(true)
                 if (safeState.singleSafe && isDeposit) {
@@ -215,7 +215,6 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
                     await safeActions.repayAndWithdraw({
                         safeData: {
                             ...safeState.safeData,
-                            isGnosisSafe: connector === gnosisSafe,
                         },
                         signer,
                         safeId: safeState.singleSafe.id,

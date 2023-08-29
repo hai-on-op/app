@@ -1,19 +1,21 @@
-import React, { useEffect, useState } from 'react'
-import { isAddress } from '@ethersproject/address'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
+import { useEthersSigner } from '~/hooks/useEthersAdapters'
+import { useAccount } from 'wagmi'
 
 import { useStoreState, useStoreActions } from '~/store'
-import { useActiveWeb3React } from '~/hooks'
 import Button from '~/components/Button'
-import useGeb from '~/hooks/useGeb'
+import { useGeb } from '~/hooks'
 import Accounts from './Accounts'
 import SafeList from './SafeList'
+import { isAddress } from '~/utils'
 
 const OnBoarding = ({ ...props }) => {
     const { t } = useTranslation()
     const [isOwner, setIsOwner] = useState(true)
-    const { account, library } = useActiveWeb3React()
+    const { address: account } = useAccount()
+    const signer = useEthersSigner()
     const geb = useGeb()
 
     const {
@@ -29,7 +31,7 @@ const OnBoarding = ({ ...props }) => {
         if (
             (!account && !address) ||
             (address && !isAddress(address.toLowerCase())) ||
-            !library ||
+            !signer ||
             connectWalletState.isWrongNetwork
         )
             return
@@ -47,14 +49,14 @@ const OnBoarding = ({ ...props }) => {
             if (
                 (!account && !address) ||
                 (address && !isAddress(address.toLowerCase())) ||
-                !library ||
+                !signer ||
                 connectWalletState.isWrongNetwork
             )
                 fetchSafes()
         }, ms)
 
         return () => clearInterval(interval)
-    }, [account, address, connectWalletState.isWrongNetwork, connectWalletState.tokensData, geb, library, safeActions])
+    }, [account, address, connectWalletState.isWrongNetwork, connectWalletState.tokensData, geb, signer, safeActions])
 
     useEffect(() => {
         if (account && address) {

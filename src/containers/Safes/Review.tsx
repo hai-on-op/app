@@ -3,24 +3,19 @@ import styled from 'styled-components'
 import { Info } from 'react-feather'
 import ReactTooltip from 'react-tooltip'
 
-import { useActiveWeb3React, SafeTypes, StatsType, useSafeInfo } from '~/hooks'
+import { SafeTypes, StatsType, useSafeInfo } from '~/hooks'
 import TransactionOverview from '~/components/TransactionOverview'
-import { returnConnectorName } from '~/utils'
 
 const ReviewTransaction = ({ type }: { type: SafeTypes }) => {
     const { stats } = useSafeInfo(type)
     const { t } = useTranslation()
-    const { connector } = useActiveWeb3React()
 
     return (
         <Box>
             <TransactionOverview
                 isChecked={false}
                 title={t('confirm_transaction_details')}
-                description={
-                    t('confirm_details_text') +
-                    (returnConnectorName(connector) ? 'on ' + returnConnectorName(connector) : '')
-                }
+                description={t('confirm_details_text')}
             />
             <Stats>
                 {Object.keys(stats).map((key) => {

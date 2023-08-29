@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { useActiveWeb3React, handleTransactionError, useStartAuction, useQuery, useGetAuctions } from '~/hooks'
+import { handleTransactionError, useStartAuction, useQuery, useGetAuctions, usePublicGeb } from '~/hooks'
 import AuctionsFAQ from '~/components/AuctionsFAQ'
 import AlertLabel from '~/components/AlertLabel'
 import Modal from '~/components/Modals/Modal'
@@ -11,7 +11,6 @@ import { useStoreActions, useStoreState } from '~/store'
 import AuctionsList from './AuctionsList'
 import Button from '~/components/Button'
 import { formatNumber } from '~/utils'
-import useGeb from '~/hooks/useGeb'
 import CollateralAuctionsList from './CollateralAuctions/CollateralAuctionsList'
 
 const Auctions = ({
@@ -19,7 +18,6 @@ const Auctions = ({
         params: { auctionType },
     },
 }: RouteComponentProps<{ auctionType?: string }>) => {
-    const { account } = useActiveWeb3React()
     const { auctionModel: auctionsActions, popupsModel: popupsActions } = useStoreActions((state) => state)
     const { auctionModel: auctionsState, connectWalletModel: connectWalletState } = useStoreState((state) => state)
     const [showFaqs, setShowFaqs] = useState(false)
@@ -29,7 +27,8 @@ const Auctions = ({
     const [error, setError] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const [selectedItem, setSelectedItem] = useState<string>('WETH')
-    const geb = useGeb()
+    const geb = usePublicGeb()
+
     const history = useHistory()
 
     const {

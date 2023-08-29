@@ -1,16 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useStoreActions, useStoreState } from '~/store'
 import { BigNumber, utils } from 'ethers'
-import _ from '~/utils/lodash'
-
-import { useActiveWeb3React } from '~/hooks'
-import { AuctionEventType, IAuction, IAuctionBidder, ICollateralAuction } from '~/types'
+import { utils as gebUtils } from '@hai-on-op/sdk'
 import { AuctionData } from '@hai-on-op/sdk/lib/virtual/virtualAuctionData'
 import { radToFixed, wadToFixed } from '@hai-on-op/sdk/lib/utils'
-import useGeb from './useGeb'
-import { utils as gebUtils } from '@hai-on-op/sdk'
+import { useAccount } from 'wagmi'
+import _ from '~/utils/lodash'
 
-// temporary cast
+import { AuctionEventType, IAuction, IAuctionBidder, ICollateralAuction } from '~/types'
+import { useGeb } from './useGeb'
+
 import {
     ICollateralAuction as SDKCollateralAuction,
     ISurplusAuction as SDKAuction,
@@ -243,8 +242,8 @@ export function useStartAuction() {
 
     const { auctionModel: auctionsState } = useStoreState((state) => state)
     const auctionsData = auctionsState.auctionsData as AuctionData
+    const { address: account } = useAccount()
 
-    const { account, library } = useActiveWeb3React()
     const [surplusAmountToSell, setSurplusAmountToSell] = useState<string>('')
     const [debtAmountToSell, setDebtAmountToSell] = useState<string>('')
     const [protocolTokensOffered, setProtocolTokensToOffer] = useState<string>('')
@@ -310,7 +309,7 @@ export function useStartAuction() {
     }, [debtAmountToSell, debtRequiredToAuction])
 
     const startSurplusAcution = async function () {
-        if (!library || !account) throw new Error('No library or account')
+        if (!account) throw new Error('No library or account')
 
         const txResponse = await geb.contracts.accountingEngine.auctionSurplus()
 
@@ -337,7 +336,7 @@ export function useStartAuction() {
     }
 
     const startDebtAcution = async function () {
-        if (!library || !account) throw new Error('No library or account')
+        if (!account) throw new Error('No library or account')
 
         const txResponse = await geb.contracts.accountingEngine.auctionDebt()
 
