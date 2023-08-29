@@ -107,6 +107,25 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
         if (isDeposit) {
             onLeftInput(depositTokenBalance.toString())
         } else {
+            const currentColRatio = safeState.singleSafe?.collateralRatio
+
+            const formattedLeftInputBalance = sanitizeDecimals(
+                leftInputBalance.toString(),
+                Number(selectedTokenDecimals)
+            )
+
+            // if current ratio is less than (safetyRatio + 10%) then set the input to 0
+            if (Number(currentColRatio) < Number(safetyRatioBN) * 1.1) {
+                onLeftInput('0')
+                return
+            }
+
+            // after format if available collateral to withdraw is 0, set the input to 0
+            if (Number(formattedLeftInputBalance) === 0) {
+                onLeftInput('0')
+                return
+            }
+
             // Getting the max amount of collateral that the user can withdraw
 
             const totalDebtBN = ethers.utils.parseEther(availableHai)
@@ -132,7 +151,7 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
 
             // Subtract the result from the total collateral balance
             // to get the max amount of collateral that the user can withdraw
-            const collateralLeft = Number(leftInputBalance) - result
+            const collateralLeft = Number(formattedLeftInputBalance) - result
             onLeftInput(collateralLeft.toString())
         }
     }
@@ -149,11 +168,18 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
 
             const isMoreDebt = totalDebtBN.gt(haiBalanceBN)
 
+            const haiRepayAmount = totalDebtBN.sub(haiBalanceBN).gt(debtFloorBN)
+                ? haiBalanceBN
+                : haiBalanceBN.sub(debtFloorBN)
+
+            // if the user has less HAI than the debt floor, return 0
+            const haiBalanceWithFloorBN = haiBalanceBN.gt(debtFloorBN) ? haiRepayAmount : '0'
+
             onRightInput(
                 isMoreDebt
                     ? // if debt is greater than the user balance,
                       // then set the difference between the haiBalanceBN and the debt floor
-                      ethers.utils.formatEther(haiBalanceBN.sub(debtFloorBN))
+                      ethers.utils.formatEther(haiBalanceWithFloorBN)
                     : ethers.utils.formatEther(totalDebtBN)
             )
         }
@@ -270,8 +296,12 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
                                 }}
                                 label={
                                     isDeposit
-                                        ? `Balance: ${leftInputBalance} ${singleSafe.collateralName}`
-                                        : `Available: ${leftInputBalance} ${singleSafe.collateralName}`
+                                        ? `Balance: ${formatNumber(leftInputBalance.toString(), 3)} ${
+                                              singleSafe.collateralName
+                                          }`
+                                        : `Available: ${formatNumber(leftInputBalance.toString(), 3)} ${
+                                              singleSafe.collateralName
+                                          }`
                                 }
                                 rightLabel={`~$${selectedTokenBalanceInUSD}`}
                                 onChange={onLeftInput}
