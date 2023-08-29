@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useCallback } from 'react'
-import { getTokenList } from '@hai-on-op/sdk/lib/contracts/addreses'
+import { getTokenList } from '@hai-on-op/sdk'
 import { useHistory, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'

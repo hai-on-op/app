@@ -1,19 +1,19 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useStoreActions, useStoreState } from '~/store'
 import { BigNumber, utils } from 'ethers'
-import { utils as gebUtils } from '@hai-on-op/sdk'
-import { AuctionData } from '@hai-on-op/sdk/lib/virtual/virtualAuctionData'
-import { radToFixed, wadToFixed } from '@hai-on-op/sdk/lib/utils'
+import {
+    utils as gebUtils,
+    AuctionData,
+    radToFixed,
+    wadToFixed,
+    ICollateralAuction as SDKCollateralAuction,
+    ISurplusAuction as SDKAuction,
+} from '@hai-on-op/sdk'
 import { useAccount } from 'wagmi'
 import _ from '~/utils/lodash'
 
 import { AuctionEventType, IAuction, IAuctionBidder, ICollateralAuction } from '~/types'
 import { useGeb } from './useGeb'
-
-import {
-    ICollateralAuction as SDKCollateralAuction,
-    ISurplusAuction as SDKAuction,
-} from '@hai-on-op/sdk/lib/schema/auction'
 import { floatsTypes } from '~/utils'
 
 export function useGetAuctions(type: AuctionEventType, tokenSymbol?: string) {

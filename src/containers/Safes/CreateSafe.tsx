@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { TokenData } from '@hai-on-op/sdk/lib/contracts/addreses'
+import { TokenData } from '@hai-on-op/sdk'
 import { ArrowLeft, Info, Loader } from 'react-feather'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router'

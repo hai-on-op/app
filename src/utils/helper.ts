@@ -1,7 +1,6 @@
 import numeral from 'numeral'
 import { BigNumber, FixedNumber } from 'ethers'
-import { utils as gebUtils } from '@hai-on-op/sdk'
-import { TokenData } from '@hai-on-op/sdk/lib/contracts/addreses'
+import { utils as gebUtils, TokenData } from '@hai-on-op/sdk'
 import { getAddress } from 'viem'
 
 import { ETHERSCAN_PREFIXES, floatsTypes } from './constants'
