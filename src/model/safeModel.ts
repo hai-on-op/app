@@ -115,10 +115,10 @@ const safeModel: SafeModel = {
                 })
             }
 
+            await txResponse.wait()
             actions.setStage(0)
             actions.setUniSwapPool(DEFAULT_SAFE_STATE)
             actions.setSafeData(DEFAULT_SAFE_STATE)
-            await txResponse.wait()
             storeActions.connectWalletModel.setForceUpdateTokens(true)
         } else {
             storeActions.connectWalletModel.setIsStepLoading(false)
@@ -145,10 +145,10 @@ const safeModel: SafeModel = {
                 status: 'success',
             })
 
+            await txResponse.wait()
             actions.setStage(0)
             actions.setUniSwapPool(DEFAULT_SAFE_STATE)
             actions.setSafeData(DEFAULT_SAFE_STATE)
-            await txResponse.wait()
             storeActions.connectWalletModel.setForceUpdateTokens(true)
         }
     }),

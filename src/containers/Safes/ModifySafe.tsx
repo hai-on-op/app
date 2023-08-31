@@ -254,6 +254,7 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
                 safeActions.setIsSuccessfulTx(false)
                 handleTransactionError(e)
             } finally {
+                safeActions.setIsSuccessfulTx(true)
                 reset()
             }
         }
@@ -351,8 +352,8 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
                                     onClick={approveUnlock}
                                 />
                             ) : (
-                                <Button onClick={handleSubmit} disabled={!isValid}>
-                                    {'Review Transaction'}
+                                <Button onClick={handleSubmit} disabled={!isValid || !safeState.isSuccessfulTx}>
+                                    {!safeState.isSuccessfulTx ? 'Pending Transaction...' : 'Review Transaction'}
                                 </Button>
                             )
                         ) : collateralUnlockState === ApprovalState.PENDING ||
@@ -367,8 +368,8 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
                                 onClick={collateralApproveUnlock}
                             />
                         ) : (
-                            <Button onClick={handleSubmit} disabled={!isValid}>
-                                {'Review Transaction'}
+                            <Button onClick={handleSubmit} disabled={!isValid || !safeState.isSuccessfulTx}>
+                                {!safeState.isSuccessfulTx ? 'Pending Transaction...' : 'Review Transaction'}
                             </Button>
                         )}
                     </ButtonContainer>
