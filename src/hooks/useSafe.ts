@@ -269,7 +269,7 @@ export function useSafeInfo(type: SafeTypes = 'create') {
         }
     }
 
-    if (totalDebtBN.lt(debtFloorBN)) {
+    if (!totalDebtBN.isZero() && totalDebtBN.lt(debtFloorBN)) {
         error =
             error ??
             `The resulting debt should be at least ${Math.ceil(

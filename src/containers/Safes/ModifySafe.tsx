@@ -27,6 +27,7 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
     const geb = useGeb()
     const proxyAddress = useProxyAddress()
     const [showPreview, setShowPreview] = useState(false)
+    const [isRepayAll, setIsRepayAll] = useState(false)
     const { safeModel: safeState, connectWalletModel } = useStoreState((state) => state)
 
     const { singleSafe } = safeState
@@ -76,7 +77,8 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
         tokensData?.HAI.address,
         proxyAddress,
         '18',
-        true
+        true,
+        isRepayAll
     )
 
     const [collateralUnlockState, collateralApproveUnlock] = useTokenApproval(
@@ -160,6 +162,7 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
         if (isDeposit) {
             onRightInput(availableHai)
         } else {
+            setIsRepayAll(true)
             const totalDebtBN = ethers.utils.parseEther(availableHai)
 
             const haiBalanceBN = tokenBalances.HAI.balanceE18
@@ -170,7 +173,7 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
 
             const haiRepayAmount = totalDebtBN.sub(haiBalanceBN).gt(debtFloorBN)
                 ? haiBalanceBN
-                : haiBalanceBN.sub(debtFloorBN)
+                : totalDebtBN.sub(debtFloorBN).mul(99).div(100)
 
             // if the user has less HAI than the debt floor, return 0
             const haiBalanceWithFloorBN = haiBalanceBN.gt(debtFloorBN) ? haiRepayAmount : '0'
@@ -187,6 +190,11 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
 
     const handleWaitingTitle = () => {
         return 'Modifying Safe'
+    }
+
+    const handleHaiApprove = async () => {
+        await approveUnlock()
+        setIsRepayAll(false)
     }
 
     const handleSubmit = () => {
@@ -349,7 +357,7 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
                                 <Button
                                     disabled={!isValid || unlockState === ApprovalState.PENDING}
                                     text={unlockState === ApprovalState.PENDING ? 'Pending Approval..' : 'Unlock HAI'}
-                                    onClick={approveUnlock}
+                                    onClick={handleHaiApprove}
                                 />
                             ) : (
                                 <Button onClick={handleSubmit} disabled={!isValid || !safeState.isSuccessfulTx}>

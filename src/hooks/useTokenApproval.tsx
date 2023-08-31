@@ -44,7 +44,8 @@ export function useTokenApproval(
     tokenAddress?: string,
     spender?: string,
     decimals: string = '18',
-    exactApproval: boolean = false
+    exactApproval: boolean = false,
+    isRepayAll?: boolean
 ): [ApprovalState, () => Promise<void>] {
     const { address: account } = useAccount()
     const geb = useGeb()
@@ -66,7 +67,11 @@ export function useTokenApproval(
         const approvalAmount = ethers.utils.parseEther(formattedAmount).mul(tokenDecimals).div(decimals18)
 
         // Add 1% to the approval amount in case that the debt increses
-        return approvalAmount.mul(101).div(100)
+        if (isRepayAll) {
+            return approvalAmount.mul(101).div(100)
+        } else {
+            return approvalAmount
+        }
     }, [amount, tokenDecimals])
 
     // check the current approval status

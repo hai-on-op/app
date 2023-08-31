@@ -98,7 +98,7 @@
     "surplus_auction_claim_tokens": "What does the Claim Tokens button do?",
     "surplus_auction_claim_tokens_desc": "In case someone outbids you in a surplus auction, your KITE bid will be reimbursed to your Proxy Contract. Claim Tokens can be used to get back KITE (and HAI) that is kept in your Account.",
     "migrate": "Migrate",
-    "manage_other_safes": "View / Top-up Other Safes",
+    "manage_other_safes": "Explore Other Safes",
     "managed_safe_warning": "CAUTION: You are not the owner of this Safe. You can only deposit collateral or repay debt. Note that these operations are irreversible.",
     "liquidate_safe_warning": "CAUTION: You are about to start the liquidation of this Safe. Note that this operation is irreversible.",
     "liquidate_confirmation": "I understand that I am about to liquidate this Safe.",

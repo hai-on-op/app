@@ -4,11 +4,12 @@ import styled from 'styled-components'
 import { Plus } from 'react-feather'
 import { useAccount } from 'wagmi'
 
-import { useStoreState } from '~/store'
+import { useStoreState, useStoreActions } from '~/store'
 import LinkButton from '~/components/LinkButton'
 import SafeBlock from '~/components/SafeBlock'
 import CheckBox from '~/components/CheckBox'
 import { returnState, ISafe } from '~/utils'
+import Button from '~/components/Button'
 
 const SafeList = ({ address }: { address?: string }) => {
     const [showEmpty, setShowEmpty] = useState(true)
@@ -18,6 +19,7 @@ const SafeList = ({ address }: { address?: string }) => {
     const { t } = useTranslation()
 
     const { connectWalletModel: connectWalletState, safeModel: safeState } = useStoreState((state) => state)
+    const { popupsModel: popupsActions } = useStoreActions((state) => state)
 
     const safes = useMemo(() => {
         if (safeState.list.length > 0) {
@@ -40,6 +42,13 @@ const SafeList = ({ address }: { address?: string }) => {
                             <Title>{'Accounts'}</Title>
                         </Col>
                         <Col>
+                            {/* <Button
+                                data-test-id="topup-btn"
+                                disabled={connectWalletState.isWrongNetwork}
+                                onClick={() => popupsActions.setIsSafeManagerOpen(true)}
+                            >
+                                <BtnInner>{t('manage_other_safes')}</BtnInner>
+                            </Button> */}
                             {safeState.safeCreated && isOwner ? (
                                 <LinkButton
                                     id="create-safe"
@@ -109,12 +118,28 @@ const Header = styled.div`
         padding: 0 20px;
         margin: 20px 0;
     }
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+     flex-direction: column;
+     gap: 20px;
+     &.safesList {
+        display: none;
+    }
+  `}
 `
 const Col = styled.div`
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+
     a {
         min-width: 100px;
         padding: 4px 12px;
     }
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+     flex-direction: column;
+  `}
 `
 
 const BtnInner = styled.div`
