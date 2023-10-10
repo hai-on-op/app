@@ -8,17 +8,23 @@ node_modules
 # testing
 /coverage
 
+# next.js
+/.next/
+/out/
+
 # production
 /build
 /cypress/screenshots
 
 # misc
 .DS_Store
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+*.pem
+
+# local env files
+.env*.local
+
+# vercel
+.vercel
 
 npm-debug.log*
 yarn-debug.log*
@@ -29,4 +35,4 @@ yarn-error.log*
 .vscode
 
 # Solidity
-src/artifacts
+artifacts

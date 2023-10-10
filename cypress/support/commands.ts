@@ -4,10 +4,10 @@
 // https://on.cypress.io/custom-commands
 // ***********************************************
 import 'cypress-wait-until'
-import { Wallet } from '@ethersproject/wallet'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { Eip1193Bridge } from '@ethersproject/experimental/lib/eip1193-bridge'
 import { Signer } from '@ethersproject/abstract-signer'
+import { Wallet } from 'ethers'
 
 // never send real ether to this, obviously
 
@@ -41,13 +41,11 @@ export class CustomizedBridge extends Eip1193Bridge {
         this.address = address
         this.allowTx = allowTx
     }
-    //@ts-ignore
-    async sendAsync(...args) {
+    async sendAsync(...args: any) {
         console.debug('sendAsync called', ...args)
         return this.send(...args)
     }
-    //@ts-ignore
-    async send(...args) {
+    async send(...args: any) {
         console.debug('send called', ...args)
         const isCallbackForm = typeof args[0] === 'object' && typeof args[1] === 'function'
         let callback
@@ -64,7 +62,7 @@ export class CustomizedBridge extends Eip1193Bridge {
 
         if (method === 'eth_sendTransaction' && this.allowTx) {
             const txReq = params[0]
-            let custom_tx = renameKeys(txReq, { gas: 'gasLimit' })
+            const custom_tx = renameKeys(txReq, { gas: 'gasLimit' })
             const { hash } = await this.signer.sendTransaction(custom_tx)
             if (isCallbackForm) {
                 callback(null, { result: hash })
@@ -127,23 +125,24 @@ const returnWallet = (type: string) => {
     }
 }
 
-Cypress.on('uncaught:exception', (err, runnable) => {
+Cypress.on('uncaught:exception', () => {
     // returning false here prevents Cypress from
     // failing the test
     return false
 })
 
+//@ts-ignore
 Cypress.Commands.overwrite('visit', (original, url, options) => {
     const { privateKey, walletAddress, allowTx } = returnWallet(options && options.qs ? options.qs.type : '')
+    //@ts-ignore
     return original(url, {
         ...options,
-        //@ts-ignore
         onBeforeLoad(win) {
             options && options.onBeforeLoad && options.onBeforeLoad(win)
             win.localStorage.clear()
             const provider = new JsonRpcProvider('https://optimism-goerli.public.blastapi.io', 420)
             const signer = new Wallet(privateKey, provider)
-            win.ethereum = new CustomizedBridge(signer, provider, walletAddress, allowTx)
+            ;(win as any).ethereum = new CustomizedBridge(signer, provider, walletAddress, allowTx)
         },
     })
 })

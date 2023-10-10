@@ -27,7 +27,7 @@ yarn
 ### Run
 
 ```bash
-yarn start
+yarn dev
 ```
 
 ### Configuring the environment
@@ -35,10 +35,12 @@ yarn start
 To have the app default to a different network when a wallet is not connected:
 
 1. Create a file and name it `.env.development.local`
-2. Change `REACT_APP_NETWORK_ID` to `"420"`
-3. Change `REACT_APP_NETWORK_URL` to e.g. `"https://opt-goerli.g.alchemy.com/v2/{YOUR_INFURA_KEY}"`
+2. Change `NEXT_PUBLIC_NETWORK_ID` to `"420"`
+3. Change `NEXT_PUBLIC_NETWORK_URL` to e.g. `"https://opt-goerli.g.alchemy.com/v2/{YOUR_INFURA_KEY}"`
 
 ## Testing
+
+TODO: re-implement tests
 
 ### Cypress integration test
 
