@@ -1,5 +1,6 @@
+import { useWeb3React } from '@web3-react/core'
 import styled from 'styled-components'
-import { useNetwork } from 'wagmi'
+import ReactTooltip from 'react-tooltip'
 
 import {
     Container,
@@ -23,9 +24,7 @@ interface ContractsTableProps {
 }
 
 export const ContractsTable = ({ title, colums, rows }: ContractsTableProps) => {
-    const { chain } = useNetwork()
-    const chainId = chain?.id
-
+    const { chainId } = useWeb3React()
     return (
         <Container>
             <Header>
@@ -40,7 +39,7 @@ export const ContractsTable = ({ title, colums, rows }: ContractsTableProps) => 
                     <SHeads>
                         {colums?.map((colName, index) => (
                             <SHeadsContainer key={title + '-column-' + index}>
-                                <SHead>{colName}</SHead>
+                                <Head>{colName}</Head>
                             </SHeadsContainer>
                         ))}
                     </SHeads>
@@ -64,38 +63,17 @@ export const ContractsTable = ({ title, colums, rows }: ContractsTableProps) => 
     )
 }
 
-// Contract Name column width variable
-const contractNamecolumnWidth = 244
 // Description column width variable
-const descriptionColumnWidth = 554
+const descriptionColumnWidth = '500px'
 
 const SHeads = styled(Heads)`
-    div:first-child {
-        width: ${contractNamecolumnWidth}px;
-    }
     div:last-child {
-        width: ${descriptionColumnWidth}px;
-    }
-
-    @media (max-width: 768px) {
-        div:last-child {
-            width: 80vw;
-        }
+        width: ${descriptionColumnWidth};
     }
 `
 const SList = styled(List)`
-    align-items: center;
-    div:first-child div {
-        width: ${contractNamecolumnWidth}px;
-    }
     div:last-child div {
-        width: ${descriptionColumnWidth}px;
-    }
-
-    @media (max-width: 768px) {
-        div:last-child div {
-            width: 80vw;
-        }
+        width: ${descriptionColumnWidth};
     }
 `
 
@@ -106,4 +84,3 @@ const SListItem = styled(ListItem)`
     text-align: start;
     text-overflow: ellipsis;
 `
-const SHead = styled(Head)``

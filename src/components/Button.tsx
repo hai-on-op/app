@@ -2,7 +2,7 @@ import React, { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 import classNames from 'classnames'
-import darkArrow from '../assets/dark-arrow.svg'
+
 import Arrow from './Icons/Arrow'
 import Loader from './Loader'
 
@@ -58,9 +58,13 @@ const Button = ({
         if (dimmedWithArrow) {
             return (
                 <DimmedBtn {...rest} disabled={disabled} onClick={onClick}>
-                    {arrowPlacement === 'left' ? <img src={darkArrow} alt={''} /> : null}
+                    {arrowPlacement === 'left' ? (
+                        <img src={require('../assets/dark-arrow.svg').default} alt={''} />
+                    ) : null}
                     {text && t(text)}
-                    {arrowPlacement === 'right' ? <img className="rotate" src={darkArrow} alt={''} /> : null}
+                    {arrowPlacement === 'right' ? (
+                        <img className="rotate" src={require('../assets/dark-arrow.svg').default} alt={''} />
+                    ) : null}
                 </DimmedBtn>
             )
         } else if (withArrow) {

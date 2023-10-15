@@ -65,7 +65,7 @@ const AuctionsOperations = () => {
                                     : 'KITE'
                             }
                             methodName={
-                                auctionType === 'DEBT' || auctionType === 'COLLATERAL' ? 'systemCoin' : 'protocolToken'
+                                auctionType === 'DEBT' || auctionType === 'COLLATERAL' ? 'coin' : 'protocolToken'
                             }
                             auctionType={auctionType}
                         />

@@ -1,9 +1,8 @@
 import React, { useEffect, useMemo } from 'react'
 import { toast } from 'react-toastify'
 import ToastPayload from '../components/ToastPayload'
+import { useActiveWeb3React } from '../hooks'
 import store, { useStoreState } from '../store'
-import { useEthersProvider } from '~/hooks'
-import { useNetwork } from 'wagmi'
 
 export function shouldCheck(
     lastBlockNumber: number,
@@ -28,9 +27,7 @@ export function shouldCheck(
 
 export default function TransactionUpdater(): null {
     const toastId = 'transactionId'
-    const { chain } = useNetwork()
-    const chainId = chain?.id
-    const provider = useEthersProvider()
+    const { chainId, library } = useActiveWeb3React()
     const { transactionsModel: state, connectWalletModel: connectedWalletState } = useStoreState((state) => state)
 
     const lastBlockNumber = chainId ? connectedWalletState.blockNumber[chainId] : null
@@ -38,12 +35,12 @@ export default function TransactionUpdater(): null {
     const transactions = useMemo(() => (chainId ? state.transactions ?? {} : {}), [chainId, state])
 
     useEffect(() => {
-        if (!chainId || !provider || !lastBlockNumber) return
+        if (!chainId || !library || !lastBlockNumber) return
 
         Object.keys(transactions)
             .filter((hash) => shouldCheck(lastBlockNumber, transactions[hash]))
             .forEach((hash) => {
-                provider
+                library
                     .getTransactionReceipt(hash)
                     .then((receipt) => {
                         if (receipt) {
@@ -89,7 +86,7 @@ export default function TransactionUpdater(): null {
                         console.error(`failed to check transaction hash: ${hash}`, error)
                     })
             })
-    }, [chainId, provider, transactions, lastBlockNumber])
+    }, [chainId, library, transactions, lastBlockNumber])
 
     return null
 }

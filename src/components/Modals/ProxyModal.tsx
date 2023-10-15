@@ -1,12 +1,14 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { AlertTriangle, ArrowUpCircle, CheckCircle } from 'react-feather'
 import { useTranslation } from 'react-i18next'
-import { useAccount, useNetwork } from 'wagmi'
+import ReactTooltip from 'react-tooltip'
 import styled from 'styled-components'
-
-import { handlePreTxGasEstimate, handleTransactionError, useTransactionAdder, useEthersSigner, useGeb } from '~/hooks'
-import { useStoreState, useStoreActions } from '~/store'
-import { timeout } from '~/utils/helper'
+import { useActiveWeb3React } from '../../hooks'
+import { handlePreTxGasEstimate, handleTransactionError, useTransactionAdder } from '../../hooks/TransactionHooks'
+import { use10BlocksConfirmations } from '../../hooks/useBlocksConfirmations'
+import useGeb from '../../hooks/useGeb'
+import { useStoreState, useStoreActions } from '../../store'
+import { timeout } from '../../utils/helper'
 import Button from '../Button'
 import Loader from '../Loader'
 import Modal from './Modal'
@@ -14,13 +16,10 @@ import Modal from './Modal'
 const ProxyModal = () => {
     const [status, setStatus] = useState('stateless')
     const { t } = useTranslation()
-
-    const { chain } = useNetwork()
-    const { address: account } = useAccount()
-    const signer = useEthersSigner()
-    const chainId = chain?.id
+    const { account, library, chainId } = useActiveWeb3React()
     const geb = useGeb()
     const addTransaction = useTransactionAdder()
+    const blocksSinceCheck = use10BlocksConfirmations()
 
     const { popupsModel: popupsState, connectWalletModel: connectWalletState } = useStoreState((state) => state)
     const storeActions = useStoreActions((state) => state)
@@ -30,7 +29,7 @@ const ProxyModal = () => {
 
     useEffect(() => {
         async function blocksChecker() {
-            if (ctHash) {
+            if (ctHash && blocksSinceCheck === 10) {
                 await timeout(2000)
                 popupsActions.setIsProxyModalOpen(false)
                 popupsState.returnProxyFunction(storeActions)
@@ -40,13 +39,14 @@ const ProxyModal = () => {
             }
         }
         blocksChecker()
-    }, [account, popupsActions, ctHash, popupsState, connectWalletActions, storeActions])
+    }, [account, blocksSinceCheck, popupsActions, ctHash, popupsState, connectWalletActions, storeActions])
 
     const handleCreateAccount = async () => {
         const { blockNumber } = connectWalletState
 
-        if (!account || !signer || !chainId) return false
+        if (!account || !library || !chainId) return false
         const txData = await geb.contracts.proxyRegistry.populateTransaction['build()']()
+        const signer = library.getSigner(account)
 
         try {
             setStatus('loading')
@@ -89,7 +89,21 @@ const ProxyModal = () => {
                 <InnerContainer>
                     <ImgContainer>{returnStatusIcon(status)}</ImgContainer>
                     <Title className={status}>{t('create_account')}</Title>
-                    <Text>{!ctHash && t('proxy_wallet_text')}</Text>
+                    <Text>
+                        {ctHash ? (
+                            <>
+                                <Confirmations>
+                                    {`WATITING FOR CONFIRMATIONS... ${
+                                        !blocksSinceCheck ? 0 : blocksSinceCheck > 10 ? 10 : blocksSinceCheck
+                                    } of 10`}{' '}
+                                    <InfoBtn data-tip={t('confirmations_info')}>?</InfoBtn>
+                                </Confirmations>
+                                <ReactTooltip multiline type="light" data-effect="solid" />
+                            </>
+                        ) : (
+                            t('proxy_wallet_text')
+                        )}
+                    </Text>
 
                     {ctHash ? null : (
                         <BtnContainer>

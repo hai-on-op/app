@@ -1,9 +1,8 @@
 import { useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
-import { useAccount } from 'wagmi'
 
-import { useIsOwner, useEthersSigner } from '~/hooks'
+import { useActiveWeb3React, useIsOwner } from '~/hooks'
 import { useStoreActions, useStoreState } from '~/store'
 import { isNumeric, DEFAULT_SAFE_STATE } from '~/utils'
 import AlertLabel from '~/components/AlertLabel'
@@ -13,8 +12,7 @@ import SafeHeader from './SafeHeader'
 
 const SafeDetails = ({ ...props }) => {
     const { t } = useTranslation()
-    const { address: account } = useAccount()
-    const signer = useEthersSigner()
+    const { account, library } = useActiveWeb3React()
 
     const { safeModel: safeActions } = useStoreActions((state) => state)
 
@@ -56,11 +54,11 @@ const SafeDetails = ({ ...props }) => {
     }, [safe, safeActions])
 
     useEffect(() => {
-        if (!account || !signer) return
+        if (!account || !library) return
         if (!isNumeric(safeId)) {
             props.history.push('/safes')
         }
-    }, [account, signer, props.history, safeId])
+    }, [account, library, props.history, safeId])
 
     const isLoading = !(liquidationData && singleSafe?.collateralName)
 

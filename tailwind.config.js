@@ -1,7 +1,6 @@
-/** @type {import('tailwindcss').Config} */
-// eslint-disable-next-line import/no-anonymous-default-export
-export default {
-    content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+module.exports = {
+    purge: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
+    darkMode: false, // or 'media' or 'class'
     theme: {
         extend: {
             maxWidth: {
@@ -16,6 +15,9 @@ export default {
                 poppins: ['Poppins', 'system-ui', 'sans-serif'],
             },
         },
+    },
+    variants: {
+        extend: {},
     },
     plugins: [],
 }

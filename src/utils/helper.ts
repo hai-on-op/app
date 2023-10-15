@@ -1,11 +1,13 @@
 import numeral from 'numeral'
 import { BigNumber, FixedNumber } from 'ethers'
-import { utils as gebUtils, TokenData } from '@hai-on-op/sdk'
-import { getAddress } from 'viem'
+import { utils as gebUtils } from '@hai-on-op/sdk'
+import { AbstractConnector } from '@web3-react/abstract-connector'
+import { getAddress } from '@ethersproject/address'
+import { TokenData } from '@hai-on-op/sdk/lib/contracts/addreses'
 
-import { ETHERSCAN_PREFIXES, floatsTypes } from './constants'
+import { ETHERSCAN_PREFIXES, floatsTypes, SUPPORTED_WALLETS } from './constants'
 import { ChainId, ILiquidationData, ISafe, ITransaction } from './interfaces'
-import { sanitizeDecimals } from './removeDecimals'
+import { injected } from '~/connectors'
 
 export const IS_IN_IFRAME = window.parent !== window
 
@@ -81,22 +83,19 @@ export const getRatePercentage = (value: string, digits = 4, returnRate = false)
     return formatNumber(String(ratePercentage * 100), digits)
 }
 
-export const toFixedString = (value: string, type: keyof typeof floatsTypes): string => {
+export const toFixedString = (value: string, type?: keyof typeof floatsTypes): string => {
     try {
-        // cut decimals to avoid underflow error
-        const formattedValue = sanitizeDecimals(value, floatsTypes[type])
-
-        const n = Number(formattedValue)
-        const nOfDecimals = Number.isInteger(n) ? formattedValue.length : formattedValue.split('.')[1].length
+        const n = Number(value)
+        const nOfDecimals = Number.isInteger(n) ? value.length : value.split('.')[1].length
 
         if (type === 'WAD' || nOfDecimals === floatsTypes.WAD) {
-            return FixedNumber.fromString(formattedValue, 'fixed256x18').toHexString()
+            return FixedNumber.fromString(value, 'fixed256x18').toHexString()
         } else if (type === 'RAY' || (nOfDecimals > floatsTypes.WAD && nOfDecimals <= floatsTypes.RAY)) {
-            return FixedNumber.fromString(formattedValue, 'fixed256x27').toHexString()
+            return FixedNumber.fromString(value, 'fixed256x27').toHexString()
         } else if (type === 'RAD' || (nOfDecimals > floatsTypes.RAY && nOfDecimals <= floatsTypes.RAD)) {
-            return FixedNumber.fromString(formattedValue, 'fixed256x45').toHexString()
+            return FixedNumber.fromString(value, 'fixed256x45').toHexString()
         }
-        return FixedNumber.fromString(formattedValue, 'fixed256x18').toHexString()
+        return FixedNumber.fromString(value, 'fixed256x18').toHexString()
     } catch (error) {
         console.error('toFixedString error:', error)
         return '0'
@@ -320,6 +319,42 @@ export const timeout = (ms: number) => {
 
 export const returnPercentAmount = (partialValue: string, totalValue: string) => {
     return numeral(partialValue).divide(totalValue).multiply(100).value()
+}
+
+export const returnConnectorName = (connector: AbstractConnector | undefined) => {
+    if (!connector || typeof connector === 'undefined') return null
+
+    const isMetamask = window?.ethereum?.isMetaMask
+    return Object.keys(SUPPORTED_WALLETS)
+        .map((key) => {
+            const option = SUPPORTED_WALLETS[key]
+            if (option.connector === connector) {
+                if (option.connector === injected) {
+                    if (isMetamask && option.name !== 'MetaMask') {
+                        return null
+                    }
+                    if (!isMetamask && option.name === 'MetaMask') {
+                        return null
+                    }
+                }
+                return option.name !== 'Injected' ? option.name : null
+            }
+            return null
+        })
+        .filter((x: string | null) => x !== null)[0]
+}
+
+export const numberizeString = (obj: any) => {
+    const res: any = {}
+    Object.keys(obj).forEach((key) => {
+        res[key] = {}
+        Object.keys(obj[key]).forEach((temp) => {
+            res[key][temp] = !isNaN(obj[key][temp]) ? numeral(obj[key][temp]).value() : obj[key][temp]
+        })
+        return res
+    })
+
+    return res
 }
 
 export const returnTimeOffset = () => {

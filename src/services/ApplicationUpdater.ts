@@ -14,16 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { useCallback, useEffect, useState } from 'react'
+import { useActiveWeb3React } from '../hooks'
 import useDebounce from '../hooks/useDebounce'
 import store from '../store'
-import { useEthersProvider } from '~/hooks/useEthersAdapters'
-import { useNetwork } from 'wagmi'
 
 export default function ApplicationUpdater(): null {
-    const { chain } = useNetwork()
-    const chainId = chain?.id
-    const provider = useEthersProvider()
-
+    const { library, chainId } = useActiveWeb3React()
     const [state, setState] = useState<{
         chainId: number | undefined
         blockNumber: number | null
@@ -50,20 +46,20 @@ export default function ApplicationUpdater(): null {
 
     // attach/detach listeners
     useEffect(() => {
-        if (!provider || !chainId) return undefined
+        if (!library || !chainId) return undefined
 
         setState({ chainId, blockNumber: null })
 
-        provider
+        library
             .getBlockNumber()
             .then(blockNumberCallback)
-            .catch((error: any) => console.error(`Failed to get block number for chainId: ${chainId}`, error))
+            .catch((error) => console.error(`Failed to get block number for chainId: ${chainId}`, error))
 
-        provider.on('block', blockNumberCallback)
+        library.on('block', blockNumberCallback)
         return () => {
-            provider.removeListener('block', blockNumberCallback)
+            library.removeListener('block', blockNumberCallback)
         }
-    }, [chainId, provider, blockNumberCallback])
+    }, [chainId, library, blockNumberCallback])
 
     const debouncedState = useDebounce(state, 100)
 

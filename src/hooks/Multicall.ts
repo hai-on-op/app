@@ -1,9 +1,9 @@
 import { useEffect, useMemo } from 'react'
-import { useNetwork } from 'wagmi'
-import { FunctionFragment, Interface } from 'ethers/lib/utils'
-import { BigNumber, Contract } from 'ethers'
+import { Interface, FunctionFragment } from '@ethersproject/abi'
+import { BigNumber } from '@ethersproject/bignumber'
+import { Contract } from '@ethersproject/contracts'
 
-import { useBlockNumber } from '~/hooks'
+import { useActiveWeb3React, useBlockNumber } from '~/hooks'
 import { Call } from '~/utils/interfaces'
 import store from '~/store'
 
@@ -82,8 +82,7 @@ export const NEVER_RELOAD: ListenerOptions = {
 
 // the lowest level call for subscribing to contract data
 function useCallsData(calls: (Call | undefined)[], options?: ListenerOptions): CallResult[] {
-    const { chain } = useNetwork()
-    const chainId = chain?.id
+    const { chainId } = useActiveWeb3React()
     const callResults = store.getState().multicallModel.callResults
 
     const serializedCallKeys: string = useMemo(

@@ -1,18 +1,19 @@
 import { useState } from 'react'
+import { isAddress } from '@ethersproject/address'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import styled from 'styled-components'
-import { useAccount } from 'wagmi'
 
 import { useStoreActions, useStoreState } from '~/store'
 import { fetchUserSafesRaw } from '~/services/safes'
-import { timeout, IUserSafeList, isAddress } from '~/utils'
-import { useGeb } from '~/hooks'
+import { timeout, IUserSafeList } from '~/utils'
+import { useActiveWeb3React } from '~/hooks'
+import useGeb from '~/hooks/useGeb'
 import Button from './Button'
 
 const SafeManager = () => {
     const { t } = useTranslation()
-    const { address: account } = useAccount()
+    const { account } = useActiveWeb3React()
     const geb = useGeb()
     const [error, setError] = useState('')
     const [value, setValue] = useState('')

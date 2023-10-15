@@ -1,30 +1,33 @@
-import { useMemo, useState } from 'react'
+import dayjs from 'dayjs'
 import { BigNumber } from 'ethers'
+import { useState } from 'react'
 import styled from 'styled-components'
 import _ from '~/utils/lodash'
-import { useConnectModal } from '@rainbow-me/rainbowkit'
-import { useAccount } from 'wagmi'
 
 import BidLine from '~/components/BidLine'
+import { useActiveWeb3React } from '~/hooks'
 import { useStoreActions, useStoreState } from '~/store'
 import { ICollateralAuction } from '~/types'
 import { COIN_TICKER, formatNumber, parseWad } from '~/utils'
 import AlertLabel from '~/components/AlertLabel'
 import Button from '~/components/Button'
-import debtImage from '~/assets/debt.svg'
-import collateralImage from '~/assets/collateral.svg'
-import surplusImage from '~/assets/surplus.svg'
+// import { utils as gebUtils } from 'geb.js'
 
 type Props = ICollateralAuction & { isCollapsed: boolean }
 
 const CollateralAuctionBlock = (auction: Props) => {
-    const { auctionId, isClaimed, remainingToRaiseE18, remainingCollateral, tokenSymbol, biddersList, isCollapsed } =
-        auction
+    const {
+        auctionId,
+        isClaimed,
+        remainingToRaiseE18,
+        remainingCollateral,
+        tokenSymbol,
+        biddersList,
+        isCollapsed,
+        maxDiscountTimestamp,
+    } = auction
 
-    const { openConnectModal } = useConnectModal()
-    const handleConnectWallet = () => openConnectModal && openConnectModal()
-
-    const { address: account } = useAccount()
+    const { account } = useActiveWeb3React()
     const { popupsModel: popupsActions, auctionModel: auctionActions } = useStoreActions((state) => state)
 
     const { connectWalletModel: connectWalletState, auctionModel: auctionsState } = useStoreState((state) => state)
@@ -33,7 +36,9 @@ const CollateralAuctionBlock = (auction: Props) => {
 
     const buySymbol = COIN_TICKER
 
-    const isOngoingAuction = BigNumber.from(remainingCollateral).gt('0') && BigNumber.from(remainingToRaiseE18).gt('0')
+    // const endsOn = auctionDeadline ? dayjs.unix(Number(auctionDeadline)).format('MMM D, h:mm A') : ''
+
+    const isOngoingAuction = BigNumber.from(remainingCollateral).gt('0')
 
     const remainingCollateralParsed = formatNumber(parseWad(BigNumber.from(remainingCollateral)), 4)
 
@@ -42,6 +47,8 @@ const CollateralAuctionBlock = (auction: Props) => {
     const eventType = 'COLLATERAL'
 
     const userProxy = _.get(connectWalletState, 'proxyAddress', '')
+
+    const endsOn = dayjs.unix(Number(maxDiscountTimestamp)).format('MMM D, h:mm A')
 
     const parseWadAmount = (buyAmount: string) => {
         return parseWad(BigNumber.from(buyAmount))
@@ -56,7 +63,7 @@ const CollateralAuctionBlock = (auction: Props) => {
 
     const handleClick = (type: string) => {
         if (!account) {
-            handleConnectWallet()
+            popupsActions.setIsConnectorsWalletOpen(true)
             return
         }
 
@@ -116,21 +123,11 @@ const CollateralAuctionBlock = (auction: Props) => {
         }
     }
 
-    const returnImage = useMemo(() => {
-        if (eventType.toLocaleLowerCase() === 'collateral') {
-            return collateralImage
-        } else if (eventType.toLocaleLowerCase() === 'debt') {
-            return debtImage
-        } else {
-            return surplusImage
-        }
-    }, [])
-
     return (
         <Container>
             <Header onClick={() => setCollapse(!collapse)}>
                 <LeftAucInfo type={eventType.toLowerCase()}>
-                    <img src={returnImage} alt="auction" />
+                    <img src={require(`../../../assets/${eventType.toLowerCase()}.svg`)} alt="auction" />
                     {`Auction #${auctionId}`}
                 </LeftAucInfo>
 
@@ -147,6 +144,11 @@ const CollateralAuctionBlock = (auction: Props) => {
                                     {buySymbol} {eventType === 'COLLATERAL' ? 'TO RAISE' : 'BID'}
                                 </InfoLabel>
                                 <InfoValue>{`${buyAmountParsed} ${buySymbol}`}</InfoValue>
+                            </InfoCol>
+
+                            <InfoCol>
+                                <InfoLabel>DISCOUNT {isOngoingAuction ? 'ENDS ON' : 'ENDED ON'}</InfoLabel>
+                                <InfoValue>{endsOn}</InfoValue>
                             </InfoCol>
                         </Info>
                     </InfoContainer>

@@ -1,5 +1,6 @@
 import { action, Action } from 'easy-peasy'
-import { ITransaction, NETWORK_ID } from '~/utils'
+import { NETWORK_ID } from 'src/connectors'
+import { ITransaction } from '../utils/interfaces'
 
 export interface TransactionsModel {
     transactions: { [hash: string]: ITransaction }
