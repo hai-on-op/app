@@ -4,6 +4,7 @@ import ttmImg from '../assets/ttm-img.png'
 import ethImg from '../assets/eth-img.svg'
 import haiImg from '../assets/hai-logo.svg'
 import stnImg from '../assets/stn-img.png'
+import snxImg from '../assets/snx-img.png'
 
 export type Tokens = {
     [key: string]: {
@@ -22,4 +23,5 @@ export const TOKEN_LOGOS: { [key: string]: string } = {
     WETH: ethImg,
     HAI: haiImg,
     STN: stnImg,
+    SNX: snxImg,
 }
