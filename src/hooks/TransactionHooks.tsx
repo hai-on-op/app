@@ -3,10 +3,10 @@ import { TransactionResponse, TransactionRequest } from '@ethersproject/provider
 import { JsonRpcSigner } from '@ethersproject/providers/lib/json-rpc-provider'
 import { utils as gebUtils } from '@hai-on-op/sdk'
 import { BigNumber } from 'ethers'
-import { useAccount, useNetwork } from 'wagmi'
 
 import { newTransactionsFirst } from '../utils/helper'
 import { ITransaction } from '../utils/interfaces'
+import { useActiveWeb3React } from '~/hooks'
 import store from '~/store'
 
 // adding transaction to store
@@ -15,9 +15,7 @@ export function useTransactionAdder(): (
     summary?: string,
     approval?: { tokenAddress: string; spender: string }
 ) => void {
-    const { chain } = useNetwork()
-    const chainId = chain?.id
-    const { address: account } = useAccount()
+    const { chainId, account } = useActiveWeb3React()
     return useCallback(
         (response: TransactionResponse, summary?: string, approval?: { tokenAddress: string; spender: string }) => {
             if (!account) return
@@ -129,6 +127,32 @@ export function handleTransactionError(e: any) {
     })
     console.error(`Transaction failed`, e)
     console.log('Required String', gebUtils.getRequireString(e))
+}
+
+// returns whether a token has a pending approval transaction
+export function useHasPendingApproval(tokenAddress: string | undefined, spender: string | undefined): boolean {
+    const allTransactions = store.getState().transactionsModel.transactions
+    return useMemo(
+        () =>
+            typeof tokenAddress === 'string' &&
+            typeof spender === 'string' &&
+            Object.keys(allTransactions).some((hash) => {
+                const tx = allTransactions[hash]
+                if (!tx) return false
+                if (tx.receipt) {
+                    return false
+                } else {
+                    const approval = tx.approval
+                    if (!approval) return false
+                    return (
+                        approval.spender === spender &&
+                        approval.tokenAddress === tokenAddress &&
+                        isTransactionRecent(tx)
+                    )
+                }
+            }),
+        [allTransactions, spender, tokenAddress]
+    )
 }
 
 export function useHasPendingTransactions() {

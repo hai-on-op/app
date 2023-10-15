@@ -1,10 +1,8 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useConnectModal } from '@rainbow-me/rainbowkit'
 import styled from 'styled-components'
-import { useAccount } from 'wagmi'
 
-import { useAuctions } from '~/hooks'
+import { useActiveWeb3React, useAuctions } from '~/hooks'
 import { useStoreActions, useStoreState } from '~/store'
 import AuctionBlock from '~/components/AuctionBlock'
 import Pagination from '~/components/Pagination'
@@ -31,15 +29,11 @@ interface Props {
 }
 const AuctionsList = ({ type, selectedItem, setSelectedItem }: Props) => {
     const { t } = useTranslation()
-
-    const { address: account } = useAccount()
+    const { account } = useActiveWeb3React()
     const [paging, setPaging] = useState<IPaging>({ from: 0, to: 5 })
     const { popupsModel: popupsActions } = useStoreActions((state) => state)
 
     const { auctionModel: auctionsState, connectWalletModel: connectWalletState } = useStoreState((state) => state)
-
-    const { openConnectModal } = useConnectModal()
-    const handleConnectWallet = () => openConnectModal && openConnectModal()
 
     // internalbalance = user's HAI balance in the protocol
     // protInternalBalance = user's KITE balance in the protocol
@@ -53,7 +47,7 @@ const AuctionsList = ({ type, selectedItem, setSelectedItem }: Props) => {
     // handle clicking to claim
     const handleClick = (modalType: string) => {
         if (!account) {
-            handleConnectWallet()
+            popupsActions.setIsConnectorsWalletOpen(true)
             return
         }
 

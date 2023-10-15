@@ -1,17 +1,19 @@
-import { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
+import { isAddress } from '@ethersproject/address'
+import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
-import { useEthersSigner } from '~/hooks/useEthersAdapters'
-import { useAccount } from 'wagmi'
 
 import { useStoreState, useStoreActions } from '~/store'
-import { useGeb } from '~/hooks'
+import { useActiveWeb3React } from '~/hooks'
+import Button from '~/components/Button'
+import useGeb from '~/hooks/useGeb'
 import Accounts from './Accounts'
 import SafeList from './SafeList'
-import { isAddress } from '~/utils'
 
 const OnBoarding = ({ ...props }) => {
-    const { address: account } = useAccount()
-    const signer = useEthersSigner()
+    const { t } = useTranslation()
+    const [isOwner, setIsOwner] = useState(true)
+    const { account, library } = useActiveWeb3React()
     const geb = useGeb()
 
     const {
@@ -19,7 +21,7 @@ const OnBoarding = ({ ...props }) => {
         safeModel: safeState,
         popupsModel: popupsState,
     } = useStoreState((state) => state)
-    const { safeModel: safeActions } = useStoreActions((state) => state)
+    const { popupsModel: popupsActions, safeModel: safeActions } = useStoreActions((state) => state)
 
     const address: string = props.match.params.address ?? ''
 
@@ -27,7 +29,7 @@ const OnBoarding = ({ ...props }) => {
         if (
             (!account && !address) ||
             (address && !isAddress(address.toLowerCase())) ||
-            !signer ||
+            !library ||
             connectWalletState.isWrongNetwork
         )
             return
@@ -45,18 +47,35 @@ const OnBoarding = ({ ...props }) => {
             if (
                 (!account && !address) ||
                 (address && !isAddress(address.toLowerCase())) ||
-                !signer ||
+                !library ||
                 connectWalletState.isWrongNetwork
             )
                 fetchSafes()
         }, ms)
 
         return () => clearInterval(interval)
-    }, [account, address, connectWalletState.isWrongNetwork, connectWalletState.tokensData, geb, signer, safeActions])
+    }, [account, address, connectWalletState.isWrongNetwork, connectWalletState.tokensData, geb, library, safeActions])
+
+    useEffect(() => {
+        if (account && address) {
+            setIsOwner(account.toLowerCase() === address.toLowerCase())
+        }
+    }, [address, account])
 
     return (
         <Container id="app-page">
             <Content>
+                {(account && !safeState.safeCreated) || (!isOwner && !safeState.list.length) ? (
+                    <BtnContainer className="top-up">
+                        <Button
+                            data-test-id="topup-btn"
+                            disabled={connectWalletState.isWrongNetwork}
+                            onClick={() => popupsActions.setIsSafeManagerOpen(true)}
+                        >
+                            <BtnInner>{t('manage_other_safes')}</BtnInner>
+                        </Button>
+                    </BtnContainer>
+                ) : null}
                 {safeState.safeCreated ? (
                     <SafeList address={address} />
                 ) : popupsState.isWaitingModalOpen ? null : (
@@ -73,6 +92,28 @@ const Container = styled.div``
 
 const Content = styled.div`
     position: relative;
+`
+
+const BtnContainer = styled.div`
+    position: absolute;
+    top: 25px;
+    right: 50px;
+    button {
+        min-width: 100px;
+        padding: 4px 12px;
+    }
+    &.top-up {
+        right: auto;
+        left: 50px;
+        top: 50px;
+    }
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+      position: static;
+      margin-bottom:20px;
+      &.top-up {
+         display:none;
+        }
+    `}
 `
 
 const BtnInner = styled.div`

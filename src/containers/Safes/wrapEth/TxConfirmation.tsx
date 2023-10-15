@@ -1,17 +1,17 @@
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
-import { useAccount } from 'wagmi'
 
-import { handleTransactionError, useEthersSigner, useGeb } from '~/hooks'
+import { useActiveWeb3React, handleTransactionError } from '~/hooks'
 import TransactionOverview from '~/components/TransactionOverview'
+import { returnConnectorName } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import Button from '~/components/Button'
 import Results from './Results'
+import useGeb from '~/hooks/useGeb'
 
 const TxConfirmation = () => {
     const { t } = useTranslation()
-    const { address: account } = useAccount()
-    const signer = useEthersSigner()
+    const { connector, account, library } = useActiveWeb3React()
     const { safeModel: safeState } = useStoreState((state) => state)
     const {
         popupsModel: popupsActions,
@@ -38,11 +38,11 @@ const TxConfirmation = () => {
 
     const handleConfirm = async () => {
         try {
-            if (account && signer) {
-                popupsActions.setSafeOperationPayload({
-                    isCreate: false,
+            if (account && library) {
+                popupsActions.setAuctionOperationPayload({
                     isOpen: false,
                     type: '',
+                    auctionType: '',
                 })
                 popupsActions.setIsWaitingModalOpen(true)
                 popupsActions.setWaitingPayload({
@@ -51,6 +51,7 @@ const TxConfirmation = () => {
                     hint: 'Confirm this transaction in your wallet',
                     status: 'loading',
                 })
+                const signer = library.getSigner(account)
 
                 await safeActions.wrapEther({
                     signer,
@@ -72,7 +73,10 @@ const TxConfirmation = () => {
                 <Body>
                     <TransactionOverview
                         title={t('confirm_transaction_details')}
-                        description={t('confirm_details_text')}
+                        description={
+                            t('confirm_details_text') +
+                            (returnConnectorName(connector) ? 'on ' + returnConnectorName(connector) : '')
+                        }
                     />
                     <Results amount={safeState.amount} />
                 </Body>

@@ -1,33 +1,45 @@
 import { useMemo } from 'react'
+import { useWeb3React } from '@web3-react/core'
+import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 import { utils } from 'ethers'
-import { ConnectButton } from '@rainbow-me/rainbowkit'
-import { useAccount } from 'wagmi'
 
+import { formatNumber, newTransactionsFirst, returnWalletAddress, TOKEN_LOGOS } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
-import { handleTransactionError, useEthersSigner } from '~/hooks'
-import { claimAirdrop } from '~/services/blockchain'
-import { formatNumber, TOKEN_LOGOS } from '~/utils'
+import { handleTransactionError, isTransactionRecent } from '~/hooks'
+import Identicon from './Icons/Identicon'
 import addIcon from '~/assets/plus.svg'
 import { Icon } from './TokenInput'
 import NavLinks from './NavLinks'
+import Button from './Button'
 import Brand from './Brand'
+import { claimAirdrop } from '~/services/blockchain'
 
 const Navbar = () => {
+    const { t } = useTranslation()
+    const { transactionsModel: transactionsState } = useStoreState((state) => state)
+
+    const { transactions } = transactionsState
+
     const {
         popupsModel: popupsActions,
         transactionsModel,
         connectWalletModel: connectWalletActions,
     } = useStoreActions((state) => state)
     const { connectWalletModel } = useStoreState((state) => state)
+    const { active, account, library } = useWeb3React()
+    const signer = library ? library.getSigner(account) : undefined
 
-    const { address: account, isConnected } = useAccount()
-    const signer = useEthersSigner()
+    const handleWalletConnect = () => {
+        if (active && account) {
+            return popupsActions.setIsConnectedWalletModalOpen(true)
+        }
+        return popupsActions.setIsConnectorsWalletOpen(true)
+    }
 
     const handleAddHAI = async () => {
         try {
-            const provider = window.ethereum as any
-            await provider?.request({
+            await library?.provider.request({
                 method: 'wallet_watchAsset',
                 params: {
                     type: 'ERC20',
@@ -42,6 +54,15 @@ const Navbar = () => {
             console.log('Error adding HAI to the wallet:', error)
         }
     }
+
+    const sortedRecentTransactions = useMemo(() => {
+        const txs = Object.values(transactions)
+        return txs.filter(isTransactionRecent).sort(newTransactionsFirst)
+    }, [transactions])
+
+    const pending = sortedRecentTransactions.filter((tx) => !tx.receipt).map((tx) => tx.hash)
+
+    const hasPendingTransactions = !!pending.length
 
     const haiBalance = useMemo(() => {
         const balances = connectWalletModel.tokensFetchedData
@@ -84,7 +105,7 @@ const Navbar = () => {
 
     return (
         <Container>
-            <Left isBigWidth={isConnected && account ? true : false}>
+            <Left isBigWidth={active && account ? true : false}>
                 <Brand />
             </Left>
             <HideMobile>
@@ -106,7 +127,25 @@ const Navbar = () => {
                     </HaiButton>
 
                     {/* Button to connect wallet */}
-                    <ConnectButton showBalance={false} accountStatus="address" />
+                    <Button
+                        primary={active && account ? true : false}
+                        id="web3-status-connected"
+                        isLoading={hasPendingTransactions}
+                        onClick={handleWalletConnect}
+                    >
+                        {active && account ? (
+                            hasPendingTransactions ? (
+                                `${pending.length} Pending`
+                            ) : (
+                                <InnerBtn>
+                                    {returnWalletAddress(account)}
+                                    <Identicon />
+                                </InnerBtn>
+                            )
+                        ) : (
+                            t('connect_wallet')
+                        )}
+                    </Button>
                 </BtnContainer>
 
                 <MenuBtn onClick={() => popupsActions.setShowSideMenu(true)}>

@@ -2,7 +2,7 @@ import React from 'react'
 import styled, { keyframes } from 'styled-components'
 import { useStoreState } from '../../store'
 import Modal from './Modal'
-import logo from '../../assets/logo192.png'
+
 const LoadingModal = () => {
     const { popupsModel: popupsState } = useStoreState((state) => state)
 
@@ -16,7 +16,7 @@ const LoadingModal = () => {
             backDropColor={'rgba(255,255,255)'}
         >
             <LoaderContainer>
-                <img src={logo} alt={''} />
+                <img src={require('../../assets/logo192.png').default} alt={''} />
                 {popupsState.isLoadingModalOpen.text ? <Text>{popupsState.isLoadingModalOpen.text}</Text> : null}
             </LoaderContainer>
         </Modal>

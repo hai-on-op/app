@@ -1,12 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import kite from '~/assets/splash/kite.png'
-import partlyCloudy from '~/assets/splash/partly-cloudy.svg'
-import optimism from '~/assets/splash/optimism.svg'
-import liquidEth from '~/assets/splash/liquid-eth.svg'
-import eth from '~/assets/splash/eth.svg'
-import twitter from '~/assets/splash/twitter.svg'
-import discord from '~/assets/splash/discord.svg'
 
 const options = ['OPTIMISM...', 'LIQUID ETH...', 'ETH...', 'WETH']
 
@@ -32,7 +26,11 @@ const Splash = () => {
             <div className="lg:grid lg:grid-cols-12 ">
                 <div className="col-span-12 md:col-span-6  h-screen flex flex-col items-end">
                     <div className="lg:hidden bg-sky w-full flex flex-col items-center py-8">
-                        <img className="h-24 w-24 lg:h-48 lg:w-48" src={partlyCloudy} alt={''} />
+                        <img
+                            className="h-24 w-24 lg:h-48 lg:w-48"
+                            src={require('../assets/splash/partly-cloudy.svg').default}
+                            alt={''}
+                        />
                     </div>
                     <div className="lg:max-w-split  w-full h-full flex flex-col items-center justify-center">
                         <div>
@@ -50,7 +48,11 @@ const Splash = () => {
                 </div>
                 <div className="col-span-12 md:col-span-6 bg-sky hidden lg:block">
                     <div className="lg:max-w-split  h-full flex flex-col items-center justify-center">
-                        <img className="h-24 w-24 lg:h-48 lg:w-48" src={partlyCloudy} alt={''} />
+                        <img
+                            className="h-24 w-24 lg:h-48 lg:w-48"
+                            src={require('../assets/splash/partly-cloudy.svg').default}
+                            alt={''}
+                        />
                     </div>
                 </div>
             </div>
@@ -71,7 +73,11 @@ const Splash = () => {
                 <div className="col-span-6 flex flex-row items-center justify-center space-x-20 md:space-x-36 mt-16 lg:mt-0">
                     <div className="space-y-6 lg:py-0">
                         <div className="relative">
-                            <img className="h-16 w-16 md:h-20 md:w-20 relative z-10" src={optimism} alt={''} />
+                            <img
+                                className="h-16 w-16 md:h-20 md:w-20 relative z-10"
+                                src={require('../assets/splash/optimism.svg').default}
+                                alt={''}
+                            />
                             <div
                                 className="absolute w-40 md:w-48 border border-egg left-4 md:left-12"
                                 style={{
@@ -80,7 +86,11 @@ const Splash = () => {
                             />
                         </div>
                         <div className="relative">
-                            <img className="h-16 w-16 md:h-20 md:w-20 z-10 relative" src={liquidEth} alt={''} />
+                            <img
+                                className="h-16 w-16 md:h-20 md:w-20 z-10 relative"
+                                src={require('../assets/splash/liquid-eth.svg').default}
+                                alt={''}
+                            />
                             <div
                                 className="absolute w-40 md:w-48 border border-egg left-0 top-1/2"
                                 style={{
@@ -89,7 +99,11 @@ const Splash = () => {
                             />
                         </div>
                         <div className="relative">
-                            <img className="h-16 w-16 md:h-20 md:w-20 z-10 relative" src={eth} alt={''} />
+                            <img
+                                className="h-16 w-16 md:h-20 md:w-20 z-10 relative"
+                                src={require('../assets/splash/eth.svg').default}
+                                alt={''}
+                            />
                             <div
                                 className="absolute md:left-14 bottom-14 md:bottom-20 w-48 md:w-48 border border-egg"
                                 style={{
@@ -99,7 +113,11 @@ const Splash = () => {
                         </div>
                     </div>
                     <div className="bg-sky h-24 w-24 lg:h-32 lg:w-32 rounded-full flex flex-col items-center justify-center z-10">
-                        <img className="h-14 w-14 lg:h-16 lg:w-16" src={partlyCloudy} alt={''} />
+                        <img
+                            className="h-14 w-14 lg:h-16 lg:w-16"
+                            src={require('../assets/splash/partly-cloudy.svg').default}
+                            alt={''}
+                        />
                     </div>
                 </div>
             </div>
@@ -150,12 +168,12 @@ const Splash = () => {
                 <div className="flex flex-row space-x-4">
                     <a href="https://twitter.com/letsgethai" rel="noreferrer" target="_blank">
                         <div className="h-14 w-14 bg-egg rounded-full flex flex-col items-center justify-center">
-                            <img className="h-8 w-8" src={twitter} alt={''} />
+                            <img className="h-8 w-8" src={require('../assets/splash/twitter.svg').default} alt={''} />
                         </div>
                     </a>
                     <a href="https://discord.gg/pX8m6zXNKu" rel="noreferrer" target="_blank">
                         <div className="h-14 w-14 bg-egg rounded-full flex flex-col items-center justify-center">
-                            <img className="h-8 w-8" src={discord} alt={''} />
+                            <img className="h-8 w-8" src={require('../assets/splash/discord.svg').default} alt={''} />
                         </div>
                     </a>
                 </div>

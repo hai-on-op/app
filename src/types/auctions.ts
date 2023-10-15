@@ -1,5 +1,5 @@
 import { JsonRpcSigner } from '@ethersproject/providers'
-import { ICollateralAuction as SDKCollateralAuction } from '@hai-on-op/sdk'
+import { ICollateralAuction as SDKCollateralAuction } from '@hai-on-op/sdk/lib/schema/auction'
 
 export type AuctionEventType = 'DEBT' | 'SURPLUS' | 'COLLATERAL'
 
@@ -51,4 +51,5 @@ export interface ICollateralAuction extends SDKCollateralAuction {
     remainingToRaiseE18: string
     remainingCollateral: string
     tokenSymbol: string
+    maxDiscountTimestamp: string
 }

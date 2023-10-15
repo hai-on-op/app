@@ -1,20 +1,21 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useStoreActions, useStoreState } from '~/store'
 import { BigNumber, utils } from 'ethers'
-import {
-    utils as gebUtils,
-    AuctionData,
-    radToFixed,
-    wadToFixed,
-    ICollateralAuction as SDKCollateralAuction,
-    ISurplusAuction as SDKAuction,
-} from '@hai-on-op/sdk'
-import { useAccount } from 'wagmi'
 import _ from '~/utils/lodash'
 
+import { useActiveWeb3React } from '~/hooks'
 import { AuctionEventType, IAuction, IAuctionBidder, ICollateralAuction } from '~/types'
-import { useGeb } from './useGeb'
-import { floatsTypes } from '~/utils'
+import { AuctionData } from '~/utils/virtual/virtualAuctionData'
+import { radToFixed, wadToFixed } from '@hai-on-op/sdk/lib/utils'
+import useGeb from './useGeb'
+import { utils as gebUtils } from '@hai-on-op/sdk'
+
+// temporary cast
+import {
+    ICollateralAuction as SDKCollateralAuction,
+    ISurplusAuction as SDKAuction,
+} from '@hai-on-op/sdk/lib/schema/auction'
+import { floatsTypes, parseWad } from '~/utils'
 
 export function useGetAuctions(type: AuctionEventType, tokenSymbol?: string) {
     const { auctionModel } = useStoreState((state) => state)
@@ -196,9 +197,16 @@ export function useCollateralAuctions(tokenSymbol: string): ICollateralAuction[]
                     BigNumber.from(amountToRaise),
                     floatsTypes.WAD - floatsTypes.RAD
                 )
-                let remainingToRaiseE18Raw = amountToRaiseE18.sub(raised).toString()
+                const remainingToRaiseE18 = amountToRaiseE18.sub(raised).toString()
 
-                const remainingToRaiseE18 = remainingToRaiseE18Raw > '0' ? remainingToRaiseE18Raw : '0'
+                const discPerSecondE18 = gebUtils.decimalShift(BigNumber.from(auc.perSecondDiscountUpdateRate), -9)
+                const disountsDiffE18 = BigNumber.from(auc.maxDiscount)
+                    .mul(BigNumber.from(10).pow(18))
+                    .div(BigNumber.from(auc.startingDiscount))
+                const timeToMaxDiscount =
+                    Math.log(Number(parseWad(disountsDiffE18))) / Math.log(Number(parseWad(discPerSecondE18)))
+                const unixNow = Math.floor(new Date().getTime() / 1000)
+                const maxDiscountTimestamp = Math.floor(unixNow + timeToMaxDiscount).toString()
 
                 const kickBidder = {
                     bidder: startedBy,
@@ -217,6 +225,7 @@ export function useCollateralAuctions(tokenSymbol: string): ICollateralAuction[]
                     remainingToRaiseE18,
                     remainingCollateral,
                     tokenSymbol,
+                    maxDiscountTimestamp,
                 }
             })
 
@@ -242,8 +251,8 @@ export function useStartAuction() {
 
     const { auctionModel: auctionsState } = useStoreState((state) => state)
     const auctionsData = auctionsState.auctionsData as AuctionData
-    const { address: account } = useAccount()
 
+    const { account, library } = useActiveWeb3React()
     const [surplusAmountToSell, setSurplusAmountToSell] = useState<string>('')
     const [debtAmountToSell, setDebtAmountToSell] = useState<string>('')
     const [protocolTokensOffered, setProtocolTokensToOffer] = useState<string>('')
@@ -258,10 +267,9 @@ export function useStartAuction() {
     useEffect(() => {
         if (auctionsData) {
             const coinBalance = auctionsData.accountingEngineData.coinBalance
-            const debtBalance = auctionsData.accountingEngineData.debtBalance
             const unqueuedUnauctionedDebt = auctionsData.accountingEngineData.unqueuedUnauctionedDebt
 
-            let systemSurplus = coinBalance.sub(debtBalance)
+            let systemSurplus = coinBalance.sub(unqueuedUnauctionedDebt)
             let systemDebt = unqueuedUnauctionedDebt.sub(coinBalance)
 
             const surplusAmount = auctionsData.accountingEngineData?.accountingEngineParams.surplusAmount
@@ -309,7 +317,7 @@ export function useStartAuction() {
     }, [debtAmountToSell, debtRequiredToAuction])
 
     const startSurplusAcution = async function () {
-        if (!account) throw new Error('No library or account')
+        if (!library || !account) throw new Error('No library or account')
 
         const txResponse = await geb.contracts.accountingEngine.auctionSurplus()
 
@@ -336,7 +344,7 @@ export function useStartAuction() {
     }
 
     const startDebtAcution = async function () {
-        if (!account) throw new Error('No library or account')
+        if (!library || !account) throw new Error('No library or account')
 
         const txResponse = await geb.contracts.accountingEngine.auctionDebt()
 

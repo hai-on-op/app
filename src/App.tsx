@@ -5,6 +5,7 @@ import { Redirect, Route, Switch } from 'react-router-dom'
 import { ThemeProvider } from 'styled-components'
 import ErrorBoundary from './ErrorBoundary'
 import GlobalStyle from './GlobalStyle'
+import Web3ReactManager from './components/Web3ReactManager'
 import Safes from './containers/Safes'
 import SafeDetails from './containers/Safes/SafeDetails'
 import Shared from './containers/Shared'
@@ -13,6 +14,7 @@ import { Theme } from './utils/interfaces'
 import { darkTheme } from './utils/themes/dark'
 
 import Splash from './containers/Splash'
+import GoogleTagManager from './components/Analytics/GoogleTagManager'
 import Privacy from './containers/Privacy'
 import CreateSafe from './containers/Safes/CreateSafe'
 import Auctions from './containers/Auctions'
@@ -34,23 +36,25 @@ const App = () => {
                 <ErrorBoundary>
                     <Shared>
                         <Suspense fallback={null}>
-                            <Route />
-                            <>
-                                <Switch>
-                                    <Route exact strict component={Splash} path={'/'} />
-                                    <Route exact strict component={Privacy} path={'/privacy'} />
-                                    <Route exact strict component={Auctions} path={'/auctions'} />
-                                    <Route exact strict component={Analytics} path={'/analytics'} />
-                                    <Route exact strict component={CreateSafe} path={'/safes/create'} />
-                                    <Route exact strict component={SafeDetails} path={'/safes/:id/deposit'} />
-                                    <Route exact strict component={SafeDetails} path={'/safes/:id/withdraw'} />
-                                    <Route exact component={SafeDetails} path={'/safes/:id'} />
-                                    <Route exact strict component={Safes} path={'/safes'} />
-                                    <Route exact strict component={Safes} path={'/:address'} />
+                            <Route component={GoogleTagManager} />
+                            <Web3ReactManager>
+                                <>
+                                    <Switch>
+                                        <Route exact strict component={Splash} path={'/'} />
+                                        <Route exact strict component={Privacy} path={'/privacy'} />
+                                        <Route exact strict component={Auctions} path={'/auctions'} />
+                                        <Route exact strict component={Analytics} path={'/analytics'} />
+                                        <Route exact strict component={CreateSafe} path={'/safes/create'} />
+                                        <Route exact strict component={SafeDetails} path={'/safes/:id/deposit'} />
+                                        <Route exact strict component={SafeDetails} path={'/safes/:id/withdraw'} />
+                                        <Route exact component={SafeDetails} path={'/safes/:id'} />
+                                        <Route exact strict component={Safes} path={'/safes'} />
+                                        <Route exact strict component={Safes} path={'/:address'} />
 
-                                    <Redirect from="*" to="/" />
-                                </Switch>
-                            </>
+                                        <Redirect from="*" to="/" />
+                                    </Switch>
+                                </>
+                            </Web3ReactManager>
                         </Suspense>
                     </Shared>
                 </ErrorBoundary>

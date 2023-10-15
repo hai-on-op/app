@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 import { EventFilter, Event } from 'ethers'
-import { Result } from 'ethers/lib/utils'
+import { Result } from '@ethersproject/abi'
 
 export interface TypedEventFilter<_EventArgsArray, _EventArgsObject> extends EventFilter {}
 

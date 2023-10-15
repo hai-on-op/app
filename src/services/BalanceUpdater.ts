@@ -1,16 +1,11 @@
 import { ethers } from 'ethers'
 import { useCallback, useEffect, useState } from 'react'
+import { useActiveWeb3React } from '../hooks'
 import useDebounce from '../hooks/useDebounce'
 import store, { useStoreState } from '../store'
-import { useEthersSigner } from '~/hooks/useEthersAdapters'
-import { useAccount, useNetwork } from 'wagmi'
 
 export default function ApplicationUpdater(): null {
-    const { chain } = useNetwork()
-    const chainId = chain?.id
-    const { address: account } = useAccount()
-    const signer = useEthersSigner()
-
+    const { library, chainId, account } = useActiveWeb3React()
     const { connectWalletModel: connectedWalletState } = useStoreState((state) => state)
     const { blockNumber } = connectedWalletState
 
@@ -39,13 +34,13 @@ export default function ApplicationUpdater(): null {
 
     // attach/detach listeners
     useEffect(() => {
-        if (!signer || !chainId || !account) return undefined
+        if (!library || !chainId || !account) return undefined
         setState({ chainId, balance: 0 })
-        signer
+        library
             .getBalance(account)
             .then(fetchEthBalanceCallBack)
             .catch((error) => console.error(`Failed to fetch balance for chainId: ${chainId}`, error))
-    }, [chainId, signer, fetchEthBalanceCallBack, account, blockNumber])
+    }, [chainId, library, fetchEthBalanceCallBack, account, blockNumber])
 
     const debouncedState = useDebounce(state, 100)
 

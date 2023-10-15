@@ -1,7 +1,9 @@
 import { JsonRpcSigner } from '@ethersproject/providers/lib/json-rpc-provider'
 import { DefaultTheme, ThemedCssFunction } from 'styled-components'
+import { AbstractConnector } from '@web3-react/abstract-connector'
+import { TokenData } from '@hai-on-op/sdk/lib/contracts/addreses'
 import { TransactionResponse } from '@ethersproject/providers'
-import { Geb, TokenData } from '@hai-on-op/sdk'
+import { Geb } from '@hai-on-op/sdk'
 import { BigNumber } from 'ethers'
 
 export declare enum ChainId {
@@ -107,6 +109,18 @@ export interface IBlockNumber {
 
 export interface ITokenBalance {
     [chainId: number]: number | string
+}
+
+export interface WalletInfo {
+    connector?: AbstractConnector
+    name: string
+    iconName: string
+    description: string
+    href: string | null
+    color: string
+    primary?: true
+    mobile?: true
+    mobileOnly?: true
 }
 
 export interface ISafe {
