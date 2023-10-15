@@ -1,8 +1,15 @@
-import { Geb } from '@hai-on-op/sdk'
 import { action, Action, thunk, Thunk } from 'easy-peasy'
 
-// temporary cast
-import { ISurplusAuction as SDKAuction, ICollateralAuction } from '@hai-on-op/sdk/lib/schema/auction'
+import {
+    Geb,
+    ISurplusAuction as SDKAuction,
+    ICollateralAuction,
+    AuctionData,
+    fetchAuctionData,
+    CollateralAuctionsData,
+    fetchCollateralAuctionData,
+} from '@hai-on-op/sdk'
+
 import {
     handleAuctionBid,
     handleAuctionBuy,
@@ -11,8 +18,6 @@ import {
     IAuctionBuy,
     IClaimInternalBalance,
 } from '~/utils'
-import { CollateralAuctionsData, fetchCollateralAuctionData } from '~/utils/virtual/virtualCollateralAuctionData'
-import { AuctionData, fetchAuctionData } from '~/utils/virtual/virtualAuctionData'
 import { IAuctionBid, IAuction, AuctionEventType } from '~/types'
 import { StoreModel } from '~/model'
 

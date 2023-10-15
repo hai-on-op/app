@@ -1,4 +1,4 @@
-import { NETWORK_ID } from '~/connectors'
+import { NETWORK_ID } from '~/utils'
 import store from '~/store'
 
 export function useEthBalance() {

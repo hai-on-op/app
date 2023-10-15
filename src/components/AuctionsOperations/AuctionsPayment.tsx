@@ -83,7 +83,7 @@ const AuctionsPayment = () => {
     const sellSymbol = sellToken === 'COIN' ? COIN_TICKER : 'KITE'
 
     const collateralPrice = useMemo(() => {
-        if (auctionsState.collateralData) {
+        if (auctionsState.collateralData && selectedCollateralAuction) {
             const data = auctionsState.collateralData.filter((item) => item._auctionId.toString() === auctionId)
             const price = data[0]?._boughtCollateral.mul(constants.WeiPerEther).div(data[0]._adjustedBid)
 

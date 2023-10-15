@@ -1,4 +1,3 @@
-import React from 'react'
 import styled from 'styled-components'
 import Lottie from 'react-lottie-player'
 import { isMobile } from 'react-device-detect'
@@ -7,6 +6,9 @@ import { useStoreState } from '../../store'
 import LottieWallet from '../../utils/Lotties/wallet.json'
 import LottieRegister from '../../utils/Lotties/register.json'
 import LottieSafe from '../../utils/Lotties/vault.json'
+import accountImg from '../../assets/account-img.png'
+import walletImg from '../../assets/wallet-img.png'
+import safeImg from '../../assets/safe-img.png'
 
 const Accounts = () => {
     const { connectWalletModel: connectWalletState } = useStoreState((state) => state)
@@ -17,19 +19,19 @@ const Accounts = () => {
         switch (step) {
             case 1:
                 return isMobile ? (
-                    <img src={require('../../assets/account-img.png').default} alt="" />
+                    <img src={accountImg} alt="" />
                 ) : (
                     <Lottie loop animationData={LottieRegister} play style={{ width: 400, height: 400 }} />
                 )
             case 2:
                 return isMobile ? (
-                    <img src={require('../../assets/safe-img.png').default} alt="" />
+                    <img src={safeImg} alt="" />
                 ) : (
                     <Lottie loop animationData={LottieSafe} play style={{ width: 400, height: 400 }} />
                 )
             default:
                 return isMobile ? (
-                    <img src={require('../../assets/wallet-img.png').default} alt="" />
+                    <img src={walletImg} alt="" />
                 ) : (
                     <Lottie loop animationData={LottieWallet} play style={{ width: 350, height: 350 }} />
                 )

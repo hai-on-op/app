@@ -1,16 +1,18 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
+import { useNetwork } from 'wagmi'
 
 import { useStoreActions, useStoreState } from '~/store'
 import DecimalInput from '~/components/DecimalInput'
 import Button from '~/components/Button'
 import Results from './Results'
-import { useWeb3React } from '@web3-react/core'
 
 const Wrap = () => {
     const { t } = useTranslation()
-    const { chainId } = useWeb3React()
+    const { chain } = useNetwork()
+    const chainId = chain?.id
+
     const [value, setValue] = useState('')
     const [error, setError] = useState('')
     const { popupsModel: popupsActions, safeModel: safeActions } = useStoreActions((state) => state)
@@ -49,10 +51,10 @@ const Wrap = () => {
     }
 
     const handleCancel = () => {
-        popupsActions.setAuctionOperationPayload({
+        popupsActions.setSafeOperationPayload({
+            isCreate: false,
             isOpen: false,
             type: '',
-            auctionType: '',
         })
         safeActions.setOperation(0)
         safeActions.setAmount('')

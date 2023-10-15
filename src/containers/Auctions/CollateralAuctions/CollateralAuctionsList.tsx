@@ -6,8 +6,7 @@ import Dropdown from '~/components/Dropdown'
 import Loader from '~/components/Loader'
 import Pagination from '~/components/Pagination'
 import { SideLabel } from '~/containers/Safes/CreateSafe'
-import { useCollateralAuctions } from '~/hooks'
-import { useStoreState } from '~/store'
+import { useCollateralAuctions, usePublicGeb } from '~/hooks'
 import { IPaging, TOKEN_LOGOS } from '~/utils'
 import CollateralAuctionBlock from './CollateralAuctionBlock'
 
@@ -28,9 +27,8 @@ const CollateralAuctionsList = ({ selectedItem, setSelectedItem }: Props) => {
     const { t } = useTranslation()
     const [paging, setPaging] = useState<IPaging>({ from: 0, to: 5 })
 
-    const { connectWalletModel: connectWalletState } = useStoreState((state) => state)
-
-    const { tokensData } = connectWalletState
+    const geb = usePublicGeb()
+    const tokensData = geb?.tokenList
 
     // auctions list
     const auctions = useCollateralAuctions(selectedItem)
