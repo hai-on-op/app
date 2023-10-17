@@ -1,4 +1,5 @@
 import styled, { css } from 'styled-components'
+import { poppins } from './GlobalStyle'
 
 export type TextProps = {
 	$color?: string,
@@ -17,21 +18,40 @@ export type TextProps = {
 }
 
 export const TextStyle = css<TextProps>`
-	${({ $color = undefined }) => $color && css`color: ${$color};`}
+	${({ theme, $color = undefined }) => $color && css`color: ${theme.colors[$color] || $color};`}
 	${({ $textAlign = undefined }) => $textAlign && css`text-align: ${$textAlign};`}
 	${({ $fontFamily = undefined }) => $fontFamily && css`font-family: ${$fontFamily};`}
-	${({ $fontSize = undefined }) => $fontSize && css`font-size: ${typeof $fontSize === 'string' ? $fontSize: `${$fontSize}px`};`}
+	${({ $fontSize = undefined }) => $fontSize && css`
+        font-size: ${typeof $fontSize === 'string' ? $fontSize: `${$fontSize}px`};
+    `}
 	${({ $fontWeight = undefined }) => $fontWeight && css`font-weight: ${$fontWeight};`}
 	${({ $whiteSpace = undefined }) => $whiteSpace && css`white-space: ${$whiteSpace};`}
 	${({ $textOverflow = undefined }) => $textOverflow && css`text-overflow: ${$textOverflow};`}
 	${({ $textTransform = undefined }) => $textTransform && css`text-transform: ${$textTransform};`}
 	${({ $textDecoration = undefined }) => $textDecoration && css`text-decoration: ${$textDecoration};`}
-	${({ $letterSpacing = undefined }) => $letterSpacing && css`letter-spacing: ${typeof $letterSpacing === 'string' ? $letterSpacing: `${$letterSpacing}px`};`}
-	${({ $lineHeight = undefined }) => $lineHeight && css`line-height: ${typeof $lineHeight === 'string' ? $lineHeight: `${$lineHeight}px`};`}
+	${({ $letterSpacing = undefined }) => $letterSpacing && css`
+        letter-spacing: ${typeof $letterSpacing === 'string' ? $letterSpacing: `${$letterSpacing}px`};
+    `}
+	${({ $lineHeight = undefined }) => $lineHeight && css`
+        line-height: ${typeof $lineHeight === 'string' ? $lineHeight: `${$lineHeight}px`};
+    `}
 	${({ $fontStyle = undefined }) => $fontStyle && css`font-style: ${$fontStyle};`}
 	padding: ${({ $padding = '0px' }) => $padding};
 `
 
 export const Text = styled.div<TextProps>`
     ${TextStyle}
+`
+
+export const Title = styled.h1<TextProps>`
+	${TextStyle}
+    ${({ $fontFamily = poppins.style.fontFamily }) => $fontFamily && css`font-family: ${$fontFamily};`}
+    ${({ $fontSize = '4.5rem' }) => $fontSize && css`
+        font-size: ${typeof $fontSize === 'string' ? $fontSize: `${$fontSize}px`};
+    `}
+    ${({ $letterSpacing = '0.05rem' }) => $letterSpacing && css`
+        letter-spacing: ${typeof $letterSpacing === 'string' ? $letterSpacing: `${$letterSpacing}px`};
+    `}
+    ${({ $fontWeight = 700 }) => $fontWeight && css`font-weight: ${$fontWeight};`}
+    -webkit-text-stroke: 0.02rem black;
 `

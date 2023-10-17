@@ -44,6 +44,8 @@ interface IColors {
     greenish: string
     blueish: string
     yellowish: string
+    pinkish: string
+    orangeish: string
     dimmedColor: string
     dimmedBackground: string
     dimmedBorder: string
@@ -58,6 +60,12 @@ interface IFonts {
     medium: string
     large: string
     extraLarge: string
+}
+
+interface IBorders {
+    thin: string,
+    medium: string,
+    thick: string
 }
 
 interface IGlobal {
@@ -79,6 +87,7 @@ export interface Theme {
     colors: IColors
     font: IFonts
     global: IGlobal
+    border: IBorders
     mediaWidth: IMediaWidth
 }
 
