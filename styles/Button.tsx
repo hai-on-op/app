@@ -1,4 +1,4 @@
-import styled, { css } from 'styled-components'
+import { css } from 'styled-components'
 
 export type ButtonProps = {
     disabled?: boolean
@@ -24,36 +24,5 @@ export const ButtonStyle = css<ButtonProps>`
     display: flex;
     align-items: center;
     border-radius: 50px;
-    justify-content: space-between;
-`
-
-export type HaiButtonProps = {
-    disabled?: boolean,
-    $variant?: 'default' | 'unblurred' | 'blueish' | 'greenish' | 'pinkish' | 'yellowish' | 'orangeish',
-    $unbordered?: boolean
-}
-export const HaiButton = styled.button<HaiButtonProps>`
-    pointer-events: ${({ disabled }) => (disabled ? 'none' : 'inherit')};
-    outline: none;
-    cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
-    min-width: 134px;
-    border: ${({ theme, $unbordered }) => $unbordered ? 'none': theme.border.thick};
-    box-shadow: none;
-    line-height: 24px;
-    font-size: ${(props) => props.theme.font.small};
-    font-weight: 600;
-    padding: 8px 30px;
-    color: black;
-    ${({ theme, $variant = 'default' }) => ($variant === 'default'
-        ? css`
-            backdrop-filter: ${theme.blur || '13px'};
-            background: transparent;
-        `
-        : css`background: ${theme.colors[ $variant ] || 'transparent'};`
-    )}
-    border-radius: 999px;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
     justify-content: space-between;
 `

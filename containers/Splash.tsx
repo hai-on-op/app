@@ -3,7 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import styled from 'styled-components'
 
-import { Flex, Grid, CenteredFlex, Text, HaiButton, Title } from '@/styles'
+import { type ButtonProps, ButtonStyle, poppins, Flex, Grid, CenteredFlex, Text } from '@/styles'
 
 const options = ['OPTIMISM', 'ETHEREUM', 'LSDs', 'UNISWAP', '???']
 
@@ -30,10 +30,10 @@ export default function Splash() {
                         $justify="center"
                         $align="flex-start"
                         $gap="1.75rem">
-                        <Title $color="orangeish">GET HAI ON</Title>
+                        <LaunchTitle>GET HAI ON</LaunchTitle>
                         <LaunchSubtitle>{title}</LaunchSubtitle>
                         <Link href="/safes">
-                            <HaiButton $variant="yellowish">Launch App</HaiButton>
+                            <LaunchButton>LAUNCH APP</LaunchButton>
                         </Link>
                     </Flex>
                 </LaunchContainer>
@@ -97,10 +97,25 @@ const LaunchContainer = styled(CenteredFlex).attrs(props => ({
 }))`
     background-color: white;
 `
+const LaunchTitle = styled.h1`
+    font-family: ${poppins.style.fontFamily};
+    font-size: 4.5rem;
+    font-weight: 600;
+    color: var(--hai-orange);
+`
 const LaunchSubtitle = styled.h1`
     color: black;
     font-weight: normal;
     font-size: 3.75rem;
+`
+const LaunchButton = styled.button<ButtonProps>`
+    ${ButtonStyle}
+    border-radius: 1rem;
+    background-color: var(--hai-orange);
+    color: white;
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+    padding: 0.625rem 3.5rem;
 `
 const IconContainer = styled(CenteredFlex).attrs(props => ({
     $width: '100%',
