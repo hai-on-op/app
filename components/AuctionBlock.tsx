@@ -1,23 +1,27 @@
-import { useState } from 'react'
-import Image from 'next/image'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 import _ from '@/utils/lodash'
 import dayjs from 'dayjs'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
+import { useAccount, useNetwork } from 'wagmi'
 
 import { COIN_TICKER, formatNumber, getEtherscanLink, returnWalletAddress, ChainId, parseRad } from '@/utils'
 import { useStoreActions, useStoreState } from '@/store'
 import { IAuction, IAuctionBidder } from '@/types'
 import { ExternalLinkArrow } from '@/styles'
-import { useActiveWeb3React } from '@/hooks'
 import AlertLabel from './AlertLabel'
 import Button from './Button'
 
 type Props = IAuction & { isCollapsed: boolean }
 
 const AuctionBlock = (auction: Props) => {
-    const { chainId, account } = useActiveWeb3React()
+    const { chain } = useNetwork()
+    const { address: account } = useAccount()
     const { t } = useTranslation()
+    const { openConnectModal } = useConnectModal()
+    const handleConnectWallet = () => openConnectModal && openConnectModal()
+
     const { popupsModel: popupsActions, auctionModel: auctionsActions } = useStoreActions((state) => state)
 
     const { connectWalletModel: connectWalletState, auctionModel: auctionsState } = useStoreState((state) => state)
@@ -80,7 +84,7 @@ const AuctionBlock = (auction: Props) => {
 
     const handleClick = (type: string) => {
         if (!account) {
-            popupsActions.setIsConnectorsWalletOpen(true)
+            handleConnectWallet()
             return
         }
 
@@ -179,11 +183,21 @@ const AuctionBlock = (auction: Props) => {
         }
     }
 
+    const returnImage = useMemo(() => {
+        if (eventType.toLocaleLowerCase() === 'collateral') {
+            return '/assets/collateral.svg'
+        } else if (eventType.toLocaleLowerCase() === 'debt') {
+            return '/assets/debt.svg'
+        } else {
+            return '/assets/surplus.svg'
+        }
+    }, [])
+
     return (
         <Container>
             <Header onClick={() => setCollapse(!collapse)}>
                 <LeftAucInfo type={eventType.toLowerCase()}>
-                    <Image src={`/assets/${eventType.toLowerCase()}.svg`} alt="auction" />
+                    <img src={returnImage} alt="auction" />
                     {`Auction #${id}`}
                 </LeftAucInfo>
 
@@ -248,7 +262,7 @@ const AuctionBlock = (auction: Props) => {
                                             {bidder.bidder && (
                                                 <Link
                                                     href={getEtherscanLink(
-                                                        chainId as ChainId,
+                                                        chain?.id as ChainId,
                                                         bidder.bidder,
                                                         'address'
                                                     )}
@@ -274,7 +288,7 @@ const AuctionBlock = (auction: Props) => {
                                             <ListItemLabel>TX</ListItemLabel>
                                             <Link
                                                 href={getEtherscanLink(
-                                                    chainId as ChainId,
+                                                    chain?.id as ChainId,
                                                     bidder.createdAtTransaction,
                                                     'transaction'
                                                 )}

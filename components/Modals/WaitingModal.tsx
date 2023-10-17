@@ -3,19 +3,20 @@ import { AlertTriangle, CheckCircle } from 'react-feather'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 import { ExternalLinkArrow } from '@/styles'
-import { useActiveWeb3React } from '@/hooks'
 import { useStoreActions, useStoreState } from '@/store'
 import { getEtherscanLink } from '@/utils/helper'
 import Button from '../Button'
 import Loader from '../Loader'
 import Modal from './Modal'
+import { useNetwork } from 'wagmi'
 
 const WaitingModal = () => {
     const { t } = useTranslation()
 
     const { popupsModel: popupsState, safeModel: safeState } = useStoreState((state) => state)
     const { popupsModel: popupsActions } = useStoreActions((state) => state)
-    const { chainId } = useActiveWeb3React()
+    const { chain } = useNetwork()
+    const chainId = chain?.id
     const { title, text, hint, status, hash, isCreate } = popupsState.waitingPayload
 
     const { list } = safeState

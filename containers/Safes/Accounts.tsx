@@ -1,4 +1,3 @@
-import React from 'react'
 import styled from 'styled-components'
 import Lottie from 'react-lottie-player'
 import { isMobile } from 'react-device-detect'

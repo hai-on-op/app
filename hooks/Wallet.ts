@@ -1,6 +1,8 @@
-import { NETWORK_ID } from '@/connectors'
-import store from '@/store'
+import { NETWORK_ID } from '@/utils'
+import { useStoreState } from '@/store'
 
 export function useEthBalance() {
-    return store.getState().connectWalletModel.ethBalance[NETWORK_ID].toString()
+    const { connectWalletModel } = useStoreState(state => state)
+    
+    return connectWalletModel.ethBalance[NETWORK_ID].toString()
 }

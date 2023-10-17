@@ -1,11 +1,11 @@
 import { useEffect, useMemo } from 'react'
-import { Interface, FunctionFragment } from '@ethersproject/abi'
-import { BigNumber } from '@ethersproject/bignumber'
-import { Contract } from '@ethersproject/contracts'
+import { useNetwork } from 'wagmi'
+import { FunctionFragment, Interface } from 'ethers/lib/utils'
+import { BigNumber, Contract } from 'ethers'
 
-import { useActiveWeb3React, useBlockNumber } from '@/hooks'
+import { useBlockNumber } from '@/hooks'
 import { Call } from '@/utils/interfaces'
-import store from '@/store'
+import { useStoreActions, useStoreState } from '@/store'
 
 export interface Result extends ReadonlyArray<any> {
     readonly [key: string]: any
@@ -82,8 +82,10 @@ export const NEVER_RELOAD: ListenerOptions = {
 
 // the lowest level call for subscribing to contract data
 function useCallsData(calls: (Call | undefined)[], options?: ListenerOptions): CallResult[] {
-    const { chainId } = useActiveWeb3React()
-    const callResults = store.getState().multicallModel.callResults
+    const { chain } = useNetwork()
+    const chainId = chain?.id
+    const { callResults } = useStoreState(state => state.multicallModel)
+    const { multicallModel } = useStoreActions(actions => actions)
 
     const serializedCallKeys: string = useMemo(
         () =>
@@ -101,14 +103,14 @@ function useCallsData(calls: (Call | undefined)[], options?: ListenerOptions): C
         const callKeys: string[] = JSON.parse(serializedCallKeys)
         if (!chainId || callKeys.length === 0) return undefined
         const calls = callKeys.map((key) => parseCallKey(key))
-        store.dispatch.multicallModel.addMulticallListeners({
+        multicallModel.addMulticallListeners({
             chainId,
             calls,
             options,
         })
 
         return () => {
-            store.dispatch.multicallModel.removeMulticallListeners({
+            multicallModel.removeMulticallListeners({
                 chainId,
                 calls,
                 options,

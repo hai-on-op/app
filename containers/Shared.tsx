@@ -1,38 +1,30 @@
 import { ReactNode, useEffect, useCallback } from 'react'
-import { getTokenList } from '@hai-on-op/sdk/lib/contracts/addreses'
+import { getTokenList } from '@hai-on-op/sdk'
 import { useRouter } from 'next/router'
-import { isAddress } from '@ethersproject/address'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 import { toast } from 'react-toastify'
 import { ethers, utils } from 'ethers'
+import { useAccount, useNetwork } from 'wagmi'
 
-import ConnectedWalletModal from '@/components/Modals/ConnectedWalletModal'
+import LiquidateSafeModal from '@/components/Modals/LiquidateSafeModal'
 import BlockBodyContainer from '@/components/BlockBodyContainer'
-import ApplicationUpdater from '@/services/ApplicationUpdater'
-import { useActiveWeb3React, useTokenContract } from '@/hooks'
+import { useTokenContract, useEthersSigner, useGeb } from '@/hooks'
 import TransactionUpdater from '@/services/TransactionUpdater'
 import AuctionsModal from '@/components/Modals/AuctionsModal'
 import TopUpModal from '@/components/Modals/SafeManagerModal'
 import ScreenLoader from '@/components/Modals/ScreenLoader'
 import WaitingModal from '@/components/Modals/WaitingModal'
 import LoadingModal from '@/components/Modals/LoadingModal'
-import MulticallUpdater from '@/services/MulticallUpdater'
 import BlockedAddress from '@/components/BlockedAddress'
 import { useStoreState, useStoreActions } from '@/store'
 import ImagePreloader from '@/components/ImagePreloader'
-import ProxyModal from '@/components/Modals/ProxyModal'
-import BalanceUpdater from '@/services/BalanceUpdater'
 import WethModal from '@/components/Modals/WETHModal'
 import ToastPayload from '@/components/ToastPayload'
-import CookieBanner from '@/components/CookieBanner'
-import WalletModal from '@/components/WalletModal'
 import AlertLabel from '@/components/AlertLabel'
 import usePrevious from '@/hooks/usePrevious'
 import SideMenu from '@/components/SideMenu'
-import { NETWORK_ID } from '@/connectors'
 import Navbar from '@/components/Navbar'
-import useGeb from '@/hooks/useGeb'
 import {
     ETHERSCAN_PREFIXES,
     blockedAddresses,
@@ -42,8 +34,9 @@ import {
     timeout,
     ChainId,
     ETH_NETWORK,
+    NETWORK_ID,
+    isAddress,
 } from '@/utils'
-import LiquidateSafeModal from '@/components/Modals/LiquidateSafeModal'
 
 interface Props {
     children: ReactNode
@@ -51,7 +44,10 @@ interface Props {
 
 const Shared = ({ children }: Props) => {
     const { t } = useTranslation()
-    const { chainId, account, library } = useActiveWeb3React()
+    const { chain } = useNetwork()
+    const { address: account } = useAccount()
+    const signer = useEthersSigner()
+    const chainId = chain?.id
     const geb = useGeb()
     const router = useRouter()
 
@@ -98,6 +94,17 @@ const Shared = ({ children }: Props) => {
             connectWalletActions.fetchTokenData({ geb, user: account })
         }
     }, [account, geb, forceUpdateTokens, connectWalletActions])
+
+    useEffect(() => {
+        if (connectWalletState && signer) {
+            signer.getBalance().then((balance) => {
+                connectWalletActions.updateEthBalance({
+                    chainId: chainId || NETWORK_ID,
+                    balance: Number(utils.formatEther(balance)),
+                })
+            })
+        }
+    }, [account])
 
     useEffect(() => {
         const haiBalance = connectWalletState?.tokensFetchedData.HAI?.balanceE18
@@ -147,7 +154,7 @@ const Shared = ({ children }: Props) => {
     }, [connectWalletActions])
 
     async function accountChecker() {
-        if (!account || !chainId || !library || !geb) return
+        if (!account || !chainId || !signer || !geb) return
         popupsActions.setWaitingPayload({
             title: '',
             status: 'loading',
@@ -247,16 +254,16 @@ const Shared = ({ children }: Props) => {
         <Container>
             {settingsState.blockBody ? <BlockBodyContainer /> : null}
             <SideMenu />
-            <WalletModal />
-            <MulticallUpdater />
-            <ApplicationUpdater />
-            <BalanceUpdater />
+            {/* <WalletModal /> */}
+            {/* <MulticallUpdater /> */}
+            {/* <ApplicationUpdater /> */}
+            {/* <BalanceUpdater /> */}
+            {/* <ProxyModal /> */}
+            {/* <ConnectedWalletModal /> */}
             <TransactionUpdater />
             <LoadingModal />
             <AuctionsModal />
             <WethModal />
-            <ProxyModal />
-            <ConnectedWalletModal />
             <ScreenLoader />
             <LiquidateSafeModal />
             {!isSplash && <WaitingModal />}
@@ -277,9 +284,6 @@ const Shared = ({ children }: Props) => {
             ) : (
                 <Content>{children}</Content>
             )}
-            <EmptyDiv>
-                <CookieBanner />
-            </EmptyDiv>
             <ImagePreloader />
         </Container>
     )

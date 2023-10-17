@@ -15,4 +15,5 @@ export const TOKEN_LOGOS: { [key: string]: string } = {
     WETH: '/assets/eth-img.svg',
     HAI: '/assets/hai-logo.svg',
     STN: '/assets/stn-img.png',
+    SNX: '/assets/snx-img.png',
 }

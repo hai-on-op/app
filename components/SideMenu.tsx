@@ -1,33 +1,17 @@
 import React, { useEffect, useState } from 'react'
 import { CSSTransition } from 'react-transition-group'
-import { useWeb3React } from '@web3-react/core'
-import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
-import { amountToFiat, returnWalletAddress, COIN_TICKER } from '@/utils'
 import { useStoreActions, useStoreState } from '@/store'
-import ConnectedWalletIcon from './ConnectedWalletIcon'
+import { ConnectButton } from '@rainbow-me/rainbowkit'
 import NavLinks from './NavLinks'
-import Button from './Button'
 
 const SideMenu = () => {
-    const { t } = useTranslation()
     const nodeRef = React.useRef(null)
-    const { active, account, chainId } = useWeb3React()
+    
     const [isOpen, setIsOpen] = useState(false)
     const { popupsModel: popupsActions } = useStoreActions((state) => state)
-    const { connectWalletModel: connectWalletState, popupsModel: popupsState } = useStoreState((state) => state)
-
-    const handleWalletConnect = () => popupsActions.setIsConnectorsWalletOpen(true)
-
-    const renderBalance = () => {
-        if (chainId) {
-            const balance = connectWalletState.ethBalance[chainId] || 0
-            const fiat = connectWalletState.fiatPrice
-            return amountToFiat(balance as number, fiat)
-        }
-        return 0
-    }
+    const { popupsModel: popupsState } = useStoreState((state) => state)
 
     useEffect(() => {
         setIsOpen(popupsState.showSideMenu)
@@ -49,31 +33,7 @@ const SideMenu = () => {
 
                     <InnerContainer>
                         <AccountBalance>
-                            {active && account ? (
-                                <Account
-                                    onClick={() => {
-                                        popupsActions.setIsConnectedWalletModalOpen(true)
-                                        popupsActions.setShowSideMenu(false)
-                                    }}
-                                >
-                                    <ConnectedWalletIcon size={40} />
-                                    <AccountData>
-                                        <Address>{returnWalletAddress(account)}</Address>
-                                        <Balance>{`$ ${renderBalance()}`}</Balance>
-                                    </AccountData>
-                                </Account>
-                            ) : (
-                                <ConnectBtnContainer>
-                                    <Icon src={'/assets/LogoIcon.png'} />
-                                    <Title>{t('welcome_reflexer')}</Title>
-                                    <Text>
-                                        {t('connect_text', {
-                                            coin_ticker: COIN_TICKER,
-                                        })}
-                                    </Text>
-                                    <Button onClick={handleWalletConnect} text={'connect_wallet'} />
-                                </ConnectBtnContainer>
-                            )}
+                            <ConnectButton showBalance={false} accountStatus="address" />
                         </AccountBalance>
                         <NavLinks />
                     </InnerContainer>
@@ -127,53 +87,7 @@ const InnerContainer = styled.div`
     margin-left: auto;
 `
 
-const ConnectBtnContainer = styled.div`
-    text-align: center;
-    width: 100%;
-`
-
 const AccountBalance = styled.div`
     padding: 30px 20px 20px 25px;
     margin-bottom: 15px;
-`
-
-const Balance = styled.div`
-    color: ${(props) => props.theme.colors.primary};
-    font-size: 16px;
-    line-height: 27px;
-    font-weight: 600;
-    letter-spacing: -0.69px;
-`
-
-const AccountData = styled.div`
-    margin-left: 10px;
-`
-
-const Address = styled.div`
-    color: ${(props) => props.theme.colors.primary};
-    font-size: 18px;
-    line-height: 27px;
-    font-weight: 600;
-    letter-spacing: -0.69px;
-`
-
-const Account = styled.div`
-    display: flex;
-    justify-content: flex-start;
-    cursor: pointer;
-`
-
-const Icon = styled.img`
-    max-width: 60px;
-`
-
-const Title = styled.div`
-    font-size: 22px;
-    font-weight: 600;
-`
-
-const Text = styled.div`
-    font-size: 14px;
-    margin-top: 10px;
-    margin-bottom: 10px;
 `

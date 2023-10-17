@@ -1,14 +1,12 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AlertTriangle, ArrowUpCircle, CheckCircle } from 'react-feather'
 import { useTranslation } from 'react-i18next'
-import { Tooltip as ReactTooltip } from 'react-tooltip'
+import { useAccount, useNetwork } from 'wagmi'
 import styled from 'styled-components'
-import { useActiveWeb3React } from '@/hooks'
-import { handlePreTxGasEstimate, handleTransactionError, useTransactionAdder } from '@/hooks/TransactionHooks'
-import { use10BlocksConfirmations } from '@/hooks/useBlocksConfirmations'
-import useGeb from '@/hooks/useGeb'
+
+import { handlePreTxGasEstimate, handleTransactionError, useTransactionAdder, useEthersSigner, useGeb } from '@/hooks'
 import { useStoreState, useStoreActions } from '@/store'
-import { timeout } from '@/utils/helper'
+import { timeout } from '@/utils'
 import Button from '../Button'
 import Loader from '../Loader'
 import Modal from './Modal'
@@ -16,10 +14,13 @@ import Modal from './Modal'
 const ProxyModal = () => {
     const [status, setStatus] = useState('stateless')
     const { t } = useTranslation()
-    const { account, library, chainId } = useActiveWeb3React()
+
+    const { chain } = useNetwork()
+    const { address: account } = useAccount()
+    const signer = useEthersSigner()
+    const chainId = chain?.id
     const geb = useGeb()
     const addTransaction = useTransactionAdder()
-    const blocksSinceCheck = use10BlocksConfirmations()
 
     const { popupsModel: popupsState, connectWalletModel: connectWalletState } = useStoreState((state) => state)
     const storeActions = useStoreActions((state) => state)
@@ -29,7 +30,7 @@ const ProxyModal = () => {
 
     useEffect(() => {
         async function blocksChecker() {
-            if (ctHash && blocksSinceCheck === 10) {
+            if (ctHash) {
                 await timeout(2000)
                 popupsActions.setIsProxyModalOpen(false)
                 popupsState.returnProxyFunction(storeActions)
@@ -39,14 +40,13 @@ const ProxyModal = () => {
             }
         }
         blocksChecker()
-    }, [account, blocksSinceCheck, popupsActions, ctHash, popupsState, connectWalletActions, storeActions])
+    }, [account, popupsActions, ctHash, popupsState, connectWalletActions, storeActions])
 
     const handleCreateAccount = async () => {
         const { blockNumber } = connectWalletState
 
-        if (!account || !library || !chainId) return false
+        if (!account || !signer || !chainId) return false
         const txData = await geb.contracts.proxyRegistry.populateTransaction['build()']()
-        const signer = library.getSigner(account)
 
         try {
             setStatus('loading')
@@ -89,21 +89,7 @@ const ProxyModal = () => {
                 <InnerContainer>
                     <ImgContainer>{returnStatusIcon(status)}</ImgContainer>
                     <Title className={status}>{t('create_account')}</Title>
-                    <Text>
-                        {ctHash ? (
-                            <>
-                                <Confirmations>
-                                    {`WATITING FOR CONFIRMATIONS... ${
-                                        !blocksSinceCheck ? 0 : blocksSinceCheck > 10 ? 10 : blocksSinceCheck
-                                    } of 10`}{' '}
-                                    <InfoBtn data-tip={t('confirmations_info')}>?</InfoBtn>
-                                </Confirmations>
-                                <ReactTooltip data-tooltip-variant="light" data-effect="solid" />
-                            </>
-                        ) : (
-                            t('proxy_wallet_text')
-                        )}
-                    </Text>
+                    <Text>{!ctHash && t('proxy_wallet_text')}</Text>
 
                     {ctHash ? null : (
                         <BtnContainer>
@@ -181,29 +167,4 @@ const BtnContainer = styled.div`
         stroke: white;
         margin: 0;
     }
-`
-
-const Confirmations = styled.div`
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    margin-top: 10px;
-    font-size: ${(props) => props.theme.font.extraSmall};
-    font-weight: 600;
-    color: ${(props) => props.theme.colors.secondary};
-`
-
-const InfoBtn = styled.div`
-    cursor: pointer;
-    background: ${(props) => props.theme.colors.secondary};
-    color: ${(props) => props.theme.colors.neutral};
-    width: 15px;
-    height: 15px;
-    border-radius: 50%;
-    font-size: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-left: 7px;
 `

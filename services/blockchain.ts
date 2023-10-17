@@ -10,7 +10,7 @@ const abi = ['function drop() public view returns ()']
 export const claimAirdrop = async (signer: JsonRpcSigner) => {
     if (!signer) return
 
-    const airdropContract = new ethers.Contract('0xb131611c5010dcc71925cdbe29f0e8aabb2625db', abi, signer)
+    const airdropContract = new ethers.Contract('0x125F32dA90E5BE3F0738EDef15188BeE87a13b44', abi, signer)
 
     const txData = await airdropContract.populateTransaction.drop()
 
@@ -55,18 +55,12 @@ export const handleDepositAndBorrow = async (signer: JsonRpcSigner, safeData: IS
         if (collateralBN.isZero() && !debtBN.isZero()) {
             txData = await proxy.generateDebt(safeId, debtBN)
         } else if (!collateralBN.isZero() && debtBN.isZero()) {
-            txData = await proxy.lockTokenCollateral(safeData.collateral, safeId, collateralBN, true)
+            txData = await proxy.lockTokenCollateral(safeData.collateral, safeId, collateralBN)
         } else {
-            txData = await proxy.lockTokenCollateralAndGenerateDebt(
-                safeData.collateral,
-                safeId,
-                collateralBN,
-                debtBN,
-                true
-            )
+            txData = await proxy.lockTokenCollateralAndGenerateDebt(safeData.collateral, safeId, collateralBN, debtBN)
         }
     } else {
-        txData = await proxy.openLockTokenCollateralAndGenerateDebt(safeData.collateral, collateralBN, debtBN, true)
+        txData = await proxy.openLockTokenCollateralAndGenerateDebt(safeData.collateral, collateralBN, debtBN)
     }
 
     if (!txData) throw new Error('No transaction request!')
@@ -116,39 +110,3 @@ export const handleRepayAndWithdraw = async (signer: JsonRpcSigner, safeData: IS
     const txResponse = await signer.sendTransaction(tx)
     return txResponse
 }
-
-// export const handleCollectETH = async (signer: JsonRpcSigner, safe: ISafe) => {
-//     if (!signer || !safe) {
-//         return false
-//     }
-//     const { id: safeId, internalCollateralBalance } = safe
-
-//     if (!safeId) {
-//         throw new Error('No safe Id')
-//     }
-//     if (!internalCollateralBalance) {
-//         throw new Error('No safe internalCollateralBalance')
-//     }
-
-//     const internalCollateralBalanceBN = ethersUtils.parseEther(
-//         internalCollateralBalance
-//     )
-
-//     if (internalCollateralBalanceBN.isZero()) {
-//         throw new Error('internalCollateralBalance is zero')
-//     }
-
-//     const geb = new Geb(ETH_NETWORK, signer)
-
-//     const proxy = await geb.getProxyAction(signer._address)
-
-//     let txData
-//     // txData = await proxy.exitETH(safeId, internalCollateralBalanceBN)
-
-//     if (!txData) throw new Error('No transaction request!')
-
-//     const tx = await handlePreTxGasEstimate(signer, txData)
-
-//     const txResponse = await signer.sendTransaction(tx)
-//     return txResponse
-// }

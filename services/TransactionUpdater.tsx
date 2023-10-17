@@ -1,11 +1,13 @@
 import React, { useEffect, useMemo } from 'react'
 import { toast } from 'react-toastify'
 import ToastPayload from '@/components/ToastPayload'
-import { useActiveWeb3React } from '@/hooks'
+import { useEthersProvider } from '@/hooks'
+import { useNetwork } from 'wagmi'
 import { useStoreActions, useStoreState } from '@/store'
 
 export function shouldCheck(
     lastBlockNumber: number,
+    // eslint-disable-next-line @typescript-eslint/ban-types
     tx: { addedTime: number; receipt?: {}; lastCheckedBlockNumber?: number }
 ): boolean {
     if (tx.receipt) return false
@@ -27,7 +29,9 @@ export function shouldCheck(
 
 export default function TransactionUpdater(): null {
     const toastId = 'transactionId'
-    const { chainId, library } = useActiveWeb3React()
+    const { chain } = useNetwork()
+    const chainId = chain?.id
+    const provider = useEthersProvider()
     const { transactionsModel: state, connectWalletModel: connectedWalletState } = useStoreState((state) => state)
     const { checkTransaction, finalizeTransaction } = useStoreActions(actions => actions.transactionsModel)
 
@@ -36,12 +40,12 @@ export default function TransactionUpdater(): null {
     const transactions = useMemo(() => (chainId ? state.transactions ?? {} : {}), [chainId, state])
 
     useEffect(() => {
-        if (!chainId || !library || !lastBlockNumber) return
+        if (!chainId || !provider || !lastBlockNumber) return
 
         Object.keys(transactions)
             .filter((hash) => shouldCheck(lastBlockNumber, transactions[hash]))
             .forEach((hash) => {
-                library
+                provider
                     .getTransactionReceipt(hash)
                     .then((receipt) => {
                         if (receipt) {
@@ -87,7 +91,7 @@ export default function TransactionUpdater(): null {
                         console.error(`failed to check transaction hash: ${hash}`, error)
                     })
             })
-    }, [chainId, library, transactions, lastBlockNumber])
+    }, [chainId, provider, transactions, lastBlockNumber])
 
     return null
 }

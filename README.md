@@ -36,7 +36,8 @@ To have the app default to a different network when a wallet is not connected:
 
 1. Create a file and name it `.env.development.local`
 2. Change `NEXT_PUBLIC_NETWORK_ID` to `"420"`
-3. Change `NEXT_PUBLIC_NETWORK_URL` to e.g. `"https://opt-goerli.g.alchemy.com/v2/{YOUR_INFURA_KEY}"`
+3. Change `NEXT_PUBLIC_PUBLIC_RPC` to e.g. `"https://opt-goerli.g.alchemy.com/v2/{YOUR_INFURA_KEY}"`
+4. Change `NEXT_PUBLIC_ALCHEMY_KEY` to e.g. `"YOUR_ALCHEMY_KEY"`
 
 ## Testing
 

@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useWeb3React } from '@web3-react/core'
 import { Tooltip as ReactTooltip } from 'react-tooltip'
 import styled from 'styled-components'
+import { useNetwork } from 'wagmi'
 
 import DataCard, { DataCardProps } from './DataCard'
 import { DataTable, TableProps } from './DataTable'
 import { ContractsTable } from './ContractsTable'
 import { AddressLink } from '@/components/AddressLink'
-import { fetchAnalyticsData } from '@/utils/virtual/virtualAnalyticsData'
+import { fetchAnalyticsData } from '@hai-on-op/sdk'
 import { contractsDescriptions } from '@/utils/contractsDescription'
 import {
     formatDataNumber,
@@ -17,7 +17,7 @@ import {
     transformToAnnualRate,
     transformToEightHourlyRate,
 } from '@/utils'
-import useGeb from '@/hooks/useGeb'
+import { usePublicGeb } from '@/hooks'
 
 interface AnalyticsStateProps {
     erc20Supply: string
@@ -35,8 +35,9 @@ interface AnalyticsStateProps {
 }
 
 const Analytics = () => {
-    const geb = useGeb()
-    const { chainId } = useWeb3React()
+    const geb = usePublicGeb()
+    const { chain } = useNetwork()
+    const chainId = chain?.id
     const [state, setState] = useState<AnalyticsStateProps>({
         erc20Supply: '',
         globalDebt: '',
@@ -71,8 +72,7 @@ const Analytics = () => {
         title: 'Collaterals',
         colums: [
             { name: 'Collateral' },
-            { name: 'ERC-20', description: 'Address of the ERC20 collateral token.' },
-            { name: 'Oracle', description: 'Delayed oracle address for the collateral.' },
+            
             {
                 name: 'Delayed Price',
                 description:
@@ -109,6 +109,10 @@ const Analytics = () => {
                 description:
                     'Comparison between the value of the minted HAI (in USD) vs the value of the locked collateral (in USD).',
             },
+            { name: 'ERC-20', description: 'Address of the ERC20 collateral token.' },
+            { name: 'Oracle', description: 'Delayed oracle address for the collateral.' },
+            { name: 'Collateral Join', description: 'Address of the Collateral Join.' },
+            { name: 'Auction House', description: 'Address of the Collateral Auction House.' },
         ],
         rows: colRows,
     }
@@ -223,8 +227,6 @@ const Analytics = () => {
                         key,
                         [
                             key, // Symbol
-                            <AddressLink key={key} address={geb.tokenList[key].address} chainId={chainId || 420} />, // ERC20 address + link to etherscan
-                            <AddressLink key={key} address={value?.delayedOracle} chainId={chainId || 420} />, // ERC20 address + link to etherscan
                             formatDataNumber(value?.currentPrice?.toString() || '0', 18, 2, true), // Current price
                             formatDataNumber(value?.nextPrice?.toString() || '0', 18, 2, true), // Next price
                             transformToAnnualRate(value?.stabilityFee?.toString() || '0', 27), // Stability fee
@@ -248,6 +250,13 @@ const Analytics = () => {
                                 multiplyWad(value?.lockedAmount?.toString(), value?.currentPrice?.toString())
                             ), // Debt amount / locked amount in USD
                         ],
+                        <AddressLink address={geb.tokenList[key].address} chainId={chainId || 420} />, // ERC20 address + link to etherscan
+                        <AddressLink address={value?.delayedOracle} chainId={chainId || 420} />, // ERC20 address + link to etherscan
+                        <AddressLink address={geb.tokenList[key].collateralJoin} chainId={chainId || 420} />, // CollateralJoin + link to etherscan
+                        <AddressLink
+                            address={geb.tokenList[key].collateralAuctionHouse}
+                            chainId={chainId || 420}
+                        />, // CollateralAuctionHouse + link to etherscan
                     ])
                 )
 

@@ -2,8 +2,9 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
+import { useAccount } from 'wagmi'
 
-import { useActiveWeb3React, useIsOwner } from '@/hooks'
+import { useIsOwner, useEthersSigner } from '@/hooks'
 import { useStoreActions, useStoreState } from '@/store'
 import { isNumeric, DEFAULT_SAFE_STATE } from '@/utils'
 import AlertLabel from '@/components/AlertLabel'
@@ -20,7 +21,8 @@ type Props = {
 const SafeDetails = ({ safeId, isDeposit, isWithdraw }: Props) => {
     const router = useRouter()
     const { t } = useTranslation()
-    const { account, library } = useActiveWeb3React()
+    const { address: account } = useAccount()
+    const signer = useEthersSigner()
 
     const { safeModel: safeActions } = useStoreActions((state) => state)
 
@@ -46,11 +48,11 @@ const SafeDetails = ({ safeId, isDeposit, isWithdraw }: Props) => {
     }, [safe, safeActions])
 
     useEffect(() => {
-        if (!account || !library) return
+        if (!account || !signer) return
         if (!isNumeric(safeId)) {
             router.push('/safes')
         }
-    }, [account, library, router, safeId])
+    }, [account, signer, router, safeId])
 
     const isLoading = !(liquidationData && singleSafe?.collateralName)
 

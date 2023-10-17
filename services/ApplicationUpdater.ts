@@ -14,12 +14,15 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { useCallback, useEffect, useState } from 'react'
-import { useActiveWeb3React } from '@/hooks'
-import useDebounce from '@/hooks/useDebounce'
 import { useStoreActions } from '@/store'
+import { useDebounce, useEthersProvider } from '@/hooks'
+import { useNetwork } from 'wagmi'
 
 export default function ApplicationUpdater(): null {
-    const { library, chainId } = useActiveWeb3React()
+    const { chain } = useNetwork()
+    const chainId = chain?.id
+    const provider = useEthersProvider()
+
     const { updateBlockNumber } = useStoreActions(actions => actions.connectWalletModel)
     const [state, setState] = useState<{
         chainId: number | undefined
@@ -47,20 +50,20 @@ export default function ApplicationUpdater(): null {
 
     // attach/detach listeners
     useEffect(() => {
-        if (!library || !chainId) return undefined
+        if (!provider || !chainId) return undefined
 
         setState({ chainId, blockNumber: null })
 
-        library
+        provider
             .getBlockNumber()
             .then(blockNumberCallback)
-            .catch((error) => console.error(`Failed to get block number for chainId: ${chainId}`, error))
+            .catch((error: any) => console.error(`Failed to get block number for chainId: ${chainId}`, error))
 
-        library.on('block', blockNumberCallback)
+        provider.on('block', blockNumberCallback)
         return () => {
-            library.removeListener('block', blockNumberCallback)
+            provider.removeListener('block', blockNumberCallback)
         }
-    }, [chainId, library, blockNumberCallback])
+    }, [chainId, provider, blockNumberCallback])
 
     const debouncedState = useDebounce(state, 100)
 

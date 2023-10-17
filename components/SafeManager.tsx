@@ -1,21 +1,20 @@
 import { useState } from 'react'
-import { isAddress } from '@ethersproject/address'
 import { useTranslation } from 'react-i18next'
 import { useRouter } from 'next/router'
 import styled from 'styled-components'
+import { useAccount } from 'wagmi'
 
 import { useStoreActions, useStoreState } from '@/store'
 import { fetchUserSafesRaw } from '@/services/safes'
-import { timeout, IUserSafeList } from '@/utils'
-import { useActiveWeb3React } from '@/hooks'
-import useGeb from '@/hooks/useGeb'
+import { timeout, IUserSafeList, isAddress } from '@/utils'
+import { useGeb } from '@/hooks'
 import Button from './Button'
 
 const SafeManager = () => {
     const router = useRouter()
 
     const { t } = useTranslation()
-    const { account } = useActiveWeb3React()
+    const { address: account } = useAccount()
     const geb = useGeb()
     const [error, setError] = useState('')
     const [value, setValue] = useState('')
