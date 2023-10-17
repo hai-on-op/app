@@ -196,7 +196,7 @@ export function useCollateralAuctions(tokenSymbol: string): ICollateralAuction[]
                     BigNumber.from(amountToRaise),
                     floatsTypes.WAD - floatsTypes.RAD
                 )
-                let remainingToRaiseE18Raw = amountToRaiseE18.sub(raised).toString()
+                const remainingToRaiseE18Raw = amountToRaiseE18.sub(raised).toString()
 
                 const remainingToRaiseE18 = remainingToRaiseE18Raw > '0' ? remainingToRaiseE18Raw : '0'
 

@@ -45,6 +45,7 @@ export function retry<T>(
     const promise = new Promise<T>((resolve, reject) => {
         rejectCancelled = reject
         ;(async () => {
+            // eslint-disable-next-line no-constant-condition
             while (true) {
                 let result: T
                 try {

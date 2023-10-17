@@ -250,10 +250,23 @@ const Analytics = () => {
                                 multiplyWad(value?.lockedAmount?.toString(), value?.currentPrice?.toString())
                             ), // Debt amount / locked amount in USD
                         ],
-                        <AddressLink address={geb.tokenList[key].address} chainId={chainId || 420} />, // ERC20 address + link to etherscan
-                        <AddressLink address={value?.delayedOracle} chainId={chainId || 420} />, // ERC20 address + link to etherscan
-                        <AddressLink address={geb.tokenList[key].collateralJoin} chainId={chainId || 420} />, // CollateralJoin + link to etherscan
                         <AddressLink
+                            key={0}
+                            address={geb.tokenList[key].address}
+                            chainId={chainId || 420}
+                        />, // ERC20 address + link to etherscan
+                        <AddressLink
+                            key={1}
+                            address={value?.delayedOracle}
+                            chainId={chainId || 420}
+                        />, // ERC20 address + link to etherscan
+                        <AddressLink
+                            key={2}
+                            address={geb.tokenList[key].collateralJoin}
+                            chainId={chainId || 420}
+                        />, // CollateralJoin + link to etherscan
+                        <AddressLink
+                            key={3}
                             address={geb.tokenList[key].collateralAuctionHouse}
                             chainId={chainId || 420}
                         />, // CollateralAuctionHouse + link to etherscan
