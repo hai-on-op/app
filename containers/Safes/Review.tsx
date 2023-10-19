@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 import { Info } from 'react-feather'
-import { Tooltip as ReactTooltip } from 'react-tooltip'
+import ReactTooltip from 'react-tooltip'
 
 import { SafeTypes, StatsType, useSafeInfo } from '@/hooks'
 import TransactionOverview from '@/components/TransactionOverview'
@@ -34,7 +34,7 @@ const ReviewTransaction = ({ type }: { type: SafeTypes }) => {
                                             {item.label}
                                         </Label>
                                         <Value>{item.value}</Value>
-                                        <ReactTooltip data-type="light" data-effect="solid" />
+                                        <ReactTooltip multiline type="light" data-effect="solid" />
                                     </Flex>
                                 )
                             })}

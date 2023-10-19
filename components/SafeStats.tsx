@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Tooltip as ReactTooltip } from 'react-tooltip'
+import ReactTooltip from 'react-tooltip'
 import styled from 'styled-components'
 import { Info } from 'react-feather'
 import Numeral from 'numeral'
@@ -236,7 +236,7 @@ const SafeStats = ({
                 </Right>
             </Flex>
 
-            <ReactTooltip data-tooltip-variant="light" data-effect="solid" />
+            <ReactTooltip multiline type="light" data-effect="solid" />
         </>
     )
 }

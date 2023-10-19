@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Tooltip as ReactTooltip } from 'react-tooltip'
+import ReactTooltip from 'react-tooltip'
 import styled from 'styled-components'
 import { useNetwork } from 'wagmi'
 
@@ -312,7 +312,7 @@ const Analytics = () => {
                         {val.children}
                     </DataCard>
                 ))}
-                <ReactTooltip data-tooltip-variant="light" data-effect="solid" />
+                <ReactTooltip multiline type="light" data-effect="solid" />
             </DataContainer>
 
             <DataContainer>

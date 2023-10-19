@@ -3,7 +3,7 @@ import { TokenData } from '@hai-on-op/sdk'
 import { ArrowLeft, Info, Loader } from 'react-feather'
 import { useTranslation } from 'react-i18next'
 import { useRouter } from 'next/router'
-import { Tooltip as ReactTooltip } from 'react-tooltip'
+import ReactTooltip from 'react-tooltip'
 import styled from 'styled-components'
 import { ethers, utils } from 'ethers'
 import { useEthersSigner } from '@/hooks/useEthersAdapters'
@@ -330,7 +330,7 @@ const CreateSafe = ({
                             </Button>
                         )}
                     </Flex>
-                    <ReactTooltip data-tooltip-variant="light" data-effect="solid" />
+                    <ReactTooltip multiline type="light" data-effect="solid" />
                 </Content>
             </InnerContent>
         </>
