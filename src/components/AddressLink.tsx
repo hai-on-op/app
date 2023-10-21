@@ -1,6 +1,6 @@
 import styled from 'styled-components'
-import { ExternalLinkArrow } from '~/GlobalStyle'
-import { getEtherscanLink, returnWalletAddress } from '~/utils'
+import { ExternalLinkArrow } from '@/styles'
+import { getEtherscanLink, returnWalletAddress } from '@/utils'
 
 export const Link = styled.a`
     ${ExternalLinkArrow}

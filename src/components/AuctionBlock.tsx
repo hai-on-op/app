@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
-import _ from '~/utils/lodash'
+import _ from '@/utils/lodash'
 import dayjs from 'dayjs'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useAccount, useNetwork } from 'wagmi'
