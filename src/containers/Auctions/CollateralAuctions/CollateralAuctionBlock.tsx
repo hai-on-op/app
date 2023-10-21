@@ -1,17 +1,17 @@
 import { useMemo, useState } from 'react'
 import { BigNumber } from 'ethers'
 import styled from 'styled-components'
-import _ from '~/utils/lodash'
+import _ from '@/utils/lodash'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useAccount } from 'wagmi'
 
-import BidLine from '~/components/BidLine'
-import { useStoreActions, useStoreState } from '~/store'
-import { ICollateralAuction } from '~/types'
-import { COIN_TICKER, formatNumber, parseWad } from '~/utils'
-import AlertLabel from '~/components/AlertLabel'
-import Button from '~/components/Button'
-import debtImage from '~/assets/debt.svg'
+import BidLine from '@/components/BidLine'
+import { useStoreActions, useStoreState } from '@/store'
+import { ICollateralAuction } from '@/types'
+import { COIN_TICKER, formatNumber, parseWad } from '@/utils'
+import AlertLabel from '@/components/AlertLabel'
+import Button from '@/components/Button'
+import debtImage from '@/assets/debt.svg'
 import collateralImage from '~/assets/collateral.svg'
 import surplusImage from '~/assets/surplus.svg'
 
@@ -350,7 +350,7 @@ const ListItemLabel = styled.div`
     display:block;
     margin-bottom:5px;
     font-weight:normal;
-   color: ${(props) => props.theme.colors.customSecondary};
+   color: ${theme.colors.customSecondary};
   `}
 `
 
@@ -374,7 +374,7 @@ const List = styled.div`
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
     flex-wrap:wrap;
-    border:1px solid ${(props) => props.theme.colors.border};
+    border:1px solid ${theme.colors.border};
     margin-bottom:10px;
     &:last-child {
       margin-bottom:0;

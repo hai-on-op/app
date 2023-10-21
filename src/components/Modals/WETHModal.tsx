@@ -1,5 +1,5 @@
-import { useStoreActions, useStoreState } from '~/store'
-import AuctionsOperations from '~/containers/Safes/wrapEth'
+import { useStoreActions, useStoreState } from '@/store'
+import AuctionsOperations from '@/containers/Safes/wrapEth'
 import Modal from './Modal'
 
 const WethModal = () => {

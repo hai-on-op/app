@@ -6,15 +6,15 @@ import dayjs from 'dayjs'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useAccount, useNetwork } from 'wagmi'
 
-import { COIN_TICKER, formatNumber, getEtherscanLink, returnWalletAddress, ChainId, parseRad } from '~/utils'
-import { useStoreActions, useStoreState } from '~/store'
-import { IAuction, IAuctionBidder } from '~/types'
-import { ExternalLinkArrow } from '~/GlobalStyle'
+import { COIN_TICKER, formatNumber, getEtherscanLink, returnWalletAddress, ChainId, parseRad } from '@/utils'
+import { useStoreActions, useStoreState } from '@/store'
+import { IAuction, IAuctionBidder } from '@/types'
+import { ExternalLinkArrow } from '@/GlobalStyle'
 import AlertLabel from './AlertLabel'
 import Button from './Button'
-import debtImage from '~/assets/debt.svg'
-import collateralImage from '~/assets/collateral.svg'
-import surplusImage from '~/assets/surplus.svg'
+import debtImage from '@/assets/debt.svg'
+import collateralImage from '@/assets/collateral.svg'
+import surplusImage from '@/assets/surplus.svg'
 
 type Props = IAuction & { isCollapsed: boolean }
 
@@ -70,7 +70,7 @@ const AuctionBlock = (auction: Props) => {
 
     const userProxy = _.get(connectWalletState, 'proxyAddress', '')
 
-    const returnWad = (amount: string, i: number) => {
+    const returnWad = (amount: string) => {
         if (!amount) return '0'
         return formatNumber(amount, 2)
     }
@@ -285,7 +285,7 @@ const AuctionBlock = (auction: Props) => {
                                         </ListItem>
                                         <ListItem>
                                             <ListItemLabel>Buy Amount</ListItemLabel>
-                                            {returnWad(bidder.buyAmount, i)} {buySymbol}
+                                            {returnWad(bidder.buyAmount)} {buySymbol}
                                         </ListItem>
                                         <ListItem>
                                             <ListItemLabel>TX</ListItemLabel>
@@ -469,10 +469,10 @@ const Head = styled.div`
 const ListItemLabel = styled.div`
     display: none;
     ${({ theme }) => theme.mediaWidth.upToSmall`
-    display:block;
-    margin-bottom:5px;
-    font-weight:normal;
-   color: ${(props) => props.theme.colors.customSecondary};
+        display:block;
+        margin-bottom:5px;
+        font-weight:normal;
+        color: ${theme.colors.customSecondary};
   `}
 `
 
@@ -496,7 +496,7 @@ const List = styled.div`
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
     flex-wrap:wrap;
-    border:1px solid ${(props) => props.theme.colors.border};
+    border:1px solid ${theme.colors.border};
     margin-bottom:10px;
     &:last-child {
       margin-bottom:0;
@@ -522,7 +522,7 @@ const ListItem = styled.div`
 
     flex: 0 0 50%;
     min-width:50%;
-    font-size: ${(props) => props.theme.font.extraSmall};
+    font-size: ${theme.font.extraSmall};
     font-weight:900;
   `}
 `

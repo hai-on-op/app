@@ -1,5 +1,5 @@
-import { useStoreActions, useStoreState } from '~/store'
-import AuctionsOperations from '~/components/AuctionsOperations'
+import { useStoreActions, useStoreState } from '@/store'
+import AuctionsOperations from '@/components/AuctionsOperations'
 import Modal from './Modal'
 
 const AuctionsModal = () => {

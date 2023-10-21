@@ -4,9 +4,9 @@ import { useTranslation } from 'react-i18next'
 import { useAccount, useNetwork } from 'wagmi'
 import styled from 'styled-components'
 
-import { handlePreTxGasEstimate, handleTransactionError, useTransactionAdder, useEthersSigner, useGeb } from '~/hooks'
-import { useStoreState, useStoreActions } from '~/store'
-import { timeout } from '~/utils/helper'
+import { handlePreTxGasEstimate, handleTransactionError, useTransactionAdder, useEthersSigner, useGeb } from '@/hooks'
+import { useStoreState, useStoreActions } from '@/store'
+import { timeout } from '@/utils/helper'
 import Button from '../Button'
 import Loader from '../Loader'
 import Modal from './Modal'
@@ -167,29 +167,4 @@ const BtnContainer = styled.div`
         stroke: white;
         margin: 0;
     }
-`
-
-const Confirmations = styled.div`
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    margin-top: 10px;
-    font-size: ${(props) => props.theme.font.extraSmall};
-    font-weight: 600;
-    color: ${(props) => props.theme.colors.secondary};
-`
-
-const InfoBtn = styled.div`
-    cursor: pointer;
-    background: ${(props) => props.theme.colors.secondary};
-    color: ${(props) => props.theme.colors.neutral};
-    width: 15px;
-    height: 15px;
-    border-radius: 50%;
-    font-size: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-left: 7px;
 `

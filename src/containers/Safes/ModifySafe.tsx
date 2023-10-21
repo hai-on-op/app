@@ -3,11 +3,11 @@ import { BigNumber, ethers } from 'ethers'
 import styled from 'styled-components'
 import { useAccount } from 'wagmi'
 
-import { formatNumber, TOKEN_LOGOS, DEFAULT_SAFE_STATE, toFixedString, sanitizeDecimals, RAY } from '~/utils'
-import { useStoreActions, useStoreState } from '~/store'
-import TokenInput from '~/components/TokenInput'
-import Modal from '~/components/Modals/Modal'
-import Button from '~/components/Button'
+import { formatNumber, TOKEN_LOGOS, DEFAULT_SAFE_STATE, toFixedString, sanitizeDecimals, RAY } from '@/utils'
+import { useStoreActions, useStoreState } from '@/store'
+import TokenInput from '@/components/TokenInput'
+import Modal from '@/components/Modals/Modal'
+import Button from '@/components/Button'
 import Review from './Review'
 import {
     handleTransactionError,
@@ -19,7 +19,7 @@ import {
     ApprovalState,
     useSafeInfo,
     useGeb,
-} from '~/hooks'
+} from '@/hooks'
 
 const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boolean }) => {
     const { address: account } = useAccount()
@@ -83,7 +83,7 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
 
     const [collateralUnlockState, collateralApproveUnlock] = useTokenApproval(
         parsedAmounts.leftInput,
-        singleSafe ? tokensData[singleSafe?.collateralName!].address : undefined,
+        singleSafe ? tokensData[singleSafe?.collateralName]?.address : undefined,
         proxyAddress,
         selectedTokenDecimals,
         true
@@ -205,7 +205,7 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
             totalDebt,
             collateralRatio: collateralRatio as number,
             liquidationPrice: liquidationPrice as number,
-            collateral: singleSafe?.collateralName!,
+            collateral: singleSafe?.collateralName || '',
         })
 
         setShowPreview(true)

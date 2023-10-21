@@ -23,16 +23,16 @@ const PageHeader = ({ text, breadcrumbs, btnText, btnFn }: Props) => {
                     </TitleBlock>
                 ))}
             </Title>
-            {text ? (
+            {!!text && (
                 <Text>
                     {text}{' '}
-                    {btnText && btnFn ? (
+                    {!!(btnText && btnFn) && (
                         <>
                             or <Button data-test-id="header-btn" withArrow text={btnText} onClick={btnFn} />
                         </>
-                    ) : null}
+                    )}
                 </Text>
-            ) : null}
+            )}
         </Container>
     )
 }

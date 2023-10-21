@@ -3,9 +3,9 @@ import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 import { useNetwork } from 'wagmi'
 
-import { useStoreActions, useStoreState } from '~/store'
-import DecimalInput from '~/components/DecimalInput'
-import Button from '~/components/Button'
+import { useStoreActions, useStoreState } from '@/store'
+import DecimalInput from '@/components/DecimalInput'
+import Button from '@/components/Button'
 import Results from './Results'
 
 const Wrap = () => {

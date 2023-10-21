@@ -4,11 +4,11 @@ import { utils } from 'ethers'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { useAccount } from 'wagmi'
 
-import { useStoreActions, useStoreState } from '~/store'
-import { handleTransactionError, useEthersSigner } from '~/hooks'
-import { claimAirdrop } from '~/services/blockchain'
-import { formatNumber, TOKEN_LOGOS } from '~/utils'
-import addIcon from '~/assets/plus.svg'
+import { useStoreActions, useStoreState } from '@/store'
+import { handleTransactionError, useEthersSigner } from '@/hooks'
+import { claimAirdrop } from '@/services/blockchain'
+import { formatNumber, TOKEN_LOGOS } from '@/utils'
+import addIcon from '@/assets/plus.svg'
 import { Icon } from './TokenInput'
 import NavLinks from './NavLinks'
 import Brand from './Brand'
@@ -203,22 +203,6 @@ const Left = styled.div<{ isBigWidth?: boolean }>`
     ${({ theme }) => theme.mediaWidth.upToSmall`
     min-width:auto;
   `}
-`
-
-const Flex = styled.div`
-    align-items: center;
-    display: flex;
-    justify-content: center;
-`
-
-const InnerBtn = styled(Flex)`
-    div {
-        display: block !important;
-        margin-left: 5px;
-        svg {
-            top: 0 !important;
-        }
-    }
 `
 
 const AddIcon = styled(Icon)`

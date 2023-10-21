@@ -3,9 +3,9 @@ import { ArrowLeft } from 'react-feather'
 import { useHistory } from 'react-router-dom'
 import styled from 'styled-components'
 
-import Button from '~/components/Button'
-import LinkButton from '~/components/LinkButton'
-import { useStoreActions, useStoreState } from '~/store'
+import Button from '@/components/Button'
+import LinkButton from '@/components/LinkButton'
+import { useStoreActions, useStoreState } from '@/store'
 
 const SafeHeader = ({
     safeId,

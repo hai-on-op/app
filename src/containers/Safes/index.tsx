@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import { useEthersSigner } from '~/hooks/useEthersAdapters'
 import { useAccount } from 'wagmi'
 
-import { useStoreState, useStoreActions } from '~/store'
+import { useStoreState, useStoreActions } from '@/store'
 import { useGeb } from '~/hooks'
 import Accounts from './Accounts'
 import SafeList from './SafeList'
@@ -73,10 +73,4 @@ const Container = styled.div``
 
 const Content = styled.div`
     position: relative;
-`
-
-const BtnInner = styled.div`
-    display: flex;
-    align-items: center;
-    gap: 5px;
 `

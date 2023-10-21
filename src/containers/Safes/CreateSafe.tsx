@@ -6,15 +6,15 @@ import { useHistory } from 'react-router'
 import ReactTooltip from 'react-tooltip'
 import styled from 'styled-components'
 import { ethers, utils } from 'ethers'
-import { useEthersSigner } from '~/hooks/useEthersAdapters'
+import { useEthersSigner } from '@/hooks/useEthersAdapters'
 import { useAccount, useNetwork } from 'wagmi'
 
-import { DEFAULT_SAFE_STATE, NETWORK_ID, TOKEN_LOGOS, formatNumber } from '~/utils'
-import { useStoreActions, useStoreState } from '~/store'
-import TokenInput from '~/components/TokenInput'
-import Modal from '~/components/Modals/Modal'
-import Dropdown from '~/components/Dropdown'
-import Button from '~/components/Button'
+import { DEFAULT_SAFE_STATE, NETWORK_ID, TOKEN_LOGOS, formatNumber } from '@/utils'
+import { useStoreActions, useStoreState } from '@/store'
+import TokenInput from '@/components/TokenInput'
+import Modal from '@/components/Modals/Modal'
+import Dropdown from '@/components/Dropdown'
+import Button from '@/components/Button'
 import Review from './Review'
 import {
     handleTransactionError,
@@ -24,7 +24,7 @@ import {
     ApprovalState,
     useSafeInfo,
     StatsType,
-} from '~/hooks'
+} from '@/hooks'
 
 const CreateSafe = ({
     selectedItem,
@@ -170,7 +170,7 @@ const CreateSafe = ({
         }
     }
 
-    let [approvalState, approve] = useTokenApproval(
+    const [approvalState, approve] = useTokenApproval(
         leftInput,
         selectedCollateral?.address,
         proxyAddress,
@@ -232,7 +232,7 @@ const CreateSafe = ({
                                     />
                                     {dropdownSelected.name === 'WETH' && (
                                         <WrapBox>
-                                            Don't have WETH?{' '}
+                                           {`Don't have WETH? `}
                                             <WrapBtn onClick={wrapEth} color="secondary">
                                                 Wrap ETH
                                             </WrapBtn>
@@ -355,12 +355,10 @@ const CreateSafeContainer = () => {
         safeActions.setSafeData({ ...DEFAULT_SAFE_STATE, collateral: selectedItem })
         return () => safeActions.setSafeData(DEFAULT_SAFE_STATE)
 
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedItem])
 
     useEffect(() => {
         if (collaterals.length > 0 && selectedItem === '') setSelectedItem(collaterals[0].symbol)
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [collaterals])
 
     return (

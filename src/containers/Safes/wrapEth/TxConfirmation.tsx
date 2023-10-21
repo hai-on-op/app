@@ -2,10 +2,10 @@ import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 import { useAccount } from 'wagmi'
 
-import { handleTransactionError, useEthersSigner, useGeb } from '~/hooks'
-import TransactionOverview from '~/components/TransactionOverview'
-import { useStoreActions, useStoreState } from '~/store'
-import Button from '~/components/Button'
+import { handleTransactionError, useEthersSigner, useGeb } from '@/hooks'
+import TransactionOverview from '@/components/TransactionOverview'
+import { useStoreActions, useStoreState } from '@/store'
+import Button from '@/components/Button'
 import Results from './Results'
 
 const TxConfirmation = () => {
@@ -62,7 +62,6 @@ const TxConfirmation = () => {
         } catch (e) {
             reset()
             handleTransactionError(e)
-        } finally {
         }
     }
 

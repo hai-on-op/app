@@ -4,10 +4,10 @@ import { useHistory } from 'react-router-dom'
 import styled from 'styled-components'
 import { useAccount } from 'wagmi'
 
-import { useStoreActions, useStoreState } from '~/store'
-import { fetchUserSafesRaw } from '~/services/safes'
-import { timeout, IUserSafeList, isAddress } from '~/utils'
-import { useGeb } from '~/hooks'
+import { useStoreActions, useStoreState } from '@/store'
+import { fetchUserSafesRaw } from '@/services/safes'
+import { timeout, IUserSafeList, isAddress } from '@/utils'
+import { useGeb } from '@/hooks'
 import Button from './Button'
 
 const SafeManager = () => {

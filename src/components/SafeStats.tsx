@@ -5,14 +5,13 @@ import styled from 'styled-components'
 import { Info } from 'react-feather'
 import Numeral from 'numeral'
 
-import { useTokenBalanceInUSD, useSafeInfo } from '~/hooks'
-import { formatNumber, getRatePercentage, ratioChecker, returnState } from '~/utils'
-import { useStoreState } from '~/store'
+import { useTokenBalanceInUSD, useSafeInfo } from '@/hooks'
+import { formatNumber, getRatePercentage, ratioChecker, returnState } from '@/utils'
+import { useStoreState } from '@/store'
 
 const SafeStats = ({
     isModifying,
     isDeposit,
-    isOwner,
 }: {
     isModifying: boolean
     isDeposit: boolean

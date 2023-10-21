@@ -3,7 +3,7 @@ import { ArrowRightCircle } from 'react-feather'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { BtnStyle } from '../GlobalStyle'
+import { ButtonProps, ButtonStyle } from '@/styles'
 
 interface Props {
     url: string
@@ -29,27 +29,27 @@ const LinkButton = ({
     return isExternal ? (
         <ExtLink id={id} {...rest} href={url} target="_blank" rel="norefferer" disabled={disabled} color={color}>
             {children}
-            <span>{text}</span> {withArrow ? <ArrowRightCircle size={'18'} /> : null}
+            <span>{text}</span> {withArrow && <ArrowRightCircle size={'18'} />}
         </ExtLink>
     ) : (
         <CustomLink id={id} {...rest} to={url} color={color} disabled={disabled}>
             {children}
-            <span>{text}</span> {withArrow ? <ArrowRightCircle size={'18'} /> : null}
+            <span>{text}</span> {withArrow && <ArrowRightCircle size={'18'} />}
         </CustomLink>
     )
 }
 
 export default LinkButton
 
-const ExtLink = styled.a`
-    ${BtnStyle}
+const ExtLink = styled.a<ButtonProps>`
+    ${ButtonStyle}
     transition: opacity 0.3s ease;
     &:hover {
         opacity: 0.9;
     }
 `
-const CustomLink = styled(Link)`
-    ${BtnStyle}
+const CustomLink = styled(Link)<ButtonProps>`
+    ${ButtonStyle}
     transition: opacity 0.3s ease;
     &:hover {
         opacity: 0.9;

@@ -1,8 +1,8 @@
 import dayjs from 'dayjs'
 import styled from 'styled-components'
 
-import { ExternalLinkArrow } from '~/GlobalStyle'
-import { ChainId, formatNumber, getEtherscanLink, returnWalletAddress } from '~/utils'
+import { ExternalLinkArrow } from '@/GlobalStyle'
+import { ChainId, formatNumber, getEtherscanLink, returnWalletAddress } from '@/utils'
 import { useNetwork } from 'wagmi'
 type Props = {
     eventType: string
@@ -69,7 +69,7 @@ const ListItemLabel = styled.div`
     display:block;
     margin-bottom:5px;
     font-weight:normal;
-   color: ${(props) => props.theme.colors.customSecondary};
+   color: ${theme.colors.customSecondary};
   `}
 `
 
@@ -90,7 +90,7 @@ const ListItem = styled.div`
 
     flex: 0 0 50%;
     min-width:50%;
-    font-size: ${(props) => props.theme.font.extraSmall};
+    font-size: ${theme.font.extraSmall};
     font-weight:900;
   `}
 `

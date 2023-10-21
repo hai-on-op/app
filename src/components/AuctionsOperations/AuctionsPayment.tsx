@@ -3,12 +3,12 @@ import { utils as gebUtils } from '@hai-on-op/sdk'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 import { BigNumber, ethers, constants } from 'ethers'
-import _ from '~/utils/lodash'
+import _ from '@/utils/lodash'
 
-import { useStoreActions, useStoreState } from '~/store'
+import { useStoreActions, useStoreState } from '@/store'
 import { COIN_TICKER, formatNumber, sanitizeDecimals, toFixedString } from '~/utils'
-import DecimalInput from '~/components/DecimalInput'
-import Button from '~/components/Button'
+import DecimalInput from '@/components/DecimalInput'
+import Button from '@/components/Button'
 import Results from './Results'
 
 const AuctionsPayment = () => {
@@ -145,7 +145,7 @@ const AuctionsPayment = () => {
                     .toString()
             }
         }
-        let amountToBuy =
+        const amountToBuy =
             biddersList.length > 0 && buyAmountBN.isZero()
                 ? BigNumber.from(toFixedString(biddersList[0].buyAmount, 'WAD'))
                 : buyAmountBN

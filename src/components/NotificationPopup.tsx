@@ -36,7 +36,7 @@ const NotificationPopup = () => {
 
                     <Menu>
                         <Scrollbars autoHide style={{ width: '100%' }} autoHeight autoHeightMax={'calc(100vh - 100px)'}>
-                            {[...new Array(4)].map((_) => (
+                            {[...new Array(4)].map(() => (
                                 <NotificationItem key={Math.random()}>
                                     <Left>
                                         <Label>Recieved ETH</Label>

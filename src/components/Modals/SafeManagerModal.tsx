@@ -1,7 +1,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
-import { useStoreActions, useStoreState } from '../../store'
+import { useStoreActions, useStoreState } from '@/store'
 import SafeManager from '../SafeManager'
 import Modal from './Modal'
 

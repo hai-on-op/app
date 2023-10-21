@@ -1,6 +1,6 @@
 import styled from 'styled-components'
 
-import { formatNumber } from '~/utils'
+import { formatNumber } from '@/utils'
 
 const Results = ({ amount, ethBalance }: { amount: string; ethBalance?: string }) => {
     return (

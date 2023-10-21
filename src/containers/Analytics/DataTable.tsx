@@ -1,6 +1,6 @@
 import { HelpCircle } from 'react-feather'
 import styled from 'styled-components'
-import { ExternalLinkArrow } from '~/GlobalStyle'
+import { ExternalLinkArrow } from '@/GlobalStyle'
 
 export interface TableProps {
     title: string
@@ -213,7 +213,7 @@ export const ListItemLabel = styled.span`
     margin-bottom:5px;
     font-weight:normal;
     width: max-content;
-   color: ${(props) => props.theme.colors.customSecondary};
+   color: ${theme.colors.customSecondary};
   `}
 `
 
@@ -241,7 +241,7 @@ export const List = styled.div`
     ${({ theme }) => theme.mediaWidth.upToSmall`
     flex-wrap:wrap;
     width: unset;
-    border:1px solid ${(props) => props.theme.colors.border};
+    border:1px solid ${theme.colors.border};
     margin-bottom:10px;
     &:last-child {
       margin-bottom:0;
@@ -271,7 +271,7 @@ export const ListItem = styled.div`
     width: 200px;
     flex: 0 0 50%;
     min-width:100%;
-    font-size: ${(props) => props.theme.font.extraSmall};
+    font-size: ${theme.font.extraSmall};
     font-weight:900;
   `}
 `

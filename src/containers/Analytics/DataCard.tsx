@@ -1,14 +1,14 @@
 import { Info } from 'react-feather'
 import styled from 'styled-components'
 
-import { TOKEN_LOGOS } from '~/utils'
+import { TOKEN_LOGOS } from '@/utils'
 
 export interface DataCardProps {
     image?: string
     title: string
     value: string
     description?: string
-    children?: React.ReactChildren | React.ReactChild
+    children?: React.ReactNode | React.ReactNode[]
 }
 
 const DataCard = ({ title, image, value, description, children }: DataCardProps) => {

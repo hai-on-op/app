@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { NavLink } from 'react-router-dom'
 
-import { useStoreActions } from '../store'
+import { useStoreActions } from '@/store'
 import SafeIcon from './Icons/SafeIcon'
 
 const NavLinks = () => {
@@ -87,7 +87,7 @@ const BtnStyle = css`
          height: 18px;
          display: inline !important;
          margin-right:10px;
-         color: ${(props) => props.theme.colors.neutral}
+         color: ${theme.colors.neutral}
         `}
     }
 
@@ -97,9 +97,9 @@ const BtnStyle = css`
     }
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
-  border-bottom: 1px solid ${(props) => props.theme.colors.border};
+  border-bottom: 1px solid ${theme.colors.border};
   &:first-child {
-    border-top: 1px solid ${(props) => props.theme.colors.border};
+    border-top: 1px solid ${theme.colors.border};
   }
       flex: 0 0 100%;
       min-width: 100%;
@@ -109,7 +109,7 @@ const BtnStyle = css`
       align-items:center;
       text-align: left;
       margin: 0;
-      color :${(props) => props.theme.colors.primary};
+      color :${theme.colors.primary};
     
   `}
 `

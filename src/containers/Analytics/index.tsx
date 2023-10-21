@@ -6,9 +6,9 @@ import { useNetwork } from 'wagmi'
 import DataCard, { DataCardProps } from './DataCard'
 import { DataTable, TableProps } from './DataTable'
 import { ContractsTable } from './ContractsTable'
-import { AddressLink } from '~/components/AddressLink'
+import { AddressLink } from '@/components/AddressLink'
 import { fetchAnalyticsData } from '@hai-on-op/sdk'
-import { contractsDescriptions } from '~/utils/contractsDescription'
+import { contractsDescriptions } from '@/utils/contractsDescription'
 import {
     formatDataNumber,
     multiplyRates,
@@ -16,8 +16,8 @@ import {
     transformToWadPercentage,
     transformToAnnualRate,
     transformToEightHourlyRate,
-} from '~/utils'
-import { usePublicGeb } from '~/hooks'
+} from '@/utils'
+import { usePublicGeb } from '@/hooks'
 
 interface AnalyticsStateProps {
     erc20Supply: string
@@ -121,7 +121,7 @@ const Analytics = () => {
     const contracts = useMemo(() => {
         if (geb) {
             const contracts: { [k: string]: string } = Object.fromEntries(
-                Object.entries(geb?.contracts).map(([key, value], index) => [key, value.address])
+                Object.entries(geb?.contracts).map(([key, value]) => [key, value.address])
             )
 
             return (
@@ -226,7 +226,7 @@ const Analytics = () => {
         if (geb) {
             fetchAnalyticsData(geb).then((result) => {
                 const colRows = Object.fromEntries(
-                    Object.entries(result?.tokenAnalyticsData).map(([key, value], index) => [
+                    Object.entries(result?.tokenAnalyticsData).map(([key, value]) => [
                         key,
                         [
                             key, // Symbol
@@ -298,8 +298,9 @@ const Analytics = () => {
                         title={val.title}
                         value={val.value}
                         description={val.description}
-                        children={val.children}
-                    />
+                    >
+                        {val.children}
+                    </DataCard>
                 ))}
                 <ReactTooltip multiline type="light" data-effect="solid" />
             </DataContainer>

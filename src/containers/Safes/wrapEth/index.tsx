@@ -2,7 +2,7 @@ import React from 'react'
 import { CSSTransition, SwitchTransition } from 'react-transition-group'
 import styled from 'styled-components'
 
-import { useStoreState } from '~/store'
+import { useStoreState } from '@/store'
 import TxConfirmation from './TxConfirmation'
 import Wrap from './Wrap'
 

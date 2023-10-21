@@ -3,12 +3,12 @@ import { CSSTransition, SwitchTransition } from 'react-transition-group'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
-import ApproveToken from '~/components/ApproveToken'
-import { useStoreActions, useStoreState } from '~/store'
+import ApproveToken from '@/components/ApproveToken'
+import { useStoreActions, useStoreState } from '@/store'
 import AuctionsTransactions from './AuctionsTransactions'
 import AuctionsPayment from './AuctionsPayment'
-import { COIN_TICKER } from '~/utils'
-import _ from '~/utils/lodash'
+import { COIN_TICKER } from '@/utils'
+import _ from '@/utils/lodash'
 
 const AuctionsOperations = () => {
     const { t } = useTranslation()

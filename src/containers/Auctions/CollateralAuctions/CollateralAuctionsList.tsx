@@ -2,12 +2,12 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
-import Dropdown from '~/components/Dropdown'
-import Loader from '~/components/Loader'
-import Pagination from '~/components/Pagination'
-import { SideLabel } from '~/containers/Safes/CreateSafe'
-import { useCollateralAuctions, usePublicGeb } from '~/hooks'
-import { IPaging, TOKEN_LOGOS } from '~/utils'
+import Dropdown from '@/components/Dropdown'
+import Loader from '@/components/Loader'
+import Pagination from '@/components/Pagination'
+import { SideLabel } from '@/containers/Safes/CreateSafe'
+import { useCollateralAuctions, usePublicGeb } from '@/hooks'
+import { IPaging, TOKEN_LOGOS } from '@/utils'
 import CollateralAuctionBlock from './CollateralAuctionBlock'
 
 export type Item = {
@@ -38,7 +38,7 @@ const CollateralAuctionsList = ({ selectedItem, setSelectedItem }: Props) => {
         return { name: collateral.symbol, icon: TOKEN_LOGOS[collateral.symbol] }
     })
 
-    const dropdownSelected = collateralsDropdown?.find((item) => item.name === selectedItem)!
+    const dropdownSelected = collateralsDropdown?.find((item) => item.name === selectedItem)
 
     return (
         <Container>
@@ -46,8 +46,8 @@ const CollateralAuctionsList = ({ selectedItem, setSelectedItem }: Props) => {
                 <DropdownContainer>
                     <SideLabel>{`Select Collateral Type`}</SideLabel>
                     <Dropdown
-                        items={collateralsDropdown!}
-                        itemSelected={dropdownSelected!}
+                        items={collateralsDropdown}
+                        itemSelected={dropdownSelected}
                         getSelectedItem={setSelectedItem}
                     />
                 </DropdownContainer>

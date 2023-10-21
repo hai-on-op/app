@@ -9,11 +9,11 @@ import { useStoreActions, useStoreState } from '~/store'
 import AuctionBlock from '~/components/AuctionBlock'
 import Pagination from '~/components/Pagination'
 import { SideLabel } from '../Safes/CreateSafe'
-import { IPaging, TOKEN_LOGOS } from '~/utils'
-import Dropdown from '~/components/Dropdown'
-import { AuctionEventType } from '~/types'
-import Button from '~/components/Button'
-import Loader from '~/components/Loader'
+import { IPaging, TOKEN_LOGOS } from '@/utils'
+import Dropdown from '@/components/Dropdown'
+import { AuctionEventType } from '@/types'
+import Button from '@/components/Button'
+import Loader from '@/components/Loader'
 
 export type Item = {
     name: string
@@ -81,7 +81,7 @@ const AuctionsList = ({ type, selectedItem, setSelectedItem }: Props) => {
         return { name: collateral.symbol, icon: TOKEN_LOGOS[collateral.symbol] }
     })
 
-    const dropdownSelected = collateralsDropdown?.find((item) => item.name === selectedItem)!
+    const dropdownSelected = collateralsDropdown?.find((item) => item.name === selectedItem)
 
     return (
         <Container>
@@ -89,8 +89,8 @@ const AuctionsList = ({ type, selectedItem, setSelectedItem }: Props) => {
                 <DropdownContainer>
                     <SideLabel>{`Select Collateral Type`}</SideLabel>
                     <Dropdown
-                        items={collateralsDropdown!}
-                        itemSelected={dropdownSelected!}
+                        items={collateralsDropdown}
+                        itemSelected={dropdownSelected}
                         getSelectedItem={setSelectedItem}
                     />
                 </DropdownContainer>

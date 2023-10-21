@@ -2,13 +2,13 @@ import { useEffect, useRef } from 'react'
 import styled from 'styled-components'
 
 // Components
-import GridContainer from '~/components/GridContainer'
+import GridContainer from '@/components/GridContainer'
 
 // Utils
-import _ from '~/utils/lodash'
+import _ from '@/utils/lodash'
 
 // Styles
-import { ExternalLinkArrow } from '~/GlobalStyle'
+import { ExternalLinkArrow } from '@/styles'
 
 const Privacy = ({ ...props }) => {
     const privacyRef = useRef(null)

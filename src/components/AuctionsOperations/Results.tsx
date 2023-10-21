@@ -1,9 +1,9 @@
 import { useMemo } from 'react'
 import styled from 'styled-components'
 
-import { useStoreState } from '~/store'
-import { formatNumber, COIN_TICKER } from '~/utils'
-import _ from '~/utils/lodash'
+import { useStoreState } from '@/store'
+import { formatNumber, COIN_TICKER } from '@/utils'
+import _ from '@/utils/lodash'
 
 const Results = () => {
     const { auctionModel: auctionsState, popupsModel: popupsState } = useStoreState((state) => state)

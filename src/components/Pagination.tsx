@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import ReactPaginate from 'react-paginate'
 import styled from 'styled-components'
 
-import { IPaging } from '../utils/interfaces'
+import { IPaging } from '@/utils/interfaces'
 
 interface Props {
     items: Array<any>

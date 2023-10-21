@@ -2,9 +2,18 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { formatNumber, returnState, COIN_TICKER, TOKEN_LOGOS } from '~/utils'
+import { formatNumber, returnState, COIN_TICKER, TOKEN_LOGOS } from '@/utils'
 
-const SafeBlock = ({ ...props }) => {
+type Props = JSX.IntrinsicElements[ 'div' ] & {
+    collateral: string,
+    totalDebt: string,
+    riskState: number,
+    collateralName: string,
+    collateralRatio: string,
+    liquidationPrice: string
+}
+
+const SafeBlock = ({ ...props }: Props) => {
     const { t } = useTranslation()
 
     const collateral = formatNumber(props.collateral)
@@ -153,7 +162,7 @@ const SafeState = styled.div`
         }
     }
     ${({ theme }) => theme.mediaWidth.upToSmall`
-    font-size: ${(props) => props.theme.font.extraSmall};
+    font-size: ${theme.font.extraSmall};
     text-align:center;
   `}
     @media (max-width: 414px) {
