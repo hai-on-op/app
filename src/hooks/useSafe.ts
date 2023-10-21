@@ -134,7 +134,7 @@ export function useSafeInfo(type: SafeTypes = 'create') {
 
     const liquidationPenaltyPercentage =
         Number(liquidationData?.collateralLiquidationData[collateralName].liquidationPenalty) - 1
-
+    
     const formattedLiquidationPenaltyPercentage = toPercentage(liquidationPenaltyPercentage || 0.2, 0)
 
     const stabilityFeePercentage = useMemo(() => {
@@ -283,11 +283,11 @@ export function useSafeInfo(type: SafeTypes = 'create') {
             `Too much debt, below ${Number(collateralLiquidationData.safetyCRatio) * 100}% collateralization ratio`
     }
 
-    if (numeral(totalDebt).value() > numeral(liquidationData!.globalDebtCeiling).value()) {
+    if ((numeral(totalDebt).value() || 0) > (numeral(liquidationData!.globalDebtCeiling).value() || 0)) {
         error = error ?? 'Cannot exceed global debt ceiling'
     }
 
-    if (numeral(totalDebt).value() > numeral(liquidationData!.perSafeDebtCeiling).value()) {
+    if ((numeral(totalDebt).value() || 0) > (numeral(liquidationData!.perSafeDebtCeiling).value() || 0)) {
         error = error ?? `Cannot exceed HAI debt ceiling`
     }
 
@@ -383,11 +383,12 @@ export function useLiquidationPrice(
     }, [currentRedemptionPrice, liquidationCRatio, totalCollateral, totalDebt])
 }
 // handles input data validation and storing them into store
-export function useInputsHandlers(): {
+type InputHandlers = {
     onLeftInput: (typedValue: string) => void
     onRightInput: (typedValue: string) => void
     onClearAll: () => void
-} {
+}
+export function useInputsHandlers(): InputHandlers {
     const { safeModel: safeActions } = useStoreActions((state) => state)
     const {
         safeModel: { safeData },
