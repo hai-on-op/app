@@ -5,9 +5,9 @@ import { utils as gebUtils } from '@hai-on-op/sdk'
 import { BigNumber } from 'ethers'
 import { useAccount, useNetwork } from 'wagmi'
 
-import { newTransactionsFirst } from '../utils/helper'
-import { ITransaction } from '../utils/interfaces'
-import store from '~/store'
+import { newTransactionsFirst } from '@/utils/helper'
+import { ITransaction } from '@/utils/interfaces'
+import store, { useStoreActions, useStoreState } from '@/store'
 
 // adding transaction to store
 export function useTransactionAdder(): (
@@ -18,6 +18,7 @@ export function useTransactionAdder(): (
     const { chain } = useNetwork()
     const chainId = chain?.id
     const { address: account } = useAccount()
+    const { addTransaction } = useStoreActions(actions => actions.transactionsModel)
     return useCallback(
         (response: TransactionResponse, summary?: string, approval?: { tokenAddress: string; spender: string }) => {
             if (!account) return
@@ -28,7 +29,7 @@ export function useTransactionAdder(): (
                 throw Error('No transaction hash found.')
             }
 
-            let tx: ITransaction = {
+            const tx: ITransaction = {
                 chainId,
                 hash,
                 from: account,
@@ -38,7 +39,7 @@ export function useTransactionAdder(): (
                 approval,
             }
 
-            store.dispatch.transactionsModel.addTransaction(tx)
+            addTransaction(tx)
         },
         [chainId, account]
     )
@@ -54,7 +55,7 @@ export function isTransactionRecent(tx: ITransaction): boolean {
 }
 
 export function useIsTransactionPending(transactionHash?: string): boolean {
-    const transactions = store.getState().transactionsModel.transactions
+    const { transactions } = useStoreState(state => state.transactionsModel)
 
     if (!transactionHash || !transactions[transactionHash]) return false
 
@@ -86,8 +87,8 @@ export async function handlePreTxGasEstimate(
         } else {
             errorMessage = 'Provider error: ' + (err || err.message)
         }
-        store.dispatch.popupsModel.setIsWaitingModalOpen(true)
-        store.dispatch.popupsModel.setWaitingPayload({
+        store?.dispatch.popupsModel.setIsWaitingModalOpen(true)
+        store?.dispatch.popupsModel.setWaitingPayload({
             title: 'Transaction Failed.',
             status: 'error',
         })
@@ -110,20 +111,20 @@ export async function handlePreTxGasEstimate(
 
 export function handleTransactionError(e: any) {
     if (typeof e === 'string' && (e.toLowerCase().includes('join') || e.toLowerCase().includes('exit'))) {
-        store.dispatch.popupsModel.setWaitingPayload({
+        store?.dispatch.popupsModel.setWaitingPayload({
             title: 'Cannot join/exit at this time.',
             status: 'error',
         })
         return
     }
     if (e?.code === 4001) {
-        store.dispatch.popupsModel.setWaitingPayload({
+        store?.dispatch.popupsModel.setWaitingPayload({
             title: 'Transaction Rejected.',
             status: 'error',
         })
         return
     }
-    store.dispatch.popupsModel.setWaitingPayload({
+    store?.dispatch.popupsModel.setWaitingPayload({
         title: 'Transaction Failed.',
         status: 'error',
     })
@@ -132,7 +133,7 @@ export function handleTransactionError(e: any) {
 }
 
 export function useHasPendingTransactions() {
-    const allTransactions = store.getState().transactionsModel.transactions
+    const { transactions: allTransactions } = useStoreState(state => state.transactionsModel)
 
     const sortedRecentTransactions = useMemo(() => {
         const txs = Object.values(allTransactions)

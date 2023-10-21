@@ -1,22 +1,16 @@
 import { useEffect, useState } from 'react'
-import { useHistory } from 'react-router-dom'
-import kite from '~/assets/splash/kite.png'
-import partlyCloudy from '~/assets/splash/partly-cloudy.svg'
-import optimism from '~/assets/splash/optimism.svg'
-import liquidEth from '~/assets/splash/liquid-eth.svg'
-import eth from '~/assets/splash/eth.svg'
-import twitter from '~/assets/splash/twitter.svg'
-import discord from '~/assets/splash/discord.svg'
+import Image from 'next/image'
+import Link from 'next/link'
+import styled from 'styled-components'
 
-const options = ['OPTIMISM...', 'LIQUID ETH...', 'ETH...', 'WETH']
+import { type ButtonProps, ButtonStyle, poppins, Flex, Grid, CenteredFlex, Text } from '@/styles'
 
-const Splash = () => {
-    const history = useHistory()
+const options = ['OPTIMISM', 'ETHEREUM', 'LSDs', 'UNISWAP', '???']
 
+export default function Splash() {
     const [title, setTitle] = useState(options[0])
 
     useEffect(() => {
-        const options = ['OPTIMISM', 'ETHEREUM', 'LSDs', 'UNISWAP', '???']
         let currentIndex = 0
 
         const interval = setInterval(() => {
@@ -28,141 +22,147 @@ const Splash = () => {
     }, [])
 
     return (
-        <div className="bg-white">
-            <div className="lg:grid lg:grid-cols-12 ">
-                <div className="col-span-12 md:col-span-6  h-screen flex flex-col items-end">
-                    <div className="lg:hidden bg-sky w-full flex flex-col items-center py-8">
-                        <img className="h-24 w-24 lg:h-48 lg:w-48" src={partlyCloudy} alt={''} />
-                    </div>
-                    <div className="lg:max-w-split  w-full h-full flex flex-col items-center justify-center">
-                        <div>
-                            <h1 className="text-egg font-semibold font-poppins text-7xl">GET HAI ON</h1>
-                            <h1 className="text-black font-normal mt-10 text-6xl">{title}</h1>
-                            <button
-                                type="button"
-                                className="rounded-2xl mt-8 bg-egg px-14 py-2.5 text-lg font-normal text-white "
-                                onClick={() => history.push('/safes')}
-                            >
-                                LAUNCH APP
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div className="col-span-12 md:col-span-6 bg-sky hidden lg:block">
-                    <div className="lg:max-w-split  h-full flex flex-col items-center justify-center">
-                        <img className="h-24 w-24 lg:h-48 lg:w-48" src={partlyCloudy} alt={''} />
-                    </div>
-                </div>
-            </div>
-
-            <div className="bg-egg">
-                <div className="max-w-7xl mx-auto flex flex-col items-center ">
-                    <h1 className="text-white max-w-3xl py-36 font-normal text-center  text-3xl md:text-4xl lg:text-5xl">
-                        HAI is a multi-collateral controlled-peg stable asset that puts decentralization first
-                    </h1>
-                </div>
-            </div>
-            <div className="lg:grid lg:grid-cols-12 max-w-7xl mx-auto mt-16">
-                <div className="col-span-6  flex flex-col items-center justify-center">
-                    <h1 className="text-black max-w-md md:max-w-xl mx-6 font-poppins  text-2xl md:text-3xl text-center">
+        <Container>
+            <SplashGrid>
+                <LaunchContainer>
+                    <Flex
+                        $column
+                        $justify="center"
+                        $align="flex-start"
+                        $gap="1.75rem">
+                        <LaunchTitle>GET HAI ON</LaunchTitle>
+                        <LaunchSubtitle>{title}</LaunchSubtitle>
+                        <Link href="/safes">
+                            <LaunchButton>LAUNCH APP</LaunchButton>
+                        </Link>
+                    </Flex>
+                </LaunchContainer>
+                <IconContainer>
+                    <Image src="/assets/splash/partly-cloudy.svg" alt="" width={317} height={233} />
+                </IconContainer>
+            </SplashGrid>
+            <Section
+                $bg="var(--hai-orange)"
+                $padding="4rem 2rem">
+                <Text
+                    as="h1"
+                    $color="white"
+                    $textAlign="center"
+                    $fontSize="3rem"
+                    $fontWeight="normal">
+                    HAI is a multi-collateral controlled-peg stable asset that puts decentralization first
+                </Text>
+            </Section>
+            <Section>
+                <BorrowGrid>
+                    <Text
+                        as="h1"
+                        $color="black"
+                        $fontSize="1.875rem"
+                        $lineHeight="2.25rem"
+                        $fontWeight="normal"
+                        $textAlign="center">
                         Borrow HAI against ETH, Liquid Staked ETH, and OP
-                    </h1>
-                </div>
-                <div className="col-span-6 flex flex-row items-center justify-center space-x-20 md:space-x-36 mt-16 lg:mt-0">
-                    <div className="space-y-6 lg:py-0">
-                        <div className="relative">
-                            <img className="h-16 w-16 md:h-20 md:w-20 relative z-10" src={optimism} alt={''} />
-                            <div
-                                className="absolute w-40 md:w-48 border border-egg left-4 md:left-12"
-                                style={{
-                                    transform: 'rotate(30deg)',
-                                }}
-                            />
-                        </div>
-                        <div className="relative">
-                            <img className="h-16 w-16 md:h-20 md:w-20 z-10 relative" src={liquidEth} alt={''} />
-                            <div
-                                className="absolute w-40 md:w-48 border border-egg left-0 top-1/2"
-                                style={{
-                                    left: '65px',
-                                }}
-                            />
-                        </div>
-                        <div className="relative">
-                            <img className="h-16 w-16 md:h-20 md:w-20 z-10 relative" src={eth} alt={''} />
-                            <div
-                                className="absolute md:left-14 bottom-14 md:bottom-20 w-48 md:w-48 border border-egg"
-                                style={{
-                                    transform: 'rotate(-30deg)',
-                                }}
-                            />
-                        </div>
-                    </div>
-                    <div className="bg-sky h-24 w-24 lg:h-32 lg:w-32 rounded-full flex flex-col items-center justify-center z-10">
-                        <img className="h-14 w-14 lg:h-16 lg:w-16" src={partlyCloudy} alt={''} />
-                    </div>
-                </div>
-            </div>
-            <div className="max-w-7xl mx-auto mt-16">
-                <div className="lg:grid lg:grid-cols-12 ">
-                    <div className="col-span-12 lg:col-span-6  flex flex-col items-center justify-center ">
-                        <h1 className="text-black max-w-md md:max-w-xl mx-6 font-poppins  text-2xl md:text-3xl text-center">
-                            A community of KITE token holders govern what collateral can be used to mint HAI
-                        </h1>
-                    </div>
-                    <div className="col-span-12 lg:col-span-6  flex flex-col items-center  order-first mt-16 lg:mt-0">
-                        <div className="rounded-full bg-egg h-52 w-52 lg:h-80 lg:w-80 flex flex-col items-center justify-center">
-                            <div className="rounded-full bg-white h-48 w-48 lg:h-72 lg:w-72 flex flex-col items-center justify-center">
-                                <img className="h-40 lg:h-60 relative z-10" src={kite} alt={''} />
-                            </div>
-                        </div>
-                    </div>{' '}
-                </div>
-            </div>
-            <div className="max-w-7xl mx-auto">
-                <div className=" flex flex-col lg:flex-row space-y-12 lg:space-y-0 lg:space-x-12 items-center mt-16 mx-8">
-                    <div className="flex flex-col border border-sky rounded-2xl p-8 max-w-xl">
-                        <div className="h-10 w-10 bg-egg rounded-full"></div>
-                        <h3 className="text-black font-poppins font-medium text-xl mt-2">Pre-Agreed Upon Exit Rates</h3>
-                        <p className="text-gray-500 font-poppins font-normal text-base mt-3">
-                            The Anti Bank-Run stable. HAI was designed to withstand the worst of market conditions.
-                        </p>
-                    </div>
-                    <div className="flex flex-col border border-sky rounded-2xl p-8 max-w-xl">
-                        <div className="h-10 w-10 bg-egg rounded-full"></div>
-                        <h3 className="text-black font-poppins font-medium text-xl mt-2">Controlled-Peg Stability</h3>
-                        <p className="text-gray-500 font-poppins font-normal text-base mt-3">
-                            Let’s face it. People suck. The interest rate for HAI loans is set automagically by a PID
-                            controller.
-                        </p>
-                    </div>
-                    <div className="flex flex-col border border-sky rounded-2xl p-8 max-w-xl">
-                        <div className="h-10 w-10 bg-egg rounded-full"></div>
-                        <h3 className="text-black font-poppins font-medium text-xl mt-2">Decentralization First</h3>
-                        <p className="text-gray-500 font-poppins font-normal text-base mt-3">
-                            HAI is DAO run from day 1. Governance will determine what collateral is added.
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <div className="w-ful flex flex-col items-center mt-8 py-16">
-                <div className="flex flex-row space-x-4">
-                    <a href="https://twitter.com/letsgethai" rel="noreferrer" target="_blank">
-                        <div className="h-14 w-14 bg-egg rounded-full flex flex-col items-center justify-center">
-                            <img className="h-8 w-8" src={twitter} alt={''} />
-                        </div>
-                    </a>
-                    <a href="https://discord.gg/pX8m6zXNKu" rel="noreferrer" target="_blank">
-                        <div className="h-14 w-14 bg-egg rounded-full flex flex-col items-center justify-center">
-                            <img className="h-8 w-8" src={discord} alt={''} />
-                        </div>
-                    </a>
-                </div>
-            </div>
-        </div>
-        // </div>
+                    </Text>
+                </BorrowGrid>
+            </Section>
+        </Container>
     )
 }
 
-export default Splash
+const Container = styled(Flex).attrs(props => ({
+    $width: '100%',
+    $column: true,
+    $justify: 'flex-start',
+    $align: 'stretch',
+    ...props
+}))`
+    background-color: white;
+`
+
+const SplashGrid = styled(Grid)`
+    grid-template-columns: 1fr;
+    grid-template-rows: 160px 1fr;
+    height: 100vh;
+
+    @media (min-width: 1024px) {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr;
+    }
+`
+const LaunchContainer = styled(CenteredFlex).attrs(props => ({
+    $width: '100%',
+    $column: true,
+    ...props
+}))`
+    background-color: white;
+`
+const LaunchTitle = styled.h1`
+    font-family: ${poppins.style.fontFamily};
+    font-size: 4.5rem;
+    font-weight: 600;
+    color: var(--hai-orange);
+`
+const LaunchSubtitle = styled.h1`
+    color: black;
+    font-weight: normal;
+    font-size: 3.75rem;
+`
+const LaunchButton = styled.button<ButtonProps>`
+    ${ButtonStyle}
+    border-radius: 1rem;
+    background-color: var(--hai-orange);
+    color: white;
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+    padding: 0.625rem 3.5rem;
+`
+const IconContainer = styled(CenteredFlex).attrs(props => ({
+    $width: '100%',
+    ...props
+}))`
+    order: -1;
+    background-color: var(--hai-skyblue);
+
+    & > img {
+        width: 96px;
+        height: 96px;
+    }
+
+    @media (min-width: 1024px) {
+        height: 100%;
+        order: unset;
+
+        & > img {
+            width: 192px;
+            height: 192px;
+        }
+    }
+`
+
+const Section = styled.section<{ $bg?: string, $padding?: string }>`
+    min-height: 360px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: ${({ $padding = '0rem 0.5rem' }) => $padding};
+    gap: 2rem;
+
+    & > ${Text} {
+        max-width: 48rem;
+    }
+    background-color: ${({ $bg = 'white' }) => $bg};
+`
+
+const BorrowGrid = styled(Grid)`
+    grid-template-columns: 1fr;
+
+    & > ${Text} {
+        max-width: 36rem;
+    }
+
+    @media (min-width: 1024px) {
+        grid-template-columns: 1fr 1fr;
+    }
+`
