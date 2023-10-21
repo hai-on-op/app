@@ -3,7 +3,7 @@ import { type PublicClient, usePublicClient, type WalletClient, useWalletClient 
 import { providers } from 'ethers'
 import { createPublicClient, http, type HttpTransport } from 'viem'
 import { optimismGoerli } from 'viem/chains'
-import { VITE_PUBLIC_RPC } from '~/utils'
+import { VITE_PUBLIC_RPC } from '@/utils'
 
 export const client = createPublicClient({
     chain: optimismGoerli,

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useStoreActions, useStoreState } from '~/store'
+import { useStoreActions, useStoreState } from '@/store'
 import { BigNumber, utils } from 'ethers'
 import {
     utils as gebUtils,
@@ -10,11 +10,11 @@ import {
     ISurplusAuction as SDKAuction,
 } from '@hai-on-op/sdk'
 import { useAccount } from 'wagmi'
-import _ from '~/utils/lodash'
+import _ from '@/utils/lodash'
 
-import { AuctionEventType, IAuction, IAuctionBidder, ICollateralAuction } from '~/types'
+import { AuctionEventType, IAuction, IAuctionBidder, ICollateralAuction } from '@/types'
 import { useGeb } from './useGeb'
-import { floatsTypes } from '~/utils'
+import { floatsTypes } from '@/utils'
 
 export function useGetAuctions(type: AuctionEventType, tokenSymbol?: string) {
     const { auctionModel } = useStoreState((state) => state)
@@ -51,7 +51,7 @@ export function useAuctions(type: AuctionEventType, tokenSymbol?: string) {
 
             // show auctions less than one month old only
             // const oneMonthOld = new Date().setMonth(new Date().getMonth() - 1)
-            const filteredAuctions: IAuction[] = auctionsList.map((auc: SDKAuction, index) => {
+            const filteredAuctions: IAuction[] = auctionsList.map((auc: SDKAuction, ) => {
                 const {
                     // isClaimed,
                     auctionDeadline,
@@ -72,7 +72,7 @@ export function useAuctions(type: AuctionEventType, tokenSymbol?: string) {
                     biddersList && biddersList.length > 0 ? biddersList.reverse()[0].bidder : ''
                 )
 
-                let sellInitialAmount = _.get(auc, 'amount', '0')
+                const sellInitialAmount = _.get(auc, 'amount', '0')
                 const startedBy = _.get(auc, 'startedBy', '')
                 const isClaimed = _.get(auc, 'isClaimed', false)
                 const buyToken = _.get(auc, 'buyToken', 'PROTOCOL_TOKEN')
@@ -182,7 +182,7 @@ export function useCollateralAuctions(tokenSymbol: string): ICollateralAuction[]
                 return []
             }
 
-            const filteredAuctions = auctionsList.map((auc: SDKCollateralAuction, index) => {
+            const filteredAuctions = auctionsList.map((auc: SDKCollateralAuction) => {
                 const { createdAt, createdAtTransaction, amountToSell, amountToRaise, biddersList } = auc
 
                 const startedBy = _.get(auc, 'startedBy', '')
@@ -196,7 +196,7 @@ export function useCollateralAuctions(tokenSymbol: string): ICollateralAuction[]
                     BigNumber.from(amountToRaise),
                     floatsTypes.WAD - floatsTypes.RAD
                 )
-                let remainingToRaiseE18Raw = amountToRaiseE18.sub(raised).toString()
+                const remainingToRaiseE18Raw = amountToRaiseE18.sub(raised).toString()
 
                 const remainingToRaiseE18 = remainingToRaiseE18Raw > '0' ? remainingToRaiseE18Raw : '0'
 

@@ -4,9 +4,9 @@ import { BigNumber, ethers } from 'ethers'
 import numeral from 'numeral'
 import { useAccount } from 'wagmi'
 
-import { useProxyAddress } from '~/hooks'
-import { useStoreActions, useStoreState } from '~/store'
-import { DEFAULT_SAFE_STATE } from '~/utils/constants'
+import { useProxyAddress } from '@/hooks'
+import { useStoreActions, useStoreState } from '@/store'
+import { DEFAULT_SAFE_STATE } from '@/utils/constants'
 import {
     formatNumber,
     getCollateralRatio,
@@ -18,7 +18,7 @@ import {
     safeIsSafe,
     toFixedString,
     toPercentage,
-} from '~/utils'
+} from '@/utils'
 
 export const LIQUIDATION_RATIO = 135 // percent
 export const ONE_DAY_WORTH_SF = ethers.utils.parseEther('0.00001')

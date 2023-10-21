@@ -3,20 +3,21 @@ import { Geb } from '@hai-on-op/sdk'
 import { useAccount } from 'wagmi'
 
 import { useEthersSigner, usePublicProvider } from './useEthersAdapters'
-import store, { useStoreActions, useStoreState } from '~/store'
-import { EMPTY_ADDRESS, network_name } from '~/utils/constants'
-import { formatNumber } from '~/utils/helper'
-import { NETWORK_ID } from '~/utils'
+
+import { useStoreActions, useStoreState } from '@/store'
+import { EMPTY_ADDRESS, network_name, formatNumber, NETWORK_ID } from '@/utils'
 
 type TokenType = 'ETH' | 'HAI' | 'WETH'
 
 // Geb with signer
 export function useGeb(): Geb {
     const [state, setState] = useState<Geb>()
+
     const signer = useEthersSigner()
+
     useEffect(() => {
         if (!signer) return
-        const geb = new Geb(network_name, signer)
+        const geb = new Geb(network_name, signer as any)
         setState(geb)
     }, [signer])
 
@@ -36,7 +37,7 @@ export function useIsOwner(safeId: string): boolean {
     const geb = useGeb()
     const { address: account } = useAccount()
 
-    const getIsOwnerCallback = useCallback((res) => {
+    const getIsOwnerCallback = useCallback((res: any) => {
         if (res) {
             const [proxyAddress, { owner }] = res
             if (proxyAddress && owner) {
@@ -87,13 +88,15 @@ export function useProxyAddress() {
 
 // fetches latest blocknumber from store
 export function useBlockNumber() {
-    return store.getState().connectWalletModel.blockNumber[NETWORK_ID]
+    const { connectWalletModel } = useStoreState(state => state)
+    return connectWalletModel.blockNumber[NETWORK_ID]
 }
 
 // returns amount of currency in USD
 export function useTokenBalanceInUSD(token: TokenType, balance: string) {
-    const ethPrice = store.getState().connectWalletModel.fiatPrice
-    const haiPrice = store.getState().safeModel.liquidationData?.currentRedemptionPrice
+    const { connectWalletModel, safeModel } = useStoreState(state => state)
+    const ethPrice = connectWalletModel.fiatPrice
+    const haiPrice = safeModel.liquidationData?.currentRedemptionPrice
 
     return useMemo(() => {
         const price = token === 'ETH' || token === 'WETH' ? ethPrice : haiPrice

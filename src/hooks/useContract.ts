@@ -1,14 +1,14 @@
 import { useMemo } from 'react'
 import { Contract } from '@ethersproject/contracts'
 import { JsonRpcSigner, Web3Provider, JsonRpcProvider } from '@ethersproject/providers'
-import { useEthersProvider, useEthersSigner } from '~/hooks/useEthersAdapters'
+import { useEthersProvider, useEthersSigner } from '@/hooks'
 import { useNetwork } from 'wagmi'
 
-import { EMPTY_ADDRESS } from '../utils/constants'
-import ERC20_BYTES32_ABI from '../abis/erc20_bytes32.json'
-import { isAddress } from '../utils/helper'
-import ERC20_ABI from '../abis/erc20.json'
-import { Erc20 } from '../abis/Erc20'
+import { EMPTY_ADDRESS } from '@/utils/constants'
+import ERC20_BYTES32_ABI from '@/abis/erc20_bytes32.json'
+import { isAddress } from '@/utils/helper'
+import ERC20_ABI from '@/abis/erc20.json'
+import { Erc20 } from '@/abis/Erc20'
 
 // account is not optional
 export function getSigner(library: Web3Provider, account: string): JsonRpcSigner {
@@ -32,8 +32,7 @@ export function getContract(address: string, ABI: any, signerOrProvider: JsonRpc
 // returns null on errors
 export function useContract<T extends Contract = Contract>(
     addressOrAddressMap: string | { [chainId: number]: string } | undefined,
-    ABI: any,
-    withSignerIfPossible = true
+    ABI: any
 ): T | null {
     const { chain } = useNetwork()
     const chainId = chain?.id
@@ -55,10 +54,10 @@ export function useContract<T extends Contract = Contract>(
     }, [addressOrAddressMap, ABI, provider, chainId, signer]) as T
 }
 
-export function useTokenContract(tokenAddress?: string, withSignerIfPossible?: boolean) {
-    return useContract<Erc20>(tokenAddress, ERC20_ABI, withSignerIfPossible)
+export function useTokenContract(tokenAddress?: string) {
+    return useContract<Erc20>(tokenAddress, ERC20_ABI)
 }
 
-export function useBytes32TokenContract(tokenAddress?: string, withSignerIfPossible?: boolean): Contract | null {
-    return useContract(tokenAddress, ERC20_BYTES32_ABI, withSignerIfPossible)
+export function useBytes32TokenContract(tokenAddress?: string): Contract | null {
+    return useContract(tokenAddress, ERC20_BYTES32_ABI)
 }
