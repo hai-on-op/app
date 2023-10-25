@@ -1,3 +1,4 @@
+import { type ReactChild, type ReactChildren } from 'react'
 import { Info } from 'react-feather'
 import styled from 'styled-components'
 
@@ -8,7 +9,7 @@ export interface DataCardProps {
     title: string
     value: string
     description?: string
-    children?: React.ReactChildren | React.ReactChild
+    children?: ReactChildren | ReactChild
 }
 
 const DataCard = ({ title, image, value, description, children }: DataCardProps) => {

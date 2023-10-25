@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { CSSTransition } from 'react-transition-group'
 import styled from 'styled-components'
 
@@ -7,7 +7,7 @@ import { ConnectButton } from '@rainbow-me/rainbowkit'
 import NavLinks from './NavLinks'
 
 const SideMenu = () => {
-    const nodeRef = React.useRef(null)
+    const nodeRef = useRef(null)
 
     const [isOpen, setIsOpen] = useState(false)
     const { popupsModel: popupsActions } = useStoreActions((state) => state)

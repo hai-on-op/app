@@ -1,7 +1,7 @@
 import { action, Action, Thunk, thunk } from 'easy-peasy'
 import { fetchTokenData, TokenFetchData, TokenData } from '@hai-on-op/sdk'
-import api from '../services/api'
-import { IBlockNumber, IFetchTokensDataPayload, ITokenBalance } from '../utils/interfaces'
+import api from '~/services/api'
+import type { IBlockNumber, IFetchTokensDataPayload, ITokenBalance } from '~/utils'
 
 export interface ConnectWalletModel {
     forceUpdateTokens: boolean

@@ -1,8 +1,8 @@
-import React, { ReactNode } from 'react'
+import React, { type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 import classNames from 'classnames'
-import darkArrow from '../assets/dark-arrow.svg'
+import darkArrow from '~/assets/dark-arrow.svg'
 import Arrow from './Icons/Arrow'
 import Loader from './Loader'
 

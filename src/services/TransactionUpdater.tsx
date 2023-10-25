@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { toast } from 'react-toastify'
-import ToastPayload from '../components/ToastPayload'
-import store, { useStoreState } from '../store'
+import ToastPayload from '~/components/ToastPayload'
+import store, { useStoreState } from '~/store'
 import { useEthersProvider } from '~/hooks'
 import { useNetwork } from 'wagmi'
 

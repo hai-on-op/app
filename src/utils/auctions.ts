@@ -2,7 +2,7 @@ import { ethers } from 'ethers'
 import { Geb } from '@hai-on-op/sdk'
 import { JsonRpcSigner } from '@ethersproject/providers'
 
-import { IAuctionBid } from '~/types'
+import type { IAuctionBid } from '~/types'
 import { handlePreTxGasEstimate } from '~/hooks'
 import { ETH_NETWORK } from './constants'
 

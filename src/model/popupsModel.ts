@@ -1,5 +1,5 @@
-import { action, Action } from 'easy-peasy'
-import { IAlert, IAuctionOperation, IOperation, IWaitingPayload, LoadingPayload } from '../utils/interfaces'
+import { action, type Action } from 'easy-peasy'
+import type { IAlert, IAuctionOperation, IOperation, IWaitingPayload, LoadingPayload } from '~/utils'
 
 export interface PopupsModel {
     isSettingsModalOpen: boolean

@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import { Info } from 'react-feather'
 import ReactTooltip from 'react-tooltip'
 
-import { SafeTypes, StatsType, useSafeInfo } from '~/hooks'
+import { type SafeTypes, type StatsType, useSafeInfo } from '~/hooks'
 import TransactionOverview from '~/components/TransactionOverview'
 
 const ReviewTransaction = ({ type }: { type: SafeTypes }) => {

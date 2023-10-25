@@ -7,7 +7,7 @@ import { useAccount } from 'wagmi'
 
 import BidLine from '~/components/BidLine'
 import { useStoreActions, useStoreState } from '~/store'
-import { ICollateralAuction } from '~/types'
+import type { ICollateralAuction } from '~/types'
 import { COIN_TICKER, formatNumber, parseWad } from '~/utils'
 import AlertLabel from '~/components/AlertLabel'
 import Button from '~/components/Button'

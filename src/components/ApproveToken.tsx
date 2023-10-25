@@ -7,7 +7,7 @@ import { useAccount } from 'wagmi'
 
 import { useTokenContract, useTransactionAdder, useGeb } from '~/hooks'
 import { useStoreActions, useStoreState } from '~/store'
-import { AuctionEventType, IAuctionBidder } from '~/types'
+import type { AuctionEventType, IAuctionBidder } from '~/types'
 import { timeout } from '~/utils'
 import Button from './Button'
 import Loader from './Loader'

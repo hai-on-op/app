@@ -1,5 +1,5 @@
 import { createTypedHooks, createStore } from 'easy-peasy'
-import model, { StoreModel } from './model'
+import model, { type StoreModel } from './model'
 import { initI18n } from './utils/i18n'
 
 const store = createStore(model)

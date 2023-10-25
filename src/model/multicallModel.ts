@@ -1,6 +1,6 @@
 import { action, Action } from 'easy-peasy'
-import { ListenerOptions, toCallKey } from '../hooks/Multicall'
-import { Call, CallResults, CallListeners } from '../utils/interfaces'
+import { ListenerOptions, toCallKey } from '~/hooks'
+import { Call, CallResults, CallListeners } from '~/utils'
 
 export interface MulticallModel {
     callListeners?: CallListeners

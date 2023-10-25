@@ -1,14 +1,14 @@
 import styled from 'styled-components'
 import Lottie from 'react-lottie-player'
 import { isMobile } from 'react-device-detect'
-import Steps from '../../components/Steps'
-import { useStoreState } from '../../store'
-import LottieWallet from '../../utils/Lotties/wallet.json'
-import LottieRegister from '../../utils/Lotties/register.json'
-import LottieSafe from '../../utils/Lotties/vault.json'
-import accountImg from '../../assets/account-img.png'
-import walletImg from '../../assets/wallet-img.png'
-import safeImg from '../../assets/safe-img.png'
+import Steps from '~/components/Steps'
+import { useStoreState } from '~/store'
+import LottieWallet from '~/utils/Lotties/wallet.json'
+import LottieRegister from '~/utils/Lotties/register.json'
+import LottieSafe from '~/utils/Lotties/vault.json'
+import accountImg from '~/assets/account-img.png'
+import walletImg from '~/assets/wallet-img.png'
+import safeImg from '~/assets/safe-img.png'
 
 const Accounts = () => {
     const { connectWalletModel: connectWalletState } = useStoreState((state) => state)

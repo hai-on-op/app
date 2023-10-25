@@ -19,7 +19,3 @@ export * from './gebManager/index'
 
 // export ./i18n
 export * from './i18n/index'
-
-// export ./themes
-export * from './themes/dark'
-export * from './themes/light'

@@ -1,10 +1,10 @@
 import numeral from 'numeral'
 import { BigNumber, FixedNumber } from 'ethers'
-import { utils as gebUtils, TokenData } from '@hai-on-op/sdk'
+import { utils as gebUtils, type TokenData } from '@hai-on-op/sdk'
 import { getAddress } from 'viem'
 
 import { ETHERSCAN_PREFIXES, floatsTypes } from './constants'
-import { ChainId, ILiquidationData, ISafe, ITransaction } from './interfaces'
+import { ChainId, type ILiquidationData, type ISafe, type ITransaction } from './interfaces'
 import { sanitizeDecimals } from './removeDecimals'
 
 export const IS_IN_IFRAME = window.parent !== window

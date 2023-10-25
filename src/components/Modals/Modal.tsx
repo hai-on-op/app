@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from 'react'
+import { type ReactNode, useEffect, useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CSSTransition } from 'react-transition-group'
 import styled from 'styled-components'
-import { useStoreActions } from '../../store'
-import Button from '../Button'
-import Confetti from '../Confetti'
+import { useStoreActions } from '~/store'
+import Button from '~/components/Button'
+import Confetti from '~/components/Confetti'
 
 interface Props {
     title?: string
-    children: React.ReactNode
+    children: ReactNode
     submitBtnText?: string
     handleSubmit?: () => void
     maxWidth?: string
@@ -42,7 +42,7 @@ const Modal = ({
     backDropColor,
 }: Props) => {
     const { t } = useTranslation()
-    const nodeRef = React.useRef(null)
+    const nodeRef = useRef(null)
     const { settingsModel: settingsActions } = useStoreActions((state) => state)
 
     const [isOpen, setIsOpen] = useState(false)

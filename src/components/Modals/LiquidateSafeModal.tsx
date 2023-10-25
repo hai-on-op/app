@@ -6,9 +6,9 @@ import styled from 'styled-components'
 import { handleTransactionError, useGeb } from '~/hooks'
 import { liquidateSafe } from '~/services/blockchain'
 import { useStoreActions, useStoreState } from '~/store'
-import AlertLabel from '../AlertLabel'
-import Button from '../Button'
-import CheckBox from '../CheckBox'
+import AlertLabel from '~/components/AlertLabel'
+import Button from '~/components/Button'
+import CheckBox from '~/components/CheckBox'
 import Modal from './Modal'
 
 const LiquidateSafeModal = () => {

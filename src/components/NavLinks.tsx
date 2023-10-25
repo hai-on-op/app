@@ -1,10 +1,9 @@
 import React from 'react'
 import styled, { css } from 'styled-components'
 import { useTranslation } from 'react-i18next'
-import { useHistory } from 'react-router-dom'
-import { NavLink } from 'react-router-dom'
+import { useHistory, NavLink } from 'react-router-dom'
 
-import { useStoreActions } from '../store'
+import { useStoreActions } from '~/store'
 import SafeIcon from './Icons/SafeIcon'
 
 const NavLinks = () => {

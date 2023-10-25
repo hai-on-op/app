@@ -1,12 +1,11 @@
 import { useCallback, useMemo } from 'react'
-import { TransactionResponse, TransactionRequest } from '@ethersproject/providers'
+import { type TransactionResponse, type TransactionRequest } from '@ethersproject/providers'
 import { JsonRpcSigner } from '@ethersproject/providers/lib/json-rpc-provider'
 import { utils as gebUtils } from '@hai-on-op/sdk'
 import { BigNumber } from 'ethers'
 import { useAccount, useNetwork } from 'wagmi'
 
-import { newTransactionsFirst } from '../utils/helper'
-import { ITransaction } from '../utils/interfaces'
+import { newTransactionsFirst, type ITransaction } from '~/utils'
 import store from '~/store'
 
 // adding transaction to store

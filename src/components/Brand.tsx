@@ -1,5 +1,5 @@
 import styled from 'styled-components'
-import Logo from '../assets/hai-logo.png'
+import Logo from '~/assets/hai-logo.png'
 
 interface Props {
     height?: number
@@ -28,10 +28,9 @@ const Container = styled.div`
                 height: 50px;
             }
             ${({ theme }) => theme.mediaWidth.upToSmall`
-        width: 50px;
-        height: 50px;
-      }
-      `}
+                width: 50px;
+                height: 50px;
+            `}
         }
     }
 `

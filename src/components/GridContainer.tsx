@@ -1,8 +1,8 @@
-import React from 'react'
+import { type ReactNode } from 'react'
 import styled from 'styled-components'
 
 interface Props {
-    children: React.ReactNode
+    children: ReactNode
 }
 
 const GridContainer = ({ children }: Props) => {

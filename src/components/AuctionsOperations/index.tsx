@@ -1,4 +1,4 @@
-import React from 'react'
+import { useRef } from 'react'
 import { CSSTransition, SwitchTransition } from 'react-transition-group'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
@@ -12,7 +12,7 @@ import _ from '~/utils/lodash'
 
 const AuctionsOperations = () => {
     const { t } = useTranslation()
-    const nodeRef = React.useRef(null)
+    const nodeRef = useRef(null)
     const { auctionModel: auctionsActions } = useStoreActions((state) => state)
     const {
         auctionModel: auctionsState,

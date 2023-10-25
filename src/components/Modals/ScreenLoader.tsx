@@ -1,7 +1,6 @@
-import React from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
-import { useStoreState, useStoreActions } from '../../store'
+import { useStoreState, useStoreActions } from '~/store'
 import Loader from '../Loader'
 import Modal from './Modal'
 

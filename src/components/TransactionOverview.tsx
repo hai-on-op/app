@@ -1,7 +1,7 @@
 import styled from 'styled-components'
 import ReflexerIcon from './Icons/ReflexerIcon'
-import arrow from '../assets/arrow.svg'
-import uniswapIcon from '../assets/uniswap-icon.svg'
+import arrow from '~/assets/arrow.svg'
+import uniswapIcon from '~/assets/uniswap-icon.svg'
 interface Props {
     title: string
     description: string

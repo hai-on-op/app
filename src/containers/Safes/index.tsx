@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import styled from 'styled-components'
-import { useEthersSigner } from '~/hooks/useEthersAdapters'
+import { useEthersSigner } from '~/hooks'
 import { useAccount } from 'wagmi'
 
 import { useStoreState, useStoreActions } from '~/store'

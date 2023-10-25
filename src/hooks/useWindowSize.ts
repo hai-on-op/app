@@ -4,7 +4,7 @@ interface State {
     width: number | null
     height: number | null
 }
-export default function useWindowSize() {
+export function useWindowSize() {
     const [windowSize, setWindowSize] = useState<State>({
         width: null,
         height: null,

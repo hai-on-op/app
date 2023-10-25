@@ -1,14 +1,13 @@
 import { useMemo } from 'react'
 import { Contract } from '@ethersproject/contracts'
 import { JsonRpcSigner, Web3Provider, JsonRpcProvider } from '@ethersproject/providers'
-import { useEthersProvider, useEthersSigner } from '~/hooks/useEthersAdapters'
 import { useNetwork } from 'wagmi'
+import { useEthersProvider, useEthersSigner } from '~/hooks'
 
-import { EMPTY_ADDRESS } from '../utils/constants'
-import ERC20_BYTES32_ABI from '../abis/erc20_bytes32.json'
-import { isAddress } from '../utils/helper'
-import ERC20_ABI from '../abis/erc20.json'
-import { Erc20 } from '../abis/Erc20'
+import { EMPTY_ADDRESS, isAddress } from '~/utils'
+import ERC20_BYTES32_ABI from '~/abis/erc20_bytes32.json'
+import ERC20_ABI from '~/abis/erc20.json'
+import { Erc20 } from '~/abis/Erc20'
 
 // account is not optional
 export function getSigner(library: Web3Provider, account: string): JsonRpcSigner {

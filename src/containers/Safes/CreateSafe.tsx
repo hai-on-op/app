@@ -6,8 +6,7 @@ import { useHistory } from 'react-router'
 import ReactTooltip from 'react-tooltip'
 import styled from 'styled-components'
 import { ethers, utils } from 'ethers'
-import { useEthersSigner } from '~/hooks/useEthersAdapters'
-import { useAccount, useNetwork } from 'wagmi'
+import { useAccount } from 'wagmi'
 
 import { DEFAULT_SAFE_STATE, NETWORK_ID, TOKEN_LOGOS, formatNumber } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
@@ -24,6 +23,7 @@ import {
     ApprovalState,
     useSafeInfo,
     StatsType,
+    useEthersSigner,
 } from '~/hooks'
 
 const CreateSafe = ({

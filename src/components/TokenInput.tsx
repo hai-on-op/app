@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useState } from 'react'
+import { type ChangeEvent, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Loader } from 'react-feather'
 import styled from 'styled-components'

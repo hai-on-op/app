@@ -14,9 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { useCallback, useEffect, useState } from 'react'
-import useDebounce from '../hooks/useDebounce'
-import store from '../store'
-import { useEthersProvider } from '~/hooks/useEthersAdapters'
+import { useDebounce, useEthersProvider } from '~/hooks'
+import store from '~/store'
 import { useNetwork } from 'wagmi'
 
 export default function ApplicationUpdater(): null {

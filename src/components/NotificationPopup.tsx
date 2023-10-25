@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import Scrollbars from 'react-custom-scrollbars'
 import styled from 'styled-components'
 import BellIcon from './Icons/BellIcon'
-import caretUp from '../assets/caret-up.svg'
-import arrowUp from '../assets/arrow-up.svg'
+import caretUp from '~/assets/caret-up.svg'
+import arrowUp from '~/assets/arrow-up.svg'
 
 const NotificationPopup = () => {
     const wrapperRef = useRef(null)

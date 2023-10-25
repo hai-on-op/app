@@ -1,6 +1,6 @@
 // Ref: https://github.com/you-dont-need/You-Dont-Need-Lodash-Underscore
 
-import { DynamicObject } from './interfaces'
+import { type DynamicObject } from './interfaces'
 
 const get = (obj: any, path: string, defaultValue: any = undefined) => {
     const travel = (regexp: any) =>

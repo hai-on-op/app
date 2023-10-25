@@ -1,8 +1,7 @@
 import { ethers } from 'ethers'
 import { useCallback, useEffect, useState } from 'react'
-import useDebounce from '../hooks/useDebounce'
-import store, { useStoreState } from '../store'
-import { useEthersSigner } from '~/hooks/useEthersAdapters'
+import { useDebounce, useEthersSigner } from '~/hooks'
+import store, { useStoreState } from '~/store'
 import { useAccount, useNetwork } from 'wagmi'
 
 export default function ApplicationUpdater(): null {

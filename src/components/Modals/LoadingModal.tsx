@@ -1,8 +1,8 @@
-import React from 'react'
 import styled, { keyframes } from 'styled-components'
-import { useStoreState } from '../../store'
+import { useStoreState } from '~/store'
 import Modal from './Modal'
-import logo from '../../assets/logo192.png'
+import logo from '~/assets/logo192.png'
+
 const LoadingModal = () => {
     const { popupsModel: popupsState } = useStoreState((state) => state)
 

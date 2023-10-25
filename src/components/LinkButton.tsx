@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import { type ReactNode } from 'react'
 import { ArrowRightCircle } from 'react-feather'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'

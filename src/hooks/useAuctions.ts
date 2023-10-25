@@ -3,16 +3,16 @@ import { useStoreActions, useStoreState } from '~/store'
 import { BigNumber, utils } from 'ethers'
 import {
     utils as gebUtils,
-    AuctionData,
+    type AuctionData,
     radToFixed,
     wadToFixed,
-    ICollateralAuction as SDKCollateralAuction,
-    ISurplusAuction as SDKAuction,
+    type ICollateralAuction as SDKCollateralAuction,
+    type ISurplusAuction as SDKAuction,
 } from '@hai-on-op/sdk'
 import { useAccount } from 'wagmi'
 import _ from '~/utils/lodash'
 
-import { AuctionEventType, IAuction, IAuctionBidder, ICollateralAuction } from '~/types'
+import type { AuctionEventType, IAuction, IAuctionBidder, ICollateralAuction } from '~/types'
 import { useGeb } from './useGeb'
 import { floatsTypes } from '~/utils'
 

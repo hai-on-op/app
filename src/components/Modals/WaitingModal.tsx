@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 import { AlertTriangle, CheckCircle } from 'react-feather'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'

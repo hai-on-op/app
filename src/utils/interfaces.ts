@@ -1,7 +1,7 @@
 import { JsonRpcSigner } from '@ethersproject/providers/lib/json-rpc-provider'
-import { DefaultTheme, ThemedCssFunction } from 'styled-components'
-import { TransactionResponse } from '@ethersproject/providers'
-import { Geb, TokenData } from '@hai-on-op/sdk'
+import { type DefaultTheme, type ThemedCssFunction } from 'styled-components'
+import { type TransactionResponse } from '@ethersproject/providers'
+import { Geb, type TokenData } from '@hai-on-op/sdk'
 import { BigNumber } from 'ethers'
 
 export declare enum ChainId {

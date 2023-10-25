@@ -1,4 +1,4 @@
-import * as React from 'react'
+import { useMemo } from 'react'
 import { type PublicClient, usePublicClient, type WalletClient, useWalletClient } from 'wagmi'
 import { providers } from 'ethers'
 import { createPublicClient, http, type HttpTransport } from 'viem'
@@ -29,11 +29,11 @@ export function publicClientToProvider(publicClient: PublicClient) {
 /** Hook to convert a viem Public Client to an ethers.js Provider. */
 export function useEthersProvider({ chainId }: { chainId?: number } = {}) {
     const publicClient = usePublicClient({ chainId })
-    return React.useMemo(() => publicClientToProvider(publicClient), [publicClient])
+    return useMemo(() => publicClientToProvider(publicClient), [publicClient])
 }
 
 export function usePublicProvider() {
-    return React.useMemo(
+    return useMemo(
         () =>
             new providers.JsonRpcProvider(client.transport.url, {
                 chainId: client.chain.id,
@@ -58,5 +58,5 @@ export function walletClientToSigner(walletClient: WalletClient) {
 /** Hook to convert a viem Wallet Client to an ethers.js Signer. */
 export function useEthersSigner({ chainId }: { chainId?: number } = {}) {
     const { data: walletClient } = useWalletClient({ chainId })
-    return React.useMemo(() => (walletClient ? walletClientToSigner(walletClient) : undefined), [walletClient])
+    return useMemo(() => (walletClient ? walletClientToSigner(walletClient) : undefined), [walletClient])
 }

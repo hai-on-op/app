@@ -6,7 +6,7 @@ import { handleTransactionError, useStartAuction, useQuery, useGetAuctions, useP
 import AuctionsFAQ from '~/components/AuctionsFAQ'
 import AlertLabel from '~/components/AlertLabel'
 import Modal from '~/components/Modals/Modal'
-import { AuctionEventType } from '~/types'
+import type { AuctionEventType } from '~/types'
 import { useStoreActions, useStoreState } from '~/store'
 import AuctionsList from './AuctionsList'
 import Button from '~/components/Button'

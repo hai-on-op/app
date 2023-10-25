@@ -8,8 +8,7 @@ import { useStoreState, useStoreActions } from '~/store'
 import LinkButton from '~/components/LinkButton'
 import SafeBlock from '~/components/SafeBlock'
 import CheckBox from '~/components/CheckBox'
-import { returnState, ISafe } from '~/utils'
-import Button from '~/components/Button'
+import { returnState, type ISafe } from '~/utils'
 
 const SafeList = ({ address }: { address?: string }) => {
     const [showEmpty, setShowEmpty] = useState(true)

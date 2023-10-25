@@ -1,4 +1,4 @@
-import React from 'react'
+import { useRef } from 'react'
 import { CSSTransition, SwitchTransition } from 'react-transition-group'
 import styled from 'styled-components'
 
@@ -7,7 +7,7 @@ import TxConfirmation from './TxConfirmation'
 import Wrap from './Wrap'
 
 const AuctionsOperations = () => {
-    const nodeRef = React.useRef(null)
+    const nodeRef = useRef(null)
     const { safeModel: safeState } = useStoreState((state) => state)
 
     const returnBody = () => {

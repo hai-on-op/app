@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import styled from 'styled-components'
 import { useTranslation } from 'react-i18next'
-import { AuctionEventType } from '~/types'
-import mine from '../assets/mine.svg'
-import bid from '../assets/bid.svg'
-import claim from '../assets/claim.svg'
-import sellHai from '../assets/sell-hai.svg'
+import type { AuctionEventType } from '~/types'
+import mine from '~/assets/mine.svg'
+import bid from '~/assets/bid.svg'
+import claim from '~/assets/claim.svg'
+import sellHai from '~/assets/sell-hai.svg'
 
 interface Props {
     type: AuctionEventType

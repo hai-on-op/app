@@ -7,7 +7,7 @@ import Loader from '~/components/Loader'
 import Pagination from '~/components/Pagination'
 import { SideLabel } from '~/containers/Safes/CreateSafe'
 import { useCollateralAuctions, usePublicGeb } from '~/hooks'
-import { IPaging, TOKEN_LOGOS } from '~/utils'
+import { type IPaging, TOKEN_LOGOS } from '~/utils'
 import CollateralAuctionBlock from './CollateralAuctionBlock'
 
 export type Item = {

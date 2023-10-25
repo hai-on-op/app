@@ -4,7 +4,7 @@ import { FunctionFragment, Interface } from 'ethers/lib/utils'
 import { BigNumber, Contract } from 'ethers'
 
 import { useBlockNumber } from '~/hooks'
-import { Call } from '~/utils/interfaces'
+import { type Call } from '~/utils'
 import store from '~/store'
 
 export interface Result extends ReadonlyArray<any> {

@@ -1,6 +1,6 @@
 import { BigNumber } from 'ethers'
-import { Geb, utils, TokenLiquidationData, fetchLiquidationData, TokenData, fetchUserSafes } from '@hai-on-op/sdk'
-import { ILiquidationResponse, IUserSafeList } from '../interfaces'
+import { Geb, utils, type TokenLiquidationData, fetchLiquidationData, type TokenData, fetchUserSafes } from '@hai-on-op/sdk'
+import type { ILiquidationResponse, IUserSafeList } from '../interfaces'
 
 interface UserListConfig {
     geb: Geb

@@ -15,7 +15,7 @@ import { publicProvider } from 'wagmi/providers/public'
 import { injectedWallet, rainbowWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets'
 import { connectorsForWallets } from '@rainbow-me/rainbowkit'
 import { VITE_ALCHEMY_KEY, VITE_WALLETCONNECT_ID } from './utils'
-import { haiTheme } from './utils/rainbowTheme'
+import { haiTheme } from '~/styles/themes'
 
 const projectId = VITE_WALLETCONNECT_ID!
 
