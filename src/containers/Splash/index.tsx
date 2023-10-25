@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react'
 
-import styled from 'styled-components'
+import { useMediaQuery } from '~/hooks'
+
+import styled, { css } from 'styled-components'
 import { Flex, CenteredFlex, Text, HaiButton, Grid, FlexStyle, FlexProps, Title } from '~/styles'
 import { Header } from './Header'
 import { BrandedTitle } from '~/components/BrandedTitle'
@@ -8,6 +10,8 @@ import { BrandedTitle } from '~/components/BrandedTitle'
 import splashImage from '~/assets/splash/splash.jpg'
 
 export default function Splash() {
+    const isLargerThanSmall = useMediaQuery('upToSmall')
+
     const parallax = useRef<HTMLElement>()
 
     useEffect(() => {
@@ -35,13 +39,9 @@ export default function Splash() {
                 <HaiButton $variant="orangeish">Learn More</HaiButton>
             </Section>
             <Section>
-                <Grid
-                    $columns="1fr 1fr"
-                    $gap={24}>
+                <DescriptionContainer>
                     <Text>HAI is a multi-collateral stable asset on the Optimism network, forked from RAI. Users deposit collateral to mint HAI, stabilized at $1. HAI utilizes a PI controller for price stability and introduces governance via KITE tokens.</Text>
-                    <Grid
-                        $columns="1fr 1fr"
-                        $gap={24}>
+                    <FeatureContainer>
                         <FeatureCard>
                             <Title>DECENTRALIZED</Title>
                             <Text>Censorship resistant stable asset governed by its holders</Text>
@@ -58,12 +58,49 @@ export default function Splash() {
                             <Title>{`GET $HAI'ER`}</Title>
                             <Text>Minimum $200 of collateral to open a safe and participate</Text>
                         </FeatureCard>
-                    </Grid>
-                </Grid>
+                    </FeatureContainer>
+                </DescriptionContainer>
             </Section>
             <Section>
-                <BrandedTitle textContent="LEARN MORE"/>
-                <Flex $gap={24}>
+                <ActionContainer>
+                    <ActionCard>
+                        <Title>BORROW</Title>
+                        <ul>
+                            <li>Borrow $HAI and multiply your crypto exposure</li>
+                            <li>Easily create vaults with $ETH, $OP</li>
+                            <li>Track your balance, debt, and collateral all from one place</li>
+                        </ul>
+                    </ActionCard>
+                    <ActionCard>
+                        <Title>EARN</Title>
+                        <ul>
+                            <li>Holders collect monthly rewards for providing liquidity</li>
+                            <li>Rewards are in $KITE which gives liquidity providers further control of the protocol</li>
+                        </ul>
+                    </ActionCard>
+                    <ActionCard>
+                        <Title>SNIPE</Title>
+                        <ul>
+                            <li>Buy $ETH, $OP, $stETH at a discount</li>
+                            <li>Liquidated assets go into Auction to be sold below spot</li>
+                        </ul>
+                    </ActionCard>
+                </ActionContainer>
+            </Section>
+            <Section>
+                <Flex
+                    $width="100%"
+                    $justify="space-between"
+                    $align="center">
+                    <BrandedTitle textContent="LEARN MORE"/>
+                    {isLargerThanSmall && (
+                        <CenteredFlex $gap={16}>
+                            <LearnMoreButton></LearnMoreButton>
+                            <LearnMoreButton></LearnMoreButton>
+                        </CenteredFlex>
+                    )}
+                </Flex>
+                <Flex $gap={48}>
                     <LearnMoreCard>
                         <Text>Introducing:</Text>
                         <Text $fontWeight="bold">HAI Protocol</Text>
@@ -111,17 +148,58 @@ const Section = styled.section.attrs(props => ({
     $column: true,
     $justify: 'center',
     $align: 'flex-start',
-    $gap: 24,
+    $gap: 32,
     ...props
-}))<FlexProps & { $bg?: string, $padding?: string }>`
+}))<FlexProps & { $bg?: string }>`
     ${FlexStyle}
+    overflow: hidden;
     min-height: 360px;
-    padding: ${({ $padding = '48px' }) => $padding};
+    padding: 48px;
     border-top: ${({ theme }) => theme.border.medium};
     border-bottom: ${({ theme }) => theme.border.medium};
     box-shadow: 0 3px 17px rgba(0,0,0,0.3);
 
-    background-color: ${({ $bg = '#bfe3f1;' }) => $bg};
+    background-color: ${({ $bg = '#bfe3f1' }) => $bg};
+    ${({ $bg = '#bfe3f1' }) => $bg === 'transparent' && css`
+        border: none;
+        box-shadow: none;
+    `}
+
+    ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+        padding: 24px;
+    `}
+`
+
+const DescriptionContainer = styled(Grid)`
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+
+    ${({ theme }) => theme.mediaWidth.upToMedium`
+        grid-template-columns: 1fr;
+    `}
+`
+const FeatureContainer = styled(Grid)`
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+
+    ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+        grid-template-columns: 1fr;
+    `}
+`
+
+const ActionContainer = styled(Grid)`
+    width: fit-content;
+    max-width: 1000px;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr;
+    justify-content: stretch;
+    align-self: center;
+    gap: 48px;
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr 1fr 1fr;
+    `}
 `
 
 const FeatureCard = styled(Flex).attrs(props => ({
@@ -154,6 +232,33 @@ const FeatureCard = styled(Flex).attrs(props => ({
     }
 `
 
+const ActionCard = styled(FeatureCard)`
+    max-width: 360px;
+    padding: 24px;
+    flex-grow: 1;
+    /* backdrop-filter: blur(13px); */
+    border: 4px dashed black;
+
+    & ul {
+        margin: 0;
+        padding-left: 24px;
+    }
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        max-width: unset;
+    `}
+`
+
+const LearnMoreButton = styled(HaiButton).attrs(props => ({
+    $variant: 'yellowish',
+    ...props
+}))`
+    min-width: unset;
+    width: 56px;
+    height: 56px;
+    padding: 0px;
+    border: ${({ theme }) => theme.border.thick};
+`
 const LearnMoreCard = styled(Flex).attrs(props => ({
     $column: true,
     $gap: 12,
@@ -162,7 +267,5 @@ const LearnMoreCard = styled(Flex).attrs(props => ({
     width: 240px;
     height: 240px;
     padding: 24px;
-    background-color: white;
     border: 4px dashed black;
-    box-shadow: 0 3px 17px rgba(0,0,0,0.3);
 `

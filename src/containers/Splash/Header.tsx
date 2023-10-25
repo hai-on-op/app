@@ -18,14 +18,21 @@ export function Header() {
 
     return (
         <Container>
-            <CenteredFlex $gap={24}>
-                <Logo src={haiLogo} alt="HAI" width={918} height={330}/>
-                {isLargerThanSmall && (<>
+            <Logo
+                src={haiLogo}
+                alt="HAI"
+                width={701}
+                height={264}
+            />
+            {isLargerThanSmall && (
+                <CenteredFlex
+                    $width="100%"
+                    $gap={24}>
                     <HeaderLink>Learn</HeaderLink>
                     <HeaderLink>Docs</HeaderLink>
                     <HeaderLink>Connect</HeaderLink>
-                </>)}
-            </CenteredFlex>
+                </CenteredFlex>
+            )}
             <CenteredFlex $gap={24}>
                 {isLargerThanSmall && (<>
                     <Twitter/>
@@ -34,6 +41,7 @@ export function Header() {
                 <HaiButton $variant="yellowish">Coming Soon</HaiButton>
                 {!isLargerThanSmall && (
                     <DropdownButton
+                        $variant="yellowish"
                         ref={setDropdownButton as any}
                         onClick={() => setDropdownActive(a => !a)}>
                         <svg viewBox="0 0 10 8" width="10" height="8">
@@ -58,7 +66,9 @@ export function Header() {
 }
 
 const Container = styled(Flex).attrs(props => ({
+    $justify: 'space-between',
     $align: 'center',
+    $gap: 24,
     ...props
 }))`
     justify-content: space-between;
@@ -79,11 +89,15 @@ const Container = styled(Flex).attrs(props => ({
         height: 24px;
     }
 
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        padding: 16px;
+    `}
+
     z-index: 2;
 `
 const Logo = styled.img`
     width: auto;
-    height: 60px;
+    height: 52px;
 `
 
 const HeaderLink = styled(Title).attrs(props => ({

@@ -38,11 +38,8 @@ export const GlobalStyle = createGlobalStyle`
         -moz-osx-font-smoothing: grayscale;
         color: ${(props) => props.theme.colors.primary};
         background-color:${(props) => props.theme.colors.background};
-        background-image: url('/assets/boxes.svg');
-        background-size: contain;
-        background-position: center 100px;
-        background-repeat: no-repeat;
         overflow: ${(props: Props) => (props.bodyOverflow ? 'hidden' : 'visible')};
+        line-height: 1.4;
 
         .web3modal-modal-lightbox {
             z-index: 999;

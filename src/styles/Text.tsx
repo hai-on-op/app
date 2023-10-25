@@ -52,5 +52,5 @@ export const Title = styled.h1<TextProps>`
         letter-spacing: ${typeof $letterSpacing === 'string' ? $letterSpacing: `${$letterSpacing}px`};
     `}
     ${({ $fontWeight = 700 }) => $fontWeight && css`font-weight: ${$fontWeight};`}
-    -webkit-text-stroke: 2px black;
+    -webkit-text-stroke: 0.04em black;
 `
