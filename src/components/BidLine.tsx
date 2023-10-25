@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 import styled from 'styled-components'
 
-import { ExternalLinkArrow } from '~/GlobalStyle'
+import { ExternalLinkArrow } from '~/styles'
 import { ChainId, formatNumber, getEtherscanLink, returnWalletAddress } from '~/utils'
 import { useNetwork } from 'wagmi'
 type Props = {

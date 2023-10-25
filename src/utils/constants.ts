@@ -21,7 +21,7 @@ export const ETHERSCAN_PREFIXES: { [chainId in ChainId]: string } = {
     420: 'goerli-optimism.',
 }
 
-const MEDIA_WIDTHS = {
+export const MEDIA_WIDTHS = {
     upToExtraSmall: 576,
     upToSmall: 768,
     upToMedium: 992,

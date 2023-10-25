@@ -1,8 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { HashRouter } from 'react-router-dom'
+import { BrowserRouter } from 'react-router-dom'
 import { StoreProvider } from 'easy-peasy'
-import './index.css'
 import App from './App'
 import store from './store'
 import { HelmetProvider } from 'react-helmet-async'
@@ -47,11 +46,11 @@ ReactDOM.render(
         <WagmiConfig config={wagmiConfig}>
             <RainbowKitProvider theme={haiTheme} chains={chains}>
                 <HelmetProvider>
-                    <HashRouter>
+                    <BrowserRouter>
                         <StoreProvider store={store}>
                             <App />
                         </StoreProvider>
-                    </HashRouter>
+                    </BrowserRouter>
                 </HelmetProvider>
             </RainbowKitProvider>
         </WagmiConfig>

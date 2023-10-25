@@ -1,6 +1,6 @@
 import { HelpCircle } from 'react-feather'
 import styled from 'styled-components'
-import { ExternalLinkArrow } from '~/GlobalStyle'
+import { ExternalLinkArrow } from '~/styles'
 
 export interface TableProps {
     title: string

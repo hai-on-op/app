@@ -3,7 +3,7 @@ import { ArrowRightCircle } from 'react-feather'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { BtnStyle } from '../GlobalStyle'
+import { ButtonStyle } from '~/styles'
 
 interface Props {
     url: string
@@ -42,14 +42,14 @@ const LinkButton = ({
 export default LinkButton
 
 const ExtLink = styled.a`
-    ${BtnStyle}
+    ${ButtonStyle}
     transition: opacity 0.3s ease;
     &:hover {
         opacity: 0.9;
     }
 `
 const CustomLink = styled(Link)`
-    ${BtnStyle}
+    ${ButtonStyle}
     transition: opacity 0.3s ease;
     &:hover {
         opacity: 0.9;

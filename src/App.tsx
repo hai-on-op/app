@@ -2,21 +2,20 @@ import i18next from 'i18next'
 import { Suspense } from 'react'
 import { I18nextProvider } from 'react-i18next'
 import { Redirect, Route, Switch } from 'react-router-dom'
-import { ThemeProvider } from 'styled-components'
-import ErrorBoundary from './ErrorBoundary'
-import GlobalStyle from './GlobalStyle'
-import Safes from './containers/Safes'
-import SafeDetails from './containers/Safes/SafeDetails'
-import Shared from './containers/Shared'
-import { useStoreState } from './store'
-import { Theme } from './utils/interfaces'
-import { darkTheme } from './utils/themes/dark'
+import ErrorBoundary from '~/ErrorBoundary'
+import Safes from '~/containers/Safes'
+import SafeDetails from '~/containers/Safes/SafeDetails'
+import Shared from '~/containers/Shared'
+import { useStoreState } from '~/store'
+import { type Theme } from '~/utils/interfaces'
 
-import Splash from './containers/Splash'
-import Privacy from './containers/Privacy'
-import CreateSafe from './containers/Safes/CreateSafe'
-import Auctions from './containers/Auctions'
-import Analytics from './containers/Analytics'
+import Splash from '~/containers/Splash'
+import Privacy from '~/containers/Privacy'
+import CreateSafe from '~/containers/Safes/CreateSafe'
+import Auctions from '~/containers/Auctions'
+import Analytics from '~/containers/Analytics'
+import { GlobalStyle } from '~/styles'
+import { HaiThemeProvider } from '~/styles/HaiThemeProvider'
 
 declare module 'styled-components' {
     export interface DefaultTheme extends Theme {}
@@ -29,7 +28,7 @@ const App = () => {
 
     return (
         <I18nextProvider i18n={i18next}>
-            <ThemeProvider theme={darkTheme}>
+            <HaiThemeProvider>
                 <GlobalStyle bodyOverflow={bodyOverflow} />
                 <ErrorBoundary>
                     <Shared>
@@ -54,7 +53,7 @@ const App = () => {
                         </Suspense>
                     </Shared>
                 </ErrorBoundary>
-            </ThemeProvider>
+            </HaiThemeProvider>
         </I18nextProvider>
     )
 }

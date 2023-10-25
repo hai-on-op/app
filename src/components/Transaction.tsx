@@ -1,8 +1,8 @@
 import { AlertTriangle, ArrowUpRight, CheckCircle } from 'react-feather'
 import styled from 'styled-components'
 import { useNetwork } from 'wagmi'
-import { ExternalLinkArrow } from '~/GlobalStyle'
-import { getEtherscanLink } from '~/utils/helper'
+import { ExternalLinkArrow } from '~/styles'
+import { getEtherscanLink } from '~/utils'
 import { useStoreState } from '~/store'
 import Loader from './Loader'
 

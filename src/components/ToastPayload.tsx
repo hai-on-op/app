@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
 import FeatherIconWrapper, { IconName } from './FeatherIconWrapper'
-import { ExternalLinkArrow } from '~/GlobalStyle'
+import { ExternalLinkArrow } from '~/styles'
 import { getEtherscanLink } from '~/utils'
 
 interface Props {

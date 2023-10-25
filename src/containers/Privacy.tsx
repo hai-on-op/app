@@ -8,7 +8,7 @@ import GridContainer from '~/components/GridContainer'
 import _ from '~/utils/lodash'
 
 // Styles
-import { ExternalLinkArrow } from '~/GlobalStyle'
+import { ExternalLinkArrow } from '~/styles'
 
 const Privacy = ({ ...props }) => {
     const privacyRef = useRef(null)
