@@ -27,10 +27,10 @@ export function Header() {
             {isLargerThanSmall && (
                 <CenteredFlex
                     $width="100%"
-                    $gap={24}>
-                    <HeaderLink>Learn</HeaderLink>
-                    <HeaderLink>Docs</HeaderLink>
-                    <HeaderLink>Connect</HeaderLink>
+                    $gap={48}>
+                    <HeaderLink $fontWeight={900}>Learn</HeaderLink>
+                    <HeaderLink $fontWeight={400}>Docs</HeaderLink>
+                    <HeaderLink $fontWeight={400}>Community</HeaderLink>
                 </CenteredFlex>
             )}
             <CenteredFlex $gap={24}>
@@ -76,11 +76,8 @@ const Container = styled(Flex).attrs(props => ({
     top: 0px;
     left: 0px;
     right: 0px;
-    height: 80px;
-    padding: 24px;
-    background: #bfe3f1;
-    border-bottom: ${({ theme }) => theme.border.medium};
-    box-shadow: 0 3px 17px rgba(0,0,0,0.3);
+    height: 120px;
+    padding: 42px;
 
     & svg {
         stroke: black;
@@ -90,39 +87,22 @@ const Container = styled(Flex).attrs(props => ({
     }
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
-        padding: 16px;
+        padding: 24px;
     `}
 
     z-index: 2;
 `
 const Logo = styled.img`
     width: auto;
-    height: 52px;
+    height: 60px;
 `
 
 const HeaderLink = styled(Title).attrs(props => ({
     $fontSize: '1.6rem',
     $letterSpacing: '0.2rem',
     $textTransform: 'uppercase',
-    $fontWeight: 900,
     ...props
-}))`
-    &:nth-of-type(1) {
-        color: ${({ theme }) => theme.colors.pinkish};
-    }
-    &:nth-of-type(2) {
-        color: ${({ theme }) => theme.colors.orangeish};
-    }
-    &:nth-of-type(3) {
-        color: ${({ theme }) => theme.colors.greenish};
-    }
-    &:nth-of-type(4) {
-        color: ${({ theme }) => theme.colors.blueish};
-    }
-    &:nth-of-type(5) {
-        color: ${({ theme }) => theme.colors.pinkish};
-    }
-`
+}))``
 
 const DropdownButton = styled(HaiButton)`
     position: relative;
