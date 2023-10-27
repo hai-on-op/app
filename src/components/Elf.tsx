@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import styled, { css, keyframes } from 'styled-components'
 
 import elf1 from '~/assets/splash/elf-1.png'
@@ -42,24 +43,26 @@ type ElfProps = {
 }
 
 export function Elf({ variant, width, animated, ...props }: ElfProps) {
+    const [animDuration] = useState(6 + 6 * Math.random())
     return (
         <ElfImage
             {...elves[variant % elves.length]}
             {...props}
             $width={width}
             $animated={animated}
+            $animDuration={animDuration}
         />
     )
 }
 
 const hueAnim = keyframes`
     0% { filter: hue-rotate(0deg); }
-    100% { filter: hue-rotate(3600deg); }
+    100% { filter: hue-rotate(360deg); }
 `
 
-export const ElfImage = styled.img<{ $width?: string, $animated?: boolean }>`
+export const ElfImage = styled.img<{ $width?: string, $animated?: boolean, $animDuration: number }>`
     position: absolute;
     width: ${({ $width = 'auto' }) => $width};
     height: auto;
-    ${({ $animated }) => $animated && css`animation: ${hueAnim} 40s linear infinite;`}
+    ${({ $animated, $animDuration }) => $animated && css`animation: ${hueAnim} ${$animDuration.toFixed(2)}s linear infinite;`}
 `

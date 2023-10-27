@@ -1,4 +1,5 @@
 import styled, { css } from 'styled-components'
+import { FlexStyle, type FlexProps } from './Flex'
 
 export type ButtonProps = {
     disabled?: boolean
@@ -27,17 +28,22 @@ export const ButtonStyle = css<ButtonProps>`
     justify-content: space-between;
 `
 
-export type HaiButtonProps = {
+export type HaiButtonProps = FlexProps & {
     disabled?: boolean,
     $variant?: 'default' | 'unblurred' | 'blueish' | 'greenish' | 'pinkish' | 'yellowish' | 'orangeish',
     $unbordered?: boolean
 }
-export const HaiButton = styled.button<HaiButtonProps>`
+export const HaiButton = styled.button.attrs(props => ({
+    $justify: 'space-between',
+    $align: 'center',
+    $gap: 12,
+    ...props
+}))<HaiButtonProps>`
+    ${FlexStyle}
     pointer-events: ${({ disabled }) => (disabled ? 'none' : 'inherit')};
     outline: none;
     cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
-    min-width: 134px;
-    border: ${({ theme, $unbordered }) => $unbordered ? 'none': theme.border.thick};
+    border: ${({ theme, $unbordered }) => $unbordered ? 'none': theme.border.medium};
     box-shadow: none;
     line-height: 24px;
     font-size: ${(props) => props.theme.font.small};
@@ -54,7 +60,4 @@ export const HaiButton = styled.button<HaiButtonProps>`
     )}
     border-radius: 999px;
     transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
 `
