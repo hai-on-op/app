@@ -9,6 +9,7 @@ import { HaiCoin, HaiCoinImage } from '~/components/HaiCoin'
 import { ZoomScene } from './Scenes/ZoomScene'
 import { Intro } from './Scenes/Intro'
 import { Second } from './Scenes/Second'
+import { Third } from './Scenes/Third'
 
 type SplashImage = {
     index: number
@@ -20,6 +21,7 @@ type SplashImage = {
 }
 
 const elves: SplashImage[] = [
+    // Intro
     {
         index: 0,
         width: '240px',
@@ -39,15 +41,32 @@ const elves: SplashImage[] = [
         rotation: 30,
         zIndex: 1002
     },
+    // Second
     {
         index: 1,
         width: '200px',
         position: ['100px', '-240px', -280],
         zIndex: 901
+    },
+    // Third
+    {
+        index: 3,
+        width: '260px',
+        position: ['300px', '-200px', -580],
+        rotation: 20,
+        zIndex: 801
+    },
+    {
+        index: 4,
+        width: '200px',
+        position: ['-40vw', '36vh', -580],
+        rotation: -20,
+        zIndex: 801
     }
 ]
 
 const clouds: SplashImage[] = [
+    // Intro
     {
         index: 0,
         width: '240px',
@@ -68,6 +87,7 @@ const clouds: SplashImage[] = [
         flip: true,
         zIndex: 990
     },
+    // Second
     {
         index: 0,
         width: '340px',
@@ -79,6 +99,19 @@ const clouds: SplashImage[] = [
         width: '190px',
         position: ['510px', '220px', -280],
         zIndex: 903
+    },
+    // Third
+    {
+        index: 0,
+        width: '280px',
+        position: ['-500px', '-200px', -580],
+        zIndex: 798
+    },
+    {
+        index: 1,
+        width: '220px',
+        position: ['420px', '250px', -620],
+        zIndex: 801
     }
 ]
 
@@ -114,8 +147,10 @@ export default function Splash() {
         const cloudImages = Array.from(zoomContainer.querySelectorAll(CloudImage)) as HTMLElement[]
         const coinImages = Array.from(zoomContainer.querySelectorAll(HaiCoinImage)) as HTMLElement[]
         const onScroll = () => {
+            const progress = 300 * window.scrollY / window.innerHeight
+
             scenes.forEach((scene, i) => {
-                const z = -300 * i + 2 * window.scrollY
+                const z = -300 * i + progress
                 scene.style.transform = `translateZ(${z}px)`
                 if (z < 190 && z > -240) scene.style.display = 'flex'
                 else scene.style.display = 'none'
@@ -125,7 +160,7 @@ export default function Splash() {
             })
             elfImages.forEach((elf, i) => {
                 const selectedElf = elves[i]
-                const z = selectedElf.position[2] + 2 * window.scrollY
+                const z = selectedElf.position[2] + progress
                 elf.style.transform = `translate(${selectedElf.position[0]}, ${selectedElf.position[1]}) translateZ(${z}px) rotate(${selectedElf.rotation || 0}deg)${selectedElf.flip ? ' scaleX(-1)': ''}`
                 if (z < 190 && z > -240) elf.style.display = 'flex'
                 else elf.style.display = 'none'
@@ -135,7 +170,7 @@ export default function Splash() {
             })
             cloudImages.forEach((cloud, i) => {
                 const selectedCloud = clouds[i]
-                const z = selectedCloud.position[2] + 2 * window.scrollY
+                const z = selectedCloud.position[2] + progress
                 cloud.style.transform = `translate(${selectedCloud.position[0]}, ${selectedCloud.position[1]}) translateZ(${z}px) rotate(${selectedCloud.rotation || 0}deg)${selectedCloud.flip ? ' scaleX(-1)': ''}`
                 if (z < 190 && z > -240) cloud.style.display = 'flex'
                 else cloud.style.display = 'none'
@@ -145,7 +180,7 @@ export default function Splash() {
             })
             coinImages.forEach((coin, i) => {
                 const selectedCoin = coins[i]
-                const z = selectedCoin.position[2] + 2 * window.scrollY
+                const z = selectedCoin.position[2] + progress
                 coin.style.transform = `translate(${selectedCoin.position[0]}, ${selectedCoin.position[1]}) translateZ(${z}px) rotate(${selectedCoin.rotation || 0}deg)${selectedCoin.flip ? ' scaleX(-1)': ''}`
                 if (z < 190 && z > -240) coin.style.display = 'flex'
                 else coin.style.display = 'none'
@@ -173,6 +208,11 @@ export default function Splash() {
             />
         </Background>
         <Header/>
+        {/* scroll targets for scroll snapping */}
+        <ScrollTarget/>
+        <ScrollTarget $top="100vh"/>
+        <ScrollTarget $top="200vh"/>
+        <ScrollTarget $top="300vh"/>
         <Container>
             <ZoomContainer ref={setZoomContainer as any}>
                 {clouds.map(({ index, width, position, rotation = 0, flip, zIndex }, i) => (
@@ -211,6 +251,7 @@ export default function Splash() {
                 ))}
                 <Intro style={{ zIndex: 1000 }}/>
                 <Second style={{ zIndex: 900 }}/>
+                <Third style={{ zIndex: 800 }}/>
             </ZoomContainer>
         </Container>
     </>)
@@ -236,6 +277,13 @@ const Background = styled(CenteredFlex)`
 
 const Container = styled.div`
     height: 1000vh;
+`
+const ScrollTarget = styled.div<{ $top?: number | string }>`
+    position: absolute;
+    width: 100%;
+    height: 0px;
+    scroll-snap-align: start;
+    top: ${({ $top = '0px' }) => (typeof $top === 'string' ? $top: `${$top}px`)};
 `
 
 const ZoomContainer = styled(CenteredFlex)`
