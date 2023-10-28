@@ -1,9 +1,50 @@
 import styled from 'styled-components'
 import { CenteredFlex, Flex, Grid, HaiButton, Text } from '~/styles'
-import { ZoomScene } from './ZoomScene'
+import { type SplashImage, ZoomScene } from './ZoomScene'
 import { BrandedTitle } from '~/components/BrandedTitle'
 import { TOKEN_LOGOS } from '~/utils'
 import { ProgressBar } from '~/components/ProgressBar'
+
+export const secondElves: SplashImage[] = [
+    {
+        index: 1,
+        width: '200px',
+        position: ['100px', '-240px', 20],
+        deltaZ: 1
+    }
+]
+
+export const secondClouds: SplashImage[] = [
+    {
+        index: 0,
+        width: '340px',
+        position: ['-510px', '240px', 20],
+        deltaZ: 1
+    },
+    {
+        index: 1,
+        width: '190px',
+        position: ['510px', '220px', 20],
+        deltaZ: 1
+    }
+]
+
+export const secondCoins: SplashImage[] = [
+    {
+        index: 0,
+        width: '180px',
+        position: ['220px', '120px', 0],
+        rotation: -20,
+        deltaZ: 1
+    },
+    {
+        index: 1,
+        width: '120px',
+        position: ['520px', '-240px', 0],
+        rotation: 20,
+        deltaZ: 1
+    }
+]
 
 export function Second({ ...props }) {
     return (

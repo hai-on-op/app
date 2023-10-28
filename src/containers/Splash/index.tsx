@@ -8,135 +8,34 @@ import { Header } from './Header'
 import { Elf, ElfImage } from '~/components/Elf'
 import { Cloud, CloudImage } from '~/components/Cloud'
 import { HaiCoin, HaiCoinImage } from '~/components/HaiCoin'
-import { ZoomScene } from './Scenes/ZoomScene'
-import { Intro } from './Scenes/Intro'
-import { Second } from './Scenes/Second'
-import { Third } from './Scenes/Third'
+import { type SplashImage, ZoomScene } from './Scenes/ZoomScene'
+import { Intro, introClouds, introCoins, introElves } from './Scenes/Intro'
+import { Second, secondClouds, secondCoins, secondElves } from './Scenes/Second'
+import { Third, thirdClouds, thirdElves } from './Scenes/Third'
+import { Footer } from './Footer'
 
-type SplashImage = {
-    index: number
-    width: string,
-    position: [ string, string, number ],
-    rotation?: number,
-    flip?: boolean,
-    zIndex?: number
+function build3dElementDetails(...arr: SplashImage[][]) {
+    return arr.reduce((temp, details, i) => {
+        return [
+            ...temp,
+            ...details.map((el: any) => ({
+                ...el,
+                position: [
+                    el.position[0],
+                    el.position[1],
+                    -300 * i + el.position[2]
+                ] as [string, string, number],
+                zIndex: 1000 - (100 * i) + (el.deltaZ || 0)
+            }))
+        ]
+    }, [] as SplashImage[])
 }
 
-const elves: SplashImage[] = [
-    // Intro
-    {
-        index: 0,
-        width: '240px',
-        position: ['340px', '70px', 40],
-        zIndex: 1001
-    },
-    {
-        index: 1,
-        width: '140px',
-        position: ['210px', '-320px', -20],
-        zIndex: 999
-    },
-    {
-        index: 2,
-        width: '300px',
-        position: ['-480px', '-100px', 20],
-        rotation: 30,
-        zIndex: 1002
-    },
-    // Second
-    {
-        index: 1,
-        width: '200px',
-        position: ['100px', '-240px', -280],
-        zIndex: 901
-    },
-    // Third
-    {
-        index: 3,
-        width: '240px',
-        position: ['30vw', '-200px', -580],
-        rotation: 20,
-        zIndex: 801
-    },
-    {
-        index: 4,
-        width: '200px',
-        position: ['-40vw', '36vh', -580],
-        rotation: -20,
-        zIndex: 801
-    }
-]
+const elves = build3dElementDetails(introElves, secondElves, thirdElves)
 
-const clouds: SplashImage[] = [
-    // Intro
-    {
-        index: 0,
-        width: '240px',
-        position: ['-320px', '-240px', -40],
-        zIndex: 995
-    },
-    {
-        index: 0,
-        width: '240px',
-        position: ['540px', '-100px', -40],
-        flip: true,
-        zIndex: 995
-    },
-    {
-        index: 0,
-        width: '200px',
-        position: ['100px', '240px', -80],
-        flip: true,
-        zIndex: 990
-    },
-    // Second
-    {
-        index: 0,
-        width: '340px',
-        position: ['-510px', '240px', -280],
-        zIndex: 903
-    },
-    {
-        index: 1,
-        width: '190px',
-        position: ['510px', '220px', -280],
-        zIndex: 903
-    },
-    // Third
-    {
-        index: 0,
-        width: '280px',
-        position: ['-36vw', '-200px', -580],
-        zIndex: 798
-    },
-    {
-        index: 1,
-        width: '220px',
-        position: ['40vw', '320px', -620],
-        zIndex: 801
-    }
-]
+const clouds = build3dElementDetails(introClouds, secondClouds, thirdClouds)
 
-const coins: Omit<SplashImage, 'index'>[] = [
-    {
-        width: '180px',
-        position: ['180px', '120px', 0],
-        rotation: -30,
-        zIndex: 1001
-    },
-    {
-        width: '140px',
-        position: ['410px', '-60px', -40],
-        rotation: 30,
-        zIndex: 996
-    },
-    {
-        width: '100px',
-        position: ['560px', '-340px', -80],
-        rotation: 0,
-        zIndex: 993
-    }
-]
+const coins = build3dElementDetails(introCoins, secondCoins)
 
 const update3dElement = (
     el: HTMLElement,
@@ -213,7 +112,8 @@ export default function Splash() {
         <ScrollTarget/>
         <ScrollTarget $top="100vh"/>
         <ScrollTarget $top="200vh"/>
-        <ScrollTarget $top="300vh"/>
+        {/* <ScrollTarget $top="300vh"/> */}
+        <ScrollTarget $top="calc(300vh + 420px)"/>
         <Container>
             <ZoomContainer ref={setZoomContainer as any}>
                 {clouds.map(({ index, width, position, rotation = 0, flip, zIndex }, i) => (
@@ -239,9 +139,10 @@ export default function Splash() {
                         }}
                     />
                 ))}
-                {coins.map(({ width, position, rotation = 0, zIndex }, i) => (
+                {coins.map(({ index, width, position, rotation = 0, zIndex }, i) => (
                     <HaiCoin
                         key={i}
+                        variant={index === 0 ? 'hai': 'kite'}
                         width={width}
                         animated
                         style={{
@@ -255,6 +156,7 @@ export default function Splash() {
                 <Third style={{ zIndex: 800 }}/>
             </ZoomContainer>
         </Container>
+        <Footer/>
     </>)
 }
 
@@ -277,7 +179,7 @@ const Background = styled(CenteredFlex)`
 `
 
 const Container = styled.div`
-    height: 1000vh;
+    height: calc(300vh + 420px);
 `
 const ScrollTarget = styled.div<{ $top?: number | string }>`
     position: absolute;

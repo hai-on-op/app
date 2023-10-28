@@ -1,7 +1,39 @@
 import styled from 'styled-components'
 import { CenteredFlex, Flex, Text } from '~/styles'
-import { ZoomScene } from './ZoomScene'
+import { type SplashImage, ZoomScene } from './ZoomScene'
 import { BrandedTitle } from '~/components/BrandedTitle'
+
+export const thirdElves: SplashImage[] = [
+    {
+        index: 3,
+        width: '240px',
+        position: ['30vw', '-200px', 20],
+        rotation: 20,
+        deltaZ: 1
+    },
+    {
+        index: 4,
+        width: '200px',
+        position: ['-40vw', '36vh', 20],
+        rotation: -20,
+        deltaZ: 1
+    }
+]
+
+export const thirdClouds: SplashImage[] = [
+    {
+        index: 0,
+        width: '280px',
+        position: ['-36vw', '-200px', 20],
+        deltaZ: -2
+    },
+    {
+        index: 1,
+        width: '220px',
+        position: ['40vw', '320px', -20],
+        deltaZ: 1
+    }
+]
 
 export function Third({ ...props }) {
     return (
