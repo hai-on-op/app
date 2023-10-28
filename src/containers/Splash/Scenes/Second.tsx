@@ -4,6 +4,7 @@ import { type SplashImage, ZoomScene } from './ZoomScene'
 import { BrandedTitle } from '~/components/BrandedTitle'
 import { TOKEN_LOGOS } from '~/utils'
 import { ProgressBar } from '~/components/ProgressBar'
+import HaiFace from '~/components/Icons/HaiFace'
 
 export const secondElves: SplashImage[] = [
     {
@@ -73,12 +74,9 @@ export function Second({ ...props }) {
                                 width={48}
                                 height={48}
                             />
-                            <img
-                                src={TOKEN_LOGOS.HAI}
-                                alt="HAI"
-                                width={48}
-                                height={48}
-                            />
+                            <CenteredFlex>
+                                <HaiFace filled/>
+                            </CenteredFlex>
                         </IconContainer>
                         <Text>
                             <strong>WETH/HAI</strong>&nbsp;#456
@@ -140,14 +138,19 @@ const PairContainer = styled(Flex).attrs(props => ({
 const IconContainer = styled(CenteredFlex)`
     width: 64px;
 
-    & > img {
+    & > * {
         width: 32px;
         height: 32px;
         border-radius: 50%;
         border: ${({ theme }) => theme.border.thin};
+        background-color: ${({ theme }) => theme.colors.greenish};
 
         &:nth-child(2) {
             margin-left: -10px;
         }
+    }
+    & svg {
+        width: 70%;
+        height: auto;
     }
 `

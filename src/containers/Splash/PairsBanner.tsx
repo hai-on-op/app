@@ -2,6 +2,7 @@ import { TOKEN_LOGOS } from '~/utils'
 
 import styled, { keyframes } from 'styled-components'
 import { CenteredFlex, Flex, Text } from '~/styles'
+import HaiFace from '~/components/Icons/HaiFace'
 
 const pairs = Object.entries(TOKEN_LOGOS).reduce((arr, [ticker, logo]) => {
     if (ticker.toLowerCase() !== 'hai') arr.push([ticker, logo])
@@ -23,12 +24,9 @@ export function PairsBanner() {
                                 width={48}
                                 height={48}
                             />
-                            <img
-                                src={TOKEN_LOGOS.HAI}
-                                alt="HAI"
-                                width={48}
-                                height={48}
-                            />
+                            <CenteredFlex>
+                                <HaiFace filled/>
+                            </CenteredFlex>
                         </IconContainer>
                         <Text $fontWeight={900}>{ticker} / HAI</Text>
                     </Pair>
@@ -83,14 +81,19 @@ const Pair = styled(Flex).attrs(props => ({
 const IconContainer = styled(CenteredFlex)`
     width: 64px;
 
-    & > img {
+    & > * {
         width: 32px;
         height: 32px;
         border-radius: 50%;
         border: ${({ theme }) => theme.border.thin};
+        background-color: ${({ theme }) => theme.colors.greenish};
 
         &:nth-child(2) {
             margin-left: -10px;
         }
+    }
+    & svg {
+        width: 70%;
+        height: auto;
     }
 `
