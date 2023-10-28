@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 
+import { clamp } from '~/utils'
+
 import styled from 'styled-components'
 import { CenteredFlex } from '~/styles'
 import { Header } from './Header'
@@ -51,8 +53,8 @@ const elves: SplashImage[] = [
     // Third
     {
         index: 3,
-        width: '260px',
-        position: ['300px', '-200px', -580],
+        width: '240px',
+        position: ['30vw', '-200px', -580],
         rotation: 20,
         zIndex: 801
     },
@@ -104,13 +106,13 @@ const clouds: SplashImage[] = [
     {
         index: 0,
         width: '280px',
-        position: ['-500px', '-200px', -580],
+        position: ['-36vw', '-200px', -580],
         zIndex: 798
     },
     {
         index: 1,
         width: '220px',
-        position: ['420px', '250px', -620],
+        position: ['40vw', '320px', -620],
         zIndex: 801
     }
 ]
@@ -135,6 +137,20 @@ const coins: Omit<SplashImage, 'index'>[] = [
         zIndex: 993
     }
 ]
+
+const update3dElement = (
+    el: HTMLElement,
+    transform: Pick<SplashImage, 'position' | 'rotation' | 'flip'>,
+    z: number
+) => {
+    el.style.transform = `translate(${transform.position[0]}, ${transform.position[1]}) translateZ(${z}px) rotate(${transform.rotation || 0}deg)${transform.flip ? ' scaleX(-1)': ''}`
+
+    if (z < 190 && z > -240) {
+        el.style.display = 'flex'
+        el.style.opacity = clamp(1 + (z + 80) / 160, 0, 1).toString()
+    }
+    else el.style.display = 'none'
+}
 
 export default function Splash() {
     const [zoomContainer, setZoomContainer] = useState<HTMLElement>()
@@ -161,32 +177,17 @@ export default function Splash() {
             elfImages.forEach((elf, i) => {
                 const selectedElf = elves[i]
                 const z = selectedElf.position[2] + progress
-                elf.style.transform = `translate(${selectedElf.position[0]}, ${selectedElf.position[1]}) translateZ(${z}px) rotate(${selectedElf.rotation || 0}deg)${selectedElf.flip ? ' scaleX(-1)': ''}`
-                if (z < 190 && z > -240) elf.style.display = 'flex'
-                else elf.style.display = 'none'
-                if (z < 0) {
-                    elf.style.opacity = Math.max(0, 1 - (-z / 240)).toString()
-                }
+                update3dElement(elf, selectedElf, z)
             })
             cloudImages.forEach((cloud, i) => {
                 const selectedCloud = clouds[i]
                 const z = selectedCloud.position[2] + progress
-                cloud.style.transform = `translate(${selectedCloud.position[0]}, ${selectedCloud.position[1]}) translateZ(${z}px) rotate(${selectedCloud.rotation || 0}deg)${selectedCloud.flip ? ' scaleX(-1)': ''}`
-                if (z < 190 && z > -240) cloud.style.display = 'flex'
-                else cloud.style.display = 'none'
-                if (z < 0) {
-                    cloud.style.opacity = Math.max(0, 1 - (-z / 240)).toString()
-                }
+                update3dElement(cloud, selectedCloud, z)
             })
             coinImages.forEach((coin, i) => {
                 const selectedCoin = coins[i]
                 const z = selectedCoin.position[2] + progress
-                coin.style.transform = `translate(${selectedCoin.position[0]}, ${selectedCoin.position[1]}) translateZ(${z}px) rotate(${selectedCoin.rotation || 0}deg)${selectedCoin.flip ? ' scaleX(-1)': ''}`
-                if (z < 190 && z > -240) coin.style.display = 'flex'
-                else coin.style.display = 'none'
-                if (z < 0) {
-                    coin.style.opacity = Math.max(0, 1 - (-z / 240)).toString()
-                }
+                update3dElement(coin, selectedCoin, z)
             })
         }
         onScroll()

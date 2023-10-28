@@ -17,31 +17,32 @@ export function Third({ ...props }) {
 }
 
 const Container = styled(Flex).attrs(props => ({
-	$justify: 'flex-start',
-	$align: 'center',
-	$gap: 24,
-	...props
+    $justify: 'flex-start',
+    $align: 'center',
+    $gap: 24,
+    ...props
 }))`
-	max-width: 100vw;
+    max-width: 100vw;
     padding: 12px 48px;
-	overflow: auto;
-	scroll-snap-type: x mandatory;
-	scroll-behavior: smooth;
+    margin-top: 100px;
+    overflow: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
 `
 
 const LearnCardContainer = styled(Flex).attrs(props => ({
-	$column: true,
-	$justify: 'space-between',
-	$align: 'flex-start',
+    $column: true,
+    $justify: 'space-between',
+    $align: 'flex-start',
     $shrink: 0,
-	...props
+    ...props
 }))`
-	width: min(calc(100vw - 48px), 400px);
-	height: 500px;
-	border: ${({ theme }) => theme.border.medium};
-	border-radius: 24px;
-	background-color: #f1f1fb77;
-	padding: 48px;
+    width: min(calc(100vw - 48px), 400px);
+    height: 500px;
+    border: ${({ theme }) => theme.border.medium};
+    border-radius: 24px;
+    background-color: #f1f1fb77;
+    padding: 48px;
 `
 
 function LearnCard({ title }: { title: string }) {

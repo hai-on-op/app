@@ -45,3 +45,7 @@ export const transformToEightHourlyRate = (rate: string, decimals: number) => {
 
     return toPercentage(result, 2)
 }
+
+export const clamp = (value: number, min: number, max: number) => {
+    return Math.max(min, Math.min(value, max))
+}
