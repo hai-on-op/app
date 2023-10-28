@@ -18,22 +18,20 @@ export function Header() {
 
     return (
         <Container>
-            <Logo
-                src={haiLogo}
-                alt="HAI"
-                width={701}
-                height={264}
-            />
-            {isLargerThanSmall && (
-                <CenteredFlex
-                    $width="100%"
-                    $gap={48}>
+            <CenteredFlex $gap={48}>
+                <Logo
+                    src={haiLogo}
+                    alt="HAI"
+                    width={701}
+                    height={264}
+                />
+                {isLargerThanSmall && (<>
                     <HeaderLink $fontWeight={900}>Learn</HeaderLink>
                     <HeaderLink $fontWeight={400}>Docs</HeaderLink>
                     <HeaderLink $fontWeight={400}>Community</HeaderLink>
-                </CenteredFlex>
-            )}
-            <CenteredFlex $gap={24}>
+                </>)}
+            </CenteredFlex>
+            <RightSide $gap={36}>
                 {isLargerThanSmall && (<>
                     <Twitter/>
                     <Telegram/>
@@ -60,7 +58,7 @@ export function Header() {
                         )}
                     </DropdownButton>
                 )}
-            </CenteredFlex>
+            </RightSide>
         </Container>
     )
 }
@@ -104,6 +102,12 @@ const HeaderLink = styled(Title).attrs(props => ({
     ...props
 }))``
 
+const RightSide = styled(CenteredFlex)`
+    & svg {
+        fill: black;
+        stroke: none;
+    }
+`
 const DropdownButton = styled(HaiButton)`
     position: relative;
     width: 48px;
