@@ -153,7 +153,8 @@ const Container = styled(Grid).attrs(props => ({
     border: ${({ theme }) => theme.border.medium};
     border-radius: 24px;
     /* background-color: #f1f1fb77; */
-    backdrop-filter: blur(13px);
+    /* backdrop-filter: blur(13px); */
+    background-color: rgba(255,255,255,0.4);
 
     /* &::before {
         content: '';

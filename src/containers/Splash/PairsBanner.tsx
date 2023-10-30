@@ -76,7 +76,8 @@ const Pair = styled(Flex).attrs(props => ({
     padding: 24px;
     border: ${({ theme }) => theme.border.medium};
     border-radius: 16px;
-    backdrop-filter: blur(13px);
+    /* backdrop-filter: blur(13px); */
+    background-color: rgba(255,255,255,0.4);
 `
 const IconContainer = styled(CenteredFlex)`
     width: 64px;
