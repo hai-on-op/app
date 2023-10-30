@@ -14,7 +14,7 @@ import BlockBodyContainer from '~/components/BlockBodyContainer'
 // import ProxyModal from '~/components/Modals/ProxyModal'
 // import BalanceUpdater from '~/services/BalanceUpdater'
 // import WalletModal from '~/components/WalletModal'
-import { useTokenContract, useEthersSigner, useGeb } from '~/hooks'
+import { useTokenContract, useEthersSigner, useGeb, usePlaylist } from '~/hooks'
 import TransactionUpdater from '~/services/TransactionUpdater'
 import AuctionsModal from '~/components/Modals/AuctionsModal'
 import TopUpModal from '~/components/Modals/SafeManagerModal'
@@ -42,6 +42,11 @@ import {
     NETWORK_ID,
     isAddress,
 } from '~/utils'
+
+const playlist = [
+    '/audio/get-hai-together.wav',
+    '/audio/hai-as-fuck.wav'
+]
 
 interface Props {
     children: ReactNode
@@ -255,6 +260,13 @@ const Shared = ({ children, ...rest }: Props) => {
     useEffect(() => {
         networkCheckerCallBack()
     }, [networkCheckerCallBack])
+
+    const { play, pause } = usePlaylist(playlist, 0.2)
+
+    useEffect(() => {
+        if (settingsState.isPlayingMusic) play()
+        else pause()
+    }, [ settingsState.isPlayingMusic, play, pause ])
 
     return (
         <Container>

@@ -1,16 +1,21 @@
 import { useState } from 'react'
 
 import { useMediaQuery, useOutsideClick } from '~/hooks'
+import { useStoreActions, useStoreState } from '~/store'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Title } from '~/styles'
 import Twitter from '~/components/Icons/Twitter'
 import Telegram from '~/components/Icons/Telegram'
+import Music from '~/components/Icons/Music'
 
 import haiLogo from '~/assets/logo.png'
 
 export function Header() {
     const isLargerThanSmall = useMediaQuery('upToSmall')
+
+    const { isPlayingMusic } = useStoreState(state => state.settingsModel)
+    const { setIsPlayingMusic } = useStoreActions(actions => actions.settingsModel)
 
     const [dropdownButton, setDropdownButton] = useState<HTMLElement>()
     const [dropdownActive, setDropdownActive] = useState(false)
@@ -36,6 +41,11 @@ export function Header() {
                     <Twitter/>
                     <Telegram/>
                 </>)}
+                <MusicButton
+                    $variant="unblurred"
+                    onClick={() => setIsPlayingMusic(!isPlayingMusic)}>
+                    <Music/>
+                </MusicButton>
                 <HaiButton
                     $variant="yellowish"
                     $shrink={1}>
@@ -117,6 +127,18 @@ const RightSide = styled(CenteredFlex)`
         stroke: none;
     }
 `
+
+const MusicButton = styled(HaiButton)`
+    width: 48px;
+    min-width: unset;
+    height: 48px;
+    padding: 0px;
+    justify-content: center;
+    & svg {
+        margin-left: -2px;
+    }
+`
+
 const DropdownButton = styled(HaiButton)`
     position: relative;
     width: 48px;
