@@ -29,12 +29,13 @@ const elves: SplashImage[] = [
     },
     {
         index: 2,
-        width: '340px',
+        width: '240px',
         style: {
-            left: '-320px',
+            left: '-280px',
             top: '-20px'
         },
-        rotation: 30,
+        rotation: 18,
+        flip: true,
         zIndex: -1
     }
 ]

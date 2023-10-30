@@ -10,7 +10,7 @@ type FloatingElementsProps = {
 }
 export function FloatingElements({ elves, clouds, coins }: FloatingElementsProps) {
     return (<>
-        {(elves || []).map(({ index, width, style, rotation = 0, zIndex = 0 }, i) => (
+        {(elves || []).map(({ index, width, style, rotation = 0, flip, zIndex = 0 }, i) => (
             <Elf
                 key={i}
                 variant={index}
@@ -18,7 +18,7 @@ export function FloatingElements({ elves, clouds, coins }: FloatingElementsProps
                 animated
                 style={{
                     ...style,
-                    transform: `translateZ(${zIndex * 20}px) rotate(${rotation}deg)`,
+                    transform: `translateZ(${zIndex * 20}px) rotate(${rotation}deg)${flip ? ' scaleX(-1)': ''}`,
                     zIndex
                 }}
             />

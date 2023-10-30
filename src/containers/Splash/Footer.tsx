@@ -63,7 +63,7 @@ export function Footer() {
                 </LinksContainer>
                 <ElfContainer $shrink={0}>
                     <Elf
-                        variant={0}
+                        variant={5}
                         width="100%"
                         animated
                     />
@@ -200,6 +200,7 @@ const ElfContainer = styled(CenteredFlex)`
     max-width: 280px;
     align-self: flex-end;
     flex-shrink: 1;
+    margin-left: -100px;
     & > * {
         left: 48px;
         bottom: -120px;

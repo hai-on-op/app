@@ -6,6 +6,7 @@ import elf2 from '~/assets/splash/elf-2.png'
 import elf3 from '~/assets/splash/elf-3.png'
 import elf4 from '~/assets/splash/elf-4.png'
 import elf5 from '~/assets/splash/elf-5.png'
+import elf6 from '~/assets/splash/elf-6.png'
 
 const elves = [
     {
@@ -20,8 +21,8 @@ const elves = [
     },
     {
         src: elf3,
-        width: 440,
-        height: 409
+        width: 400,
+        height: 580
     },
     {
         src: elf4,
@@ -32,6 +33,11 @@ const elves = [
         src: elf5,
         width: 545,
         height: 545
+    },
+    {
+        src: elf6,
+        width: 400,
+        height: 503
     }
 ]
 
