@@ -10,11 +10,7 @@ export function Footer() {
     return (
         <Container as="footer">
             <Inner>
-                <Flex
-                    $column
-                    $align="flex-start"
-                    $gap={24}
-                    style={{ maxWidth: '400px' }}>
+                <Description>
                     <Logo
                         src={haiLogo}
                         width={701}
@@ -29,14 +25,8 @@ export function Footer() {
                     <Text $fontSize="0.8rem">
                         {`HAI adopts a mechanism familiar to stablecoin protocols; it is minted from over-collateralized debt positions (CDPs). In essence, every HAI token in circulation corresponds to a greater amount of collateral locked by individual protocol users, also known as minters. These minters can generate or annihilate HAI, depending on their collateral's value. This approach aligns with systems employed by other cryptocurrencies like DAI, RAI, and many others.`}
                     </Text>
-                </Flex>
-                <Flex
-                    $width="100%"
-                    $column
-                    $justify="space-between"
-                    $align="stretch"
-                    $gap={48}
-                    style={{ maxWidth: 'min(calc(100vw - 48px), 480px)' }}>
+                </Description>
+                <LinksContainer>
                     <Grid
                         $columns="1fr 1fr min-content"
                         $gap={12}>
@@ -63,14 +53,14 @@ export function Footer() {
                         <EmailInputContainer>
                             <EmailInput
                                 type="email"
-                                placeholder="EMAIL GOES HERE"
+                                placeholder="YOUR EMAIL"
                             />
                             <HaiButton $variant="yellowish">
                                 Subscribe
                             </HaiButton>
                         </EmailInputContainer>
                     </EmailContainer>
-                </Flex>
+                </LinksContainer>
                 <ElfContainer $shrink={0}>
                     <Elf
                         variant={0}
@@ -117,12 +107,42 @@ const Inner = styled(Flex).attrs(props => ({
         gap: 24px;
     `}
 `
+const Description = styled(Flex).attrs(props => ({
+    $column: true,
+    $align: 'flex-start',
+    $gap: 24,
+    ...props
+}))`
+    max-width: 400px;
+
+    ${({ theme }) => theme.mediaWidth.upToMedium`
+        max-width: 480px;
+    `}
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        max-width: 100%;
+    `}
+`
 const Logo = styled.img`
     width: 200px;
     height: auto;
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
         width: 160px;
+    `}
+`
+
+const LinksContainer = styled(Flex).attrs(props => ({
+    $width: '100%',
+    $column: true,
+    $justify: 'space-between',
+    $align: 'stretch',
+    $gap: 48,
+    ...props
+}))`
+    max-width: min(calc(100vw - 48px), 480px);
+    
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        max-width: 100%;
     `}
 `
 const IconContainer = styled(Flex).attrs(props => ({
@@ -149,6 +169,10 @@ const EmailContainer = styled(Flex).attrs(props => ({
     border-radius: 24px;
     border: ${({ theme }) => theme.border.medium};
     background-color: rgba(255,255,255,0.1);
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        width: calc(100% - 64px);
+    `}
 `
 const EmailInputContainer = styled(Flex)`
     width: 100%;
