@@ -61,7 +61,7 @@ const Inner = styled(Flex).attrs(props => ({
 }))`
     position: absolute;
     left: 0%;
-    animation: ${rightToLeft} 20s linear infinite;
+    animation: ${rightToLeft} 40s linear infinite;
     width: ${(240 + 24) * pairs.length}px;
 `
 const Pair = styled(Flex).attrs(props => ({

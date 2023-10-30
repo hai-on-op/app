@@ -34,7 +34,7 @@ const clouds: SplashImage[] = [
         width: '280px',
         style: {
             left: '-160px',
-            top: '-180px'
+            top: '-190px'
         },
         zIndex: -2
     },
@@ -96,7 +96,8 @@ const LearnCardContainer = styled(Flex).attrs(props => ({
     height: 500px;
     border: ${({ theme }) => theme.border.medium};
     border-radius: 24px;
-    background-color: #f1f1fb77;
+    /* background-color: #f1f1fb77; */
+    backdrop-filter: blur(13px);
     padding: 48px;
     scroll-snap-align: center;
 

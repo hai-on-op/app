@@ -49,7 +49,7 @@ export function Footer() {
                         </IconContainer>
                     </Grid>
                     <EmailContainer>
-                        <Text $fontWeight={700}>EMAIL GOES HERE</Text>
+                        <Text $fontWeight={700}>SUBSCRIBE FOR UPDATES</Text>
                         <EmailInputContainer>
                             <EmailInput
                                 type="email"
@@ -222,4 +222,5 @@ const Bottom = styled(Flex).attrs(props => ({
 }))`
     padding: 24px 48px;
     border-top: ${({ theme }) => theme.border.thin};
+    font-size: 0.8rem;
 `

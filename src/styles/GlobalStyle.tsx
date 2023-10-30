@@ -12,7 +12,7 @@ export const GlobalStyle = createGlobalStyle`
         --hai-skyblue: #5fd4f2;
     }
 
-    body::-webkit-scrollbar {
+    /* body::-webkit-scrollbar {
         width: 10px;
         background: transparent;
     }
@@ -29,7 +29,7 @@ export const GlobalStyle = createGlobalStyle`
 
     body::-webkit-scrollbar-thumb:active {
         background-color: rgba(0, 0, 0, 0.2);
-    }
+    } */
 
     body {
         margin: 0;

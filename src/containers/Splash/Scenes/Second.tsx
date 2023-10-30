@@ -144,7 +144,19 @@ const Container = styled(Grid).attrs(props => ({
     padding: 72px 48px;
     border: ${({ theme }) => theme.border.medium};
     border-radius: 24px;
-    background-color: #f1f1fb77;
+    /* background-color: #f1f1fb77; */
+    backdrop-filter: blur(13px);
+
+    /* &::before {
+        content: '';
+        position: absolute;
+        width: 316px;
+        height: 196px;
+        border-radius: 24px;
+        border: ${({ theme }) => theme.border.medium};
+        position: absolute;
+        right: -52px;
+    } */
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
         grid-template-columns: 1fr;
@@ -161,6 +173,7 @@ const PairContainer = styled(Flex).attrs(props => ({
     ...props
 }))`
     width: 320px;
+    height: 200px;
     padding: 24px;
     border: ${({ theme }) => theme.border.medium};
     border-radius: 24px;
