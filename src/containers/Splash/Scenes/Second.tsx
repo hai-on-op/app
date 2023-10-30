@@ -1,8 +1,10 @@
+import { TOKEN_LOGOS } from '~/utils'
+import { useMediaQuery } from '~/hooks'
+
 import styled from 'styled-components'
 import { CenteredFlex, Flex, Grid, HaiButton, Text } from '~/styles'
 import { type SplashImage, ZoomScene } from './ZoomScene'
 import { BrandedTitle } from '~/components/BrandedTitle'
-import { TOKEN_LOGOS } from '~/utils'
 import { ProgressBar } from '~/components/ProgressBar'
 import HaiFace from '~/components/Icons/HaiFace'
 
@@ -48,6 +50,8 @@ export const secondCoins: SplashImage[] = [
 ]
 
 export function Second({ ...props }) {
+    const isLargerThanSmall = useMediaQuery('upToSmall')
+
     return (
         <ZoomScene {...props}>
             <Container>
@@ -56,7 +60,7 @@ export function Second({ ...props }) {
                     $gap={24}>
                     <BrandedTitle
                         textContent="BORROW & EARN ON THE WORLD'S MOST DECENTRALIZED STABLECOIN PROTOCOL"
-                        $fontSize="3rem"
+                        $fontSize={isLargerThanSmall ? '3rem': '2rem'}
                         $lineHeight="1.5"
                     />
                     <Text>
@@ -115,11 +119,18 @@ const Container = styled(Grid).attrs(props => ({
     $align: 'center',
     ...props
 }))`
-    width: 1100px;
+    width: min(1100px, calc(100vw - 48px));
     padding: 72px 48px;
     border: ${({ theme }) => theme.border.medium};
     border-radius: 24px;
     background-color: #f1f1fb77;
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        grid-template-columns: 1fr;
+        grid-gap: 24px;
+        padding: 24px;
+        padding-top: 36px;
+    `}
 `
 const PairContainer = styled(Flex).attrs(props => ({
     $column: true,
@@ -134,6 +145,11 @@ const PairContainer = styled(Flex).attrs(props => ({
     border-radius: 24px;
     background-color: #f1f1fb;
     transform: translateX(100px);
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        width: 100%;
+        transform: none;
+    `}
 `
 const IconContainer = styled(CenteredFlex)`
     width: 64px;

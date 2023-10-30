@@ -60,6 +60,10 @@ const Container = styled(Flex).attrs(props => ({
     overflow: auto;
     scroll-snap-type: x mandatory;
     scroll-behavior: smooth;
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        padding: 12px 24px;
+    `}
 `
 
 const LearnCardContainer = styled(Flex).attrs(props => ({
@@ -75,6 +79,7 @@ const LearnCardContainer = styled(Flex).attrs(props => ({
     border-radius: 24px;
     background-color: #f1f1fb77;
     padding: 48px;
+    scroll-snap-align: center;
 `
 
 function LearnCard({ title }: { title: string }) {

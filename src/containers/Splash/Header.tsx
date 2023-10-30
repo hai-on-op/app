@@ -18,7 +18,7 @@ export function Header() {
 
     return (
         <Container>
-            <CenteredFlex $gap={48}>
+            <CenteredFlex $gap={isLargerThanSmall ? 48: 24}>
                 <Logo
                     src={haiLogo}
                     alt="HAI"
@@ -31,12 +31,16 @@ export function Header() {
                     <HeaderLink $fontWeight={400}>Community</HeaderLink>
                 </>)}
             </CenteredFlex>
-            <RightSide $gap={36}>
+            <RightSide $gap={isLargerThanSmall ? 36: 24}>
                 {isLargerThanSmall && (<>
                     <Twitter/>
                     <Telegram/>
                 </>)}
-                <HaiButton $variant="yellowish">Coming Soon</HaiButton>
+                <HaiButton
+                    $variant="yellowish"
+                    $shrink={1}>
+                    Coming Soon
+                </HaiButton>
                 {!isLargerThanSmall && (
                     <DropdownButton
                         $variant="yellowish"
@@ -86,6 +90,7 @@ const Container = styled(Flex).attrs(props => ({
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
         padding: 24px;
+        height: 96px;
     `}
 
     z-index: 2;
@@ -93,6 +98,10 @@ const Container = styled(Flex).attrs(props => ({
 const Logo = styled.img`
     width: auto;
     height: 60px;
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        height: 40px;
+    `}
 `
 
 const HeaderLink = styled(Title).attrs(props => ({
@@ -133,11 +142,13 @@ const DropdownContainer = styled(Flex).attrs(props => ({
     position: absolute;
     top: calc(100% + 20px);
     right: 0px;
-    width: 240px;
-    background-color: #bfe3f1;
+    width: 280px;
+    padding: 12px 0;
+    background-color: ${({ theme }) => theme.colors.yellowish};
     box-shadow: 0 3px 17px rgba(0,0,0,0.3);
     border: ${({ theme }) => theme.border.medium};
+    border-radius: 24px;
     & > * {
-        padding: 4px 8px;
+        padding: 4px 16px;
     }
 `

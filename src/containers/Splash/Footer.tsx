@@ -111,10 +111,19 @@ const Inner = styled(Flex).attrs(props => ({
         flex-direction: column;
         align-items: center;
     `}
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        padding: 24px;
+        padding-top: 36px;
+        gap: 24px;
+    `}
 `
 const Logo = styled.img`
     width: 200px;
     height: auto;
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        width: 160px;
+    `}
 `
 const IconContainer = styled(Flex).attrs(props => ({
     $justify: 'center',
@@ -177,6 +186,7 @@ const ElfContainer = styled(CenteredFlex)`
         left: auto;
         right: -10vw;
         z-index: 0;
+        margin-top: -24px;
     `}
 `
 

@@ -1,3 +1,5 @@
+import { useMediaQuery } from '~/hooks'
+
 import styled from 'styled-components'
 import { Flex, HaiButton } from '~/styles'
 import { type SplashImage, ZoomScene } from './ZoomScene'
@@ -75,13 +77,15 @@ export const introCoins: SplashImage[] = [
 ]
 
 export function Intro({ ...props }) {
+    const isLargerThanSmall = useMediaQuery('upToSmall')
+
     return (
         <ZoomScene {...props}>
             <Container>
                 <BrandedTitle
                     textContent="GET $HAI ON YOUR OWN SUPPLY."
-                    $fontSize="6rem"
-                    $letterSpacing="1.2rem"
+                    $fontSize={isLargerThanSmall ? '6rem': '3.6rem'}
+                    $letterSpacing={isLargerThanSmall ? '1.2rem': '0.8rem'}
                 />
                 <HaiButton $variant="yellowish">
                     <Swirl/>
@@ -100,5 +104,5 @@ const Container = styled(Flex).attrs(props => ({
     $gap: 48,
     ...props
 }))`
-    max-width: 900px;
+    max-width: min(900px, calc(100vw - 48px));
 `
