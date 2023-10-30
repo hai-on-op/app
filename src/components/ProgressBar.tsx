@@ -18,6 +18,7 @@ const Container = styled.div`
     border: ${({ theme }) => theme.border.medium};
     border-radius: 999px;
     background-color: transparent;
+    overflow: hidden;
 `
 const Bar = styled.div<{ $progress: number }>`
     position: absolute;
@@ -27,6 +28,10 @@ const Bar = styled.div<{ $progress: number }>`
     width: ${({ $progress }) => (Math.min($progress, 1) * 100).toFixed(2)}%;
     border-radius: 999px;
     border: ${({ theme }) => theme.border.medium};
-    background-color: ${({ theme }) => theme.colors.greenish};
+    // green = rgb(192, 243, 187), red = rgb(255, 0, 0)
+    background-color: ${({ $progress }) => `
+        rgb(${255 - (255 - 192) * $progress}, ${243 * $progress}, ${187 * $progress})
+    `};
     margin: -2px;
+    transition: all 1s ease;
 `

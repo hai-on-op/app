@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react'
+
 import { TOKEN_LOGOS } from '~/utils'
 import { useMediaQuery } from '~/hooks'
 
@@ -68,6 +70,12 @@ const coins: SplashImage[] = [
 export function Second({ zIndex }: ZoomSceneProps) {
     const isLargerThanSmall = useMediaQuery('upToSmall')
 
+    const [progress, setProgress] = useState(0.72)
+    useEffect(() => {
+        const int = setInterval(() => setProgress(Math.random()), 3000)
+        return () => clearTimeout(int)
+    }, [])
+
     return (
         <ZoomScene $zIndex={zIndex}>
             <Container>
@@ -107,8 +115,8 @@ export function Second({ zIndex }: ZoomSceneProps) {
                         $columns="min-content 1fr"
                         $align="center"
                         $gap={12}>
-                        <Text>Ratio&nbsp;<strong>72%</strong></Text>
-                        <ProgressBar progress={0.72}/>
+                        <Text>Ratio&nbsp;<strong>{Math.round((progress * 10_000)) / 100}%</strong></Text>
+                        <ProgressBar progress={progress}/>
                     </Grid>
                     <Flex
                         $width="100%"
