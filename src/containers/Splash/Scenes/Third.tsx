@@ -1,50 +1,69 @@
 import styled from 'styled-components'
 import { CenteredFlex, Flex, Text } from '~/styles'
-import { type SplashImage, ZoomScene } from './ZoomScene'
+import { type SplashImage, ZoomScene, type ZoomSceneProps } from './ZoomScene'
 import { BrandedTitle } from '~/components/BrandedTitle'
 import RightArrow from '~/components/Icons/RightArrow'
+import { FloatingElements } from './FloatingElements'
 
-export const thirdElves: SplashImage[] = [
+const elves: SplashImage[] = [
     {
         index: 3,
-        width: '240px',
-        position: ['30vw', '-200px', 20],
+        width: '230px',
+        style: {
+            right: '6vw',
+            top: '-80px'
+        },
         rotation: 20,
-        deltaZ: 1
+        zIndex: 1
     },
     {
         index: 4,
         width: '200px',
-        position: ['-40vw', '36vh', 20],
+        style: {
+            left: '-10px',
+            bottom: '-60px'
+        },
         rotation: -20,
-        deltaZ: 1
+        zIndex: 1
     }
 ]
 
-export const thirdClouds: SplashImage[] = [
+const clouds: SplashImage[] = [
     {
         index: 0,
         width: '280px',
-        position: ['-36vw', '-200px', 20],
-        deltaZ: -2
+        style: {
+            left: '-160px',
+            top: '-180px'
+        },
+        zIndex: -2
     },
     {
         index: 1,
         width: '220px',
-        position: ['40vw', '320px', -20],
-        deltaZ: 1
+        style: {
+            right: '14vw',
+            bottom: '-60px'
+        },
+        zIndex: 1
     }
 ]
 
-export function Third({ ...props }) {
+export function Third({ zIndex }: ZoomSceneProps) {
     return (
-        <ZoomScene {...props}>
+        <ZoomScene
+            $zIndex={zIndex}
+            style={{ marginTop: '100px' }}>
             <Container>
                 <LearnCard title="BORROW HAI TO MULTIPLY YOUR CRYPTO EXPOSURE"/>
                 <LearnCard title="COLLECT MONTHLY REWARDS FOR PROVIDING LIQUIDITY"/>
                 <LearnCard title="ACQUIRE LIQUIDATED ASSETS"/>
                 {/* <LearnCard title="BORROW HAI TO MULTIPLY YOUR CRYPTO EXPOSURE"/> */}
             </Container>
+            <FloatingElements
+                elves={elves}
+                clouds={clouds}
+            />
         </ZoomScene>
     )
 }
@@ -57,7 +76,6 @@ const Container = styled(Flex).attrs(props => ({
 }))`
     max-width: 100vw;
     padding: 12px 48px;
-    margin-top: 100px;
     overflow: auto;
     scroll-snap-type: x mandatory;
     scroll-behavior: smooth;

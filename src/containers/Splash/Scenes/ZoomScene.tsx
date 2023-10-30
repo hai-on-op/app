@@ -4,15 +4,18 @@ import { CenteredFlex } from '~/styles'
 export type SplashImage = {
     index: number
     width: string,
-    position: [ string, string, number ],
+    style?: object,
     rotation?: number,
     flip?: boolean,
-    deltaZ?: number,
     zIndex?: number
 }
 
-export const ZoomScene = styled(CenteredFlex)`
+export type ZoomSceneProps = {
+    zIndex: number
+}
+
+export const ZoomScene = styled(CenteredFlex)<{ $zIndex: number }>`
     position: absolute;
-    width: 100%;
-    height: 100%;
+    transform-style: preserve-3d;
+    z-index: ${({ $zIndex }) => $zIndex};
 `

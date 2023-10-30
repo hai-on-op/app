@@ -2,85 +2,115 @@ import { useMediaQuery } from '~/hooks'
 
 import styled from 'styled-components'
 import { Flex, HaiButton } from '~/styles'
-import { type SplashImage, ZoomScene } from './ZoomScene'
+import { type SplashImage, ZoomScene, type ZoomSceneProps } from './ZoomScene'
 import { BrandedTitle } from '~/components/BrandedTitle'
 import Swirl from '~/components/Icons/Swirl'
 import { PairsBanner } from '../PairsBanner'
+import { FloatingElements } from './FloatingElements'
 
-export const introElves: SplashImage[] = [
+const elves: SplashImage[] = [
     {
         index: 0,
-        width: '240px',
-        position: ['340px', '70px', 40],
-        deltaZ: 2
+        width: 'min(240px, 30vw)',
+        style: {
+            right: '0px',
+            bottom: '-9vh'
+        },
+        zIndex: 2
     },
     {
         index: 1,
         width: '140px',
-        position: ['210px', '-320px', -20],
-        deltaZ: -1
+        style: {
+            right: '15vw',
+            top: '-180px'
+        },
+        zIndex: -1
     },
     {
         index: 2,
-        width: '300px',
-        position: ['-480px', '-100px', 20],
+        width: '340px',
+        style: {
+            left: '-320px',
+            top: '-20px'
+        },
         rotation: 30,
-        deltaZ: 1
+        zIndex: -1
     }
 ]
 
-export const introClouds: SplashImage[] = [
+const clouds: SplashImage[] = [
     {
         index: 0,
-        width: '240px',
-        position: ['-320px', '-240px', -40],
-        deltaZ: -2
+        width: '220px',
+        style: {
+            left: '100px',
+            top: '-140px'
+        },
+        zIndex: -1
     },
     {
         index: 0,
         width: '240px',
-        position: ['540px', '-100px', -40],
+        style: {
+            right: '-240px',
+            bottom: '60px'
+        },
         flip: true,
-        deltaZ: -2
+        zIndex: -2
     },
     {
         index: 0,
         width: '200px',
-        position: ['100px', '240px', -80],
+        style: {
+            right: '25%',
+            bottom: '-160px'
+        },
         flip: true,
-        deltaZ: -4
+        zIndex: -4
     }
 ]
 
-export const introCoins: SplashImage[] = [
+const coins: SplashImage[] = [
     {
         index: 0,
-        width: '180px',
-        position: ['180px', '120px', 0],
+        width: 'min(150px, 25vw)',
+        style: {
+            right: '12vw',
+            bottom: '-60px'
+        },
         rotation: -30,
-        zIndex: 1001
+        zIndex: 1
     },
     {
         index: 0,
-        width: '140px',
-        position: ['410px', '-60px', -40],
+        width: '130px',
+        style: {
+            right: '-40px',
+            bottom: '120px'
+        },
         rotation: 30,
-        zIndex: 996
+        zIndex: -2
     },
     {
         index: 0,
         width: '100px',
-        position: ['560px', '-340px', -80],
+        style: {
+            right: '-100px',
+            top: '-150px'
+        },
         rotation: 0,
-        zIndex: 993
+        zIndex: -4
     }
 ]
 
-export function Intro({ ...props }) {
+export function Intro({ zIndex }: ZoomSceneProps) {
     const isLargerThanSmall = useMediaQuery('upToSmall')
 
     return (
-        <ZoomScene {...props}>
+        <ZoomScene
+            $zIndex={zIndex}
+            style={{ width: '100%', height: '100%' }}>
             <Container>
                 <BrandedTitle
                     textContent="GET $HAI ON YOUR OWN SUPPLY."
@@ -91,6 +121,17 @@ export function Intro({ ...props }) {
                     <Swirl/>
                     SCROLL TO EXPLORE
                 </HaiButton>
+                {/*
+                Note: FloatingElements MUST be a direct child of ZoomScene
+                EXCEPT in this top-level scene as the opacity calculations of
+                the lower scenes will remove the transform-style: preserve-3d,
+                flattening the scene (removing the parallax effect on scroll)
+                */}
+                <FloatingElements
+                    elves={elves}
+                    clouds={clouds}
+                    coins={coins}
+                />
             </Container>
             <PairsBanner/>
         </ZoomScene>
@@ -104,5 +145,9 @@ const Container = styled(Flex).attrs(props => ({
     $gap: 48,
     ...props
 }))`
+    position: relative;
     max-width: min(900px, calc(100vw - 48px));
+    transform-style: preserve-3d;
+    /* again, this only works in this scene becuase
+    the opacity of this container will not change */
 `

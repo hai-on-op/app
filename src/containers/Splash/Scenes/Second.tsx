@@ -3,57 +3,73 @@ import { useMediaQuery } from '~/hooks'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, Grid, HaiButton, Text } from '~/styles'
-import { type SplashImage, ZoomScene } from './ZoomScene'
+import { type SplashImage, ZoomScene, type ZoomSceneProps } from './ZoomScene'
 import { BrandedTitle } from '~/components/BrandedTitle'
 import { ProgressBar } from '~/components/ProgressBar'
 import HaiFace from '~/components/Icons/HaiFace'
+import { FloatingElements } from './FloatingElements'
 
-export const secondElves: SplashImage[] = [
+const elves: SplashImage[] = [
     {
         index: 1,
-        width: '200px',
-        position: ['100px', '-240px', 20],
-        deltaZ: 1
+        width: 'min(200px, 32vw)',
+        style: {
+            right: '30%',
+            top: '-18%'
+        },
+        zIndex: 1
     }
 ]
 
-export const secondClouds: SplashImage[] = [
+const clouds: SplashImage[] = [
     {
         index: 0,
         width: '340px',
-        position: ['-510px', '240px', 20],
-        deltaZ: 1
+        style: {
+            left: '-140px',
+            bottom: '-200px'
+        },
+        zIndex: 1
     },
     {
         index: 1,
         width: '190px',
-        position: ['510px', '220px', 20],
-        deltaZ: 1
+        style: {
+            right: '-50px',
+            bottom: '-70px'
+        },
+        zIndex: 1
     }
 ]
 
-export const secondCoins: SplashImage[] = [
+const coins: SplashImage[] = [
     {
         index: 0,
-        width: '180px',
-        position: ['220px', '120px', 0],
+        width: 'min(180px, 25vw)',
+        style: {
+            right: '24%',
+            bottom: 'clamp(-60px, calc(-240px + 25vw), 0px)'
+        },
         rotation: -20,
-        deltaZ: 1
+        zIndex: 1
     },
     {
         index: 1,
-        width: '120px',
-        position: ['520px', '-240px', 0],
+        width: '100px',
+        style: {
+            top: '-20px',
+            right: '0px'
+        },
         rotation: 20,
-        deltaZ: 1
+        zIndex: 1
     }
 ]
 
-export function Second({ ...props }) {
+export function Second({ zIndex }: ZoomSceneProps) {
     const isLargerThanSmall = useMediaQuery('upToSmall')
 
     return (
-        <ZoomScene {...props}>
+        <ZoomScene $zIndex={zIndex}>
             <Container>
                 <Flex
                     $column
@@ -109,6 +125,11 @@ export function Second({ ...props }) {
                     </Flex>
                 </PairContainer>
             </Container>
+            <FloatingElements
+                elves={elves}
+                clouds={clouds}
+                coins={coins}
+            />
         </ZoomScene>
     )
 }
