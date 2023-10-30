@@ -2,6 +2,7 @@ import styled from 'styled-components'
 import { CenteredFlex, Flex, Text } from '~/styles'
 import { type SplashImage, ZoomScene } from './ZoomScene'
 import { BrandedTitle } from '~/components/BrandedTitle'
+import RightArrow from '~/components/Icons/RightArrow'
 
 export const thirdElves: SplashImage[] = [
     {
@@ -80,6 +81,11 @@ const LearnCardContainer = styled(Flex).attrs(props => ({
     background-color: #f1f1fb77;
     padding: 48px;
     scroll-snap-align: center;
+
+    & svg {
+        width: auto;
+        height: 1rem;
+    }
 `
 
 function LearnCard({ title }: { title: string }) {
@@ -87,10 +93,12 @@ function LearnCard({ title }: { title: string }) {
         <LearnCardContainer>
             <CenteredFlex $gap={12}>
                 <Text
+                    $fontSize="1.2rem"
                     $fontWeight={700}
-                    $letterSpacing="0.1rem">
+                    $letterSpacing="0.35rem">
                     LEARN
                 </Text>
+                <RightArrow/>
             </CenteredFlex>
             <BrandedTitle
                 textContent={title}
