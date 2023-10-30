@@ -7,7 +7,7 @@ import styled from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Title } from '~/styles'
 import Twitter from '~/components/Icons/Twitter'
 import Telegram from '~/components/Icons/Telegram'
-import Music from '~/components/Icons/Music'
+import Sound from '~/components/Icons/Sound'
 
 import haiLogo from '~/assets/logo.png'
 
@@ -44,7 +44,7 @@ export function Header() {
                 <MusicButton
                     $variant="unblurred"
                     onClick={() => setIsPlayingMusic(!isPlayingMusic)}>
-                    <Music/>
+                    <Sound muted={!isPlayingMusic}/>
                 </MusicButton>
                 <HaiButton
                     $variant="yellowish"
@@ -135,6 +135,7 @@ const MusicButton = styled(HaiButton)`
     padding: 0px;
     justify-content: center;
     & svg {
+        width: 25px;
         margin-left: -2px;
     }
 `
