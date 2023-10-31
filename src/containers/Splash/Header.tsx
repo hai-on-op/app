@@ -8,10 +8,12 @@ import { CenteredFlex, Flex, HaiButton, Title } from '~/styles'
 import Twitter from '~/components/Icons/Twitter'
 import Telegram from '~/components/Icons/Telegram'
 import Sound from '~/components/Icons/Sound'
+import HaiFace from '~/components/Icons/HaiFace'
 
 import haiLogo from '~/assets/logo.png'
 
 export function Header() {
+    const isLargerThanExtraSmall = useMediaQuery('upToExtraSmall')
     const isLargerThanSmall = useMediaQuery('upToSmall')
 
     const { isPlayingMusic } = useStoreState(state => state.settingsModel)
@@ -24,19 +26,24 @@ export function Header() {
     return (
         <Container>
             <CenteredFlex $gap={isLargerThanSmall ? 48: 24}>
-                <Logo
-                    src={haiLogo}
-                    alt="HAI"
-                    width={701}
-                    height={264}
-                />
+                {isLargerThanExtraSmall
+                    ? (
+                        <Logo
+                            src={haiLogo}
+                            alt="HAI"
+                            width={701}
+                            height={264}
+                        />
+                    )
+                    : <HaiFace filled/>
+                }
                 {isLargerThanSmall && (<>
                     <HeaderLink $fontWeight={900}>Learn</HeaderLink>
                     <HeaderLink $fontWeight={400}>Docs</HeaderLink>
                     <HeaderLink $fontWeight={400}>Community</HeaderLink>
                 </>)}
             </CenteredFlex>
-            <RightSide $gap={isLargerThanSmall ? 36: 24}>
+            <RightSide>
                 {isLargerThanSmall && (<>
                     <Twitter/>
                     <Telegram/>
@@ -83,7 +90,6 @@ const Container = styled(Flex).attrs(props => ({
     $gap: 24,
     ...props
 }))`
-    justify-content: space-between;
     position: fixed;
     top: 0px;
     left: 0px;
@@ -92,15 +98,18 @@ const Container = styled(Flex).attrs(props => ({
     padding: 42px;
 
     & svg {
-        stroke: black;
-        stroke-width: 1.5px;
-        width: auto;
-        height: 24px;
+        width: 64px;
+        height: auto;
     }
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
         padding: 24px;
         height: 96px;
+    `}
+    ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+        padding: 12px;
+        height: 80px;
+        gap: 12px;
     `}
 
     z-index: 2;
@@ -122,10 +131,21 @@ const HeaderLink = styled(Title).attrs(props => ({
 }))``
 
 const RightSide = styled(CenteredFlex)`
+    gap: 36px;
+
     & svg {
         fill: black;
         stroke: none;
+        width: auto;
+        height: 24px;
     }
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        gap: 24px;
+    `}
+    ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+        gap: 12px;
+    `}
 `
 
 const MusicButton = styled(HaiButton)`

@@ -69,6 +69,7 @@ const coins: SplashImage[] = [
 ]
 
 export function Second({ zIndex }: ZoomSceneProps) {
+    const isLargerThanExtraSmall = useMediaQuery('upToExtraSmall')
     const isLargerThanSmall = useMediaQuery('upToSmall')
 
     const [progress, setProgress] = useState(0.72)
@@ -82,10 +83,15 @@ export function Second({ zIndex }: ZoomSceneProps) {
             <Container>
                 <Flex
                     $column
-                    $gap={24}>
+                    $gap={isLargerThanExtraSmall ? 24: 12}>
                     <BrandedTitle
                         textContent="BORROW & EARN ON THE WORLD'S MOST DECENTRALIZED STABLECOIN PROTOCOL"
-                        $fontSize={isLargerThanSmall ? '3rem': '2rem'}
+                        $fontSize={isLargerThanSmall
+                            ? '3rem'
+                            : isLargerThanExtraSmall
+                                ? '2rem'
+                                : '1.6rem'
+                        }
                         $lineHeight="1.5"
                     />
                     <Text>
@@ -174,17 +180,21 @@ const Container = styled(Grid).attrs(props => ({
         padding: 24px;
         padding-top: 36px;
     `}
+    ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+        width: calc(100vw - 24px);
+        padding-top: 24px;
+    `}
 `
 const PairContainer = styled(Flex).attrs(props => ({
     $column: true,
     $justify: 'space-between',
     $align: 'flex-start',
-    $gap: 24,
     ...props
 }))`
     width: 320px;
     height: 200px;
     padding: 24px;
+    gap: 24px;
     border: ${({ theme }) => theme.border.medium};
     border-radius: 24px;
     background-color: #f1f1fb;
@@ -193,6 +203,9 @@ const PairContainer = styled(Flex).attrs(props => ({
     ${({ theme }) => theme.mediaWidth.upToSmall`
         width: 100%;
         transform: none;
+    `}
+    ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+        gap: 12px;
     `}
 `
 const IconContainer = styled(CenteredFlex)`

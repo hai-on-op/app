@@ -1,3 +1,5 @@
+import { useMediaQuery } from '~/hooks'
+
 import styled from 'styled-components'
 import { CenteredFlex, Flex, Text } from '~/styles'
 import { type SplashImage, ZoomScene, type ZoomSceneProps } from './ZoomScene'
@@ -8,7 +10,7 @@ import { FloatingElements } from './FloatingElements'
 const elves: SplashImage[] = [
     {
         index: 3,
-        width: '230px',
+        width: 'min(230px, 50vw)',
         style: {
             right: '6vw',
             top: '-80px'
@@ -21,7 +23,7 @@ const elves: SplashImage[] = [
         width: '200px',
         style: {
             left: '-10px',
-            bottom: '-60px'
+            bottom: '-80px'
         },
         rotation: -20,
         zIndex: 1
@@ -40,7 +42,7 @@ const clouds: SplashImage[] = [
     },
     {
         index: 1,
-        width: '220px',
+        width: 'min(220px, 50vw)',
         style: {
             right: '14vw',
             bottom: '-60px'
@@ -106,9 +108,16 @@ const LearnCardContainer = styled(Flex).attrs(props => ({
         width: auto;
         height: 1rem;
     }
+
+    ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+        padding: 36px;
+        height: 420px;
+    `}
 `
 
 function LearnCard({ title }: { title: string }) {
+    const isLargerThanExtraSmall = useMediaQuery('upToExtraSmall')
+
     return (
         <LearnCardContainer>
             <CenteredFlex $gap={12}>
@@ -122,7 +131,7 @@ function LearnCard({ title }: { title: string }) {
             </CenteredFlex>
             <BrandedTitle
                 textContent={title}
-                $fontSize="2.5rem"
+                $fontSize={isLargerThanExtraSmall ? '2.5rem': '2rem'}
                 $lineHeight="3.6rem"
             />
         </LearnCardContainer>

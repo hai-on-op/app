@@ -107,6 +107,7 @@ const coins: SplashImage[] = [
 ]
 
 export function Intro({ zIndex }: ZoomSceneProps) {
+    const isLargerThanExtraSmall = useMediaQuery('upToExtraSmall')
     const isLargerThanSmall = useMediaQuery('upToSmall')
 
     return (
@@ -116,8 +117,18 @@ export function Intro({ zIndex }: ZoomSceneProps) {
             <Container>
                 <BrandedTitle
                     textContent="GET $HAI ON YOUR OWN SUPPLY."
-                    $fontSize={isLargerThanSmall ? '6rem': '3.6rem'}
-                    $letterSpacing={isLargerThanSmall ? '1.2rem': '0.8rem'}
+                    $fontSize={isLargerThanSmall
+                        ? '6rem'
+                        : isLargerThanExtraSmall
+                            ? '3.6rem'
+                            : '3rem'
+                    }
+                    $letterSpacing={isLargerThanSmall
+                        ? '1.2rem'
+                        : isLargerThanExtraSmall
+                            ? '0.8rem'
+                            : '0.5rem'
+                    }
                 />
                 <HaiButton $variant="yellowish">
                     <Swirl/>
@@ -149,7 +160,11 @@ const Container = styled(Flex).attrs(props => ({
 }))`
     position: relative;
     max-width: min(900px, calc(100vw - 48px));
-    transform-style: preserve-3d;
     /* again, this only works in this scene becuase
     the opacity of this container will not change */
+    transform-style: preserve-3d;
+    
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        gap: 24px;
+    `}
 `

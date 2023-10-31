@@ -52,6 +52,11 @@ const Container = styled(Flex).attrs(props => ({
     bottom: 24px;
     height: 80px;
     overflow: visible;
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        height: 60px;
+        bottom: 12px;
+    `}
 `
 const Inner = styled(Flex).attrs(props => ({
     $justify: 'flex-start',
@@ -78,6 +83,11 @@ const Pair = styled(Flex).attrs(props => ({
     border-radius: 16px;
     /* backdrop-filter: blur(13px); */
     background-color: rgba(255,255,255,0.4);
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        padding: 12px;
+        height: 60px;
+    `}
 `
 const IconContainer = styled(CenteredFlex)`
     width: 64px;

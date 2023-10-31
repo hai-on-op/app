@@ -88,7 +88,7 @@ const Container = styled.div`
 const ScrollTarget = styled.div<{ $top?: number | string }>`
     position: absolute;
     width: 100%;
-    height: 0px;
+    height: 1px;
     scroll-snap-align: start;
     top: ${({ $top = '0px' }) => (typeof $top === 'string' ? $top: `${$top}px`)};
 `
