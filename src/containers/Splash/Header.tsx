@@ -38,7 +38,7 @@ export function Header() {
                     : <HaiFace filled/>
                 }
                 {isLargerThanSmall && (<>
-                    <HeaderLink $fontWeight={900}>Learn</HeaderLink>
+                    <HeaderLink $fontWeight={400}>Learn</HeaderLink>
                     <HeaderLink $fontWeight={400}>Docs</HeaderLink>
                     <HeaderLink $fontWeight={400}>Community</HeaderLink>
                 </>)}
