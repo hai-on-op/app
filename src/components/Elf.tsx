@@ -16,8 +16,8 @@ const elves = [
     },
     {
         src: elf2,
-        width: 571,
-        height: 528
+        width: 420,
+        height: 476
     },
     {
         src: elf3,

@@ -25,6 +25,7 @@ const elves: SplashImage[] = [
             right: '15vw',
             top: '-180px'
         },
+        rotation: -30,
         zIndex: -1
     },
     {
