@@ -70,5 +70,6 @@ export const ElfImage = styled.img<{ $width?: string, $animated?: boolean, $anim
     position: absolute;
     width: ${({ $width = 'auto' }) => $width};
     height: auto;
+    pointer-events: none;
     ${({ $animated, $animDuration }) => $animated && css`animation: ${hueAnim} ${$animDuration.toFixed(2)}s linear infinite;`}
 `

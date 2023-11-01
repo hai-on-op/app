@@ -36,4 +36,5 @@ export const CloudImage = styled.img<{ $width?: string }>`
     position: absolute;
     width: ${({ $width = 'auto' }) => $width};
     height: auto;
+    pointer-events: none;
 `

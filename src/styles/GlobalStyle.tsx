@@ -106,12 +106,6 @@ export const GlobalStyle = createGlobalStyle`
         }
     }
 
-    body, html {
-        scroll-snap-type: y mandatory;
-        scroll-behavior: smooth;
-        -webkit-overflow-scrolling: touch;
-    }
-
     * {
         box-sizing: border-box;
     }

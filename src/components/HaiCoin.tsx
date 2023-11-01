@@ -43,6 +43,7 @@ export const HaiCoinImage = styled(CenteredFlex)<{ $width?: string }>`
     position: absolute;
     width: ${({ $width = 'auto' }) => $width};
     height: ${({ $width = 'auto' }) => $width};
+    pointer-events: none;
 `
 const Face = styled(CenteredFlex)`
     position: absolute;
