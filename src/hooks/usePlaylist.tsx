@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { useStoreActions } from '~/store'
+
 export function usePlaylist(songs: string[], volume = 1) {
+    const { settingsModel } = useStoreActions(actions => actions)
+
     const [ audio ] = useState<HTMLAudioElement>(() => new Audio())
     const [ index, setIndex ] = useState(0)
     const [ isPlaying, setIsPlaying ] = useState(false)
@@ -13,6 +17,7 @@ export function usePlaylist(songs: string[], volume = 1) {
             })
             .catch(() => {
                 setIsPlaying(false)
+                settingsModel.setIsPlayingMusic(false)
                 console.warn('failed to play audio')
             })
     }, [audio])
