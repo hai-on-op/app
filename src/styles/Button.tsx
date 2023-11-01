@@ -40,16 +40,16 @@ export const HaiButton = styled.button.attrs(props => ({
     ...props
 }))<HaiButtonProps>`
     ${FlexStyle}
-    pointer-events: ${({ disabled }) => (disabled ? 'none' : 'inherit')};
+    pointer-events: ${({ disabled }) => (disabled ? 'none': 'all')};
     outline: none;
-    cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
+    cursor: ${({ disabled }) => (disabled ? 'not-allowed': 'pointer')};
     border: ${({ theme, $unbordered }) => $unbordered ? 'none': theme.border.medium};
     box-shadow: none;
     line-height: 24px;
     font-size: ${(props) => props.theme.font.small};
     font-weight: 600;
     white-space: nowrap;
-    padding: 8px 30px;
+    padding: 8px 16px;
     color: black;
     ${({ theme, $variant = 'default' }) => ($variant === 'default'
         ? css`

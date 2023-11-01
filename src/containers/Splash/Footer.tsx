@@ -18,11 +18,11 @@ export function Footer() {
                         alt="HAI"
                     />
                     <Text
-                        $fontSize="0.8rem"
+                        $fontSize="0.8em"
                         $fontWeight={700}>
                         HAI is a multi-collateral, over-collateralized CDP-minted stablecoin, using a PID controller to induce stability.
                     </Text>
-                    <Text $fontSize="0.8rem">
+                    <Text $fontSize="0.8em">
                         {`HAI adopts a mechanism familiar to stablecoin protocols; it is minted from over-collateralized debt positions (CDPs). In essence, every HAI token in circulation corresponds to a greater amount of collateral locked by individual protocol users, also known as minters. These minters can generate or annihilate HAI, depending on their collateral's value. This approach aligns with systems employed by other cryptocurrencies like DAI, RAI, and many others.`}
                     </Text>
                 </Description>
@@ -120,6 +120,7 @@ const Description = styled(Flex).attrs(props => ({
     `}
     ${({ theme }) => theme.mediaWidth.upToSmall`
         max-width: 100%;
+        font-size: 0.8rem;
     `}
 `
 const Logo = styled.img`
@@ -143,6 +144,7 @@ const LinksContainer = styled(Flex).attrs(props => ({
     
     ${({ theme }) => theme.mediaWidth.upToSmall`
         max-width: 100%;
+        gap: 24px;
     `}
 `
 const IconContainer = styled(Flex).attrs(props => ({
@@ -169,10 +171,6 @@ const EmailContainer = styled(Flex).attrs(props => ({
     border-radius: 24px;
     border: ${({ theme }) => theme.border.medium};
     background-color: rgba(255,255,255,0.1);
-
-    ${({ theme }) => theme.mediaWidth.upToSmall`
-        width: calc(100% - 64px);
-    `}
 `
 const EmailInputContainer = styled(Flex)`
     width: 100%;

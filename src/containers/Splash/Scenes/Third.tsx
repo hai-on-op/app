@@ -120,20 +120,22 @@ function LearnCard({ title }: { title: string }) {
 
     return (
         <LearnCardContainer>
-            <CenteredFlex $gap={12}>
-                <Text
-                    $fontSize="1.2rem"
-                    $fontWeight={700}
-                    $letterSpacing="0.35rem">
-                    LEARN
-                </Text>
-                <RightArrow/>
-            </CenteredFlex>
             <BrandedTitle
                 textContent={title}
                 $fontSize={isLargerThanExtraSmall ? '2.5rem': '2rem'}
                 $lineHeight="3.6rem"
             />
+            <CenteredFlex
+                $gap={12}
+                style={{ cursor: 'pointer' }}>
+                <Text
+                    $fontSize="1.2rem"
+                    $fontWeight={700}
+                    $letterSpacing="0.35rem">
+                    LEARN MORE
+                </Text>
+                <RightArrow/>
+            </CenteredFlex>
         </LearnCardContainer>
     )
 }

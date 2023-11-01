@@ -58,7 +58,7 @@ const coins: SplashImage[] = [
     },
     {
         index: 1,
-        width: '100px',
+        width: 'min(100px, 20vw)',
         style: {
             top: '-20px',
             right: '0px'
@@ -92,7 +92,7 @@ export function Second({ zIndex }: ZoomSceneProps) {
                                 ? '2rem'
                                 : '1.6rem'
                         }
-                        $lineHeight="1.5"
+                        $lineHeight={isLargerThanExtraSmall ? '1.5': '1.25'}
                     />
                     <Text>
                         Amplify your portfolio with <strong>$HAI</strong>, take control with <strong>$KITE</strong>
@@ -192,7 +192,6 @@ const PairContainer = styled(Flex).attrs(props => ({
     ...props
 }))`
     width: 320px;
-    height: 200px;
     padding: 24px;
     gap: 24px;
     border: ${({ theme }) => theme.border.medium};
@@ -205,6 +204,7 @@ const PairContainer = styled(Flex).attrs(props => ({
         transform: none;
     `}
     ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+        padding: 12px;
         gap: 12px;
     `}
 `
