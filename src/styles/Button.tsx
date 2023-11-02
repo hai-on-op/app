@@ -53,7 +53,7 @@ export const HaiButton = styled.button.attrs(props => ({
     color: black;
     ${({ theme, $variant = 'default' }) => ($variant === 'default'
         ? css`
-            backdrop-filter: ${(theme as any).blur || '13px'};
+            backdrop-filter: blur(13px);
             background: transparent;
         `
         : css`background: ${(theme.colors as any)[ $variant ] || 'transparent'};`
