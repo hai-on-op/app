@@ -85,6 +85,9 @@ const Container = styled(Flex).attrs(props => ({
     overflow: hidden;
     background: linear-gradient(90deg, #F2D86A 0%, #FFC3AB 100%);
     border-top: ${({ theme }) => theme.border.medium};
+    margin-top: 80vh;
+    scroll-snap-align: end;
+
     z-index: 3;
 `
 
@@ -107,8 +110,8 @@ const Inner = styled(Flex).attrs(props => ({
         gap: 24px;
     `}
 `
-const Description = styled(Flex).attrs(props => ({
-    $column: true,
+const Description = styled(Grid).attrs(props => ({
+    $columns: '1fr',
     $align: 'flex-start',
     $gap: 24,
     ...props
@@ -122,6 +125,12 @@ const Description = styled(Flex).attrs(props => ({
         max-width: 100%;
         font-size: 0.8rem;
     `}
+    ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+        grid-template-columns: min-content 1fr;
+        & > *:last-child {
+            grid-column: 1 / -1;
+        }
+    `}
 `
 const Logo = styled.img`
     width: 200px;
@@ -129,6 +138,9 @@ const Logo = styled.img`
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
         width: 160px;
+    `}
+    ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+        width: min(100px, 25vw);
     `}
 `
 
@@ -171,6 +183,11 @@ const EmailContainer = styled(Flex).attrs(props => ({
     border-radius: 24px;
     border: ${({ theme }) => theme.border.medium};
     background-color: rgba(255,255,255,0.1);
+
+    ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+        padding: 16px;
+        gap: 12px;
+    `}
 `
 const EmailInputContainer = styled(Flex)`
     width: 100%;
@@ -222,4 +239,8 @@ const Bottom = styled(Flex).attrs(props => ({
     padding: 24px 48px;
     border-top: ${({ theme }) => theme.border.thin};
     font-size: 0.8rem;
+
+    ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+        padding: 12px;
+    `}
 `

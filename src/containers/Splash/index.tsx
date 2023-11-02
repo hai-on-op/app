@@ -16,9 +16,7 @@ export default function Splash() {
     useEffect(() => {
         if (!container || !zoomContainer) return
 
-        document.body.style.overflow = 'hidden'
-        let isScrollingToTop = false
-        const onTopLevelScroll = (e: any) => {
+        const onTopLevelScroll = (e: WheelEvent | { deltaY: number }) => {
             // if not at bottom of container let scroll event pass through
             const { height } = container.getBoundingClientRect()
             if (container.scrollTop < container.scrollHeight - height - 10) {
@@ -30,19 +28,7 @@ export default function Splash() {
             // allow scroll down to footer
             if (e.deltaY >= 0) return
 
-            // if not fully scrolled up, scroll up
-            if (window.scrollY > 0) {
-                if (isScrollingToTop) return
-                window.scrollTo({
-                    top: 0,
-                    behavior: 'smooth'
-                })
-                isScrollingToTop = true
-            }
-            else {
-                zoomContainer.style.pointerEvents = 'none'
-                isScrollingToTop = false
-            }
+            zoomContainer.style.pointerEvents = 'none'
         }
         zoomContainer.addEventListener('wheel', onTopLevelScroll, false)
 
@@ -53,9 +39,7 @@ export default function Splash() {
                 x: e.touches[0].clientX - touch.x,
                 y: e.touches[0].clientY - touch.y
             }
-            if (Math.abs(delta.y) > 10 && Math.abs(delta.y) > Math.abs(delta.x)) {
-                onTopLevelScroll({ deltaY: delta.y })
-            }
+            onTopLevelScroll({ deltaY: delta.y })
         }
         const onTouchStart = (e: TouchEvent) => {
             touch.x = e.touches[0].clientX
@@ -69,8 +53,12 @@ export default function Splash() {
         const onScroll = () => {
             zoomContainer.style.pointerEvents = 'none'
             const progress = 300 * container.scrollTop / window.innerHeight
-            if (progress >= 600) Object.assign(document.body.style, { overflow: null })
-            else document.body.style.overflow = 'hidden'
+            if (progress > 600) {
+                zoomContainer.style.top = `${-100 * (progress - 600) / 300}vh`
+                zoomContainer.style.pointerEvents = 'all'
+                return
+            }
+            zoomContainer.style.top = "0px"
 
             scenes.forEach((scene, i) => {
                 const z = -300 * i + progress
@@ -90,7 +78,6 @@ export default function Splash() {
             zoomContainer.removeEventListener('touchstart', onTouchStart)
             zoomContainer.removeEventListener('touchmove', onTouchMove)
             container.removeEventListener('scroll', onScroll)
-            Object.assign(document.body.style, { overflow: null })
         }
     }, [container, zoomContainer])
 
@@ -107,19 +94,19 @@ export default function Splash() {
             />
         </Background>
         <Header/>
-        <ZoomContainer ref={setZoomContainer as any}>
-            <Intro zIndex={1000}/>
-            <Second zIndex={900}/>
-            <Third zIndex={800}/>
-        </ZoomContainer>
         <Container ref={setContainer as any}>
+            <ZoomContainer ref={setZoomContainer as any}>
+                <Intro zIndex={1000}/>
+                <Second zIndex={900}/>
+                <Third zIndex={800}/>
+            </ZoomContainer>
             {/* scroll targets for scroll snapping */}
             <ScrollTarget/>
             <ScrollTarget/>
             <ScrollTarget/>
-            {/* <ScrollTarget $height="200vh"/> */}
+            {/* <ScrollTarget/> */}
+            <Footer/>
         </Container>
-        <Footer/>
     </>)
 }
 
@@ -161,7 +148,7 @@ const ScrollTarget = styled.div<{ $height?: string }>`
 `
 
 const ZoomContainer = styled(CenteredFlex)`
-    position: absolute;
+    position: fixed;
     top: 0px;
     left: 0px;
     right: 0px;
