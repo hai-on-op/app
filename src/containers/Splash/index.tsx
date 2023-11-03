@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 
 import styled from 'styled-components'
 import { CenteredFlex } from '~/styles'
-import { Header } from './Header'
 import { ZoomScene } from './Scenes/ZoomScene'
 import { Intro } from './Scenes/Intro'
 import { Second } from './Scenes/Second'
@@ -81,19 +80,7 @@ export default function Splash() {
         }
     }, [container, zoomContainer])
 
-    return (<>
-        <Background>
-            <video
-                src="/assets/tie-dye-reduced.mov"
-                width={1920}
-                height={1072}
-                muted
-				autoPlay
-				playsInline
-                loop
-            />
-        </Background>
-        <Header/>
+    return (
         <Container ref={setContainer as any}>
             <ZoomContainer ref={setZoomContainer as any}>
                 <Intro zIndex={1000}/>
@@ -107,26 +94,8 @@ export default function Splash() {
             {/* <ScrollTarget/> */}
             <Footer/>
         </Container>
-    </>)
+    )
 }
-
-const Background = styled(CenteredFlex)`
-    position: fixed;
-    top: 0px;
-    left: 0px;
-    right: 0px;
-    bottom: 0px;
-    background-color: white;
-
-    & video {
-        min-width: 100%;
-        min-height: 100%;
-        object-fit: cover;
-        opacity: 0.5;
-    }
-
-    z-index: 0;
-`
 
 const Container = styled.div`
     /* height: calc(300vh + 420px); */

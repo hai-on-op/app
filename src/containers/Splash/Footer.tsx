@@ -83,7 +83,7 @@ const Container = styled(Flex).attrs(props => ({
 }))`
     position: relative;
     overflow: hidden;
-    background: linear-gradient(90deg, #F2D86A 0%, #FFC3AB 100%);
+    background: ${({ theme }) => theme.colors.gradient};
     border-top: ${({ theme }) => theme.border.medium};
     margin-top: 80vh;
     scroll-snap-align: end;

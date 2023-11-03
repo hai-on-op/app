@@ -30,6 +30,7 @@ import AlertLabel from '~/components/AlertLabel'
 import { usePrevious } from '~/hooks'
 import SideMenu from '~/components/SideMenu'
 import Navbar from '~/components/Navbar'
+import { Header } from './Header'
 import {
     ETHERSCAN_PREFIXES,
     blockedAddresses,
@@ -42,6 +43,7 @@ import {
     NETWORK_ID,
     isAddress,
 } from '~/utils'
+import { CenteredFlex } from '~/styles'
 
 const playlist = [
     '/audio/get-hai-together.wav',
@@ -270,6 +272,18 @@ const Shared = ({ children, ...rest }: Props) => {
 
     return (
         <Container>
+            <Background>
+                <video
+                    src="/assets/tie-dye-reduced.mov"
+                    width={1920}
+                    height={1072}
+                    muted
+                    autoPlay
+                    playsInline
+                    loop
+                />
+            </Background>
+            <Header tickerActive={!isSplash}/>
             {settingsState.blockBody ? <BlockBodyContainer /> : null}
             <SideMenu />
             {/* <WalletModal /> */}
@@ -345,6 +359,24 @@ const Container = styled.div`
             }
         }
     }
+`
+
+const Background = styled(CenteredFlex)`
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    background-color: white;
+
+    & video {
+        min-width: 100%;
+        min-height: 100%;
+        object-fit: cover;
+        opacity: 0.5;
+    }
+
+    z-index: 0;
 `
 
 const Content = styled.div``
