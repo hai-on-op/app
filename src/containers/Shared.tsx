@@ -29,7 +29,6 @@ import ToastPayload from '~/components/ToastPayload'
 import AlertLabel from '~/components/AlertLabel'
 import { usePrevious } from '~/hooks'
 import SideMenu from '~/components/SideMenu'
-import Navbar from '~/components/Navbar'
 import { Header } from './Header'
 import {
     ETHERSCAN_PREFIXES,
@@ -300,11 +299,6 @@ const Shared = ({ children, ...rest }: Props) => {
             <LiquidateSafeModal />
             {!isSplash && <WaitingModal />}
             <TopUpModal />
-            {!isSplash && (
-                <EmptyDiv>
-                    <Navbar />
-                </EmptyDiv>
-            )}
 
             {SYSTEM_STATUS && SYSTEM_STATUS.toLowerCase() === 'shutdown' ? (
                 <AlertContainer>
@@ -380,7 +374,6 @@ const Background = styled(CenteredFlex)`
 `
 
 const Content = styled.div``
-const EmptyDiv = styled.div``
 
 const AlertContainer = styled.div`
     padding: 0 20px;

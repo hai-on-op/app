@@ -46,8 +46,8 @@ const Title = styled.h1`
     font-size: 50px;
     color: ${(props) => props.theme.colors.primary};
     ${({ theme }) => theme.mediaWidth.upToSmall`
-   font-size:35px;
-   `}
+        font-size:35px;
+    `}
 `
 
 const InnterContent = styled.div`
@@ -68,35 +68,34 @@ const InnterContent = styled.div`
             color: ${(props) => props.theme.colors.primary};
             a {
                 ${ExternalLinkArrow}
-                display:inline;
+                display: inline;
                 font-size: calc(0.44vw + 0.44vh + 0.5vmin);
                 word-break: break-all;
             }
             ${({ theme }) => theme.mediaWidth.upToSmall`
-      font-size: 16px;
-      a{
-        font-size: 16px;
-      }
-    `}
+                font-size: 16px;
+                a {
+                    font-size: 16px;
+                }
+            `}
         }
     }
-    p,
-    li {
+    
+    p, li {
         color: ${(props) => props.theme.colors.secondary};
         font-weight: 600;
         font-size: calc(0.46vw + 0.46vh + 0.5vmin);
         ${({ theme }) => theme.mediaWidth.upToSmall`
-    font-size:15px;
-  `}
+            font-size:15px;
+        `}
         a {
             ${ExternalLinkArrow}
-            display:inline;
+            display: inline;
             font-size: calc(0.44vw + 0.44vh + 0.5vmin);
             word-break: break-all;
             ${({ theme }) => theme.mediaWidth.upToSmall`
-      font-size: 15px;
-     
-    `}
+                font-size: 15px;
+            `}
         }
     }
 
@@ -107,9 +106,9 @@ const InnterContent = styled.div`
         margin-top: 60px;
         margin-bottom: 20px;
         ${({ theme }) => theme.mediaWidth.upToSmall`
-  font-size:20px;
-  margin-bottom:20px;
-  `}
+            font-size:20px;
+            margin-bottom:20px;
+        `}
     }
 
     h5 {
@@ -120,16 +119,16 @@ const InnterContent = styled.div`
         font-weight: 600;
         a {
             ${ExternalLinkArrow}
-            display:inline;
+            display: inline;
             font-size: calc(0.44vw + 0.44vh + 0.5vmin);
             word-break: break-all;
         }
         ${({ theme }) => theme.mediaWidth.upToSmall`
-      font-size: 17px;
-      a{
-        font-size: 17px;
-      }
-    `}
+            font-size: 17px;
+            a {
+                font-size: 17px;
+            }
+        `}
     }
 
     h6 {
@@ -139,16 +138,16 @@ const InnterContent = styled.div`
 
         a {
             ${ExternalLinkArrow}
-            display:inline;
+            display: inline;
             font-size: calc(0.48vw + 0.48vh + 0.5vmin);
             word-break: break-all;
         }
         ${({ theme }) => theme.mediaWidth.upToSmall`
-      font-size: 16px;
-      a{
-        font-size: 16px;
-      }
-    `}
+            font-size: 16px;
+            a {
+                font-size: 16px;
+            }
+        `}
     }
 `
 

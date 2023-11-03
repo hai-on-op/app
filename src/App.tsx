@@ -38,14 +38,14 @@ const App = () => {
                                 <Switch>
                                     <Route exact strict component={Splash} path={'/'} />
                                     <Route exact strict component={Privacy} path={'/privacy'} />
-                                    <Route exact strict component={Auctions} path={'/auctions'} />
+                                    {/* <Route exact strict component={Auctions} path={'/auctions'} />
                                     <Route exact strict component={Analytics} path={'/analytics'} />
                                     <Route exact strict component={CreateSafe} path={'/safes/create'} />
                                     <Route exact strict component={SafeDetails} path={'/safes/:id/deposit'} />
                                     <Route exact strict component={SafeDetails} path={'/safes/:id/withdraw'} />
                                     <Route exact component={SafeDetails} path={'/safes/:id'} />
                                     <Route exact strict component={Safes} path={'/safes'} />
-                                    <Route exact strict component={Safes} path={'/:address'} />
+                                    <Route exact strict component={Safes} path={'/:address'} /> */}
 
                                     <Redirect from="*" to="/" />
                                 </Switch>
