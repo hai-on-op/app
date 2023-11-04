@@ -24,6 +24,7 @@ export function PassLink({
             to={href}
             style={style}
             onClick={onClick}
+            $width="fit-content"
             $justify="center"
             $align="center"
             {...props}>
@@ -31,7 +32,6 @@ export function PassLink({
                 <Text
                     as="span"
                     $textDecoration="underline"
-                    $fontWeight={700}
                     {...props}>
                     {children}
                 </Text>

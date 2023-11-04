@@ -14,10 +14,10 @@ import { FloatingElements } from './FloatingElements'
 const elves: SplashImage[] = [
     {
         index: 1,
-        width: 'min(200px, 32vw)',
+        width: 'min(180px, 28vw)',
         style: {
             right: '30%',
-            top: '-20%'
+            top: '-120px'
         },
         rotation: -20,
         zIndex: 1
@@ -85,7 +85,7 @@ export function Second({ zIndex }: ZoomSceneProps) {
                     $column
                     $gap={isLargerThanExtraSmall ? 24: 12}>
                     <BrandedTitle
-                        textContent="BORROW & EARN ON THE WORLD'S MOST DECENTRALIZED STABLECOIN PROTOCOL"
+                        textContent="BORROW & EARN ON THE WORLD'S MOST DANK STABLECOIN PROTOCOL"
                         $fontSize={isLargerThanSmall
                             ? '3rem'
                             : isLargerThanExtraSmall
@@ -122,13 +122,14 @@ export function Second({ zIndex }: ZoomSceneProps) {
                         $columns="min-content 1fr"
                         $align="center"
                         $gap={12}>
-                        <Text>Ratio&nbsp;<strong>{Math.round((progress * 10_000)) / 100}%</strong></Text>
+                        <Text>Ratio&nbsp;<strong>{Math.round(((1.5 + 2.5 * progress) * 10_000)) / 100}%</strong></Text>
                         <ProgressBar progress={progress}/>
                     </Grid>
                     <Flex
                         $width="100%"
-                        $justify="space-between"
-                        $align="center">
+                        $justify="flex-start"
+                        $align="center"
+                        $gap={12}>
                         <HaiButton
                             $variant="yellowish"
                             $grow={0}>

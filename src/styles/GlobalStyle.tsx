@@ -112,7 +112,7 @@ export const GlobalStyle = createGlobalStyle`
 
     a {
         text-decoration: none;
-        color: #b1aef9;
+        color: inherit;
     }
 
     h1, h2, h3, h4, h5, h6 {

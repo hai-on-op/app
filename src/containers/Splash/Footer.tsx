@@ -1,8 +1,12 @@
+import { LINK_TO_DOCS, LINK_TO_TELEGRAM, LINK_TO_TWITTER } from '~/utils'
+
 import styled from 'styled-components'
 import { CenteredFlex, Flex, Grid, HaiButton, Text } from '~/styles'
 import { Elf } from '~/components/Elf'
 import Twitter from '~/components/Icons/Twitter'
 import Telegram from '~/components/Icons/Telegram'
+import { PassLink } from '~/components/PassLink'
+import { ExternalLink } from '~/components/ExternalLink'
 
 import haiLogo from '~/assets/logo.png'
 
@@ -34,18 +38,45 @@ export function Footer() {
                             $column
                             $gap={12}>
                             <Text $fontWeight={700}>About</Text>
-                            <Text>Privacy</Text>
-                            <Text>Terms</Text>
+                            <PassLink
+                                href="/privacy"
+                                $textDecoration="none">
+                                Privacy
+                            </PassLink>
+                            {/* TODO: replace link */}
+                            <PassLink
+                                href="/privacy"
+                                $textDecoration="none">
+                                Terms
+                            </PassLink>
                         </Flex>
                         <Flex
                             $column
                             $gap={12}>
                             <Text $fontWeight={700}>Resources</Text>
-                            <Text>Docs</Text>
+                            <ExternalLink
+                                href={LINK_TO_DOCS}
+                                $textDecoration="none">
+                                Docs
+                            </ExternalLink>
                         </Flex>
                         <IconContainer>
-                            <Twitter/>
-                            <Telegram/>
+                            <ExternalLink
+                                href={LINK_TO_TWITTER}
+                                $textDecoration="none">
+                                <Twitter
+                                    width={28}
+                                    height={24}
+                                />
+                            </ExternalLink>
+                            <ExternalLink
+                                href={LINK_TO_TELEGRAM}
+                                $textDecoration="none">
+                                <Telegram
+                                    width={32}
+                                    height={24}
+                                />
+                            </ExternalLink>
                         </IconContainer>
                     </Grid>
                     <EmailContainer>
@@ -166,8 +197,8 @@ const IconContainer = styled(Flex).attrs(props => ({
     ...props
 }))`
     & svg {
-        width: 24px;
-        height: auto;
+        height: 24px;
+        width: auto;
         fill: black;
         stroke: none;
     }

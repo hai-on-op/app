@@ -23,7 +23,7 @@ export default function Splash() {
                 return
             }
             
-            container.style.pointerEvents = e.deltaY > 0 ? 'none': 'all'
+            // container.style.pointerEvents = e.deltaY > 0 ? 'none': 'all'
             // allow scroll down to footer
             if (e.deltaY >= 0) return
 
@@ -53,11 +53,14 @@ export default function Splash() {
             zoomContainer.style.pointerEvents = 'none'
             const progress = 300 * container.scrollTop / window.innerHeight
             if (progress > 600) {
-                zoomContainer.style.top = `${-100 * (progress - 600) / 300}vh`
+                const offset = 50 * (progress - 600) / 300
+                zoomContainer.style.top = `${-offset}vh`
+                zoomContainer.style.bottom = `${offset}vh`
                 zoomContainer.style.pointerEvents = 'all'
                 return
             }
-            zoomContainer.style.top = "0px"
+            zoomContainer.style.top = '0px'
+            zoomContainer.style.bottom = '0px'
 
             scenes.forEach((scene, i) => {
                 const z = -300 * i + progress

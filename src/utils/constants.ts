@@ -56,3 +56,8 @@ export const floatsTypes = {
 }
 
 export const network_name = VITE_NETWORK_ID === '1' ? 'mainnet' : 'optimism-goerli'
+
+export const LINK_TO_DOCS = 'https://docs.letsgethai.com/'
+export const LINK_TO_TWITTER = 'https://twitter.com/@letsgethai'
+// TODO: replace link
+export const LINK_TO_TELEGRAM = 'https://twitter.com/@letsgethai'

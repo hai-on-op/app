@@ -1,14 +1,14 @@
 import { useState } from 'react'
 
+import { LINK_TO_DOCS } from '~/utils'
 import { useMediaQuery } from '~/hooks'
 
 import styled from 'styled-components'
-import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
+import { Flex, HaiButton, Text } from '~/styles'
 import { type SplashImage, ZoomScene, type ZoomSceneProps } from './ZoomScene'
-import { BrandedTitle } from '~/components/BrandedTitle'
-import RightArrow from '~/components/Icons/RightArrow'
 import { FloatingElements } from './FloatingElements'
 import Caret from '~/components/Icons/Caret'
+import { LearnCard } from './LearnCard'
 
 const elves: SplashImage[] = [
     {
@@ -55,9 +55,21 @@ const clouds: SplashImage[] = [
 ]
 
 const cardTitles = [
-    'BORROW HAI TO MULTIPLY YOUR CRYPTO EXPOSURE',
-    'COLLECT MONTHLY REWARDS FOR PROVIDING LIQUIDITY',
-    'ACQUIRE LIQUIDATED ASSETS'
+    {
+        title: 'MINT',
+        content: 'Borrow HAI against your crypto bags',
+        link: LINK_TO_DOCS
+    },
+    {
+        title: 'EARN',
+        content: 'Get HAI, earn rewards',
+        link: LINK_TO_DOCS
+    },
+    {
+        title: 'FARM',
+        content: 'Provide HAI or KITE liquidity for rewards',
+        link: LINK_TO_DOCS
+    }
 ]
 
 export function Third({ zIndex }: ZoomSceneProps) {
@@ -73,10 +85,12 @@ export function Third({ zIndex }: ZoomSceneProps) {
                 ? 'calc(0px)'
                 : `max(calc(${-100 * index}vw + ${24 * index}px), ${-424 * index}px)`
             }>
-                {cardTitles.map((title, i) => (
+                {cardTitles.map(({ title, content, link }, i) => (
                     <LearnCard
                         key={i}
                         title={title}
+                        content={content}
+                        link={link}
                     />
                 ))}
                 <ArrowButton onClick={() => setIndex(i => i <= 0 ? cardTitles.length - 1: i - 1)}>
@@ -142,57 +156,3 @@ const ArrowButton = styled(HaiButton).attrs(props => ({
         display: none;
     }
 `
-
-const LearnCardContainer = styled(Flex).attrs(props => ({
-    $column: true,
-    $justify: 'space-between',
-    $align: 'flex-start',
-    $shrink: 0,
-    ...props
-}))`
-    position: relative;
-    width: min(calc(100vw - 48px), 400px);
-    height: 500px;
-    border: ${({ theme }) => theme.border.medium};
-    border-radius: 24px;
-    /* background-color: #f1f1fb77; */
-    /* backdrop-filter: blur(13px); */
-    background-color: rgba(255,255,255,0.4);
-    padding: 48px;
-    transition: all 0.5s ease;
-
-    & svg {
-        width: auto;
-        height: 1rem;
-    }
-
-    ${({ theme }) => theme.mediaWidth.upToExtraSmall`
-        padding: 36px;
-        height: max(400px, min(420px, 65vh));
-    `}
-`
-
-function LearnCard({ title }: { title: string }) {
-    const isLargerThanExtraSmall = useMediaQuery('upToExtraSmall')
-
-    return (
-        <LearnCardContainer>
-            <BrandedTitle
-                textContent={title}
-                $fontSize={isLargerThanExtraSmall ? '2.5rem': '2rem'}
-                $lineHeight="1.25"
-            />
-            <CenteredFlex
-                $gap={12}
-                style={{ cursor: 'pointer' }}>
-                <Text
-                    $fontSize={isLargerThanExtraSmall ? '1.2rem': '1rem'}
-                    $fontWeight={700}
-                    $letterSpacing="0.35rem">
-                    LEARN MORE
-                </Text>
-                <RightArrow/>
-            </CenteredFlex>
-        </LearnCardContainer>
-    )
-}

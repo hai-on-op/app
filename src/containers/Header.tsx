@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { LINK_TO_DOCS, LINK_TO_TELEGRAM, LINK_TO_TWITTER } from '~/utils'
 import { useMediaQuery, useOutsideClick } from '~/hooks'
 import { useStoreActions, useStoreState } from '~/store'
 
@@ -10,6 +11,7 @@ import Telegram from '~/components/Icons/Telegram'
 import Sound from '~/components/Icons/Sound'
 import HaiFace from '~/components/Icons/HaiFace'
 import { Marquee, MarqueeChunk } from '~/components/Marquee'
+import { ExternalLink } from '~/components/ExternalLink'
 
 import haiLogo from '~/assets/logo.png'
 
@@ -55,15 +57,42 @@ export function Header({ tickerActive = false }: HeaderProps) {
                         : <HaiFace filled/>
                     }
                     {isLargerThanSmall && (<>
-                        <HeaderLink $fontWeight={400}>Learn</HeaderLink>
-                        <HeaderLink $fontWeight={400}>Docs</HeaderLink>
-                        <HeaderLink $fontWeight={400}>Community</HeaderLink>
+                        {/* TODO: replace links */}
+                        <ExternalLink
+                            href={LINK_TO_DOCS}
+                            $textDecoration="none">
+                            <HeaderLink>Learn</HeaderLink>
+                        </ExternalLink>
+                        <ExternalLink
+                            href={LINK_TO_DOCS}
+                            $textDecoration="none">
+                            <HeaderLink>Docs</HeaderLink>
+                        </ExternalLink>
+                        <ExternalLink
+                            href={LINK_TO_DOCS}
+                            $textDecoration="none">
+                            <HeaderLink>Community</HeaderLink>
+                        </ExternalLink>
                     </>)}
                 </CenteredFlex>
                 <RightSide>
                     {isLargerThanSmall && (<>
-                        <Twitter/>
-                        <Telegram/>
+                        <ExternalLink
+                            href={LINK_TO_TWITTER}
+                            $textDecoration="none">
+                            <Twitter
+                                width={28}
+                                height={24}
+                            />
+                        </ExternalLink>
+                        <ExternalLink
+                            href={LINK_TO_TELEGRAM}
+                            $textDecoration="none">
+                            <Telegram
+                                width={32}
+                                height={24}
+                            />
+                        </ExternalLink>
                     </>)}
                     <MusicButton
                         $variant="unblurred"
@@ -85,11 +114,35 @@ export function Header({ tickerActive = false }: HeaderProps) {
                             </svg>
                             {dropdownActive && (
                                 <DropdownContainer onClick={(e: any) => e.stopPropagation()}>
-                                    <HeaderLink>Learn</HeaderLink>
-                                    <HeaderLink>Docs</HeaderLink>
+                                    {/* TODO: replace links */}
+                                    <ExternalLink
+                                        href={LINK_TO_DOCS}
+                                        $textDecoration="none">
+                                        <HeaderLink>Learn</HeaderLink>
+                                    </ExternalLink>
+                                    <ExternalLink
+                                        href={LINK_TO_DOCS}
+                                        $textDecoration="none">
+                                        <HeaderLink>Docs</HeaderLink>
+                                    </ExternalLink>
+                                    <ExternalLink
+                                        href={LINK_TO_DOCS}
+                                        $textDecoration="none">
+                                        <HeaderLink>Community</HeaderLink>
+                                    </ExternalLink>
+
                                     <HeaderLink>Connect</HeaderLink>
-                                    <HeaderLink>Twitter</HeaderLink>
-                                    <HeaderLink>Telegram</HeaderLink>
+
+                                    <ExternalLink
+                                        href={LINK_TO_TWITTER}
+                                        $textDecoration="none">
+                                        <HeaderLink>Twitter</HeaderLink>
+                                    </ExternalLink>
+                                    <ExternalLink
+                                        href={LINK_TO_TELEGRAM}
+                                        $textDecoration="none">
+                                        <HeaderLink>Telegram</HeaderLink>
+                                    </ExternalLink>
                                 </DropdownContainer>
                             )}
                         </DropdownButton>
@@ -170,9 +223,10 @@ const Logo = styled.img`
 `
 
 const HeaderLink = styled(Title).attrs(props => ({
-    $fontSize: '1.6rem',
+    $fontSize: '1.6em',
     $letterSpacing: '0.2rem',
     $textTransform: 'uppercase',
+    $fontWeight: 400,
     ...props
 }))``
 
@@ -237,6 +291,8 @@ const DropdownContainer = styled(Flex).attrs(props => ({
     box-shadow: 0 3px 17px rgba(0,0,0,0.3);
     border: ${({ theme }) => theme.border.medium};
     border-radius: 24px;
+    font-size: 0.8em;
+
     & > * {
         padding: 4px 16px;
     }
