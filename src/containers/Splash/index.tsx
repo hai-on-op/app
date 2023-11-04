@@ -6,6 +6,7 @@ import { ZoomScene } from './Scenes/ZoomScene'
 import { Intro } from './Scenes/Intro'
 import { Second } from './Scenes/Second'
 import { Third } from './Scenes/Third'
+import { Fourth } from './Scenes/Fourth'
 import { Footer } from './Footer'
 
 export default function Splash() {
@@ -52,8 +53,8 @@ export default function Splash() {
         const onScroll = () => {
             zoomContainer.style.pointerEvents = 'none'
             const progress = 300 * container.scrollTop / window.innerHeight
-            if (progress > 600) {
-                const offset = 50 * (progress - 600) / 300
+            if (progress > 900) {
+                const offset = 50 * (progress - 900) / 300
                 zoomContainer.style.top = `${-offset}vh`
                 zoomContainer.style.bottom = `${offset}vh`
                 zoomContainer.style.pointerEvents = 'all'
@@ -89,12 +90,13 @@ export default function Splash() {
                 <Intro zIndex={1000}/>
                 <Second zIndex={900}/>
                 <Third zIndex={800}/>
+                <Fourth zIndex={700}/>
             </ZoomContainer>
             {/* scroll targets for scroll snapping */}
             <ScrollTarget/>
             <ScrollTarget/>
             <ScrollTarget/>
-            {/* <ScrollTarget/> */}
+            <ScrollTarget/>
             <Footer/>
         </Container>
     )
