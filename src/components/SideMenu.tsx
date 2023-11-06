@@ -87,53 +87,7 @@ const InnerContainer = styled.div`
     margin-left: auto;
 `
 
-const ConnectBtnContainer = styled.div`
-    text-align: center;
-    width: 100%;
-`
-
 const AccountBalance = styled.div`
     padding: 30px 20px 20px 25px;
     margin-bottom: 15px;
-`
-
-const Balance = styled.div`
-    color: ${(props) => props.theme.colors.primary};
-    font-size: 16px;
-    line-height: 27px;
-    font-weight: 600;
-    letter-spacing: -0.69px;
-`
-
-const AccountData = styled.div`
-    margin-left: 10px;
-`
-
-const Address = styled.div`
-    color: ${(props) => props.theme.colors.primary};
-    font-size: 18px;
-    line-height: 27px;
-    font-weight: 600;
-    letter-spacing: -0.69px;
-`
-
-const Account = styled.div`
-    display: flex;
-    justify-content: flex-start;
-    cursor: pointer;
-`
-
-const Icon = styled.img`
-    max-width: 60px;
-`
-
-const Title = styled.div`
-    font-size: 22px;
-    font-weight: 600;
-`
-
-const Text = styled.div`
-    font-size: 14px;
-    margin-top: 10px;
-    margin-bottom: 10px;
 `

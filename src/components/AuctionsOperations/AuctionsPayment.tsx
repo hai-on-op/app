@@ -92,7 +92,7 @@ const AuctionsPayment = () => {
             return price
         }
         return BigNumber.from('0')
-    }, [auctionId, auctionsState.collateralData])
+    }, [auctionId, auctionsState.collateralData, selectedCollateralAuction])
 
     const collateralPriceFormatted = ethers.utils.formatUnits(collateralPrice || constants.WeiPerEther, 18)
 

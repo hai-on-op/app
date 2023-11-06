@@ -168,28 +168,3 @@ const BtnContainer = styled.div`
         margin: 0;
     }
 `
-
-const Confirmations = styled.div`
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    margin-top: 10px;
-    font-size: ${(props) => props.theme.font.extraSmall};
-    font-weight: 600;
-    color: ${(props) => props.theme.colors.secondary};
-`
-
-const InfoBtn = styled.div`
-    cursor: pointer;
-    background: ${(props) => props.theme.colors.secondary};
-    color: ${(props) => props.theme.colors.neutral};
-    width: 15px;
-    height: 15px;
-    border-radius: 50%;
-    font-size: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-left: 7px;
-`

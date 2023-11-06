@@ -194,7 +194,7 @@ const AuctionBlock = (auction: Props) => {
         } else {
             return surplusImage
         }
-    }, [])
+    }, [eventType])
 
     return (
         <Container>

@@ -37,7 +37,6 @@ interface AnalyticsStateProps {
 const Analytics = () => {
     const geb = usePublicGeb()
     const { chain } = useNetwork()
-    const chainId = chain?.id
 
     const [state, setState] = useState<AnalyticsStateProps>({
         erc20Supply: '',
@@ -224,6 +223,7 @@ const Analytics = () => {
 
     useEffect(() => {
         if (geb) {
+            const chainId = chain?.id || 420
             fetchAnalyticsData(geb).then((result) => {
                 const colRows = Object.fromEntries(
                     Object.entries(result?.tokenAnalyticsData).map(([key, value], index) => [
@@ -252,19 +252,19 @@ const Analytics = () => {
                                 multiplyWad(value?.debtAmount?.toString(), result?.redemptionPrice?.toString()),
                                 multiplyWad(value?.lockedAmount?.toString(), value?.currentPrice?.toString())
                             ), // Debt amount / locked amount in USD
-                            <AddressLink address={geb.tokenList[key].address} chainId={chainId || 420} />, // ERC20 address + link to etherscan
-                            <AddressLink address={value?.delayedOracle} chainId={chainId || 420} />, // ERC20 address + link to etherscan
-                            <AddressLink address={geb.tokenList[key].collateralJoin} chainId={chainId || 420} />, // CollateralJoin + link to etherscan
+                            <AddressLink address={geb.tokenList[key].address} chainId={chainId} />, // ERC20 address + link to etherscan
+                            <AddressLink address={value?.delayedOracle} chainId={chainId} />, // ERC20 address + link to etherscan
+                            <AddressLink address={geb.tokenList[key].collateralJoin} chainId={chainId} />, // CollateralJoin + link to etherscan
                             <AddressLink
                                 address={geb.tokenList[key].collateralAuctionHouse}
-                                chainId={chainId || 420}
+                                chainId={chainId}
                             />, // CollateralAuctionHouse + link to etherscan
                         ],
                     ])
                 )
 
-                setState({
-                    ...state,
+                setState(s => ({
+                    ...s,
                     erc20Supply: formatDataNumber(result.erc20Supply, 18, 0, true),
                     globalDebt: formatDataNumber(result.globalDebt, 18, 0, true),
                     globalDebtCeiling: formatDataNumber(result.globalDebtCeiling, 18, 0, true),
@@ -277,10 +277,10 @@ const Analytics = () => {
                     pRate: transformToAnnualRate(result.redemptionRatePTerm, 27),
                     iRate: transformToAnnualRate(result.redemptionRateITerm, 27),
                     colRows: Object.values(colRows),
-                })
+                }))
             })
         }
-    }, [geb])
+    }, [geb, chain?.id])
 
     return (
         <Container>

@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import { Plus } from 'react-feather'
 import { useAccount } from 'wagmi'
 
-import { useStoreState, useStoreActions } from '~/store'
+import { useStoreState } from '~/store'
 import LinkButton from '~/components/LinkButton'
 import SafeBlock from '~/components/SafeBlock'
 import CheckBox from '~/components/CheckBox'
@@ -18,7 +18,6 @@ const SafeList = ({ address }: { address?: string }) => {
     const { t } = useTranslation()
 
     const { connectWalletModel: connectWalletState, safeModel: safeState } = useStoreState((state) => state)
-    const { popupsModel: popupsActions } = useStoreActions((state) => state)
 
     const safes = useMemo(() => {
         if (safeState.list.length > 0) {

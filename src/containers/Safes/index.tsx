@@ -74,9 +74,3 @@ const Container = styled.div``
 const Content = styled.div`
     position: relative;
 `
-
-const BtnInner = styled.div`
-    display: flex;
-    align-items: center;
-    gap: 5px;
-`

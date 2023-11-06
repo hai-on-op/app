@@ -72,7 +72,7 @@ export function useTokenApproval(
         } else {
             return approvalAmount
         }
-    }, [amount, tokenDecimals])
+    }, [amount, tokenDecimals, isRepayAll])
 
     // check the current approval status
     const approvalState: ApprovalState = useMemo(() => {

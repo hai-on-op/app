@@ -179,15 +179,13 @@ const CreateSafe = ({
     )
 
     useEffect(() => {
-        if (signer) {
-            signer.getBalance().then((balance) => {
-                connectWalletActions.updateEthBalance({
-                    chainId: NETWORK_ID,
-                    balance: Number(utils.formatEther(balance)),
-                })
+        signer?.getBalance().then((balance) => {
+            connectWalletActions.updateEthBalance({
+                chainId: NETWORK_ID,
+                balance: Number(utils.formatEther(balance)),
             })
-        }
-    }, [account])
+        })
+    }, [account, signer])
 
     return (
         <>

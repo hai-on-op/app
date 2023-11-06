@@ -53,12 +53,11 @@ interface Props {
     children: ReactNode
 }
 
-const Shared = ({ children, ...rest }: Props) => {
+const Shared = ({ children }: Props) => {
     const { t } = useTranslation()
     const { chain } = useNetwork()
     const { address: account } = useAccount()
     const signer = useEthersSigner()
-    const chainId = chain?.id
     const geb = useGeb()
     const history = useHistory()
 
@@ -102,59 +101,59 @@ const Shared = ({ children, ...rest }: Props) => {
     const forceUpdateTokens = connectWalletState.forceUpdateTokens
 
     useEffect(() => {
-        if (account && geb && forceUpdateTokens) {
-            connectWalletActions.fetchTokenData({ geb, user: account })
-        }
+        if (!account || !geb || !forceUpdateTokens) return
+        
+        connectWalletActions.fetchTokenData({ geb, user: account })
     }, [account, geb, forceUpdateTokens, connectWalletActions])
 
     useEffect(() => {
-        if (connectWalletState && signer) {
-            signer.getBalance().then((balance) => {
-                connectWalletActions.updateEthBalance({
-                    chainId: chainId || NETWORK_ID,
-                    balance: Number(utils.formatEther(balance)),
-                })
+        if (!connectWalletState || !signer) return
+        
+        signer.getBalance().then((balance) => {
+            connectWalletActions.updateEthBalance({
+                chainId: chain?.id || NETWORK_ID,
+                balance: Number(utils.formatEther(balance)),
             })
-        }
-    }, [account])
+        })
+    }, [account, signer, connectWalletState, chain?.id])
 
     useEffect(() => {
-        const haiBalance = connectWalletState?.tokensFetchedData.HAI?.balanceE18
-        const kiteBalance = connectWalletState?.tokensFetchedData.KITE?.balanceE18
+        if (!connectWalletState) return
+        const { HAI, KITE } = connectWalletState.tokensFetchedData
 
-        if (haiBalance && kiteBalance) {
-            setCoinBalances({
-                hai: utils.formatEther(haiBalance),
-                kite: utils.formatEther(kiteBalance),
-            })
-        }
+        if (!HAI?.balanceE18 || !KITE?.balanceE18) return
+
+        setCoinBalances({
+            hai: utils.formatEther(HAI.balanceE18),
+            kite: utils.formatEther(KITE.balanceE18),
+        })
     }, [connectWalletState, setCoinBalances])
 
     useEffect(() => {
-        if (account && coinTokenContract && protTokenContract && connectWalletState.proxyAddress) {
-            protTokenContract.allowance(account, connectWalletState.proxyAddress).then((allowance) => {
-                const formattedAllowance = utils.formatEther(allowance)
-                connectWalletActions.setProtAllowance(formattedAllowance)
-            })
+        if (!account || !coinTokenContract || !protTokenContract || !connectWalletState.proxyAddress) return
+        
+        protTokenContract.allowance(account, connectWalletState.proxyAddress).then((allowance) => {
+            const formattedAllowance = utils.formatEther(allowance)
+            connectWalletActions.setProtAllowance(formattedAllowance)
+        })
 
-            coinTokenContract.allowance(account, connectWalletState.proxyAddress).then((allowance) => {
-                const formattedAllowance = utils.formatEther(allowance)
-                connectWalletActions.setCoinAllowance(formattedAllowance)
-            })
-        }
+        coinTokenContract.allowance(account, connectWalletState.proxyAddress).then((allowance) => {
+            const formattedAllowance = utils.formatEther(allowance)
+            connectWalletActions.setCoinAllowance(formattedAllowance)
+        })
     }, [account, coinTokenContract, connectWalletActions, connectWalletState.proxyAddress, protTokenContract])
 
     useEffect(() => {
-        if (auctionsData) {
-            const protInternalBalance = auctionsData.protocolTokenProxyBalance
-            setProtInternalBalance(ethers.utils.formatEther(protInternalBalance))
+        if (!auctionsData) return
+        
+        const protInternalBalance = auctionsData.protocolTokenProxyBalance
+        setProtInternalBalance(ethers.utils.formatEther(protInternalBalance))
 
-            // coinTokenSafeBalance has 45 decimals
-            const coinSafeBalance = auctionsData.coinTokenSafeBalance
+        // coinTokenSafeBalance has 45 decimals
+        const coinSafeBalance = auctionsData.coinTokenSafeBalance
 
-            // const coinInternalBalance = coinBalance.add(coinSafeBalance)
-            setInternalBalance(ethers.utils.formatUnits(coinSafeBalance, 45))
-        }
+        // const coinInternalBalance = coinBalance.add(coinSafeBalance)
+        setInternalBalance(ethers.utils.formatUnits(coinSafeBalance, 45))
     }, [auctionsData, setInternalBalance, setProtInternalBalance])
 
     useEffect(() => {
@@ -166,7 +165,7 @@ const Shared = ({ children, ...rest }: Props) => {
     }, [connectWalletActions])
 
     async function accountChecker() {
-        if (!account || !chainId || !signer || !geb) return
+        if (!account || !chain?.id || !signer || !geb) return
         popupsActions.setWaitingPayload({
             title: '',
             status: 'loading',
@@ -178,7 +177,7 @@ const Shared = ({ children, ...rest }: Props) => {
             if (userProxy && userProxy.proxyAddress && userProxy.proxyAddress !== EMPTY_ADDRESS) {
                 connectWalletActions.setProxyAddress(userProxy.proxyAddress)
             }
-            const txs = localStorage.getItem(`${account}-${chainId}`)
+            const txs = localStorage.getItem(`${account}-${chain.id}`)
             if (txs) {
                 transactionsActions.setTransactions(JSON.parse(txs))
             }
@@ -227,7 +226,7 @@ const Shared = ({ children, ...rest }: Props) => {
         accountChange()
         const id: ChainId = NETWORK_ID
         popupsActions.setIsSafeManagerOpen(false)
-        if (chainId && chainId !== id) {
+        if (chain?.id !== id) {
             const chainName = ETHERSCAN_PREFIXES[id]
             connectWalletActions.setIsWrongNetwork(true)
             // settingsActions.setBlockBody(true)
@@ -256,7 +255,7 @@ const Shared = ({ children, ...rest }: Props) => {
         }
     }
     /*eslint-disable-next-line*/
-    const networkCheckerCallBack = useCallback(networkChecker, [account, chainId, geb])
+    const networkCheckerCallBack = useCallback(networkChecker, [account, chain?.id, geb])
 
     useEffect(() => {
         networkCheckerCallBack()
@@ -267,7 +266,7 @@ const Shared = ({ children, ...rest }: Props) => {
     useEffect(() => {
         if (settingsState.isPlayingMusic) play()
         else pause()
-    }, [ settingsState.isPlayingMusic, play, pause ])
+    }, [settingsState.isPlayingMusic, play, pause])
 
     return (
         <Container>

@@ -205,22 +205,6 @@ const Left = styled.div<{ isBigWidth?: boolean }>`
   `}
 `
 
-const Flex = styled.div`
-    align-items: center;
-    display: flex;
-    justify-content: center;
-`
-
-const InnerBtn = styled(Flex)`
-    div {
-        display: block !important;
-        margin-left: 5px;
-        svg {
-            top: 0 !important;
-        }
-    }
-`
-
 const AddIcon = styled(Icon)`
     margin: 0 5px 0 10px;
 `

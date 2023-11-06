@@ -24,7 +24,7 @@ const SafeHeader = ({
         history.push(`/safes`)
     }, [history])
 
-    const canLiquidate = singleSafe && singleSafe.riskState == 4
+    const canLiquidate = singleSafe && singleSafe.riskState === 4
 
     return (
         <Container>
