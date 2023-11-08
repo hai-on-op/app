@@ -74,7 +74,7 @@ export function Second({ zIndex }: ZoomSceneProps) {
 
     const [progress, setProgress] = useState(0.72)
     useEffect(() => {
-        const int = setInterval(() => setProgress(Math.random()), 3000)
+        const int = setInterval(() => setProgress(1.5 + 2.5 * Math.random()), 3000)
         return () => clearTimeout(int)
     }, [])
 
@@ -140,11 +140,20 @@ export function Second({ zIndex }: ZoomSceneProps) {
                     </Flex>
                     <Grid
                         $width="100%"
-                        $columns="min-content 1fr"
+                        $columns="110px 1fr"
                         $align="center"
                         $gap={12}>
-                        <Text>Ratio&nbsp;<strong>{Math.round(((1.5 + 2.5 * progress) * 10_000)) / 100}%</strong></Text>
-                        <ProgressBar progress={progress}/>
+                        <Text>
+                            Ratio&nbsp;<strong>{Math.round((progress * 10_000)) / 100}%</strong>
+                        </Text>
+                        <ProgressBar
+                            progress={progress / 4}
+                            colorLimits={[0.25, 0.75]}
+                            labels={[{
+                                progress: 0.24,
+                                label: '100%'
+                            }]}
+                        />
                     </Grid>
                     <Flex
                         $width="100%"

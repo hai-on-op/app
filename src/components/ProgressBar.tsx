@@ -1,26 +1,52 @@
+import { clamp } from '~/utils'
+
 import styled from 'styled-components'
+import { CenteredFlex, Flex, Text } from '~/styles'
 
 type ProgressBarProps = {
-    progress: number
+    progress: number,
+    colorLimits?: [number, number],
+    labels?: { progress: number, label: string }[]
 }
-export function ProgressBar({ progress }: ProgressBarProps) {
+export function ProgressBar({ progress, colorLimits, labels }: ProgressBarProps) {
     return (
         <Container>
-            <Bar $progress={progress}/>
+            <Inner>
+                <Bar
+                    $progress={progress}
+                    $limits={colorLimits}
+                />
+            </Inner>
+            {labels?.map(({ progress: p, label }, i) => (
+                <Indicator
+                    key={i}
+                    $left={`${(p * 100).toFixed(2)}%`}>
+                    <Text $fontSize="8px">{label}</Text>
+                </Indicator>
+            ))}
         </Container>
     )
 }
 
-const Container = styled.div`
+const Container = styled(CenteredFlex)`
     position: relative;
     width: 100%;
     height: 16px;
     border: ${({ theme }) => theme.border.medium};
     border-radius: 999px;
     background-color: transparent;
+    overflow: visible;
+`
+const Inner = styled.div`
+    position: relative;
+    width: calc(100% + 4px);
+    height: calc(100% + 4px);
+    flex-shrink: 0;
+    border-radius: 999px;
     overflow: hidden;
 `
-const Bar = styled.div<{ $progress: number }>`
+// green = rgb(192, 243, 187), red = rgb(255, 0, 0)
+const Bar = styled.div<{ $progress: number, $limits?: [number, number] }>`
     position: absolute;
     top: 0px;
     left: 0px;
@@ -28,10 +54,33 @@ const Bar = styled.div<{ $progress: number }>`
     width: ${({ $progress }) => (Math.min($progress, 1) * 100).toFixed(2)}%;
     border-radius: 999px;
     border: ${({ theme }) => theme.border.medium};
-    // green = rgb(192, 243, 187), red = rgb(255, 0, 0)
-    background-color: ${({ $progress }) => `
-        rgb(${255 - (255 - 192) * $progress}, ${243 * $progress}, ${187 * $progress})
-    `};
-    margin: -2px;
+    background-color: ${({ $progress, $limits = [0, 1] }) => {
+        const p = clamp(($progress - $limits[0]) / ($limits[1] - $limits[0]), 0, 1)
+        return `rgb(${255 - (255 - 192) * p}, ${243 * p}, ${187 * p})`
+    }};
     transition: all 1s ease;
+    z-index: 0;
+`
+const Indicator = styled(Flex).attrs(props => ({
+    $column: true,
+    $justify: 'flex-end',
+    $align: 'center',
+    ...props
+}))<{ $left: string }>`
+    position: absolute;
+    top: 0px;
+    bottom: -14px;
+    left: ${({ $left }) => $left};
+    transform: translateX(-50%);
+
+    &::after {
+        content: '';
+        width: 1px;
+        position: absolute;
+        top: 0px;
+        bottom: 14px;
+        background-color: black;
+    }
+
+    z-index: 1;
 `
