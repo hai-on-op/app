@@ -228,7 +228,9 @@ const HeaderLink = styled(Title).attrs(props => ({
     $textTransform: 'uppercase',
     $fontWeight: 400,
     ...props
-}))``
+}))`
+    text-shadow: none;
+`
 
 const RightSide = styled(CenteredFlex)`
     gap: 36px;
