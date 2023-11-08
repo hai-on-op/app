@@ -85,18 +85,39 @@ export function Second({ zIndex }: ZoomSceneProps) {
                     $column
                     $gap={isLargerThanExtraSmall ? 24: 12}>
                     <BrandedTitle
-                        textContent="BORROW & EARN ON THE WORLD'S MOST DANK STABLECOIN PROTOCOL"
+                        textContent="ELEVATE ASSETS, NOT ANXIETY."
                         $fontSize={isLargerThanSmall
-                            ? '3rem'
+                            ? '3.6rem'
                             : isLargerThanExtraSmall
-                                ? '2rem'
-                                : '1.6rem'
+                                ? '3rem'
+                                : '2rem'
                         }
-                        $lineHeight={isLargerThanExtraSmall ? '1.5': '1.25'}
+                        $letterSpacing={isLargerThanSmall
+                            ? '0.7rem'
+                            : isLargerThanExtraSmall
+                                ? '0.6rem'
+                                : '0.5rem'
+                        }
+                        $lineHeight={isLargerThanSmall
+                            ? "1.4"
+                            : "1.2"
+                        }
                     />
-                    <Text>
-                        Amplify your portfolio with <strong>$HAI</strong>, take control with <strong>$KITE</strong>
-                    </Text>
+                    <Subtitle>
+                        <Text
+                            as="span"
+                            $fontWeight={700}>
+                            {`$HAI stablecoin reserves are fully on-chain, `}
+                        </Text>
+                        <span>
+                            {`no bank buzzkills here. `}
+                        </span>
+                        <Text
+                            as="span"
+                            $fontWeight={700}>
+                            {`Collateral choices are voted in by $KITE holders`}
+                        </Text>
+                    </Subtitle>
                 </Flex>
                 <PairContainer>
                     <Flex
@@ -162,18 +183,7 @@ const Container = styled(Grid).attrs(props => ({
     border-radius: 24px;
     /* background-color: #f1f1fb77; */
     /* backdrop-filter: blur(13px); */
-    background-color: rgba(255,255,255,0.4);
-
-    /* &::before {
-        content: '';
-        position: absolute;
-        width: 316px;
-        height: 196px;
-        border-radius: 24px;
-        border: ${({ theme }) => theme.border.medium};
-        position: absolute;
-        right: -52px;
-    } */
+    background-color: rgba(255,255,255,0.5);
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
         grid-template-columns: 1fr;
@@ -185,6 +195,12 @@ const Container = styled(Grid).attrs(props => ({
         width: calc(100vw - 24px);
         padding-top: 24px;
     `}
+`
+const Subtitle = styled(Text).attrs(props => ({
+    $lineHeight: '1.6',
+    ...props
+}))`
+    max-width: max(300px, 75%);
 `
 const PairContainer = styled(Flex).attrs(props => ({
     $column: true,

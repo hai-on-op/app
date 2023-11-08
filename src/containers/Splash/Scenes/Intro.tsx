@@ -1,7 +1,7 @@
 import { useMediaQuery } from '~/hooks'
 
 import styled from 'styled-components'
-import { Flex, HaiButton } from '~/styles'
+import { Flex, HaiButton, Text } from '~/styles'
 import { type SplashImage, ZoomScene, type ZoomSceneProps } from './ZoomScene'
 import { BrandedTitle } from '~/components/BrandedTitle'
 import Swirl from '~/components/Icons/Swirl'
@@ -130,6 +130,9 @@ export function Intro({ zIndex }: ZoomSceneProps) {
                             : '0.5rem'
                     }
                 />
+                <Text $lineHeight="1.6">
+                    The <strong>multi-collateral stablecoin</strong> for smooth financial highs
+                </Text>
                 <HaiButton $variant="yellowish">
                     <Swirl/>
                     SCROLL TO EXPLORE

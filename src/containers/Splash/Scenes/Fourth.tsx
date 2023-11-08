@@ -56,24 +56,23 @@ const clouds: SplashImage[] = [
 
 const cardTitles = [
     {
-        title: 'MINT',
-        content: 'Borrow HAI against your crypto bags',
+        title: 'BORROW HAI TO MULTIPLY YOUR CRYPTO EXPOSURE',
         link: LINK_TO_DOCS
     },
     {
-        title: 'EARN',
-        content: 'Get HAI, earn rewards',
+        title: 'EARN KITE AND OP WHILE GETTING HAI',
         link: LINK_TO_DOCS
     },
     {
-        title: 'FARM',
-        content: 'Provide HAI or KITE liquidity for rewards',
+        title: 'FARM REWARDS BY PROVIDING LIQUIDITY',
         link: LINK_TO_DOCS
     }
 ]
 
+const CARDS_WIDTH = 424 * cardTitles.length + 72
+
 export function Fourth({ zIndex }: ZoomSceneProps) {
-    const isLargerThanWidth = useMediaQuery('(min-width: 1344px)')
+    const isLargerThanWidth = useMediaQuery(`(min-width: ${CARDS_WIDTH}px)`)
 
     const [index, setIndex] = useState(0)
 
@@ -85,11 +84,10 @@ export function Fourth({ zIndex }: ZoomSceneProps) {
                 ? 'calc(0px)'
                 : `max(calc(${-100 * index}vw + ${24 * index}px), ${-424 * index}px)`
             }>
-                {cardTitles.map(({ title, content, link }, i) => (
+                {cardTitles.map(({ title, link }, i) => (
                     <LearnCard
                         key={i}
                         title={title}
-                        content={content}
                         link={link}
                     />
                 ))}
@@ -115,7 +113,7 @@ const Container = styled(Flex).attrs(props => ({
     ...props
 }))<{ $offset: string }>`
     position: relative;
-    width: ${cardTitles.length * 424 + 96}px;
+    width: ${CARDS_WIDTH}px;
     max-width: 100vw;
     padding: 12px 48px;
     overflow: hidden;
