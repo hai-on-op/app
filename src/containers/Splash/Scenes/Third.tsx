@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { LINK_TO_DOCS } from '~/utils'
 import { useMediaQuery } from '~/hooks'
@@ -44,6 +44,8 @@ export function Third({ zIndex }: ZoomSceneProps) {
     const isLargerThanSmall = useMediaQuery('upToSmall')
 
     const [canvas, setCanvas] = useState<HTMLCanvasElement>()
+    const priceText = useRef<HTMLDivElement | null>(null)
+    const changeText = useRef<HTMLDivElement | null>(null)
 
     useEffect(() => {
         if (!canvas) return
@@ -107,6 +109,23 @@ export function Third({ zIndex }: ZoomSceneProps) {
             ctx.closePath()
             ctx.fill()
 
+            // text
+            if (priceText.current && changeText.current) {
+                const p = Math.sin(2 * Math.PI * progress)
+                priceText.current.textContent = `$${(1 + 0.03 * p).toFixed(2)}`
+                changeText.current.textContent = `${Math.round(3 * p)}%${p > 0
+                    ? '↑'
+                    : p < 0
+                        ? '↓'
+                        : '-'
+                }`
+                changeText.current.style.color = p > 0
+                    ? '#00AC11'
+                    : p < 0
+                        ? '#ff0000'
+                        : 'inherit'
+            }
+
             frame = requestAnimationFrame(onLoop)
         }
         frame = requestAnimationFrame(onLoop)
@@ -156,8 +175,15 @@ export function Third({ zIndex }: ZoomSceneProps) {
                             <HaiFace filled/>
                         </IconContainer>
                         <Text>HAI</Text>
-                        <Text $fontWeight={700}>$1.25</Text>
-                        <Text $color="#00AC11">4%↑</Text>
+                        <Text
+                            ref={priceText}
+                            $fontWeight={700}
+                            style={{ width: '48px' }}>
+                            $1.00
+                        </Text>
+                        <Text ref={changeText}>
+                            0.0%-
+                        </Text>
                     </Flex>
                     <CenteredFlex $width="100%">
                         <SmoothCanvas
@@ -265,6 +291,7 @@ const FlyingElfContainer = styled(CenteredFlex)`
     transform-style: preserve-3d;
     transform: translateZ(40px);
     animation: ${float} 3s ease-in-out alternate infinite;
+    pointer-events: none;
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
         right: -66px;
