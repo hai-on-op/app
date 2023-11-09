@@ -52,20 +52,21 @@ export const Title = styled.h1<TextProps>`
         letter-spacing: ${typeof $letterSpacing === 'string' ? $letterSpacing: `${$letterSpacing}px`};
     `}
     ${({ $fontWeight = 700 }) => $fontWeight && css`font-weight: ${$fontWeight};`}
-    text-shadow: 1px 1px 0.5px black,
-        -1px 1px 0.5px black,
-        1px -1px 0.5px black,
-        -1px -1px 0.5px black,
-        1px 0px 0.5px black,
-        -1px 0px 0.5px black,
-        0px 1px 0.5px black,
-        0px -1px 0.5px black,
-        1.3px 1.3px 0.25px black,
-        -1.3px 1.3px 0.25px black,
-        1.3px -1.3px 0.25px black,
-        -1.3px -1.3px 0.25px black,
-        1.8px 0px 0.25px black,
-        -1.8px 0px 0.25px black,
-        0px 1.8px 0.25px black,
-        0px -1.8px 0.25px black;
+    -webkit-text-stroke: 0.025em black;
+    // text-shadow: 1px 1px 0.5px black,
+    //     -1px 1px 0.5px black,
+    //     1px -1px 0.5px black,
+    //     -1px -1px 0.5px black,
+    //     1px 0px 0.5px black,
+    //     -1px 0px 0.5px black,
+    //     0px 1px 0.5px black,
+    //     0px -1px 0.5px black,
+    //     1.3px 1.3px 0.25px black,
+    //     -1.3px 1.3px 0.25px black,
+    //     1.3px -1.3px 0.25px black,
+    //     -1.3px -1.3px 0.25px black,
+    //     1.8px 0px 0.25px black,
+    //     -1.8px 0px 0.25px black,
+    //     0px 1.8px 0.25px black,
+    //     0px -1.8px 0.25px black;
 `

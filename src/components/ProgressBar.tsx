@@ -69,7 +69,7 @@ const Indicator = styled(Flex).attrs(props => ({
 }))<{ $left: string }>`
     position: absolute;
     top: 0px;
-    bottom: -14px;
+    bottom: -16px;
     left: ${({ $left }) => $left};
     transform: translateX(-50%);
 
@@ -78,7 +78,7 @@ const Indicator = styled(Flex).attrs(props => ({
         width: 1px;
         position: absolute;
         top: 0px;
-        bottom: 14px;
+        bottom: 16px;
         background-color: black;
     }
 

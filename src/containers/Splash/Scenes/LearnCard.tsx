@@ -21,8 +21,8 @@ export function LearnCard({ title, link, titleColorOffset }: LearnCardProps) {
                 $gap={24}>
                 <BrandedTitle
                     textContent={title}
-                    $fontSize={isLargerThanExtraSmall ? '2rem': '1.8rem'}
-                    $letterSpacing="0.5rem"
+                    $fontSize={isLargerThanExtraSmall ? '2.2rem': '1.9rem'}
+                    $letterSpacing="0.4rem"
                     $lineHeight="1.4"
                     colorOffset={titleColorOffset}
                 />

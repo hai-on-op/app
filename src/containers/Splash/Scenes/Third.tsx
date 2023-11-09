@@ -12,6 +12,8 @@ import HaiFace from '~/components/Icons/HaiFace'
 import { ExternalLink } from '~/components/ExternalLink'
 import { Elf } from '~/components/Elf'
 
+import elfKite from '~/assets/splash/elf-kite.png'
+
 const clouds: SplashImage[] = [
     {
         index: 0,
@@ -196,13 +198,22 @@ export function Third({ zIndex }: ZoomSceneProps) {
             </Container>
             <FloatingElements clouds={clouds}/>
             <FlyingElfContainer>
-                <Parachute>Placeholder</Parachute>
+                <ElfKite
+                    src={elfKite}
+                    width={457}
+                    height={261}
+                    alt=""
+                />
                 <Wire/>
                 <Wire/>
                 <Elf
                     variant={4}
-                    width="65%"
-                    style={{ bottom: '0px', transform: 'scaleX(-1)' }}
+                    width="50%"
+                    style={{
+                        bottom: '0px',
+                        transform: 'scaleX(-1)',
+                        zIndex: 1
+                    }}
                 />
             </FlyingElfContainer>
         </ZoomScene>
@@ -286,7 +297,7 @@ const FlyingElfContainer = styled(CenteredFlex)`
     position: absolute;
     right: min(100px, calc(100vw - 420px));
     top: 20px;
-    width: 240px;
+    width: 300px;
     height: 424px;
     transform-style: preserve-3d;
     transform: translateZ(40px);
@@ -299,34 +310,34 @@ const FlyingElfContainer = styled(CenteredFlex)`
 
     z-index: 2;
 `
-const Parachute = styled(CenteredFlex)`
+const ElfKite = styled.img`
     position: absolute;
     top: 0px;
     left: 2%;
     width: 90%;
-    height: 80px;
-    background-color: rgb(255,200,200);
-    color: rgba(0,0,0,0.2);
-    border: 1px solid black;
-    border-top-left-radius: 40%;
-    border-top-right-radius: 60%;
-    z-index: 2;
+    height: auto;
+    z-index: 0;
 `
 const Wire = styled.div`
     position: absolute;
     width: 1px;
-    height: 80%;
-    background-color: rgb(180,180,180);
-    transform: rotate(-12deg);
-    left: 28%;
-    bottom: 36px;
+    background-color: rgba(0,0,0,0.1);
+    /* height: 70%;
+    transform: rotate(-17.5deg);
+    left: 27%;
+    bottom: 30px; */
+    height: 82%;
+    transform: rotate(-1deg);
+    left: 40.5%;
+    bottom: 40px;
 
     &:last-of-type {
         transform: rotate(7deg);
         left: auto;
-        right: 30%;
-        bottom: 48px;
+        right: 34.5%;
+        bottom: 45px;
+        height: 62.5%;
     }
 
-    z-index: 1;
+    z-index: 0;
 `

@@ -142,6 +142,12 @@ const ArrowButton = styled(HaiButton).attrs(props => ({
         right: 24px;
     }
 
+    & svg {
+        width: 10px;
+        height: auto;
+        stroke-width: 2.5px;
+    }
+
     ${({ theme }) => theme.mediaWidth.upToSmall`
         left: 0px;
         &:last-of-type {
@@ -150,7 +156,7 @@ const ArrowButton = styled(HaiButton).attrs(props => ({
         }
     `}
 
-    @media(min-width: 1344px) {
+    @media(min-width: ${CARDS_WIDTH}px) {
         display: none;
     }
 `

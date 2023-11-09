@@ -2,6 +2,7 @@ import opImg from '~/assets/op-img.svg'
 import wbtcImg from '~/assets/wbtc-img.svg'
 import ttmImg from '~/assets/ttm-img.png'
 import ethImg from '~/assets/eth-img.svg'
+import wstethImg from '~/assets/wsteth-img.png'
 import haiImg from '~/assets/hai-logo.svg'
 import stnImg from '~/assets/stn-img.png'
 import snxImg from '~/assets/snx-img.png'
@@ -21,6 +22,7 @@ export const TOKEN_LOGOS: { [key: string]: string } = {
     WBTC: wbtcImg,
     TTM: ttmImg,
     WETH: ethImg,
+    WSTETH: wstethImg,
     HAI: haiImg,
     STN: stnImg,
     SNX: snxImg,

@@ -7,10 +7,11 @@ import { CenteredFlex, Flex, Text } from '~/styles'
 
 const PAIR_WIDTH = 180
 
-const pairs = Object.entries(TOKEN_LOGOS).reduce((arr, [ticker, logo]) => {
-    if (ticker.toLowerCase() !== 'hai') arr.push([ticker, logo])
-    return arr
-}, [] as [string, string][])
+const pairs: [string, string][] = [
+    ['OP', TOKEN_LOGOS.OP],
+    ['WETH', TOKEN_LOGOS.WETH],
+    ['WSTETH', TOKEN_LOGOS.WSTETH]
+]
 
 export function PairsBanner() {
     const [repeat, setRepeat] = useState(2)
