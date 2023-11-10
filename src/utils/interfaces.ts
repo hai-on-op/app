@@ -44,6 +44,7 @@ interface IColors {
     yellowish: string
     pinkish: string
     orangeish: string
+    reddish: string
     dimmedColor: string
     dimmedBackground: string
     dimmedBorder: string

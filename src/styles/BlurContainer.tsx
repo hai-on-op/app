@@ -6,6 +6,7 @@ export const BlurContainer = styled.div<FlexProps>`
     flex-direction: column;
     border: ${({ theme }) => theme.border.medium};
     border-radius: 24px;
+    background-color: rgba(255,255,255,0.15);
     backdrop-filter: blur(13px);
 
     & > * {

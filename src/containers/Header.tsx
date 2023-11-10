@@ -5,19 +5,22 @@ import { LINK_TO_DOCS, LINK_TO_TELEGRAM, LINK_TO_TWITTER } from '~/utils'
 import { useMediaQuery, useOutsideClick } from '~/hooks'
 import { useStoreActions, useStoreState } from '~/store'
 
-import styled from 'styled-components'
-import { CenteredFlex, Flex, HaiButton, Text, Title } from '~/styles'
+import styled, { css } from 'styled-components'
+import { CenteredFlex, Flex, HaiButton, Popout, Text, Title } from '~/styles'
 import Twitter from '~/components/Icons/Twitter'
 import Telegram from '~/components/Icons/Telegram'
 import Sound from '~/components/Icons/Sound'
 import Caret from '~/components/Icons/Caret'
 import HaiFace from '~/components/Icons/HaiFace'
+import Notification from '~/components/Icons/Notification'
+import Hamburger from '~/components/Icons/Hamburger'
+import Gear from '~/components/Icons/Gear'
 import { Marquee, MarqueeChunk } from '~/components/Marquee'
 import { PassLink } from '~/components/PassLink'
 import { ExternalLink } from '~/components/ExternalLink'
+import { ConnectButton } from '~/components/ConnectButton'
 
 import haiLogo from '~/assets/logo.png'
-import { ConnectButton } from '~/components/ConnectButton'
 
 const tickerExampleText = [
     'HAI',
@@ -42,6 +45,10 @@ export function Header({ tickerActive = false }: HeaderProps) {
     const [dropdownButton, setDropdownButton] = useState<HTMLElement>()
     const [dropdownActive, setDropdownActive] = useState(false)
     useOutsideClick(dropdownButton, () => setDropdownActive(false))
+
+    const [notificationButton, setNotificationButton] = useState<HTMLElement>()
+    const [notificationsActive, setNotificationsActive] = useState(false)
+    useOutsideClick(notificationButton, () => setNotificationsActive(false))
 
     return (
         <Container $tickerActive={tickerActive}>
@@ -151,20 +158,49 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                 </HaiButton>
                             </PassLink>
                         )
-                        : <ConnectButton showBalance/>
+                        : (<>
+                            <ConnectButton showBalance/>
+                            <NotificationButton
+                                as="div"
+                                ref={setNotificationButton as any}
+                                onClick={() => setNotificationsActive(a => !a)}
+                                $variant="yellowish"
+                                $notify>
+                                <Notification/>
+                                {notificationsActive && (
+                                    <NotificationsDropdown
+                                        $float="left"
+                                        $margin="20px"
+                                        onClick={(e: any) => e.stopPropagation()}>
+                                        <Flex
+                                            $width="100%"
+                                            $justify="space-between"
+                                            $align="center">
+                                            <Text>Notifications</Text>
+                                            <SettingsButton>
+                                                <Gear/>
+                                            </SettingsButton>
+                                        </Flex>
+                                        <CenteredFlex $width="100%">
+                                            <Text
+                                                $fontWeight={700}
+                                                $textDecoration="underline">
+                                                View All Notifications
+                                            </Text>
+                                        </CenteredFlex>
+                                    </NotificationsDropdown>
+                                )}
+                            </NotificationButton>
+                        </>)
                     }
                     {!isLargerThanSmall && (
                         <DropdownButton
                             $variant="yellowish"
                             ref={setDropdownButton as any}
                             onClick={() => setDropdownActive(a => !a)}>
-                            <svg viewBox="0 0 10 8" width="10" height="8">
-                                <line x1="1" y1="1" x2="9" y2="1"/>
-                                <line x1="1" y1="4" x2="9" y2="4"/>
-                                <line x1="1" y1="7" x2="9" y2="7"/>
-                            </svg>
+                            <Hamburger/>
                             {dropdownActive && (
-                                <DropdownContainer onClick={(e: any) => e.stopPropagation()}>
+                                <Dropdown onClick={(e: any) => e.stopPropagation()}>
                                     {/* TODO: replace links */}
                                     <ExternalLink
                                         href={LINK_TO_DOCS}
@@ -194,7 +230,7 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                         $textDecoration="none">
                                         <HeaderLink>Telegram</HeaderLink>
                                     </ExternalLink>
-                                </DropdownContainer>
+                                </Dropdown>
                             )}
                         </DropdownButton>
                     )}
@@ -292,6 +328,7 @@ const RightSide = styled(CenteredFlex)`
 const MoreButton = styled(HaiButton)`
     position: relative;
     width: 100px;
+    height: 48px;
 
     & > ${Text} {
         width: 100%;
@@ -314,10 +351,49 @@ const MusicButton = styled(HaiButton)`
     height: 48px;
     padding: 0px;
     justify-content: center;
-    & svg {
-        width: 25px;
-        margin-left: -2px;
+
+    & > svg {
+        width: 21px;
+        height: auto;
     }
+`
+const SettingsButton = styled(MusicButton)`
+    & > svg {
+        width: 22px;
+        height: auto;
+    }
+`
+const NotificationButton = styled(HaiButton)<{ $notify?: boolean }>`
+    position: relative;
+    width: 48px;
+    height: 48px;
+    padding: 0px;
+    justify-content: center;
+
+    ${({ $notify = false }) => $notify && css`
+        &::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background-color: ${({ theme }) => theme.colors.reddish};
+            border: ${({ theme }) => theme.border.medium};
+        }
+    `}
+
+    & > svg {
+        width: 16px;
+    }
+`
+const NotificationsDropdown = styled(Popout)`
+    width: min(400px, calc(100vw - 48px));
+    padding: 24px;
+    margin-right: -21px;
+    gap: 24px;
+    cursor: default;
 `
 
 const DropdownButton = styled(HaiButton)`
@@ -331,29 +407,18 @@ const DropdownButton = styled(HaiButton)`
     & > svg {
         width: 20px;
         height: auto;
-        fill: none;
-        stroke: black;
-        stroke-width: 1.5px;
-        stroke-linecap: round;
     }
 `
-const DropdownContainer = styled(Flex).attrs(props => ({
-    $column: true,
-    $align: 'flex-start',
-    ...props
-}))`
-    position: absolute;
-    top: calc(100% + 20px);
-    right: 0px;
+const Dropdown = styled(Popout)`
     width: 280px;
-    padding: 12px 0;
-    background-color: ${({ theme }) => theme.colors.yellowish};
-    box-shadow: 0 3px 17px rgba(0,0,0,0.3);
-    border: ${({ theme }) => theme.border.medium};
-    border-radius: 24px;
-    font-size: 0.8em;
-
+    padding: 12px;
+    margin-right: -22px;
+    gap: 4px;
+    
     & > * {
-        padding: 4px 16px;
+        width: 100%;
+        height: 24px;
+        border-radius: 12px;
+        border: 1px solid rgba(0,0,0,0.1);
     }
 `

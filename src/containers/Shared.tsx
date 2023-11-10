@@ -304,31 +304,35 @@ const Shared = ({ children }: Props) => {
             {!isSplash && <WaitingModal />}
             <TopUpModal />
 
-            {SYSTEM_STATUS && SYSTEM_STATUS.toLowerCase() === 'shutdown' ? (
+            {SYSTEM_STATUS && SYSTEM_STATUS.toLowerCase() === 'shutdown' && (
                 <AlertContainer>
-                    <AlertLabel type="danger" text={t('shutdown_text')} />
+                    <AlertLabel
+                        type="danger"
+                        text={t('shutdown_text')}
+                    />
                 </AlertContainer>
-            ) : null}
-            {account && blockedAddresses.includes(account.toLowerCase()) ? (
-                <BlockedAddress />
-            ) : (
-                <Content $padTop={!isSplash}>
-                    {(isEarn || isVaults) && (
-                        <IntentionHeader
-                            type={isEarn ? 'earn': 'borrow'}
-                            setType={(type: string) => {
-                                history.push(`/${type === 'borrow' ? 'vaults': type}`)
-                            }}
-                            setAssets={() => {}}>
-                            {isEarn
-                                ? <EarnStats/>
-                                : null
-                            }
-                        </IntentionHeader>
-                    )}
-                    {children}
-                </Content>
             )}
+            {account && blockedAddresses.includes(account.toLowerCase())
+                ? <BlockedAddress />
+                : (
+                    <Content $padTop={!isSplash}>
+                        {(isEarn || isVaults) && (
+                            <IntentionHeader
+                                type={isEarn ? 'earn': 'borrow'}
+                                setType={(type: string) => {
+                                    history.push(`/${type === 'borrow' ? 'vaults': type}`)
+                                }}
+                                setAssets={() => {}}>
+                                {isEarn
+                                    ? <EarnStats/>
+                                    : null
+                                }
+                            </IntentionHeader>
+                        )}
+                        {children}
+                    </Content>
+                )
+            }
             <ImagePreloader />
         </Container>
     )
