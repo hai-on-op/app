@@ -43,6 +43,7 @@ import {
     isAddress,
 } from '~/utils'
 import { CenteredFlex } from '~/styles'
+import { IntentionHeader } from '~/components/IntentionHeader'
 
 const playlist = [
     '/audio/get-hai-together.wav',
@@ -65,6 +66,8 @@ const Shared = ({ children }: Props) => {
 
     const location = useLocation()
     const isSplash = location.pathname === '/'
+    const isEarn = location.pathname === '/earn'
+    const isVaults = location.pathname === '/vaults'
     const tokensData = geb?.tokenList
     const coinTokenContract = useTokenContract(getTokenList(ETH_NETWORK).HAI.address)
     const protTokenContract = useTokenContract(getTokenList(ETH_NETWORK).KITE.address)
@@ -307,7 +310,19 @@ const Shared = ({ children }: Props) => {
             {account && blockedAddresses.includes(account.toLowerCase()) ? (
                 <BlockedAddress />
             ) : (
-                <Content>{children}</Content>
+                <Content $padTop={!isSplash}>
+                    {(isEarn || isVaults) && (
+                        <IntentionHeader
+                            type={isEarn ? 'earn': 'borrow'}
+                            setType={(type: string) => {
+                                history.push(`/${type === 'borrow' ? 'vaults': type}`)
+                            }}
+                            setAssets={() => {}}>
+
+                        </IntentionHeader>
+                    )}
+                    {children}
+                </Content>
             )}
             <ImagePreloader />
         </Container>
@@ -372,7 +387,15 @@ const Background = styled(CenteredFlex)`
     z-index: 0;
 `
 
-const Content = styled.div``
+const Content = styled.div<{ $padTop?: boolean }>`
+    padding: 0 48px;
+    margin-top: ${({ $padTop = false }) => $padTop ? '200px': '0px'};
+
+    ${({ theme, $padTop = false }) => theme.mediaWidth.upToSmall`
+        padding: 0 24px;
+        margin-top: ${$padTop ? '160px': '0px'};
+    `}
+`
 
 const AlertContainer = styled.div`
     padding: 0 20px;
