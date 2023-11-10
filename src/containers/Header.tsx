@@ -1,19 +1,23 @@
 import { useState } from 'react'
+import { useLocation } from 'react-router-dom'
 
 import { LINK_TO_DOCS, LINK_TO_TELEGRAM, LINK_TO_TWITTER } from '~/utils'
 import { useMediaQuery, useOutsideClick } from '~/hooks'
 import { useStoreActions, useStoreState } from '~/store'
 
 import styled from 'styled-components'
-import { CenteredFlex, Flex, HaiButton, Title } from '~/styles'
+import { CenteredFlex, Flex, HaiButton, Text, Title } from '~/styles'
 import Twitter from '~/components/Icons/Twitter'
 import Telegram from '~/components/Icons/Telegram'
 import Sound from '~/components/Icons/Sound'
+import Caret from '~/components/Icons/Caret'
 import HaiFace from '~/components/Icons/HaiFace'
 import { Marquee, MarqueeChunk } from '~/components/Marquee'
+import { PassLink } from '~/components/PassLink'
 import { ExternalLink } from '~/components/ExternalLink'
 
 import haiLogo from '~/assets/logo.png'
+import { ConnectButton } from '~/components/ConnectButton'
 
 const tickerExampleText = [
     'HAI',
@@ -26,6 +30,9 @@ type HeaderProps = {
     tickerActive?: boolean
 }
 export function Header({ tickerActive = false }: HeaderProps) {
+    const location = useLocation()
+    const isSplash = location.pathname === '/'
+
     const isLargerThanExtraSmall = useMediaQuery('upToExtraSmall')
     const isLargerThanSmall = useMediaQuery('upToSmall')
 
@@ -56,52 +63,98 @@ export function Header({ tickerActive = false }: HeaderProps) {
                         )
                         : <HaiFace filled/>
                     }
-                    {isLargerThanSmall && (<>
-                        {/* TODO: replace links */}
-                        <ExternalLink
-                            href={LINK_TO_DOCS}
-                            $textDecoration="none">
-                            <HeaderLink>Learn</HeaderLink>
-                        </ExternalLink>
-                        <ExternalLink
-                            href={LINK_TO_DOCS}
-                            $textDecoration="none">
-                            <HeaderLink>Docs</HeaderLink>
-                        </ExternalLink>
-                        <ExternalLink
-                            href={LINK_TO_DOCS}
-                            $textDecoration="none">
-                            <HeaderLink>Community</HeaderLink>
-                        </ExternalLink>
-                    </>)}
+                    {isLargerThanSmall && (
+                        isSplash
+                            ? (<>
+                                {/* TODO: replace links */}
+                                <ExternalLink
+                                    href={LINK_TO_DOCS}
+                                    $textDecoration="none">
+                                    <HeaderLink>Learn</HeaderLink>
+                                </ExternalLink>
+                                <ExternalLink
+                                    href={LINK_TO_DOCS}
+                                    $textDecoration="none">
+                                    <HeaderLink>Docs</HeaderLink>
+                                </ExternalLink>
+                                <ExternalLink
+                                    href={LINK_TO_DOCS}
+                                    $textDecoration="none">
+                                    <HeaderLink>Community</HeaderLink>
+                                </ExternalLink>
+                            </>)
+                            : (<>
+                                <PassLink
+                                    href="/vaults"
+                                    $textDecoration="none"
+                                    content={(
+                                        <HeaderLink $active={location.pathname === '/vaults'}>
+                                            GET HAI
+                                        </HeaderLink>
+                                    )}
+                                />
+                                <PassLink
+                                    href="/earn"
+                                    $textDecoration="none"
+                                    content={(
+                                        <HeaderLink $active={location.pathname === '/earn'}>
+                                            EARN
+                                        </HeaderLink>
+                                    )}
+                                />
+                                <ExternalLink
+                                    href={LINK_TO_DOCS}
+                                    $textDecoration="none">
+                                    <HeaderLink>LEARN</HeaderLink>
+                                </ExternalLink>
+                            </>)
+                    )}
                 </CenteredFlex>
                 <RightSide>
-                    {isLargerThanSmall && (<>
-                        <ExternalLink
-                            href={LINK_TO_TWITTER}
-                            $textDecoration="none">
-                            <Twitter
-                                width={28}
-                                height={24}
-                            />
-                        </ExternalLink>
-                        <ExternalLink
-                            href={LINK_TO_TELEGRAM}
-                            $textDecoration="none">
-                            <Telegram
-                                width={32}
-                                height={24}
-                            />
-                        </ExternalLink>
-                    </>)}
+                    {isLargerThanSmall && (
+                        isSplash
+                            ? (<>
+                                <ExternalLink
+                                    href={LINK_TO_TWITTER}
+                                    $textDecoration="none">
+                                    <Twitter
+                                        width={28}
+                                        height={24}
+                                    />
+                                </ExternalLink>
+                                <ExternalLink
+                                    href={LINK_TO_TELEGRAM}
+                                    $textDecoration="none">
+                                    <Telegram
+                                        width={32}
+                                        height={24}
+                                    />
+                                </ExternalLink>
+                            </>)
+                            : (
+                                <MoreButton>
+                                    <Text>More</Text>
+                                    <Caret/>
+                                </MoreButton>
+                            )
+                    )}
                     <MusicButton
                         $variant="unblurred"
                         onClick={() => setIsPlayingMusic(!isPlayingMusic)}>
                         <Sound muted={!isPlayingMusic}/>
                     </MusicButton>
-                    <HaiButton $variant="yellowish">
-                        Coming Soon
-                    </HaiButton>
+                    {isSplash
+                        ? (
+                            <PassLink
+                                href="/vaults"
+                                $textDecoration="none">
+                                <HaiButton $variant="yellowish">
+                                    Enter App
+                                </HaiButton>
+                            </PassLink>
+                        )
+                        : <ConnectButton showBalance/>
+                    }
                     {!isLargerThanSmall && (
                         <DropdownButton
                             $variant="yellowish"
@@ -166,17 +219,11 @@ const Container = styled(Flex).attrs(props => ({
     right: 0px;
     height: ${({ $tickerActive }) => $tickerActive ? 156: 96}px;
 
-    & svg {
-        width: 64px;
-        height: auto;
-    }
-
-    ${({ theme }) => theme.mediaWidth.upToSmall`
-        padding: 24px;
+    ${({ theme, $tickerActive }) => theme.mediaWidth.upToSmall`
+        height: ${$tickerActive ? 140: 80}px;
     `}
     ${({ theme, $tickerActive }) => theme.mediaWidth.upToExtraSmall`
-        padding: 12px;
-        height: ${$tickerActive ? 140: 80}px;
+        height: ${$tickerActive ? 120: 60}px;
         gap: 12px;
     `}
 
@@ -226,21 +273,15 @@ const HeaderLink = styled(Title).attrs(props => ({
     $fontSize: '1.6em',
     $letterSpacing: '0.2rem',
     $textTransform: 'uppercase',
-    $fontWeight: 400,
     ...props
-}))`
+}))<{ $active?: boolean }>`
     text-shadow: none;
+    -webkit-text-stroke: 0px;
+    font-weight: ${({ $active = false }) => $active ? 700: 400};
 `
 
 const RightSide = styled(CenteredFlex)`
     gap: 36px;
-
-    & svg {
-        fill: black;
-        stroke: none;
-        width: auto;
-        height: 24px;
-    }
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
         gap: 24px;
@@ -248,6 +289,25 @@ const RightSide = styled(CenteredFlex)`
     ${({ theme }) => theme.mediaWidth.upToExtraSmall`
         gap: 12px;
     `}
+`
+
+const MoreButton = styled(HaiButton)`
+    position: relative;
+    width: 100px;
+
+    & > ${Text} {
+        width: 100%;
+        text-align: center;
+    }
+    & svg {
+        fill: none;
+        stroke: black;
+        stroke-width: 2.5px;
+        width: 10px;
+        height: auto;
+        transform: rotate(90deg);
+        flex-shrink: 0;
+    }
 `
 
 const MusicButton = styled(HaiButton)`
