@@ -49,7 +49,7 @@ export const HaiButton = styled.button.attrs(props => ({
     font-size: ${(props) => props.theme.font.small};
     font-weight: 600;
     white-space: nowrap;
-    padding: 8px 16px;
+    padding: 8px 20px;
     color: black;
     ${({ theme, $variant = 'default' }) => ($variant === 'default'
         ? css`

@@ -1,6 +1,9 @@
 import merge from 'lodash.merge'
 import { darkTheme as rainbowDarkTheme, type Theme as RainbowTheme } from '@rainbow-me/rainbowkit'
 import { type Theme, mediaWidthTemplates } from '~/utils'
+import { css } from 'styled-components'
+
+import dashedBorderImage from '~/assets/border-image.png'
 
 export const darkTheme: Theme = {
     colors: {
@@ -9,7 +12,7 @@ export const darkTheme: Theme = {
         customSecondary: '#DADADA',
         gradient: 'linear-gradient(90deg, #F2D86A 0%, #FFC3AB 100%)',
         neutral: '#ffffff',
-        background: '#040C20',
+        background: '#F2F1FB',
         overlay: 'rgba(0, 0, 0, 0.8)',
         greenish: '#c0f3bb',
         blueish: '#bbc2f0',
@@ -50,7 +53,13 @@ export const darkTheme: Theme = {
     border: {
         thin: '1px solid black',
         medium: '2px solid black',
-        thick: '3px solid black'
+        thick: '3px solid black',
+        dashedImage: css`
+            border-style: dashed;
+            border-image-source: url('${dashedBorderImage}');
+            border-image-slice: 2;
+            border-image-repeat: round;
+        `
     },
     global: {
         gridMaxWidth: '1454px',
@@ -110,7 +119,13 @@ export const lightTheme: Theme = {
     border: {
         thin: '1px solid black',
         medium: '2px solid black',
-        thick: '3px solid black'
+        thick: '3px solid black',
+        dashedImage: css`
+            border-style: dashed;
+            border-image-source: url('${dashedBorderImage}');
+            border-image-slice: 2;
+            border-image-repeat: round;
+        `
     },
     global: {
         gridMaxWidth: '1500px',

@@ -1,5 +1,5 @@
 import { JsonRpcSigner } from '@ethersproject/providers/lib/json-rpc-provider'
-import { type DefaultTheme, type ThemedCssFunction } from 'styled-components'
+import { type FlattenSimpleInterpolation, type DefaultTheme, type ThemedCssFunction } from 'styled-components'
 import { type TransactionResponse } from '@ethersproject/providers'
 import { Geb, type TokenData } from '@hai-on-op/sdk'
 import { BigNumber } from 'ethers'
@@ -64,6 +64,7 @@ interface IBorders {
     thin: string
     medium: string
     thick: string
+    dashedImage: FlattenSimpleInterpolation
 }
 
 interface IGlobal {

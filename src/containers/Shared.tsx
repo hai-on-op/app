@@ -42,8 +42,9 @@ import {
     NETWORK_ID,
     isAddress,
 } from '~/utils'
-import { CenteredFlex } from '~/styles'
+import { CenteredFlex, Flex } from '~/styles'
 import { IntentionHeader } from '~/components/IntentionHeader'
+import { EarnStats } from './Earn/Stats'
 
 const playlist = [
     '/audio/get-hai-together.wav',
@@ -118,6 +119,7 @@ const Shared = ({ children }: Props) => {
                 balance: Number(utils.formatEther(balance)),
             })
         })
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [account, signer, connectWalletState, chain?.id])
 
     useEffect(() => {
@@ -318,7 +320,10 @@ const Shared = ({ children }: Props) => {
                                 history.push(`/${type === 'borrow' ? 'vaults': type}`)
                             }}
                             setAssets={() => {}}>
-
+                            {isEarn
+                                ? <EarnStats/>
+                                : null
+                            }
                         </IntentionHeader>
                     )}
                     {children}
@@ -387,13 +392,23 @@ const Background = styled(CenteredFlex)`
     z-index: 0;
 `
 
-const Content = styled.div<{ $padTop?: boolean }>`
+const Content = styled(Flex).attrs(props => ({
+    $column: true,
+    $justify: 'flex-start',
+    $align: 'center',
+    $gap: 48,
+    ...props
+}))<{ $padTop?: boolean }>`
     padding: 0 48px;
-    margin-top: ${({ $padTop = false }) => $padTop ? '200px': '0px'};
+    margin-top: ${({ $padTop = false }) => $padTop ? '240px': '0px'};
+
+    /* & > * {
+        max-width: min(1200px, calc(100vw - 96px));
+    } */
 
     ${({ theme, $padTop = false }) => theme.mediaWidth.upToSmall`
         padding: 0 24px;
-        margin-top: ${$padTop ? '160px': '0px'};
+        margin-top: ${$padTop ? '200px': '0px'};
     `}
 `
 

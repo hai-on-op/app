@@ -37,6 +37,7 @@ const Container = styled(CenteredFlex)`
     height: 48px;
     border: ${({ theme }) => theme.border.medium};
     border-radius: 999px;
+    backdrop-filter: blur(13px);
 `
 
 const BalanceContainer = styled(Text).attrs(props => ({

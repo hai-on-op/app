@@ -138,9 +138,7 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                 </MoreButton>
                             )
                     )}
-                    <MusicButton
-                        $variant="unblurred"
-                        onClick={() => setIsPlayingMusic(!isPlayingMusic)}>
+                    <MusicButton onClick={() => setIsPlayingMusic(!isPlayingMusic)}>
                         <Sound muted={!isPlayingMusic}/>
                     </MusicButton>
                     {isSplash

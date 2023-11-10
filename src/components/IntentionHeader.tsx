@@ -1,12 +1,13 @@
-import { type ChangeEvent, type ReactNode } from 'react'
+import { type ReactNode } from 'react'
 
-import { LINK_TO_DOCS } from '~/utils'
+import { LINK_TO_DOCS, TOKEN_LOGOS } from '~/utils'
 
 import styled from 'styled-components'
 import { BlurContainer, Flex, Text, Title } from '~/styles'
 import { BrandedTitle } from './BrandedTitle'
 import { ExternalLink } from './ExternalLink'
 import { BrandedSelect } from './BrandedSelect'
+import HaiFace from './Icons/HaiFace'
 
 type IntentionType = 'earn' | 'borrow'
 
@@ -27,6 +28,21 @@ const copy: Record<IntentionType, {
     }
 }
 
+const typeOptions = [
+    {
+        label: 'GET HAI',
+        value: 'borrow',
+        icon: <HaiFace filled/>,
+        description: 'Mint & borrow $HAI stablecoin against your preferred collateral'
+    },
+    {
+        label: 'EARN REWARDS',
+        value: 'earn',
+        icon: TOKEN_LOGOS.OP,
+        description: 'Earn long term yields by staking a growing list of crypto assets'
+    }
+]
+
 type IntentionHeaderProps = {
     type: 'earn' | 'borrow',
     setType: (type: string) => void,
@@ -46,27 +62,22 @@ export function IntentionHeader({ type, setType, setAssets, children }: Intentio
                     $flexWrap>
                     <BrandedTitle
                         textContent="I WANT TO"
-                        $fontSize="3.6em"
+                        $fontSize="3.2em"
                     />
                     <BrandedSelect
-                        width={type === 'earn' ? '510px': '280px'}
                         value={type}
-                        onChange={(e: ChangeEvent<HTMLSelectElement>) => setType(e.currentTarget.value)}
-                        options={[
-                            { label: 'EARN REWARDS', value: 'earn' },
-                            { label: 'GET HAI', value: 'borrow' }
-                        ]}
+                        onChange={(value: string) => setType(value)}
+                        options={typeOptions}
                     />
                     {type === 'borrow' && (<>
                         <Title
                             $color="orangeish"
-                            $fontSize="3.6em">
+                            $fontSize="3.2em">
                             ON
                         </Title>
                         <BrandedSelect
-                            width="380px"
                             value="all"
-                            onChange={(e: ChangeEvent<HTMLSelectElement>) => setAssets?.(e.currentTarget.value)}
+                            onChange={(value: string) => setAssets?.(value)}
                             options={[
                                 { label: 'ALL ASSETS', value: 'all' }
                             ]}
@@ -90,13 +101,15 @@ export function IntentionHeader({ type, setType, setAssets, children }: Intentio
 const Container = styled(BlurContainer).attrs(props => ({
     $width: '100%',
     ...props
-}))``
+}))`
+    overflow: visible;
+`
 
 const Inner = styled(Flex).attrs(props => ({
     $width: '100%',
     $column: true,
     $justify: 'flex-start',
     $align: 'flex-start',
-    $gap: 24,
+    $gap: 36,
     ...props
 }))``
