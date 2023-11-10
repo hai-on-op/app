@@ -49,7 +49,7 @@ export function useIsOwner(safeId: string): boolean {
         if (!geb || !account || !safeId) return undefined
         setState(true)
         Promise.all([
-            geb.contracts.proxyRegistry.proxies(account as string),
+            geb.contracts.proxyFactory.proxies(account as string),
             geb.contracts.safeManager.safeData(safeId),
         ])
             .then(getIsOwnerCallback)

@@ -1012,10 +1012,10 @@
     "@ethersproject/properties" "^5.7.0"
     "@ethersproject/strings" "^5.7.0"
 
-"@hai-on-op/abis@0.0.0-f1d775e0":
-  version "0.0.0-f1d775e0"
-  resolved "https://registry.npmjs.org/@hai-on-op/abis/-/abis-0.0.0-f1d775e0.tgz#abb515f85016f35cd188762d967693e0a83dd83a"
-  integrity sha512-IMTK2CGNdTJfpQtLat8UNXU8/V9qiYCxK3/t27xt/6cw7pGGkNy0jz3CCEiGN/pVugyDTzAmpjUsb04GfH8c+g==
+"@hai-on-op/abis@0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@hai-on-op/abis/-/abis-0.1.2.tgz#eb9f78b6f2ea1929a96b8817f2b4ed4d6c3fe4fe"
+  integrity sha512-i43YZHD4BFmywaepnvYMrWCDVxiEkBJH9PctXhaNAp27w93AqsyGaiesXuxu1TCFq3MTMP8XdFAh3ReWbVNc/w==
   dependencies:
     "@defi-wonderland/solidity-utils" "0.0.0-4298c6c6"
     "@ethersproject/abi" "5.7.0"
@@ -1026,14 +1026,15 @@
     "@uniswap/v3-periphery" "https://github.com/Uniswap/v3-periphery.git#0.8"
     bn.js "5.2.1"
     ethers "6.0.3"
+    forge-std "https://github.com/foundry-rs/forge-std.git#e8a047e3f40f13fa37af6fe14e6e06283d9a060e"
     typechain "^8.3.1"
 
-"@hai-on-op/sdk@1.2.0-rc.3":
-  version "1.2.0-rc.3"
-  resolved "https://registry.npmjs.org/@hai-on-op/sdk/-/sdk-1.2.0-rc.3.tgz#47b20283bdb660cbe7bb167a56ea26e28c991c37"
-  integrity sha512-YMJKeUwKp7L/XCS3DKi954TxEHifIfc7+ajLa0JglEeXbk7k+i4DCgcZBE3+aJWgUtPVBP0J/OxWZsNIRbl2bw==
+"@hai-on-op/sdk@1.2.2-52d946b2.0":
+  version "1.2.2-52d946b2.0"
+  resolved "https://registry.yarnpkg.com/@hai-on-op/sdk/-/sdk-1.2.2-52d946b2.0.tgz#04e0f727fb008d17677cbe9daef4dd774180cd6e"
+  integrity sha512-WZr+Xd5cqMrNObkgo0enuotAPJvPRExc58npEFt0bZ/yWB6T+qh7/HmrMlPH8+OG8IR4PwBeDjEI37zy/2Lb4A==
   dependencies:
-    "@hai-on-op/abis" "0.0.0-f1d775e0"
+    "@hai-on-op/abis" "0.1.2"
     ethers "5.4.7"
 
 "@jest/schemas@^29.6.3":
@@ -3138,9 +3139,9 @@ domexception@^4.0.0:
   dependencies:
     webidl-conversions "^7.0.0"
 
-"ds-test@git+https://github.com/dapphub/ds-test.git":
+"ds-test@https://github.com/dapphub/ds-test":
   version "1.0.0"
-  resolved "git+https://github.com/dapphub/ds-test.git#e282159d5170298eb2455a6c05280ab5a73a4ef0"
+  resolved "https://github.com/dapphub/ds-test#e282159d5170298eb2455a6c05280ab5a73a4ef0"
 
 duplexify@^4.1.2:
   version "4.1.2"
@@ -3539,9 +3540,13 @@ for-each@^0.3.3:
   dependencies:
     is-callable "^1.1.3"
 
-"forge-std@git+https://github.com/foundry-rs/forge-std.git":
-  version "1.6.0"
-  resolved "git+https://github.com/foundry-rs/forge-std.git#c4aaed668ae0900dbae646ef1bb43cad2e95097c"
+"forge-std@git+https://github.com/foundry-rs/forge-std.git#e8a047e3f40f13fa37af6fe14e6e06283d9a060e":
+  version "1.5.6"
+  resolved "git+https://github.com/foundry-rs/forge-std.git#e8a047e3f40f13fa37af6fe14e6e06283d9a060e"
+
+"forge-std@https://github.com/foundry-rs/forge-std":
+  version "1.7.1"
+  resolved "https://github.com/foundry-rs/forge-std#37a37ab73364d6644bfe11edf88a07880f99bd56"
 
 form-data@^4.0.0:
   version "4.0.0"
