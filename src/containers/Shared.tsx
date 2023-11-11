@@ -2,7 +2,7 @@ import { type ReactNode, useEffect, useCallback } from 'react'
 import { getTokenList } from '@hai-on-op/sdk'
 import { useHistory, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 import { toast } from 'react-toastify'
 import { ethers, utils } from 'ethers'
 import { useAccount, useNetwork } from 'wagmi'
@@ -46,6 +46,7 @@ import { CenteredFlex, Flex } from '~/styles'
 import { IntentionHeader } from '~/components/IntentionHeader'
 import { EarnStats } from './Earn/Stats'
 import { ParallaxBackground } from '~/components/ParallaxBackground'
+import { HaiAlert } from '~/components/HaiAlert'
 
 const playlist = [
     '/audio/get-hai-together.wav',
@@ -274,6 +275,8 @@ const Shared = ({ children }: Props) => {
         else pause()
     }, [settingsState.isPlayingMusic, play, pause])
 
+    const haiAlertActive = true
+
     return (
         <Container>
             <Background>
@@ -320,6 +323,7 @@ const Shared = ({ children }: Props) => {
                 : (
                     <Content
                         $padTop={!isSplash}
+                        $padBottom={!isSplash && haiAlertActive}
                         $maxWidth={!isSplash ? 'min(1200px, calc(100vw - 96px))': undefined}>
                         {(isEarn || isVaults) && (
                             <IntentionHeader
@@ -338,6 +342,7 @@ const Shared = ({ children }: Props) => {
                     </Content>
                 )
             }
+            {!isSplash && haiAlertActive && <HaiAlert/>}
             <ImagePreloader />
         </Container>
     )
@@ -407,8 +412,9 @@ const Content = styled(Flex).attrs(props => ({
     $align: 'center',
     $gap: 48,
     ...props
-}))<{ $padTop?: boolean, $maxWidth?: string }>`
+}))<{ $padTop?: boolean, $padBottom?: boolean, $maxWidth?: string }>`
     padding: 0 48px;
+    ${({ $padBottom = false }) => $padBottom && css`padding-bottom: 120px;`}
     margin-top: ${({ $padTop = false }) => $padTop ? '240px': '0px'};
 
     & > * {
