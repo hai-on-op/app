@@ -170,7 +170,7 @@ const CreateSafe = ({
         }
     }
 
-    let [approvalState, approve] = useTokenApproval(
+    const [approvalState, approve] = useTokenApproval(
         leftInput,
         selectedCollateral?.address,
         proxyAddress,
@@ -354,13 +354,10 @@ const CreateSafeContainer = () => {
     useEffect(() => {
         safeActions.setSafeData({ ...DEFAULT_SAFE_STATE, collateral: selectedItem })
         return () => safeActions.setSafeData(DEFAULT_SAFE_STATE)
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedItem])
 
     useEffect(() => {
         if (collaterals.length > 0 && selectedItem === '') setSelectedItem(collaterals[0].symbol)
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [collaterals])
 
     return (

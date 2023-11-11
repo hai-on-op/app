@@ -20,6 +20,7 @@ const Auctions = ({
 }: RouteComponentProps<{ auctionType?: string }>) => {
     const { auctionModel: auctionsActions, popupsModel: popupsActions } = useStoreActions((state) => state)
     const { auctionModel: auctionsState, connectWalletModel: connectWalletState } = useStoreState((state) => state)
+    const { proxyAddress } = connectWalletState
     const [showFaqs, setShowFaqs] = useState(false)
     const query = useQuery()
     const queryType = query.get('type') as AuctionEventType | null
@@ -45,8 +46,6 @@ const Auctions = ({
         deltaToStartDebtAuction,
         surplusCooldownDone,
     } = useStartAuction()
-
-    const { proxyAddress } = connectWalletState
 
     const handleStartSurplusAuction = async () => {
         setIsLoading(true)
@@ -118,6 +117,7 @@ const Auctions = ({
                     geb,
                     type,
                     tokenSymbol: type && type === 'COLLATERAL' ? selectedItem : undefined,
+                    userProxy: proxyAddress,
                 })
                 setError('')
             } catch (error) {

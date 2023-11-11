@@ -2,7 +2,7 @@ import { formatUserSafe, IFetchSafesPayload, IUserSafeList } from '~/utils'
 import gebManager from '~/utils/gebManager'
 
 export const fetchUserSafes = async (config: IFetchSafesPayload) => {
-    let response = await fetchUserSafesRaw(config)
+    const response = await fetchUserSafesRaw(config)
     if (!response) return
 
     const safesResponse: IUserSafeList = response
@@ -31,7 +31,7 @@ export const fetchUserSafesRaw = async (config: IFetchSafesPayload) => {
     const { address, geb } = config
 
     if (!geb || !config.tokensData) return
-    let response = await gebManager.getUserSafesRpc({
+    const response = await gebManager.getUserSafesRpc({
         address: address.toLowerCase(),
         geb,
         tokensData: config.tokensData,

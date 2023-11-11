@@ -25,7 +25,7 @@ export const handleAuctionBuy = async ({ signer, haiAmount, auctionId, collatera
     const collateralAmountBN = ethers.utils.parseUnits(collateralAmount, 18)
 
     console.log('calling buyCollateral')
-    let tx = await proxy.buyCollateral(collateral, auctionId, collateralAmountBN, haiAmountBN)
+    const tx = await proxy.buyCollateral(collateral, auctionId, collateralAmountBN, haiAmountBN)
 
     if (!tx) throw new Error('No transaction request!')
     const txWithGas = await handlePreTxGasEstimate(signer, tx)

@@ -129,6 +129,8 @@ const Fade = styled.div`
     }
     &.fade-enter-active,
     &.fade-exit-active {
-        transition: opacity 300ms, transform 300ms;
+        transition:
+            opacity 300ms,
+            transform 300ms;
     }
 `

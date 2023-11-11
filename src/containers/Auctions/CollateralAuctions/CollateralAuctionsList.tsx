@@ -4,11 +4,11 @@ import styled from 'styled-components'
 
 import Dropdown from '~/components/Dropdown'
 import Loader from '~/components/Loader'
-import Pagination from '~/components/Pagination'
 import { SideLabel } from '~/containers/Safes/CreateSafe'
-import { useCollateralAuctions, usePublicGeb } from '~/hooks'
-import { IPaging, TOKEN_LOGOS } from '~/utils'
+import { usePublicGeb, useLoadMoreAuctions, useGetAuctions } from '~/hooks'
+import { TOKEN_LOGOS } from '~/utils'
 import CollateralAuctionBlock from './CollateralAuctionBlock'
+import { ICollateralAuction } from '~/types'
 
 export type Item = {
     name: string
@@ -25,13 +25,13 @@ interface Props {
 }
 const CollateralAuctionsList = ({ selectedItem, setSelectedItem }: Props) => {
     const { t } = useTranslation()
-    const [paging, setPaging] = useState<IPaging>({ from: 0, to: 5 })
 
     const geb = usePublicGeb()
     const tokensData = geb?.tokenList
 
     // auctions list
-    const auctions = useCollateralAuctions(selectedItem)
+    const auctions = useGetAuctions('COLLATERAL', selectedItem) as ICollateralAuction[]
+    const { LoadMoreButton, numberOfAuctions } = useLoadMoreAuctions({ auctions })
 
     const collaterals = tokensData && Object.values(tokensData).filter((token) => token.isCollateral)
     const collateralsDropdown = collaterals?.map((collateral) => {
@@ -61,10 +61,11 @@ const CollateralAuctionsList = ({ selectedItem, setSelectedItem }: Props) => {
                 <Loader text="Loading..." />
             ) : auctions.length > 0 ? (
                 <>
-                    {auctions.slice(paging.from, paging.to).map((auction, i: number) => (
+                    {auctions.slice(0, numberOfAuctions).map((auction, i: number) => (
                         <CollateralAuctionBlock key={auction.auctionId} {...{ ...auction, isCollapsed: i !== 0 }} />
                     ))}
-                    <Pagination items={auctions} perPage={5} handlePagingMargin={setPaging} />
+
+                    <LoadMoreButton />
                 </>
             ) : (
                 <NoData>

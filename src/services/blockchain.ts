@@ -12,7 +12,7 @@ export const claimAirdrop = async (signer: JsonRpcSigner) => {
 
     const airdropContract = new ethers.Contract('0x125F32dA90E5BE3F0738EDef15188BeE87a13b44', abi, signer)
 
-    let txData = await airdropContract.populateTransaction.drop()
+    const txData = await airdropContract.populateTransaction.drop()
 
     const tx = await handlePreTxGasEstimate(signer, txData)
 
