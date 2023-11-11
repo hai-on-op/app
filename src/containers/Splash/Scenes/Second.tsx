@@ -7,7 +7,7 @@ import { Flex, Grid, HaiButton, Text } from '~/styles'
 import { type SplashImage, ZoomScene, type ZoomSceneProps } from './ZoomScene'
 import { BrandedTitle } from '~/components/BrandedTitle'
 import { ProgressBar } from '~/components/ProgressBar'
-import { FloatingElements } from './FloatingElements'
+import { FloatingElements } from '~/components/FloatingElements'
 import { TokenPair } from '~/components/TokenPair'
 
 const elves: SplashImage[] = [

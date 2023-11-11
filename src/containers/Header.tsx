@@ -200,7 +200,10 @@ export function Header({ tickerActive = false }: HeaderProps) {
                             onClick={() => setDropdownActive(a => !a)}>
                             <Hamburger/>
                             {dropdownActive && (
-                                <Dropdown onClick={(e: any) => e.stopPropagation()}>
+                                <Dropdown
+                                    $float="left"
+                                    $margin="20px"
+                                    onClick={(e: any) => e.stopPropagation()}>
                                     {/* TODO: replace links */}
                                     <ExternalLink
                                         href={LINK_TO_DOCS}
@@ -412,12 +415,16 @@ const DropdownButton = styled(HaiButton)`
 const Dropdown = styled(Popout)`
     width: 280px;
     padding: 12px;
-    margin-right: -22px;
+    margin-right: -19px;
     gap: 4px;
+    cursor: default;
     
     & > * {
         width: 100%;
-        height: 24px;
+        height: 36px;
+        & * {
+            line-height: 36px;
+        }
         border-radius: 12px;
         border: 1px solid rgba(0,0,0,0.1);
     }

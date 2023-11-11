@@ -1,7 +1,7 @@
 import styled from 'styled-components'
 import { DashedContainerStyle, Flex, HaiButton, Text } from '~/styles'
 import { ExternalLink } from '~/components/ExternalLink'
-import { FloatingElements, FloatingElementsProps } from '../Splash/Scenes/FloatingElements'
+import { FloatingElements, FloatingElementsProps } from '~/components/FloatingElements'
 import { TOKEN_LOGOS } from '~/utils'
 
 type EarnStrategyProps = {

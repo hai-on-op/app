@@ -6,7 +6,7 @@ import { useMediaQuery } from '~/hooks'
 import styled from 'styled-components'
 import { Flex, HaiButton } from '~/styles'
 import { type SplashImage, ZoomScene, type ZoomSceneProps } from './ZoomScene'
-import { FloatingElements } from './FloatingElements'
+import { FloatingElements } from '~/components/FloatingElements'
 import Caret from '~/components/Icons/Caret'
 import { LearnCard } from './LearnCard'
 
@@ -135,6 +135,8 @@ const ArrowButton = styled(HaiButton).attrs(props => ({
     position: absolute;
     width: 48px;
     height: 48px;
+    padding: 0px;
+    justify-content: center;
     left: 24px;
 
     &:last-of-type {

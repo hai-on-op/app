@@ -1,6 +1,6 @@
 import { TOKEN_LOGOS } from "~/utils"
 
-import { type SplashImage } from "./ZoomScene"
+import { type SplashImage } from "../containers/Splash/Scenes/ZoomScene"
 import { Cloud } from "~/components/Cloud"
 import { Elf } from "~/components/Elf"
 import { HaiCoin } from "~/components/HaiCoin"
