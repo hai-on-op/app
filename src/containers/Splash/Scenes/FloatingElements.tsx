@@ -1,12 +1,17 @@
+import { TOKEN_LOGOS } from "~/utils"
+
 import { type SplashImage } from "./ZoomScene"
 import { Cloud } from "~/components/Cloud"
 import { Elf } from "~/components/Elf"
 import { HaiCoin } from "~/components/HaiCoin"
 
-type FloatingElementsProps = {
+export type FloatingElementsProps = {
     elves?: SplashImage[],
     clouds?: SplashImage[],
-    coins?: SplashImage[]
+    coins?: (Omit<SplashImage, 'index'> & {
+        index: number | keyof typeof TOKEN_LOGOS,
+        thickness?: number
+    })[]
 }
 export function FloatingElements({ elves, clouds, coins }: FloatingElementsProps) {
     return (<>
@@ -35,10 +40,15 @@ export function FloatingElements({ elves, clouds, coins }: FloatingElementsProps
                 }}
             />
         ))}
-        {(coins || []).map(({ index, width, style, rotation = 0, zIndex = 0 }, i) => (
+        {(coins || []).map(({ index, width, style, rotation = 0, zIndex = 0, thickness }, i) => (
             <HaiCoin
                 key={i}
-                variant={index === 0 ? 'hai': 'kite'}
+                variant={typeof index === 'string'
+                    ? index
+                    : index === 0
+                        ? 'HAI'
+                        : 'KITE'
+                }
                 width={width}
                 animated
                 style={{
@@ -46,6 +56,7 @@ export function FloatingElements({ elves, clouds, coins }: FloatingElementsProps
                     transform: `translateZ(${zIndex * 20}px) rotate(${rotation}deg)`,
                     zIndex
                 }}
+                thickness={thickness}
             />
         ))}
     </>)

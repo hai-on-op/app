@@ -1,17 +1,19 @@
 import { useState } from 'react'
+
+import { TOKEN_LOGOS } from '~/utils'
+
 import styled, { css, keyframes } from 'styled-components'
 import { CenteredFlex } from '~/styles'
-import HaiFace from './Icons/HaiFace'
-import Kite from './Icons/Kite'
 
 type HaiCoinProps = {
-    variant?: 'hai' | 'kite',
+    variant?: keyof typeof TOKEN_LOGOS,
     width?: string,
     style?: object,
-    animated?: boolean
+    animated?: boolean,
+    thickness?: number
 }
 
-export function HaiCoin({ variant = 'hai', width, animated, ...props }: HaiCoinProps) {
+export function HaiCoin({ variant = 'HAI', width, animated, thickness, ...props }: HaiCoinProps) {
     const [animDuration] = useState(1.5 + 0.75 * Math.random())
 
     return (
@@ -22,13 +24,10 @@ export function HaiCoin({ variant = 'hai', width, animated, ...props }: HaiCoinP
                 $variant={variant}
                 $animated={animated}
                 $animDur={animDuration}>
-                <Face>
-                    {variant === 'hai'
-                        ? <HaiFace filled/>
-                        : <Kite/>
-                    }
+                <Face $thickness={thickness}>
+                    <img src={TOKEN_LOGOS[variant]} alt=""/>
                 </Face>
-                <BackFace/>
+                <BackFace $thickness={thickness}/>
             </Inner>
         </HaiCoinImage>
     )
@@ -45,31 +44,27 @@ export const HaiCoinImage = styled(CenteredFlex)<{ $width?: string }>`
     height: ${({ $width = 'auto' }) => $width};
     pointer-events: none;
 `
-const Face = styled(CenteredFlex)`
+const Face = styled(CenteredFlex)<{ $thickness?: number }>`
     position: absolute;
     width: 100%;
     height: 100%;
     border-radius: 50%;
     background-color: ${({ theme }) => theme.colors.greenish};
-    transform: translateZ(12px);
+    transform: translateZ(${({ $thickness = 12 }) => $thickness}px);
     z-index: 2;
 
-    & svg {
-        width: 70%;
-        height: 70%;
+    & svg, & img {
+        width: 80%;
+        height: 80%;
     }
 `
-const BackFace = styled.div`
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
+const BackFace = styled(Face)`
     background-color: #B2E3AD;
-    transform: translateZ(-12px);
+    transform: translateZ(-${({ $thickness = 12 }) => $thickness}px);
     z-index: 1;
 `
 const Inner = styled(CenteredFlex)<{
-    $variant?: 'hai' | 'kite',
+    $variant?: HaiCoinProps['variant'],
     $animated?: boolean,
     $animDur: number
 }>`
@@ -79,22 +74,34 @@ const Inner = styled(CenteredFlex)<{
     transform-style: preserve-3d;
     ${({ $animated, $animDur }) => $animated && css`animation: ${rotate} ${$animDur}s ease-in-out infinite alternate;`}
 
-    ${({ theme, $variant = 'hai' }) => ($variant === 'hai'
-        ? css`
+    ${({ theme, $variant = 'HAI' }) => {
+        let frontColor = theme.colors.greenish
+        let backColor = '#B2E3AD'
+        switch($variant) {
+            case 'KITE': {
+                frontColor = '#EECABC'
+                backColor = '#D6B5A8'
+                break
+            }
+            case 'OP': {
+                frontColor = '#FF0000'
+                backColor = '#DD0000'
+                break
+            }
+            case 'HAI':
+            default: {
+                frontColor = theme.colors.greenish
+                backColor = '#B2E3AD'
+                break
+            }
+        }
+        return css`
             & ${Face} {
-                background-color: ${theme.colors.greenish};
+                background-color: ${frontColor};
             }
             & ${BackFace} {
-                background-color: #B2E3AD;
+                background-color: ${backColor};
             }
         `
-        : css`
-            & ${Face} {
-                background-color: #EECABC;
-            }
-            & ${BackFace} {
-                background-color: #D6B5A8;
-            }
-        `
-    )}
+    }}
 `

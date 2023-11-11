@@ -14,6 +14,7 @@ import Privacy from '~/containers/Privacy'
 import CreateSafe from '~/containers/Safes/CreateSafe'
 import Auctions from '~/containers/Auctions'
 import Analytics from '~/containers/Analytics'
+import { Earn } from '~/containers/Earn'
 import { GlobalStyle } from '~/styles'
 import { HaiThemeProvider } from '~/styles/HaiThemeProvider'
 
@@ -40,6 +41,7 @@ const App = () => {
                                     <Route exact strict component={Privacy} path={'/privacy'} />
                                     <Route exact strict component={Auctions} path={'/auctions'} />
                                     <Route exact strict component={Analytics} path={'/analytics'} />
+                                    <Route exact strict component={Earn} path={'/earn'}/>
                                     <Route exact strict component={CreateSafe} path={'/vaults/create'} />
                                     <Route exact strict component={SafeDetails} path={'/vaults/:id/deposit'} />
                                     <Route exact strict component={SafeDetails} path={'/vaults/:id/withdraw'} />

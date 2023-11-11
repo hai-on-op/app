@@ -1,15 +1,14 @@
 import { useEffect, useState } from 'react'
 
-import { TOKEN_LOGOS } from '~/utils'
 import { useMediaQuery } from '~/hooks'
 
 import styled from 'styled-components'
-import { CenteredFlex, Flex, Grid, HaiButton, Text } from '~/styles'
+import { Flex, Grid, HaiButton, Text } from '~/styles'
 import { type SplashImage, ZoomScene, type ZoomSceneProps } from './ZoomScene'
 import { BrandedTitle } from '~/components/BrandedTitle'
 import { ProgressBar } from '~/components/ProgressBar'
-import HaiFace from '~/components/Icons/HaiFace'
 import { FloatingElements } from './FloatingElements'
+import { TokenPair } from '~/components/TokenPair'
 
 const elves: SplashImage[] = [
     {
@@ -120,24 +119,7 @@ export function Second({ zIndex }: ZoomSceneProps) {
                     </Subtitle>
                 </Flex>
                 <PairContainer>
-                    <Flex
-                        $align="center"
-                        $gap={12}>
-                        <IconContainer>
-                            <img
-                                src={TOKEN_LOGOS.WETH}
-                                alt="HAI"
-                                width={48}
-                                height={48}
-                            />
-                            <CenteredFlex>
-                                <HaiFace filled/>
-                            </CenteredFlex>
-                        </IconContainer>
-                        <Text>
-                            <strong>WETH/HAI</strong>&nbsp;#456
-                        </Text>
-                    </Flex>
+                    <TokenPair tokens={['WETH', 'HAI']}/>
                     <Grid
                         $width="100%"
                         $columns="110px 1fr"
@@ -233,23 +215,4 @@ const PairContainer = styled(Flex).attrs(props => ({
         padding: 12px;
         gap: 12px;
     `}
-`
-const IconContainer = styled(CenteredFlex)`
-    width: 64px;
-
-    & > * {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        border: ${({ theme }) => theme.border.thin};
-        background-color: ${({ theme }) => theme.colors.greenish};
-
-        &:nth-child(2) {
-            margin-left: -10px;
-        }
-    }
-    & svg {
-        width: 70%;
-        height: auto;
-    }
 `

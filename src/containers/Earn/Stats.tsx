@@ -1,4 +1,5 @@
 import styled from 'styled-components'
+import { RewardsTokenPair } from '~/components/TokenPair'
 import { DashedContainerProps, DashedContainerStyle, Flex, Grid, HaiButton, Text } from '~/styles'
 
 export function EarnStats() {
@@ -6,7 +7,7 @@ export function EarnStats() {
         <Container $borderOpacity={0.2}>
             <Stat>
                 <StatText>
-                    <Text>$45,600</Text>
+                    <StatHeaderText>$45,600</StatHeaderText>
                     <Flex>
                         <Text>My Farm TVL</Text>
                     </Flex>
@@ -14,7 +15,7 @@ export function EarnStats() {
             </Stat>
             <Stat>
                 <StatText>
-                    <Text>7.8%</Text>
+                    <StatHeaderText>7.8%</StatHeaderText>
                     <Flex>
                         <Text>My Net Farm APY</Text>
                     </Flex>
@@ -22,7 +23,15 @@ export function EarnStats() {
             </Stat>
             <Stat>
                 <StatText>
-                    <Text>$7,000</Text>
+                    <Flex
+                        $align="center"
+                        $gap={12}>
+                        <StatHeaderText>$7,000</StatHeaderText>
+                        <RewardsTokenPair
+                            tokens={['OP', 'KITE']}
+                            hideLabel
+                        />
+                    </Flex>
                     <Flex>
                         <Text>My Farm Rewards</Text>
                     </Flex>
@@ -76,9 +85,9 @@ const StatText = styled(Flex).attrs(props => ({
     ...props
 }))`
     font-size: 0.7rem;
-
-    & > ${Text}:first-of-type {
-        font-size: 2.2em;
-        font-weight: 700;
-    }
 `
+const StatHeaderText = styled(Text).attrs(props => ({
+    $fontSize: '2.2em',
+    $fontWeight: 700,
+    ...props
+}))``
