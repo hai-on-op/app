@@ -45,6 +45,7 @@ import {
 import { CenteredFlex, Flex } from '~/styles'
 import { IntentionHeader } from '~/components/IntentionHeader'
 import { EarnStats } from './Earn/Stats'
+import { ParallaxBackground } from '~/components/ParallaxBackground'
 
 const playlist = [
     '/audio/get-hai-together.wav',
@@ -303,6 +304,8 @@ const Shared = ({ children }: Props) => {
             <LiquidateSafeModal />
             {!isSplash && <WaitingModal />}
             <TopUpModal />
+
+            {!isSplash && <ParallaxBackground/>}
 
             {SYSTEM_STATUS && SYSTEM_STATUS.toLowerCase() === 'shutdown' && (
                 <AlertContainer>
