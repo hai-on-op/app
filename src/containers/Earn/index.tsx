@@ -2,7 +2,7 @@ import { LINK_TO_DOCS } from '~/utils'
 
 import styled from 'styled-components'
 import { BlurContainer, Flex, Grid, HaiButton, Text } from '~/styles'
-import { EarnStrategy } from './Strategy'
+import { EarnStrategy, type EarnStrategyProps } from './Strategy'
 import { type DummyStrategy, StrategyTable } from './StrategyTable'
 
 const dummyRows: DummyStrategy[] = [
@@ -34,6 +34,23 @@ const dummyRows: DummyStrategy[] = [
     }
 ]
 
+const strategies: EarnStrategyProps[] = [
+    {
+        heading: 'OP REWARDS',
+        status: 'NOW LIVE',
+        description: 'Earn OP tokens by minting & borrowing HAI',
+        ctaLink: LINK_TO_DOCS,
+        tokenImages: ['OP']
+    },
+    {
+        heading: 'KITE REWARDS',
+        status: 'NOW LIVE',
+        description: 'Earn KITE tokens by minting & borrowing HAI',
+        ctaLink: LINK_TO_DOCS,
+        tokenImages: ['KITE']
+    }
+]
+
 export function Earn() {
     return (
         <Container>
@@ -48,18 +65,13 @@ export function Earn() {
             </Header>
             <Body>
                 <StrategyTable rows={dummyRows}/>
-                <EarnStrategy
-                    heading="OP REWARDS"
-                    description="Earn OP tokens by minting & borrowing HAI"
-                    ctaLink={LINK_TO_DOCS}
-                    tokenImages={['OP']}
-                />
-                <EarnStrategy
-                    heading="KITE REWARDS"
-                    description="Earn KITE tokens by minting & borrowing HAI"
-                    ctaLink={LINK_TO_DOCS}
-                    tokenImages={['KITE']}
-                />
+                {strategies.map((strat, i) => (
+                    <EarnStrategy
+                        key={i}
+                        bgVariant={i}
+                        {...strat}
+                    />
+                ))}
             </Body>
         </Container>
     )

@@ -34,9 +34,9 @@ export function StrategyTable({ rows }: StrategyTableProps) {
             {rows.map(({ pair, rewards, tvl, vol24hr, apy, userPosition, userApy, earnPlatform }, i) => (
                 <TableRow key={i}>
                     <Grid
-                        $columns="1fr min-content 24px"
+                        $columns="1fr min-content 12px"
                         $align="center"
-                        $gap={24}>
+                        $gap={12}>
                         <TokenPair tokens={pair}/>
                         <RewardsTokenPair tokens={rewards}/>
                     </Grid>

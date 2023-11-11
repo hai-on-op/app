@@ -318,7 +318,9 @@ const Shared = ({ children }: Props) => {
             {account && blockedAddresses.includes(account.toLowerCase())
                 ? <BlockedAddress />
                 : (
-                    <Content $padTop={!isSplash}>
+                    <Content
+                        $padTop={!isSplash}
+                        $maxWidth={!isSplash ? 'min(1200px, calc(100vw - 96px))': undefined}>
                         {(isEarn || isVaults) && (
                             <IntentionHeader
                                 type={isEarn ? 'earn': 'borrow'}
@@ -405,13 +407,13 @@ const Content = styled(Flex).attrs(props => ({
     $align: 'center',
     $gap: 48,
     ...props
-}))<{ $padTop?: boolean }>`
+}))<{ $padTop?: boolean, $maxWidth?: string }>`
     padding: 0 48px;
     margin-top: ${({ $padTop = false }) => $padTop ? '240px': '0px'};
 
-    /* & > * {
-        max-width: min(1200px, calc(100vw - 96px));
-    } */
+    & > * {
+        max-width: ${({ $maxWidth = 'auto' }) => $maxWidth};
+    }
 
     ${({ theme, $padTop = false }) => theme.mediaWidth.upToSmall`
         padding: 0 24px;
