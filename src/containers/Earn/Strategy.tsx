@@ -1,8 +1,10 @@
+import { TOKEN_LOGOS } from '~/utils'
+
 import styled from 'styled-components'
 import { DashedContainerStyle, Flex, HaiButton, Text } from '~/styles'
 import { ExternalLink } from '~/components/ExternalLink'
-import { FloatingElements, FloatingElementsProps } from '~/components/FloatingElements'
-import { TOKEN_LOGOS } from '~/utils'
+import { FloatingElements, type FloatingElementsProps } from '~/components/FloatingElements'
+import HaiArrow from '~/components/Icons/HaiArrow'
 
 export type EarnStrategyProps = {
     heading: string,
@@ -51,8 +53,15 @@ export function EarnStrategy({
             <ExternalLink
                 href={ctaLink}
                 $textDecoration="none">
-                <HaiButton $variant="yellowish">
+                <HaiButton
+                    $variant="yellowish"
+                    $gap={8}>
                     <Text>{cta}</Text>
+                    <HaiArrow
+                        width={15}
+                        height={15}
+                        style={{ transform: 'rotate(-135deg)' }}
+                    />
                 </HaiButton>
             </ExternalLink>
         </Container>

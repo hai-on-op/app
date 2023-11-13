@@ -1,3 +1,5 @@
+import { useMemo, useState } from 'react'
+
 import { LINK_TO_DOCS } from '~/utils'
 
 import styled from 'styled-components'
@@ -10,26 +12,28 @@ const dummyRows: DummyStrategy[] = [
         pair: ['WETH', 'HAI'],
         rewards: ['OP', 'KITE'],
         tvl: "$5.6M",
-        vol24hr: "$5.6M",
+        vol24hr: "$4.6M",
         apy: 0.19,
         userPosition: "$300k",
-        userApy: 0.19,
+        userApy: 0.15,
         earnPlatform: 'uniswap'
     },
     {
         pair: ['WBTC', 'HAI'],
         rewards: ['OP', 'KITE'],
-        tvl: "$5.6M",
-        vol24hr: "$5.6M",
-        apy: 0.19,
+        tvl: "$5.5M",
+        vol24hr: "$5.1M",
+        apy: 0.11,
         earnPlatform: 'velodrome'
     },
     {
         pair: ['KITE', 'OP'],
         rewards: ['OP', 'KITE'],
-        tvl: "$5.6M",
-        vol24hr: "$5.6M",
-        apy: 0.19,
+        tvl: "$4.6M",
+        vol24hr: "$1.2M",
+        apy: 0.09,
+        userPosition: "$169k",
+        userApy: 0.11,
         earnPlatform: 'velodrome'
     }
 ]
@@ -52,19 +56,27 @@ const strategies: EarnStrategyProps[] = [
 ]
 
 export function Earn() {
+    const [filterEmpty, setFilterEmpty] = useState(false)
+    
+    const filteredRows = useMemo(() => {
+        if (!filterEmpty) return dummyRows
+
+        return dummyRows.filter(({ userPosition }) => !!userPosition)
+    }, [filterEmpty])
+
     return (
         <Container>
             <Header>
                 <Nav>
                     <Text>All Strategies (3)</Text>
                 </Nav>
-                <OnlyButton>
-                    <OnlyCheckbox/>
+                <OnlyButton onClick={() => setFilterEmpty(e => !e)}>
+                    <OnlyCheckbox $active={filterEmpty}/>
                     <Text>Only Show My Positions</Text>
                 </OnlyButton>
             </Header>
             <Body>
-                <StrategyTable rows={dummyRows}/>
+                <StrategyTable rows={filteredRows}/>
                 {strategies.map((strat, i) => (
                     <EarnStrategy
                         key={i}
@@ -108,11 +120,12 @@ const OnlyButton = styled(HaiButton)`
     padding-left: 12px;
     font-weight: 400;
 `
-const OnlyCheckbox = styled.div`
+const OnlyCheckbox = styled.div<{ $active?: boolean }>`
     width: 20px;
     height: 20px;
     border-radius: 50%;
     border: ${({ theme }) => theme.border.thin};
+    background-color: ${({ $active }) => $active ? 'black': 'transparent'};
 `
 const Body = styled(Flex).attrs(props => ({
     $column: true,
