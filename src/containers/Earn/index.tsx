@@ -68,7 +68,7 @@ export function Earn() {
         <Container>
             <Header>
                 <Nav>
-                    <Text>All Strategies (3)</Text>
+                    <Text>All Strategies ({filteredRows.length})</Text>
                 </Nav>
                 <OnlyButton onClick={() => setFilterEmpty(e => !e)}>
                     <OnlyCheckbox $active={filterEmpty}/>

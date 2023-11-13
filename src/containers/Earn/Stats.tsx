@@ -1,6 +1,7 @@
 import styled from 'styled-components'
+import { type DashedContainerProps, DashedContainerStyle, Flex, Grid, HaiButton, Text } from '~/styles'
 import { RewardsTokenPair } from '~/components/TokenPair'
-import { DashedContainerProps, DashedContainerStyle, Flex, Grid, HaiButton, Text } from '~/styles'
+import { Tooltip } from '~/components/Tooltip'
 
 export function EarnStats() {
     return (
@@ -8,8 +9,11 @@ export function EarnStats() {
             <Stat>
                 <StatText>
                     <StatHeaderText>$45,600</StatHeaderText>
-                    <Flex>
+                    <Flex $gap={8}>
                         <Text>My Farm TVL</Text>
+                        <Tooltip width="120px">
+                            Hello world
+                        </Tooltip>
                     </Flex>
                 </StatText>
             </Stat>

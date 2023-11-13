@@ -4,41 +4,41 @@ import { Flex, FlexProps } from './Flex'
 import popoutSVG from '~/assets/popout.svg'
 
 export type PopoutProps = FlexProps & {
-	$float?: 'left' | 'center' | 'right',
-	$anchor?: 'top' | 'bottom',
-	$margin?: string,
-	hidden?: boolean
+    $float?: 'left' | 'center' | 'right',
+    $anchor?: 'top' | 'bottom',
+    $margin?: string,
+    hidden?: boolean
 }
 
 export const Popout = styled(Flex).attrs((props => ({
-	$width: '100%',
-	$column: true,
-	$justify: 'center',
-	$align: 'center',
-	...props
+    $width: '100%',
+    $column: true,
+    $justify: 'center',
+    $align: 'center',
+    ...props
 })))<PopoutProps>`
-	position: absolute;
-	${({ $float = 'center' }) => ($float === 'center'
-		? css`
-			left: 50%;
-			transform: translateX(-50%);
-		`
-		: $float === 'left'
-			? css`right: -8px;`
-			: css`left: -8px;`
-	)}
-	${({ $anchor = 'top', $margin = '0px' }) => ($anchor === 'top'
-		? css`top: calc(100% + ${$margin});`
-		: css`bottom: calc(100% + ${$margin});`
-	)}
-	background-color: ${({ theme }) => theme.colors.background};
-	color: inherit;
-	border: ${({ theme }) => theme.border.medium};
+    position: absolute;
+    ${({ $float = 'center' }) => ($float === 'center'
+        ? css`
+            left: 50%;
+            transform: translateX(-50%);
+        `
+        : $float === 'left'
+            ? css`right: -8px;`
+            : css`left: -8px;`
+    )}
+    ${({ $anchor = 'top', $margin = '0px' }) => ($anchor === 'top'
+        ? css`top: calc(100% + ${$margin});`
+        : css`bottom: calc(100% + ${$margin});`
+    )}
+    background-color: ${({ theme }) => theme.colors.background};
+    color: inherit;
+    border: ${({ theme }) => theme.border.medium};
     border-radius: 24px;
 
-	&::after {
-		content: '';
-		position: absolute;
+    &::after {
+        content: '';
+        position: absolute;
         ${({ $float = 'center' }) => ($float === 'center'
             ? css`left: 50%;`
             : $float === 'left'
@@ -55,15 +55,16 @@ export const Popout = styled(Flex).attrs((props => ({
                 transform: rotate(180deg);
             `
         )}
-		width: 56px;
-		height: 16px;
-		margin-left: -28px;
+        width: 56px;
+        height: 24px;
+        margin-left: -28px;
         background-image: url('${popoutSVG}');
-        background-size: 100% 100%;
+        background-size: contain;
+        background-position: center bottom;
         background-repeat: no-repeat;
-	}
+    }
 
-	${({ hidden }) => hidden && css`display: none;`}
+    ${({ hidden }) => hidden && css`display: none;`}
 
-	z-index: 1;
+    z-index: 1;
 `

@@ -8,7 +8,7 @@ type TableHeaderItemProps = {
     sortable?: boolean,
     isSorting?: 'asc' | 'desc' | false,
     onClick?: () => void,
-    children?: JSX.Element | ReactNode
+    children?: JSX.Element | ReactNode | ReactNode[]
 }
 export function TableHeaderItem({
     sortable = false,
