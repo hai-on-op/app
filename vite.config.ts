@@ -16,7 +16,7 @@ export default defineConfig(() => ({
         },
     },
     build: {
-        outDir: 'build',
+        outDir: 'dist',
     },
     test: {
         globals: true,
