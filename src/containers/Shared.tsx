@@ -71,6 +71,7 @@ const Shared = ({ children }: Props) => {
     const isSplash = location.pathname === '/'
     const isEarn = location.pathname === '/earn'
     const isVaults = location.pathname === '/vaults'
+    const isAuctions = location.pathname === '/auctions'
     const tokensData = geb?.tokenList
     const coinTokenContract = useTokenContract(getTokenList(ETH_NETWORK).HAI.address)
     const protTokenContract = useTokenContract(getTokenList(ETH_NETWORK).KITE.address)
@@ -325,9 +326,14 @@ const Shared = ({ children }: Props) => {
                         $padTop={!isSplash}
                         $padBottom={!isSplash && haiAlertActive}
                         $maxWidth={!isSplash ? 'min(1200px, calc(100vw - 96px))': undefined}>
-                        {(isEarn || isVaults) && (
+                        {(isEarn || isVaults || isAuctions) && (
                             <IntentionHeader
-                                type={isEarn ? 'earn': 'borrow'}
+                                type={isEarn
+                                    ? 'earn'
+                                    : isVaults
+                                        ? 'borrow'
+                                        : 'auctions'
+                                }
                                 setType={(type: string) => {
                                     history.push(`/${type === 'borrow' ? 'vaults': type}`)
                                 }}>

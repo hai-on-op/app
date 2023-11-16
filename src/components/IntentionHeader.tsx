@@ -11,7 +11,7 @@ import HaiFace from './Icons/HaiFace'
 
 import uniswapLogo from '~/assets/uniswap-icon.svg'
 
-type IntentionType = 'earn' | 'borrow'
+type IntentionType = 'earn' | 'borrow' | 'auctions'
 
 const copy: Record<IntentionType, {
     subtitle: string,
@@ -26,6 +26,11 @@ const copy: Record<IntentionType, {
     borrow: {
         subtitle: 'Mint & borrow HAI against your preferred collateral. ',
         cta: 'Read more about borrowing →',
+        ctaLink: LINK_TO_DOCS
+    },
+    auctions: {
+        subtitle: 'Buy your favorite crypto assets from liquidated loan auctions at a discount. ',
+        cta: 'Read more about auctions →',
         ctaLink: LINK_TO_DOCS
     }
 }
@@ -67,7 +72,7 @@ const typeOptions = [
 ]
 
 type IntentionHeaderProps = {
-    type: 'earn' | 'borrow',
+    type: 'earn' | 'borrow' | 'auctions',
     setType: (type: string) => void,
     children?: JSX.Element | ReactNode | ReactNode[]
 }
