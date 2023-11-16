@@ -1,16 +1,18 @@
-import { useState, type ChangeEvent } from 'react'
+import { useState, type ChangeEvent, useEffect } from 'react'
 
 import { useOutsideClick } from '~/hooks'
 
 import styled from 'styled-components'
 import { CenteredFlex, Popout, type TextProps, Title, Flex, Text } from '~/styles'
 import Caret from './Icons/Caret'
+import { ExternalLink } from './ExternalLink'
 
 type BrandedSelectOption = {
     label: string,
     value: string,
-    icon?: JSX.Element | string,
-    description?: string
+    icon?: JSX.Element | string | (JSX.Element | string)[],
+    description?: string,
+    href?: string
 }
 
 type BrandedSelectProps = TextProps & {
@@ -37,7 +39,7 @@ export function BrandedSelect({ width, options, value, onChange, ...props }: Bra
                 $fontSize="3.2em"
                 $lineHeight="1"
                 {...props}>
-                {options.find(({ value: v }) => v === value)?.label}
+                {options.find(({ value: v }) => v === value)?.label.toUpperCase()}
             </HiddenText>
             <Select
                 as="select"
@@ -51,7 +53,7 @@ export function BrandedSelect({ width, options, value, onChange, ...props }: Bra
                     <option
                         key={v}
                         value={v}>
-                        {label}
+                        {label.toUpperCase()}
                     </option>
                 ))}
             </Select>
@@ -60,31 +62,52 @@ export function BrandedSelect({ width, options, value, onChange, ...props }: Bra
                 $float="left"
                 $margin="30px"
                 hidden={!persistent}>
-                {options.map(({ label, value: v, icon, description }) => (
-                    <DropdownOption
-                        key={v}
-                        $active={v === value}
-                        onClick={() => {
-                            // e.stopPropagation()
-                            onChange(v)
-                        }}>
-                        {icon && (
-                            <DropdownIcon>
-                                {typeof icon === 'string'
-                                    ? <img src={icon} alt=""/>
-                                    : icon
-                                }
-                            </DropdownIcon>
-                        )}
-                        <Flex
-                            $column
-                            $justify="flex-start"
-                            $align="flex-start">
-                            <Text $fontWeight={700}>{label}</Text>
-                            <Text>{description}</Text>
-                        </Flex>
-                    </DropdownOption>
-                ))}
+                {options.map(({ label, value: v, icon, description, href }) => !href
+                    ? (
+                        <DropdownOption
+                            key={v}
+                            $active={v === value}
+                            onClick={() => {
+                                // e.stopPropagation()
+                                onChange(v)
+                            }}>
+                            {icon && (
+                                <DropdownIcon icon={icon}/>
+                            )}
+                            <Flex
+                                $column
+                                $justify="flex-start"
+                                $align="flex-start">
+                                <Text $fontWeight={700}>{label}</Text>
+                                <Text>{description}</Text>
+                            </Flex>
+                        </DropdownOption>
+                    )
+                    : (
+                        <ExternalLink
+                            key={v}
+                            href={href}
+                            $textDecoration="none">
+                            <DropdownOption
+                                $active={v === value}
+                                onClick={() => {
+                                    // e.stopPropagation()
+                                    onChange(v)
+                                }}>
+                                {icon && (
+                                    <DropdownIcon icon={icon}/>
+                                )}
+                                <Flex
+                                    $column
+                                    $justify="flex-start"
+                                    $align="flex-start">
+                                    <Text $fontWeight={700}>{label}</Text>
+                                    <Text>{description}</Text>
+                                </Flex>
+                            </DropdownOption>
+                        </ExternalLink>
+                    )
+                )}
             </Dropdown>
         </Container>
     )
@@ -122,6 +145,7 @@ const Dropdown = styled(Popout)`
     padding: 24px;
     margin-right: -22px;
     gap: 12px;
+    cursor: default;
 `
 const DropdownOption = styled(Flex).attrs(props => ({
     $width: '100%',
@@ -142,11 +166,41 @@ const DropdownOption = styled(Flex).attrs(props => ({
         background-color: rgba(0,0,0,0.05);
     }
 `
-const DropdownIcon = styled(CenteredFlex)`
-    width: 56px;
-    height: 56px;
+const DropdownIconContainer = styled(CenteredFlex)`
+    width: 52px;
+    height: 52px;
     border-radius: 50%;
     flex-shrink: 0;
     border: ${({ theme }) => theme.border.medium};
     background-color: ${({ theme }) => theme.colors.greenish};
+    overflow: hidden;
+
+    & > img {
+        width: 52px;
+        height: 52px;
+    }
 `
+
+function DropdownIcon({ icon }: { icon: BrandedSelectOption['icon'] }) {
+    const [currentIcon, setCurrentIcon] = useState(Array.isArray(icon) ? icon[0]: icon)
+
+    useEffect(() => {
+        if (!Array.isArray(icon)) return
+
+        let index = 0
+        const int = setInterval(() => {
+            index++
+            setCurrentIcon(icon[index % icon.length])
+        }, 3000)
+
+        return () => clearInterval(int)
+    }, [icon])
+
+    return (
+        <DropdownIconContainer>
+            {typeof currentIcon === 'string'
+                ? <img src={currentIcon} alt=""/>
+                : currentIcon}
+        </DropdownIconContainer>
+    )
+}

@@ -2,10 +2,10 @@ import { useMemo, useState } from 'react'
 
 import { LINK_TO_DOCS } from '~/utils'
 
-import styled from 'styled-components'
-import { BlurContainer, Flex, Grid, HaiButton, Text } from '~/styles'
+import { NavContainer } from '~/components/NavContainer'
 import { EarnStrategy, type EarnStrategyProps } from './Strategy'
 import { type DummyStrategy, StrategyTable } from './StrategyTable'
+import { CheckboxButton } from '~/components/CheckboxButton'
 
 const dummyRows: DummyStrategy[] = [
     {
@@ -65,74 +65,25 @@ export function Earn() {
     }, [filterEmpty])
 
     return (
-        <Container>
-            <Header>
-                <Nav>
-                    <Text>All Strategies ({filteredRows.length})</Text>
-                </Nav>
-                <OnlyButton onClick={() => setFilterEmpty(e => !e)}>
-                    <OnlyCheckbox $active={filterEmpty}/>
-                    <Text>Only Show My Positions</Text>
-                </OnlyButton>
-            </Header>
-            <Body>
-                <StrategyTable rows={filteredRows}/>
-                {strategies.map((strat, i) => (
-                    <EarnStrategy
-                        key={i}
-                        bgVariant={i}
-                        {...strat}
-                    />
-                ))}
-            </Body>
-        </Container>
+        <NavContainer
+            navItems={[`All Strategies (${filteredRows.length})`]}
+            selected={0}
+            onSelect={() => 0}
+            headerContent={(
+                <CheckboxButton
+                    checked={filterEmpty}
+                    toggle={() => setFilterEmpty(e => !e)}>
+                    Only Show My Positions
+                </CheckboxButton>
+            )}>
+            <StrategyTable rows={filteredRows}/>
+            {strategies.map((strat, i) => (
+                <EarnStrategy
+                    key={i}
+                    bgVariant={i}
+                    {...strat}
+                />
+            ))}
+        </NavContainer>
     )
 }
-
-const Container = styled(BlurContainer)`
-    width: 100%;
-    margin-bottom: 48px;
-`
-
-const Header = styled(Flex).attrs(props => ({
-    $justify: 'space-between',
-    $align: 'center',
-    ...props
-}))`
-    height: 144px;
-    padding: 0 48px;
-    border-bottom: ${({ theme }) => theme.border.medium};
-`
-const Nav = styled(Grid).attrs(props => ({
-    $columns: '1fr',
-    $align: 'flex-end',
-    ...props
-}))`
-    height: 100%;
-    & > * {
-        padding: 24px 12px;
-        font-weight: 700;
-        border-bottom: ${({ theme }) => theme.border.medium};
-    }
-`
-const OnlyButton = styled(HaiButton)`
-    height: 48px;
-    padding-left: 12px;
-    font-weight: 400;
-`
-const OnlyCheckbox = styled.div<{ $active?: boolean }>`
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    border: ${({ theme }) => theme.border.thin};
-    background-color: ${({ $active }) => $active ? 'black': 'transparent'};
-`
-const Body = styled(Flex).attrs(props => ({
-    $column: true,
-    $gap: 24,
-    ...props
-}))`
-    width: 100%;
-    padding: 48px;
-    padding-top: 24px;
-`

@@ -1,9 +1,13 @@
+import { useMediaQuery } from '~/hooks'
+
 import styled from 'styled-components'
 import { CenteredFlex, Flex, Text } from '~/styles'
 import HaiFace from './Icons/HaiFace'
 import { Elf } from './Elf'
 
 export function HaiAlert() {
+    const isLargerThanSmall = useMediaQuery('upToSmall')
+
     return (
         <Container>
             <CenteredFlex $gap={24}>
@@ -13,11 +17,11 @@ export function HaiAlert() {
                 <Text>
                     <strong>$HAI ALERT</strong>
                     {` • `}
-                    MARKET PRICE <strong>$1.00</strong>
+                    {isLargerThanSmall ? `MARKET PRICE `: `MP `}<strong>$1.00</strong>
                     {` • `}
-                    REDEMPTION PRICE <strong>$1.15</strong>
+                    {isLargerThanSmall ? `REDEMPTION PRICE `: `RP `}<strong>$1.15</strong>
                     {` • `}
-                    PRICE DIFFERENCE <strong>15%</strong>
+                    {isLargerThanSmall ? `PRICE DIFFERENCE `: `DIFF. `}<strong>15%</strong>
                 </Text>
             </CenteredFlex>
             <ElfContainer>
@@ -25,7 +29,11 @@ export function HaiAlert() {
                     variant={1}
                     width="50%"
                     animated
-                    style={{ bottom: '0px', left: '0px', zIndex: 0 }}
+                    style={{
+                        bottom: '0px',
+                        left: '0px',
+                        zIndex: 0
+                    }}
                 />
                 <Elf
                     variant={0}
@@ -70,7 +78,10 @@ const Container = styled(Flex).attrs(props => ({
     border-top: ${({ theme }) => theme.border.medium};
     background: ${({ theme }) => theme.colors.gradientSecondary};
 `
-const HaiIconContainer = styled(CenteredFlex)`
+const HaiIconContainer = styled(CenteredFlex).attrs(props => ({
+    $shrink: 0,
+    ...props
+}))`
     width: 48px;
     height: 48px;
     border-radius: 50%;

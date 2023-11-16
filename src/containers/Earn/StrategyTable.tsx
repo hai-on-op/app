@@ -8,6 +8,14 @@ import { RewardsTokenPair, TokenPair } from '~/components/TokenPair'
 import { TableHeaderItem } from '~/components/TableHeaderItem'
 import HaiArrow from '~/components/Icons/HaiArrow'
 
+import uniswapLogo from '~/assets/uniswap-icon.svg'
+import velodromeLogo from '~/assets/velodrome-img.svg'
+
+const logoMap = {
+    uniswap: uniswapLogo,
+    velodrome: velodromeLogo
+}
+
 type TokenKey = keyof typeof TOKEN_LOGOS
 export type DummyStrategy = {
     pair: [TokenKey, TokenKey],
@@ -140,7 +148,20 @@ export function StrategyTable({ rows }: StrategyTableProps) {
                                 style={{ transform: 'rotate(-135deg)' }}
                             />
                         </CenteredFlex>
-                        <CenteredFlex>{earnPlatform.toUpperCase()}</CenteredFlex>
+                        <Flex
+                            $justify="flex-start"
+                            $align="center"
+                            $gap={earnPlatform === 'uniswap' ? 4: 12}>
+                            <img
+                                src={logoMap[earnPlatform]}
+                                alt=""
+                                width={earnPlatform === 'uniswap' ? 28: 20}
+                                height={earnPlatform === 'uniswap' ? 28: 20}
+                            />
+                            <Text>
+                                {earnPlatform.toUpperCase()}
+                            </Text>
+                        </Flex>
                     </EarnButton>
                 </TableRow>
             ))}
@@ -157,7 +178,7 @@ const Table = styled(Flex).attrs(props => ({
     ...props
 }))``
 const TableHeader = styled(Grid)`
-    grid-template-columns: 3fr minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) 200px;
+    grid-template-columns: 3fr minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) 224px;
     align-items: center;
     padding: 4px;
     padding-left: 8px;
@@ -178,12 +199,14 @@ const EarnButton = styled(HaiButton)`
     height: 48px;
     border: 2px solid rgba(0,0,0,0.1);
     padding-left: 16px;
-    padding-right: 8px;
+    padding-right: 6px;
     font-size: 0.8rem;
 
     & > *:nth-child(2) {
         background-color: white;
         border-radius: 999px;
         padding: 4px 12px;
+        width: 100%;
+        height: 36px;
     }
 `

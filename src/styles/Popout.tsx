@@ -31,6 +31,7 @@ export const Popout = styled(Flex).attrs((props => ({
         ? css`top: calc(100% + ${$margin});`
         : css`bottom: calc(100% + ${$margin});`
     )}
+    min-width: 100px;
     background-color: ${({ theme }) => theme.colors.background};
     color: inherit;
     border: ${({ theme }) => theme.border.medium};

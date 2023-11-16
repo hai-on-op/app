@@ -330,8 +330,7 @@ const Shared = ({ children }: Props) => {
                                 type={isEarn ? 'earn': 'borrow'}
                                 setType={(type: string) => {
                                     history.push(`/${type === 'borrow' ? 'vaults': type}`)
-                                }}
-                                setAssets={() => {}}>
+                                }}>
                                 {isEarn
                                     ? <EarnStats/>
                                     : null

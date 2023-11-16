@@ -3,11 +3,13 @@ import { type ReactNode } from 'react'
 import { LINK_TO_DOCS, TOKEN_LOGOS } from '~/utils'
 
 import styled from 'styled-components'
-import { BlurContainer, Flex, Text, Title } from '~/styles'
+import { BlurContainer, Flex, Text } from '~/styles'
 import { BrandedTitle } from './BrandedTitle'
 import { ExternalLink } from './ExternalLink'
 import { BrandedSelect } from './BrandedSelect'
 import HaiFace from './Icons/HaiFace'
+
+import uniswapLogo from '~/assets/uniswap-icon.svg'
 
 type IntentionType = 'earn' | 'borrow'
 
@@ -30,26 +32,46 @@ const copy: Record<IntentionType, {
 
 const typeOptions = [
     {
-        label: 'GET HAI',
+        label: 'Get $HAI',
         value: 'borrow',
         icon: <HaiFace filled/>,
         description: 'Mint & borrow $HAI stablecoin against your preferred collateral'
     },
     {
-        label: 'EARN REWARDS',
+        label: 'Buy $HAI',
+        value: '',
+        icon: uniswapLogo,
+        description: 'Market buy $HAI from various pairs on Uniswap',
+        href: 'https://app.uniswap.org/swap'
+    },
+    {
+        label: 'Earn Rewards',
         value: 'earn',
-        icon: TOKEN_LOGOS.OP,
+        icon: [
+            TOKEN_LOGOS.OP,
+            TOKEN_LOGOS.WETH,
+            TOKEN_LOGOS.WSTETH
+        ],
         description: 'Earn long term yields by staking a growing list of crypto assets'
+    },
+    {
+        label: 'Buy Liquidated Assets',
+        value: 'auctions',
+        icon: [
+            TOKEN_LOGOS.OP,
+            TOKEN_LOGOS.WETH,
+            TOKEN_LOGOS.WSTETH
+        ],
+        description: 'Buy your favorite assets from liquidated loans at a discount'
     }
 ]
 
 type IntentionHeaderProps = {
     type: 'earn' | 'borrow',
     setType: (type: string) => void,
-    setAssets?: (assets: string) => void,
     children?: JSX.Element | ReactNode | ReactNode[]
 }
-export function IntentionHeader({ type, setType, setAssets, children }: IntentionHeaderProps) {
+export function IntentionHeader({ type, setType, children }: IntentionHeaderProps) {
     const { subtitle, cta, ctaLink } = copy[type]
 
     return (
@@ -66,23 +88,9 @@ export function IntentionHeader({ type, setType, setAssets, children }: Intentio
                     />
                     <BrandedSelect
                         value={type}
-                        onChange={(value: string) => setType(value)}
+                        onChange={(value: string) => !!value && setType(value)}
                         options={typeOptions}
                     />
-                    {type === 'borrow' && (<>
-                        <Title
-                            $color="orangeish"
-                            $fontSize="3.2em">
-                            ON
-                        </Title>
-                        <BrandedSelect
-                            value="all"
-                            onChange={(value: string) => setAssets?.(value)}
-                            options={[
-                                { label: 'ALL ASSETS', value: 'all' }
-                            ]}
-                        />
-                    </>)}
                 </Flex>
                 <Text>
                     {subtitle}
@@ -103,6 +111,8 @@ const Container = styled(BlurContainer).attrs(props => ({
     ...props
 }))`
     overflow: visible;
+    position: relative;
+    z-index: 1;
 `
 
 const Inner = styled(Flex).attrs(props => ({

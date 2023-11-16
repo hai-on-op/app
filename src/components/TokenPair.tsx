@@ -5,7 +5,7 @@ import { CenteredFlex, Flex, Text } from '~/styles'
 
 type TokenKey = keyof typeof TOKEN_LOGOS
 type TokenPairProps = {
-    tokens: [TokenKey, TokenKey],
+    tokens: [TokenKey] | [TokenKey, TokenKey],
     size?: number,
     hideLabel?: boolean
 }
@@ -33,7 +33,7 @@ export function TokenPair({ tokens, size = 64, hideLabel = false }: TokenPairPro
 }
 
 const IconContainer = styled(CenteredFlex)<{ $size?: number, $isKite?: boolean }>`
-    width: ${({ $size = 64 }) => $size}px;
+    width: fit-content;
 
     & > * {
         width: ${({ $size = 64 }) => $size / 2}px;
@@ -75,7 +75,7 @@ export function RewardsTokenPair({ tokens, hideLabel = false }: RewardsPairProps
 
 const RewardsContainer = styled(CenteredFlex)<{ $pad?: boolean }>`
     height: 36px;
-    padding: 6px;
+    padding: 6px 10px;
     ${({ $pad = false }) => $pad && css`padding-right: 12px;`}
     border-radius: 999px;
     background-color: white;
