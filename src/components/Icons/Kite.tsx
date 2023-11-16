@@ -1,8 +1,18 @@
-import React from 'react'
+import type { IconProps } from '~/types'
 
-const Kite = () => {
+export function Kite({ size = 40, ...props }: IconProps) {
     return (
-        <svg xmlns="http://www.w3.org/2000/svg"viewBox="0 0 40 40.000002" height="40" width="40" fill="none" stroke="#000000" strokeWidth="1px" strokeLinecap="round" strokeLinejoin="round">
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 40 40"
+            width={size}
+            height={size}
+            fill="none"
+            stroke="#000000"
+            strokeWidth="1"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            {...props}>
             <path d="m 10.49993,12.937433 h 9.500074 V 3.3124332 Z" fill="#bbc2f0"/>
             <path d="m 10.500004,12.9375 h 9.5 v 15 z" fill="#c0f3bb"/>
             <path d="m 20.000004,27.9375 v 1.25 c 0,0.985348 0.508168,1.5 1.5,1.5 h 2.25 c 1.001149,0 1.5,0.501723 1.5,1.5 0,0.998277 -0.514412,1.5 -1.5,1.5 h -5.25 c -0.985349,0 -1.5,0.491251 -1.5,1.5 0,0.987642 0.499921,1.5 1.5,1.5 h 5.452973"/>
@@ -11,5 +21,3 @@ const Kite = () => {
         </svg>
     )
 }
-
-export default Kite

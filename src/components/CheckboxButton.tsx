@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react'
+import type { ReactChildren } from '~/types'
 
 import styled from 'styled-components'
 import { HaiButton, Text } from '~/styles'
@@ -6,7 +6,7 @@ import { HaiButton, Text } from '~/styles'
 type CheckboxButtonProps = {
     checked: boolean,
     toggle: () => void,
-    children: JSX.Element | ReactNode | ReactNode[]
+    children: ReactChildren
 }
 export function CheckboxButton({ checked, toggle, children }: CheckboxButtonProps) {
     return (

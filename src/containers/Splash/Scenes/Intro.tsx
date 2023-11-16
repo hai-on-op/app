@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import { Flex, HaiButton, Text } from '~/styles'
 import { type SplashImage, ZoomScene, type ZoomSceneProps } from './ZoomScene'
 import { BrandedTitle } from '~/components/BrandedTitle'
-import Swirl from '~/components/Icons/Swirl'
+import { Swirl } from '~/components/Icons/Swirl'
 import { PairsBanner } from '../PairsBanner'
 import { FloatingElements } from '~/components/FloatingElements'
 

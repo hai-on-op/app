@@ -1,5 +1,4 @@
-import { type ReactNode } from 'react'
-
+import type { ReactChildren } from '~/types'
 import { type ISafe } from '~/utils'
 
 import styled from 'styled-components'
@@ -11,7 +10,7 @@ import { VaultActions } from './VaultActions'
 
 type ManageVaultProps = {
     vault: ISafe,
-    headerContent?: JSX.Element | ReactNode | ReactNode[]
+    headerContent?: ReactChildren
 }
 export function ManageVault({ vault, headerContent }: ManageVaultProps) {
     return (

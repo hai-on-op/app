@@ -1,22 +1,24 @@
-import { type HTMLProps, type ReactNode } from 'react'
+import { type HTMLProps } from 'react'
+
+import type { ReactChildren } from '~/types'
 
 import styled from 'styled-components'
 import { TextStyle, type TextProps } from '~/styles'
 
 type ExternalLinkProps = TextProps & HTMLProps<HTMLAnchorElement> & {
-	children: JSX.Element | ReactNode | ReactNode[]
+    children: ReactChildren
 }
 
 export function ExternalLink({ children, ...props }: ExternalLinkProps) {
-	return (
-		<Link
-			target="_blank"
-			rel="noreferrer"
-			$textDecoration="underline"
-			{...(props as any)}>
-			{children}
-		</Link>
-	)
+    return (
+        <Link
+            target="_blank"
+            rel="noreferrer"
+            $textDecoration="underline"
+            {...(props as any)}>
+            {children}
+        </Link>
+    )
 }
 
 const Link = styled.a<TextProps>`

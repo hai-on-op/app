@@ -7,7 +7,7 @@ import { CenteredFlex, Flex, Grid, HaiButton, Text } from '~/styles'
 import { RewardsTokenPair, TokenPair } from '~/components/TokenPair'
 import { TableHeaderItem } from '~/components/TableHeaderItem'
 import { Tooltip } from '~/components/Tooltip'
-import HaiArrow from '~/components/Icons/HaiArrow'
+import { HaiArrow } from '~/components/Icons/HaiArrow'
 
 type SortableHeader = {
     label: string,
@@ -148,9 +148,9 @@ export function AvailableVaultsTable({ rows, onSelect, myVaults }: AvailableVaul
                                                         Vault #{vault.id}
                                                     </Text>
                                                     <HaiArrow
-                                                        width={14}
+                                                        size={14}
                                                         strokeWidth={2}
-                                                        style={{ transform: 'rotate(-135deg)' }}
+                                                        direction="upRight"
                                                     />
                                                 </VaultLink>
                                             ))}

@@ -7,7 +7,7 @@ import styled from 'styled-components'
 import { Flex, HaiButton } from '~/styles'
 import { type SplashImage, ZoomScene, type ZoomSceneProps } from './ZoomScene'
 import { FloatingElements } from '~/components/FloatingElements'
-import Caret from '~/components/Icons/Caret'
+import { Caret } from '~/components/Icons/Caret'
 import { LearnCard } from './LearnCard'
 
 const elves: SplashImage[] = [
@@ -91,11 +91,11 @@ export function Fourth({ zIndex }: ZoomSceneProps) {
                         link={link}
                     />
                 ))}
-                <ArrowButton onClick={() => setIndex(i => i <= 0 ? cardTitles.length - 1: i - 1)}>
-                    <Caret style={{ transform: 'rotate(180deg)' }}/>
+                <ArrowButton onClick={() => setIndex(i => (i <= 0 ? cardTitles.length - 1: i - 1))}>
+                    <Caret direction="left"/>
                 </ArrowButton>
                 <ArrowButton onClick={() => setIndex(i => i >= cardTitles.length - 1 ? 0: i + 1)}>
-                    <Caret/>
+                    <Caret direction="right"/>
                 </ArrowButton>
             </Container>
             <FloatingElements
@@ -142,12 +142,6 @@ const ArrowButton = styled(HaiButton).attrs(props => ({
     &:last-of-type {
         left: auto;
         right: 24px;
-    }
-
-    & svg {
-        width: 10px;
-        height: auto;
-        stroke-width: 2.5px;
     }
 
     ${({ theme }) => theme.mediaWidth.upToSmall`

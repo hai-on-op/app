@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react'
+import type { ReactChildren } from '~/types'
 
 import styled, { css } from 'styled-components'
 import { BlurContainer, CenteredFlex, Flex, Grid } from '~/styles'
@@ -7,8 +7,8 @@ type NavContainerProps = {
     navItems: string[],
     selected: number,
     onSelect: (index: number) => void,
-    headerContent?: JSX.Element | ReactNode | ReactNode[],
-    children: JSX.Element | ReactNode | ReactNode[]
+    headerContent?: ReactChildren,
+    children: ReactChildren
 }
 export function NavContainer({
     navItems,

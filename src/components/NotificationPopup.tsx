@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Scrollbars from 'react-custom-scrollbars'
 import styled from 'styled-components'
-import BellIcon from './Icons/BellIcon'
+import { Bell } from './Icons/Bell'
 import caretUp from '~/assets/caret-up.svg'
 import arrowUp from '~/assets/arrow-up.svg'
 
@@ -28,7 +28,7 @@ const NotificationPopup = () => {
     return (
         <InnerContent ref={wrapperRef}>
             <BellBtn className={isOpen ? 'active' : ''} onClick={() => setIsOpen(!isOpen)}>
-                <BellIcon />
+                <Bell />
             </BellBtn>
             {isOpen ? (
                 <>

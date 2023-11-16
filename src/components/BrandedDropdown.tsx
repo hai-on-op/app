@@ -1,14 +1,15 @@
-import { type ReactNode, useState } from 'react'
+import { useState } from 'react'
 
+import type { ReactChildren } from '~/types'
 import { useOutsideClick } from '~/hooks'
 
 import styled from 'styled-components'
 import { CenteredFlex, HaiButton, Popout } from '~/styles'
-import Caret from './Icons/Caret'
+import { Caret } from './Icons/Caret'
 
 type BrandedDropdownProps = {
-    label: JSX.Element | ReactNode | ReactNode[],
-    children: JSX.Element | ReactNode | ReactNode[]
+    label: ReactChildren,
+    children: ReactChildren
 }
 export function BrandedDropdown({ label, children }: BrandedDropdownProps) {
     const [container, setContainer] = useState<HTMLElement>()
@@ -22,12 +23,7 @@ export function BrandedDropdown({ label, children }: BrandedDropdownProps) {
             onClick={() => setExpanded(e => !e)}>
             <CenteredFlex $gap={12}>
                 {label}
-                <Caret
-                    width={10}
-                    height={14}
-                    strokeWidth={2.5}
-                    style={{ transform: 'rotate(90deg)' }}
-                />
+                <Caret direction="down"/>
             </CenteredFlex>
             <Dropdown
                 $float="left"

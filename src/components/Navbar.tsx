@@ -10,7 +10,6 @@ import { claimAirdrop } from '~/services/blockchain'
 import { formatNumber, TOKEN_LOGOS } from '~/utils'
 import addIcon from '~/assets/plus.svg'
 import { Icon } from './TokenInput'
-import NavLinks from './NavLinks'
 import Brand from './Brand'
 
 const Navbar = () => {
@@ -88,7 +87,7 @@ const Navbar = () => {
                 <Brand />
             </Left>
             <HideMobile>
-                <NavLinks />
+                {/* <NavLinks /> */}
             </HideMobile>
             <RightSide>
                 <BtnContainer>

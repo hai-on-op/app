@@ -2,7 +2,7 @@ import { ConnectButton as RKConnectButton } from '@rainbow-me/rainbowkit'
 
 import styled from 'styled-components'
 import { CenteredFlex, HaiButton, Text } from '~/styles'
-import Caret from './Icons/Caret'
+import { Caret } from './Icons/Caret'
 
 type ConnectButtonProps = {
     showBalance?: boolean
@@ -23,7 +23,7 @@ export function ConnectButton({ showBalance = false }: ConnectButtonProps) {
                         {showBalance && <BalanceContainer>{account.balanceFormatted} ETH</BalanceContainer>}
                         <Button onClick={openAccountModal}>
                             <Text>{account.displayName}</Text>
-                            <Caret/>
+                            <Caret direction="down"/>
                         </Button>
                     </Container>
                 )
@@ -55,13 +55,4 @@ const Button = styled(HaiButton).attrs(props => ({
     height: calc(100% + 4px);
     margin: -2px;
     gap: 12px;
-
-    & > svg {
-        fill: none;
-        stroke: black;
-        stroke-width: 2.5px;
-        width: 10px;
-        height: auto;
-        transform: rotate(90deg);
-    }
 `

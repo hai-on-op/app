@@ -1,13 +1,15 @@
-import { useState, type ReactNode } from 'react'
+import { useState } from 'react'
+
+import type { ReactChildren } from '~/types'
 
 import styled from 'styled-components'
 import { CenteredFlex, Popout, type PopoutProps } from '~/styles'
-import Info from './Icons/Info'
+import { Info } from './Icons/Info'
 
 type TooltipProps = PopoutProps & {
     size?: number,
     width?: string,
-    children?: JSX.Element | ReactNode | ReactNode[]
+    children?: ReactChildren
 }
 export function Tooltip({ size = 14, width = 'auto', children, ...props }: TooltipProps) {
     const [hovered, setHovered] = useState(false)
@@ -17,10 +19,7 @@ export function Tooltip({ size = 14, width = 'auto', children, ...props }: Toolt
             $popoutWidth={width}
             onPointerEnter={() => setHovered(true)}
             onPointerLeave={() => setHovered(false)}>
-            <Info
-                width={size}
-                height={size}
-            />
+            <Info size={size}/>
             <Popout
                 hidden={!hovered}
                 $anchor="bottom"

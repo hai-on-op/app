@@ -2,9 +2,9 @@ import { useMediaQuery } from '~/hooks'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, Text } from '~/styles'
-import RightArrow from '~/components/Icons/RightArrow'
 import { ExternalLink } from '~/components/ExternalLink'
 import { BrandedTitle } from '~/components/BrandedTitle'
+import { HaiArrow } from '~/components/Icons/HaiArrow'
 
 type LearnCardProps = {
     title: string,
@@ -28,17 +28,20 @@ export function LearnCard({ title, link, titleColorOffset }: LearnCardProps) {
                 />
             </Flex>
             <ExternalLink
-            href={link}
-            $textDecoration="none">
-            <CenteredFlex $gap={12}>
-                <Text
-                    $fontSize={isLargerThanExtraSmall ? '1.2rem': '1rem'}
-                    $fontWeight={700}
-                    $letterSpacing="0.35rem">
-                    LEARN MORE
-                </Text>
-                <RightArrow/>
-            </CenteredFlex>
+                href={link}
+                $textDecoration="none">
+                <CenteredFlex $gap={12}>
+                    <Text
+                        $fontSize={isLargerThanExtraSmall ? '1.2rem': '1rem'}
+                        $fontWeight={700}
+                        $letterSpacing="0.35rem">
+                        LEARN MORE
+                    </Text>
+                    <HaiArrow
+                        direction="right"
+                        strokeWidth={2.5}
+                    />
+                </CenteredFlex>
             </ExternalLink>
         </Container>
     )
@@ -64,7 +67,7 @@ const Container = styled(Flex).attrs(props => ({
 
     & svg {
         width: auto;
-        height: 1rem;
+        height: 1.2rem;
     }
 
     ${({ theme }) => theme.mediaWidth.upToExtraSmall`

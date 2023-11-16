@@ -1,5 +1,4 @@
-import { type ReactNode } from 'react'
-
+import type { ReactChildren } from '~/types'
 import { LINK_TO_DOCS, TOKEN_LOGOS } from '~/utils'
 
 import styled from 'styled-components'
@@ -7,7 +6,7 @@ import { BlurContainer, Flex, Text } from '~/styles'
 import { BrandedTitle } from './BrandedTitle'
 import { ExternalLink } from './ExternalLink'
 import { BrandedSelect } from './BrandedSelect'
-import HaiFace from './Icons/HaiFace'
+import { HaiFace } from './Icons/HaiFace'
 
 import uniswapLogo from '~/assets/uniswap-icon.svg'
 
@@ -74,7 +73,7 @@ const typeOptions = [
 type IntentionHeaderProps = {
     type: 'earn' | 'borrow' | 'auctions',
     setType: (type: string) => void,
-    children?: JSX.Element | ReactNode | ReactNode[]
+    children?: ReactChildren
 }
 export function IntentionHeader({ type, setType, children }: IntentionHeaderProps) {
     const { subtitle, cta, ctaLink } = copy[type]

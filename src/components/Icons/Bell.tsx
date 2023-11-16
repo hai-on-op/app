@@ -1,8 +1,14 @@
-import React from 'react'
+import type { IconProps } from '~/types'
 
-const BellIcon = () => {
+export function Bell({ size = 28, ...props }: IconProps) {
     return (
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg
+            width={size}
+            height={size}
+            viewBox="0 0 28 28"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            {...props}>
             <path
                 fillRule="evenodd"
                 clipRule="evenodd"
@@ -42,5 +48,3 @@ const BellIcon = () => {
         </svg>
     )
 }
-
-export default BellIcon

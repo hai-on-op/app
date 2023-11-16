@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { type RouteComponentProps } from 'react-router-dom'
 import { useAccount } from 'wagmi'
 
 import { useStoreActions, useStoreState } from '~/store'
@@ -9,17 +10,17 @@ import styled from 'styled-components'
 import { HaiButton, Text } from '~/styles'
 import { ManageVault } from './ManageVault'
 import { VaultsList } from './VaultsList'
-import Caret from '~/components/Icons/Caret'
+import { Caret } from '~/components/Icons/Caret'
 
-export function Vaults({ ...props }) {
+export function Vaults(props: RouteComponentProps<{ address?: string }>) {
     const { address: account } = useAccount()
     const signer = useEthersSigner()
     const geb = useGeb()
 
-    const { tokensData, isWrongNetwork } = useStoreState(state => state.connectWalletModel )
+    const { tokensData, isWrongNetwork } = useStoreState(state => state.connectWalletModel)
     const { safeModel: safeActions } = useStoreActions(actions => actions)
 
-    const address: string = props.match.params.address ?? ''
+    const { address = '' } = props.match.params
 
     useEffect(() => {
         if (
@@ -58,12 +59,7 @@ export function Vaults({ ...props }) {
             vault={activeVault}
             headerContent={(
                 <BackButton onClick={() => setActiveVault(undefined)}>
-                    <Caret
-                        width={10}
-                        height={14}
-                        strokeWidth={3}
-                        style={{ transform: 'rotate(180deg)' }}
-                    />
+                    <Caret direction="left"/>
                     <Text>
                         Back to {navIndex === 0 ? 'All': 'My'} Vaults
                     </Text>

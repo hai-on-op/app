@@ -4,7 +4,6 @@ import styled from 'styled-components'
 
 import { useStoreActions, useStoreState } from '~/store'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
-import NavLinks from './NavLinks'
 
 const SideMenu = () => {
     const nodeRef = useRef(null)
@@ -35,7 +34,7 @@ const SideMenu = () => {
                         <AccountBalance>
                             <ConnectButton showBalance={false} accountStatus="address" />
                         </AccountBalance>
-                        <NavLinks />
+                        {/* <NavLinks /> */}
                     </InnerContainer>
                 </Inner>
             </Container>

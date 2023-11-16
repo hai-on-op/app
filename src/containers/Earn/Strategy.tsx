@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import { DashedContainerStyle, Flex, HaiButton, Text } from '~/styles'
 import { ExternalLink } from '~/components/ExternalLink'
 import { FloatingElements, type FloatingElementsProps } from '~/components/FloatingElements'
-import HaiArrow from '~/components/Icons/HaiArrow'
+import { HaiArrow } from '~/components/Icons/HaiArrow'
 
 export type EarnStrategyProps = {
     heading: string,
@@ -58,9 +58,8 @@ export function EarnStrategy({
                     $gap={8}>
                     <Text>{cta}</Text>
                     <HaiArrow
-                        width={15}
-                        height={15}
-                        style={{ transform: 'rotate(-135deg)' }}
+                        size={15}
+                        direction="upRight"
                     />
                 </HaiButton>
             </ExternalLink>

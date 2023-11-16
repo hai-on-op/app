@@ -3,8 +3,8 @@ import { LINK_TO_DOCS, LINK_TO_TELEGRAM, LINK_TO_TWITTER } from '~/utils'
 import styled from 'styled-components'
 import { CenteredFlex, Flex, Grid, HaiButton, Text } from '~/styles'
 import { Elf } from '~/components/Elf'
-import Twitter from '~/components/Icons/Twitter'
-import Telegram from '~/components/Icons/Telegram'
+import { Twitter } from '~/components/Icons/Twitter'
+import { Telegram } from '~/components/Icons/Telegram'
 import { PassLink } from '~/components/PassLink'
 import { ExternalLink } from '~/components/ExternalLink'
 
@@ -64,18 +64,12 @@ export function Footer() {
                             <ExternalLink
                                 href={LINK_TO_TWITTER}
                                 $textDecoration="none">
-                                <Twitter
-                                    width={28}
-                                    height={24}
-                                />
+                                <Twitter size={28}/>
                             </ExternalLink>
                             <ExternalLink
                                 href={LINK_TO_TELEGRAM}
                                 $textDecoration="none">
-                                <Telegram
-                                    width={32}
-                                    height={24}
-                                />
+                                <Telegram size={32}/>
                             </ExternalLink>
                         </IconContainer>
                     </Grid>

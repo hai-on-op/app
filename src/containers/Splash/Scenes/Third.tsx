@@ -8,7 +8,7 @@ import { CenteredFlex, Flex, Grid, Text } from '~/styles'
 import { type SplashImage, ZoomScene, type ZoomSceneProps } from './ZoomScene'
 import { FloatingElements } from '~/components/FloatingElements'
 import { BrandedTitle } from '~/components/BrandedTitle'
-import HaiFace from '~/components/Icons/HaiFace'
+import { HaiFace } from '~/components/Icons/HaiFace'
 import { ExternalLink } from '~/components/ExternalLink'
 import { Elf } from '~/components/Elf'
 

@@ -1,15 +1,24 @@
-import React from 'react'
-
+import type { IconProps } from '~/types'
 import { useHaiTheme } from '~/styles/HaiThemeProvider'
 
-type Props = {
+type Props = IconProps & {
     filled?: boolean
 }
-const HaiFace = ({ filled }: Props) => {
+export function HaiFace({ size = 40, filled, ...props }: Props) {
     const { theme } = useHaiTheme()
 
     return (
-        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="-3 0 40 40" fill="none" stroke="#000000" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round">
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width={size}
+            height={size}
+            viewBox="-3 0 40 40"
+            fill="none"
+            stroke="#000000"
+            strokeWidth="1.25"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            {...props}>
             {/* face with flower */}
             <path d="m 26.726671,26.502027 c 0,0 -4.168077,2.246653 -2.579065,4.406113 1.69021,2.296987 4.156897,-0.79494 4.156897,-0.79494 0,0 -0.656625,3.669994 1.755989,3.495888 3.51257,-0.253484 1.897964,-4.525913 1.897964,-4.525913 0,0 4.049409,1.545038 4.122408,-1.812898 0.073,-3.357935 -3.714882,-2.536553 -3.714882,-2.536553 0,0 2.820443,-3.344929 -0.626522,-4.410381 -3.304501,-1.021416 -3.722929,3.13894 -3.722929,3.13894 0,0 -1.546788,-2.352988 -2.825215,-1.017112 -2.079459,2.172904 1.535355,4.056856 1.535355,4.056856 z M 16.889578,6.386111 a 13,13 0 0 0 -12.892578,13 13,13 0 0 0 13,13 13,13 0 0 0 6.890625,-1.978516 c -0.699499,-1.992067 2.839844,-3.90625 2.839844,-3.90625 0,0 -3.614615,-1.883735 -1.535156,-4.05664 1.278427,-1.335876 2.824218,1.017578 2.824218,1.017578 0,0 0.262312,-2.525334 1.945313,-3.152344 a 13,13 0 0 0 0.03516,-0.923828 13,13 0 0 0 -13,-13 13,13 0 0 0 -0.107422,0 z" fill={filled ? theme.colors.yellowish: undefined}/>
             {/* mouth with stem */}
@@ -31,5 +40,3 @@ const HaiFace = ({ filled }: Props) => {
         </svg>
     )
 }
-
-export default HaiFace

@@ -1,7 +1,8 @@
 import styled from 'styled-components'
-import ReflexerIcon from './Icons/ReflexerIcon'
+import { Reflexer } from './Icons/Reflexer'
 import arrow from '~/assets/arrow.svg'
 import uniswapIcon from '~/assets/uniswap-icon.svg'
+
 interface Props {
     title: string
     description: string
@@ -12,7 +13,7 @@ const TransactionOverview = ({ title, description, isChecked }: Props) => {
     return (
         <>
             <IconsHolder>
-                <ReflexerIcon />
+                <Reflexer />
                 {isChecked ? (
                     <>
                         <img className="sep" src={arrow} alt="" />

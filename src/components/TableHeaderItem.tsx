@@ -1,14 +1,14 @@
-import { type ReactNode } from 'react'
+import type { ReactChildren } from '~/types'
 
 import styled, { css } from 'styled-components'
 import { CenteredFlex, Text } from '~/styles'
-import HaiArrow from './Icons/HaiArrow'
+import { HaiArrow } from './Icons/HaiArrow'
 
 type TableHeaderItemProps = {
     sortable?: boolean,
     isSorting?: 'asc' | 'desc' | false,
     onClick?: () => void,
-    children?: JSX.Element | ReactNode | ReactNode[]
+    children?: ReactChildren
 }
 export function TableHeaderItem({
     sortable = false,
@@ -24,7 +24,7 @@ export function TableHeaderItem({
             {sortable && (
                 <HaiArrow
                     strokeWidth={isSorting ? 3: 2}
-                    style={{ transform: `rotate(${isSorting === 'asc' ? 180: 0}deg)` }}
+                    direction={isSorting === 'asc' ? 'up': 'down'}
                 />
             )}
             {typeof children === 'string'

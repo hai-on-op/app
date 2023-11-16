@@ -1,4 +1,6 @@
-import { useMemo, useState, type ReactNode, useRef, useEffect } from 'react'
+import { useMemo, useState, useRef, useEffect } from 'react'
+
+import type { ReactChildren } from '~/types'
 
 import styled, { css, keyframes } from 'styled-components'
 import { CenteredFlex, Flex, type FlexProps, Text, type TextProps } from '~/styles'
@@ -33,7 +35,7 @@ type BannerHeaderProps = FlexProps & {
 	textOptions?: TextProps,
 	staticWidth?: number,
 	spacing?: number,
-	children?: JSX.Element | ReactNode | ReactNode[]
+	children?: ReactChildren
 }
 
 export function Marquee({

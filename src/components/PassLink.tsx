@@ -1,5 +1,6 @@
-import { type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+
+import type { ReactChildren } from '~/types'
 
 import styled from 'styled-components'
 import { type FlexProps, FlexStyle, Text, type TextProps } from '~/styles'
@@ -7,8 +8,8 @@ import { type FlexProps, FlexStyle, Text, type TextProps } from '~/styles'
 type PassLinkProps = TextProps & FlexProps & {
     href: string,
     style?: object,
-    content?: JSX.Element | ReactNode | ReactNode[],
-    children?: JSX.Element | ReactNode | ReactNode[],
+    content?: ReactChildren,
+    children?: ReactChildren,
     onClick?: any
 }
 export function PassLink({

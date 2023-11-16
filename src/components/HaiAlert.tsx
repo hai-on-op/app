@@ -2,7 +2,7 @@ import { useMediaQuery } from '~/hooks'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, Text } from '~/styles'
-import HaiFace from './Icons/HaiFace'
+import { HaiFace } from './Icons/HaiFace'
 import { Elf } from './Elf'
 
 export function HaiAlert() {

@@ -5,7 +5,7 @@ import { useOutsideClick } from '~/hooks'
 import styled from 'styled-components'
 import { CenteredFlex, Popout, type TextProps, Title, Flex, Text } from '~/styles'
 import { ExternalLink } from './ExternalLink'
-import CaretWithOutline from './Icons/CaretWithOutline'
+import { CaretWithOutline } from './Icons/CaretWithOutline'
 
 type BrandedSelectOption = {
     label: string,

@@ -7,14 +7,14 @@ import { useStoreActions, useStoreState } from '~/store'
 
 import styled, { css } from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Popout, Text, Title } from '~/styles'
-import Twitter from '~/components/Icons/Twitter'
-import Telegram from '~/components/Icons/Telegram'
-import Sound from '~/components/Icons/Sound'
-import Caret from '~/components/Icons/Caret'
-import HaiFace from '~/components/Icons/HaiFace'
-import Notification from '~/components/Icons/Notification'
-import Hamburger from '~/components/Icons/Hamburger'
-import Gear from '~/components/Icons/Gear'
+import { Twitter } from '~/components/Icons/Twitter'
+import { Telegram } from '~/components/Icons/Telegram'
+import { Sound } from '~/components/Icons/Sound'
+import { Caret } from '~/components/Icons/Caret'
+import { HaiFace } from '~/components/Icons/HaiFace'
+import { Notification } from '~/components/Icons/Notification'
+import { Hamburger } from '~/components/Icons/Hamburger'
+import { Gear } from '~/components/Icons/Gear'
 import { Marquee, MarqueeChunk } from '~/components/Marquee'
 import { PassLink } from '~/components/PassLink'
 import { ExternalLink } from '~/components/ExternalLink'
@@ -124,29 +124,26 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                 <ExternalLink
                                     href={LINK_TO_TWITTER}
                                     $textDecoration="none">
-                                    <Twitter
-                                        width={28}
-                                        height={24}
-                                    />
+                                    <Twitter size={28}/>
                                 </ExternalLink>
                                 <ExternalLink
                                     href={LINK_TO_TELEGRAM}
                                     $textDecoration="none">
-                                    <Telegram
-                                        width={32}
-                                        height={24}
-                                    />
+                                    <Telegram size={32}/>
                                 </ExternalLink>
                             </>)
                             : (
                                 <MoreButton>
                                     <Text>More</Text>
-                                    <Caret/>
+                                    <Caret direction="down"/>
                                 </MoreButton>
                             )
                     )}
                     <MusicButton onClick={() => setIsPlayingMusic(!isPlayingMusic)}>
-                        <Sound muted={!isPlayingMusic}/>
+                        <Sound
+                            muted={!isPlayingMusic}
+                            size={21}
+                        />
                     </MusicButton>
                     {isSplash
                         ? (
@@ -166,7 +163,7 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                 onClick={() => setNotificationsActive(a => !a)}
                                 $variant="yellowish"
                                 $notify>
-                                <Notification/>
+                                <Notification size={18}/>
                                 {notificationsActive && (
                                     <NotificationsDropdown
                                         $float="left"
@@ -178,7 +175,7 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                             $align="center">
                                             <Text>Notifications</Text>
                                             <SettingsButton>
-                                                <Gear/>
+                                                <Gear size={22}/>
                                             </SettingsButton>
                                         </Flex>
                                         <CenteredFlex $width="100%">
@@ -198,7 +195,7 @@ export function Header({ tickerActive = false }: HeaderProps) {
                             $variant="yellowish"
                             ref={setDropdownButton as any}
                             onClick={() => setDropdownActive(a => !a)}>
-                            <Hamburger/>
+                            <Hamburger size={20}/>
                             {dropdownActive && (
                                 <Dropdown
                                     $float="left"
@@ -337,13 +334,7 @@ const MoreButton = styled(HaiButton)`
         width: 100%;
         text-align: center;
     }
-    & svg {
-        fill: none;
-        stroke: black;
-        stroke-width: 2.5px;
-        width: 10px;
-        height: auto;
-        transform: rotate(90deg);
+    & > svg {
         flex-shrink: 0;
     }
 `
@@ -354,18 +345,8 @@ const MusicButton = styled(HaiButton)`
     height: 48px;
     padding: 0px;
     justify-content: center;
-
-    & > svg {
-        width: 21px;
-        height: auto;
-    }
 `
-const SettingsButton = styled(MusicButton)`
-    & > svg {
-        width: 22px;
-        height: auto;
-    }
-`
+const SettingsButton = styled(MusicButton)``
 const NotificationButton = styled(HaiButton)<{ $notify?: boolean }>`
     position: relative;
     width: 48px;
@@ -386,10 +367,6 @@ const NotificationButton = styled(HaiButton)<{ $notify?: boolean }>`
             border: ${({ theme }) => theme.border.medium};
         }
     `}
-
-    & > svg {
-        width: 16px;
-    }
 `
 const NotificationsDropdown = styled(Popout)`
     width: min(400px, calc(100vw - 48px));
@@ -406,11 +383,6 @@ const DropdownButton = styled(HaiButton)`
     height: 48px;
     padding: 0px;
     justify-content: center;
-
-    & > svg {
-        width: 20px;
-        height: auto;
-    }
 `
 const Dropdown = styled(Popout)`
     width: 280px;

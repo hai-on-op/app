@@ -6,7 +6,7 @@ import styled from 'styled-components'
 import { CenteredFlex, Flex, Grid, HaiButton, Text } from '~/styles'
 import { RewardsTokenPair, TokenPair } from '~/components/TokenPair'
 import { TableHeaderItem } from '~/components/TableHeaderItem'
-import HaiArrow from '~/components/Icons/HaiArrow'
+import { HaiArrow } from '~/components/Icons/HaiArrow'
 
 import uniswapLogo from '~/assets/uniswap-icon.svg'
 import velodromeLogo from '~/assets/velodrome-img.svg'
@@ -143,9 +143,8 @@ export function StrategyTable({ rows }: StrategyTableProps) {
                         <CenteredFlex $gap={4}>
                             <Text>Earn</Text>
                             <HaiArrow
-                                width={15}
-                                height={15}
-                                style={{ transform: 'rotate(-135deg)' }}
+                                size={15}
+                                direction="upRight"
                             />
                         </CenteredFlex>
                         <Flex
