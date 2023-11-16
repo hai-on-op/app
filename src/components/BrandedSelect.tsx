@@ -4,8 +4,8 @@ import { useOutsideClick } from '~/hooks'
 
 import styled from 'styled-components'
 import { CenteredFlex, Popout, type TextProps, Title, Flex, Text } from '~/styles'
-import Caret from './Icons/Caret'
 import { ExternalLink } from './ExternalLink'
+import CaretWithOutline from './Icons/CaretWithOutline'
 
 type BrandedSelectOption = {
     label: string,
@@ -31,7 +31,7 @@ export function BrandedSelect({ width, options, value, onChange, ...props }: Bra
     return (
         <Container
             ref={setContainer as any}
-            $gap={16}
+            $gap={8}
             // onPointerOver={() => setActive(true)}
             // onPointerLeave={() => setActive(false)}
             onClick={() => setPersistent(p => !p)}>
@@ -57,7 +57,7 @@ export function BrandedSelect({ width, options, value, onChange, ...props }: Bra
                     </option>
                 ))}
             </Select>
-            <Caret/>
+            <CaretWithOutline/>
             <Dropdown
                 $float="left"
                 $margin="30px"
@@ -121,7 +121,12 @@ const Container = styled(CenteredFlex)`
     cursor: pointer;
     & > svg {
         pointer-events: none;
-        transform: rotate(90deg);
+        width: 32px;
+        height: auto;
+        fill: ${({ theme }) => theme.colors.yellowish};
+        stroke: black;
+        stroke-width: 1px;
+        margin-top: 8px;
     }
 `
 const HiddenText = styled(Title)`
@@ -143,7 +148,7 @@ const Select = styled(Title)`
 const Dropdown = styled(Popout)`
     width: 400px;
     padding: 24px;
-    margin-right: -22px;
+    margin-right: -14px;
     gap: 12px;
     cursor: default;
 `
