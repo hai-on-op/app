@@ -1,15 +1,6 @@
 import styled from 'styled-components'
 import { CenteredFlex } from '~/styles'
 
-export type SplashImage = {
-    index: number
-    width: string,
-    style?: object,
-    rotation?: number,
-    flip?: boolean,
-    zIndex?: number
-}
-
 export type ZoomSceneProps = {
     zIndex: number
 }

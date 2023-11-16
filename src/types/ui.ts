@@ -16,3 +16,12 @@ export type DirectionalIconProps = IconProps & {
         | 'downRight'
         | 'downLeft'
 }
+
+export type SplashImage = {
+    index: number
+    width: string,
+    style?: object,
+    rotation?: number,
+    flip?: boolean,
+    zIndex?: number
+}

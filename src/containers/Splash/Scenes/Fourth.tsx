@@ -6,7 +6,7 @@ import { useMediaQuery } from '~/hooks'
 import styled from 'styled-components'
 import { Flex, HaiButton } from '~/styles'
 import { type SplashImage, ZoomScene, type ZoomSceneProps } from './ZoomScene'
-import { FloatingElements } from '~/components/FloatingElements'
+import { FloatingElements } from '~/components/BrandElements/FloatingElements'
 import { Caret } from '~/components/Icons/Caret'
 import { LearnCard } from './LearnCard'
 

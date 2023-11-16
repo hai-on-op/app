@@ -12,15 +12,23 @@ export function ConnectButton({ showBalance = false }: ConnectButtonProps) {
         <RKConnectButton.Custom>
             {({ account, chain, openConnectModal, openAccountModal, openChainModal }) => {
                 if (!account) return (
-                    <Button onClick={openConnectModal}>Connect</Button>
+                    <Button onClick={openConnectModal}>
+                        Connect
+                    </Button>
                 )
                 if (chain?.id !== 420) return (
-                    <Button onClick={openChainModal}>Switch Network</Button>
+                    <Button onClick={openChainModal}>
+                        Switch Network
+                    </Button>
                 )
 
                 return (
                     <Container>
-                        {showBalance && <BalanceContainer>{account.balanceFormatted} ETH</BalanceContainer>}
+                        {showBalance && (
+                            <BalanceContainer>
+                                {account.balanceFormatted} ETH
+                            </BalanceContainer>
+                        )}
                         <Button onClick={openAccountModal}>
                             <Text>{account.displayName}</Text>
                             <Caret direction="down"/>

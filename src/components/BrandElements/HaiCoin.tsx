@@ -20,7 +20,7 @@ export function HaiCoin({ variant = 'HAI', width, animated, thickness, ...props 
         <HaiCoinImage
             {...props}
             $width={width}>
-			<Inner
+            <Inner
                 $variant={variant}
                 $animated={animated}
                 $animDur={animDuration}>

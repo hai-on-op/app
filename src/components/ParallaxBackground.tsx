@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 
 import styled from 'styled-components'
-import { FloatingElements, type FloatingElementsProps } from './FloatingElements'
-import { CloudImage } from './Cloud'
+import { FloatingElements, type FloatingElementsProps } from './BrandElements/FloatingElements'
+import { CloudImage } from './BrandElements/Cloud'
 
 // MUST have style.top defined, in pixels
 const els: FloatingElementsProps = {

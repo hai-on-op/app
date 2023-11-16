@@ -6,7 +6,7 @@ import { type SplashImage, ZoomScene, type ZoomSceneProps } from './ZoomScene'
 import { BrandedTitle } from '~/components/BrandedTitle'
 import { Swirl } from '~/components/Icons/Swirl'
 import { PairsBanner } from '../PairsBanner'
-import { FloatingElements } from '~/components/FloatingElements'
+import { FloatingElements } from '~/components/BrandElements/FloatingElements'
 
 const elves: SplashImage[] = [
     {

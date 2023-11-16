@@ -2,7 +2,7 @@ import { LINK_TO_DOCS, LINK_TO_TELEGRAM, LINK_TO_TWITTER } from '~/utils'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, Grid, HaiButton, Text } from '~/styles'
-import { Elf } from '~/components/Elf'
+import { Elf } from '~/components/BrandElements/Elf'
 import { Twitter } from '~/components/Icons/Twitter'
 import { Telegram } from '~/components/Icons/Telegram'
 import { PassLink } from '~/components/PassLink'

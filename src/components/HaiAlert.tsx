@@ -3,7 +3,7 @@ import { useMediaQuery } from '~/hooks'
 import styled from 'styled-components'
 import { CenteredFlex, Flex, Text } from '~/styles'
 import { HaiFace } from './Icons/HaiFace'
-import { Elf } from './Elf'
+import { Elf } from './BrandElements/Elf'
 
 export function HaiAlert() {
     const isLargerThanSmall = useMediaQuery('upToSmall')

@@ -3,7 +3,7 @@ import { TOKEN_LOGOS } from '~/utils'
 import styled from 'styled-components'
 import { DashedContainerStyle, Flex, HaiButton, Text } from '~/styles'
 import { ExternalLink } from '~/components/ExternalLink'
-import { FloatingElements, type FloatingElementsProps } from '~/components/FloatingElements'
+import { FloatingElements, type FloatingElementsProps } from '~/components/BrandElements/FloatingElements'
 import { HaiArrow } from '~/components/Icons/HaiArrow'
 
 export type EarnStrategyProps = {

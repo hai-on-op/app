@@ -1,9 +1,10 @@
-import { TOKEN_LOGOS } from "~/utils"
+import { TOKEN_LOGOS } from '~/utils'
 
-import { type SplashImage } from "../containers/Splash/Scenes/ZoomScene"
-import { Cloud } from "~/components/Cloud"
-import { Elf } from "~/components/Elf"
-import { HaiCoin } from "~/components/HaiCoin"
+import type { SplashImage } from '~/types'
+
+import { Cloud } from './Cloud'
+import { Elf } from './Elf'
+import { HaiCoin } from './HaiCoin'
 
 export type FloatingElementsProps = {
     elves?: SplashImage[],

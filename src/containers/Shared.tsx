@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useCallback } from 'react'
+import { useEffect, useCallback } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
@@ -6,6 +6,7 @@ import { ethers, utils } from 'ethers'
 import { useAccount, useNetwork } from 'wagmi'
 import { getTokenList } from '@hai-on-op/sdk'
 
+import type { ReactChildren } from '~/types'
 import {
     ETHERSCAN_PREFIXES,
     blockedAddresses,
@@ -28,7 +29,6 @@ import TransactionUpdater from '~/services/TransactionUpdater'
 import styled, { css } from 'styled-components'
 import { CenteredFlex, Flex } from '~/styles'
 import ImagePreloader from '~/components/ImagePreloader'
-import BlockBodyContainer from '~/components/BlockBodyContainer'
 import LiquidateSafeModal from '~/components/Modals/LiquidateSafeModal'
 // import ProxyModal from '~/components/Modals/ProxyModal'
 // import WalletModal from '~/components/WalletModal'
@@ -41,7 +41,6 @@ import WethModal from '~/components/Modals/WETHModal'
 import BlockedAddress from '~/components/BlockedAddress'
 import ToastPayload from '~/components/ToastPayload'
 import AlertLabel from '~/components/AlertLabel'
-import SideMenu from '~/components/SideMenu'
 import { IntentionHeader } from '~/components/IntentionHeader'
 import { ParallaxBackground } from '~/components/ParallaxBackground'
 import { HaiAlert } from '~/components/HaiAlert'
@@ -53,10 +52,9 @@ const playlist = [
     '/audio/hai-as-fuck.wav'
 ]
 
-interface Props {
-    children: ReactNode
+type Props = {
+    children: ReactChildren
 }
-
 const Shared = ({ children }: Props) => {
     const { t } = useTranslation()
     const { chain } = useNetwork()
@@ -292,8 +290,7 @@ const Shared = ({ children }: Props) => {
                 />
             </Background>
             <Header tickerActive={!isSplash}/>
-            {settingsState.blockBody ? <BlockBodyContainer /> : null}
-            <SideMenu />
+            {settingsState.blockBody && <BlockBodyContainer/>}
             {/* <WalletModal /> */}
             {/* <MulticallUpdater /> */}
             {/* <ApplicationUpdater /> */}
@@ -391,6 +388,17 @@ const Container = styled.div`
             }
         }
     }
+`
+
+const BlockBodyContainer = styled.div`
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    z-index: 1000;
+    background-color: rgba(35, 37, 39, 0.75);
+    -webkit-tap-highlight-color: transparent;
 `
 
 const Background = styled(CenteredFlex)`
