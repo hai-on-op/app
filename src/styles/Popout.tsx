@@ -56,7 +56,7 @@ export const Popout = styled(Flex).attrs((props => ({
                 transform: rotate(180deg);
             `
         )}
-        width: 56px;
+        width: 52px;
         height: 24px;
         margin-left: -28px;
         background-image: url('${popoutSVG}');
