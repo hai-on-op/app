@@ -6,6 +6,7 @@ import styled from 'styled-components'
 import { CenteredFlex, Flex, Grid, HaiButton, Text } from '~/styles'
 import { RewardsTokenPair, TokenPair } from '~/components/TokenPair'
 import { TableHeaderItem } from '~/components/TableHeaderItem'
+import { Status, StatusLabel } from '~/components/StatusLabel'
 
 type SortableHeader = {
     label: string,
@@ -114,46 +115,51 @@ export function MyVaultsTable({ rows, onSelect }: MyVaultsTableProps) {
                 collateral,
                 debt,
                 liquidationCRatio
-            }, i) => (
-                <TableRow key={i}>
-                    <Grid
-                        $columns="2fr min-content 1fr"
-                        $align="center"
-                        $gap={12}>
-                        <CenteredFlex
-                            $width="fit-content"
-                            $gap={4}>
-                            <TokenPair tokens={[collateralName.toUpperCase() as any, 'HAI']}/>
-                            <Text>#{id}</Text>
+            }, i) => {
+                const risk = ['', 'Low', 'Medium'].includes(returnState(riskState))
+                    ? Status.SAFE
+                    : Status.DANGER
+                return (
+                    <TableRow key={i}>
+                        <Grid
+                            $columns="2fr min-content 1fr"
+                            $align="center"
+                            $gap={12}>
+                            <CenteredFlex
+                                $width="fit-content"
+                                $gap={4}>
+                                <TokenPair tokens={[collateralName.toUpperCase() as any, 'HAI']}/>
+                                <Text>#{id}</Text>
+                            </CenteredFlex>
+                            <RewardsTokenPair tokens={['OP']}/>
+                        </Grid>
+                        <Flex
+                            $align="center"
+                            $gap={12}>
+                            <Text>{collateralRatio}</Text>
+                            <StatusLabel status={risk}/>
+                        </Flex>
+                        <Flex
+                            $align="center"
+                            $gap={8}>
+                            <Text>{collateral}</Text>
+                            <Text>{collateralName.toUpperCase()}</Text>
+                        </Flex>
+                        <Flex
+                            $align="center"
+                            $gap={8}>
+                            <Text>{debt}</Text>
+                            <Text>HAI</Text>
+                        </Flex>
+                        <Text>{liquidationCRatio}%</Text>
+                        <CenteredFlex>
+                            <ManageButton onClick={() => onSelect(sortedRows[i])}>
+                                Manage
+                            </ManageButton>
                         </CenteredFlex>
-                        <RewardsTokenPair tokens={['OP']}/>
-                    </Grid>
-                    <Flex
-                        $align="center"
-                        $gap={8}>
-                        <Text>{collateralRatio}</Text>
-                        <Text>{returnState(riskState)}</Text>
-                    </Flex>
-                    <Flex
-                        $align="center"
-                        $gap={8}>
-                        <Text>{collateral}</Text>
-                        <Text>{collateralName.toUpperCase()}</Text>
-                    </Flex>
-                    <Flex
-                        $align="center"
-                        $gap={8}>
-                        <Text>{debt}</Text>
-                        <Text>HAI</Text>
-                    </Flex>
-                    <Text>{liquidationCRatio}%</Text>
-                    <CenteredFlex>
-                        <ManageButton onClick={() => onSelect(sortedRows[i])}>
-                            Manage
-                        </ManageButton>
-                    </CenteredFlex>
-                </TableRow>
-            ))}
+                    </TableRow>
+                )
+            })}
         </Table>
     )
 }

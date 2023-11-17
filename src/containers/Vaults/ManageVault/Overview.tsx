@@ -3,6 +3,7 @@ import { TOKEN_LOGOS, type ISafe } from '~/utils'
 import styled, { css } from 'styled-components'
 import { type DashedContainerProps, DashedContainerStyle, Flex, Grid, Text, CenteredFlex } from '~/styles'
 import { Tooltip } from '~/components/Tooltip'
+import { Status, StatusLabel } from '~/components/StatusLabel'
 
 type OverviewProps = {
     vault: ISafe
@@ -17,10 +18,18 @@ export function Overview({ vault }: OverviewProps) {
                 <FullWidthOverviewStat
                     token={vault.collateralName.toUpperCase() as any}
                     label="Collateral Asset"
+                    alert={{
+                        value: '7.2% APY',
+                        status: Status.POSITIVE
+                    }}
                 />
                 <FullWidthOverviewStat
                     token="HAI"
                     label="Debt Asset"
+                    alert={{
+                        value: '-7.2% APY',
+                        status: Status.NEGATIVE
+                    }}
                 />
                 <OverviewStat
                     stat={vault.collateralRatio}
@@ -84,9 +93,13 @@ const Inner = styled(Grid).attrs(props => ({
 
 type FullWidthOverviewStatProps = {
     token: keyof typeof TOKEN_LOGOS,
-    label: string
+    label: string,
+    alert: {
+        value: string,
+        status: Status
+    }
 }
-function FullWidthOverviewStat({ token, label }: FullWidthOverviewStatProps) {
+function FullWidthOverviewStat({ token, label, alert }: FullWidthOverviewStatProps) {
     return (
         <FullWidthFlex>
             <Flex
@@ -113,7 +126,9 @@ function FullWidthOverviewStat({ token, label }: FullWidthOverviewStatProps) {
                     <Text $fontSize="0.8em">{label}</Text>
                 </Flex>
             </Flex>
-            <Text>7.2%</Text>
+            <StatusLabel status={alert.status}>
+                {alert.value}
+            </StatusLabel>
         </FullWidthFlex>
     )
 }
