@@ -10,7 +10,6 @@ import { CenteredFlex, Flex, HaiButton, Popout, Text, Title } from '~/styles'
 import { Twitter } from '~/components/Icons/Twitter'
 import { Telegram } from '~/components/Icons/Telegram'
 import { Sound } from '~/components/Icons/Sound'
-import { Caret } from '~/components/Icons/Caret'
 import { HaiFace } from '~/components/Icons/HaiFace'
 import { Notification } from '~/components/Icons/Notification'
 import { Hamburger } from '~/components/Icons/Hamburger'
@@ -19,6 +18,7 @@ import { Marquee, MarqueeChunk } from '~/components/Marquee'
 import { PassLink } from '~/components/PassLink'
 import { ExternalLink } from '~/components/ExternalLink'
 import { ConnectButton } from '~/components/ConnectButton'
+import { BrandedDropdown, DropdownOption } from '~/components/BrandedDropdown'
 
 import haiLogo from '~/assets/logo.png'
 
@@ -133,10 +133,15 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                 </ExternalLink>
                             </>)
                             : (
-                                <MoreButton>
-                                    <Text>More</Text>
-                                    <Caret direction="down"/>
-                                </MoreButton>
+                                <BrandedDropdown label="More">
+                                    <PassLink
+                                        href="/auctions"
+                                        $textDecoration="none">
+                                        <DropdownOption>
+                                            Auctions
+                                        </DropdownOption>
+                                    </PassLink>
+                                </BrandedDropdown>
                             )
                     )}
                     <MusicButton onClick={() => setIsPlayingMusic(!isPlayingMusic)}>
@@ -323,20 +328,6 @@ const RightSide = styled(CenteredFlex)`
     ${({ theme }) => theme.mediaWidth.upToExtraSmall`
         gap: 12px;
     `}
-`
-
-const MoreButton = styled(HaiButton)`
-    position: relative;
-    width: 100px;
-    height: 48px;
-
-    & > ${Text} {
-        width: 100%;
-        text-align: center;
-    }
-    & > svg {
-        flex-shrink: 0;
-    }
 `
 
 const MusicButton = styled(HaiButton)`

@@ -3,11 +3,10 @@ import { type Dispatch, type SetStateAction, useMemo, useState } from 'react'
 import { type ISafe } from '~/utils'
 import { useStoreState } from '~/store'
 
-import styled from 'styled-components'
-import { Flex, Text } from '~/styles'
+import { Text } from '~/styles'
 import { NavContainer } from '~/components/NavContainer'
 import { CheckboxButton } from '~/components/CheckboxButton'
-import { BrandedDropdown } from '~/components/BrandedDropdown'
+import { BrandedDropdown, DropdownOption } from '~/components/BrandedDropdown'
 import { AvailableVaultsTable } from './AvailableVaultsTable'
 import { MyVaultsTable } from './MyVaultsTable'
 
@@ -159,20 +158,3 @@ export function VaultsList({ setActiveVault, navIndex, setNavIndex }: VaultsList
         </NavContainer>
     )
 }
-
-const DropdownOption = styled(Flex).attrs(props => ({
-    $width: '100%',
-    $align: 'center',
-    $gap: 12,
-    ...props
-}))`
-    width: 160px;
-    padding: 8px 16px;
-    border-radius: 999px;
-    border: 2px solid rgba(0,0,0,0.1);
-    cursor: pointer;
-
-    &:hover {
-        background-color: rgba(0,0,0,0.1);
-    }
-`

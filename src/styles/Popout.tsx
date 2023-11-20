@@ -1,12 +1,24 @@
-import styled, { css } from 'styled-components'
+import styled, { css, keyframes } from 'styled-components'
 import { Flex, FlexProps } from './Flex'
 
 import popoutSVG from '~/assets/popout.svg'
+
+const anim = (deltaY: number | string, transform = '') => keyframes`
+    0% {
+        opacity: 0;
+        transform: translateY(${deltaY}px) ${transform};
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0px) ${transform};
+    }
+`
 
 export type PopoutProps = FlexProps & {
     $float?: 'left' | 'center' | 'right',
     $anchor?: 'top' | 'bottom',
     $margin?: string,
+    $disableAnimation?: boolean,
     hidden?: boolean
 }
 
@@ -58,7 +70,7 @@ export const Popout = styled(Flex).attrs((props => ({
         )}
         width: 52px;
         height: 24px;
-        margin-left: -28px;
+        margin-left: -26px;
         background-image: url('${popoutSVG}');
         background-size: contain;
         background-position: center bottom;
@@ -66,6 +78,11 @@ export const Popout = styled(Flex).attrs((props => ({
     }
 
     ${({ hidden }) => hidden && css`display: none;`}
+    ${({ hidden, $disableAnimation = false, $anchor = 'top', $float = 'center' }) => (
+        !hidden && !$disableAnimation && css`
+            animation: ${anim($anchor === 'top' ? -8: 8, $float === 'center' ? 'translateX(-50%)': '')} 0.3s ease forwards;
+        `
+    )}
 
     z-index: 1;
 `
