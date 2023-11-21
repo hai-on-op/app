@@ -19,17 +19,17 @@ const dummyStats: StatProps[] = [
         label: 'My Net APY',
         tooltip: 'Hello World'
     },
-    {
-        header: '65%',
-        headerStatus: (
-            <StatusLabel
-                status={Status.SAFE}
-                size={0.8}
-            />
-        ),
-        label: 'My Net CR',
-        tooltip: 'Hello World'
-    },
+    // {
+    //     header: '65%',
+    //     headerStatus: (
+    //         <StatusLabel
+    //             status={Status.SAFE}
+    //             size={0.8}
+    //         />
+    //     ),
+    //     label: 'My Net CR',
+    //     tooltip: 'Hello World'
+    // },
     {
         header: '$7,000',
         headerStatus: (
@@ -38,7 +38,7 @@ const dummyStats: StatProps[] = [
                 hideLabel
             />
         ),
-        label: 'My Farm Rewards',
+        label: 'My Vault Rewards',
         tooltip: 'Hello World',
         button: <HaiButton $variant="yellowish">Claim</HaiButton>
     }
@@ -49,7 +49,7 @@ export function BorrowStats() {
     return (
         <Stats
             stats={dummyStats}
-            columns="repeat(4, 1fr) 1.6fr"
+            columns="repeat(3, 1fr) 1.6fr"
         />
     )
 }

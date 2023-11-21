@@ -52,7 +52,7 @@ export function Header({ tickerActive = false }: HeaderProps) {
                     <Marquee text={tickerExampleText}/>
                 </Ticker>
             )}
-            <Inner>
+            <Inner $blur={!isSplash}>
                 <CenteredFlex $gap={isLargerThanSmall ? 48: 24}>
                     {isLargerThanExtraSmall
                         ? (
@@ -217,9 +217,11 @@ const Inner = styled(Flex).attrs(props => ({
     $align: 'center',
     $gap: 24,
     ...props
-}))`
+}))<{ $blur?: boolean }>`
     height: 100%;
     padding: 0 42px;
+    backdrop-filter: ${({ $blur = false }) => $blur ? 'blur(13px)': 'none'};
+    border-bottom: 2px solid ${({ $blur = false }) => $blur ? 'black': 'transparent'};
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
         padding: 0 24px;

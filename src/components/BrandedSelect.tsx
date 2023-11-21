@@ -57,7 +57,9 @@ export function BrandedSelect({ width, options, value, onChange, ...props }: Bra
                     </option>
                 ))}
             </Select>
-            <CaretWithOutline/>
+            <IconContainer $active={persistent}>
+                <CaretWithOutline/>
+            </IconContainer>
             <Dropdown
                 $float="left"
                 $margin="30px"
@@ -119,15 +121,6 @@ const Container = styled(CenteredFlex)`
     padding: 0 12px;
     border-bottom: 2px solid rgba(0,0,0,0.1);
     cursor: pointer;
-    & > svg {
-        pointer-events: none;
-        width: 32px;
-        height: auto;
-        fill: ${({ theme }) => theme.colors.yellowish};
-        stroke: black;
-        stroke-width: 1px;
-        margin-top: 8px;
-    }
 `
 const HiddenText = styled(Title)`
     visibility: hidden;
@@ -143,6 +136,19 @@ const Select = styled(Title)`
     outline: none;
     border: none;
     pointer-events: none;
+`
+const IconContainer = styled(CenteredFlex)<{ $active?: boolean }>`
+    margin-top: 8px;
+    transition: all 0.5s ease;
+    transform: rotate(${({ $active }) => $active ? -180: 0}deg);
+    & > svg {
+        pointer-events: none;
+        width: 32px;
+        height: auto;
+        fill: ${({ theme }) => theme.colors.yellowish};
+        stroke: black;
+        stroke-width: 1px;
+    }
 `
 
 const Dropdown = styled(Popout)`
