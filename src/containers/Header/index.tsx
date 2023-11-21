@@ -2,26 +2,26 @@ import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 
 import { LINK_TO_DOCS, LINK_TO_TELEGRAM, LINK_TO_TWITTER } from '~/utils'
-import { useMediaQuery, useOutsideClick } from '~/hooks'
+import { useMediaQuery } from '~/hooks'
 import { useStoreActions, useStoreState } from '~/store'
 
-import styled, { css } from 'styled-components'
-import { CenteredFlex, Flex, HaiButton, Popout, Text, Title } from '~/styles'
+import styled from 'styled-components'
+import { CenteredFlex, Flex, HaiButton, Title } from '~/styles'
 import { Twitter } from '~/components/Icons/Twitter'
 import { Telegram } from '~/components/Icons/Telegram'
 import { Sound } from '~/components/Icons/Sound'
 import { HaiFace } from '~/components/Icons/HaiFace'
-import { Notification } from '~/components/Icons/Notification'
-import { Hamburger } from '~/components/Icons/Hamburger'
-import { Gear } from '~/components/Icons/Gear'
 import { Marquee, MarqueeChunk } from '~/components/Marquee'
 import { PassLink } from '~/components/PassLink'
 import { ExternalLink } from '~/components/ExternalLink'
 import { ConnectButton } from '~/components/ConnectButton'
 import { BrandedDropdown, DropdownOption } from '~/components/BrandedDropdown'
+import { Notifications } from './Notifications'
+import { MobileMenu } from './MobileMenu'
 
 import haiLogo from '~/assets/logo.png'
 
+// TODO: actually create ticker data
 const tickerExampleText = [
     'HAI',
     '$1.50',
@@ -42,13 +42,8 @@ export function Header({ tickerActive = false }: HeaderProps) {
     const { isPlayingMusic } = useStoreState(state => state.settingsModel)
     const { setIsPlayingMusic } = useStoreActions(actions => actions.settingsModel)
 
-    const [dropdownButton, setDropdownButton] = useState<HTMLElement>()
     const [dropdownActive, setDropdownActive] = useState(false)
-    useOutsideClick(dropdownButton, () => setDropdownActive(false))
-
-    const [notificationButton, setNotificationButton] = useState<HTMLElement>()
     const [notificationsActive, setNotificationsActive] = useState(false)
-    useOutsideClick(notificationButton, () => setNotificationsActive(false))
 
     return (
         <Container $tickerActive={tickerActive}>
@@ -162,82 +157,17 @@ export function Header({ tickerActive = false }: HeaderProps) {
                         )
                         : (<>
                             <ConnectButton showBalance/>
-                            <NotificationButton
-                                as="div"
-                                ref={setNotificationButton as any}
-                                onClick={() => setNotificationsActive(a => !a)}
-                                $variant="yellowish"
-                                $notify>
-                                <Notification size={18}/>
-                                {notificationsActive && (
-                                    <NotificationsDropdown
-                                        $float="left"
-                                        $margin="20px"
-                                        onClick={(e: any) => e.stopPropagation()}>
-                                        <Flex
-                                            $width="100%"
-                                            $justify="space-between"
-                                            $align="center">
-                                            <Text>Notifications</Text>
-                                            <SettingsButton>
-                                                <Gear size={22}/>
-                                            </SettingsButton>
-                                        </Flex>
-                                        <CenteredFlex $width="100%">
-                                            <Text
-                                                $fontWeight={700}
-                                                $textDecoration="underline">
-                                                View All Notifications
-                                            </Text>
-                                        </CenteredFlex>
-                                    </NotificationsDropdown>
-                                )}
-                            </NotificationButton>
+                            <Notifications
+                                active={notificationsActive}
+                                setActive={setNotificationsActive}
+                            />
                         </>)
                     }
                     {!isLargerThanSmall && (
-                        <DropdownButton
-                            $variant="yellowish"
-                            ref={setDropdownButton as any}
-                            onClick={() => setDropdownActive(a => !a)}>
-                            <Hamburger size={20}/>
-                            {dropdownActive && (
-                                <Dropdown
-                                    $float="left"
-                                    $margin="20px"
-                                    onClick={(e: any) => e.stopPropagation()}>
-                                    {/* TODO: replace links */}
-                                    <ExternalLink
-                                        href={LINK_TO_DOCS}
-                                        $textDecoration="none">
-                                        <HeaderLink>Learn</HeaderLink>
-                                    </ExternalLink>
-                                    <ExternalLink
-                                        href={LINK_TO_DOCS}
-                                        $textDecoration="none">
-                                        <HeaderLink>Docs</HeaderLink>
-                                    </ExternalLink>
-                                    <ExternalLink
-                                        href={LINK_TO_DOCS}
-                                        $textDecoration="none">
-                                        <HeaderLink>Community</HeaderLink>
-                                    </ExternalLink>
-
-                                    <HeaderLink>Connect</HeaderLink>
-
-                                    <ExternalLink
-                                        href={LINK_TO_TWITTER}
-                                        $textDecoration="none">
-                                        <HeaderLink>Twitter</HeaderLink>
-                                    </ExternalLink>
-                                    <ExternalLink
-                                        href={LINK_TO_TELEGRAM}
-                                        $textDecoration="none">
-                                        <HeaderLink>Telegram</HeaderLink>
-                                    </ExternalLink>
-                                </Dropdown>
-                            )}
-                        </DropdownButton>
+                        <MobileMenu
+                            active={dropdownActive}
+                            setActive={setDropdownActive}
+                        />
                     )}
                 </RightSide>
             </Inner>
@@ -336,59 +266,4 @@ const MusicButton = styled(HaiButton)`
     height: 48px;
     padding: 0px;
     justify-content: center;
-`
-const SettingsButton = styled(MusicButton)``
-const NotificationButton = styled(HaiButton)<{ $notify?: boolean }>`
-    position: relative;
-    width: 48px;
-    height: 48px;
-    padding: 0px;
-    justify-content: center;
-
-    ${({ $notify = false }) => $notify && css`
-        &::after {
-            content: '';
-            position: absolute;
-            top: -10px;
-            right: -10px;
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            background-color: ${({ theme }) => theme.colors.reddish};
-            border: ${({ theme }) => theme.border.medium};
-        }
-    `}
-`
-const NotificationsDropdown = styled(Popout)`
-    width: min(400px, calc(100vw - 48px));
-    padding: 24px;
-    margin-right: -21px;
-    gap: 24px;
-    cursor: default;
-`
-
-const DropdownButton = styled(HaiButton)`
-    position: relative;
-    width: 48px;
-    min-width: unset;
-    height: 48px;
-    padding: 0px;
-    justify-content: center;
-`
-const Dropdown = styled(Popout)`
-    width: 280px;
-    padding: 12px;
-    margin-right: -19px;
-    gap: 4px;
-    cursor: default;
-    
-    & > * {
-        width: 100%;
-        height: 36px;
-        & * {
-            line-height: 36px;
-        }
-        border-radius: 12px;
-        border: 1px solid rgba(0,0,0,0.1);
-    }
 `
