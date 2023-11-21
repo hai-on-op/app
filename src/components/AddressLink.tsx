@@ -1,20 +1,19 @@
-import styled from 'styled-components'
-import { ExternalLinkArrow } from '~/styles'
 import { getEtherscanLink, returnWalletAddress } from '~/utils'
 
-export const Link = styled.a`
-    ${ExternalLinkArrow}
-`
+import { ExternalLink, ExternalLinkProps } from './ExternalLink'
 
-interface AddressLinkProps {
+type AddressLinkProps = Omit<ExternalLinkProps, 'children'> & {
     chainId: number
-    address: string
+    address: string,
+    type?: 'address' | 'transaction'
 }
 
-export const AddressLink = ({ chainId, address }: AddressLinkProps) => {
+export const AddressLink = ({ chainId, address, type = 'address', ...props }: AddressLinkProps) => {
     return (
-        <Link href={getEtherscanLink(chainId, address, 'address')} target="_blank">
+        <ExternalLink
+            {...props}
+            href={getEtherscanLink(chainId, address, type)}>
             {returnWalletAddress(address)}
-        </Link>
+        </ExternalLink>
     )
 }

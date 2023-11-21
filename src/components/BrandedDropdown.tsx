@@ -50,7 +50,7 @@ const Dropdown = styled(Popout)`
     min-width: 100%;
     width: fit-content;
     padding: 24px;
-    margin-right: -22px;
+    margin-right: -16px;
     gap: 12px;
 `
 

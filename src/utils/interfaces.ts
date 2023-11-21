@@ -19,6 +19,7 @@ interface IColors {
     secondary: string
     gradient: string
     gradientSecondary: string
+    gradientCool: string
     neutral: string
     background: string
     overlay: string

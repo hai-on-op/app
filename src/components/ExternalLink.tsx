@@ -5,7 +5,7 @@ import type { ReactChildren } from '~/types'
 import styled from 'styled-components'
 import { TextStyle, type TextProps } from '~/styles'
 
-type ExternalLinkProps = TextProps & HTMLProps<HTMLAnchorElement> & {
+export type ExternalLinkProps = TextProps & HTMLProps<HTMLAnchorElement> & {
     children: ReactChildren
 }
 
