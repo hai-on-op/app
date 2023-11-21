@@ -20,9 +20,10 @@ const headers: SortableHeader[] = [
 ]
 
 type AuctionTableProps = {
-    auctions: IAuction[]
+    auctions: IAuction[],
+    isLoading: boolean
 }
-export function AuctionTable({ auctions }: AuctionTableProps) {
+export function AuctionTable({ auctions, isLoading }: AuctionTableProps) {
     const [expandedId, setExpandedId] = useState<string>()
 
     const [paging, setPaging] = useState<IPaging>({
@@ -94,7 +95,14 @@ export function AuctionTable({ auctions }: AuctionTableProps) {
                 })}
             />
             {!sortedRows.length
-                ? <LoadingOrNotFound>No auctions matched the active filters</LoadingOrNotFound>
+                ? (
+                    <LoadingOrNotFound>
+                        {isLoading
+                            ? `Loading auctions...`
+                            : `No auctions matched the active filters`
+                        }
+                    </LoadingOrNotFound>
+                )
                 : sortedRows.slice(paging.from, paging.to).map(auction => {
                     const key = `${auction.englishAuctionType}-${auction.auctionId}`
                     return (

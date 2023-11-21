@@ -8,6 +8,7 @@ export function Auctions() {
     const { auctionModel: auctionsActions, popupsModel: popupsActions } = useStoreActions((state) => state)
     const { auctionModel: auctionsState, connectWalletModel: connectWalletState } = useStoreState((state) => state)
     
+    const [isLoadingAuctions, setIsLoadingAuctions] = useState(false)
     const [selectedItem, setSelectedItem] = useState<string>('WETH')
     const [error, setError] = useState('')
     const [isLoading, setIsLoading] = useState(false)
@@ -88,6 +89,7 @@ export function Auctions() {
         if (!geb) return
 
         async function fetchAuctions() {
+            setIsLoadingAuctions(true)
             try {
                 await Promise.all([
                     auctionsActions.fetchAuctions({
@@ -105,8 +107,9 @@ export function Auctions() {
                     })
                 ])
                 setError('')
+                setIsLoadingAuctions(false)
             } catch (error) {
-                console.log(error)
+                console.error(error)
                 if (error instanceof SyntaxError && error.message.includes('failed')) {
                     setError('Failed to fetch auctions from the graph node')
                 }
@@ -122,6 +125,6 @@ export function Auctions() {
     }, [auctionsActions, geb, proxyAddress, auctionsState.auctionsData])
 
     return (
-        <AuctionsList/>
+        <AuctionsList isLoading={isLoadingAuctions}/>
     )
 }

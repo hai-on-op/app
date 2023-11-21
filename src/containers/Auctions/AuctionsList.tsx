@@ -34,7 +34,10 @@ const sortByTimeCreated = ({ createdAt: a }: IAuction, { createdAt: b }: IAuctio
     return parseInt(b) - parseInt(a)
 }
 
-export function AuctionsList() {
+type AuctionsListProps = {
+    isLoading: boolean
+}
+export function AuctionsList({ isLoading }: AuctionsListProps) {
     const [filterMyBids, setFilterMyBids] = useState(false)
     const [typeFilter, setTypeFilter] = useState<AuctionEventType>()
     const [saleAssetsFilter, setSaleAssetsFilter] = useState<string>()
@@ -154,7 +157,10 @@ export function AuctionsList() {
                     </>)}
                 </CenteredFlex>
             )}>
-            <AuctionTable auctions={auctions}/>
+            <AuctionTable
+                auctions={auctions}
+                isLoading={isLoading}
+            />
         </NavContainer>
     )
 }

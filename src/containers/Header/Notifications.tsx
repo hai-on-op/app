@@ -1,13 +1,13 @@
 import { type Dispatch, type SetStateAction, useState, useMemo } from 'react'
+import dayjs from 'dayjs'
 
+import { parseRemainingTime } from '~/utils'
 import { useOutsideClick } from '~/hooks'
 
 import styled, { css } from 'styled-components'
 import { CenteredFlex, Flex, Grid, HaiButton, Popout, Text } from '~/styles'
 import { Notification as NotificationIcon } from '~/components/Icons/Notification'
 import { Gear } from '~/components/Icons/Gear'
-import dayjs from 'dayjs'
-import { parseRemainingTime } from '~/utils'
 
 const dummyNotifications = [
     {
