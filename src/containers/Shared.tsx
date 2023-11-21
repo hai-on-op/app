@@ -46,6 +46,8 @@ import { ParallaxBackground } from '~/components/ParallaxBackground'
 import { HaiAlert } from '~/components/HaiAlert'
 import { Header } from './Header'
 import { EarnStats } from './Earn/Stats'
+import { BorrowStats } from './Vaults/Stats'
+import { AuctionStats } from './Auctions/Stats'
 
 const playlist = [
     '/audio/get-hai-together.wav',
@@ -336,7 +338,11 @@ const Shared = ({ children }: Props) => {
                                 }}>
                                 {isEarn
                                     ? <EarnStats/>
-                                    : null
+                                    : isVaults
+                                        ? <BorrowStats/>
+                                        : isAuctions
+                                            ? <AuctionStats/>
+                                            : null
                                 }
                             </IntentionHeader>
                         )}

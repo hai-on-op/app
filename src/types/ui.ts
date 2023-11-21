@@ -25,3 +25,21 @@ export type SplashImage = {
     flip?: boolean,
     zIndex?: number
 }
+
+// TABLES
+
+export type SortableHeader = {
+    label: string,
+    unsortable?: boolean
+}
+
+export type Sorting = {
+    key: string,
+    dir: 'asc' | 'desc'
+}
+
+export type TableHeaderProps = {
+    headers: SortableHeader[],
+    sorting: Sorting,
+    onSort: (label: string) => void
+}

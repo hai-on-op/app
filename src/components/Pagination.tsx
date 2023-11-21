@@ -1,66 +1,58 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useMemo } from 'react'
 import ReactPaginate from 'react-paginate'
-import styled from 'styled-components'
 
 import { type IPaging } from '~/utils'
 
+import styled from 'styled-components'
+import { Caret } from './Icons/Caret'
+
 interface Props {
-    items: Array<any>
+    items: any[]
     perPage: number
     handlePagingMargin: ({ from, to }: IPaging) => void
 }
 
 const Pagination = ({ items, handlePagingMargin, perPage = 5 }: Props) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [total, setTotal] = useState(0)
+    const total = useMemo(() => {
+        if (!items.length) return 1
 
-    const setPagination = (itemsArray: Array<any>) => {
-        if (!itemsArray.length) return
-        setTotal(Math.ceil(itemsArray.length / perPage))
-    }
+        return Math.ceil(items.length / perPage)
+    }, [items, perPage])
 
-    const setPaginationCB = useCallback(setPagination, [perPage])
-
-    useEffect(() => {
-        setPaginationCB(items)
-    }, [setPaginationCB, items])
-
-    const handlePageClick = ({ selected }: any) => {
-        const from = selected * perPage
-        const to = (selected + 1) * perPage
-        handlePagingMargin({ from, to })
-    }
-
-    return items.length > perPage ? (
+    if (items.length <= perPage) return null
+    
+    return (
         <PaginationContainer>
             <ReactPaginate
-                previousLabel={'Previous'}
-                nextLabel={'Next'}
-                breakLabel={'...'}
-                breakClassName={'break-me'}
+                previousLabel={<Caret direction="left"/>}
+                nextLabel={<Caret direction="right"/>}
                 pageCount={total}
                 marginPagesDisplayed={2}
                 pageRangeDisplayed={4}
-                onPageChange={handlePageClick}
-                containerClassName={'pagination'}
-                activeClassName={'active'}
+                onPageChange={({ selected }: any) => {
+                    handlePagingMargin({
+                        from: selected * perPage,
+                        to: (selected + 1) * perPage
+                    })
+                }}
+                breakLabel="..."
+                breakClassName="break-me"
+                containerClassName="pagination"
+                activeClassName="active"
             />
         </PaginationContainer>
-    ) : null
+    )
 }
 
 export default Pagination
 
 const PaginationContainer = styled.div`
     text-align: right;
-    margin-top: 0.5rem;
-    padding-right: 0.7rem;
 
     .pagination {
         padding: 0;
         list-style: none;
         display: inline-block;
-        border-radius: ${(props) => props.theme.global.borderRadius};
 
         li {
             display: inline-block;
@@ -70,60 +62,37 @@ const PaginationContainer = styled.div`
             outline: none;
             box-shadow: none;
             margin: 0 2px;
-            font-size: ${(props) => props.theme.font.small};
-            &.active {
-                background: ${(props) => props.theme.colors.blueish};
-                color: #fff;
-                border-radius: 50%;
-            }
+            font-size: 0.67rem;
+            font-weight: 700;
             a {
-                justify-content: center;
                 display: flex;
+                justify-content: center;
                 align-items: center;
-                height: 20px;
-                width: 20px;
-                outline: none;
-                box-shadow: none;
-
-                &:hover {
-                    background: rgba(0, 0, 0, 0.08);
+                flex-shrink: 0;
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                border: ${({ theme }) => theme.border.medium};
+                border-color: rgba(0,0,0,0.1);
+            }
+            &.active, &:active, &:hover {
+                &:not(.disabled) {
+                    a {
+                        border-color: black;
+                    }
                 }
             }
 
+            &:first-child.disabled, &:last-child.disabled {
+                & svg {
+                    opacity: 0.1;
+                }
+            }
             &:first-child {
                 margin-right: 10px;
             }
-
             &:last-child {
                 margin-left: 10px;
-            }
-
-            &:first-child,
-            &:last-child {
-                padding: 0;
-                a {
-                    height: auto;
-                    width: auto;
-                    padding: 3px 8px;
-                    border-radius: 2px;
-                    &:hover {
-                        background: rgba(0, 0, 0, 0.08);
-                    }
-                    text-align: center;
-                }
-
-                &.active {
-                    a {
-                        background: ${(props) => props.theme.colors.gradient};
-                        color: #fff;
-                        border-radius: ${(props) => props.theme.global.borderRadius};
-                    }
-                }
-
-                &.disabled {
-                    pointer-events: none;
-                    opacity: 0.2;
-                }
             }
         }
     }

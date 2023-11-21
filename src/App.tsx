@@ -13,7 +13,7 @@ import Shared from '~/containers/Shared'
 
 import Splash from '~/containers/Splash'
 import Privacy from '~/containers/Privacy'
-import Auctions from '~/containers/Auctions'
+import { Auctions } from '~/containers/Auctions'
 import Analytics from '~/containers/Analytics'
 import { Earn } from '~/containers/Earn'
 import { Vaults } from '~/containers/Vaults'

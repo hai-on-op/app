@@ -1,176 +1,160 @@
-import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { useConnectModal } from '@rainbow-me/rainbowkit'
-import styled from 'styled-components'
-import { useAccount } from 'wagmi'
+import { useMemo, useState } from 'react'
 
+import { type AuctionEventType, type IAuction } from '~/types'
 import { useAuctions } from '~/hooks'
-import { useStoreActions, useStoreState } from '~/store'
-import AuctionBlock from '~/components/AuctionBlock'
-import Pagination from '~/components/Pagination'
-import { SideLabel } from '~/containers/Safes/CreateSafe'
-import { type IPaging, TOKEN_LOGOS } from '~/utils'
-import Dropdown from '~/components/Dropdown'
-import { type AuctionEventType } from '~/types'
-import Button from '~/components/Button'
-import Loader from '~/components/Loader'
 
-export type Item = {
-    name: string
-    icon: string
-    symbol: string
-    href?: string
-    isExternal?: boolean
-    [U: string]: boolean | number | string | undefined
+import { CenteredFlex, Text } from '~/styles'
+import { NavContainer } from '~/components/NavContainer'
+import { CheckboxButton } from '~/components/CheckboxButton'
+import { BrandedDropdown, DropdownOption } from '~/components/BrandedDropdown'
+import { AuctionTable } from './AuctionTable'
+
+const assets = [
+    'All',
+    'HAI',
+    'KITE',
+    'WETH',
+    'WSTETH',
+    'OP'
+]
+
+const tokenMap: Record<string, string> = {
+    'PROTOCOL_TOKEN': 'HAI',
+    'COIN': 'KITE'
 }
 
-interface Props {
-    type: AuctionEventType
-    selectedItem: string
-    setSelectedItem: (item: string) => void
+const auctionFilters: (AuctionEventType | 'All')[] = [
+    'All',
+    'COLLATERAL',
+    'DEBT',
+    'SURPLUS'
+]
+
+const sortByTimeCreated = ({ createdAt: a }: IAuction, { createdAt: b }: IAuction) => {
+    return parseInt(b) - parseInt(a)
 }
-const AuctionsList = ({ type, selectedItem, setSelectedItem }: Props) => {
-    const { t } = useTranslation()
 
-    const { address: account } = useAccount()
-    const [paging, setPaging] = useState<IPaging>({ from: 0, to: 5 })
-    const { popupsModel: popupsActions } = useStoreActions((state) => state)
+export function AuctionsList() {
+    const [filterMyBids, setFilterMyBids] = useState(false)
+    const [typeFilter, setTypeFilter] = useState<AuctionEventType>()
+    const [saleAssetsFilter, setSaleAssetsFilter] = useState<string>()
+    const [buyAssetsFilter, setBuyAssetsFilter] = useState<string>()
 
-    const { auctionModel: auctionsState, connectWalletModel: connectWalletState } = useStoreState((state) => state)
+    const collateralAuctions = useAuctions('COLLATERAL', saleAssetsFilter)
+    const debtAuctions = useAuctions('DEBT')
+    const surplusAuctions = useAuctions('SURPLUS')
 
-    const { openConnectModal } = useConnectModal()
-    const handleConnectWallet = () => openConnectModal && openConnectModal()
-
-    // internalbalance = user's HAI balance in the protocol
-    // protInternalBalance = user's KITE balance in the protocol
-    const { internalBalance, protInternalBalance } = auctionsState
-
-    const { proxyAddress, tokensData } = connectWalletState
-
-    // auctions list
-    const auctions = useAuctions(type, selectedItem)
-
-    // handle clicking to claim
-    const handleClick = (modalType: string) => {
-        if (!account) {
-            handleConnectWallet()
-            return
+    const auctions = useMemo(() => {
+        let temp: IAuction[] = []
+        switch(typeFilter) {
+            case 'COLLATERAL': {
+                temp = [...collateralAuctions]
+                break
+            }
+            // TODO: check to make sure that debt and surplus auctions always have same
+            // buy/sell assets and therefore should not be filterable by those assets
+            case 'DEBT': {
+                return debtAuctions.sort(sortByTimeCreated)
+                // temp = [...debtAuctions]
+                // break
+            }
+            case 'SURPLUS': {
+                return surplusAuctions.sort(sortByTimeCreated)
+                // temp = [...surplusAuctions]
+                // break
+            }
+            default: {
+                temp = [
+                    ...collateralAuctions,
+                    ...debtAuctions,
+                    ...surplusAuctions
+                ]
+                break
+            }
         }
-
-        if (!proxyAddress) {
-            popupsActions.setIsProxyModalOpen(true)
-            popupsActions.setReturnProxyFunction((storeActions: any) => {
-                storeActions.popupsModel.setAuctionOperationPayload({
-                    isOpen: true,
-                    type: modalType,
-                    auctionType: type,
-                })
+        if (buyAssetsFilter || saleAssetsFilter) {
+            temp = temp.filter(({ buyToken, sellToken }) => {
+                const parsedBuyToken = tokenMap[buyToken] || buyToken
+                const parsedSellToken = tokenMap[sellToken] || sellToken
+                if (buyAssetsFilter && buyAssetsFilter !== parsedBuyToken) return false
+                if (saleAssetsFilter && saleAssetsFilter !== parsedSellToken) return false
+                return true
             })
-            return
         }
-
-        popupsActions.setAuctionOperationPayload({
-            isOpen: true,
-            type: modalType,
-            auctionType: type,
-        })
-    }
-
-    const collaterals = tokensData && Object.values(tokensData).filter((token) => token.isCollateral)
-    const collateralsDropdown = collaterals?.map((collateral) => {
-        return { name: collateral.symbol, icon: TOKEN_LOGOS[collateral.symbol] }
-    })
-
-    const dropdownSelected = collateralsDropdown?.find((item) => item.name === selectedItem)!
+        return temp.sort(sortByTimeCreated)
+    }, [collateralAuctions, debtAuctions, surplusAuctions, typeFilter, filterMyBids, typeFilter, saleAssetsFilter, buyAssetsFilter])
 
     return (
-        <Container>
-            {type === 'COLLATERAL' && collateralsDropdown && dropdownSelected && (
-                <DropdownContainer>
-                    <SideLabel>{`Select Collateral Type`}</SideLabel>
-                    <Dropdown
-                        items={collateralsDropdown!}
-                        itemSelected={dropdownSelected!}
-                        getSelectedItem={setSelectedItem}
-                    />
-                </DropdownContainer>
-            )}
-            <InfoBox>
-                <Box>
-                    <Title>{type.toLowerCase()} Auctions</Title>
-                    {account &&
-                    auctions &&
-                    auctions.length &&
-                    (Number(internalBalance) >= 0.0001 || Number(protInternalBalance) >= 0.0001) ? (
-                        <Button text={t('claim_tokens')} onClick={() => handleClick('claim_tokens')} />
-                    ) : null}
-                </Box>
-            </InfoBox>
-            {!auctions ? (
-                <Loader text="Loading..." />
-            ) : auctions.length > 0 ? (
-                <>
-                    {auctions.slice(paging.from, paging.to).map((auction, i: number) => (
-                        <AuctionBlock key={auction.auctionId} {...{ ...auction, isCollapsed: i !== 0 }} />
-                    ))}
-                    <Pagination items={auctions} perPage={5} handlePagingMargin={setPaging} />
-                </>
-            ) : (
-                <NoData>
-                    {t('no_auctions', {
-                        type: type.toLowerCase(),
-                    })}
-                </NoData>
-            )}
-        </Container>
+        <NavContainer
+            navItems={[`All Auctions (${auctions.length.toLocaleString()})`]}
+            selected={0}
+            onSelect={() => 0}
+            headerContent={(
+                <CenteredFlex $gap={24}>
+                    <CheckboxButton
+                        checked={filterMyBids}
+                        toggle={() => setFilterMyBids(f => !f)}>
+                        Only Show My Bids
+                    </CheckboxButton>
+                    <BrandedDropdown label={(
+                        <Text
+                            $fontWeight={400}
+                            $textAlign="left">
+                            Auction Type: <strong>{typeFilter || 'All'}</strong>
+                        </Text>
+                    )}>
+                        {auctionFilters.map(label => (
+                            <DropdownOption
+                                key={label}
+                                onClick={(e: any) => {
+                                    // e.stopPropagation()
+                                    setTypeFilter(label === 'All' ? undefined: label)
+                                }}>
+                                {label}
+                            </DropdownOption>
+                        ))}
+                    </BrandedDropdown>
+                    {(!typeFilter || typeFilter === 'COLLATERAL') && (<>
+                        <BrandedDropdown label={(
+                            <Text
+                                $fontWeight={400}
+                                $textAlign="left">
+                                For Sale Asset: <strong>{saleAssetsFilter || 'All'}</strong>
+                            </Text>
+                        )}>
+                            {assets.map(label => (
+                                <DropdownOption
+                                    key={label}
+                                    onClick={(e: any) => {
+                                        // e.stopPropagation()
+                                        setSaleAssetsFilter(label === 'All' ? undefined: label)
+                                    }}>
+                                    {label}
+                                </DropdownOption>
+                            ))}
+                        </BrandedDropdown>
+                        <BrandedDropdown label={(
+                            <Text
+                                $fontWeight={400}
+                                $textAlign="left">
+                                Buy With Asset: <strong>{buyAssetsFilter || 'All'}</strong>
+                            </Text>
+                        )}>
+                            {assets.map(label => (
+                                <DropdownOption
+                                    key={label}
+                                    onClick={(e: any) => {
+                                        // e.stopPropagation()
+                                        setBuyAssetsFilter(label === 'All' ? undefined: label)
+                                    }}>
+                                    {label}
+                                </DropdownOption>
+                            ))}
+                        </BrandedDropdown>
+                    </>)}
+                </CenteredFlex>
+            )}>
+            <AuctionTable auctions={auctions}/>
+        </NavContainer>
     )
 }
-
-export default AuctionsList
-
-const Container = styled.div`
-    margin-top: 40px;
-    padding: 30px 20px;
-    border-radius: 15px;
-    background: ${(props) => props.theme.colors.colorSecondary};
-`
-
-const Title = styled.div`
-    font-size: ${(props) => props.theme.font.default};
-    font-weight: bold;
-    text-transform: capitalize !important;
-`
-
-const Box = styled.div`
-    display: flex;
-    align-items: center;
-`
-
-const InfoBox = styled.div`
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    button {
-        min-width: 100px;
-        padding: 4px 12px;
-        margin-left: 30px;
-    }
-    margin-bottom: 20px;
-    span {
-        margin-right: 20px;
-        font-size: 12px;
-    }
-`
-
-const NoData = styled.div`
-    border-radius: 15px;
-    margin-bottom: 15px;
-    background: ${(props) => props.theme.colors.background};
-    padding: 2rem 20px;
-    text-align: center;
-    font-size: ${(props) => props.theme.font.small};
-`
-const DropdownContainer = styled.div`
-    margin-bottom: 20px;
-`

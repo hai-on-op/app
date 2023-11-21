@@ -1,33 +1,16 @@
 import { HaiButton } from '~/styles'
 import { RewardsTokenPair } from '~/components/TokenPair'
 import { Stats, type StatProps } from '~/components/Stats'
-import { Status, StatusLabel } from '~/components/StatusLabel'
 
 const dummyStats: StatProps[] = [
     {
-        header: '$45,600',
-        label: 'My Locked Collateral',
+        header: '7',
+        label: 'My Active Bids',
         tooltip: 'Hello World'
     },
     {
         header: '$45,600',
-        label: 'My Total Debt',
-        tooltip: 'Hello World'
-    },
-    {
-        header: '7.8%',
-        label: 'My Net APY',
-        tooltip: 'Hello World'
-    },
-    {
-        header: '65%',
-        headerStatus: (
-            <StatusLabel
-                status={Status.SAFE}
-                size={0.8}
-            />
-        ),
-        label: 'My Net CR',
+        label: 'My Active Bids Value',
         tooltip: 'Hello World'
     },
     {
@@ -38,18 +21,18 @@ const dummyStats: StatProps[] = [
                 hideLabel
             />
         ),
-        label: 'My Farm Rewards',
+        label: 'My Auction Winnings',
         tooltip: 'Hello World',
         button: <HaiButton $variant="yellowish">Claim</HaiButton>
     }
 ]
 
-export function BorrowStats() {
+export function AuctionStats() {
     // TODO: dynamically calculate stats
     return (
         <Stats
             stats={dummyStats}
-            columns="repeat(4, 1fr) 1.6fr"
+            columns="repeat(3, 1fr)"
         />
     )
 }
