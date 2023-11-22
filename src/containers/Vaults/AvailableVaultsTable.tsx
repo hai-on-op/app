@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 
+import type { SortableHeader } from '~/types'
 import { type ISafe } from '~/utils'
 
 import styled from 'styled-components'
@@ -9,10 +10,6 @@ import { TableHeaderItem } from '~/components/TableHeaderItem'
 import { Tooltip } from '~/components/Tooltip'
 import { HaiArrow } from '~/components/Icons/HaiArrow'
 
-type SortableHeader = {
-    label: string,
-    unsortable?: boolean
-}
 const sortableHeaders: SortableHeader[] = [
     { label: 'Pair' },
     { label: 'Coll. Factor' },
@@ -82,21 +79,25 @@ export function AvailableVaultsTable({ rows, onSelect, myVaults }: AvailableVaul
     return (
         <Table>
             <TableHeader>
-                {sortableHeaders.map(({ label, unsortable }) => (
+                {sortableHeaders.map(({ label, tooltip, unsortable }) => (
                     <TableHeaderItem
                         key={label}
                         sortable={!unsortable}
                         isSorting={sorting.key === label ? sorting.dir: false}
-                        onClick={() => setSorting(s => {
-                            if (s.key === label) return {
-                                ...s,
-                                dir: s.dir === 'asc' ? 'desc': 'asc'
-                            }
-                            return {
-                                key: label,
-                                dir: 'desc'
-                            }
-                        })}>
+                        onClick={unsortable
+                            ? undefined
+                            : () => setSorting(s => {
+                                if (s.key === label) return {
+                                    ...s,
+                                    dir: s.dir === 'asc' ? 'desc': 'asc'
+                                }
+                                return {
+                                    key: label,
+                                    dir: 'desc'
+                                }
+                            })
+                        }
+                        tooltip={tooltip}>
                         <Text $fontWeight={sorting.key === label ? 700: 400}>{label}</Text>
                     </TableHeaderItem>
                 ))}

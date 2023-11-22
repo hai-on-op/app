@@ -136,6 +136,13 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                             Auctions
                                         </DropdownOption>
                                     </PassLink>
+                                    <PassLink
+                                        href="/analytics"
+                                        $textDecoration="none">
+                                        <DropdownOption>
+                                            Analytics
+                                        </DropdownOption>
+                                    </PassLink>
                                 </BrandedDropdown>
                             )
                     )}

@@ -33,9 +33,10 @@ export function Tooltip({ size = 14, width = 'auto', children, ...props }: Toolt
 
 const Container = styled(CenteredFlex)<{ $popoutWidth: string }>`
     position: relative;
+    font-size: 0.7rem;
 
     & ${Popout} {
         width: ${({ $popoutWidth }) => $popoutWidth};
-        padding: 12px;
+        padding: 18px;
     }
 `

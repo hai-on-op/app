@@ -3,17 +3,20 @@ import type { ReactChildren } from '~/types'
 import styled, { css } from 'styled-components'
 import { CenteredFlex, Text } from '~/styles'
 import { HaiArrow } from './Icons/HaiArrow'
+import { Tooltip } from './Tooltip'
 
 type TableHeaderItemProps = {
     sortable?: boolean,
     isSorting?: 'asc' | 'desc' | false,
     onClick?: () => void,
+    tooltip?: string,
     children?: ReactChildren
 }
 export function TableHeaderItem({
     sortable = false,
     isSorting,
     onClick,
+    tooltip,
     children
 }: TableHeaderItemProps) {
     return (
@@ -31,6 +34,7 @@ export function TableHeaderItem({
                 ? <Text>{children}</Text>
                 : children
             }
+            {!!tooltip && <Tooltip width="200px">{tooltip}</Tooltip>}
         </Container>
     )
 }

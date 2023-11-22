@@ -48,11 +48,7 @@ export function Stat({ stat }: { stat: StatProps }) {
                 </Flex>
                 <Flex $gap={8}>
                     <Text>{label}</Text>
-                    {tooltip && (
-                        <Tooltip width="120px">
-                            Hello world
-                        </Tooltip>
-                    )}
+                    {!!tooltip && <Tooltip width="200px">{tooltip}</Tooltip>}
                 </Flex>
             </StatText>
             {button}

@@ -7,12 +7,16 @@ import { TableHeaderItem } from '~/components/TableHeaderItem'
 export function AuctionTableHeader({ headers, sorting, onSort }: TableHeaderProps) {
     return (
         <TableHeader>
-            {headers.map(({ label, unsortable }) => (
+            {headers.map(({ label, tooltip, unsortable }) => (
                 <TableHeaderItem
                     key={label}
                     sortable={!unsortable}
                     isSorting={sorting.key === label ? sorting.dir: false}
-                    onClick={() => onSort(label)}>
+                    onClick={unsortable
+                        ? undefined
+                        : () => onSort(label)
+                    }
+                    tooltip={tooltip}>
                     <Text $fontWeight={sorting.key === label ? 700: 400}>{label}</Text>
                 </TableHeaderItem>
             ))}

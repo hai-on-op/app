@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 
+import type { SortableHeader } from '~/types'
 import { TOKEN_LOGOS } from '~/utils'
 
 import styled from 'styled-components'
@@ -28,10 +29,6 @@ export type DummyStrategy = {
     earnPlatform: 'uniswap' | 'velodrome'
 }
 
-type SortableHeader = {
-    label: string,
-    unsortable?: boolean
-}
 const sortableHeaders: SortableHeader[] = [
     { label: 'Asset Pair' },
     { label: 'TVL' },
@@ -105,21 +102,25 @@ export function StrategyTable({ rows }: StrategyTableProps) {
     return (
         <Table>
             <TableHeader>
-                {sortableHeaders.map(({ label, unsortable }) => (
+                {sortableHeaders.map(({ label, tooltip, unsortable }) => (
                     <TableHeaderItem
                         key={label}
                         sortable={!unsortable}
                         isSorting={sorting.key === label ? sorting.dir: false}
-                        onClick={() => setSorting(s => {
-                            if (s.key === label) return {
-                                ...s,
-                                dir: s.dir === 'asc' ? 'desc': 'asc'
-                            }
-                            return {
-                                key: label,
-                                dir: 'desc'
-                            }
-                        })}>
+                        onClick={unsortable
+                            ? undefined
+                            : () => setSorting(s => {
+                                if (s.key === label) return {
+                                    ...s,
+                                    dir: s.dir === 'asc' ? 'desc': 'asc'
+                                }
+                                return {
+                                    key: label,
+                                    dir: 'desc'
+                                }
+                            })
+                        }
+                        tooltip={tooltip}>
                         <Text $fontWeight={sorting.key === label ? 700: 400}>{label}</Text>
                     </TableHeaderItem>
                 ))}

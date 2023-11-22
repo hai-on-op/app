@@ -30,6 +30,7 @@ export type SplashImage = {
 
 export type SortableHeader = {
     label: string,
+    tooltip?: string,
     unsortable?: boolean
 }
 
