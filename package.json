@@ -27,6 +27,7 @@
         "@hai-on-op/sdk": "1.2.1",
         "@nivo/core": "^0.84.0",
         "@nivo/line": "^0.84.0",
+        "@nivo/pie": "^0.84.0",
         "@rainbow-me/rainbowkit": "^1.0.9",
         "axios": "^0.27.2",
         "classnames": "^2.2.6",

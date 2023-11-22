@@ -1,7 +1,6 @@
 import { HaiButton } from '~/styles'
 import { RewardsTokenPair } from '~/components/TokenPair'
 import { Stats, type StatProps } from '~/components/Stats'
-import { Status, StatusLabel } from '~/components/StatusLabel'
 
 const dummyStats: StatProps[] = [
     {

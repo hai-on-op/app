@@ -9,7 +9,7 @@ type Options = {
     max?: number
     enabled?: boolean
 }
-export function useDummyData(baseData: any[], options: Options) {
+export function useDummyData(baseData: any[], options: Options = {}) {
     const data = useMemo(() => {
         const {
             timeframe = Timeframe.ONE_WEEK,

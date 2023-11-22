@@ -2,7 +2,7 @@ import { type ReactNode } from 'react'
 
 import type { ReactChildren } from '~/types'
 
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 import { type DashedContainerProps, DashedContainerStyle, Flex, Grid, Text } from '~/styles'
 import { Tooltip } from '~/components/Tooltip'
 
@@ -35,10 +35,10 @@ export function Stats({ stats, columns, children }: StatsProps) {
     )
 }
 
-export function Stat({ stat }: { stat: StatProps }) {
+export function Stat({ stat, unbordered }: { stat: StatProps, unbordered?: boolean }) {
     const { header, headerStatus, label, tooltip, button } = stat
     return (
-        <StatContainer>
+        <StatContainer $unbordered={unbordered}>
             <StatText>
                 <Flex
                     $align="center"
@@ -71,23 +71,26 @@ const StatContainer = styled(Flex).attrs(props => ({
     $gap: 12,
     $flexWrap: true,
     ...props
-}))`
+}))<{ $unbordered?: boolean }>`
     padding: 20px 24px;
-    &:not(:first-of-type) {
-        ${DashedContainerStyle}
-        border-top: 2px solid transparent;
-        border-bottom: 2px solid transparent;
-        &::after {
-            opacity: 0.2;
-            border-top: none;
-            border-right: none;
-            border-bottom: none;
-        }
-    }
 
-    ${({ theme }) => theme.mediaWidth.upToExtraSmall`
-        border-left: none;
-        border-top: 2px dashed rgba(0,0,0,0.1);
+    ${({ $unbordered, theme }) => !$unbordered && css`
+        &:not(:first-of-type) {
+            ${DashedContainerStyle}
+            border-top: 2px solid transparent;
+            border-bottom: 2px solid transparent;
+            &::after {
+                opacity: 0.2;
+                border-top: none;
+                border-right: none;
+                border-bottom: none;
+            }
+        }
+
+        ${theme.mediaWidth.upToExtraSmall`
+            border-left: none;
+            border-top: 2px dashed rgba(0,0,0,0.1);
+        `}
     `}
 `
 const StatText = styled(Flex).attrs(props => ({

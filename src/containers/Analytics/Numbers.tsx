@@ -18,9 +18,11 @@ import { BrandedTitle } from '~/components/BrandedTitle'
 import { Stat, Stats } from '~/components/Stats'
 import { ToggleSlider } from '~/components/ToggleSlider'
 import { LineChart } from '~/components/Charts/Line'
-import { useDummyData } from '~/components/Charts/Line/useDummyData'
+import { useDummyData as useDummyLineData } from '~/components/Charts/Line/useDummyData'
+import { useDummyData as useDummyPieData } from '~/components/Charts/Pie/useDummyData'
 import { PriceDisplay } from './PriceDisplay'
-import { Tooltip } from '~/components/Tooltip'
+import { PieChart } from '~/components/Charts/Pie'
+import { Legend } from '~/components/Charts/Legend'
 
 const dummyPriceDataBase = [
     {
@@ -36,6 +38,17 @@ const dummyPriceDataBase = [
 const dummyRedemptionDataBase = [
     {
         id: 'Redemption Rate',
+        color: 'hsl(115, 70%, 84%)'
+    }
+]
+
+const dummyPieDataBase = [
+    {
+        id: 'HAI in Liquidity Pools',
+        color: 'hsl(49, 84%, 68%)'
+    },
+    {
+        id: 'UniV3 Pool',
         color: 'hsl(115, 70%, 84%)'
     }
 ]
@@ -56,14 +69,18 @@ export function Numbers() {
     const [timeframe, setTimeframe] = useState<Timeframe>(Timeframe.ONE_WEEK)
 
     // TODO: remove and use actual data
-    const dummyPriceData = useDummyData(dummyPriceDataBase, {
+    const dummyPriceData = useDummyLineData(dummyPriceDataBase, {
         timeframe,
         min: 0.9,
         max: 1.1
     })
-    const dummyRedemptionData = useDummyData(dummyRedemptionDataBase, {
+    const dummyRedemptionData = useDummyLineData(dummyRedemptionDataBase, {
         min: 0.01,
         max: 0.1
+    })
+    const dummyPieData = useDummyPieData(dummyPieDataBase, {
+        min: 30_000,
+        max: 100_000
     })
 
     return (
@@ -143,9 +160,10 @@ export function Numbers() {
                                 max: 1.1
                             }}
                             axisRight={{
-                                format: value => `$${value}`
+                                format: value => `$${parseFloat(parseFloat(value).toFixed(3))}`
                             }}
                         />
+                        <Legend data={dummyPriceData}/>
                     </ChartContainer>
                 </SectionContent>
             </Section>
@@ -157,47 +175,43 @@ export function Numbers() {
                         $justify="flex-start"
                         $align="center"
                         $gap={36}>
-                        <RedemptionRateHeaderItem>
-                            <Text>{annualRate}</Text>
-                            <Flex
-                                $align="center"
-                                $gap={4}>
-                                <Text>Annual Redemption Rate</Text>
-                                <Tooltip>Hello world</Tooltip>
-                            </Flex>
-                        </RedemptionRateHeaderItem>
-                        <RedemptionRateHeaderItem>
-                            <Text>{eightRate}</Text>
-                            <Flex
-                                $align="center"
-                                $gap={4}>
-                                <Text>Main Rate</Text>
-                                <Tooltip>Hello world</Tooltip>
-                            </Flex>
-                        </RedemptionRateHeaderItem>
-                        <RedemptionRateHeaderItem>
-                            <Text>{pRate}</Text>
-                            <Flex
-                                $align="center"
-                                $gap={4}>
-                                <Text>pRate</Text>
-                                <Tooltip>Hello world</Tooltip>
-                            </Flex>
-                        </RedemptionRateHeaderItem>
-                        <RedemptionRateHeaderItem>
-                            <Text>{iRate}</Text>
-                            <Flex
-                                $align="center"
-                                $gap={4}>
-                                <Text>iRate</Text>
-                                <Tooltip>Hello world</Tooltip>
-                            </Flex>
-                        </RedemptionRateHeaderItem>
+                        <Stat
+                            stat={{
+                                header: annualRate,
+                                label: 'Annual Redemption Rate',
+                                tooltip: 'Hello world'
+                            }}
+                            unbordered
+                        />
+                        <Stat
+                            stat={{
+                                header: eightRate,
+                                label: 'Main Rate',
+                                tooltip: 'Hello world'
+                            }}
+                            unbordered
+                        />
+                        <Stat
+                            stat={{
+                                header: pRate,
+                                label: 'pRate',
+                                tooltip: 'Hello world'
+                            }}
+                            unbordered
+                        />
+                        <Stat
+                            stat={{
+                                header: iRate,
+                                label: 'iRate',
+                                tooltip: 'Hello world'
+                            }}
+                            unbordered
+                        />
                     </Flex>
                     <ChartContainer>
                         <LineChart
                             data={dummyRedemptionData}
-                            timeframe={timeframe}
+                            timeframe={Timeframe.ONE_WEEK}
                             yScale={{
                                 type: 'linear',
                                 min: 0.01,
@@ -207,11 +221,61 @@ export function Numbers() {
                                 format: value => parseFloat((100 * value).toFixed(2)) + '%'
                             }}
                         />
+                        <Legend data={dummyRedemptionData}/>
                     </ChartContainer>
                 </SectionContent>
             </Section>
             <Section>
                 <SectionHeader>LIQUIDITY</SectionHeader>
+                <SectionContent $gap={0}>
+                    <Flex
+                        $width="100%"
+                        $justify="flex-start"
+                        $align="center"
+                        $gap={36}>
+                        <Stat
+                            stat={{
+                                header: `$${dummyPieData[0].value.toLocaleString('en-US', {
+                                    maximumFractionDigits: 2
+                                })}`,
+                                label: 'HAI in Liquidity Pools',
+                                tooltip: 'Hello world'
+                            }}
+                            unbordered
+                        />
+                        <Stat
+                            stat={{
+                                header: `$${dummyPieData[1].value.toLocaleString('en-US', {
+                                    maximumFractionDigits: 2
+                                })}`,
+                                label: 'UNIv3 Pool',
+                                tooltip: 'Hello world'
+                            }}
+                            unbordered
+                        />
+                        <Stat
+                            stat={{
+                                header: '$XX,XXX',
+                                label: 'Depth to Equilibrium',
+                                tooltip: 'Hello world'
+                            }}
+                            unbordered
+                        />
+                    </Flex>
+                    <PieContainer>
+                        <PieChart
+                            data={dummyPieData}
+                            valueFormat={value => '$' + value.toLocaleString('en-US', {
+                                maximumFractionDigits: 2
+                            })}
+                        />
+                        <Legend
+                            $column
+                            data={dummyPieData}
+                            style={{ top: 'calc(50% - 96px)' }}
+                        />
+                    </PieContainer>
+                </SectionContent>
             </Section>
             <Section>
                 <SectionHeader>PROTOCOL BALANCE</SectionHeader>
@@ -279,6 +343,7 @@ const SectionContent = styled(Flex).attrs(props => ({
 `
 
 const ChartContainer = styled(CenteredFlex)`
+    position: relative;
     width: 100%;
     height: 240px;
     border-radius: 24px;
@@ -297,22 +362,22 @@ const TimeframeLabel = styled(CenteredFlex)`
     font-weight: 700;
 `
 
-const RedemptionRateHeaderItem = styled(Flex).attrs(props => ({
-    $column: true,
-    $justify: 'center',
-    $align: 'flex-start',
-    $gap: 4,
-    ...props
-}))`
-    & > * {
-        &:nth-child(1) {
-            font-size: 1.54rem;
-            font-weight: 700;
-        }
-        &:nth-child(2) {
-            & > ${Text} {
-                font-size: 0.7rem;
-            }
-        }
+const PieContainer = styled(CenteredFlex)`
+    position: relative;
+    width: 100%;
+    height: 400px;
+    flex-grow: 1;
+    flex-shrink: 1;
+    overflow: visible;
+    
+    &::before {
+        content: '';
+        position: absolute;
+        left: 0px;
+        right: 0px;
+        height: 240px;
+        border-radius: 24px;
+        background: ${({ theme }) => theme.colors.gradientCool};
+        z-index: 0;
     }
 `
