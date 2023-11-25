@@ -61,7 +61,7 @@ const Container = styled(Flex)<{ $status: Status, $size: number, $color?: string
         display: none;
     }
 
-    background: ${({ $bg = 'white' }) => $bg};
+    background: ${({ $bg = 'white', theme }) => (theme.colors as any)[$bg] || $bg};
     ${({ $status, $color, theme }) => {
         switch($status) {
             case Status.SAFE:

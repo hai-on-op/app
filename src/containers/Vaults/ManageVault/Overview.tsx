@@ -1,31 +1,52 @@
-import { TOKEN_LOGOS, type ISafe } from '~/utils'
+import { TOKEN_LOGOS, type ISafe, formatDataNumber } from '~/utils'
 
 import styled, { css } from 'styled-components'
 import { type DashedContainerProps, DashedContainerStyle, Flex, Grid, Text, CenteredFlex } from '~/styles'
+import { Swirl } from '~/components/Icons/Swirl'
 import { Tooltip } from '~/components/Tooltip'
 import { Status, StatusLabel } from '~/components/StatusLabel'
+import { TokenPair } from '~/components/TokenPair'
 
 type OverviewProps = {
-    vault: ISafe
+    vault: ISafe,
+    simulation?: Partial<ISafe>
 }
-export function Overview({ vault }: OverviewProps) {
+export function Overview({ vault, simulation }: OverviewProps) {
     return (
         <Container>
             <Header>
                 <Text $fontWeight={700}>Vault Overview #{vault.id}</Text>
+                {!!simulation && (
+                    <StatusLabel
+                        status={Status.CUSTOM}
+                        background="gradient">
+                        <CenteredFlex $gap={8}>
+                            <Swirl size={14}/>
+                            <Text
+                                $fontSize="0.67rem"
+                                $fontWeight={700}>
+                                Simulation
+                            </Text>
+                        </CenteredFlex>
+                    </StatusLabel>
+                )}
             </Header>
             <Inner $borderOpacity={0.2}>
                 <FullWidthOverviewStat
+                    amount={vault.collateral ? formatDataNumber(vault.collateral): ''}
                     token={vault.collateralName.toUpperCase() as any}
                     label="Collateral Asset"
+                    simulatedAmount={simulation?.collateral ? formatDataNumber(simulation.collateral): ''}
                     alert={{
                         value: '7.2% APY',
                         status: Status.POSITIVE
                     }}
                 />
                 <FullWidthOverviewStat
+                    amount={vault.debt ? formatDataNumber(vault.debt): ''}
                     token="HAI"
                     label="Debt Asset"
+                    simulatedAmount={simulation?.debt ? formatDataNumber(simulation.debt): ''}
                     alert={{
                         value: '-7.2% APY',
                         status: Status.NEGATIVE
@@ -34,26 +55,26 @@ export function Overview({ vault }: OverviewProps) {
                 <OverviewStat
                     stat={vault.collateralRatio}
                     label="CF"
-                    tooltip="blarn"
+                    tooltip="Hello world"
                     borderedBottom
                     borderedRight
                 />
                 <OverviewStat
-                    stat={vault.totalAnnualizedStabilityFee}
+                    stat={parseFloat((100 * parseFloat(vault.totalAnnualizedStabilityFee)).toFixed(2)) + '%'}
                     label="Stability Fee APY"
-                    tooltip="blarn"
+                    tooltip="Hello world"
                     borderedBottom
                 />
                 <OverviewStat
                     stat={vault.liquidationPrice}
                     label="Liq. Price"
-                    tooltip="blarn"
+                    tooltip="Hello world"
                     borderedRight
                 />
                 <OverviewStat
-                    stat={vault.totalAnnualizedStabilityFee}
+                    stat={parseFloat((100 * parseFloat(vault.totalAnnualizedStabilityFee)).toFixed(2)) + '%'}
                     label="Rewards APY"
-                    tooltip="blarn"
+                    tooltip="Hello world"
                 />
             </Inner>
         </Container>
@@ -73,8 +94,10 @@ const Header = styled(Flex).attrs(props => ({
     $width: '100%',
     $justify: 'flex-start',
     $align: 'center',
+    $gap: 12,
     ...props
 }))`
+    height: 60px;
     padding: 24px 0px;
 `
 
@@ -92,27 +115,26 @@ const Inner = styled(Grid).attrs(props => ({
 `
 
 type FullWidthOverviewStatProps = {
+    amount: string,
     token: keyof typeof TOKEN_LOGOS,
     label: string,
+    simulatedAmount?: string,
     alert: {
         value: string,
         status: Status
     }
 }
-function FullWidthOverviewStat({ token, label, alert }: FullWidthOverviewStatProps) {
+function FullWidthOverviewStat({ amount, token, label, simulatedAmount, alert }: FullWidthOverviewStatProps) {
     return (
         <FullWidthFlex>
             <Flex
                 $align="center"
                 $gap={12}>
-                <IconContainer>
-                    <img
-                        src={TOKEN_LOGOS[token]}
-                        alt={token}
-                        width={48}
-                        height={48}
-                    />
-                </IconContainer>
+                <TokenPair
+                    size={96}
+                    tokens={[token]}
+                    hideLabel
+                />
                 <Flex
                     $column
                     $justify="center"
@@ -121,14 +143,32 @@ function FullWidthOverviewStat({ token, label, alert }: FullWidthOverviewStatPro
                     <Text
                         $fontSize="1.25em"
                         $fontWeight={700}>
-                        {token}
+                        {amount || '--'} {token}
                     </Text>
                     <Text $fontSize="0.8em">{label}</Text>
                 </Flex>
             </Flex>
-            <StatusLabel status={alert.status}>
-                {alert.value}
-            </StatusLabel>
+            <CenteredFlex $gap={12}>
+                {!!simulatedAmount && (
+                    <StatusLabel
+                        status={Status.CUSTOM}
+                        background="gradient">
+                        <Text
+                            $fontSize="0.67rem"
+                            $fontWeight={700}>
+                            {simulatedAmount || '--'} {token}
+                        </Text>
+                        <Text
+                            $fontSize="0.67rem"
+                            $fontWeight={400}>
+                            After Tx
+                        </Text>
+                    </StatusLabel>
+                )}
+                <StatusLabel status={alert.status}>
+                    {alert.value}
+                </StatusLabel>
+            </CenteredFlex>
         </FullWidthFlex>
     )
 }
@@ -150,22 +190,22 @@ const FullWidthFlex = styled(Flex).attrs(props => ({
     }
 `
 
-const IconContainer = styled(CenteredFlex)`
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    border: ${({ theme }) => theme.border.thin};
-    background-color: ${({ theme }) => theme.colors.greenish};
-`
-
 type OverviewStatProps = {
     stat: string,
     label: string,
     tooltip: string,
+    simulatedStat?: string,
     borderedRight?: boolean,
     borderedBottom?: boolean
 }
-function OverviewStat({ stat, label, tooltip, borderedRight, borderedBottom }: OverviewStatProps) {
+function OverviewStat({
+    stat,
+    label,
+    tooltip,
+    simulatedStat,
+    borderedRight,
+    borderedBottom
+}: OverviewStatProps) {
     return (
         <StatContainer
             $borderedRight={borderedRight}
@@ -178,19 +218,31 @@ function OverviewStat({ stat, label, tooltip, borderedRight, borderedBottom }: O
                 <Text
                     $fontWeight={700}
                     $fontSize="1.1em">
-                    {stat}
+                    {stat || '--'}
                 </Text>
                 <Flex $gap={4}>
                     <Text $fontSize="0.65em">{label}</Text>
                     <Tooltip>{tooltip}</Tooltip>
                 </Flex>
             </Flex>
+            {!!simulatedStat && (
+                <StatusLabel
+                    status={Status.CUSTOM}
+                    background="gradient">
+                    <Text
+                        $fontSize="0.67rem"
+                        $fontWeight={700}>
+                        {simulatedStat || '--'}
+                    </Text>
+                    <Text>After Tx</Text>
+                </StatusLabel>
+            )}
         </StatContainer>
     )
 }
 
 const StatContainer = styled(Flex).attrs(props => ({
-    $justify: 'flex-start',
+    $justify: 'space-between-start',
     $align: 'center',
     $borderOpacity: 0.2,
     ...props

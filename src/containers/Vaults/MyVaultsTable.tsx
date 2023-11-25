@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 
 import type { SortableHeader } from '~/types'
-import { returnState, type ISafe } from '~/utils'
+import { returnState, type ISafe, formatDataNumber } from '~/utils'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, Grid, HaiButton, Text } from '~/styles'
@@ -143,13 +143,13 @@ export function MyVaultsTable({ rows, onSelect }: MyVaultsTableProps) {
                         <Flex
                             $align="center"
                             $gap={8}>
-                            <Text>{collateral}</Text>
+                            <Text>{formatDataNumber(collateral, 18, 2, false, true)}</Text>
                             <Text>{collateralName.toUpperCase()}</Text>
                         </Flex>
                         <Flex
                             $align="center"
                             $gap={8}>
-                            <Text>{debt}</Text>
+                            <Text>{formatDataNumber(debt, 18, 2, false, true)}</Text>
                             <Text>HAI</Text>
                         </Flex>
                         <Text>{liquidationCRatio}%</Text>

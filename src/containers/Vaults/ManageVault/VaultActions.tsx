@@ -1,61 +1,140 @@
-import { type ChangeEvent } from 'react'
+import { useMemo, type Dispatch } from 'react'
+import { BigNumber } from 'ethers'
+import { parseEther } from 'ethers/lib/utils'
 
 import { type ISafe } from '~/utils'
 
-import styled from 'styled-components'
-import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
-import { Tooltip } from '~/components/Tooltip'
+import styled, { css } from 'styled-components'
+import { CenteredFlex, Flex, Grid, HaiButton, Text } from '~/styles'
+import { ActionInput } from './ActionInput'
+
+export enum Action {
+    DEPOSIT_OR_BORROW,
+    WITHDRAW_OR_PAY_BACK
+}
+
+export type FormState = {
+    deposit?: BigNumber,
+    borrow?: BigNumber,
+    withdraw?: BigNumber,
+    payback?: BigNumber
+}
 
 type VaultActionsProps = {
-    vault?: ISafe
+    vault: ISafe,
+    actionState: Action,
+    setActionState: (state: Action) => void,
+    formState: FormState,
+    updateForm: Dispatch<Partial<FormState>>
 }
-export function VaultActions({ vault }: VaultActionsProps) {
+export function VaultActions({
+    vault,
+    actionState,
+    setActionState,
+    formState,
+    updateForm
+}: VaultActionsProps) {
+    const [buttonActive, buttonLabel] = useMemo(() => {
+        switch(actionState) {
+            case Action.DEPOSIT_OR_BORROW: {
+                if (!formState.deposit?.gt(0) && !formState.borrow?.gt(0)) {
+                    return [false, 'Deposit']
+                }
+                if (!formState.borrow?.gt(0)) return [true, 'Deposit']
+                if (!formState.deposit?.gt(0)) return [true, 'Borrow']
+                return [true, 'Deposit & Borrow']
+            }
+            case Action.WITHDRAW_OR_PAY_BACK: {
+                if (!formState.withdraw?.gt(0) && !formState.payback?.gt(0)) {
+                    return [false, 'Deposit']
+                }
+                if (!formState.payback?.gt(0)) return [true, 'Withdraw']
+                if (!formState.withdraw?.gt(0)) return [true, 'Pay Back']
+                return [true, 'Withdraw & Pay Back']
+            }
+        }
+    }, [actionState, formState])
+
+    const isNewVault = !(vault.collateral && vault.debt)
+
     return (
         <Container>
             <Header>
                 <Text $fontWeight={700}>
-                    {!vault ? 'Open New Vault': `Manage Vault #${vault.id}`}
+                    {isNewVault
+                        ? 'Open New Vault'
+                        : `Manage Vault #${vault.id}`
+                    }
                 </Text>
+                <Grid $columns="1fr 1fr">
+                    <HeaderNav
+                        $active={actionState === Action.DEPOSIT_OR_BORROW}
+                        onClick={() => setActionState(Action.DEPOSIT_OR_BORROW)}>
+                        Deposit & Borrow
+                    </HeaderNav>
+                    <HeaderNav
+                        $disabled={isNewVault}
+                        $active={actionState === Action.WITHDRAW_OR_PAY_BACK}
+                        onClick={!isNewVault
+                            ? () => setActionState(Action.WITHDRAW_OR_PAY_BACK)
+                            : () => setActionState(Action.DEPOSIT_OR_BORROW)
+                        }>
+                        Withdraw & Pay Back
+                    </HeaderNav>
+                </Grid>
             </Header>
             <Body>
                 <ActionInput
                     label="Deposit"
-                    tooltip="blarn"
-                    subLabel={`Max ${23} WETH`}
-                    value={''}
-                    placeholder="Enter Deposit Amount"
-                    onChange={(value: string) => value}
+                    subLabel={`Max ${23} ${vault?.collateralName}`}
+                    placeholder="Deposit Amount"
+                    unitLabel={vault?.collateralName}
+                    onChange={(value: string) => updateForm({
+                        deposit: value ? parseEther(value): undefined
+                    })}
+                    value={formState.deposit}
+                    hidden={actionState !== Action.DEPOSIT_OR_BORROW}
                 />
                 <ActionInput
                     label="Withdraw"
-                    tooltip="blarn"
-                    subLabel={`Max ${23} WETH`}
-                    value={''}
-                    placeholder="Enter Withdraw Amount"
-                    onChange={(value: string) => value}
+                    subLabel={`Max ${23} ${vault?.collateralName}`}
+                    placeholder="Withdraw Amount"
+                    unitLabel={vault?.collateralName}
+                    onChange={(value: string) => updateForm({
+                        withdraw: value ? parseEther(value): undefined
+                    })}
+                    value={formState.withdraw}
+                    hidden={actionState !== Action.WITHDRAW_OR_PAY_BACK}
                 />
                 <ActionInput
                     label="Borrow"
-                    tooltip="blarn"
-                    subLabel={`Max ${23} WETH`}
-                    value={''}
-                    placeholder="Enter Borrow Amount"
-                    onChange={(value: string) => value}
+                    subLabel={`Max ${23} HAI`}
+                    placeholder="Borrow Amount"
+                    unitLabel="HAI"
+                    onChange={(value: string) => updateForm({
+                        borrow: value ? parseEther(value): undefined
+                    })}
+                    value={formState.borrow}
+                    hidden={actionState !== Action.DEPOSIT_OR_BORROW}
                 />
                 <ActionInput
                     label="Pay Back"
-                    tooltip="blarn"
-                    subLabel={`Max ${23} WETH`}
-                    value={''}
-                    placeholder="Enter Pay Back Amount"
-                    onChange={(value: string) => value}
+                    subLabel={`Max ${23} HAI`}
+                    placeholder="Pay Back Amount"
+                    unitLabel="HAI"
+                    onChange={(value: string) => updateForm({
+                        payback: value ? parseEther(value): undefined
+                    })}
+                    value={formState.payback}
+                    hidden={actionState !== Action.WITHDRAW_OR_PAY_BACK}
                 />
             </Body>
             <Footer>
                 <HaiButton
                     $variant="yellowish"
-                    $width="100%">
-                    Deposit & Pay Back (2)
+                    $width="100%"
+                    disabled={!buttonActive}>
+                    {buttonLabel}
                 </HaiButton>
             </Footer>
         </Container>
@@ -75,18 +154,38 @@ const Container = styled(Flex).attrs(props => ({
     border-radius: 24px;
     border: ${({ theme }) => theme.border.medium};
 `
-const Header = styled(Flex)`
-    width: 100%;
-    padding: 24px;
-    padding-bottom: 20px;
+const Header = styled(Flex).attrs(props => ({
+    $width: '100%',
+    $column: true,
+    $justify: 'flex-end',
+    $align: 'flex-start',
+    $gap: 12,
+    ...props
+}))`
+    padding-top: 24px;
     border-bottom: 1px solid rgba(0,0,0,0.3);
+
+    & > *:first-child {
+        padding-left: 24px;
+    }
+`
+const HeaderNav = styled(CenteredFlex)<{ $active?: boolean, $disabled?: boolean }>`
+    padding: 12px;
+    border-bottom: 2px solid ${({ $active }) => $active ? 'black': 'transparent'};
+    font-size: 0.8em;
+    cursor: pointer;
+
+    ${({ $disabled = false }) => $disabled && css`
+        opacity: 0.7;
+        cursor: not-allowed;
+    `}
 `
 const Body = styled(Flex).attrs(props => ({
     $width: '100%',
     $column: true,
     $justify: 'flex-start',
     $align: 'flex-start',
-    $gap: 24,
+    $gap: 12,
     $grow: 1,
     $shrink: 1,
     ...props
@@ -99,59 +198,4 @@ const Footer = styled(CenteredFlex)`
     width: 100%;
     padding: 24px;
     border-top: 1px solid rgba(0,0,0,0.3);
-`
-
-type ActionInputProps = {
-    label: string,
-    tooltip: string,
-    subLabel: string,
-    value: string,
-    placeholder: string,
-    onChange: (value: string) => void
-}
-function ActionInput({
-    label,
-    tooltip,
-    subLabel,
-    value,
-    placeholder,
-    onChange
-}: ActionInputProps) {
-    return (
-        <Flex
-            $width="100%"
-            $column
-            $gap={12}>
-            <Flex
-                $width="100%"
-                $justify="space-between"
-                $align="center">
-                <CenteredFlex $gap={8}>
-                    <Tooltip>{tooltip}</Tooltip>
-                    <Text
-                        $fontSize="0.65em"
-                        $fontWeight={700}>
-                        {label}
-                    </Text>
-                </CenteredFlex>
-                <Text $fontSize="0.65em">{subLabel}</Text>
-            </Flex>
-            <Input
-                type="number"
-                value={value}
-                placeholder={placeholder}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.currentTarget.value)}
-            />
-        </Flex>
-    )
-}
-
-const Input = styled.input`
-    width: 100%;
-    height: 56px;
-    padding: 0 12px;
-    border-radius: 8px;
-    outline: none;
-    border: ${({ theme }) => theme.border.medium};
-    background: transparent;
 `
