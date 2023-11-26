@@ -185,6 +185,7 @@ const TableHeader = styled(Grid)`
     align-items: center;
     padding: 4px;
     padding-left: 8px;
+    padding-right: 0px;
     font-size: 0.8rem;
 
     & > * {

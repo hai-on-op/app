@@ -8,6 +8,7 @@ import { Text } from '~/styles'
 import { NavContainer } from '~/components/NavContainer'
 import { CheckboxButton } from '~/components/CheckboxButton'
 import { BrandedDropdown, DropdownOption } from '~/components/BrandedDropdown'
+import { ProxyPrompt } from '~/components/ProxyPrompt'
 import { AvailableVaultsTable } from './AvailableVaultsTable'
 import { MyVaultsTable } from './MyVaultsTable'
 
@@ -150,10 +151,12 @@ export function VaultsList({ setActiveVault, navIndex, setNavIndex }: VaultsList
                     />
                 )
                 : (
-                    <MyVaultsTable
-                        rows={myVaults}
-                        onSelect={(vault: ISafe) => setActiveVault(vault)}
-                    />
+                    <ProxyPrompt>
+                        <MyVaultsTable
+                            rows={myVaults}
+                            onSelect={(vault: ISafe) => setActiveVault(vault)}
+                        />
+                    </ProxyPrompt>
                 )
             }
         </NavContainer>

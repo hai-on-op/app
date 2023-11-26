@@ -1,5 +1,7 @@
 import { ConnectButton as RKConnectButton } from '@rainbow-me/rainbowkit'
 
+import { NETWORK_ID } from '~/utils'
+
 import styled from 'styled-components'
 import { CenteredFlex, HaiButton, Text } from '~/styles'
 import { Caret } from './Icons/Caret'
@@ -16,17 +18,24 @@ export function ConnectButton({ showBalance = false }: ConnectButtonProps) {
                         Connect
                     </Button>
                 )
-                if (chain?.id !== 420) return (
+                if (chain?.id !== NETWORK_ID) return (
                     <Button onClick={openChainModal}>
                         Switch Network
                     </Button>
                 )
 
+                const decimalIndex = account.balanceFormatted?.indexOf('.') ?? -1
                 return (
                     <Container>
                         {showBalance && (
                             <BalanceContainer>
-                                {account.balanceFormatted} ETH
+                                {decimalIndex > -1
+                                    ? account.balanceFormatted?.slice(
+                                        0,
+                                        decimalIndex + 5
+                                    )
+                                    : account.balanceFormatted
+                                } ETH
                             </BalanceContainer>
                         )}
                         <Button onClick={openAccountModal}>

@@ -40,9 +40,7 @@ export const HaiButton = styled.button.attrs(props => ({
     ...props
 }))<HaiButtonProps>`
     ${FlexStyle}
-    pointer-events: ${({ disabled }) => (disabled ? 'none': 'all')};
     outline: none;
-    cursor: ${({ disabled }) => (disabled ? 'not-allowed': 'pointer')};
     border: ${({ theme, $unbordered }) => $unbordered ? 'none': theme.border.medium};
     box-shadow: none;
     line-height: 24px;
@@ -60,4 +58,10 @@ export const HaiButton = styled.button.attrs(props => ({
     )}
     border-radius: 999px;
     transition: all 0.3s ease;
+    cursor: pointer;
+
+    &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
 `

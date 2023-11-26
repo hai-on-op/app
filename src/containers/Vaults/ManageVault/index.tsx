@@ -8,6 +8,7 @@ import styled from 'styled-components'
 import { BlurContainer, CenteredFlex, Flex, Text } from '~/styles'
 import { BrandedDropdown } from '~/components/BrandedDropdown'
 import { RewardsTokenPair, TokenPair } from '~/components/TokenPair'
+import { ProxyPrompt } from '~/components/ProxyPrompt'
 import { Overview } from './Overview'
 import { Action, type FormState, VaultActions } from './VaultActions'
 
@@ -80,17 +81,21 @@ export function ManageVault({ vault, headerContent }: ManageVaultProps) {
                 {headerContent}
             </Header>
             <Body>
-                <Overview
-                    vault={vault}
-                    simulation={simulation}
-                />
-                <VaultActions
-                    vault={vault}
-                    actionState={actionState}
-                    setActionState={setActionState}
-                    formState={formState}
-                    updateForm={updateForm}
-                />
+                <ProxyPrompt>
+                    <>
+                        <Overview
+                            vault={vault}
+                            simulation={simulation}
+                        />
+                        <VaultActions
+                            vault={vault}
+                            actionState={actionState}
+                            setActionState={setActionState}
+                            formState={formState}
+                            updateForm={updateForm}
+                        />
+                    </>
+                </ProxyPrompt>
             </Body>
         </Container>
     )
