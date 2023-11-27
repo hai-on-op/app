@@ -1,3 +1,5 @@
+import { type CSSProperties } from 'react'
+
 import styled from 'styled-components'
 import { Flex, type FlexProps, Text } from '~/styles'
 
@@ -7,12 +9,14 @@ type LegendProps = FlexProps & {
         label?: string,
         color: string
     }[],
-    style?: object
+    style?: CSSProperties
 }
 export const Legend = ({ data, ...props }: LegendProps) => (
-    // not sure why, but typescript freaks out that the flex props
-    // aren't compatible, so have to use `as any`
-    <Container {...props as any}>
+    <Container
+        $justify="flex-start"
+        $align="flex-start"
+        $gap={12}
+        {...props}>
         {data.map(({ id, label, color }) => (
             <Entry
                 key={id}
@@ -23,12 +27,7 @@ export const Legend = ({ data, ...props }: LegendProps) => (
     </Container>
 )
 
-const Container = styled(Flex).attrs(props => ({
-    $justify: 'flex-start',
-    $align: 'flex-start',
-    $gap: 12,
-    ...props
-}))`
+const Container = styled(Flex)`
     position: absolute;
     top: 24px;
     left: 24px;

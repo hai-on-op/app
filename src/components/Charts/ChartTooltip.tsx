@@ -11,7 +11,7 @@ type ChartTooltipProps = Omit<HTMLProps<HTMLDivElement>, 'children' | 'ref' | 'a
     size?: number,
     active?: boolean
 }
-export const ChartTooltip = forwardRef(({
+export const ChartTooltip = forwardRef<HTMLDivElement, ChartTooltipProps>(({
     heading,
     subHeading,
     label,
@@ -19,9 +19,9 @@ export const ChartTooltip = forwardRef(({
     size = 0,
     active = false,
     ...props
-}: ChartTooltipProps, ref) => (
+}, ref) => (
     <PopoutContainer
-        ref={ref as any}
+        ref={ref}
         $size={size}
         {...props}>
         <GraphPopout hidden={!active}>

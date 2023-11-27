@@ -18,8 +18,10 @@ export const ButtonStyle = css<ButtonProps>`
     font-weight: 600;
     padding: 8px 30px;
     color: ${(props) => props.theme.colors.neutral};
-    background: ${({ theme, disabled, color }) =>
-        disabled ? theme.colors.dimmedBackground : theme.colors[color ?? 'blueish']};
+    background: ${({ theme, disabled, color = 'blueish' }) => (disabled
+        ? theme.colors.dimmedBackground
+        : theme.colors[color]
+    )};
     border-radius: ${(props) => props.theme.global.borderRadius};
     transition: all 0.3s ease;
     display: flex;
@@ -54,7 +56,7 @@ export const HaiButton = styled.button.attrs(props => ({
             backdrop-filter: blur(13px);
             background: transparent;
         `
-        : css`background: ${(theme.colors as any)[ $variant ] || 'transparent'};`
+        : css`background: ${(theme.colors as any)[$variant] || 'transparent'};`
     )}
     border-radius: 999px;
     transition: all 0.3s ease;

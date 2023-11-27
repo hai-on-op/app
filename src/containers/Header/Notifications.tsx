@@ -32,13 +32,14 @@ type NotificationsProps = {
     setActive: Dispatch<SetStateAction<boolean>>
 }
 export function Notifications({ active, setActive }: NotificationsProps) {
-    const [button, setButton] = useState<HTMLElement>()
+    const [button, setButton] = useState<HTMLElement | null>(null)
+
     useOutsideClick(button, () => setActive(false))
 
     return (
         <NotificationButton
             as="div"
-            ref={setButton as any}
+            ref={setButton}
             onClick={() => setActive(a => !a)}
             $variant="yellowish"
             $notify>

@@ -12,14 +12,14 @@ type BrandedDropdownProps = {
     children: ReactChildren
 }
 export function BrandedDropdown({ label, children }: BrandedDropdownProps) {
-    const [container, setContainer] = useState<HTMLElement>()
+    const [container, setContainer] = useState<HTMLElement | null>(null)
     const [expanded, setExpanded] = useState(false)
 
     useOutsideClick(container, () => setExpanded(false))
 
     return (
         <Container
-            ref={setContainer as any}
+            ref={setContainer}
             onClick={() => setExpanded(e => !e)}>
             <CenteredFlex $gap={12}>
                 {label}

@@ -10,8 +10,8 @@ import { Fourth } from './Scenes/Fourth'
 import { Footer } from './Footer'
 
 export default function Splash() {
-    const [container, setContainer] = useState<HTMLElement>()
-    const [zoomContainer, setZoomContainer] = useState<HTMLElement>()
+    const [container, setContainer] = useState<HTMLElement | null>(null)
+    const [zoomContainer, setZoomContainer] = useState<HTMLElement | null>(null)
 
     useEffect(() => {
         if (!container || !zoomContainer) return
@@ -85,8 +85,8 @@ export default function Splash() {
     }, [container, zoomContainer])
 
     return (
-        <Container ref={setContainer as any}>
-            <ZoomContainer ref={setZoomContainer as any}>
+        <Container ref={setContainer}>
+            <ZoomContainer ref={setZoomContainer}>
                 <Intro zIndex={1000}/>
                 <Second zIndex={900}/>
                 <Third zIndex={800}/>

@@ -11,8 +11,8 @@ type PointProps = Point & {
 }
 export const PointWithPopout = ({ serieId, x, y, data, serieColor, formatX, formatY }: PointProps) => {
     const [hovered, setHovered] = useState(false)
-    const [circle, setCircle] = useState<SVGCircleElement>()
-    const [container, setContainer] = useState<HTMLElement>()
+    const [circle, setCircle] = useState<SVGCircleElement | null>(null)
+    const [container, setContainer] = useState<HTMLElement | null>(null)
 
     useEffect(() => {
         if (!circle || !container) return
@@ -34,7 +34,7 @@ export const PointWithPopout = ({ serieId, x, y, data, serieColor, formatX, form
 
     return (<>
         <Circle
-            ref={setCircle as any}
+            ref={setCircle}
             $hovered={hovered}
             x={0}
             y={0}
@@ -46,7 +46,7 @@ export const PointWithPopout = ({ serieId, x, y, data, serieColor, formatX, form
         />
         {createPortal(
             <ChartTooltip
-                ref={setContainer as any}
+                ref={setContainer}
                 onPointerEnter={() => setHovered(true)}
                 onPointerLeave={() => setHovered(false)}
                 active={hovered}

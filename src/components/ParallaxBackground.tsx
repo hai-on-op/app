@@ -29,14 +29,14 @@ const els: FloatingElementsProps = {
 }
 
 export function ParallaxBackground() {
-    const [container, setContainer] = useState<HTMLElement>()
+    const [container, setContainer] = useState<HTMLElement | null>(null)
 
     useEffect(() => {
         if (!container) return
 
         // parse top definition for reference in loop
         const tops = els.clouds?.map(({ style }) => {
-            const top = (style as any)?.top?.replace('px', '') || '0'
+            const top = style?.top?.toString().replace('px', '') || '0'
             return parseInt(top)
         }) || []
 
@@ -54,7 +54,7 @@ export function ParallaxBackground() {
     }, [container])
 
     return (
-        <Container ref={setContainer as any}>
+        <Container ref={setContainer}>
             <FloatingElements {...els}/>
         </Container>
     )

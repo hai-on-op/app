@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-export function useOutsideClick(ref: HTMLElement | undefined, onOutsideClick: () => void) {
+export function useOutsideClick(ref: HTMLElement | null | undefined, onOutsideClick: () => void) {
     useEffect(() => {
         if (!ref) return
 

@@ -13,14 +13,15 @@ type MobileMenuProps = {
     setActive: Dispatch<SetStateAction<boolean>>
 }
 export function MobileMenu({ active, setActive }: MobileMenuProps) {
-    const [button, setButton] = useState<HTMLElement>()
+    const [button, setButton] = useState<HTMLElement | null>(null)
+    
     useOutsideClick(button, () => setActive(false))
 
     return (
         <DropdownButton
             as="div"
             $variant="yellowish"
-            ref={setButton as any}
+            ref={setButton}
             onClick={() => setActive(a => !a)}>
             <Hamburger size={20}/>
             {active && (

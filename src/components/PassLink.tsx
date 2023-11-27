@@ -1,3 +1,4 @@
+import { type HTMLProps } from 'react'
 import { Link } from 'react-router-dom'
 
 import type { ReactChildren } from '~/types'
@@ -5,12 +6,11 @@ import type { ReactChildren } from '~/types'
 import styled from 'styled-components'
 import { type FlexProps, FlexStyle, Text, type TextProps } from '~/styles'
 
-type PassLinkProps = TextProps & FlexProps & {
+type CleanAnchorProps = Omit<HTMLProps<HTMLAnchorElement>, 'ref' | 'as' | 'href' | 'children'>
+type PassLinkProps = TextProps & FlexProps & CleanAnchorProps & {
     href: string,
-    style?: object,
     content?: ReactChildren,
-    children?: ReactChildren,
-    onClick?: any
+    children?: ReactChildren
 }
 export function PassLink({
     href,

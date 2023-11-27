@@ -1,4 +1,4 @@
-import { type ReactNode, type SVGProps } from 'react'
+import { type CSSProperties, type ReactNode, type SVGProps } from 'react'
 
 export type ReactChildren = JSX.Element | ReactNode | ReactNode[]
 
@@ -20,7 +20,7 @@ export type DirectionalIconProps = IconProps & {
 export type SplashImage = {
     index: number
     width: string,
-    style?: object,
+    style?: CSSProperties,
     rotation?: number,
     flip?: boolean,
     zIndex?: number

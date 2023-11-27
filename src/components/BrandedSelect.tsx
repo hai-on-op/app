@@ -22,7 +22,7 @@ type BrandedSelectProps = TextProps & {
     onChange: (value: string) => void
 }
 export function BrandedSelect({ width, options, value, onChange, ...props }: BrandedSelectProps) {
-    const [container, setContainer] = useState<HTMLElement>()
+    const [container, setContainer] = useState<HTMLElement | null>(null)
     const [persistent, setPersistent] = useState(false)
     // const [active, setActive] = useState(false)
 
@@ -30,7 +30,7 @@ export function BrandedSelect({ width, options, value, onChange, ...props }: Bra
 
     return (
         <Container
-            ref={setContainer as any}
+            ref={setContainer}
             $gap={8}
             // onPointerOver={() => setActive(true)}
             // onPointerLeave={() => setActive(false)}

@@ -22,7 +22,7 @@ type AuctionTableRowProps = {
     onSelect?: () => void
 }
 export function AuctionTableRow({ auction, expanded, onSelect }: AuctionTableRowProps) {
-    const [timeEl, setTimeEl] = useState<HTMLElement>()
+    const [timeEl, setTimeEl] = useState<HTMLElement | null>(null)
     const [refresher, forceTimeRefresh] = useReducer(x => x + 1, 0)
 
     useEffect(() => {
@@ -92,6 +92,7 @@ export function AuctionTableRow({ auction, expanded, onSelect }: AuctionTableRow
         if (auction.isClaimed && auction.winner) return Status.COMPLETED
         if (!auction.isClaimed && !auction.winner) return Status.RESTARTING
         return Status.SETTLING
+        // eslint-disable-next-line
     }, [auction.auctionDeadline, auction.isClaimed, auction.winner, refresher])
 
     return (
@@ -139,7 +140,7 @@ export function AuctionTableRow({ auction, expanded, onSelect }: AuctionTableRow
                         {(new Date(parseInt(auctionDeadline) * 1000)).toLocaleDateString()}
                     </Text>
                     <Text
-                        ref={setTimeEl as any}
+                        ref={setTimeEl}
                         $fontSize="0.6rem">
                         --
                     </Text>
