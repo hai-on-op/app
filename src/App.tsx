@@ -7,7 +7,6 @@ import { useStoreState } from '~/store'
 import { type Theme } from '~/utils'
 
 import { GlobalStyle } from '~/styles'
-import { HaiThemeProvider } from '~/styles/HaiThemeProvider'
 import ErrorBoundary from '~/ErrorBoundary'
 import Shared from '~/containers/Shared'
 
@@ -29,31 +28,29 @@ const App = () => {
 
     return (
         <I18nextProvider i18n={i18next}>
-            <HaiThemeProvider>
-                <GlobalStyle bodyOverflow={bodyOverflow} />
-                <ErrorBoundary>
-                    <Shared>
-                        <Suspense fallback={null}>
-                            <Route />
-                            <>
-                                <Switch>
-                                    <Route exact strict component={Splash} path={'/'} />
-                                    <Route exact strict component={Privacy} path={'/privacy'} />
-                                    <Route exact strict component={Auctions} path={'/auctions'} />
-                                    <Route exact strict component={Analytics} path={'/analytics'} />
-                                    <Route exact strict component={Earn} path={'/earn'}/>
-                                    <Route exact strict component={Vaults} path={'/vaults/create'} />
-                                    <Route exact component={Vaults} path={'/vaults/:id'} />
-                                    <Route exact strict component={Vaults} path={'/vaults'} />
-                                    <Route exact strict component={Vaults} path={'/:address'} />
+            <GlobalStyle bodyOverflow={bodyOverflow} />
+            <ErrorBoundary>
+                <Shared>
+                    <Suspense fallback={null}>
+                        <Route />
+                        <>
+                            <Switch>
+                                <Route exact strict component={Splash} path={'/'} />
+                                <Route exact strict component={Privacy} path={'/privacy'} />
+                                <Route exact strict component={Auctions} path={'/auctions'} />
+                                <Route exact strict component={Analytics} path={'/analytics'} />
+                                <Route exact strict component={Earn} path={'/earn'}/>
+                                <Route exact strict component={Vaults} path={'/vaults/create'} />
+                                <Route exact component={Vaults} path={'/vaults/:id'} />
+                                <Route exact strict component={Vaults} path={'/vaults'} />
+                                <Route exact strict component={Vaults} path={'/:address'} />
 
-                                    <Redirect from="*" to="/" />
-                                </Switch>
-                            </>
-                        </Suspense>
-                    </Shared>
-                </ErrorBoundary>
-            </HaiThemeProvider>
+                                <Redirect from="*" to="/" />
+                            </Switch>
+                        </>
+                    </Suspense>
+                </Shared>
+            </ErrorBoundary>
         </I18nextProvider>
     )
 }
