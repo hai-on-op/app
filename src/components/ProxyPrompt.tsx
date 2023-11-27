@@ -86,6 +86,13 @@ export function ProxyPrompt({ children }: ProxyPromptProps) {
         localStorage.removeItem('ctHash')
     }, [connectWalletState.ctHash, popupsActions, connectWalletActions])
 
+    if (connectWalletState.step === PromptStep.CONNECT_WALLET) return (
+        <Container>
+            <Text>Please connect a wallet to continue</Text>
+            <ConnectButton/>
+        </Container>
+    )
+
     if (chain?.id !== NETWORK_ID) return (
         <Container>
             <Text>Please switch the connected network to continue</Text>
@@ -93,36 +100,21 @@ export function ProxyPrompt({ children }: ProxyPromptProps) {
         </Container>
     )
 
-    const content = () => {
-        switch(connectWalletState.step) {
-            case PromptStep.CONNECT_WALLET:
-                return (
-                    <Container>
-                        <Text>Please connect a wallet to continue</Text>
-                        <ConnectButton/>
-                    </Container>
-                )
-            case PromptStep.CREATE_PROXY:
-                return (
-                    <Container>
-                        <Text>
-                            To continue, please create a proxy contract. A proxy contract allows for transaction bundling as well as other unique features.&nbsp;
-                            <ExternalLink href={LINK_TO_DOCS}>Read more →</ExternalLink>
-                        </Text>
-                        <HaiButton
-                            $variant="yellowish"
-                            onClick={handleCreateAccount}>
-                            {t('create_account')}
-                        </HaiButton>
-                    </Container>
-                )
-            case PromptStep.CREATE_SAFE:
-            default:
-                return children
-        }
-    }
-
-    return content()
+    if (connectWalletState.step === PromptStep.CREATE_PROXY) return (
+        <Container>
+            <Text>
+                To continue, please create a proxy contract. A proxy contract allows for transaction bundling as well as other unique features.&nbsp;
+                <ExternalLink href={LINK_TO_DOCS}>Read more →</ExternalLink>
+            </Text>
+            <HaiButton
+                $variant="yellowish"
+                onClick={handleCreateAccount}>
+                {t('create_account')}
+            </HaiButton>
+        </Container>
+    )
+    
+    return children
 }
 
 const Container = styled(CenteredFlex).attrs(props => ({
