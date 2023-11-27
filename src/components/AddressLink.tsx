@@ -1,23 +1,24 @@
 import { useNetwork } from 'wagmi'
 
-import { getEtherscanLink, returnWalletAddress } from '~/utils'
+import { NETWORK_ID, getEtherscanLink, returnWalletAddress } from '~/utils'
 
 import { ExternalLink, ExternalLinkProps } from './ExternalLink'
 
 type AddressLinkProps = Omit<ExternalLinkProps, 'children'> & {
     chainId?: number
     address: string,
-    type?: 'address' | 'transaction'
+    type?: 'address' | 'transaction',
+    children?: JSX.Element
 }
 
-export const AddressLink = ({ chainId, address, type = 'address', ...props }: AddressLinkProps) => {
+export const AddressLink = ({ chainId, address, type = 'address', children, ...props }: AddressLinkProps) => {
     const { chain } = useNetwork()
 
     return (
         <ExternalLink
             {...props}
-            href={getEtherscanLink(chainId || chain?.id || 420, address, type)}>
-            {returnWalletAddress(address)}
+            href={getEtherscanLink(chainId || chain?.id || NETWORK_ID, address, type)}>
+            {children || returnWalletAddress(address)}
         </ExternalLink>
     )
 }

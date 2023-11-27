@@ -1,8 +1,14 @@
 import { css } from 'styled-components'
 import { ChainId } from './interfaces'
 
-export const { VITE_SYSTEM_STATUS, VITE_NETWORK_ID, VITE_WALLETCONNECT_ID, VITE_ALCHEMY_KEY, VITE_PUBLIC_RPC } =
-    import.meta.env
+export const {
+    VITE_SYSTEM_STATUS,
+    VITE_NETWORK_ID,
+    VITE_WALLETCONNECT_ID,
+    VITE_ALCHEMY_KEY,
+    VITE_PUBLIC_RPC
+} = import.meta.env
+
 export const NETWORK_ID = parseInt(VITE_NETWORK_ID ?? '1')
 
 export enum Network {

@@ -13,7 +13,7 @@ export function ExternalLink({ children, ...props }: ExternalLinkProps) {
     return (
         <Link
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             $textDecoration="underline"
             {...(props as any)}>
             {children}

@@ -46,7 +46,7 @@ export function VaultActions({
             }
             case Action.WITHDRAW_OR_PAY_BACK: {
                 if (!formState.withdraw?.gt(0) && !formState.payback?.gt(0)) {
-                    return [false, 'Deposit']
+                    return [false, 'Withdraw']
                 }
                 if (!formState.payback?.gt(0)) return [true, 'Withdraw']
                 if (!formState.withdraw?.gt(0)) return [true, 'Pay Back']
@@ -133,6 +133,7 @@ export function VaultActions({
                 <HaiButton
                     $variant="yellowish"
                     $width="100%"
+                    $justify="center"
                     disabled={!buttonActive}>
                     {buttonLabel}
                 </HaiButton>
@@ -163,7 +164,7 @@ const Header = styled(Flex).attrs(props => ({
     ...props
 }))`
     padding-top: 24px;
-    border-bottom: 1px solid rgba(0,0,0,0.3);
+    border-bottom: ${({ theme }) => theme.border.thin};
 
     & > *:first-child {
         padding-left: 24px;
@@ -176,7 +177,7 @@ const HeaderNav = styled(CenteredFlex)<{ $active?: boolean, $disabled?: boolean 
     cursor: pointer;
 
     ${({ $disabled = false }) => $disabled && css`
-        opacity: 0.7;
+        opacity: 0.5;
         cursor: not-allowed;
     `}
 `
@@ -197,5 +198,5 @@ const Body = styled(Flex).attrs(props => ({
 const Footer = styled(CenteredFlex)`
     width: 100%;
     padding: 24px;
-    border-top: 1px solid rgba(0,0,0,0.3);
+    border-top: ${({ theme }) => theme.border.thin};
 `

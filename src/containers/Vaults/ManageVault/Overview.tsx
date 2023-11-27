@@ -32,47 +32,51 @@ export function Overview({ vault, simulation }: OverviewProps) {
                 )}
             </Header>
             <Inner $borderOpacity={0.2}>
-                <FullWidthOverviewStat
-                    amount={vault.collateral ? formatDataNumber(vault.collateral): ''}
+                <OverviewStat
+                    value={vault.collateral ? formatDataNumber(vault.collateral): ''}
                     token={vault.collateralName.toUpperCase() as any}
                     label="Collateral Asset"
-                    simulatedAmount={simulation?.collateral ? formatDataNumber(simulation.collateral): ''}
+                    simulatedValue={simulation?.collateral ? formatDataNumber(simulation.collateral): ''}
                     alert={{
                         value: '7.2% APY',
                         status: Status.POSITIVE
                     }}
+                    fullWidth
+                    borderedBottom
                 />
-                <FullWidthOverviewStat
-                    amount={vault.debt ? formatDataNumber(vault.debt): ''}
+                <OverviewStat
+                    value={vault.debt ? formatDataNumber(vault.debt): ''}
                     token="HAI"
                     label="Debt Asset"
-                    simulatedAmount={simulation?.debt ? formatDataNumber(simulation.debt): ''}
+                    simulatedValue={simulation?.debt ? formatDataNumber(simulation.debt): ''}
                     alert={{
                         value: '-7.2% APY',
                         status: Status.NEGATIVE
                     }}
+                    fullWidth
+                    borderedBottom
                 />
                 <OverviewStat
-                    stat={vault.collateralRatio}
+                    value={vault.collateralRatio}
                     label="CF"
                     tooltip="Hello world"
                     borderedBottom
                     borderedRight
                 />
                 <OverviewStat
-                    stat={parseFloat((100 * parseFloat(vault.totalAnnualizedStabilityFee)).toFixed(2)) + '%'}
+                    value={parseFloat((100 * parseFloat(vault.totalAnnualizedStabilityFee)).toFixed(2)) + '%'}
                     label="Stability Fee APY"
                     tooltip="Hello world"
                     borderedBottom
                 />
                 <OverviewStat
-                    stat={vault.liquidationPrice}
+                    value={vault.liquidationPrice}
                     label="Liq. Price"
                     tooltip="Hello world"
                     borderedRight
                 />
                 <OverviewStat
-                    stat={parseFloat((100 * parseFloat(vault.totalAnnualizedStabilityFee)).toFixed(2)) + '%'}
+                    value={parseFloat((100 * parseFloat(vault.totalAnnualizedStabilityFee)).toFixed(2)) + '%'}
                     label="Rewards APY"
                     tooltip="Hello world"
                 />
@@ -114,27 +118,47 @@ const Inner = styled(Grid).attrs(props => ({
     }
 `
 
-type FullWidthOverviewStatProps = {
-    amount: string,
-    token: keyof typeof TOKEN_LOGOS,
+type OverviewStatProps = {
+    token?: keyof typeof TOKEN_LOGOS,
+    value: string,
     label: string,
-    simulatedAmount?: string,
-    alert: {
+    tooltip?: string,
+    alert?: {
         value: string,
         status: Status
-    }
+    },
+    simulatedValue?: string,
+    fullWidth?: boolean,
+    borderedRight?: boolean,
+    borderedBottom?: boolean
 }
-function FullWidthOverviewStat({ amount, token, label, simulatedAmount, alert }: FullWidthOverviewStatProps) {
+
+function OverviewStat({
+    token,
+    value,
+    label,
+    tooltip,
+    alert,
+    simulatedValue,
+    fullWidth = false,
+    borderedRight = false,
+    borderedBottom = false
+}: OverviewStatProps) {
     return (
-        <FullWidthFlex>
+        <StatContainer
+            $fullWidth={fullWidth}
+            $borderedRight={borderedRight}
+            $borderedBottom={borderedBottom}>
             <Flex
                 $align="center"
                 $gap={12}>
-                <TokenPair
-                    size={96}
-                    tokens={[token]}
-                    hideLabel
-                />
+                {!!token && (
+                    <TokenPair
+                        size={96}
+                        tokens={[token]}
+                        hideLabel
+                    />
+                )}
                 <Flex
                     $column
                     $justify="center"
@@ -143,20 +167,26 @@ function FullWidthOverviewStat({ amount, token, label, simulatedAmount, alert }:
                     <Text
                         $fontSize="1.25em"
                         $fontWeight={700}>
-                        {amount || '--'} {token}
+                        {value || '--'} {token}
                     </Text>
-                    <Text $fontSize="0.8em">{label}</Text>
+                    <Flex
+                        $justify="flex-start"
+                        $align="center"
+                        $gap={4}>
+                        <Text $fontSize="0.8em">{label}</Text>
+                        {!!tooltip && <Tooltip>{tooltip}</Tooltip>}
+                    </Flex>
                 </Flex>
             </Flex>
             <CenteredFlex $gap={12}>
-                {!!simulatedAmount && (
+                {!!simulatedValue && (
                     <StatusLabel
                         status={Status.CUSTOM}
                         background="gradient">
                         <Text
                             $fontSize="0.67rem"
                             $fontWeight={700}>
-                            {simulatedAmount || '--'} {token}
+                            {simulatedValue || '--'} {token}
                         </Text>
                         <Text
                             $fontSize="0.67rem"
@@ -165,89 +195,28 @@ function FullWidthOverviewStat({ amount, token, label, simulatedAmount, alert }:
                         </Text>
                     </StatusLabel>
                 )}
-                <StatusLabel status={alert.status}>
-                    {alert.value}
-                </StatusLabel>
+                {!!alert && (
+                    <StatusLabel status={alert.status}>
+                        {alert.value}
+                    </StatusLabel>
+                )}
             </CenteredFlex>
-        </FullWidthFlex>
-    )
-}
-
-const FullWidthFlex = styled(Flex).attrs(props => ({
-    $justify: 'space-between',
-    $align: 'center',
-    $gap: 12,
-    $borderOpacity: 0.2,
-    ...props
-}))<DashedContainerProps>`
-    grid-column: 1 / -1;
-    ${DashedContainerStyle}
-    border-bottom: 2px solid transparent;
-    &::after {
-        border-top: none;
-        border-left: none;
-        border-right: none;
-    }
-`
-
-type OverviewStatProps = {
-    stat: string,
-    label: string,
-    tooltip: string,
-    simulatedStat?: string,
-    borderedRight?: boolean,
-    borderedBottom?: boolean
-}
-function OverviewStat({
-    stat,
-    label,
-    tooltip,
-    simulatedStat,
-    borderedRight,
-    borderedBottom
-}: OverviewStatProps) {
-    return (
-        <StatContainer
-            $borderedRight={borderedRight}
-            $borderedBottom={borderedBottom}>
-            <Flex
-                $column
-                $justify="center"
-                $align="flex-start"
-                $gap={4}>
-                <Text
-                    $fontWeight={700}
-                    $fontSize="1.1em">
-                    {stat || '--'}
-                </Text>
-                <Flex $gap={4}>
-                    <Text $fontSize="0.65em">{label}</Text>
-                    <Tooltip>{tooltip}</Tooltip>
-                </Flex>
-            </Flex>
-            {!!simulatedStat && (
-                <StatusLabel
-                    status={Status.CUSTOM}
-                    background="gradient">
-                    <Text
-                        $fontSize="0.67rem"
-                        $fontWeight={700}>
-                        {simulatedStat || '--'}
-                    </Text>
-                    <Text>After Tx</Text>
-                </StatusLabel>
-            )}
         </StatContainer>
     )
 }
 
 const StatContainer = styled(Flex).attrs(props => ({
-    $justify: 'space-between-start',
+    $justify: 'space-between',
     $align: 'center',
     $borderOpacity: 0.2,
     ...props
-}))<DashedContainerProps & { $borderedBottom?: boolean, $borderedRight?: boolean }>`
+}))<DashedContainerProps & {
+    $fullWidth?: boolean,
+    $borderedBottom?: boolean,
+    $borderedRight?: boolean
+}>`
     ${DashedContainerStyle}
+    ${({ $fullWidth }) => $fullWidth && css`grid-column: 1 / -1;`}
     ${({ $borderedBottom, $borderedRight }) => css`
         border-bottom: ${$borderedBottom ? '2px solid transparent': 'none'};
         border-right: ${$borderedRight ? '2px solid transparent': 'none'};
