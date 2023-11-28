@@ -6,7 +6,7 @@ import type { ReactChildren } from '~/types'
 import styled from 'styled-components'
 import { type FlexProps, FlexStyle, Text, type TextProps } from '~/styles'
 
-type CleanAnchorProps = Omit<HTMLProps<HTMLAnchorElement>, 'ref' | 'as' | 'href' | 'children'>
+type CleanAnchorProps = Omit<HTMLProps<HTMLAnchorElement>, 'ref' | 'as' | 'href' | 'content' | 'children'>
 type PassLinkProps = TextProps & FlexProps & CleanAnchorProps & {
     href: string,
     content?: ReactChildren,

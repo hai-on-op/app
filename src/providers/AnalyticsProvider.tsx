@@ -97,7 +97,7 @@ export function AnalyticsProvider({ children }: Props) {
                     }))
             }))
         })
-        // eslint-disable next-line
+        // eslint-disable-next-line
     }, [geb, chain?.id, refresher])
 
     return (

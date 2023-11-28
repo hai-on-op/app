@@ -30,7 +30,7 @@ export function PriceDisplay({ token = 'HAI', price, label, tooltip }: PriceDisp
                     $align="center"
                     $gap={4}>
                     <Text $fontSize="0.7em">{label}</Text>
-                    <Tooltip>{tooltip}</Tooltip>
+                    <Tooltip width="200px">{tooltip}</Tooltip>
                 </Flex>
             </Flex>
         </CenteredFlex>
