@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useReducer, useState } from 'react'
 import { useNetwork } from 'wagmi'
 import { type AnalyticsData, fetchAnalyticsData } from '@hai-on-op/sdk'
 
@@ -16,33 +16,41 @@ type TokenAnalyticsData = AnalyticsData['tokenAnalyticsData'][string] & {
 }
 
 type AnalyticsContext = {
-    erc20Supply: string
-    globalDebt: string
-    globalDebtUtilization: string
-    globalDebtCeiling: string
-    surplusInTreasury: string
-    marketPrice: string
-    redemptionPrice: string
-    annualRate: string
-    eightRate: string
-    pRate: string
-    iRate: string
-    tokenAnalyticsData: TokenAnalyticsData[]
+    forceRefresh: () => void,
+    data: {
+        erc20Supply: string
+        globalDebt: string
+        globalDebtUtilization: string
+        globalDebtCeiling: string
+        surplusInTreasury: string
+        marketPrice: string
+        redemptionPrice: string
+        priceDiff: number
+        annualRate: string
+        eightRate: string
+        pRate: string
+        iRate: string
+        tokenAnalyticsData: TokenAnalyticsData[]
+    }
 }
 
 const defaultState: AnalyticsContext = {
-    erc20Supply: '',
-    globalDebt: '',
-    globalDebtUtilization: '',
-    globalDebtCeiling: '',
-    surplusInTreasury: '',
-    marketPrice: '',
-    redemptionPrice: '',
-    annualRate: '',
-    eightRate: '',
-    pRate: '',
-    iRate: '',
-    tokenAnalyticsData: []
+    forceRefresh: () => undefined,
+    data: {
+        erc20Supply: '',
+        globalDebt: '',
+        globalDebtUtilization: '',
+        globalDebtCeiling: '',
+        surplusInTreasury: '',
+        marketPrice: '',
+        redemptionPrice: '',
+        priceDiff: 0,
+        annualRate: '',
+        eightRate: '',
+        pRate: '',
+        iRate: '',
+        tokenAnalyticsData: []
+    }
 }
 
 const AnalyticsContext = createContext<AnalyticsContext>(defaultState)
@@ -56,12 +64,18 @@ export function AnalyticsProvider({ children }: Props) {
     const geb = usePublicGeb()
     const { chain } = useNetwork()
 
-    const [data, setData] = useState(defaultState)
+    const [refresher, forceRefresh] = useReducer(x => x + 1, 0)
+    const [data, setData] = useState(defaultState.data)
 
     useEffect(() => {
         if (!geb) return
         
         fetchAnalyticsData(geb).then((result) => {
+            const marketPrice = formatDataNumber(result.marketPrice, 18, 3, true)
+            const redemptionPrice = formatDataNumber(result.redemptionPrice, 18, 3, true)
+            // TODO: should difference be relative to market or redemption price?
+            const priceDiff = 100 * Math.abs(1 - parseFloat(marketPrice.replace('$', '')) / parseFloat(redemptionPrice.replace('$', '')))
+
             setData(d => ({
                 ...d,
                 erc20Supply: formatDataNumber(result.erc20Supply, 18, 0, true),
@@ -69,8 +83,9 @@ export function AnalyticsProvider({ children }: Props) {
                 globalDebtCeiling: formatDataNumber(result.globalDebtCeiling, 18, 0, true),
                 globalDebtUtilization: transformToWadPercentage(result.globalDebt, result.globalDebtCeiling),
                 surplusInTreasury: formatDataNumber(result.surplusInTreasury, 18, 0, true),
-                marketPrice: formatDataNumber(result.marketPrice, 18, 3, true),
-                redemptionPrice: formatDataNumber(result.redemptionPrice, 18, 3, true),
+                marketPrice,
+                redemptionPrice,
+                priceDiff,
                 annualRate: transformToAnnualRate(result.redemptionRate, 27),
                 eightRate: transformToEightHourlyRate(result.redemptionRate, 27),
                 pRate: transformToAnnualRate(result.redemptionRatePTerm, 27),
@@ -82,10 +97,14 @@ export function AnalyticsProvider({ children }: Props) {
                     }))
             }))
         })
-    }, [geb, chain?.id])
+        // eslint-disable next-line
+    }, [geb, chain?.id, refresher])
 
     return (
-        <AnalyticsContext.Provider value={data}>
+        <AnalyticsContext.Provider value={{
+            forceRefresh,
+            data
+        }}>
             {children}
         </AnalyticsContext.Provider>
     )

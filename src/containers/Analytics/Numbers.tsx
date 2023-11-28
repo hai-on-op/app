@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { Timeframe } from '~/utils'
-import { useAnalytics } from './AnalyticsProvider'
+import { useAnalytics } from '~/providers/AnalyticsProvider'
 
 import styled from 'styled-components'
 import {
@@ -55,15 +55,17 @@ const dummyPieDataBase = [
 
 export function Numbers() {
     const {
-        erc20Supply,
-        marketPrice,
-        redemptionPrice,
-        annualRate,
-        eightRate,
-        pRate,
-        iRate,
-        surplusInTreasury,
-        globalDebt
+        data: {
+            erc20Supply,
+            marketPrice,
+            redemptionPrice,
+            annualRate,
+            eightRate,
+            pRate,
+            iRate,
+            surplusInTreasury,
+            globalDebt
+        }
     } = useAnalytics()
 
     const [timeframe, setTimeframe] = useState<Timeframe>(Timeframe.ONE_WEEK)

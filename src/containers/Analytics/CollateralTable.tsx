@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 
 import type { SortableHeader } from '~/types'
 import { formatDataNumber, transformToAnnualRate } from '~/utils'
-import { useAnalytics } from './AnalyticsProvider'
+import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { usePublicGeb } from '~/hooks'
 
 import styled from 'styled-components'
@@ -40,7 +40,7 @@ const sortableHeaders: SortableHeader[] = [
 
 export function CollateralTable() {
     const geb = usePublicGeb()
-    const { tokenAnalyticsData: rows } = useAnalytics()
+    const { data: { tokenAnalyticsData: rows } } = useAnalytics()
 
     const [sorting, setSorting] = useState<{ key: string, dir: 'asc' | 'desc'}>({
         key: 'Collateral Asset',

@@ -1,4 +1,5 @@
 import { useMediaQuery } from '~/hooks'
+import { useAnalytics } from '~/providers/AnalyticsProvider'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, Text } from '~/styles'
@@ -7,6 +8,8 @@ import { Elf } from './BrandElements/Elf'
 
 export function HaiAlert() {
     const isLargerThanSmall = useMediaQuery('upToSmall')
+
+    const { data: { marketPrice, redemptionPrice, priceDiff } } = useAnalytics()
 
     return (
         <Container>
@@ -17,11 +20,11 @@ export function HaiAlert() {
                 <Text>
                     <strong>$HAI ALERT</strong>
                     {` • `}
-                    {isLargerThanSmall ? `MARKET PRICE `: `MP `}<strong>$1.00</strong>
+                    {isLargerThanSmall ? `MARKET PRICE `: `MP `}<strong>{marketPrice}</strong>
                     {` • `}
-                    {isLargerThanSmall ? `REDEMPTION PRICE `: `RP `}<strong>$1.15</strong>
+                    {isLargerThanSmall ? `REDEMPTION PRICE `: `RP `}<strong>{redemptionPrice}</strong>
                     {` • `}
-                    {isLargerThanSmall ? `PRICE DIFFERENCE `: `DIFF. `}<strong>15%</strong>
+                    {isLargerThanSmall ? `PRICE DIFFERENCE `: `DIFF. `}<strong>{parseFloat(priceDiff.toFixed(2))}%</strong>
                 </Text>
             </CenteredFlex>
             <ElfContainer>

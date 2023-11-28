@@ -276,6 +276,7 @@ const Shared = ({ children }: Props) => {
         else pause()
     }, [settingsState.isPlayingMusic, play, pause])
 
+    // TODO: pull priceDiff from analytics and toggle footer visibility
     const haiAlertActive = true
 
     return (

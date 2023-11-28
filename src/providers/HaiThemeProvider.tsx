@@ -1,7 +1,7 @@
 import { createContext, useContext, type Dispatch, type SetStateAction, type ReactNode, useState } from 'react'
 import { ThemeProvider } from 'styled-components'
 import { type Theme } from '~/utils'
-import { darkTheme, lightTheme } from './themes'
+import { darkTheme, lightTheme } from '~/styles/themes'
 
 type HaiThemeContext = {
 	themeId: 'dark' | 'light',

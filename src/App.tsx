@@ -5,6 +5,7 @@ import { I18nextProvider } from 'react-i18next'
 
 import { useStoreState } from '~/store'
 import { type Theme } from '~/utils'
+import { AnalyticsProvider } from '~/providers/AnalyticsProvider'
 
 import { GlobalStyle } from '~/styles'
 import ErrorBoundary from '~/ErrorBoundary'
@@ -30,26 +31,28 @@ const App = () => {
         <I18nextProvider i18n={i18next}>
             <GlobalStyle bodyOverflow={bodyOverflow} />
             <ErrorBoundary>
-                <Shared>
-                    <Suspense fallback={null}>
-                        <Route />
-                        <>
-                            <Switch>
-                                <Route exact strict component={Splash} path={'/'} />
-                                <Route exact strict component={Privacy} path={'/privacy'} />
-                                <Route exact strict component={Auctions} path={'/auctions'} />
-                                <Route exact strict component={Analytics} path={'/analytics'} />
-                                <Route exact strict component={Earn} path={'/earn'}/>
-                                <Route exact strict component={Vaults} path={'/vaults/create'} />
-                                <Route exact component={Vaults} path={'/vaults/:id'} />
-                                <Route exact strict component={Vaults} path={'/vaults'} />
-                                <Route exact strict component={Vaults} path={'/:address'} />
+                <AnalyticsProvider>
+                    <Shared>
+                        <Suspense fallback={null}>
+                            <Route />
+                            <>
+                                <Switch>
+                                    <Route exact strict component={Splash} path={'/'} />
+                                    <Route exact strict component={Privacy} path={'/privacy'} />
+                                    <Route exact strict component={Auctions} path={'/auctions'} />
+                                    <Route exact strict component={Analytics} path={'/analytics'} />
+                                    <Route exact strict component={Earn} path={'/earn'}/>
+                                    <Route exact strict component={Vaults} path={'/vaults/create'} />
+                                    <Route exact component={Vaults} path={'/vaults/:id'} />
+                                    <Route exact strict component={Vaults} path={'/vaults'} />
+                                    <Route exact strict component={Vaults} path={'/:address'} />
 
-                                <Redirect from="*" to="/" />
-                            </Switch>
-                        </>
-                    </Suspense>
-                </Shared>
+                                    <Redirect from="*" to="/" />
+                                </Switch>
+                            </>
+                        </Suspense>
+                    </Shared>
+                </AnalyticsProvider>
             </ErrorBoundary>
         </I18nextProvider>
     )

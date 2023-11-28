@@ -1,5 +1,5 @@
 import type { IconProps } from '~/types'
-import { useHaiTheme } from '~/styles/HaiThemeProvider'
+import { useHaiTheme } from '~/providers/HaiThemeProvider'
 
 type Props = IconProps & {
     filled?: boolean

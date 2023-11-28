@@ -17,7 +17,7 @@ import { connectorsForWallets } from '@rainbow-me/rainbowkit'
 import { VITE_ALCHEMY_KEY, VITE_WALLETCONNECT_ID } from '~/utils'
 import { haiTheme } from '~/styles/themes'
 import { CustomAvatar } from '~/components/CustomAvatar'
-import { HaiThemeProvider } from '~/styles/HaiThemeProvider'
+import { HaiThemeProvider } from '~/providers/HaiThemeProvider'
 
 const projectId = VITE_WALLETCONNECT_ID!
 
