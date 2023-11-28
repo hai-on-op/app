@@ -1,7 +1,4 @@
 import { type ChangeEvent, useRef } from 'react'
-import { BigNumber } from 'ethers'
-
-import { formatDataNumber } from '~/utils'
 
 import styled, { css } from 'styled-components'
 import { Flex, Text } from '~/styles'
@@ -11,8 +8,10 @@ type ActionInputProps = {
     subLabel: string,
     placeholder: string,
     unitLabel?: string,
-    value?: BigNumber,
+    value?: string,
+    footerLabel?: string,
     onChange: (value: string) => void,
+    onMax?: () => void,
     hidden?: boolean
 }
 export function ActionInput({
@@ -21,7 +20,9 @@ export function ActionInput({
     placeholder,
     unitLabel,
     value,
+    footerLabel,
     onChange,
+    onMax,
     hidden = false
 }: ActionInputProps) {
     const input = useRef<HTMLInputElement | null>(null)
@@ -37,19 +38,24 @@ export function ActionInput({
                     $fontWeight={700}>
                     {label}
                 </Text>
-                <Text $fontSize="0.65em">{subLabel}</Text>
+                <Text
+                    $fontSize="0.65em"
+                    onClick={onMax}
+                    style={onMax ? { cursor: 'pointer' }: undefined}>
+                    {subLabel}
+                </Text>
             </Flex>
             <InputContainer onClick={() => input.current?.click()}>
                 <Input
                     ref={input}
                     type="number"
-                    defaultValue={''}
+                    value={value || ''}
                     placeholder={placeholder}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.currentTarget.value)}
                 />
                 {unitLabel && <InputLabel>{unitLabel}</InputLabel>}
                 <FooterText>
-                    {value ? `~${formatDataNumber(value.toString(), 18, 3, true, true)}`: ''}
+                    {footerLabel}
                 </FooterText>
             </InputContainer>
         </Container>
@@ -94,7 +100,7 @@ const InputLabel = styled(Text).attrs(props => ({
 
 const FooterText = styled(Text).attrs(props => ({
     $fontSize: '0.67rem',
-    $color: 'rgba(0,0,0,0.3)',
+    $color: 'rgba(0,0,0,0.5)',
     $textAlign: 'left',
     ...props
 }))``

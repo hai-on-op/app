@@ -1,21 +1,57 @@
-import { TOKEN_LOGOS, type ISafe, formatDataNumber } from '~/utils'
+import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 
-import styled, { css } from 'styled-components'
+import { Status, formatNumberWithStyle } from '~/utils'
+import { useVault } from '~/providers/VaultProvider'
+
+import styled from 'styled-components'
 import { type DashedContainerProps, DashedContainerStyle, Flex, Grid, Text, CenteredFlex } from '~/styles'
 import { Swirl } from '~/components/Icons/Swirl'
-import { Tooltip } from '~/components/Tooltip'
-import { Status, StatusLabel } from '~/components/StatusLabel'
-import { TokenPair } from '~/components/TokenPair'
+import { StatusLabel } from '~/components/StatusLabel'
+import { OverviewProgressStat, OverviewStat } from './OverviewStat'
 
-type OverviewProps = {
-    vault: ISafe,
-    simulation?: Partial<ISafe>
-}
-export function Overview({ vault, simulation }: OverviewProps) {
+export function Overview() {
+    const { t } = useTranslation()
+
+    const {
+        vault,
+        collateralName,
+        totalCollateral,
+        totalDebt,
+        riskStatus,
+        parsedCR,
+        safetyCR,
+        stabilityFeePercentage,
+        liquidationPrice,
+        simulation
+    } = useVault()
+
+    const progressProps = useMemo(() => {
+        if (!parsedCR || !safetyCR) return {
+            progress: 0
+        }
+
+        const MAX_FACTOR = 2.5
+
+        const min = safetyCR
+        const max = min * MAX_FACTOR
+        const labels = [
+            { progress: 1 / MAX_FACTOR, label: `${Math.floor(min)}%` },
+            { progress: 1.5 / MAX_FACTOR, label: `${Math.floor(1.5 * min)}%` },
+            { progress: 2.2 / MAX_FACTOR, label: `${Math.floor(2.2 * min)}%` }
+        ]
+        
+        return {
+            progress: Math.min(parsedCR, max) / max,
+            labels,
+            colorLimits: [100 / max, 2 / MAX_FACTOR] as [number, number]
+        }
+    }, [parsedCR, safetyCR])
+
     return (
         <Container>
             <Header>
-                <Text $fontWeight={700}>Vault Overview #{vault.id}</Text>
+                <Text $fontWeight={700}>Vault Overview {vault ? `#${vault.id}`: ''}</Text>
                 {!!simulation && (
                     <StatusLabel
                         status={Status.CUSTOM}
@@ -33,10 +69,16 @@ export function Overview({ vault, simulation }: OverviewProps) {
             </Header>
             <Inner $borderOpacity={0.2}>
                 <OverviewStat
-                    value={vault.collateral ? formatDataNumber(vault.collateral): ''}
-                    token={vault.collateralName.toUpperCase() as any}
+                    value={vault?.collateral
+                        ? formatNumberWithStyle(vault.collateral, { maxDecimals: 4 })
+                        : formatNumberWithStyle(totalCollateral.toString(), { maxDecimals: 4 })
+                    }
+                    token={collateralName as any}
                     label="Collateral Asset"
-                    simulatedValue={simulation?.collateral ? formatDataNumber(simulation.collateral): ''}
+                    simulatedValue={vault && simulation?.collateral
+                        ? formatNumberWithStyle(totalCollateral.toString(), { maxDecimals: 4 })
+                        : ''
+                    }
                     alert={{
                         value: '7.2% APY',
                         status: Status.POSITIVE
@@ -45,10 +87,16 @@ export function Overview({ vault, simulation }: OverviewProps) {
                     borderedBottom
                 />
                 <OverviewStat
-                    value={vault.debt ? formatDataNumber(vault.debt): ''}
+                    value={vault?.debt
+                        ? formatNumberWithStyle(vault.debt, { maxDecimals: 4 })
+                        : formatNumberWithStyle(totalDebt.toString(), { maxDecimals: 4 })
+                    }
                     token="HAI"
                     label="Debt Asset"
-                    simulatedValue={simulation?.debt ? formatDataNumber(simulation.debt): ''}
+                    simulatedValue={vault && simulation?.debt
+                        ? formatNumberWithStyle(totalDebt.toString(), { maxDecimals: 4 })
+                        : ''
+                    }
                     alert={{
                         value: '-7.2% APY',
                         status: Status.NEGATIVE
@@ -56,30 +104,74 @@ export function Overview({ vault, simulation }: OverviewProps) {
                     fullWidth
                     borderedBottom
                 />
-                <OverviewStat
-                    value={vault.collateralRatio}
+                <OverviewProgressStat
+                    value={typeof parsedCR === 'undefined'
+                        ? '--%'
+                        : formatNumberWithStyle(parsedCR, {
+                            scalingFactor: 0.01,
+                            style: 'percent'
+                        })
+                    }
+                    label="Ratio:"
+                    simulatedValue={vault && simulation?.riskStatus
+                        ? `${simulation.collateralRatio
+                            ? formatNumberWithStyle(simulation.collateralRatio, {
+                                scalingFactor: 0.01,
+                                style: 'percent'
+                            })
+                            : '--'
+                        } ${simulation.riskStatus}`
+                        : undefined
+                    }
+                    alert={riskStatus ? { status: riskStatus }: undefined}
+                    {...progressProps}
+                    fullWidth
+                    borderedBottom
+                />
+                {/* <OverviewStat
+                    value={(singleSafe?.collateralRatio || vaultInfo.collateralRatio).toString() + '%'}
                     label="CF"
                     tooltip="Hello world"
                     borderedBottom
                     borderedRight
-                />
+                /> */}
                 <OverviewStat
-                    value={parseFloat((100 * parseFloat(vault.totalAnnualizedStabilityFee)).toFixed(2)) + '%'}
-                    label="Stability Fee APY"
-                    tooltip="Hello world"
-                    borderedBottom
-                />
-                <OverviewStat
-                    value={vault.liquidationPrice}
-                    label="Liq. Price"
-                    tooltip="Hello world"
+                    value={vault?.totalAnnualizedStabilityFee
+                        ? formatNumberWithStyle(vault.totalAnnualizedStabilityFee, {
+                            // scalingFactor: 0.01,
+                            maxDecimals: 4,
+                            style: 'percent'
+                        })
+                        : formatNumberWithStyle(stabilityFeePercentage, {
+                            scalingFactor: 0.01,
+                            maxDecimals: 4,
+                            style: 'percent'
+                        })
+                    }
+                    label="Stability Fee"
+                    tooltip={t('stability_fee_tip')}
                     borderedRight
                 />
                 <OverviewStat
-                    value={parseFloat((100 * parseFloat(vault.totalAnnualizedStabilityFee)).toFixed(2)) + '%'}
+                    value={formatNumberWithStyle(vault?.liquidationPrice || liquidationPrice.toString(), {
+                        maxDecimals: 3,
+                        style: 'currency'
+                    })}
+                    label="Liq. Price"
+                    simulatedValue={vault && simulation?.liquidationPrice
+                        ? formatNumberWithStyle(simulation.liquidationPrice, {
+                            maxDecimals: 3,
+                            style: 'currency'
+                        })
+                        : undefined
+                    }
+                    tooltip={t('liquidation_price_tip')}
+                />
+                {/* <OverviewStat
+                    value={parseFloat((100 * parseFloat(singleSafe?.totalAnnualizedStabilityFee || '0')).toFixed(2)) + '%'}
                     label="Rewards APY"
                     tooltip="Hello world"
-                />
+                /> */}
             </Inner>
         </Container>
     )
@@ -115,116 +207,5 @@ const Inner = styled(Grid).attrs(props => ({
     & > * {
         padding: 24px;
         min-height: 100px;
-    }
-`
-
-type OverviewStatProps = {
-    token?: keyof typeof TOKEN_LOGOS,
-    value: string,
-    label: string,
-    tooltip?: string,
-    alert?: {
-        value: string,
-        status: Status
-    },
-    simulatedValue?: string,
-    fullWidth?: boolean,
-    borderedRight?: boolean,
-    borderedBottom?: boolean
-}
-
-function OverviewStat({
-    token,
-    value,
-    label,
-    tooltip,
-    alert,
-    simulatedValue,
-    fullWidth = false,
-    borderedRight = false,
-    borderedBottom = false
-}: OverviewStatProps) {
-    return (
-        <StatContainer
-            $fullWidth={fullWidth}
-            $borderedRight={borderedRight}
-            $borderedBottom={borderedBottom}>
-            <Flex
-                $align="center"
-                $gap={12}>
-                {!!token && (
-                    <TokenPair
-                        size={96}
-                        tokens={[token]}
-                        hideLabel
-                    />
-                )}
-                <Flex
-                    $column
-                    $justify="center"
-                    $align="flex-start"
-                    $gap={4}>
-                    <Text
-                        $fontSize="1.25em"
-                        $fontWeight={700}>
-                        {value || '--'} {token}
-                    </Text>
-                    <Flex
-                        $justify="flex-start"
-                        $align="center"
-                        $gap={4}>
-                        <Text $fontSize="0.8em">{label}</Text>
-                        {!!tooltip && <Tooltip>{tooltip}</Tooltip>}
-                    </Flex>
-                </Flex>
-            </Flex>
-            <CenteredFlex $gap={12}>
-                {!!simulatedValue && (
-                    <StatusLabel
-                        status={Status.CUSTOM}
-                        background="gradient">
-                        <Text
-                            $fontSize="0.67rem"
-                            $fontWeight={700}>
-                            {simulatedValue || '--'} {token}
-                        </Text>
-                        <Text
-                            $fontSize="0.67rem"
-                            $fontWeight={400}>
-                            After Tx
-                        </Text>
-                    </StatusLabel>
-                )}
-                {!!alert && (
-                    <StatusLabel status={alert.status}>
-                        {alert.value}
-                    </StatusLabel>
-                )}
-            </CenteredFlex>
-        </StatContainer>
-    )
-}
-
-const StatContainer = styled(Flex).attrs(props => ({
-    $justify: 'space-between',
-    $align: 'center',
-    $borderOpacity: 0.2,
-    ...props
-}))<DashedContainerProps & {
-    $fullWidth?: boolean,
-    $borderedBottom?: boolean,
-    $borderedRight?: boolean
-}>`
-    ${DashedContainerStyle}
-    ${({ $fullWidth }) => $fullWidth && css`grid-column: 1 / -1;`}
-    ${({ $borderedBottom, $borderedRight }) => css`
-        border-bottom: ${$borderedBottom ? '2px solid transparent': 'none'};
-        border-right: ${$borderedRight ? '2px solid transparent': 'none'};
-    `}
-    &::after {
-        border-top: none;
-        border-left: none;
-        ${({ $borderedBottom }) => !$borderedBottom && css`border-bottom: none;`}
-        ${({ $borderedRight }) => !$borderedRight && css`border-right: none;`}
     }
 `

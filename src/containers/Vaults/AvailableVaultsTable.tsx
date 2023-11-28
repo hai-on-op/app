@@ -20,7 +20,7 @@ const sortableHeaders: SortableHeader[] = [
 
 type AvailableVaultsTableProps = {
     rows: ISafe[],
-    onSelect: (vault: ISafe) => void,
+    onSelect: (vault: ISafe, create: boolean) => void,
     myVaults: ISafe[]
 }
 export function AvailableVaultsTable({ rows, onSelect, myVaults }: AvailableVaultsTableProps) {
@@ -142,7 +142,7 @@ export function AvailableVaultsTable({ rows, onSelect, myVaults }: AvailableVaul
                                             {existingVaults.map((vault) => (
                                                 <VaultLink
                                                     key={vault.id}
-                                                    onClick={() => onSelect(vault)}>
+                                                    onClick={() => onSelect(vault, false)}>
                                                     <Text
                                                         $whiteSpace="nowrap"
                                                         $fontWeight={700}>
@@ -161,7 +161,7 @@ export function AvailableVaultsTable({ rows, onSelect, myVaults }: AvailableVaul
                             }
                         </Flex>
                         <CenteredFlex>
-                            <BorrowButton onClick={() => onSelect(sortedRows[i])}>
+                            <BorrowButton onClick={() => onSelect(sortedRows[i], true)}>
                                 Borrow
                             </BorrowButton>
                         </CenteredFlex>

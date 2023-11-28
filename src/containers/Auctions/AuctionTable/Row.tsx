@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useReducer, useState } from 'react'
 
 import type { IAuction } from '~/types'
-import { formatNumber, parseRemainingTime } from '~/utils'
+import { Status, formatNumber, parseRemainingTime } from '~/utils'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
 import { TableHeader } from './Header'
 import { TokenPair } from '~/components/TokenPair'
-import { Status, StatusLabel } from '~/components/StatusLabel'
+import { StatusLabel } from '~/components/StatusLabel'
 import { Caret } from '~/components/Icons/Caret'
 import { BidTable } from './BidTable'
 

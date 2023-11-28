@@ -1,8 +1,8 @@
 import { type Dispatch, type SetStateAction, useMemo, useState } from 'react'
-import { parseEther } from 'ethers/lib/utils'
 
 import { type ISafe } from '~/utils'
 import { useStoreState } from '~/store'
+import { useVault } from '~/providers/VaultProvider'
 
 import { Text } from '~/styles'
 import { NavContainer } from '~/components/NavContainer'
@@ -46,18 +46,18 @@ const myDummySafes: ISafe[] = [
         date: '',
         safeHandler: '',
         riskState: 1,
-        collateral: parseEther('1000').toString(),
-        debt: parseEther('1600000').toString(),
-        totalDebt: parseEther('1600000').toString(),
-        availableDebt: parseEther('1600000').toString(),
+        collateral: '2000',
+        debt: '1600000',
+        totalDebt: '1600000',
+        availableDebt: '1600000',
         accumulatedRate: '',
-        collateralRatio: '1.5',
+        collateralRatio: '250',
         currentRedemptionPrice: '$1.05',
         currentLiquidationPrice: '$0.98',
-        internalCollateralBalance: parseEther('1000').toString(),
-        liquidationCRatio: '1.2',
+        internalCollateralBalance: '2000',
+        liquidationCRatio: '120',
         liquidationPenalty: '',
-        liquidationPrice: '$0.98',
+        liquidationPrice: '1365.43',
         totalAnnualizedStabilityFee: '0.072',
         currentRedemptionRate: '',
         collateralType: '',
@@ -68,18 +68,18 @@ const myDummySafes: ISafe[] = [
         date: '',
         safeHandler: '',
         riskState: 3,
-        collateral: parseEther('1000').toString(),
-        debt: parseEther('1600000').toString(),
-        totalDebt: parseEther('1600000').toString(),
-        availableDebt: parseEther('1600000').toString(),
+        collateral: '1300',
+        debt: '1600',
+        totalDebt: '1600',
+        availableDebt: '1600',
         accumulatedRate: '',
-        collateralRatio: '1.5',
+        collateralRatio: '140',
         currentRedemptionPrice: '$1.05',
         currentLiquidationPrice: '$0.98',
-        internalCollateralBalance: parseEther('1000').toString(),
-        liquidationCRatio: '1.2',
+        internalCollateralBalance: '1300',
+        liquidationCRatio: '120',
         liquidationPenalty: '',
-        liquidationPrice: '$0.98',
+        liquidationPrice: '2.42',
         totalAnnualizedStabilityFee: '0.072',
         currentRedemptionRate: '',
         collateralType: '',
@@ -88,11 +88,12 @@ const myDummySafes: ISafe[] = [
 ]
 
 type VaultsListProps = {
-    setActiveVault: (vault: ISafe) => void,
     navIndex: number,
     setNavIndex: Dispatch<SetStateAction<number>>
 }
-export function VaultsList({ setActiveVault, navIndex, setNavIndex }: VaultsListProps) {
+export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
+    const { setActiveVault } = useVault()
+
     const [eligibleOnly, setEligibleOnly] = useState(false)
     const [assetsFilter, setAssetsFilter] = useState<string>()
 
@@ -146,7 +147,7 @@ export function VaultsList({ setActiveVault, navIndex, setNavIndex }: VaultsList
                 ? (
                     <AvailableVaultsTable
                         rows={dummyVaults}
-                        onSelect={(vault: ISafe) => setActiveVault(vault)}
+                        onSelect={setActiveVault}
                         myVaults={myVaults}
                     />
                 )
@@ -154,7 +155,7 @@ export function VaultsList({ setActiveVault, navIndex, setNavIndex }: VaultsList
                     <ProxyPrompt>
                         <MyVaultsTable
                             rows={myVaults}
-                            onSelect={(vault: ISafe) => setActiveVault(vault)}
+                            onSelect={setActiveVault}
                         />
                     </ProxyPrompt>
                 )

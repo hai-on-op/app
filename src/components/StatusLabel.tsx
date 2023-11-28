@@ -1,20 +1,8 @@
 import type { ReactChildren } from '~/types'
+import { Status } from '~/utils'
 
 import styled, { css } from 'styled-components'
 import { Flex, type FlexProps } from '~/styles'
-
-export enum Status {
-    SAFE = 'SAFE',
-    DANGER = 'DANGER',
-    LIVE = 'LIVE',
-    COMPLETED = 'COMPLETED',
-    RESTARTING = 'RESTARTING',
-    SETTLING = 'SETTLING',
-    POSITIVE = 'POSITIVE',
-    NEGATIVE = 'NEGATIVE',
-    NEUTRAL = 'NEUTRAL',
-    CUSTOM = 'CUSTOM'
-}
 
 type StatusLabelProps = FlexProps & {
     status: Status,
@@ -72,8 +60,12 @@ const Container = styled(Flex)<{ $status: Status, $size: number, $color?: string
             case Status.NEGATIVE: return css`
                 color: ${$color || theme.colors.dangerColor};
             `
+            case Status.OKAY:
             case Status.NEUTRAL: return css`
-                color: ${$color || theme.colors.dimmedColor};
+                color: ${$color || theme.colors.warningColor};
+            `
+            case Status.UNKNOWN: return css`
+                color: ${$color || 'black'};
             `
             case Status.LIVE: return css`
                 color: ${$color || theme.colors.successColor};

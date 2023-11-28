@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react'
 import { type RouteComponentProps } from 'react-router-dom'
 import { useAccount } from 'wagmi'
 
+import { isAddress } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
-import { useEthersSigner, useGeb } from '~/hooks'
-import { type ISafe, isAddress } from '~/utils'
+import { VaultProvider } from '~/providers/VaultProvider'
+import { VaultAction, useEthersSigner, useGeb } from '~/hooks'
 
 import styled from 'styled-components'
 import { HaiButton, Text } from '~/styles'
@@ -17,7 +18,13 @@ export function Vaults(props: RouteComponentProps<{ address?: string }>) {
     const signer = useEthersSigner()
     const geb = useGeb()
 
-    const { tokensData, isWrongNetwork } = useStoreState(state => state.connectWalletModel)
+    const {
+        connectWalletModel: {
+            tokensData,
+            isWrongNetwork
+        },
+        safeModel: { singleSafe }
+    } = useStoreState(state => state)
     const { safeModel: safeActions } = useStoreActions(actions => actions)
 
     const { address = '' } = props.match.params
@@ -52,28 +59,34 @@ export function Vaults(props: RouteComponentProps<{ address?: string }>) {
     }, [account, address, isWrongNetwork, tokensData, geb, signer, safeActions])
 
     const [navIndex, setNavIndex] = useState(0)
-    const [activeVault, setActiveVault] = useState<ISafe>()
-
-    if (activeVault) return (
-        <ManageVault
-            vault={activeVault}
-            headerContent={(
-                <BackButton onClick={() => setActiveVault(undefined)}>
-                    <Caret direction="left"/>
-                    <Text>
-                        Back to {navIndex === 0 ? 'All': 'My'} Vaults
-                    </Text>
-                </BackButton>
-            )}
-        />
-    )
+    const [action, setAction] = useState<VaultAction>(VaultAction.INFO)
 
     return (
-        <VaultsList
-            setActiveVault={setActiveVault}
-            navIndex={navIndex}
-            setNavIndex={setNavIndex}
-        />
+        <VaultProvider
+            action={action}
+            setAction={setAction}>
+            {action === VaultAction.CREATE || singleSafe
+                ? (
+                    <ManageVault headerContent={(
+                        <BackButton onClick={() => {
+                            safeActions.setSingleSafe(undefined)
+                            setAction(VaultAction.INFO)
+                        }}>
+                            <Caret direction="left"/>
+                            <Text>
+                                Back to {navIndex === 0 ? 'All': 'My'} Vaults
+                            </Text>
+                        </BackButton>
+                    )}/>
+                )
+                : (
+                    <VaultsList
+                        navIndex={navIndex}
+                        setNavIndex={setNavIndex}
+                    />
+                )
+            }
+        </VaultProvider>
     )
 }
 

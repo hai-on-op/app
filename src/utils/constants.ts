@@ -45,6 +45,21 @@ export const mediaWidthTemplates: {
     return accumulator
 }, {}) as any
 
+export enum Status {
+    SAFE = 'SAFE',
+    DANGER = 'DANGER',
+    LIVE = 'LIVE',
+    COMPLETED = 'COMPLETED',
+    RESTARTING = 'RESTARTING',
+    SETTLING = 'SETTLING',
+    POSITIVE = 'POSITIVE',
+    NEGATIVE = 'NEGATIVE',
+    NEUTRAL = 'NEUTRAL',
+    OKAY = 'OKAY',
+    UNKNOWN = 'UNKNOWN',
+    CUSTOM = 'CUSTOM'
+}
+
 export const DEFAULT_SAFE_STATE = {
     totalCollateral: '',
     totalDebt: '',

@@ -3,7 +3,7 @@ import { BigNumber, FixedNumber } from 'ethers'
 import { utils as gebUtils, type TokenData } from '@hai-on-op/sdk'
 import { getAddress } from 'viem'
 
-import { ETHERSCAN_PREFIXES, floatsTypes } from './constants'
+import { ETHERSCAN_PREFIXES, Status, floatsTypes } from './constants'
 import { ChainId, type ILiquidationData, type ISafe, type ITransaction } from './interfaces'
 import { sanitizeDecimals } from './removeDecimals'
 
@@ -70,6 +70,22 @@ export const formatNumber = (value: string, digits = 6, round = false) => {
     }
 
     return isNaN(Number(val)) ? value : val
+}
+
+type FormatOptions = {
+    scalingFactor?: number,
+    maxDecimals?: number,
+    style?: 'currency' | 'percent'
+}
+export const formatNumberWithStyle = (value: number | string, options: FormatOptions = {}) => {
+    const { scalingFactor = 1, maxDecimals = 2, style } = options
+
+    const scaledValue = scalingFactor * parseFloat((value || '0').toString())
+    return scaledValue.toLocaleString(undefined, {
+        style,
+        currency: style === 'currency' ? 'USD': undefined,
+        maximumFractionDigits: maxDecimals
+    })
 }
 
 export const getRatePercentage = (value: string, digits = 4, returnRate = false) => {
@@ -219,21 +235,28 @@ export const safeIsSafe = (totalCollateral: string, totalDebt: string, safetyPri
     return totalDebtBN.lte(totalCollateralBN.mul(safetyPriceBN).div(gebUtils.RAY))
 }
 
+export enum RiskState {
+    UNKNOWN,
+    LOW,
+    MEDIUM,
+    HIGH,
+    LIQUIDATION
+}
 export const ratioChecker = (currentLiquitdationRatio: number, minLiquidationRatio: number) => {
     const minLiquidationRatioPercent = minLiquidationRatio * 100
     const safestRatio = minLiquidationRatioPercent * 2.2
     const midSafeRatio = minLiquidationRatioPercent * 1.5
 
     if (currentLiquitdationRatio < minLiquidationRatioPercent && currentLiquitdationRatio > 0) {
-        return 4
+        return RiskState.LIQUIDATION
     } else if (currentLiquitdationRatio >= safestRatio) {
-        return 1
+        return RiskState.LOW
     } else if (currentLiquitdationRatio < safestRatio && currentLiquitdationRatio >= midSafeRatio) {
-        return 2
+        return RiskState.MEDIUM
     } else if (currentLiquitdationRatio < midSafeRatio && currentLiquitdationRatio > 0) {
-        return 3
+        return RiskState.HIGH
     } else {
-        return 0
+        return RiskState.UNKNOWN
     }
 }
 
@@ -328,6 +351,13 @@ export const returnTimeOffset = () => {
     return res < 0 ? res : '+' + res
 }
 
+export const riskStateToStatus: Record<RiskState | number, Status> = {
+    [RiskState.LOW]: Status.SAFE,
+    [RiskState.MEDIUM]: Status.OKAY,
+    [RiskState.HIGH]: Status.DANGER,
+    [RiskState.LIQUIDATION]: Status.DANGER,
+    [RiskState.UNKNOWN]: Status.UNKNOWN
+}
 export const returnState = (state: number) => {
     switch (state) {
         case 1:

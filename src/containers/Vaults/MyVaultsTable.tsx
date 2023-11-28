@@ -1,13 +1,13 @@
 import { useMemo, useState } from 'react'
 
 import type { SortableHeader } from '~/types'
-import { returnState, type ISafe, formatDataNumber } from '~/utils'
+import { Status, type ISafe, formatNumberWithStyle, riskStateToStatus } from '~/utils'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, Grid, HaiButton, Text } from '~/styles'
 import { RewardsTokenPair, TokenPair } from '~/components/TokenPair'
 import { TableHeaderItem } from '~/components/TableHeaderItem'
-import { Status, StatusLabel } from '~/components/StatusLabel'
+import { StatusLabel } from '~/components/StatusLabel'
 
 const sortableHeaders: SortableHeader[] = [
     { label: 'Vault' },
@@ -23,8 +23,8 @@ type MyVaultsTableProps = {
 }
 export function MyVaultsTable({ rows, onSelect }: MyVaultsTableProps) {
     const [sorting, setSorting] = useState<{ key: string, dir: 'asc' | 'desc'}>({
-        key: 'Net APY',
-        dir: 'desc'
+        key: 'Risk Ratio',
+        dir: 'asc'
     })
 
     const sortedRows = useMemo(() => {
@@ -115,11 +115,8 @@ export function MyVaultsTable({ rows, onSelect }: MyVaultsTableProps) {
                 riskState,
                 collateral,
                 debt,
-                liquidationCRatio
+                totalAnnualizedStabilityFee
             }, i) => {
-                const risk = ['', 'Low', 'Medium'].includes(returnState(riskState))
-                    ? Status.SAFE
-                    : Status.DANGER
                 return (
                     <TableRow key={i}>
                         <Grid
@@ -129,7 +126,7 @@ export function MyVaultsTable({ rows, onSelect }: MyVaultsTableProps) {
                             <CenteredFlex
                                 $width="fit-content"
                                 $gap={4}>
-                                <TokenPair tokens={[collateralName.toUpperCase() as any, 'HAI']}/>
+                                <TokenPair tokens={[collateralName as any, 'HAI']}/>
                                 <Text>#{id}</Text>
                             </CenteredFlex>
                             <RewardsTokenPair tokens={['OP']}/>
@@ -137,22 +134,35 @@ export function MyVaultsTable({ rows, onSelect }: MyVaultsTableProps) {
                         <Flex
                             $align="center"
                             $gap={12}>
-                            <Text>{collateralRatio}</Text>
-                            <StatusLabel status={risk}/>
+                            <Text>
+                                {formatNumberWithStyle(collateralRatio, {
+                                    scalingFactor: 0.01,
+                                    style: 'percent'
+                                })}
+                            </Text>
+                            <StatusLabel
+                                status={riskStateToStatus[riskState] || Status.UNKNOWN}
+                                size={0.8}
+                            />
                         </Flex>
                         <Flex
                             $align="center"
                             $gap={8}>
-                            <Text>{formatDataNumber(collateral, 18, 2, false, true)}</Text>
+                            <Text>{formatNumberWithStyle(collateral, { maxDecimals: 4 })}</Text>
                             <Text>{collateralName.toUpperCase()}</Text>
                         </Flex>
                         <Flex
                             $align="center"
                             $gap={8}>
-                            <Text>{formatDataNumber(debt, 18, 2, false, true)}</Text>
+                            <Text>{formatNumberWithStyle(debt)}</Text>
                             <Text>HAI</Text>
                         </Flex>
-                        <Text>{liquidationCRatio}%</Text>
+                        <Text>
+                            {formatNumberWithStyle(totalAnnualizedStabilityFee, {
+                                // scalingFactor: 0.01,
+                                style: 'percent'
+                            })}
+                        </Text>
                         <CenteredFlex>
                             <ManageButton onClick={() => onSelect(sortedRows[i])}>
                                 Manage

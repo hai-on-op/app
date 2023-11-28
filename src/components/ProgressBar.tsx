@@ -3,7 +3,7 @@ import { clamp } from '~/utils'
 import styled from 'styled-components'
 import { CenteredFlex, Flex, Text } from '~/styles'
 
-type ProgressBarProps = {
+export type ProgressBarProps = {
     progress: number,
     colorLimits?: [number, number],
     labels?: { progress: number, label: string }[]
