@@ -1,29 +1,26 @@
 import { useTranslation } from 'react-i18next'
-import styled from 'styled-components'
+
 import { useStoreActions, useStoreState } from '~/store'
-import SafeManager from '~/components/SafeManager'
+
+import styled from 'styled-components'
 import Modal from './Modal'
+import SafeManager from '~/components/SafeManager'
 
 const SafeManagerModal = () => {
     const { t } = useTranslation()
-    const { popupsModel: popupsState } = useStoreState((state) => state)
-    const { popupsModel: popupsActions } = useStoreActions((state) => state)
+    const { popupsModel: popupsState } = useStoreState(state => state)
+    const { popupsModel: popupsActions } = useStoreActions(actions => actions)
+
     return (
         <Modal
-            title={'settings'}
+            title="settings"
             isModalOpen={popupsState.isSafeManagerOpen}
             closeModal={() => popupsActions.setIsSafeManagerOpen(false)}
             backDropClose
-            handleModalContent
-        >
-            <ModalContent
-                style={{
-                    width: '100%',
-                    maxWidth: '720px',
-                }}
-            >
+            handleModalContent>
+            <ModalContent>
                 <Header>{t('manage_other_safes')}</Header>
-                <SafeManager />
+                <SafeManager/>
             </ModalContent>
         </Modal>
     )
@@ -32,17 +29,19 @@ const SafeManagerModal = () => {
 export default SafeManagerModal
 
 const ModalContent = styled.div`
-    background: ${(props) => props.theme.colors.background};
-    border-radius: ${(props) => props.theme.global.borderRadius};
-    border: 1px solid ${(props) => props.theme.colors.border};
+    max-width: 720px;
+    width: 100%;
+    background: ${({ theme }) => theme.colors.background};
+    border-radius: ${({ theme }) => theme.global.borderRadius};
+    border: ${({ theme }) => theme.border.thin};
 `
 
 const Header = styled.div`
     padding: 20px;
-    font-size: ${(props) => props.theme.font.large};
+    font-size: ${({ theme }) => theme.font.large};
     font-weight: 600;
-    color: ${(props) => props.theme.colors.neutral};
-    border-bottom: 1px solid ${(props) => props.theme.colors.border};
+    color: ${({ theme }) => theme.colors.neutral};
+    border-bottom: ${({ theme }) => theme.border.thin};
     letter-spacing: -0.47px;
     span {
         text-transform: capitalize;

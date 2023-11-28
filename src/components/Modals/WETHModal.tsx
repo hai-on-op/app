@@ -1,10 +1,14 @@
 import { useStoreActions, useStoreState } from '~/store'
-import AuctionsOperations from '~/containers/Safes/wrapEth'
+
 import Modal from './Modal'
+import AuctionsOperations from '~/containers/Safes/wrapEth'
 
 const WethModal = () => {
-    const { popupsModel: popupsState } = useStoreState((state) => state)
-    const { popupsModel: popupsActions, safeModel: safeActions } = useStoreActions((state) => state)
+    const { popupsModel: popupsState } = useStoreState(state => state)
+    const {
+        popupsModel: popupsActions,
+        safeModel: safeActions
+    } = useStoreActions(actions => actions)
 
     const handleCancel = () => {
         popupsActions.setSafeOperationPayload({
@@ -21,9 +25,8 @@ const WethModal = () => {
             isModalOpen={popupsState.safeOperationPayload.isOpen}
             handleModalContent
             backDropClose={!popupsState.blockBackdrop}
-            closeModal={handleCancel}
-        >
-            <AuctionsOperations />
+            closeModal={handleCancel}>
+            <AuctionsOperations/>
         </Modal>
     )
 }

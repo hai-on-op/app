@@ -1,13 +1,22 @@
 import ReactConfetti from 'react-confetti'
 import { useWindowSize } from '~/hooks'
 
-// eslint-disable-next-line react/prop-types
-export default function Confetti({ start, variant }: { start: boolean; variant?: string }) {
+type Props = {
+    start: boolean,
+    variant?: string
+}
+export default function Confetti({ start, variant }: Props) {
     const { width, height } = useWindowSize()
 
-    const _variant = variant ? variant : height && width && height > 1.5 * width ? 'bottom' : variant
+    if (!start || !width || !height) return null
 
-    return start && width && height ? (
+    const _variant = variant
+        ? variant
+        : height && width && height > 1.5 * width
+            ? 'bottom'
+            : variant
+
+    return (
         <ReactConfetti
             style={{ zIndex: 1401 }}
             numberOfPieces={400}
@@ -19,7 +28,11 @@ export default function Confetti({ start, variant }: { start: boolean; variant?:
                 h: height,
                 w: width,
                 x: 0,
-                y: _variant === 'top' ? height * 0.25 : _variant === 'bottom' ? height * 0.75 : height * 0.5,
+                y: _variant === 'top'
+                    ? height * 0.25
+                    : _variant === 'bottom'
+                        ? height * 0.75
+                        : height * 0.5,
             }}
             initialVelocityX={15}
             initialVelocityY={30}
@@ -27,5 +40,5 @@ export default function Confetti({ start, variant }: { start: boolean; variant?:
             tweenDuration={100}
             wind={0.05}
         />
-    ) : null
+    )
 }

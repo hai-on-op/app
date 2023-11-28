@@ -27,7 +27,7 @@ export const DEFAULT_SAFE_STATE = {
 export interface SafeModel {
     list: Array<ISafe>
     safeCreated: boolean
-    singleSafe: ISafe | null
+    singleSafe?: ISafe
     operation: number
     targetedCRatio: number
     totalEth: string
@@ -39,7 +39,7 @@ export interface SafeModel {
     stage: number
     isSuccessfulTx: boolean
     safeData: ISafeData
-    liquidationData: ILiquidationData | null
+    liquidationData?: ILiquidationData
     uniSwapPool: ISafeData
     depositAndBorrow: Thunk<SafeModel, ISafePayload & { safeId?: string }, any, StoreModel>
     repayAndWithdraw: Thunk<SafeModel, ISafePayload & { safeId: string }, any, StoreModel>
@@ -52,7 +52,7 @@ export interface SafeModel {
     // >
     setIsSafeCreated: Action<SafeModel, boolean>
     setList: Action<SafeModel, Array<ISafe>>
-    setSingleSafe: Action<SafeModel, ISafe | null>
+    setSingleSafe: Action<SafeModel, ISafe | undefined>
     setOperation: Action<SafeModel, number>
     setTotalEth: Action<SafeModel, string>
     setTotalHAI: Action<SafeModel, string>
@@ -76,7 +76,7 @@ const safeModel: SafeModel = {
     operation: 0,
     amount: '',
     targetedCRatio: 0,
-    singleSafe: null,
+    singleSafe: undefined,
     totalEth: '0.00',
     totalHAI: '0.00',
     isSuccessfulTx: true,
@@ -84,7 +84,7 @@ const safeModel: SafeModel = {
     isUniSwapPoolChecked: true,
     stage: 0,
     safeData: DEFAULT_SAFE_STATE,
-    liquidationData: null,
+    liquidationData: undefined,
     uniSwapPool: DEFAULT_SAFE_STATE,
     depositAndBorrow: thunk(async (actions, payload, { getStoreActions }) => {
         const storeActions = getStoreActions()

@@ -1,23 +1,31 @@
-import styled, { keyframes } from 'styled-components'
 import { useStoreState } from '~/store'
+
+import styled, { keyframes } from 'styled-components'
 import Modal from './Modal'
+
 import logo from '~/assets/logo192.png'
 
 const LoadingModal = () => {
-    const { popupsModel: popupsState } = useStoreState((state) => state)
+    const { popupsModel: popupsState } = useStoreState(state => state)
 
     return (
         <Modal
-            width={'350px'}
+            width="350px"
             isModalOpen={popupsState.isLoadingModalOpen.isOpen}
-            borderRadius={'20px'}
+            borderRadius="20px"
             handleModalContent
             showXButton
-            backDropColor={'rgba(255,255,255)'}
-        >
+            backDropColor={'rgba(255,255,255)'}>
             <LoaderContainer>
-                <img src={logo} alt={''} />
-                {popupsState.isLoadingModalOpen.text ? <Text>{popupsState.isLoadingModalOpen.text}</Text> : null}
+                <img
+                    src={logo}
+                    alt={''}
+                    width={192}
+                    height={192}
+                />
+                {!!popupsState.isLoadingModalOpen.text && (
+                    <Text>{popupsState.isLoadingModalOpen.text}</Text>
+                )}
             </LoaderContainer>
         </Modal>
     )
@@ -46,12 +54,12 @@ const LoaderContainer = styled.div`
         animation: ${zoom} 1.5s ease-in-out infinite;
         animation-fill-mode: both;
         ${({ theme }) => theme.mediaWidth.upToMedium`
-      width: 40px;
-    `}
+            width: 40px;
+        `}
     }
 `
 
 const Text = styled.div`
-    font-size: ${(props) => props.theme.font.small};
+    font-size: ${({ theme }) => theme.font.small};
     margin-top: 20px;
 `

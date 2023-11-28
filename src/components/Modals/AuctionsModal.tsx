@@ -1,10 +1,14 @@
 import { useStoreActions, useStoreState } from '~/store'
-import AuctionsOperations from '~/components/AuctionsOperations'
+
 import Modal from './Modal'
+import AuctionsOperations from '~/components/AuctionsOperations'
 
 const AuctionsModal = () => {
-    const { popupsModel: popupsState } = useStoreState((state) => state)
-    const { popupsModel: popupsActions, auctionModel: auctionsActions } = useStoreActions((state) => state)
+    const { popupsModel: popupsState } = useStoreState(state => state)
+    const {
+        popupsModel: popupsActions,
+        auctionModel: auctionsActions
+    } = useStoreActions(actions => actions)
 
     const handleCancel = () => {
         popupsActions.setAuctionOperationPayload({
@@ -23,8 +27,7 @@ const AuctionsModal = () => {
             isModalOpen={popupsState.auctionOperationPayload.isOpen}
             handleModalContent
             backDropClose={!popupsState.blockBackdrop}
-            closeModal={handleCancel}
-        >
+            closeModal={handleCancel}>
             <AuctionsOperations />
         </Modal>
     )

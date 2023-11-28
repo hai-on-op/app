@@ -1,23 +1,27 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
-import styled from 'styled-components'
 
-import { handleTransactionError, useGeb } from '~/hooks'
 import { liquidateSafe } from '~/services/blockchain'
 import { useStoreActions, useStoreState } from '~/store'
+import { handleTransactionError, useGeb } from '~/hooks'
+
+import styled from 'styled-components'
+import { CenteredFlex } from '~/styles'
+import Modal from './Modal'
 import AlertLabel from '~/components/AlertLabel'
 import Button from '~/components/Button'
 import CheckBox from '~/components/CheckBox'
-import Modal from './Modal'
 
 const LiquidateSafeModal = () => {
-    const { liquidateSafePayload, isLiquidateSafeModalOpen } = useStoreState((state) => state.popupsModel)
-    const { popupsModel, transactionsModel } = useStoreActions((state) => state)
     const { t } = useTranslation()
-    const [accepted, setAccepted] = useState(false)
     const geb = useGeb()
     const history = useHistory()
+
+    const { popupsModel: popupsState } = useStoreState(state => state)
+    const { popupsModel, transactionsModel } = useStoreActions(actions => actions)
+
+    const [accepted, setAccepted] = useState(false)
 
     const closeModal = () => {
         setAccepted(false)
@@ -25,42 +29,41 @@ const LiquidateSafeModal = () => {
     }
 
     const startSafeLiquidation = async () => {
-        if (liquidateSafePayload && geb) {
-            popupsModel.setIsWaitingModalOpen(true)
+        if (!popupsState.liquidateSafePayload || !geb) return
+        const { safeId } = popupsState.liquidateSafePayload
+        
+        popupsModel.setIsWaitingModalOpen(true)
+        popupsModel.setWaitingPayload({
+            text: `Starting liquidation for safe #${safeId}...`,
+            title: 'Waiting For Confirmation',
+            hint: 'Confirm this transaction in your wallet',
+            status: 'loading',
+        })
+
+        try {
+            const txResponse = await liquidateSafe(geb, safeId)
+            if (!txResponse) return
+            const { hash, chainId, from } = txResponse
+            transactionsModel.addTransaction({
+                chainId,
+                hash,
+                from,
+                summary: `Liquidate Safe #${safeId}`,
+                addedTime: new Date().getTime(),
+                originalTx: txResponse,
+            })
             popupsModel.setWaitingPayload({
-                text: `Starting liquidation for safe #${liquidateSafePayload.safeId}...`,
-                title: 'Waiting For Confirmation',
-                hint: 'Confirm this transaction in your wallet',
+                title: 'Transaction Submitted',
+                text: `Starting liquidation for safe #${safeId}...`,
+                hash: txResponse.hash,
                 status: 'loading',
             })
-            liquidateSafe(geb, liquidateSafePayload.safeId)
-                .then((txResponse) => {
-                    if (txResponse) {
-                        const { hash, chainId } = txResponse
-                        transactionsModel.addTransaction({
-                            chainId,
-                            hash,
-                            from: txResponse.from,
-                            summary: `Liquidate Safe #${liquidateSafePayload.safeId}`,
-                            addedTime: new Date().getTime(),
-                            originalTx: txResponse,
-                        })
-                        popupsModel.setWaitingPayload({
-                            title: 'Transaction Submitted',
-                            text: `Starting liquidation for safe #${liquidateSafePayload.safeId}...`,
-                            hash: txResponse.hash,
-                            status: 'loading',
-                        })
-                        txResponse.wait().then(() => {
-                            popupsModel.setIsWaitingModalOpen(false)
-                            history.push('/safes')
-                            closeModal()
-                        })
-                    }
-                })
-                .catch((error) => {
-                    handleTransactionError(error)
-                })
+            await txResponse.wait()
+            popupsModel.setIsWaitingModalOpen(false)
+            history.push('/vaults')
+            closeModal()
+        } catch(error: any) {
+            handleTransactionError(error)
         }
     }
 
@@ -69,26 +72,34 @@ const LiquidateSafeModal = () => {
             title="Liquidate Safe"
             maxWidth="400px"
             borderRadius="20px"
-            isModalOpen={isLiquidateSafeModalOpen}
+            isModalOpen={popupsState.isLiquidateSafeModalOpen}
             closeModal={closeModal}
             showXButton
-            backDropClose
-        >
-            <div>
-                <AlertContainer>
-                    <AlertLabel isBlock={false} text={t('liquidate_safe_warning')} type="danger" />
-                </AlertContainer>
-                <CheckboxContainer>
-                    <CheckBox checked={accepted} onChange={setAccepted} />
-                    <span onClick={() => setAccepted(!accepted)}>{t('liquidate_confirmation')}</span>
-                </CheckboxContainer>
-                <ButtonContainer>
-                    <Button disabled={!accepted} onClick={startSafeLiquidation}>
-                        {t('liquidate_button')}
-                        {liquidateSafePayload?.safeId}
-                    </Button>
-                </ButtonContainer>
-            </div>
+            backDropClose>
+            <AlertContainer>
+                <AlertLabel
+                    isBlock={false}
+                    text={t('liquidate_safe_warning')}
+                    type="danger"
+                />
+            </AlertContainer>
+            <CheckboxContainer>
+                <CheckBox
+                    checked={accepted}
+                    onChange={setAccepted}
+                />
+                <span onClick={() => setAccepted(!accepted)}>
+                    {t('liquidate_confirmation')}
+                </span>
+            </CheckboxContainer>
+            <ButtonContainer>
+                <Button
+                    disabled={!accepted}
+                    onClick={startSafeLiquidation}>
+                    {t('liquidate_button')}
+                    {popupsState.liquidateSafePayload?.safeId}
+                </Button>
+            </ButtonContainer>
         </Modal>
     )
 }
@@ -97,25 +108,24 @@ export default LiquidateSafeModal
 
 const AlertContainer = styled.div`
     margin-bottom: 20px;
-    div {
+
+    & > div {
         font-size: 13px;
         ${({ theme }) => theme.mediaWidth.upToSmall`
-    margin-left:0;
- 
-  `}
+            margin-left: 0px;
+        `}
     }
+    
     ${({ theme }) => theme.mediaWidth.upToSmall`
-      margin-top:10px;
-      margin-bottom:10px;
-  `}
+        margin: 12px 0;
+    `}
 `
 
-const CheckboxContainer = styled.div`
-    display: flex;
-    align-items: center;
+const CheckboxContainer = styled(CenteredFlex)`
     margin-bottom: 20px;
-    span {
-        margin-left: 10px;
+    gap: 12px;
+
+    & > span {
         position: relative;
         font-size: 13px;
         top: -3px;
