@@ -1,11 +1,12 @@
 import { useState } from 'react'
 
+import type { SplashImage } from '~/types'
 import { LINK_TO_DOCS } from '~/utils'
 import { useMediaQuery } from '~/hooks'
 
 import styled from 'styled-components'
 import { Flex, HaiButton } from '~/styles'
-import { type SplashImage, ZoomScene, type ZoomSceneProps } from './ZoomScene'
+import { ZoomScene, type ZoomSceneProps } from './ZoomScene'
 import { FloatingElements } from '~/components/BrandElements/FloatingElements'
 import { Caret } from '~/components/Icons/Caret'
 import { LearnCard } from './LearnCard'
