@@ -227,6 +227,14 @@ const Container = styled(Flex).attrs(props => ({
     right: 0px;
     height: ${({ $tickerActive }) => $tickerActive ? 156: 96}px;
 
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0px;
+        background-color: rgba(255,255,255,0.3);
+        z-index: -1;
+    }
+
     ${({ theme, $tickerActive }) => theme.mediaWidth.upToSmall`
         height: ${$tickerActive ? 140: 80}px;
     `}

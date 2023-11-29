@@ -1,34 +1,38 @@
 import { type ChangeEvent, useRef } from 'react'
 
 import styled, { css } from 'styled-components'
-import { Flex, Text } from '~/styles'
+import { Flex, type FlexProps, Text } from '~/styles'
 
-type ActionInputProps = {
+type NumberInputProps = FlexProps & {
     label: string,
     subLabel: string,
     placeholder: string,
     unitLabel?: string,
     value?: string,
-    footerLabel?: string,
+    conversion?: string,
     onChange: (value: string) => void,
     onMax?: () => void,
     hidden?: boolean
 }
-export function ActionInput({
+export function NumberInput({
     label,
     subLabel,
     placeholder,
     unitLabel,
     value,
-    footerLabel,
+    conversion,
     onChange,
     onMax,
-    hidden = false
-}: ActionInputProps) {
+    hidden = false,
+    ...props
+}: NumberInputProps) {
     const input = useRef<HTMLInputElement | null>(null)
 
     return (
-        <Container hidden={hidden}>
+        <Container
+            $gap={12}
+            {...props}
+            hidden={hidden}>
             <Flex
                 $width="100%"
                 $justify="space-between"
@@ -54,9 +58,7 @@ export function ActionInput({
                     onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.currentTarget.value)}
                 />
                 {unitLabel && <InputLabel>{unitLabel}</InputLabel>}
-                <FooterText>
-                    {footerLabel}
-                </FooterText>
+                <ConversionText>{conversion}</ConversionText>
             </InputContainer>
         </Container>
     )
@@ -65,7 +67,6 @@ export function ActionInput({
 const Container = styled(Flex).attrs(props => ({
     $width: '100%',
     $column: true,
-    $gap: 12,
     ...props
 }))<{ hidden: boolean }>`
     ${({ hidden }) => hidden && css`display: none;`}
@@ -81,7 +82,7 @@ const InputContainer = styled(Flex).attrs(props => ({
     border-radius: 8px;
 `
 const Input = styled.input`
-    width: 172px;
+    width: 100%;
     height: 56px;
     padding-left: 24px;
     padding-right: 12px;
@@ -95,12 +96,16 @@ const InputLabel = styled(Text).attrs(props => ({
     ...props
 }))`
     min-width: 48px;
+    flex-shrink: 0;
     z-index: 1;
 `
 
-const FooterText = styled(Text).attrs(props => ({
+const ConversionText = styled(Text).attrs(props => ({
     $fontSize: '0.67rem',
     $color: 'rgba(0,0,0,0.5)',
     $textAlign: 'left',
     ...props
-}))``
+}))`
+    width: fit-content;
+    flex-shrink: 0;
+`

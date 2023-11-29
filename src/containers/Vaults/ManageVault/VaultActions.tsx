@@ -1,11 +1,12 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 import { VaultAction, VaultInfoError, formatNumberWithStyle } from '~/utils'
 import { useVault } from '~/providers/VaultProvider'
 
 import styled, { css } from 'styled-components'
 import { CenteredFlex, Flex, Grid, HaiButton, Text } from '~/styles'
-import { ActionInput } from './ActionInput'
+import { NumberInput } from '~/components/NumberInput'
+import { WrapETHModal } from '~/components/Modal/WrapETHModal'
 
 export function VaultActions() {
     const {
@@ -18,6 +19,8 @@ export function VaultActions() {
         debt,
         error
     } = useVault()
+
+    const [wrapEthActive, setWrapEthActive] = useState(false)
 
     const [buttonActive, buttonLabel] = useMemo(() => {
         switch(action) {
@@ -43,6 +46,8 @@ export function VaultActions() {
             default: return [false, 'Deposit']
         }
     }, [action, formState])
+
+    const isDepositBorrowOrCreate = action === VaultAction.DEPOSIT_BORROW || action === VaultAction.CREATE
 
     return (
         <Container>
@@ -84,16 +89,16 @@ export function VaultActions() {
                 )}
             </Header>
             <Body>
-                <ActionInput
+                <NumberInput
                     label="Deposit"
                     subLabel={`Max ${formatNumberWithStyle(collateral.balance, { maxDecimals: 4 })} ${collateral.name}`}
                     placeholder="Deposit Amount"
                     unitLabel={collateral.name}
                     onChange={(value: string) => updateForm({ deposit: value || undefined })}
                     value={formState.deposit}
-                    hidden={action !== VaultAction.DEPOSIT_BORROW && action !== VaultAction.CREATE}
+                    hidden={!isDepositBorrowOrCreate}
                     onMax={() => updateForm({ deposit: collateral.balance })}
-                    footerLabel={formState.deposit && Number(formState.deposit) > 0
+                    conversion={formState.deposit && Number(formState.deposit) > 0
                         ? `~${formatNumberWithStyle(
                             parseFloat(collateral.priceInUSD || '0') * parseFloat(formState.deposit),
                             { style: 'currency' }
@@ -101,7 +106,7 @@ export function VaultActions() {
                         : undefined
                     }
                 />
-                <ActionInput
+                <NumberInput
                     label="Withdraw"
                     subLabel={`Max ${collateral.available} ${collateral.name}`}
                     placeholder="Withdraw Amount"
@@ -110,7 +115,7 @@ export function VaultActions() {
                     value={formState.withdraw}
                     hidden={action !== VaultAction.WITHDRAW_REPAY}
                     onMax={() => updateForm({ withdraw: collateral.available })}
-                    footerLabel={formState.withdraw && Number(formState.withdraw) > 0
+                    conversion={formState.withdraw && Number(formState.withdraw) > 0
                         ? `~${formatNumberWithStyle(
                             parseFloat(collateral.priceInUSD || '0') * parseFloat(formState.withdraw),
                             { style: 'currency' }
@@ -118,16 +123,16 @@ export function VaultActions() {
                         : undefined
                     }
                 />
-                <ActionInput
+                <NumberInput
                     label="Borrow"
                     subLabel={`Max ${formatNumberWithStyle(debt.available, { maxDecimals: 4 })} HAI`}
                     placeholder="Borrow Amount"
                     unitLabel="HAI"
                     onChange={(value: string) => updateForm({ borrow: value || undefined })}
                     value={formState.borrow}
-                    hidden={action !== VaultAction.DEPOSIT_BORROW && action !== VaultAction.CREATE}
+                    hidden={!isDepositBorrowOrCreate}
                     onMax={() => updateForm({ borrow: debt.available })}
-                    footerLabel={formState.borrow && Number(formState.borrow) > 0
+                    conversion={formState.borrow && Number(formState.borrow) > 0
                         ? `~${formatNumberWithStyle(
                             parseFloat(debt.priceInUSD) * parseFloat(formState.borrow),
                             { style: 'currency' }
@@ -135,7 +140,7 @@ export function VaultActions() {
                         : undefined
                     }
                 />
-                <ActionInput
+                <NumberInput
                     label="Pay Back"
                     subLabel={`Max ${formatNumberWithStyle(debt.available, { maxDecimals: 4 })} HAI`}
                     placeholder="Pay Back Amount"
@@ -144,7 +149,7 @@ export function VaultActions() {
                     value={formState.repay}
                     hidden={action !== VaultAction.WITHDRAW_REPAY}
                     onMax={() => updateForm({ repay: debt.available })}
-                    footerLabel={formState.repay && Number(formState.repay) > 0
+                    conversion={formState.repay && Number(formState.repay) > 0
                         ? `~${formatNumberWithStyle(
                             parseFloat(debt.priceInUSD) * parseFloat(formState.repay),
                             { style: 'currency' }
@@ -152,6 +157,18 @@ export function VaultActions() {
                         : undefined
                     }
                 />
+                {collateral.name === 'WETH' && isDepositBorrowOrCreate && (<>
+                    <WrapEthText onClick={() => setWrapEthActive(true)}>
+                        Need WETH?&nbsp;
+                        <Text
+                            as="span"
+                            $fontWeight={700}
+                            $textDecoration="underline">
+                            Click here to wrap
+                        </Text>
+                    </WrapEthText>
+                    {wrapEthActive && <WrapETHModal onClose={() => setWrapEthActive(false)}/>}
+                </>)}
                 {/* TODO: wrap ETH prompt when insufficient collateral? */}
                 <VaultActionError/>
             </Body>
@@ -222,6 +239,17 @@ const Body = styled(Flex).attrs(props => ({
     padding: 24px;
     overflow: auto;
 `
+const WrapEthText = styled(Text).attrs(props => ({
+    $textAlign: 'right',
+    $color: 'rgba(0,0,0,0.5)',
+    $fontSize: '0.67em',
+    ...props
+}))`
+    width: 100%;
+    margin-top: 8px;
+    cursor: pointer;
+`
+
 const Footer = styled(CenteredFlex)`
     width: 100%;
     padding: 24px;
