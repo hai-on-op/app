@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useMemo } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
@@ -25,6 +25,7 @@ import { useStoreState, useStoreActions } from '~/store'
 // import MulticallUpdater from '~/services/MulticallUpdater'
 // import BalanceUpdater from '~/services/BalanceUpdater'
 import TransactionUpdater from '~/services/TransactionUpdater'
+import { useAnalytics } from '~/providers/AnalyticsProvider'
 
 import styled, { css } from 'styled-components'
 import { CenteredFlex, Flex } from '~/styles'
@@ -276,8 +277,11 @@ const Shared = ({ children }: Props) => {
         else pause()
     }, [settingsState.isPlayingMusic, play, pause])
 
-    // TODO: pull priceDiff from analytics and toggle footer visibility
-    const haiAlertActive = true
+    const { data: { priceDiff } } = useAnalytics()
+    const haiAlertActive = useMemo(() => {
+        // TODO: determine diff threshold
+        return priceDiff > 0
+    }, [priceDiff])
 
     return (
         <Container>

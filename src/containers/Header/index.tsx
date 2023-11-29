@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 
-import { LINK_TO_DOCS, LINK_TO_TELEGRAM, LINK_TO_TWITTER } from '~/utils'
-import { useMediaQuery } from '~/hooks'
+import { LINK_TO_DOCS, LINK_TO_TELEGRAM, LINK_TO_TWITTER, formatNumberWithStyle } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
+import { useAnalytics } from '~/providers/AnalyticsProvider'
+import { useMediaQuery } from '~/hooks'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Title } from '~/styles'
@@ -21,14 +22,6 @@ import { MobileMenu } from './MobileMenu'
 
 import haiLogo from '~/assets/logo.png'
 
-// TODO: actually create ticker data
-const tickerExampleText = [
-    'HAI',
-    '$1.50',
-    '↑34%',
-    '\u2022'
-]
-
 type HeaderProps = {
     tickerActive?: boolean
 }
@@ -39,17 +32,56 @@ export function Header({ tickerActive = false }: HeaderProps) {
     const isLargerThanExtraSmall = useMediaQuery('upToExtraSmall')
     const isLargerThanSmall = useMediaQuery('upToSmall')
 
-    const { isPlayingMusic } = useStoreState(state => state.settingsModel)
+    const {
+        safeModel: { liquidationData },
+        settingsModel: { isPlayingMusic }
+    } = useStoreState(state => state)
     const { setIsPlayingMusic } = useStoreActions(actions => actions.settingsModel)
+
+    const { data: { marketPrice, redemptionPrice } } = useAnalytics()
 
     const [dropdownActive, setDropdownActive] = useState(false)
     const [notificationsActive, setNotificationsActive] = useState(false)
+
+    const tickerText = useMemo(() => {
+        // TODO: figure out %change (or drop it)
+        const arr = [
+            [
+                'HAI (MP)',
+                marketPrice,
+                '↑34%',
+                '\u2022'
+            ],
+            [
+                'HAI (RP)',
+                redemptionPrice,
+                '↑34%',
+                '\u2022'
+            ]
+        ]
+        if (liquidationData) {
+            Object.entries(liquidationData.collateralLiquidationData)
+                .forEach(([token, data]) => {
+                    if (!data?.currentPrice.value) return
+                    arr.push([
+                        token,
+                        formatNumberWithStyle(data.currentPrice.value, {
+                            style: 'currency',
+                            maxDecimals: 3
+                        }),
+                        '↑34%',
+                        '\u2022'
+                    ])
+                })
+        }
+        return arr.flat()
+    }, [liquidationData, marketPrice, redemptionPrice])
 
     return (
         <Container $tickerActive={tickerActive}>
             {tickerActive && (
                 <Ticker>
-                    <Marquee text={tickerExampleText}/>
+                    <Marquee text={tickerText}/>
                 </Ticker>
             )}
             <Inner $blur={!isSplash}>
@@ -163,7 +195,7 @@ export function Header({ tickerActive = false }: HeaderProps) {
                             </PassLink>
                         )
                         : (<>
-                            <ConnectButton showBalance/>
+                            {isLargerThanSmall && <ConnectButton showBalance/>}
                             <Notifications
                                 active={notificationsActive}
                                 setActive={setNotificationsActive}
@@ -213,7 +245,7 @@ const Ticker = styled(Flex)`
     border-bottom: ${({ theme }) => theme.border.medium};
 
     & ${MarqueeChunk} {
-        & > *:first-child {
+        & > *:nth-child(4n + 1) {
             font-weight: 700;
         }
     }

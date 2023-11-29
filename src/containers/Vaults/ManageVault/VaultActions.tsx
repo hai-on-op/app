@@ -152,6 +152,7 @@ export function VaultActions() {
                         : undefined
                     }
                 />
+                {/* TODO: wrap ETH prompt when insufficient collateral? */}
                 <VaultActionError/>
             </Body>
             <Footer>

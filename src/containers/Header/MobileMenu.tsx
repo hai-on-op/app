@@ -7,6 +7,7 @@ import styled from 'styled-components'
 import { HaiButton, Popout, Title } from '~/styles'
 import { ExternalLink } from '~/components/ExternalLink'
 import { Hamburger } from '~/components/Icons/Hamburger'
+import { ConnectButton } from '~/components/ConnectButton'
 
 type MobileMenuProps = {
     active: boolean,
@@ -29,6 +30,7 @@ export function MobileMenu({ active, setActive }: MobileMenuProps) {
                     $float="left"
                     $margin="20px"
                     onClick={(e: any) => e.stopPropagation()}>
+                    <ConnectButton/>
                     {/* TODO: replace links */}
                     <ExternalLink
                         href={LINK_TO_DOCS}
@@ -45,10 +47,6 @@ export function MobileMenu({ active, setActive }: MobileMenuProps) {
                         $textDecoration="none">
                         <HeaderLink>Community</HeaderLink>
                     </ExternalLink>
-
-                    {/* TODO: add actual connect button */}
-                    <HeaderLink>Connect</HeaderLink>
-
                     <ExternalLink
                         href={LINK_TO_TWITTER}
                         $textDecoration="none">
