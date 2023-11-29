@@ -27,7 +27,7 @@ export type FormState = {
     deposit?: string,
     borrow?: string,
     withdraw?: string,
-    payback?: string
+    repay?: string
 }
 
 type VaultContext = VaultInfo & {
@@ -135,11 +135,11 @@ export function VaultProvider({ action, setAction, children }: Props) {
                 }
             }
             case VaultAction.WITHDRAW_REPAY: {
-                const { withdraw = '0', payback = '0' } = formState
-                if (Number(withdraw) <= 0 && Number(payback) <= 0) return undefined
+                const { withdraw = '0', repay = '0' } = formState
+                if (Number(withdraw) <= 0 && Number(repay) <= 0) return undefined
                 return {
                     collateral: Number(withdraw) > 0 ? withdraw: undefined,
-                    debt: Number(payback) > 0 ? payback: undefined
+                    debt: Number(repay) > 0 ? repay: undefined
                 }
             }
             default: return undefined
@@ -158,7 +158,7 @@ export function VaultProvider({ action, setAction, children }: Props) {
             safeActions.setSafeData({
                 ...dataRef.current,
                 leftInput: formState.withdraw?.toString() || '',
-                rightInput: formState.payback?.toString() || ''
+                rightInput: formState.repay?.toString() || ''
             })
         }
         else safeActions.setSafeData({

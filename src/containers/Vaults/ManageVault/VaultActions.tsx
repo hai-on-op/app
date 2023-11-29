@@ -8,13 +8,6 @@ import styled, { css } from 'styled-components'
 import { CenteredFlex, Flex, Grid, HaiButton, Text } from '~/styles'
 import { ActionInput } from './ActionInput'
 
-export type FormState = {
-    deposit?: string,
-    borrow?: string,
-    withdraw?: string,
-    payback?: string
-}
-
 export function VaultActions() {
     const {
         vault,
@@ -23,7 +16,6 @@ export function VaultActions() {
         formState,
         updateForm,
         error,
-        errorMessage,
         balances,
         collateralName,
         collateralUSD,
@@ -45,11 +37,11 @@ export function VaultActions() {
                 return [true, 'Deposit & Borrow']
             }
             case VaultAction.WITHDRAW_REPAY: {
-                const { withdraw = '0', payback = '0' } = formState
-                if (Number(withdraw) <= 0 && Number(payback) <= 0) {
+                const { withdraw = '0', repay = '0' } = formState
+                if (Number(withdraw) <= 0 && Number(repay) <= 0) {
                     return [false, 'Withdraw']
                 }
-                if (Number(payback) <= 0) return [true, 'Withdraw']
+                if (Number(repay) <= 0) return [true, 'Withdraw']
                 if (Number(withdraw) <= 0) return [true, 'Pay Back']
                 return [true, 'Withdraw & Pay Back']
             }
@@ -166,24 +158,19 @@ export function VaultActions() {
                     placeholder="Pay Back Amount"
                     unitLabel="HAI"
                     onChange={(value: string) => updateForm({
-                        payback: value || undefined
+                        repay: value || undefined
                     })}
-                    value={formState.payback}
+                    value={formState.repay}
                     hidden={action !== VaultAction.WITHDRAW_REPAY}
-                    onMax={() => updateForm({ payback: availableHai.toString() })}
-                    footerLabel={formState.payback && Number(formState.payback) > 0
-                        ? `~${formatNumberWithStyle(haiUSD * parseFloat(formState.payback), {
+                    onMax={() => updateForm({ repay: availableHai.toString() })}
+                    footerLabel={formState.repay && Number(formState.repay) > 0
+                        ? `~${formatNumberWithStyle(haiUSD * parseFloat(formState.repay), {
                             style: 'currency'
                         })}`
                         : undefined
                     }
                 />
-                <VaultActionError
-                    action={action}
-                    formState={formState}
-                    error={error}
-                    errorMessage={errorMessage}
-                />
+                <VaultActionError/>
             </Body>
             <Footer>
                 <HaiButton
@@ -258,13 +245,9 @@ const Footer = styled(CenteredFlex)`
     border-top: ${({ theme }) => theme.border.thin};
 `
 
-type VaultActionErrorProps = {
-    action: VaultAction,
-    formState: FormState,
-    error?: VaultInfoError,
-    errorMessage?: string
-}
-function VaultActionError({ action, formState, error, errorMessage }: VaultActionErrorProps) {
+function VaultActionError() {
+    const { action, formState, error, errorMessage } = useVault()
+
     if (!error) return null
 
     if (error === VaultInfoError.ZERO_AMOUNT) {
@@ -278,7 +261,7 @@ function VaultActionError({ action, formState, error, errorMessage }: VaultActio
         }
         else if (action === VaultAction.WITHDRAW_REPAY) {
             // ignore single-sided empty error
-            if (!formState.withdraw || !formState.payback) return null
+            if (!formState.withdraw || !formState.repay) return null
         }
     }
 
