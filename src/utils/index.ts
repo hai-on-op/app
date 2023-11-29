@@ -13,6 +13,7 @@ export * from './retry'
 export * from './time'
 export * from './tokens'
 export * from './validations'
+export * from './vaults'
 export * from './wrapEther'
 
 // export gebManager

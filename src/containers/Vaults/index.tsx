@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react'
 import { type RouteComponentProps } from 'react-router-dom'
 import { useAccount } from 'wagmi'
 
-import { isAddress } from '~/utils'
+import { VaultAction, isAddress } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { VaultProvider } from '~/providers/VaultProvider'
-import { VaultAction, useEthersSigner, useGeb } from '~/hooks'
+import { useEthersSigner, useGeb } from '~/hooks'
 
 import styled from 'styled-components'
 import { HaiButton, Text } from '~/styles'

@@ -15,25 +15,24 @@ export function Overview() {
 
     const {
         vault,
-        collateralName,
-        totalCollateral,
-        totalDebt,
+        collateral,
+        debt,
         riskStatus,
-        parsedCR,
-        safetyCR,
+        safetyRatio,
+        collateralRatio,
         stabilityFeePercentage,
         liquidationPrice,
         simulation
     } = useVault()
 
     const progressProps = useMemo(() => {
-        if (!parsedCR || !safetyCR) return {
+        if (!collateralRatio || !safetyRatio) return {
             progress: 0
         }
 
         const MAX_FACTOR = 2.5
 
-        const min = safetyCR
+        const min = safetyRatio
         const max = min * MAX_FACTOR
         const labels = [
             { progress: 1 / MAX_FACTOR, label: `${Math.floor(min)}%` },
@@ -42,11 +41,11 @@ export function Overview() {
         ]
         
         return {
-            progress: Math.min(parsedCR, max) / max,
+            progress: Math.min(parseFloat(collateralRatio), max) / max,
             labels,
             colorLimits: [100 / max, 2 / MAX_FACTOR] as [number, number]
         }
-    }, [parsedCR, safetyCR])
+    }, [collateralRatio, safetyRatio])
 
     return (
         <Container>
@@ -71,12 +70,12 @@ export function Overview() {
                 <OverviewStat
                     value={vault?.collateral
                         ? formatNumberWithStyle(vault.collateral, { maxDecimals: 4 })
-                        : formatNumberWithStyle(totalCollateral.toString(), { maxDecimals: 4 })
+                        : formatNumberWithStyle(collateral.total, { maxDecimals: 4 })
                     }
-                    token={collateralName as any}
+                    token={collateral.name as any}
                     label="Collateral Asset"
                     simulatedValue={vault && simulation?.collateral
-                        ? formatNumberWithStyle(totalCollateral.toString(), { maxDecimals: 4 })
+                        ? formatNumberWithStyle(collateral.total, { maxDecimals: 4 })
                         : ''
                     }
                     alert={{
@@ -89,12 +88,12 @@ export function Overview() {
                 <OverviewStat
                     value={vault?.debt
                         ? formatNumberWithStyle(vault.debt, { maxDecimals: 4 })
-                        : formatNumberWithStyle(totalDebt.toString(), { maxDecimals: 4 })
+                        : formatNumberWithStyle(debt.total, { maxDecimals: 4 })
                     }
                     token="HAI"
                     label="Debt Asset"
                     simulatedValue={vault && simulation?.debt
-                        ? formatNumberWithStyle(totalDebt.toString(), { maxDecimals: 4 })
+                        ? formatNumberWithStyle(debt.total, { maxDecimals: 4 })
                         : ''
                     }
                     alert={{
@@ -105,12 +104,12 @@ export function Overview() {
                     borderedBottom
                 />
                 <OverviewProgressStat
-                    value={typeof parsedCR === 'undefined'
-                        ? '--%'
-                        : formatNumberWithStyle(parsedCR, {
+                    value={collateralRatio && !isNaN(Number(collateralRatio))
+                        ? formatNumberWithStyle(collateralRatio, {
                             scalingFactor: 0.01,
                             style: 'percent'
                         })
+                        : '--%'
                     }
                     label="Ratio:"
                     simulatedValue={vault && simulation?.riskStatus
@@ -128,13 +127,6 @@ export function Overview() {
                     fullWidth
                     borderedBottom
                 />
-                {/* <OverviewStat
-                    value={(singleSafe?.collateralRatio || vaultInfo.collateralRatio).toString() + '%'}
-                    label="CF"
-                    tooltip="Hello world"
-                    borderedBottom
-                    borderedRight
-                /> */}
                 <OverviewStat
                     value={vault?.totalAnnualizedStabilityFee
                         ? formatNumberWithStyle(vault.totalAnnualizedStabilityFee, {
@@ -153,7 +145,7 @@ export function Overview() {
                     borderedRight
                 />
                 <OverviewStat
-                    value={formatNumberWithStyle(vault?.liquidationPrice || liquidationPrice.toString(), {
+                    value={formatNumberWithStyle(vault?.liquidationPrice || liquidationPrice, {
                         maxDecimals: 3,
                         style: 'currency'
                     })}

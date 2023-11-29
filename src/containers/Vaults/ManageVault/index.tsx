@@ -1,4 +1,5 @@
 import type { ReactChildren } from '~/types'
+import { formatNumberWithStyle } from '~/utils'
 import { useVault } from '~/providers/VaultProvider'
 
 import styled from 'styled-components'
@@ -13,7 +14,9 @@ type ManageVaultProps = {
     headerContent?: ReactChildren
 }
 export function ManageVault({ headerContent }: ManageVaultProps) {
-    const { collateralName, collateralUSD, haiUSD } = useVault()
+    const { collateral, debt } = useVault()
+
+    const relativePrice = parseFloat(collateral.priceInUSD || '0') / parseFloat(debt.priceInUSD)
 
     return (
         <Container>
@@ -21,7 +24,7 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
                 <CenteredFlex $gap={12}>
                     <BrandedDropdown
                         label={(<>
-                            <TokenPair tokens={[collateralName as any, 'HAI']}/>
+                            <TokenPair tokens={[collateral.name as any, 'HAI']}/>
                             <Text>{`• 1 of `}12</Text>
                         </>)}>
                         <Text>blarn</Text>
@@ -32,7 +35,12 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
                 </CenteredFlex>
                 <Text>
                     Market Price:&nbsp;
-                    <strong>{(((collateralUSD || 0) / haiUSD) || '--').toLocaleString()} HAI/{collateralName}</strong>
+                    <strong>
+                        {relativePrice
+                            ? formatNumberWithStyle(relativePrice.toString(), { maxDecimals: 2 })
+                            : '--'
+                        } HAI/{collateral.name}
+                    </strong>
                 </Text>
                 {headerContent}
             </Header>

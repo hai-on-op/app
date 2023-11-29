@@ -227,7 +227,7 @@ export const getLiquidationPrice = (
     return formatNumber(numerator.value().toString())
 }
 
-export const safeIsSafe = (totalCollateral: string, totalDebt: string, safetyPrice: string): Boolean => {
+export const safeIsSafe = (totalCollateral: string, totalDebt: string, safetyPrice: string) => {
     if (isNaN(Number(totalDebt))) return true
     const totalDebtBN = BigNumber.from(toFixedString(totalDebt, 'WAD'))
     const totalCollateralBN = BigNumber.from(toFixedString(totalCollateral, 'WAD'))

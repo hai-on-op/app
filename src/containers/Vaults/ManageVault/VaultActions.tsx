@@ -1,8 +1,7 @@
 import { useMemo } from 'react'
 
-import { formatNumberWithStyle } from '~/utils'
+import { VaultAction, VaultInfoError, formatNumberWithStyle } from '~/utils'
 import { useVault } from '~/providers/VaultProvider'
-import { VaultAction, VaultInfoError } from '~/hooks'
 
 import styled, { css } from 'styled-components'
 import { CenteredFlex, Flex, Grid, HaiButton, Text } from '~/styles'
@@ -15,13 +14,9 @@ export function VaultActions() {
         setAction,
         formState,
         updateForm,
-        error,
-        balances,
-        collateralName,
-        collateralUSD,
-        availableCollateral,
-        availableHai,
-        haiUSD
+        collateral,
+        debt,
+        error
     } = useVault()
 
     const [buttonActive, buttonLabel] = useMemo(() => {
@@ -48,13 +43,6 @@ export function VaultActions() {
             default: return [false, 'Deposit']
         }
     }, [action, formState])
-
-    const collateralBalanceFormatted = useMemo(() => {
-        if (!collateralName) return '0'
-        const balance = balances[collateralName]?.toString() || '0'
-
-        return formatNumberWithStyle(balance, { maxDecimals: 4 })
-    }, [balances, collateralName])
 
     return (
         <Container>
@@ -98,18 +86,16 @@ export function VaultActions() {
             <Body>
                 <ActionInput
                     label="Deposit"
-                    subLabel={`Max ${collateralBalanceFormatted} ${collateralName}`}
+                    subLabel={`Max ${formatNumberWithStyle(collateral.balance, { maxDecimals: 4 })} ${collateral.name}`}
                     placeholder="Deposit Amount"
-                    unitLabel={collateralName}
-                    onChange={(value: string) => updateForm({
-                        deposit: value || undefined
-                    })}
+                    unitLabel={collateral.name}
+                    onChange={(value: string) => updateForm({ deposit: value || undefined })}
                     value={formState.deposit}
                     hidden={action !== VaultAction.DEPOSIT_BORROW && action !== VaultAction.CREATE}
-                    onMax={() => updateForm({ deposit: collateralBalanceFormatted.toString() })}
+                    onMax={() => updateForm({ deposit: collateral.balance })}
                     footerLabel={formState.deposit && Number(formState.deposit) > 0
                         ? `~${formatNumberWithStyle(
-                            (collateralUSD || 0) * parseFloat(formState.deposit),
+                            parseFloat(collateral.priceInUSD || '0') * parseFloat(formState.deposit),
                             { style: 'currency' }
                         )}`
                         : undefined
@@ -117,18 +103,16 @@ export function VaultActions() {
                 />
                 <ActionInput
                     label="Withdraw"
-                    subLabel={`Max ${availableCollateral.toString()} ${collateralName}`}
+                    subLabel={`Max ${collateral.available} ${collateral.name}`}
                     placeholder="Withdraw Amount"
-                    unitLabel={collateralName}
-                    onChange={(value: string) => updateForm({
-                        withdraw: value || undefined
-                    })}
+                    unitLabel={collateral.name}
+                    onChange={(value: string) => updateForm({ withdraw: value || undefined })}
                     value={formState.withdraw}
                     hidden={action !== VaultAction.WITHDRAW_REPAY}
-                    onMax={() => updateForm({ withdraw: availableCollateral.toString() })}
+                    onMax={() => updateForm({ withdraw: collateral.available })}
                     footerLabel={formState.withdraw && Number(formState.withdraw) > 0
                         ? `~${formatNumberWithStyle(
-                            (collateralUSD || 0) * parseFloat(formState.withdraw),
+                            parseFloat(collateral.priceInUSD || '0') * parseFloat(formState.withdraw),
                             { style: 'currency' }
                         )}`
                         : undefined
@@ -136,37 +120,35 @@ export function VaultActions() {
                 />
                 <ActionInput
                     label="Borrow"
-                    subLabel={`Max ${formatNumberWithStyle(availableHai.toString(), { maxDecimals: 4 })} HAI`}
+                    subLabel={`Max ${formatNumberWithStyle(debt.available, { maxDecimals: 4 })} HAI`}
                     placeholder="Borrow Amount"
                     unitLabel="HAI"
-                    onChange={(value: string) => updateForm({
-                        borrow: value || undefined
-                    })}
+                    onChange={(value: string) => updateForm({ borrow: value || undefined })}
                     value={formState.borrow}
                     hidden={action !== VaultAction.DEPOSIT_BORROW && action !== VaultAction.CREATE}
-                    onMax={() => updateForm({ borrow: availableHai.toString() })}
+                    onMax={() => updateForm({ borrow: debt.available })}
                     footerLabel={formState.borrow && Number(formState.borrow) > 0
-                        ? `~${formatNumberWithStyle(haiUSD * parseFloat(formState.borrow), {
-                            style: 'currency'
-                        })}`
+                        ? `~${formatNumberWithStyle(
+                            parseFloat(debt.priceInUSD) * parseFloat(formState.borrow),
+                            { style: 'currency' }
+                        )}`
                         : undefined
                     }
                 />
                 <ActionInput
                     label="Pay Back"
-                    subLabel={`Max ${formatNumberWithStyle(availableHai.toString(), { maxDecimals: 4 })} HAI`}
+                    subLabel={`Max ${formatNumberWithStyle(debt.available, { maxDecimals: 4 })} HAI`}
                     placeholder="Pay Back Amount"
                     unitLabel="HAI"
-                    onChange={(value: string) => updateForm({
-                        repay: value || undefined
-                    })}
+                    onChange={(value: string) => updateForm({ repay: value || undefined })}
                     value={formState.repay}
                     hidden={action !== VaultAction.WITHDRAW_REPAY}
-                    onMax={() => updateForm({ repay: availableHai.toString() })}
+                    onMax={() => updateForm({ repay: debt.available })}
                     footerLabel={formState.repay && Number(formState.repay) > 0
-                        ? `~${formatNumberWithStyle(haiUSD * parseFloat(formState.repay), {
-                            style: 'currency'
-                        })}`
+                        ? `~${formatNumberWithStyle(
+                            parseFloat(debt.priceInUSD) * parseFloat(formState.repay),
+                            { style: 'currency' }
+                        )}`
                         : undefined
                     }
                 />
