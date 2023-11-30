@@ -1,11 +1,13 @@
+import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import type { ReactChildren } from '~/types'
 
 import styled from 'styled-components'
-import { CenteredFlex, Flex, createFadeInAnimation } from '~/styles'
+import { CenteredFlex, Flex } from '~/styles'
 import { X } from '../Icons/X'
 import { BrandedTitle } from '../BrandedTitle'
+import { FloatingElements, type FloatingElementsProps } from '../BrandElements/FloatingElements'
 
 export type ModalProps = {
     heading?: ReactChildren,
@@ -23,9 +25,35 @@ export function Modal({
     onClose,
     maxWidth
 }: ModalProps) {
+    const [container, setContainer] = useState<HTMLElement | null>(null)
+
+    useEffect(() => {
+        if (!container) return
+
+        const duration = 1000
+
+        let start = 0
+        let anim: number
+        const onLoop = (timestamp: number) => {
+            start = start || timestamp
+            const p = Math.min((timestamp - start) / duration, 1)
+            const progress = 1 - Math.pow(1 - p, 3) // ease-out cubic
+            container.style.transform = `translateZ(${200 * (1 - progress)}px)`
+
+            if (progress < 1) anim = requestAnimationFrame(onLoop)
+        }
+        anim = requestAnimationFrame(onLoop)
+
+        return () => {
+            Object.assign(container, { transform: null })
+            cancelAnimationFrame(anim)
+        }
+    }, [container])
+
     return createPortal(
         <Overlay onClick={onClose}>
             <ModalContainer
+                ref={setContainer}
                 $maxWidth={maxWidth}
                 onClick={(e: any) => e.stopPropagation()}>
                 {overrideContent || (<>
@@ -50,13 +78,12 @@ export function Modal({
                     </ModalBody>
                     <ModalFooter>{footerContent}</ModalFooter>
                 </>)}
+                <FloatingElements clouds={clouds}/>
             </ModalContainer>
         </Overlay>,
         document.body
     )
 }
-
-const fadeIn = createFadeInAnimation('24px')
 
 const Overlay = styled(CenteredFlex)`
     position: fixed;
@@ -65,7 +92,10 @@ const Overlay = styled(CenteredFlex)`
     right: 0px;
     bottom: 0px;
 
-    background-color: rgba(0,0,0,0.15);
+    perspective-origin: 50% 50%;
+    perspective: 190px;
+
+    background-color: rgba(0,0,0,0.6);
     z-index: 998;
 `
 
@@ -75,30 +105,18 @@ export const ModalContainer = styled(Flex).attrs(props => ({
     $align: 'stretch',
     ...props
 }))<{ $maxWidth?: string }>`
-    position: fixed;
-    /* top: 180px; */
+    position: absolute;
     width: 100%;
     max-width: min(${({ $maxWidth = '720px' }) => $maxWidth}, calc(100vw - 48px));
-    /* min-height: 360px; */
-    max-height: calc(100vh - 240px);
+    max-height: calc(100vh - 320px);
     z-index: 999;
-    animation: ${fadeIn} 0.5s ease forwards;
-    backdrop-filter: blur(13px);
+    background-color: ${({ theme }) => theme.colors.background};
     border: ${({ theme }) => theme.border.medium};
     border-radius: 24px;
-
-    &::before {
-        content: '';
-        position: absolute;
-        inset: 0px;
-        border-radius: 24px;
-        background-color: rgba(255,255,255,0.3);
-        z-index: -1;
-    }
+    transform-style: preserve-3d;
 
     ${({ theme }) => theme.mediaWidth.upToExtraSmall`
-        // top: 120px;
-        max-height: calc(100vh - 180px);
+        max-height: calc(100vh - 240px);
     `}
 `
 
@@ -144,3 +162,36 @@ export const ModalBody = styled(Flex).attrs(props => ({
 `
 
 export const ModalFooter = styled(ModalHeader)``
+
+const clouds: FloatingElementsProps['clouds'] = [
+    {
+        index: 0,
+        width: '160px',
+        style: {
+            right: '-140px',
+            bottom: '-190px',
+            filter: 'brightness(0.6)'
+        },
+        flip: true,
+        zIndex: -3
+    },
+    {
+        index: 1,
+        width: '220px',
+        style: {
+            right: '-220px',
+            bottom: '-120px',
+            filter: 'brightness(0.8)'
+        },
+        zIndex: -2
+    },
+    {
+        index: 0,
+        width: '200px',
+        style: {
+            left: '-90px',
+            top: '-100px'
+        },
+        zIndex: 2
+    }
+]
