@@ -57,8 +57,8 @@ export function NumberInput({
                     placeholder={placeholder}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.currentTarget.value)}
                 />
-                {unitLabel && <InputLabel>{unitLabel}</InputLabel>}
-                <ConversionText>{conversion}</ConversionText>
+                {!!unitLabel && <InputLabel>{unitLabel}</InputLabel>}
+                {typeof conversion !== 'undefined' && <ConversionText>{conversion}</ConversionText>}
             </InputContainer>
         </Container>
     )
@@ -80,6 +80,7 @@ const InputContainer = styled(Flex).attrs(props => ({
 }))`
     border: ${({ theme }) => theme.border.medium};
     border-radius: 8px;
+    padding-right: 4px;
 `
 const Input = styled.input`
     width: 100%;
@@ -106,6 +107,6 @@ const ConversionText = styled(Text).attrs(props => ({
     $textAlign: 'left',
     ...props
 }))`
-    width: fit-content;
+    width: 75px;
     flex-shrink: 0;
 `

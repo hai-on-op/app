@@ -103,7 +103,7 @@ export function VaultActions() {
                             parseFloat(collateral.priceInUSD || '0') * parseFloat(formState.deposit),
                             { style: 'currency' }
                         )}`
-                        : undefined
+                        : ''
                     }
                 />
                 <NumberInput
@@ -120,7 +120,7 @@ export function VaultActions() {
                             parseFloat(collateral.priceInUSD || '0') * parseFloat(formState.withdraw),
                             { style: 'currency' }
                         )}`
-                        : undefined
+                        : ''
                     }
                 />
                 <NumberInput
@@ -137,7 +137,7 @@ export function VaultActions() {
                             parseFloat(debt.priceInUSD) * parseFloat(formState.borrow),
                             { style: 'currency' }
                         )}`
-                        : undefined
+                        : ''
                     }
                 />
                 <NumberInput
@@ -154,7 +154,7 @@ export function VaultActions() {
                             parseFloat(debt.priceInUSD) * parseFloat(formState.repay),
                             { style: 'currency' }
                         )}`
-                        : undefined
+                        : ''
                     }
                 />
                 {collateral.name === 'WETH' && isDepositBorrowOrCreate && (<>
