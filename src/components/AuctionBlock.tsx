@@ -126,7 +126,7 @@ const AuctionBlock = (auction: Props) => {
                     <Button
                         text={t('Settle')}
                         withArrow
-                        disabled={auctionsState.isSubmitting}
+                        disabled={!connectWalletState.proxyAddress || auctionsState.isSubmitting}
                         onClick={() => handleClick('settle')}
                     />
                 </BtnContainer>
@@ -148,6 +148,7 @@ const AuctionBlock = (auction: Props) => {
                         text={'Bid'}
                         withArrow
                         disabled={
+                            !connectWalletState.proxyAddress ||
                             auctionsState.isSubmitting ||
                             (isOngoingAuction &&
                                 userProxy &&

@@ -15,7 +15,7 @@ export type TypedListener<EventArgsArray extends Array<any>, EventArgsObject> = 
     ...listenerArg: [
         // @ts-ignore
         ...EventArgsArray,
-        TypedEvent<EventArgsArray & EventArgsObject>
+        TypedEvent<EventArgsArray & EventArgsObject>,
     ]
 ) => void
 

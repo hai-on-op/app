@@ -145,7 +145,7 @@ const AuctionsPayment = () => {
                     .toString()
             }
         }
-        let amountToBuy =
+        const amountToBuy =
             biddersList.length > 0 && buyAmountBN.isZero()
                 ? BigNumber.from(toFixedString(biddersList[0].buyAmount, 'WAD'))
                 : buyAmountBN

@@ -28,7 +28,7 @@ export function useTransactionAdder(): (
                 throw Error('No transaction hash found.')
             }
 
-            let tx: ITransaction = {
+            const tx: ITransaction = {
                 chainId,
                 hash,
                 from: account,

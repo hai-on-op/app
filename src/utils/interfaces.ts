@@ -309,7 +309,7 @@ export interface ISafeQuery extends ILiquidationResponse {
             coinAllowance: {
                 amount: string
             } | null
-        }
+        },
     ]
 }
 

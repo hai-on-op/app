@@ -6,7 +6,6 @@ export interface MulticallModel {
     callListeners?: CallListeners
     callResults: CallResults
     addMulticallListeners: Action<MulticallModel, { chainId: number; calls: Call[]; options?: ListenerOptions }>
-
     removeMulticallListeners: Action<MulticallModel, { chainId: number; calls: Call[]; options?: ListenerOptions }>
     fetchingMulticallResults: Action<MulticallModel, { chainId: number; calls: Call[]; fetchingBlockNumber: number }>
 

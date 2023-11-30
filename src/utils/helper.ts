@@ -74,7 +74,7 @@ export const formatNumber = (value: string, digits = 6, round = false) => {
 
 export const getRatePercentage = (value: string, digits = 4, returnRate = false) => {
     const rate = Number(value)
-    let ratePercentage = rate < 1 ? numeral(1).subtract(rate).value() * -1 : numeral(rate).subtract(1).value()
+    const ratePercentage = rate < 1 ? numeral(1).subtract(rate).value() * -1 : numeral(rate).subtract(1).value()
 
     if (returnRate) return ratePercentage
 
@@ -211,7 +211,7 @@ export const getLiquidationPrice = (
     return formatNumber(numerator.value().toString())
 }
 
-export const safeIsSafe = (totalCollateral: string, totalDebt: string, safetyPrice: string): Boolean => {
+export const safeIsSafe = (totalCollateral: string, totalDebt: string, safetyPrice: string): boolean => {
     if (isNaN(Number(totalDebt))) return true
     const totalDebtBN = BigNumber.from(toFixedString(totalDebt, 'WAD'))
     const totalCollateralBN = BigNumber.from(toFixedString(totalCollateral, 'WAD'))

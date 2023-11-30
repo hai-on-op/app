@@ -48,10 +48,7 @@ export function useIsOwner(safeId: string): boolean {
     useEffect(() => {
         if (!geb || !account || !safeId) return undefined
         setState(true)
-        Promise.all([
-            geb.contracts.proxyRegistry.proxies(account as string),
-            geb.contracts.safeManager.safeData(safeId),
-        ])
+        Promise.all([geb.contracts.proxyFactory.proxies(account as string), geb.contracts.safeManager.safeData(safeId)])
             .then(getIsOwnerCallback)
             .catch((error) => console.error(`Failed to get proxyAddress and SafeOwner`, error))
     }, [account, geb, getIsOwnerCallback, safeId])
