@@ -26,11 +26,12 @@ export function Marquee({
 
     const chunkWidth: number | undefined = useMemo(() => {
         if (staticWidth) return staticWidth + spacing
+        if (!text) return undefined
         if (!chunk) return undefined
 
         const { width } = chunk.getBoundingClientRect()
         return width + spacing
-    }, [chunk, spacing, staticWidth])
+    }, [chunk, text, spacing, staticWidth])
 
     const [repeat, setRepeat] = useState(1)
     const repeatRef = useRef(repeat)
