@@ -16,7 +16,7 @@ import {
 import styled from 'styled-components'
 import Modal from './Modal'
 import Button from '~/components/Button'
-import Loader from '~/components/Loader'
+import { Loader } from '~/components/Loader'
 
 const ProxyModal = () => {
     const { t } = useTranslation()
@@ -101,7 +101,7 @@ const ProxyModal = () => {
                     />
                 )
             case 'loading':
-                return <Loader width="40px"/>
+                return <Loader size={40}/>
             default:
                 return (
                     <ArrowUpCircle

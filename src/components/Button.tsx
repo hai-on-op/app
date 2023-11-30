@@ -1,96 +1,68 @@
-import React, { type ReactNode } from 'react'
+import React, { type HTMLProps } from 'react'
 import { useTranslation } from 'react-i18next'
-import styled from 'styled-components'
-import classNames from 'classnames'
-import darkArrow from '~/assets/dark-arrow.svg'
-import { Arrow } from './Icons/Arrow'
-import Loader from './Loader'
 
-interface Props extends React.HTMLAttributes<HTMLButtonElement> {
-    text?: string
-    onClick?: (event?: React.MouseEvent<HTMLButtonElement>) => void
-    primary?: boolean
-    secondary?: boolean
-    dimmed?: boolean
-    dimmedNormal?: boolean
-    withArrow?: boolean
-    disabled?: boolean
-    isLoading?: boolean
-    dimmedWithArrow?: boolean
-    isBordered?: boolean
-    arrowPlacement?: string
-    children?: ReactNode
+import type { ReactChildren } from '~/types'
+
+import styled from 'styled-components'
+import { Arrow } from './Icons/Arrow'
+import { Loader } from './Loader'
+
+import darkArrow from '~/assets/dark-arrow.svg'
+
+type ButtonProps = Omit<HTMLProps<HTMLButtonElement>, 'ref' | 'as' | 'type' | 'children'> & {
+    text?: string,
+    variant?: 'default' | 'primary' | 'secondary' | 'dimmed' | 'dimmedNormal' | 'bordered',
+    withArrow?: boolean | 'left' | 'right',
+    isLoading?: boolean,
+    isBordered?: boolean,
+    children?: ReactChildren
 }
 
 const Button = ({
     text,
-    onClick,
-    dimmed,
-    dimmedNormal,
-    primary,
-    secondary,
-    withArrow,
-    disabled,
+    variant = 'default',
+    withArrow = false,
     isLoading,
-    dimmedWithArrow,
     isBordered,
-    arrowPlacement = 'left',
     children,
-    ...rest
-}: Props) => {
+    ...props
+}: ButtonProps) => {
     const { t } = useTranslation()
 
-    const classes = classNames({
-        primary,
-        secondary,
-        dimmedNormal,
-    })
+    if (variant === 'dimmed') return (
+        <DimmedBtn {...props}>
+            {withArrow && withArrow !== 'right' && <img src={darkArrow} alt={''} />}
+            {!!text && t(text)}
+            {withArrow === 'right' && <img src={darkArrow} alt={''} className="rotate" />}
+        </DimmedBtn>
+    )
+    if (withArrow) return (
+        <ArrowBtn {...props}>
+            {!!text && <span>{t(text)}&nbsp;</span>}
+            <Arrow/>
+        </ArrowBtn>
+    )
+    if (variant === 'bordered') return (
+        <BorderedBtn {...props}>
+            <Inner>{text && t(text)}</Inner>
+        </BorderedBtn>
+    )
 
-    const returnType = () => {
-        if (dimmed) {
-            return (
-                <DimmedBtn {...rest} disabled={disabled} onClick={onClick}>
-                    {text && t(text)}
-                </DimmedBtn>
-            )
-        }
-
-        if (dimmedWithArrow) {
-            return (
-                <DimmedBtn {...rest} disabled={disabled} onClick={onClick}>
-                    {arrowPlacement === 'left' ? <img src={darkArrow} alt={''} /> : null}
-                    {text && t(text)}
-                    {arrowPlacement === 'right' ? <img className="rotate" src={darkArrow} alt={''} /> : null}
-                </DimmedBtn>
-            )
-        } else if (withArrow) {
-            return (
-                <ArrowBtn {...rest} disabled={disabled} onClick={onClick}>
-                    <span>{text && t(text)}</span> <Arrow />
-                </ArrowBtn>
-            )
-        } else if (isBordered) {
-            return (
-                <BorderedBtn {...rest} disabled={disabled} onClick={onClick}>
-                    <Inner> {text && t(text)}</Inner>
-                </BorderedBtn>
-            )
-        } else {
-            return (
-                <Container {...rest} className={classes} disabled={disabled} isLoading={isLoading} onClick={onClick}>
-                    {text && t(text)}
-                    {children || null}
-                    {isLoading && <Loader inlineButton />}
-                </Container>
-            )
-        }
-    }
-    return returnType()
+    return (
+        <Container
+            {...props}
+            variant={variant}
+            isLoading={isLoading}>
+            {text && t(text)}
+            {children || null}
+            {isLoading && <Loader/>}
+        </Container>
+    )
 }
 
 export default React.memo(Button)
 
-const Container = styled.button<{ isLoading?: boolean }>`
+const Container = styled.button<{ variant: ButtonProps['variant'], isLoading?: boolean }>`
     outline: none;
     cursor: pointer;
     min-width: 134px;
@@ -98,27 +70,33 @@ const Container = styled.button<{ isLoading?: boolean }>`
     box-shadow: none;
     padding: 8px 30px;
     line-height: 24px;
-    font-size: ${(props) => props.theme.font.small};
+    font-size: ${({ theme }) => theme.font.small};
     font-weight: 600;
-    color: ${(props) => props.theme.colors.neutral};
-    background: ${(props) => props.theme.colors.blueish};
+    color: ${({ theme }) => theme.colors.neutral};
     border-radius: 50px;
     transition: all 0.3s ease;
-    &.dimmedNormal {
-        background: ${(props) => props.theme.colors.secondary};
-    }
-    &.primary {
-        background: ${(props) => props.theme.colors.colorPrimary};
-    }
-    &.secondary {
-        background: ${(props) => props.theme.colors.colorSecondary};
-    }
+
+    background: ${({ theme, variant }) => {
+        switch(variant) {
+            case 'dimmedNormal':
+                return theme.colors.secondary
+            case 'primary':
+                return theme.colors.colorPrimary
+            case 'secondary':
+                return theme.colors.colorSecondary
+            default:
+                return theme.colors.blueish
+        }
+    }}
     &:hover {
         opacity: 0.8;
     }
 
     &:disabled {
-        background: ${(props) => (props.isLoading ? props.theme.colors.placeholder : props.theme.colors.secondary)};
+        background: ${({ theme, isLoading }) => (isLoading
+            ? theme.colors.placeholder
+            : theme.colors.secondary
+        )};
         cursor: not-allowed;
     }
 `
@@ -130,8 +108,8 @@ const DimmedBtn = styled.button`
     outline: none;
     background: transparent;
     border-radius: 0;
-    color: ${(props) => props.theme.colors.secondary};
-    font-size: ${(props) => props.theme.font.small};
+    color: ${({ theme }) => theme.colors.secondary};
+    font-size: ${({ theme }) => theme.font.small};
     font-weight: 600;
     line-height: 24px;
     padding: 0;
@@ -157,11 +135,11 @@ const DimmedBtn = styled.button`
 
 const ArrowBtn = styled.button`
     span {
-        background: ${(props) => props.theme.colors.gradient};
+        background: ${({ theme }) => theme.colors.gradient};
         background-clip: text;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        color: ${(props) => props.theme.colors.inputBorderColor};
+        color: ${({ theme }) => theme.colors.inputBorderColor};
     }
     background: transparent;
     border: 0;
@@ -170,7 +148,7 @@ const ArrowBtn = styled.button`
     outline: none;
     padding: 0;
     margin: 0;
-    font-size: ${(props) => props.theme.font.small};
+    font-size: ${({ theme }) => theme.font.small};
     font-weight: 600;
     line-height: 24px;
     letter-spacing: -0.18px;
@@ -189,7 +167,7 @@ const ArrowBtn = styled.button`
 `
 
 const BorderedBtn = styled.button`
-    background: ${(props) => props.theme.colors.gradient};
+    background: ${({ theme }) => theme.colors.gradient};
     padding: 2px;
     border-radius: 25px;
     box-shadow: none;
@@ -202,8 +180,8 @@ const BorderedBtn = styled.button`
 `
 
 const Inner = styled.div`
-    background: ${(props) => props.theme.colors.background};
-    color: ${(props) => props.theme.colors.inputBorderColor};
+    background: ${({ theme }) => theme.colors.background};
+    color: ${({ theme }) => theme.colors.inputBorderColor};
     border-radius: 25px;
     padding: 4px 6px;
     transition: all 0.3s ease;

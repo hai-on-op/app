@@ -1,30 +1,41 @@
 import { AlertTriangle, ArrowUpRight, CheckCircle } from 'react-feather'
-import styled from 'styled-components'
 import { useNetwork } from 'wagmi'
-import { ExternalLinkArrow } from '~/styles'
+
 import { getEtherscanLink } from '~/utils'
 import { useStoreState } from '~/store'
-import Loader from './Loader'
+
+import styled from 'styled-components'
+import { ExternalLinkArrow } from '~/styles'
+import { Loader } from './Loader'
 
 const Transaction = ({ hash }: { hash: string }) => {
     const { chain } = useNetwork()
     const chainId = chain?.id
     const { transactionsModel: transactionsState } = useStoreState((state) => state)
 
-    const tx = transactionsState.transactions?.[hash]
-    const summary = tx?.summary
-    const pending = !tx?.receipt
-    const success = !pending && tx && (tx.receipt?.status === 1 || typeof tx.receipt?.status === 'undefined')
+    const { summary, receipt } = transactionsState.transactions?.[hash] || {}
+    const pending = !receipt
+    const success = !pending && (receipt.status === 1 || typeof receipt.status === 'undefined')
 
     if (!chainId) return null
     return (
         <Container>
-            <a href={getEtherscanLink(chainId, hash, 'transaction')} target="_blank" rel="noopener noreferrer">
+            <a
+                href={getEtherscanLink(chainId, hash, 'transaction')}
+                target="_blank"
+                rel="noopener noreferrer">
                 <Text>
                     {summary ?? hash} <ArrowUpRight />
                 </Text>
-                <IconWrapper pending={pending} success={success}>
-                    {pending ? <Loader /> : success ? <CheckCircle size="16" /> : <AlertTriangle size="16" />}
+                <IconWrapper
+                    pending={pending}
+                    success={success}>
+                    {pending
+                        ? <Loader />
+                        : success
+                            ? <CheckCircle size="16" />
+                            : <AlertTriangle size="16" />
+                    }
                 </IconWrapper>
             </a>
         </Container>
@@ -53,7 +64,12 @@ const Text = styled.div`
 `
 
 const IconWrapper = styled.div<{ pending: boolean; success?: boolean }>`
-    color: ${({ theme, pending, success }) => (pending ? theme.colors.inputBorderColor : success ? 'green' : 'red')};
+    color: ${({ theme, pending, success }) => (pending
+        ? theme.colors.inputBorderColor
+        : success
+            ? 'green'
+            : 'red'
+    )};
     svg {
         margin-right: 0;
     }

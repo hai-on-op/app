@@ -409,7 +409,7 @@ const AuctionsPayment = () => {
             {error && <Error>{error}</Error>}
             <Results />
             <Footer>
-                <Button dimmed text={t('cancel')} onClick={handleCancel} />
+                <Button variant="dimmed" text={t('cancel')} onClick={handleCancel} />
                 <Button withArrow onClick={handleSubmit} text={t('review_transaction')} />
             </Footer>
         </Container>

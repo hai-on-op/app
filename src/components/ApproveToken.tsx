@@ -10,7 +10,7 @@ import { useStoreActions, useStoreState } from '~/store'
 import type { AuctionEventType, IAuctionBidder } from '~/types'
 import { timeout } from '~/utils'
 import Button from './Button'
-import Loader from './Loader'
+import { Loader } from './Loader'
 
 export type ApproveMethod = 'systemCoin' | 'protocolToken'
 
@@ -50,7 +50,7 @@ const ApproveToken = ({ bids, amount, handleBackBtn, handleSuccess, methodName, 
             case 'error':
                 return <AlertTriangle width={'40px'} className={status} />
             case 'loading':
-                return <Loader width={'40px'} />
+                return <Loader size={40} />
             default:
                 return <ArrowUpCircle width={'40px'} className={'stateless'} />
         }
@@ -133,21 +133,29 @@ const ApproveToken = ({ bids, amount, handleBackBtn, handleSuccess, methodName, 
     return (
         <Container>
             <InnerContainer>
-                {popupsState.blockBackdrop ? null : (
+                {!popupsState.blockBackdrop && (
                     <BackContainer>
-                        <Button dimmedWithArrow text={'back'} onClick={handleBackBtn} />
+                        <Button
+                            variant="dimmed"
+                            withArrow
+                            text={'back'}
+                            onClick={handleBackBtn}
+                        />
                     </BackContainer>
                 )}
                 <ImgContainer>{returnStatusIcon(textPayload.status)}</ImgContainer>
                 <Title>{textPayload.title}</Title>
 
-                {textPayload.text ? <Text className={textPayload.status}>{textPayload.text}</Text> : null}
+                {!!textPayload.text && <Text className={textPayload.status}>{textPayload.text}</Text>}
 
-                {!textPayload.status || textPayload.status === 'error' ? (
+                {(!textPayload.status || textPayload.status === 'error') && (
                     <BtnContainer>
-                        <Button text={textPayload.status === 'error' ? 'Try again' : 'Unlock'} onClick={unlockRAI} />
+                        <Button
+                            text={textPayload.status === 'error' ? 'Try again' : 'Unlock'}
+                            onClick={unlockRAI}
+                        />
                     </BtnContainer>
-                ) : null}
+                )}
             </InnerContainer>
         </Container>
     )

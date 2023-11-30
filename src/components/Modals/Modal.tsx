@@ -105,7 +105,7 @@ const Modal = ({
                                     {(!showXButton || !!submitBtnText) && (
                                         <Footer>
                                             <Button
-                                                dimmed
+                                                variant="dimmed"
                                                 onClick={closeModal}
                                                 text={t('cancel')}
                                             />

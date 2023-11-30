@@ -8,7 +8,7 @@ import styled from 'styled-components'
 import { CenteredFlex } from '~/styles'
 import Modal from './Modal'
 import Button from '~/components/Button'
-import Loader from '~/components/Loader'
+import { Loader } from '~/components/Loader'
 import { AddressLink } from '~/components/AddressLink'
 
 const WaitingModal = () => {
@@ -45,7 +45,7 @@ const WaitingModal = () => {
                     />
                 )
             default:
-                return <Loader width="60px" />
+                return <Loader size={60} />
         }
     }
     return (
@@ -74,7 +74,7 @@ const WaitingModal = () => {
                             : status === 'success' && isCreate
                                 ? (
                                     <CreateNew>
-                                        <Loader width={'14px'} /> {text}
+                                        <Loader size={14} /> {text}
                                     </CreateNew>
                                 )
                                 : text

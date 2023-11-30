@@ -78,7 +78,7 @@ const TxConfirmation = () => {
                 </Body>
 
                 <Footer>
-                    <Button dimmedWithArrow text={t('back')} onClick={handleBack} />
+                    <Button variant="dimmed" withArrow text={t('back')} onClick={handleBack} />
                     <Button withArrow text={t('confirm_transaction')} onClick={handleConfirm} />
                 </Footer>
             </>

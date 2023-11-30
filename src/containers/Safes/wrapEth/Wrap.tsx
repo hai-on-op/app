@@ -72,7 +72,7 @@ const Wrap = () => {
             {error && <Error>{error}</Error>}
             <Results amount={value} ethBalance={connectWalletState.ethBalance[chainId || 420].toString()} />
             <Footer>
-                <Button dimmed text={t('cancel')} onClick={handleCancel} />
+                <Button variant="dimmed" text={t('cancel')} onClick={handleCancel} />
                 <Button withArrow onClick={handleSubmit} text={t('review_transaction')} />
             </Footer>
         </Container>

@@ -67,7 +67,7 @@ const SafeManager = () => {
             {error && <Error>{error}</Error>}
 
             <Footer>
-                <Button dimmed text={t('cancel')} onClick={handleCancel} />
+                <Button variant="dimmed" text={t('cancel')} onClick={handleCancel} />
                 <Button data-test-id="topup-manage" withArrow onClick={handleSubmit} text={t('manage_safe')} />
             </Footer>
         </Body>

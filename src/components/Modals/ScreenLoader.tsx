@@ -4,7 +4,7 @@ import { useStoreState, useStoreActions } from '~/store'
 
 import styled from 'styled-components'
 import Modal from './Modal'
-import Loader from '~/components/Loader'
+import { Loader } from '~/components/Loader'
 
 const ScreenLoader = () => {
     const { t } = useTranslation()
@@ -19,7 +19,7 @@ const ScreenLoader = () => {
             closeModal={() => popupsActions.setIsScreenModalOpen(false)}
             showXButton>
             <LoaderContainer>
-                <Loader text={t('Initializing...')} />
+                <Loader>{t('Initializing...')}</Loader>
             </LoaderContainer>
         </Modal>
     )
