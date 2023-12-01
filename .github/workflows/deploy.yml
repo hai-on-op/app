@@ -31,9 +31,9 @@ jobs:
         run: yarn run build
         id: build
         env:
-          VITE_NETWORK_ID: ${{ secrets.VITE_NETWORK_ID }}
           VITE_WALLETCONNECT_ID: ${{ secrets.VITE_WALLETCONNECT_ID }}
-          VITE_PUBLIC_RPC: ${{ secrets.VITE_PUBLIC_RPC }}
+          VITE_TESTNET_PUBLIC_RPC: ${{ secrets.VITE_TESTNET_PUBLIC_RPC }}
+          VITE_MAINNET_PUBLIC_RPC: ${{ secrets.VITE_MAINNET_PUBLIC_RPC }}
           VITE_ALCHEMY_KEY: ${{ secrets.VITE_ALCHEMY_KEY }}
 
       - uses: amondnet/vercel-action@v25

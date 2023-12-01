@@ -4,9 +4,8 @@ import { useAccount } from 'wagmi'
 
 import { useEthersSigner, usePublicProvider } from './useEthersAdapters'
 import store, { useStoreActions, useStoreState } from '~/store'
-import { EMPTY_ADDRESS, network_name } from '~/utils/constants'
+import { EMPTY_ADDRESS, getNetworkName } from '~/utils/constants'
 import { formatNumber } from '~/utils/helper'
-import { NETWORK_ID } from '~/utils'
 
 type TokenType = 'ETH' | 'HAI' | 'WETH'
 
@@ -16,8 +15,11 @@ export function useGeb(): Geb {
     const signer = useEthersSigner()
     useEffect(() => {
         if (!signer) return
-        const geb = new Geb(network_name, signer)
-        setState(geb)
+        signer.getChainId().then((chainId) => {
+            const networkName = getNetworkName(chainId)
+            const geb = new Geb(networkName, signer)
+            setState(geb)
+        })
     }, [signer])
 
     return state as Geb
@@ -26,7 +28,11 @@ export function useGeb(): Geb {
 // Geb with public provider, no need to connect wallet
 export function usePublicGeb(): Geb {
     const provider = usePublicProvider()
-    const publicGeb = useMemo(() => new Geb(network_name, provider), [provider])
+    const publicGeb = useMemo(() => {
+        const chainId = provider.network.chainId
+        const networkName = getNetworkName(chainId)
+        return new Geb(networkName, provider)
+    }, [provider])
     return publicGeb
 }
 
@@ -80,11 +86,6 @@ export function useProxyAddress() {
     }, [account, connectWalletActions, geb, proxyAddress])
 
     return useMemo(() => proxyAddress, [proxyAddress])
-}
-
-// fetches latest blocknumber from store
-export function useBlockNumber() {
-    return store.getState().connectWalletModel.blockNumber[NETWORK_ID]
 }
 
 // returns amount of currency in USD

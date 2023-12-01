@@ -1,9 +1,17 @@
 import { useEffect, useState } from 'react'
 import { BigNumber, ethers } from 'ethers'
 import styled from 'styled-components'
-import { useAccount } from 'wagmi'
+import { useAccount, useNetwork } from 'wagmi'
 
-import { formatNumber, TOKEN_LOGOS, DEFAULT_SAFE_STATE, toFixedString, sanitizeDecimals, RAY } from '~/utils'
+import {
+    formatNumber,
+    TOKEN_LOGOS,
+    DEFAULT_SAFE_STATE,
+    toFixedString,
+    sanitizeDecimals,
+    RAY,
+    DEFAULT_NETWORK_ID,
+} from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import TokenInput from '~/components/TokenInput'
 import Modal from '~/components/Modals/Modal'
@@ -29,6 +37,8 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
     const [showPreview, setShowPreview] = useState(false)
     const [isRepayAll, setIsRepayAll] = useState(false)
     const { safeModel: safeState, connectWalletModel } = useStoreState((state) => state)
+    const { chain } = useNetwork()
+    const chainId = chain?.id || DEFAULT_NETWORK_ID
 
     const { singleSafe } = safeState
     const type = isDeposit ? 'deposit_borrow' : 'repay_withdraw'
@@ -220,6 +230,7 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
             address: account as string,
             geb,
             tokensData: tokensData,
+            chainId,
         })
     }
 

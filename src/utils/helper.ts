@@ -28,7 +28,7 @@ export const getEtherscanLink = (
     data: string,
     type: 'transaction' | 'token' | 'address' | 'block'
 ): string => {
-    const prefix = `https://${ETHERSCAN_PREFIXES[chainId] || ETHERSCAN_PREFIXES[1]}etherscan.io`
+    const prefix = `https://${ETHERSCAN_PREFIXES[chainId] || ETHERSCAN_PREFIXES[10]}etherscan.io`
 
     switch (type) {
         case 'transaction': {
