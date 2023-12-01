@@ -1,15 +1,15 @@
-import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
 import styled from 'styled-components'
+import { useAccount } from 'wagmi'
 
-import { useActiveWeb3React, useAuctions } from '~/hooks'
+import { useGetAuctions, useLoadMoreAuctions } from '~/hooks'
 import { useStoreActions, useStoreState } from '~/store'
 import AuctionBlock from '~/components/AuctionBlock'
-import Pagination from '~/components/Pagination'
 import { SideLabel } from '../Safes/CreateSafe'
-import { IPaging, TOKEN_LOGOS } from '~/utils'
+import { TOKEN_LOGOS } from '~/utils'
 import Dropdown from '~/components/Dropdown'
-import { AuctionEventType } from '~/types'
+import { AuctionEventType, IAuction } from '~/types'
 import Button from '~/components/Button'
 import Loader from '~/components/Loader'
 
@@ -29,11 +29,13 @@ interface Props {
 }
 const AuctionsList = ({ type, selectedItem, setSelectedItem }: Props) => {
     const { t } = useTranslation()
-    const { account } = useActiveWeb3React()
-    const [paging, setPaging] = useState<IPaging>({ from: 0, to: 5 })
+    const { address: account } = useAccount()
     const { popupsModel: popupsActions } = useStoreActions((state) => state)
 
     const { auctionModel: auctionsState, connectWalletModel: connectWalletState } = useStoreState((state) => state)
+
+    const { openConnectModal } = useConnectModal()
+    const handleConnectWallet = () => openConnectModal && openConnectModal()
 
     // internalbalance = user's HAI balance in the protocol
     // protInternalBalance = user's KITE balance in the protocol
@@ -42,12 +44,13 @@ const AuctionsList = ({ type, selectedItem, setSelectedItem }: Props) => {
     const { proxyAddress, tokensData } = connectWalletState
 
     // auctions list
-    const auctions = useAuctions(type, selectedItem)
+    const auctions = useGetAuctions(type, selectedItem) as IAuction[]
+    const { LoadMoreButton, numberOfAuctions } = useLoadMoreAuctions({ auctions })
 
     // handle clicking to claim
     const handleClick = (modalType: string) => {
         if (!account) {
-            popupsActions.setIsConnectorsWalletOpen(true)
+            handleConnectWallet()
             return
         }
 
@@ -104,10 +107,11 @@ const AuctionsList = ({ type, selectedItem, setSelectedItem }: Props) => {
                 <Loader text="Loading..." />
             ) : auctions.length > 0 ? (
                 <>
-                    {auctions.slice(paging.from, paging.to).map((auction, i: number) => (
+                    {auctions.slice(0, numberOfAuctions).map((auction, i: number) => (
                         <AuctionBlock key={auction.auctionId} {...{ ...auction, isCollapsed: i !== 0 }} />
                     ))}
-                    <Pagination items={auctions} perPage={5} handlePagingMargin={setPaging} />
+
+                    <LoadMoreButton />
                 </>
             ) : (
                 <NoData>

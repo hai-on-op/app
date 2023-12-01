@@ -1,19 +1,26 @@
+import { useEffect } from 'react'
 import styled from 'styled-components'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
-import ReactTooltip from 'react-tooltip'
+import { useAccount, useNetwork } from 'wagmi'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
 
-import { useActiveWeb3React, handleTransactionError, useTransactionAdder, use10BlocksConfirmations } from '~/hooks'
+import { handleTransactionError, useTransactionAdder, useGeb, useEthersSigner } from '~/hooks'
 import { useStoreActions, useStoreState } from '~/store'
 import StepsContent from './StepsContent'
 import { COIN_TICKER } from '~/utils'
-import useGeb from '~/hooks/useGeb'
 
 const Steps = () => {
     const { t } = useTranslation()
-    const { account, library, chainId } = useActiveWeb3React()
+    const { chain } = useNetwork()
+    const chainId = chain?.id
+    const { address: account } = useAccount()
+    const signer = useEthersSigner()
+    const { openConnectModal } = useConnectModal()
+    const handleConnectWallet = () => openConnectModal && openConnectModal()
+
     const geb = useGeb()
-    const blocksSinceCheck = use10BlocksConfirmations()
+
     const history = useHistory()
     const { connectWalletModel: connectWalletState } = useStoreState((state) => state)
 
@@ -21,14 +28,11 @@ const Steps = () => {
 
     const addTransaction = useTransactionAdder()
 
-    const { step, isWrongNetwork, isStepLoading, blockNumber, ctHash } = connectWalletState
-
-    const handleConnectWallet = () => popupsActions.setIsConnectorsWalletOpen(true)
+    const { step, isWrongNetwork, isStepLoading, blockNumber } = connectWalletState
 
     const handleCreateAccount = async () => {
-        if (!account || !library || !chainId) return false
-        const txData = await geb.contracts.proxyRegistry.populateTransaction['build()']()
-        const signer = library.getSigner(account)
+        if (!account || !signer || !chainId) return false
+        const txData = await geb.contracts.proxyFactory.populateTransaction['build()']()
 
         try {
             connectWalletActions.setIsStepLoading(true)
@@ -47,7 +51,13 @@ const Steps = () => {
                 hash: txResponse.hash,
                 status: 'success',
             })
-            await txResponse.wait()
+            // wait some blocks before continue to the next step
+            await txResponse.wait(5)
+
+            popupsActions.setIsWaitingModalOpen(false)
+            connectWalletActions.setIsStepLoading(false)
+            connectWalletActions.setStep(2)
+            localStorage.removeItem('ctHash')
         } catch (e) {
             connectWalletActions.setIsStepLoading(false)
             handleTransactionError(e)
@@ -106,6 +116,15 @@ const Steps = () => {
         }
     }
 
+    useEffect(() => {
+        if (connectWalletState.ctHash) {
+            popupsActions.setIsWaitingModalOpen(false)
+            connectWalletActions.setIsStepLoading(false)
+            connectWalletActions.setStep(2)
+            localStorage.removeItem('ctHash')
+        }
+    }, [])
+
     return (
         <StepsContainer>
             <StepsBars>
@@ -117,19 +136,6 @@ const Steps = () => {
                 ) : null}
             </StepsBars>
             {returnSteps(step)}
-            {step === 1 && ctHash ? (
-                <>
-                    <Confirmations>
-                        {`WATITING FOR CONFIRMATIONS... ${
-                            !blocksSinceCheck ? 0 : blocksSinceCheck > 10 ? 10 : blocksSinceCheck
-                        } of 10`}{' '}
-                        <InfoBtn data-tip={t('confirmations_info')}>?</InfoBtn>
-                    </Confirmations>
-                    <ReactTooltip multiline type="light" data-effect="solid" />
-                </>
-            ) : (
-                ''
-            )}
         </StepsContainer>
     )
 }

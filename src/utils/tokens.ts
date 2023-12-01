@@ -1,3 +1,11 @@
+import opImg from '../assets/op-img.svg'
+import wbtcImg from '../assets/wbtc-img.svg'
+import ttmImg from '../assets/ttm-img.png'
+import ethImg from '../assets/eth-img.svg'
+import haiImg from '../assets/hai-logo.svg'
+import stnImg from '../assets/stn-img.png'
+import snxImg from '../assets/snx-img.png'
+
 export type Tokens = {
     [key: string]: {
         name: string
@@ -9,10 +17,11 @@ export type Tokens = {
 }
 
 export const TOKEN_LOGOS: { [key: string]: string } = {
-    OP: require('../assets/op-img.svg').default,
-    WBTC: require('../assets/wbtc-img.svg').default,
-    TTM: require('../assets/ttm-img.png'),
-    WETH: require('../assets/eth-img.svg').default,
-    HAI: require('../assets/hai-logo.svg').default,
-    STN: require('../assets/stn-img.png'),
+    OP: opImg,
+    WBTC: wbtcImg,
+    TTM: ttmImg,
+    WETH: ethImg,
+    HAI: haiImg,
+    STN: stnImg,
+    SNX: snxImg,
 }

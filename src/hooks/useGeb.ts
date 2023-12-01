@@ -1,34 +1,40 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Geb } from '@hai-on-op/sdk'
+import { useAccount } from 'wagmi'
 
+import { useEthersSigner, usePublicProvider } from './useEthersAdapters'
 import store, { useStoreActions, useStoreState } from '~/store'
 import { EMPTY_ADDRESS, network_name } from '~/utils/constants'
 import { formatNumber } from '~/utils/helper'
-import { useActiveWeb3React } from '~/hooks'
-import { NETWORK_ID } from '~/connectors'
+import { NETWORK_ID } from '~/utils'
 
 type TokenType = 'ETH' | 'HAI' | 'WETH'
 
-// connect to @hai-on-op/sdk
-
-export default function useGeb(): Geb {
-    const { library } = useActiveWeb3React()
+// Geb with signer
+export function useGeb(): Geb {
     const [state, setState] = useState<Geb>()
-
+    const signer = useEthersSigner()
     useEffect(() => {
-        if (!library) return
-        const geb = new Geb(network_name, library.getSigner())
+        if (!signer) return
+        const geb = new Geb(network_name, signer)
         setState(geb)
-    }, [library])
+    }, [signer])
 
     return state as Geb
+}
+
+// Geb with public provider, no need to connect wallet
+export function usePublicGeb(): Geb {
+    const provider = usePublicProvider()
+    const publicGeb = useMemo(() => new Geb(network_name, provider), [provider])
+    return publicGeb
 }
 
 // check if is owner of the safe
 export function useIsOwner(safeId: string): boolean {
     const [state, setState] = useState(true)
     const geb = useGeb()
-    const { account } = useActiveWeb3React()
+    const { address: account } = useAccount()
 
     const getIsOwnerCallback = useCallback((res) => {
         if (res) {
@@ -42,10 +48,7 @@ export function useIsOwner(safeId: string): boolean {
     useEffect(() => {
         if (!geb || !account || !safeId) return undefined
         setState(true)
-        Promise.all([
-            geb.contracts.proxyRegistry.proxies(account as string),
-            geb.contracts.safeManager.safeData(safeId),
-        ])
+        Promise.all([geb.contracts.proxyFactory.proxies(account as string), geb.contracts.safeManager.safeData(safeId)])
             .then(getIsOwnerCallback)
             .catch((error) => console.error(`Failed to get proxyAddress and SafeOwner`, error))
     }, [account, geb, getIsOwnerCallback, safeId])
@@ -56,7 +59,7 @@ export function useIsOwner(safeId: string): boolean {
 // Returns proxy address from @hai-on-op/sdk
 export function useProxyAddress() {
     const geb = useGeb()
-    const { account } = useActiveWeb3React()
+    const { address: account } = useAccount()
     const { connectWalletModel: connectWalletState } = useStoreState((state) => state)
     const { connectWalletModel: connectWalletActions } = useStoreActions((state) => state)
     const { proxyAddress } = connectWalletState
@@ -87,7 +90,7 @@ export function useBlockNumber() {
 // returns amount of currency in USD
 export function useTokenBalanceInUSD(token: TokenType, balance: string) {
     const ethPrice = store.getState().connectWalletModel.fiatPrice
-    const haiPrice = store.getState().safeModel.liquidationData!.currentRedemptionPrice
+    const haiPrice = store.getState().safeModel.liquidationData?.currentRedemptionPrice
 
     return useMemo(() => {
         const price = token === 'ETH' || token === 'WETH' ? ethPrice : haiPrice
