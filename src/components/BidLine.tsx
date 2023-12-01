@@ -2,9 +2,8 @@ import dayjs from 'dayjs'
 import styled from 'styled-components'
 
 import { ExternalLinkArrow } from '~/GlobalStyle'
-import { useActiveWeb3React } from '~/hooks'
 import { ChainId, formatNumber, getEtherscanLink, returnWalletAddress } from '~/utils'
-
+import { useNetwork } from 'wagmi'
 type Props = {
     eventType: string
     bidder: string
@@ -17,7 +16,9 @@ type Props = {
 }
 
 const BidLine = ({ eventType, bidder, date, bid, buyAmount, buySymbol, sellSymbol, createdAtTransaction }: Props) => {
-    const { chainId } = useActiveWeb3React()
+    const { chain } = useNetwork()
+
+    const chainId = chain?.id
 
     const returnWad = (amount: string) => {
         if (!amount) return '0'

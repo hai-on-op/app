@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { useActiveWeb3React, handleTransactionError, useStartAuction, useQuery, useGetAuctions } from '~/hooks'
+import { handleTransactionError, useStartAuction, useQuery, useGetAuctions, usePublicGeb } from '~/hooks'
 import AuctionsFAQ from '~/components/AuctionsFAQ'
 import AlertLabel from '~/components/AlertLabel'
 import Modal from '~/components/Modals/Modal'
@@ -11,7 +11,6 @@ import { useStoreActions, useStoreState } from '~/store'
 import AuctionsList from './AuctionsList'
 import Button from '~/components/Button'
 import { formatNumber } from '~/utils'
-import useGeb from '~/hooks/useGeb'
 import CollateralAuctionsList from './CollateralAuctions/CollateralAuctionsList'
 
 const Auctions = ({
@@ -19,9 +18,9 @@ const Auctions = ({
         params: { auctionType },
     },
 }: RouteComponentProps<{ auctionType?: string }>) => {
-    const { account } = useActiveWeb3React()
     const { auctionModel: auctionsActions, popupsModel: popupsActions } = useStoreActions((state) => state)
     const { auctionModel: auctionsState, connectWalletModel: connectWalletState } = useStoreState((state) => state)
+    const { proxyAddress } = connectWalletState
     const [showFaqs, setShowFaqs] = useState(false)
     const query = useQuery()
     const queryType = query.get('type') as AuctionEventType | null
@@ -29,7 +28,8 @@ const Auctions = ({
     const [error, setError] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const [selectedItem, setSelectedItem] = useState<string>('WETH')
-    const geb = useGeb()
+    const geb = usePublicGeb()
+
     const history = useHistory()
 
     const {
@@ -46,8 +46,6 @@ const Auctions = ({
         deltaToStartDebtAuction,
         surplusCooldownDone,
     } = useStartAuction()
-
-    const { proxyAddress } = connectWalletState
 
     const handleStartSurplusAuction = async () => {
         setIsLoading(true)
@@ -119,6 +117,7 @@ const Auctions = ({
                     geb,
                     type,
                     tokenSymbol: type && type === 'COLLATERAL' ? selectedItem : undefined,
+                    userProxy: proxyAddress,
                 })
                 setError('')
             } catch (error) {
@@ -175,7 +174,7 @@ const Auctions = ({
                 </Tab>
             </Switcher>
 
-            {type === 'SURPLUS' && account ? (
+            {type === 'SURPLUS' ? (
                 <StartAuctionContainer>
                     <Box style={{ justifyContent: 'space-between' }}>
                         <div>
@@ -204,7 +203,7 @@ const Auctions = ({
                 </StartAuctionContainer>
             ) : null}
 
-            {type === 'DEBT' && account ? (
+            {type === 'DEBT' ? (
                 <StartAuctionContainer>
                     <Box style={{ justifyContent: 'space-between' }}>
                         <div>

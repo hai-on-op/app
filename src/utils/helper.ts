@@ -1,13 +1,11 @@
 import numeral from 'numeral'
 import { BigNumber, FixedNumber } from 'ethers'
-import { utils as gebUtils } from '@hai-on-op/sdk'
-import { AbstractConnector } from '@web3-react/abstract-connector'
-import { getAddress } from '@ethersproject/address'
-import { TokenData } from '@hai-on-op/sdk/lib/contracts/addreses'
+import { utils as gebUtils, TokenData } from '@hai-on-op/sdk'
+import { getAddress } from 'viem'
 
-import { ETHERSCAN_PREFIXES, floatsTypes, SUPPORTED_WALLETS } from './constants'
+import { ETHERSCAN_PREFIXES, floatsTypes } from './constants'
 import { ChainId, ILiquidationData, ISafe, ITransaction } from './interfaces'
-import { injected } from '~/connectors'
+import { sanitizeDecimals } from './removeDecimals'
 
 export const IS_IN_IFRAME = window.parent !== window
 
@@ -76,26 +74,29 @@ export const formatNumber = (value: string, digits = 6, round = false) => {
 
 export const getRatePercentage = (value: string, digits = 4, returnRate = false) => {
     const rate = Number(value)
-    let ratePercentage = rate < 1 ? numeral(1).subtract(rate).value() * -1 : numeral(rate).subtract(1).value()
+    const ratePercentage = rate < 1 ? numeral(1).subtract(rate).value() * -1 : numeral(rate).subtract(1).value()
 
     if (returnRate) return ratePercentage
 
     return formatNumber(String(ratePercentage * 100), digits)
 }
 
-export const toFixedString = (value: string, type?: keyof typeof floatsTypes): string => {
+export const toFixedString = (value: string, type: keyof typeof floatsTypes): string => {
     try {
-        const n = Number(value)
-        const nOfDecimals = Number.isInteger(n) ? value.length : value.split('.')[1].length
+        // cut decimals to avoid underflow error
+        const formattedValue = sanitizeDecimals(value, floatsTypes[type])
+
+        const n = Number(formattedValue)
+        const nOfDecimals = Number.isInteger(n) ? formattedValue.length : formattedValue.split('.')[1].length
 
         if (type === 'WAD' || nOfDecimals === floatsTypes.WAD) {
-            return FixedNumber.fromString(value, 'fixed256x18').toHexString()
+            return FixedNumber.fromString(formattedValue, 'fixed256x18').toHexString()
         } else if (type === 'RAY' || (nOfDecimals > floatsTypes.WAD && nOfDecimals <= floatsTypes.RAY)) {
-            return FixedNumber.fromString(value, 'fixed256x27').toHexString()
+            return FixedNumber.fromString(formattedValue, 'fixed256x27').toHexString()
         } else if (type === 'RAD' || (nOfDecimals > floatsTypes.RAY && nOfDecimals <= floatsTypes.RAD)) {
-            return FixedNumber.fromString(value, 'fixed256x45').toHexString()
+            return FixedNumber.fromString(formattedValue, 'fixed256x45').toHexString()
         }
-        return FixedNumber.fromString(value, 'fixed256x18').toHexString()
+        return FixedNumber.fromString(formattedValue, 'fixed256x18').toHexString()
     } catch (error) {
         console.error('toFixedString error:', error)
         return '0'
@@ -210,7 +211,7 @@ export const getLiquidationPrice = (
     return formatNumber(numerator.value().toString())
 }
 
-export const safeIsSafe = (totalCollateral: string, totalDebt: string, safetyPrice: string): Boolean => {
+export const safeIsSafe = (totalCollateral: string, totalDebt: string, safetyPrice: string): boolean => {
     if (isNaN(Number(totalDebt))) return true
     const totalDebtBN = BigNumber.from(toFixedString(totalDebt, 'WAD'))
     const totalCollateralBN = BigNumber.from(toFixedString(totalCollateral, 'WAD'))
@@ -319,42 +320,6 @@ export const timeout = (ms: number) => {
 
 export const returnPercentAmount = (partialValue: string, totalValue: string) => {
     return numeral(partialValue).divide(totalValue).multiply(100).value()
-}
-
-export const returnConnectorName = (connector: AbstractConnector | undefined) => {
-    if (!connector || typeof connector === 'undefined') return null
-
-    const isMetamask = window?.ethereum?.isMetaMask
-    return Object.keys(SUPPORTED_WALLETS)
-        .map((key) => {
-            const option = SUPPORTED_WALLETS[key]
-            if (option.connector === connector) {
-                if (option.connector === injected) {
-                    if (isMetamask && option.name !== 'MetaMask') {
-                        return null
-                    }
-                    if (!isMetamask && option.name === 'MetaMask') {
-                        return null
-                    }
-                }
-                return option.name !== 'Injected' ? option.name : null
-            }
-            return null
-        })
-        .filter((x: string | null) => x !== null)[0]
-}
-
-export const numberizeString = (obj: any) => {
-    const res: any = {}
-    Object.keys(obj).forEach((key) => {
-        res[key] = {}
-        Object.keys(obj[key]).forEach((temp) => {
-            res[key][temp] = !isNaN(obj[key][temp]) ? numeral(obj[key][temp]).value() : obj[key][temp]
-        })
-        return res
-    })
-
-    return res
 }
 
 export const returnTimeOffset = () => {

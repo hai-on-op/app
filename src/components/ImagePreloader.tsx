@@ -1,20 +1,37 @@
+import brandWhite from '../assets/brand-white.svg'
+import darkArrow from '../assets/dark-arrow.svg'
+import walletConnectIcon from '../assets/connectors/walletConnectIcon.svg'
+import coinbaseWalletIcon from '../assets/connectors/coinbaseWalletIcon.svg'
+import cookie from '../assets/cookie.svg'
+import caret from '../assets/caret.png'
+import caretUp from '../assets/caret-up.svg'
+import arrowUp from '../assets/arrow-up.svg'
+import logoIcon from '../assets/LogoIcon.png'
+import arrow from '../assets/arrow.svg'
+import uniswapIcon from '../assets/uniswap-icon.svg'
+import logo192 from '../assets/logo192.png'
+import metamask from '../assets/connectors/metamask.png'
+import accountImg from '../assets/account-img.png'
+import walletImg from '../assets/wallet-img.png'
+import safeImg from '../assets/safe-img.png'
+
 const INITIAL_STATE = [
-    require('../assets/brand-white.svg').default,
-    require('../assets/dark-arrow.svg').default,
-    require('../assets/connectors/walletConnectIcon.svg').default,
-    require('../assets/connectors/coinbaseWalletIcon.svg').default,
-    require('../assets/cookie.svg').default,
-    require('../assets/caret.png').default,
-    require('../assets/caret-up.svg').default,
-    require('../assets/arrow-up.svg').default,
-    require('../assets/LogoIcon.png').default,
-    require('../assets/arrow.svg').default,
-    require('../assets/uniswap-icon.svg').default,
-    require('../assets/logo192.png').default,
-    require('../assets/connectors/metamask.png').default,
-    require('../assets/account-img.png').default,
-    require('../assets/wallet-img.png').default,
-    require('../assets/safe-img.png').default,
+    brandWhite,
+    darkArrow,
+    walletConnectIcon,
+    coinbaseWalletIcon,
+    cookie,
+    caret,
+    caretUp,
+    arrowUp,
+    logoIcon,
+    arrow,
+    uniswapIcon,
+    logo192,
+    metamask,
+    accountImg,
+    walletImg,
+    safeImg,
 ]
 
 const ImagePreloader = () => {

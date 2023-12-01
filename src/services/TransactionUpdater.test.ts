@@ -8,6 +8,7 @@ describe('transactions updater', () => {
         it('returns false if has receipt and never checked', () => {
             expect(shouldCheck(10, { addedTime: 100, receipt: {} })).toEqual(false)
         })
+
         it('returns true if has not been checked in 1 blocks', () => {
             expect(
                 shouldCheck(10, {
@@ -16,6 +17,7 @@ describe('transactions updater', () => {
                 })
             ).toEqual(true)
         })
+
         it('returns false if checked in last 3 blocks and greater than 20 minutes old', () => {
             expect(
                 shouldCheck(10, {
