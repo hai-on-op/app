@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import styled from 'styled-components'
 import { utils } from 'ethers'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
-import { useAccount } from 'wagmi'
+import { useAccount, useNetwork } from 'wagmi'
 
 import { useStoreActions, useStoreState } from '~/store'
 import { handleTransactionError, useEthersSigner } from '~/hooks'
@@ -23,6 +23,8 @@ const Navbar = () => {
 
     const { address: account, isConnected } = useAccount()
     const signer = useEthersSigner()
+    const { chain } = useNetwork()
+    const chainId = chain?.id
 
     const handleAddHAI = async () => {
         try {
@@ -92,7 +94,7 @@ const Navbar = () => {
             </HideMobile>
             <RightSide>
                 <BtnContainer>
-                    {signer && (
+                    {signer && chainId === 420 && (
                         <ClaimButton onClick={() => signer && claimAirdropButton(signer)}>
                             Claim test tokens 🪂
                         </ClaimButton>

@@ -9,17 +9,17 @@ describe('safe model', () => {
 
     describe('setsBlockNumber', () => {
         it('sets block number', () => {
-            store.getActions().updateBlockNumber({ chainId: 42, blockNumber: 123 })
-            expect(store.getState().blockNumber).toEqual({ 42: 123 })
+            store.getActions().updateBlockNumber({ chainId: 10, blockNumber: 123 })
+            expect(store.getState().blockNumber).toEqual({ 10: 123 })
         })
     })
 
     describe('setsEthBalance', () => {
         it('sets ethBalance', () => {
-            store.getActions().updateEthBalance({ chainId: 42, balance: 123 })
+            store.getActions().updateEthBalance({ chainId: 10, balance: 123 })
             expect(store.getState().ethBalance).toEqual({
                 1: 0,
-                42: 123,
+                10: 123,
                 420: 0,
             })
         })
@@ -30,7 +30,7 @@ describe('safe model', () => {
             store.getActions().updateEthBalance({ chainId: 1, balance: 123 })
             expect(store.getState().ethBalance).toEqual({
                 1: 123,
-                42: 0,
+                10: 0,
                 420: 0,
             })
         })
@@ -39,7 +39,7 @@ describe('safe model', () => {
             store.getActions().updateEthBalance({ chainId: 4, balance: 123 })
             expect(store.getState().ethBalance).toEqual({
                 1: 0,
-                42: 0,
+                10: 0,
                 4: 123,
                 420: 0,
             })

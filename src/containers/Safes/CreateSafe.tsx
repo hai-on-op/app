@@ -9,7 +9,7 @@ import { ethers, utils } from 'ethers'
 import { useEthersSigner } from '~/hooks/useEthersAdapters'
 import { useAccount, useNetwork } from 'wagmi'
 
-import { DEFAULT_SAFE_STATE, NETWORK_ID, TOKEN_LOGOS, formatNumber } from '~/utils'
+import { DEFAULT_NETWORK_ID, DEFAULT_SAFE_STATE, TOKEN_LOGOS, formatNumber } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import TokenInput from '~/components/TokenInput'
 import Modal from '~/components/Modals/Modal'
@@ -41,6 +41,8 @@ const CreateSafe = ({
     const { address: account } = useAccount()
     const signer = useEthersSigner()
     const [showPreview, setShowPreview] = useState(false)
+    const { chain } = useNetwork()
+    const chainId = chain?.id || DEFAULT_NETWORK_ID
 
     const {
         safeModel: safeState,
@@ -182,7 +184,7 @@ const CreateSafe = ({
         if (signer) {
             signer.getBalance().then((balance) => {
                 connectWalletActions.updateEthBalance({
-                    chainId: NETWORK_ID,
+                    chainId: chainId,
                     balance: Number(utils.formatEther(balance)),
                 })
             })

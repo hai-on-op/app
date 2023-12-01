@@ -1,14 +1,26 @@
 import * as React from 'react'
-import { type PublicClient, usePublicClient, type WalletClient, useWalletClient } from 'wagmi'
+import { type PublicClient, usePublicClient, type WalletClient, useWalletClient, useNetwork } from 'wagmi'
 import { providers } from 'ethers'
 import { createPublicClient, http, type HttpTransport } from 'viem'
-import { optimismGoerli } from 'viem/chains'
-import { VITE_PUBLIC_RPC } from '~/utils'
+import { optimism, optimismGoerli } from 'viem/chains'
+import { DEFAULT_NETWORK_ID, VITE_MAINNET_PUBLIC_RPC, VITE_TESTNET_PUBLIC_RPC } from '~/utils'
 
-export const client = createPublicClient({
-    chain: optimismGoerli,
-    transport: http(VITE_PUBLIC_RPC, { batch: true }),
-})
+export const useCustomPublicClient = (): PublicClient => {
+    const { chain } = useNetwork()
+    const chainId = chain?.id || DEFAULT_NETWORK_ID
+
+    const testnetClient = createPublicClient({
+        chain: optimismGoerli,
+        transport: http(VITE_TESTNET_PUBLIC_RPC, { batch: true }),
+    })
+    const mainnetClient = createPublicClient({
+        chain: optimism,
+        transport: http(VITE_MAINNET_PUBLIC_RPC, { batch: true }),
+    })
+
+    if (chainId === 10) return mainnetClient as PublicClient
+    return testnetClient as PublicClient
+}
 
 export function publicClientToProvider(publicClient: PublicClient) {
     const { chain, transport } = publicClient
@@ -33,6 +45,7 @@ export function useEthersProvider({ chainId }: { chainId?: number } = {}) {
 }
 
 export function usePublicProvider() {
+    const client = useCustomPublicClient()
     return React.useMemo(
         () =>
             new providers.JsonRpcProvider(client.transport.url, {
