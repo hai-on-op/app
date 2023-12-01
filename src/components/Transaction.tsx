@@ -1,14 +1,14 @@
 import { AlertTriangle, ArrowUpRight, CheckCircle } from 'react-feather'
 import styled from 'styled-components'
-
+import { useNetwork } from 'wagmi'
 import { ExternalLinkArrow } from '~/GlobalStyle'
 import { getEtherscanLink } from '~/utils/helper'
-import { useActiveWeb3React } from '~/hooks'
 import { useStoreState } from '~/store'
 import Loader from './Loader'
 
 const Transaction = ({ hash }: { hash: string }) => {
-    const { chainId } = useActiveWeb3React()
+    const { chain } = useNetwork()
+    const chainId = chain?.id
     const { transactionsModel: transactionsState } = useStoreState((state) => state)
 
     const tx = transactionsState.transactions?.[hash]

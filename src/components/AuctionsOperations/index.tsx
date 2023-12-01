@@ -65,7 +65,7 @@ const AuctionsOperations = () => {
                                     : 'KITE'
                             }
                             methodName={
-                                auctionType === 'DEBT' || auctionType === 'COLLATERAL' ? 'coin' : 'protocolToken'
+                                auctionType === 'DEBT' || auctionType === 'COLLATERAL' ? 'systemCoin' : 'protocolToken'
                             }
                             auctionType={auctionType}
                         />
@@ -129,6 +129,8 @@ const Fade = styled.div`
     }
     &.fade-enter-active,
     &.fade-exit-active {
-        transition: opacity 300ms, transform 300ms;
+        transition:
+            opacity 300ms,
+            transform 300ms;
     }
 `

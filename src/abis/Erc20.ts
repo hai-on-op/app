@@ -14,9 +14,9 @@ import {
     Signer,
     utils,
 } from 'ethers'
-import { FunctionFragment, Result, EventFragment } from '@ethersproject/abi'
-import { Listener, Provider } from '@ethersproject/providers'
+
 import { TypedEventFilter, TypedEvent, TypedListener } from './common'
+import { EventFragment, FunctionFragment, Result } from 'ethers/lib/utils'
 
 export interface Erc20Interface extends utils.Interface {
     functions: {
@@ -71,7 +71,7 @@ export type TransferEventFilter = TypedEventFilter<
 >
 
 export interface Erc20 extends BaseContract {
-    connect(signerOrProvider: Signer | Provider | string): this
+    connect(signerOrProvider: any): this
     attach(addressOrName: string): this
     deployed(): Promise<this>
 
@@ -98,11 +98,11 @@ export interface Erc20 extends BaseContract {
         eventFilter: TypedEventFilter<EventArgsArray, EventArgsObject>
     ): this
 
-    listeners(eventName?: string): Array<Listener>
-    off(eventName: string, listener: Listener): this
-    on(eventName: string, listener: Listener): this
-    once(eventName: string, listener: Listener): this
-    removeListener(eventName: string, listener: Listener): this
+    listeners(eventName?: string): Array<any>
+    off(eventName: string, listener: any): this
+    on(eventName: string, listener: any): this
+    once(eventName: string, listener: any): this
+    removeListener(eventName: string, listener: any): this
     removeAllListeners(eventName?: string): this
 
     queryFilter<EventArgsArray extends Array<any>, EventArgsObject>(

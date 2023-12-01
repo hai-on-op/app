@@ -1,31 +1,33 @@
 import { useEffect, useState } from 'react'
 import { BigNumber, ethers } from 'ethers'
 import styled from 'styled-components'
+import { useAccount } from 'wagmi'
 
-import { formatNumber, TOKEN_LOGOS, DEFAULT_SAFE_STATE } from '~/utils'
+import { formatNumber, TOKEN_LOGOS, DEFAULT_SAFE_STATE, toFixedString, sanitizeDecimals, RAY } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import TokenInput from '~/components/TokenInput'
 import Modal from '~/components/Modals/Modal'
-import { gnosisSafe } from '~/connectors'
 import Button from '~/components/Button'
-import useGeb from '~/hooks/useGeb'
 import Review from './Review'
 import {
     handleTransactionError,
     useTokenBalanceInUSD,
-    useActiveWeb3React,
     useInputsHandlers,
     useTokenApproval,
     useProxyAddress,
+    useEthersSigner,
     ApprovalState,
     useSafeInfo,
+    useGeb,
 } from '~/hooks'
 
 const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boolean }) => {
-    const { library, account, connector } = useActiveWeb3React()
+    const { address: account } = useAccount()
+    const signer = useEthersSigner()
     const geb = useGeb()
     const proxyAddress = useProxyAddress()
     const [showPreview, setShowPreview] = useState(false)
+    const [isRepayAll, setIsRepayAll] = useState(false)
     const { safeModel: safeState, connectWalletModel } = useStoreState((state) => state)
 
     const { singleSafe } = safeState
@@ -61,6 +63,13 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
         (Number(collateralUnitPriceUSD) * Number(leftInputBalance)).toString(),
         2
     )
+    const debtFloorBN = BigNumber.from(
+        toFixedString(safeState.liquidationData!.collateralLiquidationData[singleSafe!.collateralName].debtFloor, 'WAD')
+    )
+
+    const safetyRatio = safeState.liquidationData!.collateralLiquidationData[singleSafe!.collateralName].safetyCRatio
+    const safetyRatioBN = BigNumber.from(Number(safetyRatio) * 100)
+
     const selectedTokenDecimals = singleSafe ? tokenBalances[singleSafe.collateralName].decimals : '18'
 
     const [unlockState, approveUnlock] = useTokenApproval(
@@ -68,7 +77,8 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
         tokensData?.HAI.address,
         proxyAddress,
         '18',
-        true
+        true,
+        isRepayAll
     )
 
     const [collateralUnlockState, collateralApproveUnlock] = useTokenApproval(
@@ -78,6 +88,8 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
         selectedTokenDecimals,
         true
     )
+
+    const currentRedemptionPrice = safeState.singleSafe!.currentRedemptionPrice
 
     const { onLeftInput, onRightInput, onClearAll } = useInputsHandlers()
 
@@ -97,7 +109,52 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
         if (isDeposit) {
             onLeftInput(depositTokenBalance.toString())
         } else {
-            onLeftInput(availableCollateral as string)
+            const currentColRatio = safeState.singleSafe?.collateralRatio
+
+            const formattedLeftInputBalance = sanitizeDecimals(
+                leftInputBalance.toString(),
+                Number(selectedTokenDecimals)
+            )
+
+            // if current ratio is less than (safetyRatio + 10%) then set the input to 0
+            if (Number(currentColRatio) < Number(safetyRatioBN) * 1.1) {
+                onLeftInput('0')
+                return
+            }
+
+            // after format if available collateral to withdraw is 0, set the input to 0
+            if (Number(formattedLeftInputBalance) === 0) {
+                onLeftInput('0')
+                return
+            }
+
+            // Getting the max amount of collateral that the user can withdraw
+
+            const totalDebtBN = ethers.utils.parseEther(availableHai)
+
+            // Add the safety ratio to the total debt
+            const safetyColAmount = totalDebtBN.mul(safetyRatioBN).div(100)
+
+            // Format current price of Hai
+            //  - we parse it with 28 decimals because the redemption price can be  decimal (i.e. 0.9e27)
+            //  - we'll divide by 10 later to get the correct value*
+            const currentRedemptionPriceBN = ethers.utils.parseUnits(currentRedemptionPrice, 28)
+
+            // Multiply the safety collateral amount by the currentRedemptionPrice
+            const safetyColatWithHaiRatio = ethers.utils.formatEther(
+                safetyColAmount.mul(currentRedemptionPriceBN).div(RAY)
+            )
+
+            // Divide the safety collateral amount by the collateral price in USD
+            const numerator = Number(sanitizeDecimals(safetyColatWithHaiRatio, 10)) / 10 //*return the decimal we added before
+            const denominator = Number(sanitizeDecimals(collateralUnitPriceUSD.toString(), 10))
+            // Note: add 1% to the result to handle rounding errors
+            const result = (numerator * 1.01) / denominator
+
+            // Subtract the result from the total collateral balance
+            // to get the max amount of collateral that the user can withdraw
+            const collateralLeft = Number(formattedLeftInputBalance) - result
+            onLeftInput(collateralLeft.toString())
         }
     }
 
@@ -105,18 +162,39 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
         if (isDeposit) {
             onRightInput(availableHai)
         } else {
-            const availableHaiBN = ethers.utils.parseEther(availableHai)
+            setIsRepayAll(true)
+            const totalDebtBN = ethers.utils.parseEther(availableHai)
 
-            const haiBalanceBN = tokenBalances.HAI.balanceE18 ? tokenBalances.HAI.balanceE18 : BigNumber.from('0')
+            const haiBalanceBN = tokenBalances.HAI.balanceE18
+                ? BigNumber.from(tokenBalances.HAI.balanceE18)
+                : BigNumber.from('0')
 
-            const isMoreDebt = availableHaiBN.gt(haiBalanceBN)
+            const isMoreDebt = totalDebtBN.gt(haiBalanceBN)
 
-            onRightInput(isMoreDebt ? ethers.utils.formatEther(haiBalanceBN) : availableHai)
+            const haiRepayAmount = totalDebtBN.sub(haiBalanceBN).gt(debtFloorBN)
+                ? haiBalanceBN
+                : totalDebtBN.sub(debtFloorBN).mul(99).div(100)
+
+            // if the user has less HAI than the debt floor, return 0
+            const haiBalanceWithFloorBN = haiBalanceBN.gt(debtFloorBN) ? haiRepayAmount : '0'
+
+            onRightInput(
+                isMoreDebt
+                    ? // if debt is greater than the user balance,
+                      // then set the difference between the haiBalanceBN and the debt floor
+                      ethers.utils.formatEther(haiBalanceWithFloorBN)
+                    : ethers.utils.formatEther(totalDebtBN)
+            )
         }
     }
 
     const handleWaitingTitle = () => {
         return 'Modifying Safe'
+    }
+
+    const handleHaiApprove = async () => {
+        await approveUnlock()
+        setIsRepayAll(false)
     }
 
     const handleSubmit = () => {
@@ -146,7 +224,7 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
     }
 
     const handleConfirm = async () => {
-        if (account && library) {
+        if (account && signer) {
             safeActions.setIsSuccessfulTx(false)
             setShowPreview(false)
             popupsActions.setIsWaitingModalOpen(true)
@@ -157,7 +235,6 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
                 status: 'loading',
             })
 
-            const signer = library.getSigner(account)
             try {
                 connectWalletActions.setIsStepLoading(true)
                 if (safeState.singleSafe && isDeposit) {
@@ -172,7 +249,6 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
                     await safeActions.repayAndWithdraw({
                         safeData: {
                             ...safeState.safeData,
-                            isGnosisSafe: connector === gnosisSafe,
                         },
                         signer,
                         safeId: safeState.singleSafe.id,
@@ -186,6 +262,7 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
                 safeActions.setIsSuccessfulTx(false)
                 handleTransactionError(e)
             } finally {
+                safeActions.setIsSuccessfulTx(true)
                 reset()
             }
         }
@@ -228,8 +305,12 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
                                 }}
                                 label={
                                     isDeposit
-                                        ? `Balance: ${leftInputBalance} ${singleSafe.collateralName}`
-                                        : `Available: ${leftInputBalance} ${singleSafe.collateralName}`
+                                        ? `Balance: ${formatNumber(leftInputBalance.toString(), 3)} ${
+                                              singleSafe.collateralName
+                                          }`
+                                        : `Available: ${formatNumber(leftInputBalance.toString(), 3)} ${
+                                              singleSafe.collateralName
+                                          }`
                                 }
                                 rightLabel={`~$${selectedTokenBalanceInUSD}`}
                                 onChange={onLeftInput}
@@ -276,11 +357,11 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
                                 <Button
                                     disabled={!isValid || unlockState === ApprovalState.PENDING}
                                     text={unlockState === ApprovalState.PENDING ? 'Pending Approval..' : 'Unlock HAI'}
-                                    onClick={approveUnlock}
+                                    onClick={handleHaiApprove}
                                 />
                             ) : (
-                                <Button onClick={handleSubmit} disabled={!isValid}>
-                                    {'Review Transaction'}
+                                <Button onClick={handleSubmit} disabled={!isValid || !safeState.isSuccessfulTx}>
+                                    {!safeState.isSuccessfulTx ? 'Pending Transaction...' : 'Review Transaction'}
                                 </Button>
                             )
                         ) : collateralUnlockState === ApprovalState.PENDING ||
@@ -295,8 +376,8 @@ const ModifySafe = ({ isDeposit, isOwner }: { isDeposit: boolean; isOwner: boole
                                 onClick={collateralApproveUnlock}
                             />
                         ) : (
-                            <Button onClick={handleSubmit} disabled={!isValid}>
-                                {'Review Transaction'}
+                            <Button onClick={handleSubmit} disabled={!isValid || !safeState.isSuccessfulTx}>
+                                {!safeState.isSuccessfulTx ? 'Pending Transaction...' : 'Review Transaction'}
                             </Button>
                         )}
                     </ButtonContainer>

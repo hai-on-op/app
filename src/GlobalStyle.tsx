@@ -1,4 +1,5 @@
 import { createGlobalStyle, css } from 'styled-components'
+import boxes from './assets/boxes.svg'
 
 interface Props {
     bodyOverflow?: boolean
@@ -28,7 +29,7 @@ const GlobalStyle = createGlobalStyle`
   body {
     color: ${(props) => props.theme.colors.primary};
     background-color:${(props) => props.theme.colors.background};
-    background-image: url(${require('./assets/boxes.svg').default});
+    background-image: url(${boxes});
     background-size: contain;
     background-position: center 100px;
     background-repeat: no-repeat;

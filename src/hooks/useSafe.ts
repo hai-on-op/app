@@ -2,8 +2,9 @@ import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BigNumber, ethers } from 'ethers'
 import numeral from 'numeral'
+import { useAccount } from 'wagmi'
 
-import { useActiveWeb3React, useProxyAddress } from '~/hooks'
+import { useProxyAddress } from '~/hooks'
 import { useStoreActions, useStoreState } from '~/store'
 import { DEFAULT_SAFE_STATE } from '~/utils/constants'
 import {
@@ -12,12 +13,12 @@ import {
     getLiquidationPrice,
     getRatePercentage,
     returnAvaiableDebt,
-    returnPercentAmount,
     returnTotalDebt,
     returnTotalValue,
     safeIsSafe,
     toFixedString,
-} from '~/utils/helper'
+    toPercentage,
+} from '~/utils'
 
 export const LIQUIDATION_RATIO = 135 // percent
 export const ONE_DAY_WORTH_SF = ethers.utils.parseEther('0.00001')
@@ -40,7 +41,7 @@ export function useSafeState() {
 
 // returns all safe info from amounts, debt, collateral and other helper attributes
 export function useSafeInfo(type: SafeTypes = 'create') {
-    const { account } = useActiveWeb3React()
+    const { address: account } = useAccount()
     const proxyAddress = useProxyAddress()
     const { t } = useTranslation()
     const {
@@ -131,7 +132,10 @@ export function useSafeInfo(type: SafeTypes = 'create') {
         return '0.00'
     }, [collateralLiquidationData, leftInput, singleSafe, type])
 
-    const liquidationPenaltyPercentage = '18-20'
+    const liquidationPenaltyPercentage =
+        Number(liquidationData?.collateralLiquidationData[collateralName].liquidationPenalty) - 1
+
+    const formattedLiquidationPenaltyPercentage = toPercentage(liquidationPenaltyPercentage || 0.2, 0)
 
     const stabilityFeePercentage = useMemo(() => {
         return collateralLiquidationData
@@ -202,7 +206,7 @@ export function useSafeInfo(type: SafeTypes = 'create') {
             info: [
                 {
                     label: 'Total Liquidation Penalty',
-                    value: liquidationPenaltyPercentage + '%',
+                    value: formattedLiquidationPenaltyPercentage,
                     tip: t('liquidation_penalty_tip'),
                 },
                 {
@@ -217,6 +221,7 @@ export function useSafeInfo(type: SafeTypes = 'create') {
         collateralName,
         collateralRatio,
         liquidationData,
+        formattedLiquidationPenaltyPercentage,
         liquidationPrice,
         stabilityFeePercentage,
         t,
@@ -231,7 +236,7 @@ export function useSafeInfo(type: SafeTypes = 'create') {
     }
 
     if (!proxyAddress) {
-        error = error ?? 'Create a Reflexer Account to continue'
+        error = error ?? 'Create a Proxy Contract to continue'
     }
 
     if (type === 'deposit_borrow') {
@@ -257,14 +262,6 @@ export function useSafeInfo(type: SafeTypes = 'create') {
 
         if (rightInputBN.gt(availableHaiBN)) {
             error = error ?? `HAI to repay cannot exceed owed amount`
-        }
-
-        if (!rightInputBN.isZero()) {
-            const repayPercent = returnPercentAmount(rightInput, availableHai as string)
-
-            if (rightInputBN.add(ONE_DAY_WORTH_SF).lt(BigNumber.from(availableHaiBN)) && repayPercent > 95) {
-                error = error ?? `You can only repay a minimum of ${availableHai} HAI to avoid leaving residual values`
-            }
         }
 
         if (!rightInputBN.isZero() && rightInputBN.gt(haiBalanceBN)) {
