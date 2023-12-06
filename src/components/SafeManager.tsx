@@ -1,18 +1,20 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
-import styled from 'styled-components'
-import { useAccount } from 'wagmi'
+import { useAccount, useNetwork } from 'wagmi'
 
-import { useStoreActions, useStoreState } from '~/store'
 import { fetchUserSafesRaw } from '~/services/safes'
-import { timeout, type IUserSafeList, isAddress } from '~/utils'
+import { timeout, type IUserSafeList, isAddress, DEFAULT_NETWORK_ID } from '~/utils'
+import { useStoreActions, useStoreState } from '~/store'
 import { useGeb } from '~/hooks'
+
+import styled from 'styled-components'
 import Button from './Button'
 
 const SafeManager = () => {
     const { t } = useTranslation()
     const { address: account } = useAccount()
+    const { chain } = useNetwork()
     const geb = useGeb()
     const [error, setError] = useState('')
     const [value, setValue] = useState('')
@@ -38,7 +40,12 @@ const SafeManager = () => {
         }
 
         try {
-            const userSafes: IUserSafeList | undefined = await fetchUserSafesRaw({ address: value, geb, tokensData })
+            const userSafes: IUserSafeList | undefined = await fetchUserSafesRaw({
+                address: value,
+                geb,
+                tokensData,
+                chainId: chain?.id || DEFAULT_NETWORK_ID
+            })
 
             if (!userSafes || (userSafes && !userSafes.safes.length)) {
                 setError('Address has no Safes')

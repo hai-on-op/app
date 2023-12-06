@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { type RouteComponentProps } from 'react-router-dom'
-import { useAccount } from 'wagmi'
+import { useAccount, useNetwork } from 'wagmi'
 
-import { VaultAction, isAddress } from '~/utils'
+import { DEFAULT_NETWORK_ID, VaultAction, isAddress } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { VaultProvider } from '~/providers/VaultProvider'
 import { useEthersSigner, useGeb } from '~/hooks'
@@ -15,6 +15,7 @@ import { Caret } from '~/components/Icons/Caret'
 
 export function Vaults(props: RouteComponentProps<{ address?: string }>) {
     const { address: account } = useAccount()
+    const { chain } = useNetwork()
     const signer = useEthersSigner()
     const geb = useGeb()
 
@@ -42,6 +43,7 @@ export function Vaults(props: RouteComponentProps<{ address?: string }>) {
                 address: address || (account as string),
                 geb,
                 tokensData,
+                chainId: chain?.id || DEFAULT_NETWORK_ID
             })
         }
         fetchSafes()

@@ -1,9 +1,9 @@
 import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
-import { useAccount } from 'wagmi'
+import { useAccount, useNetwork } from 'wagmi'
 
-import { DEFAULT_SAFE_STATE, VaultAction } from '~/utils'
+import { DEFAULT_NETWORK_ID, DEFAULT_SAFE_STATE, VaultAction } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { useVault } from '~/providers/VaultProvider'
 import { handleTransactionError, useEthersSigner, useGeb } from '~/hooks'
@@ -17,6 +17,7 @@ export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
     const { t } = useTranslation()
     const history = useHistory()
     const { address: account } = useAccount()
+    const { chain } = useNetwork()
     const signer = useEthersSigner()
     const geb = useGeb()
 
@@ -46,6 +47,7 @@ export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
             address: account as string,
             geb,
             tokensData,
+            chainId: chain?.id || DEFAULT_NETWORK_ID
         })
     }, [updateForm, safeActions, connectWalletActions, account, geb, tokensData])
 

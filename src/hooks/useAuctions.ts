@@ -7,7 +7,6 @@ import {
     radToFixed,
     wadToFixed,
     type ICollateralAuction as SDKCollateralAuction,
-    type ISurplusAuction as SDKAuction,
 } from '@hai-on-op/sdk'
 import { useAccount } from 'wagmi'
 import _ from '~/utils/lodash'
@@ -46,7 +45,7 @@ export function useAuctions(type: AuctionEventType, tokenSymbol?: string) {
     const { connectWalletModel: connectWalletState } = useStoreState((state) => state)
 
     // Temporary casting. We need to know how to manage the collateralAuctions as those are different types
-    const auctionsList = useGetAuctions(type, tokenSymbol) as SDKAuction[]
+    const auctionsList = useGetAuctions(type, tokenSymbol)
     const userProxy: string = _.get(connectWalletState, 'proxyAddress', '')
 
     const auctions: IAuction[] = useMemo(() => {
@@ -55,17 +54,17 @@ export function useAuctions(type: AuctionEventType, tokenSymbol?: string) {
         }
         // show auctions less than one month old only
         // const oneMonthOld = new Date().setMonth(new Date().getMonth() - 1)
-        const filteredAuctions: IAuction[] = auctionsList.map((auc: SDKAuction, index) => {
+        const filteredAuctions: IAuction[] = auctionsList.map((auc, index) => {
             const {
                 // isClaimed,
-                auctionDeadline,
+                auctionDeadline = 0,
                 // startedBy,
                 createdAt,
-                initialBid,
+                initialBid = '',
                 createdAtTransaction,
                 biddersList,
                 auctionId,
-            } = auc
+            } = auc as any
 
             // if auction is settled, winner is the last bidder
             const winner = _.get(
@@ -94,7 +93,9 @@ export function useAuctions(type: AuctionEventType, tokenSymbol?: string) {
             const sellDecimals = englishAuctionType === 'SURPLUS' ? 45 : 18
 
             const isOngoingAuction = Number(auctionDeadline) * 1000 > Date.now()
-            const bidders = biddersList?.sort((a, b) => Number(a.createdAt) - Number(b.createdAt)) || []
+            const bidders = biddersList?.sort((a: any, b: any) => (
+                Number(a.createdAt) - Number(b.createdAt)
+            )) || []
             const kickBidder = {
                 bidder: startedBy,
                 buyAmount: utils.formatUnits(initialBid, buyDecimals),
@@ -102,7 +103,7 @@ export function useAuctions(type: AuctionEventType, tokenSymbol?: string) {
                 sellAmount: utils.formatUnits(sellInitialAmount, sellDecimals),
                 createdAtTransaction,
             }
-            const formattedInitialBids: IAuctionBidder[] = bidders.map((bid) => {
+            const formattedInitialBids: IAuctionBidder[] = bidders.map((bid: any) => {
                 return {
                     bidder: bid.bidder,
                     buyAmount: utils.formatUnits(bid.bid, buyDecimals),

@@ -40,7 +40,7 @@ export function ProxyPrompt({ children }: ProxyPromptProps) {
 
     const handleCreateAccount = async () => {
         if (!account || !signer || !chainId) return false
-        const txData = await geb.contracts.proxyRegistry.populateTransaction['build()']()
+        const txData = await geb.contracts.proxyFactory.populateTransaction['build()']()
 
         try {
             connectWalletActions.setIsStepLoading(true)

@@ -11,7 +11,6 @@ import {
     ISafe,
     ISafeData,
     ISafePayload,
-    NETWORK_ID,
 } from '~/utils'
 
 export const DEFAULT_SAFE_STATE = {
@@ -179,6 +178,8 @@ const safeModel: SafeModel = {
         const state = getState()
         const { isSuccessfulTx } = state
         const fetched = await fetchUserSafes(payload)
+        const chainId = payload.chainId
+
         if (fetched) {
             actions.setList(fetched.userSafes)
             if (fetched.userSafes.length > 0) {
@@ -191,7 +192,7 @@ const safeModel: SafeModel = {
                 actions.setIsSafeCreated(false)
             }
             actions.setLiquidationData(fetched.liquidationData)
-            const chainId = NETWORK_ID
+
             if (fetched.availableHAI && chainId) {
                 storeActions.connectWalletModel.updateHaiBalance({
                     chainId,

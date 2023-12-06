@@ -5,11 +5,19 @@ import { useStoreActions, useStoreState } from '~/store'
 import { AuctionsList } from './AuctionsList'
 
 export function Auctions() {
-    const { auctionModel: auctionsActions, popupsModel: popupsActions } = useStoreActions((state) => state)
-    const { auctionModel: auctionsState, connectWalletModel: connectWalletState } = useStoreState((state) => state)
+    const {
+        auctionModel: auctionsState,
+        connectWalletModel: connectWalletState
+    } = useStoreState(state => state)
+    const {
+        auctionModel: auctionsActions,
+        popupsModel: popupsActions
+    } = useStoreActions(actions => actions)
     
     const [isLoadingAuctions, setIsLoadingAuctions] = useState(false)
     const [selectedItem, setSelectedItem] = useState<string>('WETH')
+    const { proxyAddress } = connectWalletState
+    
     const [error, setError] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const geb = usePublicGeb()
@@ -28,8 +36,6 @@ export function Auctions() {
         // deltaToStartDebtAuction,
         // surplusCooldownDone,
     } = useStartAuction()
-
-    const { proxyAddress } = connectWalletState
 
     const handleStartSurplusAuction = async () => {
         setIsLoading(true)

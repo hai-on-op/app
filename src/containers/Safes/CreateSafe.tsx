@@ -6,9 +6,9 @@ import { useHistory } from 'react-router'
 import ReactTooltip from 'react-tooltip'
 import styled from 'styled-components'
 import { ethers, utils } from 'ethers'
-import { useAccount } from 'wagmi'
+import { useAccount, useNetwork } from 'wagmi'
 
-import { DEFAULT_SAFE_STATE, NETWORK_ID, TOKEN_LOGOS, formatNumber } from '~/utils'
+import { DEFAULT_NETWORK_ID, DEFAULT_SAFE_STATE, TOKEN_LOGOS, formatNumber } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import TokenInput from '~/components/TokenInput'
 import Modal from '~/components/Modals/Modal'
@@ -41,6 +41,8 @@ const CreateSafe = ({
     const { address: account } = useAccount()
     const signer = useEthersSigner()
     const [showPreview, setShowPreview] = useState(false)
+    const { chain } = useNetwork()
+    const chainId = chain?.id || DEFAULT_NETWORK_ID
 
     const {
         safeModel: safeState,
@@ -170,7 +172,7 @@ const CreateSafe = ({
         }
     }
 
-    let [approvalState, approve] = useTokenApproval(
+    const [approvalState, approve] = useTokenApproval(
         leftInput,
         selectedCollateral?.address,
         proxyAddress,
@@ -179,12 +181,14 @@ const CreateSafe = ({
     )
 
     useEffect(() => {
-        signer?.getBalance().then((balance) => {
-            connectWalletActions.updateEthBalance({
-                chainId: NETWORK_ID,
-                balance: Number(utils.formatEther(balance)),
+        if (signer) {
+            signer.getBalance().then((balance) => {
+                connectWalletActions.updateEthBalance({
+                    chainId: chainId,
+                    balance: Number(utils.formatEther(balance)),
+                })
             })
-        })
+        }
     }, [account, signer])
 
     return (
@@ -352,13 +356,10 @@ const CreateSafeContainer = () => {
     useEffect(() => {
         safeActions.setSafeData({ ...DEFAULT_SAFE_STATE, collateral: selectedItem })
         return () => safeActions.setSafeData(DEFAULT_SAFE_STATE)
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedItem])
 
     useEffect(() => {
         if (collaterals.length > 0 && selectedItem === '') setSelectedItem(collaterals[0].symbol)
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [collaterals])
 
     return (

@@ -1,16 +1,17 @@
 import { useEffect } from 'react'
 import styled from 'styled-components'
 import { useEthersSigner } from '~/hooks'
-import { useAccount } from 'wagmi'
+import { useAccount, useNetwork } from 'wagmi'
 
 import { useStoreState, useStoreActions } from '~/store'
 import { useGeb } from '~/hooks'
 import Accounts from './Accounts'
 import SafeList from './SafeList'
-import { isAddress } from '~/utils'
+import { DEFAULT_NETWORK_ID, isAddress } from '~/utils'
 
 const OnBoarding = ({ ...props }) => {
     const { address: account } = useAccount()
+    const { chain } = useNetwork()
     const signer = useEthersSigner()
     const geb = useGeb()
 
@@ -37,6 +38,7 @@ const OnBoarding = ({ ...props }) => {
                 address: address || (account as string),
                 geb,
                 tokensData: connectWalletState.tokensData,
+                chainId: chain?.id || DEFAULT_NETWORK_ID
             })
         }
         fetchSafes()
@@ -52,7 +54,7 @@ const OnBoarding = ({ ...props }) => {
         }, ms)
 
         return () => clearInterval(interval)
-    }, [account, address, connectWalletState.isWrongNetwork, connectWalletState.tokensData, geb, signer, safeActions])
+    }, [account, address, connectWalletState.isWrongNetwork, connectWalletState.tokensData, geb, signer, safeActions, chain?.id])
 
     return (
         <Container id="app-page">

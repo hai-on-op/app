@@ -51,7 +51,7 @@ const SafeDetails = ({ ...props }) => {
             safeActions.setSafeData(DEFAULT_SAFE_STATE)
         }
         return () => {
-            safeActions.setSingleSafe(null)
+            safeActions.setSingleSafe(undefined)
         }
     }, [safe, safeActions])
 

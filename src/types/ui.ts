@@ -3,7 +3,7 @@ import { type CSSProperties, type ReactNode, type SVGProps } from 'react'
 export type ReactChildren = JSX.Element | ReactNode | ReactNode[]
 
 export type IconProps = Omit<SVGProps<SVGElement>, 'ref'> & {
-    size?: number | string
+    size?: number
 }
 
 export type DirectionalIconProps = IconProps & {

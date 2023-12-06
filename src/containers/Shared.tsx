@@ -15,9 +15,9 @@ import {
     SYSTEM_STATUS,
     timeout,
     ChainId,
-    ETH_NETWORK,
-    NETWORK_ID,
     isAddress,
+    getNetworkName,
+    NETWORK_ID,
 } from '~/utils'
 import { useTokenContract, useEthersSigner, useGeb, usePlaylist, usePrevious } from '~/hooks'
 import { useStoreState, useStoreActions } from '~/store'
@@ -61,6 +61,7 @@ type Props = {
 const Shared = ({ children }: Props) => {
     const { t } = useTranslation()
     const { chain } = useNetwork()
+    const chainId = chain?.id || NETWORK_ID
     const { address: account } = useAccount()
     const signer = useEthersSigner()
     const geb = useGeb()
@@ -74,8 +75,10 @@ const Shared = ({ children }: Props) => {
     const isVaults = location.pathname === '/vaults'
     const isAuctions = location.pathname === '/auctions'
     const tokensData = geb?.tokenList
-    const coinTokenContract = useTokenContract(getTokenList(ETH_NETWORK).HAI.address)
-    const protTokenContract = useTokenContract(getTokenList(ETH_NETWORK).KITE.address)
+    const networkName = getNetworkName(chainId)
+
+    const coinTokenContract = useTokenContract(getTokenList(networkName).HAI.address)
+    const protTokenContract = useTokenContract(getTokenList(networkName).KITE.address)
 
     const {
         settingsModel: settingsState,
@@ -123,7 +126,6 @@ const Shared = ({ children }: Props) => {
                 balance: Number(utils.formatEther(balance)),
             })
         })
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [account, signer, connectWalletState, chain?.id])
 
     useEffect(() => {
@@ -206,6 +208,7 @@ const Shared = ({ children }: Props) => {
                     address: address ? address : (account as string),
                     geb,
                     tokensData,
+                    chainId,
                 })
             }
         } catch (error) {
@@ -233,7 +236,7 @@ const Shared = ({ children }: Props) => {
 
     function networkChecker() {
         accountChange()
-        const id: ChainId = NETWORK_ID
+        const id: ChainId = chainId
         popupsActions.setIsSafeManagerOpen(false)
         if (chain?.id !== id) {
             const chainName = ETHERSCAN_PREFIXES[id]

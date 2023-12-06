@@ -52,3 +52,10 @@ export interface ICollateralAuction extends SDKCollateralAuction {
     remainingCollateral: string
     tokenSymbol: string
 }
+
+export interface LoadingAuctionsData {
+    surplusStartBlock?: number
+    debtStartBlock?: number
+    collateralStartBlock?: number
+    loading: boolean
+}

@@ -6,24 +6,30 @@ export const {
     VITE_NETWORK_ID,
     VITE_WALLETCONNECT_ID,
     VITE_ALCHEMY_KEY,
-    VITE_PUBLIC_RPC
+    VITE_MAINNET_PUBLIC_RPC,
+    VITE_TESTNET_PUBLIC_RPC
 } = import.meta.env
 
-export const NETWORK_ID = parseInt(VITE_NETWORK_ID ?? '1')
+export const NETWORK_ID = parseInt(VITE_NETWORK_ID ?? '10')
+export const DEFAULT_NETWORK_ID = 10
 
-export enum Network {
-    OPTIMISM_GOERLI = 'optimism-goerli',
+export const getNetworkName = (chainId: number) => {
+    switch (chainId) {
+        case 10:
+            return 'mainnet'
+        case 420:
+            return 'optimism-goerli'
+        default:
+            return 'mainnet'
+    }
 }
 
-export const ETH_NETWORK = Network.OPTIMISM_GOERLI
 export const COIN_TICKER = 'HAI'
 export const EMPTY_ADDRESS = '0x0000000000000000000000000000000000000000'
 export const SYSTEM_STATUS = VITE_SYSTEM_STATUS || ''
-export const NetworkContextName = 'NETWORK'
 
 export const ETHERSCAN_PREFIXES: { [chainId in ChainId]: string } = {
-    1: '',
-    5: 'goerli.',
+    10: 'optimistic.',
     420: 'goerli-optimism.',
 }
 
@@ -82,3 +88,8 @@ export const LINK_TO_DOCS = 'https://docs.letsgethai.com/'
 export const LINK_TO_TWITTER = 'https://twitter.com/@letsgethai'
 // TODO: replace link
 export const LINK_TO_TELEGRAM = 'https://twitter.com/@letsgethai'
+// Auctions
+export const NUMBER_OF_AUCTIONS_TO_SHOW = 15
+export const SURPLUS_BATCH_SIZE = 5_000_000 // blocks
+export const DEBT_BATCH_SIZE = 200_000 // blocks
+export const COLLATERAL_BATCH_SIZE = 200_000 // blocks

@@ -28,7 +28,7 @@ export const getEtherscanLink = (
     data: string,
     type: 'transaction' | 'token' | 'address' | 'block'
 ): string => {
-    const prefix = `https://${ETHERSCAN_PREFIXES[chainId] || ETHERSCAN_PREFIXES[1]}etherscan.io`
+    const prefix = `https://${ETHERSCAN_PREFIXES[chainId] || ETHERSCAN_PREFIXES[10]}etherscan.io`
 
     switch (type) {
         case 'transaction': {
@@ -90,7 +90,7 @@ export const formatNumberWithStyle = (value: number | string, options: FormatOpt
 
 export const getRatePercentage = (value: string, digits = 4, returnRate = false) => {
     const rate = Number(value)
-    let ratePercentage = rate < 1 ? numeral(1).subtract(rate).value() * -1 : numeral(rate).subtract(1).value()
+    const ratePercentage = rate < 1 ? numeral(1).subtract(rate).value() * -1 : numeral(rate).subtract(1).value()
 
     if (returnRate) return ratePercentage
 

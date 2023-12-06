@@ -58,9 +58,8 @@ const ProxyModal = () => {
 
     const handleCreateAccount = async () => {
         if (!account || !signer || !chainId) return false
-
         const { blockNumber } = connectWalletState
-        const txData = await geb.contracts.proxyRegistry.populateTransaction['build()']()
+        const txData = await geb.contracts.proxyFactory.populateTransaction['build()']()
 
         try {
             setStatus('loading')

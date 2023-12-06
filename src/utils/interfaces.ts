@@ -5,8 +5,7 @@ import { Geb, type TokenData } from '@hai-on-op/sdk'
 import { BigNumber } from 'ethers'
 
 export declare enum ChainId {
-    MAINNET = 1,
-    GOERLI = 5,
+    MAINNET = 10,
     OPTIMISM_GOERLI = 420,
 }
 
@@ -322,7 +321,7 @@ export interface ISafeQuery extends ILiquidationResponse {
             coinAllowance: {
                 amount: string
             } | null
-        }
+        },
     ]
 }
 
@@ -336,6 +335,7 @@ export interface IFetchSafesPayload {
     address: string
     geb: Geb
     tokensData: { [key: string]: TokenData }
+    chainId: number
 }
 
 export interface IFetchSafeById extends IFetchSafesPayload {

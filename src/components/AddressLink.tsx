@@ -4,7 +4,7 @@ import { NETWORK_ID, getEtherscanLink, returnWalletAddress } from '~/utils'
 
 import { ExternalLink, ExternalLinkProps } from './ExternalLink'
 
-type AddressLinkProps = ExternalLinkProps & {
+type AddressLinkProps = Partial<ExternalLinkProps> & {
     chainId?: number
     address: string,
     type?: 'address' | 'transaction'
