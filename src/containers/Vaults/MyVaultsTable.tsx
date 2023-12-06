@@ -159,7 +159,7 @@ export function MyVaultsTable({ rows, onSelect }: MyVaultsTableProps) {
                         </Flex>
                         <Text>
                             {formatNumberWithStyle(totalAnnualizedStabilityFee, {
-                                // scalingFactor: 0.01,
+                                scalingFactor: 0.01,
                                 style: 'percent'
                             })}
                         </Text>

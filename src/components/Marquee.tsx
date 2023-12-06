@@ -9,6 +9,8 @@ type BannerHeaderProps = FlexProps & {
     text: string | string[],
     textOptions?: TextProps,
     staticWidth?: number,
+    reverse?: boolean,
+    speed?: number,
     spacing?: number,
     children?: ReactChildren
 }
@@ -17,6 +19,8 @@ export function Marquee({
     text,
     textOptions,
     staticWidth,
+    reverse = false,
+    speed = 1,
     spacing = 12,
     children
 }: BannerHeaderProps) {
@@ -55,7 +59,10 @@ export function Marquee({
 
     return (
         <Container>
-            <Banner $scrollDistance={chunkWidth}>
+            <Banner
+                $scrollDistance={chunkWidth}
+                $reverse={reverse}
+                $speed={speed}>
                 <Flex
                     $width="100%"
                     $gap={spacing}>
@@ -95,17 +102,26 @@ const Container = styled(CenteredFlex)`
     overflow: visible;
 `
 
-const Banner = styled(Flex)<{ $scrollDistance?: number }>`
+const Banner = styled(Flex)<{
+    $scrollDistance?: number,
+    $speed: number,
+    $reverse?: boolean
+}>`
     position: absolute;
     left: 0px;
     right: 0px;
     overflow: visible;
-    ${({ $scrollDistance }) => !!$scrollDistance && css`
-        & > div {
-            animation: ${createScrollAnimation($scrollDistance)} ${$scrollDistance / 50}s linear infinite;
-            overflow: visible;
-        }
-    `}
+    ${({ $scrollDistance, $reverse, $speed }) => {
+        if (!$scrollDistance) return ''
+
+        const d = $reverse ? -$scrollDistance: $scrollDistance
+        return css`
+            & > div {
+                animation: ${createScrollAnimation(d)} ${Math.max($scrollDistance / (50 * $speed), 0.5)}s linear infinite;
+                overflow: visible;
+            }
+        `
+    }}
 `
 
 export const MarqueeChunk = styled(Flex).attrs(props => ({

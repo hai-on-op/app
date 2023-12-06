@@ -37,7 +37,6 @@ export function WrapETHModal(props: ModalProps) {
         return [bal.toString(), Math.max(bal - 0.01, 0).toString()]
     }, [chain?.id, ethBalance])
 
-    console.log(wrapValue)
     const isNonZero = parseFloat(wrapValue || '0') > 0
 
     const insufficientFunds = parseFloat(wrapValue || '0') > parseFloat(balance)

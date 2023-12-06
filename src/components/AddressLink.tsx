@@ -4,11 +4,10 @@ import { NETWORK_ID, getEtherscanLink, returnWalletAddress } from '~/utils'
 
 import { ExternalLink, ExternalLinkProps } from './ExternalLink'
 
-type AddressLinkProps = Omit<ExternalLinkProps, 'children'> & {
+type AddressLinkProps = ExternalLinkProps & {
     chainId?: number
     address: string,
-    type?: 'address' | 'transaction',
-    children?: JSX.Element
+    type?: 'address' | 'transaction'
 }
 
 export const AddressLink = ({ chainId, address, type = 'address', children, ...props }: AddressLinkProps) => {

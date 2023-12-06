@@ -22,8 +22,8 @@ type Props = {
 }
 export function useVaultError({
     action,
-    debt,
     collateral,
+    debt,
     collateralRatio,
     isSafe
 }: Props) {
@@ -35,6 +35,7 @@ export function useVaultError({
     if (!proxyAddress) return { error: VaultInfoError.NO_PROXY }
 
     const availableCollateralBN = BigNumber.from(toFixedString(collateral.available, 'WAD'))
+    const collateralBalanceBN = BigNumber.from(toFixedString(collateral.balance, 'WAD'))
     const availableHaiBN = BigNumber.from(toFixedString(debt.available, 'WAD'))
     const haiBalanceBN = BigNumber.from(toFixedString(debt.balance || '0', 'WAD'))
 
@@ -49,15 +50,15 @@ export function useVaultError({
         debtFloor,
         safetyCRatio
     } = collateral.liquidationData || {}
-    // returns debtFloor from liquidation data from store
+    
     const debtFloorBN = BigNumber.from(toFixedString(debtFloor || '0', 'WAD'))
     const totalDebtBN = BigNumber.from(toFixedString(debt.total, 'WAD'))
 
-    if (action === VaultAction.DEPOSIT_BORROW) {
+    if (action === VaultAction.DEPOSIT_BORROW || action === VaultAction.CREATE) {
         if (leftInputBN.isZero() && rightInputBN.isZero()) {
             return { error: VaultInfoError.ZERO_AMOUNT }
         }
-        if (leftInputBN.gt(availableCollateralBN)) {
+        if (leftInputBN.gt(collateralBalanceBN)) {
             return { error: VaultInfoError.INSUFFICIENT_COLLATERAL }
         }
         if (rightInputBN.gt(availableHaiBN)) {

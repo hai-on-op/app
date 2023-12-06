@@ -58,7 +58,7 @@ const myDummySafes: ISafe[] = [
         liquidationCRatio: '120',
         liquidationPenalty: '',
         liquidationPrice: '1365.43',
-        totalAnnualizedStabilityFee: '0.072',
+        totalAnnualizedStabilityFee: '7.2',
         currentRedemptionRate: '',
         collateralType: '',
         collateralName: 'WETH'
@@ -80,7 +80,7 @@ const myDummySafes: ISafe[] = [
         liquidationCRatio: '120',
         liquidationPenalty: '',
         liquidationPrice: '2.42',
-        totalAnnualizedStabilityFee: '0.072',
+        totalAnnualizedStabilityFee: '7.2',
         currentRedemptionRate: '',
         collateralType: '',
         collateralName: 'OP'

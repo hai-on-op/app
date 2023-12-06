@@ -138,7 +138,7 @@ export function AvailableVaultsTable({ rows, onSelect, myVaults }: AvailableVaul
                                 : (
                                     <CenteredFlex $gap={4}>
                                         <Text>{existingVaults.length}</Text>
-                                        <Tooltip>
+                                        <Tooltip $gap={12}>
                                             {existingVaults.map((vault) => (
                                                 <VaultLink
                                                     key={vault.id}

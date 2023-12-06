@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAccount, useNetwork } from 'wagmi'
 
+import type { ReactChildren } from '~/types'
 import { useStoreActions, useStoreState } from '~/store'
 import { LINK_TO_DOCS, NETWORK_ID } from '~/utils'
 import { handleTransactionError, useEthersSigner, useGeb, useTransactionAdder } from '~/hooks'
@@ -18,7 +19,7 @@ enum PromptStep {
 }
 
 type ProxyPromptProps = {
-    children: JSX.Element
+    children: ReactChildren
 }
 export function ProxyPrompt({ children }: ProxyPromptProps) {
     const { t } = useTranslation()
@@ -114,7 +115,7 @@ export function ProxyPrompt({ children }: ProxyPromptProps) {
         </Container>
     )
     
-    return children
+    return (<>{children}</>)
 }
 
 const Container = styled(CenteredFlex).attrs(props => ({

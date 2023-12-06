@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+
 import type { ReactChildren } from '~/types'
 import { formatNumberWithStyle } from '~/utils'
 import { useVault } from '~/providers/VaultProvider'
@@ -14,9 +16,12 @@ type ManageVaultProps = {
     headerContent?: ReactChildren
 }
 export function ManageVault({ headerContent }: ManageVaultProps) {
-    const { collateral, debt } = useVault()
+    const { updateForm, collateral, debt } = useVault()
 
     const relativePrice = parseFloat(collateral.priceInUSD || '0') / parseFloat(debt.priceInUSD)
+
+    // clear form inputs when unmounting
+    useEffect(() => () => updateForm('clear'), [updateForm])
 
     return (
         <Container>
@@ -24,9 +29,13 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
                 <CenteredFlex $gap={12}>
                     <BrandedDropdown
                         label={(<>
-                            <TokenPair tokens={[collateral.name as any, 'HAI']}/>
-                            <Text>{`• 1 of `}12</Text>
-                        </>)}>
+                            <TokenPair
+                                tokens={[collateral.name as any, 'HAI']}
+                                hideLabel
+                            />
+                            <Text>{collateral.name}/HAI • 1 of 12</Text>
+                        </>)}
+                        style={{ paddingLeft: '8px' }}>
                         <Text>blarn</Text>
                         <Text>blarn</Text>
                         <Text>blarn</Text>
@@ -46,10 +55,8 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
             </Header>
             <Body>
                 <ProxyPrompt>
-                    <>
-                        <Overview/>
-                        <VaultActions/>
-                    </>
+                    <Overview/>
+                    <VaultActions/>
                 </ProxyPrompt>
             </Body>
         </Container>

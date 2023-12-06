@@ -88,10 +88,10 @@ const HaiIconContainer = styled(CenteredFlex).attrs(props => ({
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    border: ${({ theme }) => theme.border.medium};
+    border: ${({ theme }) => theme.border.thin};
     background-color: ${({ theme }) => theme.colors.greenish};
     & > svg {
-        width: 70%;
+        width: 80%;
         height: auto;
     }
 `

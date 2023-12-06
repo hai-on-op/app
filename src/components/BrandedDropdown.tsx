@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { type HTMLProps, useState } from 'react'
 
 import type { ReactChildren } from '~/types'
 import { useOutsideClick } from '~/hooks'
@@ -7,11 +7,12 @@ import styled from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Popout } from '~/styles'
 import { Caret } from './Icons/Caret'
 
-type BrandedDropdownProps = {
+type ButtonProps = Omit<HTMLProps<HTMLButtonElement>, 'ref' | 'as' | 'type' | 'label' | 'children'>
+type BrandedDropdownProps = ButtonProps & {
     label: ReactChildren,
     children: ReactChildren
 }
-export function BrandedDropdown({ label, children }: BrandedDropdownProps) {
+export function BrandedDropdown({ label, children, ...props }: BrandedDropdownProps) {
     const [container, setContainer] = useState<HTMLElement | null>(null)
     const [expanded, setExpanded] = useState(false)
 
@@ -20,6 +21,7 @@ export function BrandedDropdown({ label, children }: BrandedDropdownProps) {
     return (
         <Container
             ref={setContainer}
+            {...props}
             onClick={() => setExpanded(e => !e)}>
             <CenteredFlex $gap={12}>
                 {label}

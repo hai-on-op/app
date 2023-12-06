@@ -147,17 +147,14 @@ export const ModalBody = styled(Flex).attrs(props => ({
     $justify: 'stretch',
     $align: 'center',
     $grow: 1,
+    $gap: 24,
     ...props
 }))`
     overflow: hidden auto;
-    & > * {
-        padding: 24px 36px;
-    }
+    padding: 0 36px;
 
     ${({ theme }) => theme.mediaWidth.upToExtraSmall`
-        & > * {
-            padding: 16px;
-        }
+        padding: 0 16px;
     `}
 `
 
