@@ -1,3 +1,4 @@
+import { type TokenData } from '@hai-on-op/sdk'
 import { type CollateralLiquidationData } from './interfaces'
 
 export enum VaultAction {
@@ -16,6 +17,7 @@ export type FormState = {
 
 export type Collateral = {
     name: string,
+    data?: TokenData,
     total: string,
     available: string,
     balance: string,
@@ -25,6 +27,7 @@ export type Collateral = {
 
 export type Debt = {
     total: string,
+    data?: TokenData,
     available: string,
     balance: string,
     priceInUSD: string
@@ -56,4 +59,13 @@ export const vaultInfoErrors: Record<number, string> = {
     [VaultInfoError.GLOBAL_DEBT_CEILING]: `Cannot exceed global debt ceiling`,
     [VaultInfoError.HAI_DEBT_CEILING]: `Cannot exceed HAI debt ceiling`,
     [VaultInfoError.MINIMUM_MINT]: `You must mint at least 1 $HAI to create a Vault`
+}
+
+export type SummaryItemValue<T = {}> = T & {
+    raw: string,
+    formatted: string
+}
+export type SummaryItem<T = {}> = {
+    current?: SummaryItemValue<T>,
+    after: SummaryItemValue<T>
 }

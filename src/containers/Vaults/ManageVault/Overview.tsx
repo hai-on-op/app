@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { Status, formatNumberWithStyle } from '~/utils'
+import { Status } from '~/utils'
 import { useVault } from '~/providers/VaultProvider'
 
 import styled from 'styled-components'
@@ -16,13 +16,11 @@ export function Overview() {
     const {
         vault,
         collateral,
-        debt,
         riskStatus,
         safetyRatio,
         collateralRatio,
-        stabilityFeePercentage,
-        liquidationPrice,
-        simulation
+        simulation,
+        summary
     } = useVault()
 
     const progressProps = useMemo(() => {
@@ -50,7 +48,9 @@ export function Overview() {
     return (
         <Container>
             <Header>
-                <Text $fontWeight={700}>Vault Overview {vault ? `#${vault.id}`: ''}</Text>
+                <Text $fontWeight={700}>
+                    Vault Overview {vault ? `#${vault.id}`: ''}
+                </Text>
                 {!!simulation && (
                     <StatusLabel
                         status={Status.CUSTOM}
@@ -68,14 +68,14 @@ export function Overview() {
             </Header>
             <Inner $borderOpacity={0.2}>
                 <OverviewStat
-                    value={vault?.collateral
-                        ? formatNumberWithStyle(vault.collateral, { maxDecimals: 4 })
-                        : formatNumberWithStyle(collateral.total, { maxDecimals: 4 })
+                    value={
+                        summary.collateral.current?.formatted
+                        || summary.collateral.after.formatted
                     }
                     token={collateral.name as any}
                     label="Collateral Asset"
                     simulatedValue={vault && simulation?.collateral
-                        ? formatNumberWithStyle(collateral.total, { maxDecimals: 4 })
+                        ? summary.collateral.after.formatted
                         : ''
                     }
                     alert={{
@@ -86,14 +86,14 @@ export function Overview() {
                     borderedBottom
                 />
                 <OverviewStat
-                    value={vault?.debt
-                        ? formatNumberWithStyle(vault.debt, { maxDecimals: 4 })
-                        : formatNumberWithStyle(debt.total, { maxDecimals: 4 })
+                    value={
+                        summary.debt.current?.formatted
+                        || summary.debt.after.formatted
                     }
                     token="HAI"
                     label="Debt Asset"
                     simulatedValue={vault && simulation?.debt
-                        ? formatNumberWithStyle(debt.total, { maxDecimals: 4 })
+                        ? summary.debt.after.formatted
                         : ''
                     }
                     alert={{
@@ -104,22 +104,16 @@ export function Overview() {
                     borderedBottom
                 />
                 <OverviewProgressStat
-                    value={collateralRatio && !isNaN(Number(collateralRatio))
-                        ? formatNumberWithStyle(collateralRatio, {
-                            scalingFactor: 0.01,
-                            style: 'percent'
-                        })
-                        : '--%'
+                    value={
+                        summary.collateralRatio.current?.formatted
+                        || summary.collateralRatio.after.formatted
                     }
                     label="Ratio:"
                     simulatedValue={vault && simulation?.riskStatus
                         ? `${simulation.collateralRatio
-                            ? formatNumberWithStyle(simulation.collateralRatio, {
-                                scalingFactor: 0.01,
-                                style: 'percent'
-                            })
-                            : '--'
-                        } ${simulation.riskStatus}`
+                            ? summary.collateralRatio.after.formatted
+                            : '--%'
+                        } (${simulation.riskStatus})`
                         : undefined
                     }
                     alert={riskStatus ? { status: riskStatus }: undefined}
@@ -128,33 +122,19 @@ export function Overview() {
                     borderedBottom
                 />
                 <OverviewStat
-                    value={vault?.totalAnnualizedStabilityFee
-                        ? formatNumberWithStyle(vault.totalAnnualizedStabilityFee, {
-                            // scalingFactor: 0.01,
-                            maxDecimals: 4,
-                            style: 'percent'
-                        })
-                        : formatNumberWithStyle(stabilityFeePercentage, {
-                            scalingFactor: 0.01,
-                            maxDecimals: 4,
-                            style: 'percent'
-                        })
-                    }
+                    value={summary.stabilityFee.formatted}
                     label="Stability Fee"
                     tooltip={t('stability_fee_tip')}
                     borderedRight
                 />
                 <OverviewStat
-                    value={formatNumberWithStyle(vault?.liquidationPrice || liquidationPrice, {
-                        maxDecimals: 3,
-                        style: 'currency'
-                    })}
+                    value={
+                        summary.liquidationPrice.current?.formatted
+                        || summary.liquidationPrice.after.formatted
+                    }
                     label="Liq. Price"
                     simulatedValue={vault && simulation?.liquidationPrice
-                        ? formatNumberWithStyle(simulation.liquidationPrice, {
-                            maxDecimals: 3,
-                            style: 'currency'
-                        })
+                        ? summary.liquidationPrice.after.formatted
                         : undefined
                     }
                     tooltip={t('liquidation_price_tip')}

@@ -14,7 +14,10 @@ export function useCollateral(action: VaultAction): Collateral {
             singleSafe,
             liquidationData
         },
-        connectWalletModel: { tokensFetchedData }
+        connectWalletModel: {
+            tokensData,
+            tokensFetchedData
+        }
     } = useStoreState(state => state)
 
     const name = useMemo(() => (
@@ -30,21 +33,25 @@ export function useCollateral(action: VaultAction): Collateral {
         return returnTotalValue(singleSafe.collateral, leftInput).toString()
     }, [singleSafe, leftInput, action])
 
-    const balance = formatEther(tokensFetchedData[name]?.balanceE18 || '0')
+    const balance = useMemo(() => (
+        formatEther(tokensFetchedData[name]?.balanceE18 || '0')
+    ), [tokensFetchedData, name])
 
     const collateralLiquidationData = liquidationData?.collateralLiquidationData[name]
 
     const available = useMemo(() => {
-        if (!singleSafe) return '0'
-
-        if (action !== VaultAction.DEPOSIT_BORROW || !singleSafe.collateralName) {
-            return singleSafe.collateral
+        if (
+            (action !== VaultAction.DEPOSIT_BORROW && action !== VaultAction.CREATE)
+            || (singleSafe && !singleSafe.collateralName)
+        ) {
+            return singleSafe?.collateral || '0'
         }
         return formatNumber(balance, 2).toString()
     }, [singleSafe, balance, action])
 
     return {
         name,
+        data: tokensData?.[name],
         total,
         available,
         balance,

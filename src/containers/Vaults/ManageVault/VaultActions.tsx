@@ -1,14 +1,21 @@
 import { useMemo, useState } from 'react'
 
-import { VaultAction, VaultInfoError, formatNumberWithStyle } from '~/utils'
+import { VaultAction, formatNumberWithStyle } from '~/utils'
+import { useStoreState } from '~/store'
 import { useVault } from '~/providers/VaultProvider'
+import { ApprovalState, useProxyAddress, useTokenApproval } from '~/hooks'
 
 import styled, { css } from 'styled-components'
 import { CenteredFlex, Flex, Grid, HaiButton, Text } from '~/styles'
 import { NumberInput } from '~/components/NumberInput'
 import { WrapETHModal } from '~/components/Modal/WrapETHModal'
+import { ReviewVaultTxModal } from '~/components/Modal/ReviewVaultTxModal'
+import { VaultActionError } from './VaultActionError'
 
 export function VaultActions() {
+    const proxyAddress = useProxyAddress()
+    const { safeModel: safeState } = useStoreState(state => state)
+
     const {
         vault,
         action,
@@ -20,36 +27,149 @@ export function VaultActions() {
         error
     } = useVault()
 
+    const [collateralApproval, approveCollateral] = useTokenApproval(
+        action === VaultAction.WITHDRAW_REPAY
+            ? formState.withdraw || '0'
+            : formState.deposit || '0',
+        collateral.data?.address,
+        proxyAddress,
+        collateral.data?.decimals.toString(),
+        true
+    )
+
+    const [debtApproval, approveDebtUnlock] = useTokenApproval(
+        action === VaultAction.WITHDRAW_REPAY
+            ? formState.repay || '0'
+            : formState.borrow || '0',
+        debt.data?.address,
+        proxyAddress,
+        debt.data?.decimals.toString() || '18',
+        true,
+        action === VaultAction.WITHDRAW_REPAY && formState.repay === debt.available
+    )
+
+    const [reviewActive, setReviewActive] = useState(false)
     const [wrapEthActive, setWrapEthActive] = useState(false)
 
     const [buttonActive, buttonLabel] = useMemo(() => {
+        let label = ''
         switch(action) {
-            case VaultAction.DEPOSIT_BORROW:
             case VaultAction.CREATE: {
+                const { deposit = '0', borrow = '0' } = formState
+                if (Number(deposit) <= 0 || Number(borrow) <= 0) {
+                    return [false, 'Create Vault']
+                }
+                label = 'Create Vault'
+                break
+            }
+            case VaultAction.DEPOSIT_BORROW: {
                 const { deposit = '0', borrow = '0' } = formState
                 if (Number(deposit) <= 0 && Number(borrow) <= 0) {
                     return [false, 'Deposit']
                 }
-                if (Number(borrow) <= 0) return [true, 'Deposit']
-                if (Number(deposit) <= 0) return [true, 'Borrow']
-                return [true, 'Deposit & Borrow']
+                if (Number(borrow) <= 0) label = 'Deposit'
+                else if (Number(deposit) <= 0) label = 'Borrow'
+                else label = 'Deposit & Borrow'
+                break
             }
             case VaultAction.WITHDRAW_REPAY: {
                 const { withdraw = '0', repay = '0' } = formState
                 if (Number(withdraw) <= 0 && Number(repay) <= 0) {
                     return [false, 'Withdraw']
                 }
-                if (Number(repay) <= 0) return [true, 'Withdraw']
-                if (Number(withdraw) <= 0) return [true, 'Pay Back']
-                return [true, 'Withdraw & Pay Back']
+                if (Number(repay) <= 0) label = 'Withdraw'
+                else if (Number(withdraw) <= 0) label = 'Pay Back'
+                else  label = 'Withdraw & Pay Back'
+                break
             }
             default: return [false, 'Deposit']
         }
-    }, [action, formState])
+        return [!error, label]
+    }, [action, formState, error])
+
+    const button = useMemo(() => {
+        switch(action) {
+            case VaultAction.DEPOSIT_BORROW:
+            case VaultAction.CREATE:
+                switch(collateralApproval) {
+                    case ApprovalState.NOT_APPROVED:
+                    case ApprovalState.PENDING:
+                    case ApprovalState.UNKNOWN:
+                        return (
+                            <HaiButton
+                                $variant="yellowish"
+                                $width="100%"
+                                $justify="center"
+                                disabled={!buttonActive || collateralApproval === ApprovalState.PENDING}
+                                onClick={approveCollateral}>
+                                {collateralApproval === ApprovalState.PENDING
+                                    ? 'Pending Approval..'
+                                    : `Unlock ${collateral.name}`
+                                }
+                            </HaiButton>
+                        )
+                    case ApprovalState.APPROVED:
+                    default:
+                        return (
+                            <HaiButton
+                                $variant="yellowish"
+                                $width="100%"
+                                $justify="center"
+                                disabled={!buttonActive || !safeState.isSuccessfulTx}
+                                onClick={() => setReviewActive(true)}>
+                                {!safeState.isSuccessfulTx
+                                    ? 'Pending Transaction...'
+                                    : `Review ${buttonLabel}`
+                                }
+                            </HaiButton>
+                        )
+                }
+            case VaultAction.WITHDRAW_REPAY: {
+                switch(debtApproval) {
+                    case ApprovalState.NOT_APPROVED:
+                    case ApprovalState.PENDING:
+                    case ApprovalState.UNKNOWN:
+                        return (
+                            <HaiButton
+                                $variant="yellowish"
+                                $width="100%"
+                                $justify="center"
+                                disabled={!buttonActive || collateralApproval === ApprovalState.PENDING}
+                                onClick={approveDebtUnlock}>
+                                {collateralApproval === ApprovalState.PENDING
+                                    ? 'Pending Approval..'
+                                    : `Unlock HAI`
+                                }
+                            </HaiButton>
+                        )
+                    case ApprovalState.APPROVED:
+                    default:
+                        return (
+                            <HaiButton
+                                $variant="yellowish"
+                                $width="100%"
+                                $justify="center"
+                                disabled={!buttonActive || !safeState.isSuccessfulTx}
+                                onClick={() => setReviewActive(true)}>
+                                {!safeState.isSuccessfulTx
+                                    ? 'Pending Transaction...'
+                                    : `Review ${buttonLabel}`
+                                }
+                            </HaiButton>
+                        )
+                }
+            }
+        }
+    }, [
+        action, safeState, buttonActive, buttonLabel,
+        collateral, collateralApproval, approveCollateral,
+        debtApproval, approveDebtUnlock
+    ])
 
     const isDepositBorrowOrCreate = action === VaultAction.DEPOSIT_BORROW || action === VaultAction.CREATE
 
-    return (
+    return (<>
+        {reviewActive && <ReviewVaultTxModal onClose={() => setReviewActive(false)}/>}
         <Container>
             <Header $pad={action === VaultAction.CREATE}>
                 <Flex
@@ -169,20 +289,13 @@ export function VaultActions() {
                     </WrapEthText>
                     {wrapEthActive && <WrapETHModal onClose={() => setWrapEthActive(false)}/>}
                 </>)}
-                {/* TODO: wrap ETH prompt when insufficient collateral? */}
                 <VaultActionError/>
             </Body>
             <Footer>
-                <HaiButton
-                    $variant="yellowish"
-                    $width="100%"
-                    $justify="center"
-                    disabled={!!error || !buttonActive}>
-                    {buttonLabel}
-                </HaiButton>
+                {button}
             </Footer>
         </Container>
-    )
+    </>)
 }
 
 const Container = styled(Flex).attrs(props => ({
@@ -255,33 +368,3 @@ const Footer = styled(CenteredFlex)`
     padding: 24px;
     border-top: ${({ theme }) => theme.border.thin};
 `
-
-function VaultActionError() {
-    const { action, formState, error, errorMessage } = useVault()
-
-    if (!error) return null
-
-    if (error === VaultInfoError.ZERO_AMOUNT) {
-        if (action === VaultAction.CREATE) {
-            // ignore error on initial form state
-            if (!formState.deposit || !formState.borrow) return null
-        }
-        else if (action === VaultAction.DEPOSIT_BORROW) {
-            // ignore single-sided empty error
-            if (!formState.deposit || !formState.borrow) return null
-        }
-        else if (action === VaultAction.WITHDRAW_REPAY) {
-            // ignore single-sided empty error
-            if (!formState.withdraw || !formState.repay) return null
-        }
-    }
-
-    return (
-        <Text
-            $fontSize="0.8em"
-            $color="red"
-            style={{ marginTop: '24px' }}>
-            Error: {errorMessage}
-        </Text>
-    )
-}

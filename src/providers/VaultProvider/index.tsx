@@ -33,6 +33,7 @@ import { useStoreActions, useStoreState } from '~/store'
 import { useCollateral } from './useCollateral'
 import { useDebt } from './useDebt'
 import { type Simulation, useSimulation } from './useSimulation'
+import { type Summary, useSummary, DEFAULT_SUMMARY } from './useSummary'
 import { useVaultError } from './useVaultError'
 
 type VaultContext = {
@@ -52,6 +53,7 @@ type VaultContext = {
     isSafe: boolean,
     liquidationPenaltyPercentage: number,
     stabilityFeePercentage: string,
+    summary: Summary,
     error?: VaultInfoError,
     errorMessage?: string
 }
@@ -79,7 +81,8 @@ const defaultState: VaultContext = {
     riskStatus: Status.UNKNOWN,
     isSafe: true,
     liquidationPenaltyPercentage: 0,
-    stabilityFeePercentage: ''
+    stabilityFeePercentage: '',
+    summary: DEFAULT_SUMMARY
 }
 
 const VaultContext = createContext<VaultContext>(defaultState)
@@ -224,6 +227,15 @@ export function VaultProvider({ action, setAction, children }: Props) {
         debt
     })
 
+    const summary = useSummary({
+        vault: singleSafe,
+        collateral,
+        debt,
+        simulatedCR: simulation?.collateralRatio,
+        liquidationPrice,
+        stabilityFeePercentage
+    })
+
     const { error, errorMessage } = useVaultError({
         action,
         collateral,
@@ -250,6 +262,7 @@ export function VaultProvider({ action, setAction, children }: Props) {
             isSafe,
             liquidationPenaltyPercentage,
             stabilityFeePercentage,
+            summary,
             error,
             errorMessage: error
                 ? errorMessage || vaultInfoErrors[error] || undefined

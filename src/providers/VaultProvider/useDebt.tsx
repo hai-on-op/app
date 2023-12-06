@@ -18,7 +18,10 @@ export function useDebt(action: VaultAction, collateralLiquidationData?: Collate
             safeData: { leftInput, rightInput },
             singleSafe
         },
-        connectWalletModel: { tokensFetchedData }
+        connectWalletModel: {
+            tokensData,
+            tokensFetchedData
+        }
     } = useStoreState(state => state)
 
     const { accumulatedRate = '0' } = collateralLiquidationData || {}
@@ -67,6 +70,7 @@ export function useDebt(action: VaultAction, collateralLiquidationData?: Collate
     }, [collateralLiquidationData, accumulatedRate, singleSafe, action, leftInput])
 
     return {
+        data: tokensData?.HAI,
         total: (Number(total || '0') <= 0.00001)
             ? '0'
             : total,
