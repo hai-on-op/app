@@ -21,7 +21,8 @@ import { haiTheme } from './utils/rainbowTheme'
 const projectId = VITE_WALLETCONNECT_ID!
 
 const { chains, publicClient } = configureChains(
-    [optimismGoerli, optimism],
+    // temporary
+    [optimismGoerli /* optimism */],
     [alchemyProvider({ apiKey: VITE_ALCHEMY_KEY! }), publicProvider()]
 )
 
