@@ -4,7 +4,8 @@ import {
     type ISafe,
     type SummaryItem,
     type SummaryItemValue,
-    formatNumberWithStyle
+    formatNumberWithStyle,
+    getRatePercentage
 } from "~/utils"
 
 type SummaryCurrency = {
@@ -24,17 +25,17 @@ type Props = {
     collateral: Collateral,
     debt: Debt,
     simulatedCR?: string,
-    liquidationPrice: string,
-    stabilityFeePercentage: string
+    liquidationPrice: string
 }
 export function useSummary({
     vault,
     collateral,
     debt,
     simulatedCR,
-    liquidationPrice,
-    stabilityFeePercentage
+    liquidationPrice
 }: Props): Summary {
+    const stabilityFee = vault?.totalAnnualizedStabilityFee
+        || collateral.liquidationData?.totalAnnualizedStabilityFee
     return {
         collateral: {
             current: formatSummaryCurrency(vault?.collateral, collateral.priceInUSD),
@@ -48,10 +49,14 @@ export function useSummary({
             current: formatSummaryPercentage(vault?.collateralRatio, 0.01),
             after: formatSummaryPercentage(simulatedCR || '0', 0.01)!
         },
-        stabilityFee: formatSummaryPercentage(
-            vault?.totalAnnualizedStabilityFee || stabilityFeePercentage,
-            0.01
-        )!,
+        stabilityFee: stabilityFee
+            ? formatSummaryPercentage(
+                (getRatePercentage(stabilityFee, 4, true)).toString()
+            )!
+            : {
+                raw: '',
+                formatted: '--%'
+            },
         liquidationPrice: {
             current: vault?.liquidationPrice
                 ? {

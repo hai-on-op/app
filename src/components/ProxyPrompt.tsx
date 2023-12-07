@@ -19,9 +19,10 @@ enum PromptStep {
 }
 
 type ProxyPromptProps = {
-    children: ReactChildren
+    children: ReactChildren,
+    onCreateVault?: () => void
 }
-export function ProxyPrompt({ children }: ProxyPromptProps) {
+export function ProxyPrompt({ children, onCreateVault }: ProxyPromptProps) {
     const { t } = useTranslation()
     const { chain } = useNetwork()
     const chainId = chain?.id
@@ -111,6 +112,19 @@ export function ProxyPrompt({ children }: ProxyPromptProps) {
                 $variant="yellowish"
                 onClick={handleCreateAccount}>
                 {t('create_account')}
+            </HaiButton>
+        </Container>
+    )
+
+    if (onCreateVault && connectWalletState.step === PromptStep.CREATE_SAFE) return (
+        <Container>
+            <Text>
+                No active vaults associated with this address were found.
+            </Text>
+            <HaiButton
+                $variant="yellowish"
+                onClick={onCreateVault}>
+                {t('create_safe')}
             </HaiButton>
         </Container>
     )

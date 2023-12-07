@@ -17,6 +17,7 @@ import { PassLink } from '~/components/PassLink'
 import { ExternalLink } from '~/components/ExternalLink'
 import { ConnectButton } from '~/components/ConnectButton'
 import { BrandedDropdown, DropdownOption } from '~/components/BrandedDropdown'
+import { WrapETHModal } from '~/components/Modal/WrapETHModal'
 import { Notifications } from './Notifications'
 import { MobileMenu } from './MobileMenu'
 
@@ -42,6 +43,8 @@ export function Header({ tickerActive = false }: HeaderProps) {
 
     const [dropdownActive, setDropdownActive] = useState(false)
     const [notificationsActive, setNotificationsActive] = useState(false)
+
+    const [wrapEthActive, setWrapEthActive] = useState(false)
 
     const tickerText = useMemo(() => {
         // TODO: figure out %change (or drop it)
@@ -77,7 +80,8 @@ export function Header({ tickerActive = false }: HeaderProps) {
         return arr.flat()
     }, [liquidationData, marketPrice, redemptionPrice])
 
-    return (
+    return (<>
+        {wrapEthActive && <WrapETHModal onClose={() => setWrapEthActive(false)}/>}
         <Container $tickerActive={tickerActive}>
             {tickerActive && (
                 <Ticker>
@@ -175,6 +179,12 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                             Analytics
                                         </DropdownOption>
                                     </PassLink>
+                                    <DropdownOption onClick={() => {
+                                        setDropdownActive(false)
+                                        setWrapEthActive(true)
+                                    }}>
+                                        Wrap ETH
+                                    </DropdownOption>
                                 </BrandedDropdown>
                             )
                     )}
@@ -211,7 +221,7 @@ export function Header({ tickerActive = false }: HeaderProps) {
                 </RightSide>
             </Inner>
         </Container>
-    )
+    </>)
 }
 
 const Container = styled(Flex).attrs(props => ({

@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react'
+import { formatEther } from 'ethers/lib/utils'
 
 import type { SortableHeader } from '~/types'
-import { type ISafe } from '~/utils'
+import { type AvailableVaultPair, formatNumberWithStyle } from '~/utils'
+import { useVault } from '~/providers/VaultProvider'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, Grid, HaiButton, Text } from '~/styles'
@@ -19,11 +21,11 @@ const sortableHeaders: SortableHeader[] = [
 ]
 
 type AvailableVaultsTableProps = {
-    rows: ISafe[],
-    onSelect: (vault: ISafe, create: boolean) => void,
-    myVaults: ISafe[]
+    rows: AvailableVaultPair[]
 }
-export function AvailableVaultsTable({ rows, onSelect, myVaults }: AvailableVaultsTableProps) {
+export function AvailableVaultsTable({ rows }: AvailableVaultsTableProps) {
+    const { setActiveVault } = useVault()
+
     const [sorting, setSorting] = useState<{ key: string, dir: 'asc' | 'desc'}>({
         key: 'Coll. Factor',
         dir: 'desc'
@@ -41,7 +43,7 @@ export function AvailableVaultsTable({ rows, onSelect, myVaults }: AvailableVaul
                 })
             }
             case 'Net APY': {
-                return rows.sort(({ liquidationCRatio: a }, { liquidationCRatio: b }) => {
+                return rows.sort(({ apy: a }, { apy: b }) => {
                     if (!b) return -1
                     if (!a) return 1
                     return sorting.dir === 'desc'
@@ -50,22 +52,26 @@ export function AvailableVaultsTable({ rows, onSelect, myVaults }: AvailableVaul
                 })
             }
             case 'My Eligible Collateral': {
-                return rows
+                return rows.sort(({ eligibleBalance: a }, { eligibleBalance: b }) => {
+                    if (!b) return -1
+                    if (!a) return 1
+                    return sorting.dir === 'desc'
+                        ? parseFloat(b) - parseFloat(a)
+                        : parseFloat(a) - parseFloat(b)
+                })
             }
             case 'My Vaults': {
-                const vaultMap = myVaults.reduce((obj, { collateralName }) => {
-                    obj[collateralName] = (obj[collateralName] || 0) + 1
-                    return obj
-                }, {} as Record<string, number>)
-                return rows.sort(({ collateralName: a }, { collateralName: b }) => {
+                return rows.sort(({ myVaults: a }, { myVaults: b}) => {
+                    if (!b) return -1
+                    if (!a) return 1
                     return sorting.dir === 'desc'
-                        ? (vaultMap[b] || 0) - (vaultMap[a] || 0)
-                        : (vaultMap[a] || 0) - (vaultMap[b] || 0)
+                        ? b.length - a.length
+                        : a.length - b.length
                 })
             }
             case 'Coll. Factor':
             default: {
-                return rows.sort(({ collateralRatio: a }, { collateralRatio: b }) => {
+                return rows.sort(({ collateralizationFactor: a }, { collateralizationFactor: b }) => {
                     if (!b) return -1
                     if (!a) return 1
                     return sorting.dir === 'desc'
@@ -74,7 +80,7 @@ export function AvailableVaultsTable({ rows, onSelect, myVaults }: AvailableVaul
                 })
             }
         }
-    }, [rows, sorting, myVaults])
+    }, [rows, sorting])
     
     return (
         <Table>
@@ -105,12 +111,11 @@ export function AvailableVaultsTable({ rows, onSelect, myVaults }: AvailableVaul
             </TableHeader>
             {sortedRows.map(({
                 collateralName,
-                collateralRatio,
-                liquidationCRatio
+                collateralizationFactor,
+                apy,
+                eligibleBalance,
+                myVaults: existingVaults
             }, i) => {
-                const existingVaults = myVaults.filter(({ collateralName: name }) => (
-                    name === collateralName
-                ))
                 return (
                     <TableRow key={i}>
                         <Grid
@@ -123,17 +128,25 @@ export function AvailableVaultsTable({ rows, onSelect, myVaults }: AvailableVaul
                         <Flex
                             $align="center"
                             $gap={8}>
-                            <Text>{collateralRatio}</Text>
+                            <Text>{collateralizationFactor}</Text>
                         </Flex>
-                        <Text>{liquidationCRatio}%</Text>
+                        <Text>{apy}%</Text>
                         <Flex
                             $align="center"
                             $gap={4}>
-                            <Text>-</Text>
-                            {/* <Text>{collateralName}</Text> */}
+                            <Text>
+                                {eligibleBalance && eligibleBalance !== '0'
+                                    ? formatNumberWithStyle(
+                                        formatEther(eligibleBalance),
+                                        { maxDecimals: 4 }
+                                    )
+                                    : '-'
+                                }
+                            </Text>
+                            {!!eligibleBalance && eligibleBalance !== '0' && <Text>{collateralName}</Text>}
                         </Flex>
                         <Flex>
-                            {!existingVaults.length
+                            {!existingVaults?.length
                                 ? <Text>-</Text>
                                 : (
                                     <CenteredFlex $gap={4}>
@@ -142,7 +155,7 @@ export function AvailableVaultsTable({ rows, onSelect, myVaults }: AvailableVaul
                                             {existingVaults.map((vault) => (
                                                 <VaultLink
                                                     key={vault.id}
-                                                    onClick={() => onSelect(vault, false)}>
+                                                    onClick={() => setActiveVault({ vault })}>
                                                     <Text
                                                         $whiteSpace="nowrap"
                                                         $fontWeight={700}>
@@ -161,7 +174,10 @@ export function AvailableVaultsTable({ rows, onSelect, myVaults }: AvailableVaul
                             }
                         </Flex>
                         <CenteredFlex>
-                            <BorrowButton onClick={() => onSelect(sortedRows[i], true)}>
+                            <BorrowButton onClick={() => setActiveVault({
+                                create: true,
+                                collateralName: sortedRows[i].collateralName
+                            })}>
                                 Borrow
                             </BorrowButton>
                         </CenteredFlex>

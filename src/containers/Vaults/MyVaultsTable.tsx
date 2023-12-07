@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 
 import type { SortableHeader } from '~/types'
-import { Status, type ISafe, formatNumberWithStyle, riskStateToStatus } from '~/utils'
+import { Status, type ISafe, formatNumberWithStyle, riskStateToStatus, getRatePercentage } from '~/utils'
+import { useVault } from '~/providers/VaultProvider'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, Grid, HaiButton, Text } from '~/styles'
@@ -18,10 +19,11 @@ const sortableHeaders: SortableHeader[] = [
 ]
 
 type MyVaultsTableProps = {
-    rows: ISafe[],
-    onSelect: (vault: ISafe) => void
+    rows: ISafe[]
 }
-export function MyVaultsTable({ rows, onSelect }: MyVaultsTableProps) {
+export function MyVaultsTable({ rows }: MyVaultsTableProps) {
+    const { setActiveVault } = useVault()
+
     const [sorting, setSorting] = useState<{ key: string, dir: 'asc' | 'desc'}>({
         key: 'Risk Ratio',
         dir: 'asc'
@@ -108,15 +110,17 @@ export function MyVaultsTable({ rows, onSelect }: MyVaultsTableProps) {
                 ))}
                 <Text></Text>
             </TableHeader>
-            {sortedRows.map(({
-                id,
-                collateralName,
-                collateralRatio,
-                riskState,
-                collateral,
-                debt,
-                totalAnnualizedStabilityFee
-            }, i) => {
+            {sortedRows.map((vault, i) => {
+                const {
+                    id,
+                    collateralName,
+                    collateralRatio,
+                    riskState,
+                    collateral,
+                    debt,
+                    totalAnnualizedStabilityFee
+                } = vault
+
                 return (
                     <TableRow key={i}>
                         <Grid
@@ -158,13 +162,16 @@ export function MyVaultsTable({ rows, onSelect }: MyVaultsTableProps) {
                             <Text>HAI</Text>
                         </Flex>
                         <Text>
-                            {formatNumberWithStyle(totalAnnualizedStabilityFee, {
-                                scalingFactor: 0.01,
-                                style: 'percent'
-                            })}
+                            {formatNumberWithStyle(
+                                getRatePercentage(totalAnnualizedStabilityFee, 4),
+                                {
+                                    scalingFactor: 0.01,
+                                    style: 'percent'
+                                }
+                            )}
                         </Text>
                         <CenteredFlex>
-                            <ManageButton onClick={() => onSelect(sortedRows[i])}>
+                            <ManageButton onClick={() => setActiveVault({ vault })}>
                                 Manage
                             </ManageButton>
                         </CenteredFlex>

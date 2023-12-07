@@ -13,20 +13,19 @@ import {
 import type { ReactChildren } from '~/types'
 import {
     DEFAULT_SAFE_STATE,
-    Status,
-    getCollateralRatio,
-    type ISafe,
-    safeIsSafe,
-    VaultAction,
-    type FormState,
     type Collateral,
     type Debt,
-    getLiquidationPrice,
+    type FormState,
+    type ISafe,
+    Status,
+    VaultAction,
     VaultInfoError,
-    vaultInfoErrors,
+    getCollateralRatio,
+    getLiquidationPrice,
+    safeIsSafe,
     ratioChecker,
     riskStateToStatus,
-    getRatePercentage
+    vaultInfoErrors
 } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 
@@ -36,9 +35,19 @@ import { type Simulation, useSimulation } from './useSimulation'
 import { type Summary, useSummary, DEFAULT_SUMMARY } from './useSummary'
 import { useVaultError } from './useVaultError'
 
+type SetActiveVaultProps = {
+    create: true,
+    collateralName: string,
+    vault?: undefined
+} | {
+    create?: false,
+    collateralName?: undefined,
+    vault: ISafe
+}
+
 type VaultContext = {
     vault?: ISafe,
-    setActiveVault: (vault: ISafe, create?: boolean) => void,
+    setActiveVault: (props: SetActiveVaultProps) => void,
     action: VaultAction,
     setAction: Dispatch<SetStateAction<VaultAction>>,
     formState: FormState,
@@ -52,7 +61,6 @@ type VaultContext = {
     riskStatus: Status,
     isSafe: boolean,
     liquidationPenaltyPercentage: number,
-    stabilityFeePercentage: string,
     summary: Summary,
     error?: VaultInfoError,
     errorMessage?: string
@@ -81,7 +89,6 @@ const defaultState: VaultContext = {
     riskStatus: Status.UNKNOWN,
     isSafe: true,
     liquidationPenaltyPercentage: 0,
-    stabilityFeePercentage: '',
     summary: DEFAULT_SUMMARY
 }
 
@@ -101,14 +108,17 @@ export function VaultProvider({ action, setAction, children }: Props) {
     const dataRef = useRef(safeData)
     dataRef.current = safeData
 
-    const setActiveVault = useCallback((vault: ISafe, create = false) => {
+    const setActiveVault: VaultContext['setActiveVault'] = useCallback(({
+        create,
+        collateralName,
+        vault
+    }: SetActiveVaultProps) => {
         safeActions.setSafeData({
             ...DEFAULT_SAFE_STATE,
-            collateral: vault.collateralName
+            collateral: collateralName || vault?.collateralName || 'WETH'
         })
         safeActions.setSingleSafe(create ? undefined: vault)
         setAction(create ? VaultAction.CREATE: VaultAction.DEPOSIT_BORROW)
-        // eslint-disable-next-line
     }, [safeActions])
 
     const [formState, updateForm] = useReducer((
@@ -204,12 +214,6 @@ export function VaultProvider({ action, setAction, children }: Props) {
 
     // const formattedLiquidationPenaltyPercentage = toPercentage(liquidationPenaltyPercentage || 0.2, 0)
 
-    const stabilityFeePercentage = useMemo(() => {
-        return collateral.liquidationData
-            ? getRatePercentage(collateral.liquidationData.totalAnnualizedStabilityFee, 2).toString()
-            : '-'
-    }, [collateral.liquidationData])
-
     const isSafe = useMemo(() => {
         if (!collateral.liquidationData?.currentPrice.safetyPrice) return true
 
@@ -232,8 +236,7 @@ export function VaultProvider({ action, setAction, children }: Props) {
         collateral,
         debt,
         simulatedCR: simulation?.collateralRatio,
-        liquidationPrice,
-        stabilityFeePercentage
+        liquidationPrice
     })
 
     const { error, errorMessage } = useVaultError({
@@ -261,7 +264,6 @@ export function VaultProvider({ action, setAction, children }: Props) {
             riskStatus,
             isSafe,
             liquidationPenaltyPercentage,
-            stabilityFeePercentage,
             summary,
             error,
             errorMessage: error

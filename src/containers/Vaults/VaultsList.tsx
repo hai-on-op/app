@@ -1,10 +1,11 @@
 import { type Dispatch, type SetStateAction, useMemo, useState } from 'react'
+import { BigNumber } from 'ethers'
 
-import { type ISafe } from '~/utils'
+import { type AvailableVaultPair } from '~/utils'
 import { useStoreState } from '~/store'
 import { useVault } from '~/providers/VaultProvider'
 
-import { Text } from '~/styles'
+import { CenteredFlex, Text } from '~/styles'
 import { NavContainer } from '~/components/NavContainer'
 import { CheckboxButton } from '~/components/CheckboxButton'
 import { BrandedDropdown, DropdownOption } from '~/components/BrandedDropdown'
@@ -19,71 +20,21 @@ const assets = [
     'OP'
 ]
 
-const dummyVaults: any[] = [
+const dummyVaults: AvailableVaultPair[] = [
     {
-        id: '123',
         collateralName: 'WETH',
-        collateralRatio: '110',
-        liquidationCRatio: '110'
+        collateralizationFactor: '110',
+        apy: '110'
     },
     {
-        id: '234',
         collateralName: 'WSTETH',
-        collateralRatio: '110',
-        liquidationCRatio: '110'
+        collateralizationFactor: '110',
+        apy: '110'
     },
     {
-        id: '345',
         collateralName: 'OP',
-        collateralRatio: '110',
-        liquidationCRatio: '110'
-    }
-]
-
-const myDummySafes: ISafe[] = [
-    {
-        id: '123',
-        date: '',
-        safeHandler: '',
-        riskState: 1,
-        collateral: '2000',
-        debt: '1600000',
-        totalDebt: '1600000',
-        availableDebt: '1600000',
-        accumulatedRate: '',
-        collateralRatio: '250',
-        currentRedemptionPrice: '$1.05',
-        currentLiquidationPrice: '$0.98',
-        internalCollateralBalance: '2000',
-        liquidationCRatio: '120',
-        liquidationPenalty: '',
-        liquidationPrice: '1365.43',
-        totalAnnualizedStabilityFee: '7.2',
-        currentRedemptionRate: '',
-        collateralType: '',
-        collateralName: 'WETH'
-    },
-    {
-        id: '456',
-        date: '',
-        safeHandler: '',
-        riskState: 3,
-        collateral: '1300',
-        debt: '1600',
-        totalDebt: '1600',
-        availableDebt: '1600',
-        accumulatedRate: '',
-        collateralRatio: '140',
-        currentRedemptionPrice: '$1.05',
-        currentLiquidationPrice: '$0.98',
-        internalCollateralBalance: '1300',
-        liquidationCRatio: '120',
-        liquidationPenalty: '',
-        liquidationPrice: '2.42',
-        totalAnnualizedStabilityFee: '7.2',
-        currentRedemptionRate: '',
-        collateralType: '',
-        collateralName: 'OP'
+        collateralizationFactor: '110',
+        apy: '110'
     }
 ]
 
@@ -97,10 +48,15 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
     const [eligibleOnly, setEligibleOnly] = useState(false)
     const [assetsFilter, setAssetsFilter] = useState<string>()
 
-    const { safeModel: safeState } = useStoreState(state => state)
+    const {
+        connectWalletModel: {
+            tokensFetchedData
+        },
+        safeModel: safeState
+    } = useStoreState(state => state)
 
     const myVaults = useMemo(() => {
-        const temp = [...safeState.list, ...myDummySafes]
+        const temp = safeState.list
         if (!assetsFilter) return temp
 
         return temp.filter(({ collateralName }) => (
@@ -108,9 +64,31 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
         ))
     }, [safeState.list, assetsFilter])
 
+    const availableVaults = useMemo(() => {
+        return dummyVaults.map(pair => ({
+            ...pair,
+            eligibleBalance: tokensFetchedData[pair.collateralName]?.balanceE18 || '0',
+            myVaults: safeState.list.filter(({ collateralName }) => (
+                collateralName === pair.collateralName
+            ))
+        }))
+    }, [eligibleOnly, tokensFetchedData, safeState.list])
+
+    const filteredAvailableVaults = useMemo(() => {
+        if (!eligibleOnly) return availableVaults
+
+        return availableVaults.filter(({ collateralName }) => {
+            const balance = tokensFetchedData[collateralName]?.balanceE18 || '0'
+            return !BigNumber.from(balance).isZero()
+        })
+    }, [availableVaults, eligibleOnly])
+
     return (
         <NavContainer
-            navItems={[`All Vaults`, `My Vaults`]}
+            navItems={[
+                `All Vaults (${availableVaults.length})`,
+                `My Vaults (${safeState.list.length})`
+            ]}
             selected={navIndex}
             onSelect={(i: number) => setNavIndex(i)}
             headerContent={navIndex === 0
@@ -144,19 +122,24 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
                 )
             }>
             {navIndex === 0
-                ? (
-                    <AvailableVaultsTable
-                        rows={dummyVaults}
-                        onSelect={setActiveVault}
-                        myVaults={myVaults}
-                    />
-                )
+                ? !filteredAvailableVaults.length
+                    ? (
+                        <CenteredFlex $width="100%">
+                            <Text>No available vaults matched your search criteria</Text>
+                        </CenteredFlex>
+                    )
+                    : (
+                        <AvailableVaultsTable rows={filteredAvailableVaults}/>
+                    )
                 : (
-                    <ProxyPrompt>
-                        <MyVaultsTable
-                            rows={myVaults}
-                            onSelect={setActiveVault}
-                        />
+                    <ProxyPrompt onCreateVault={!safeState.list.length
+                        ? () => setActiveVault({
+                            create: true,
+                            collateralName: 'WETH'
+                        })
+                        : undefined
+                    }>
+                        <MyVaultsTable rows={myVaults}/>
                     </ProxyPrompt>
                 )
             }

@@ -1,11 +1,19 @@
 import { type TokenData } from '@hai-on-op/sdk'
-import { type CollateralLiquidationData } from './interfaces'
+import { type ISafe, type CollateralLiquidationData } from './interfaces'
 
 export enum VaultAction {
     DEPOSIT_BORROW,
     WITHDRAW_REPAY,
     CREATE,
     INFO
+}
+
+export type AvailableVaultPair = {
+    collateralName: string,
+    collateralizationFactor: string,
+    apy: string,
+    eligibleBalance?: string,
+    myVaults?: ISafe[]
 }
 
 export type FormState = {
