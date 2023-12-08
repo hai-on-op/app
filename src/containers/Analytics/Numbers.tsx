@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useMemo } from 'react'
 
-import { Timeframe } from '~/utils'
+import { getRatePercentage } from '~/utils'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 
 import styled from 'styled-components'
@@ -18,29 +18,10 @@ import { BrandedTitle } from '~/components/BrandedTitle'
 import { Stat, Stats } from '~/components/Stats'
 import { ToggleSlider } from '~/components/ToggleSlider'
 import { LineChart } from '~/components/Charts/Line'
-import { useDummyData as useDummyLineData } from '~/components/Charts/Line/useDummyData'
 import { useDummyData as useDummyPieData } from '~/components/Charts/Pie/useDummyData'
 import { PriceDisplay } from './PriceDisplay'
 import { PieChart } from '~/components/Charts/Pie'
 import { Legend } from '~/components/Charts/Legend'
-
-const dummyPriceDataBase = [
-    {
-        id: 'Market Price',
-        color: 'hsl(49, 84%, 68%)'
-    },
-    {
-        id: 'Redemption Price',
-        color: 'hsl(115, 70%, 84%)'
-    }
-]
-
-const dummyRedemptionDataBase = [
-    {
-        id: 'Redemption Rate',
-        color: 'hsl(115, 70%, 84%)'
-    }
-]
 
 const dummyPieDataBase = [
     {
@@ -65,21 +46,51 @@ export function Numbers() {
             iRate,
             surplusInTreasury,
             globalDebt
-        }
+        },
+        graphData,
+        haiPriceHistory,
+        redemptionRateHistory
     } = useAnalytics()
 
-    const [timeframe, setTimeframe] = useState<Timeframe>(Timeframe.ONE_WEEK)
+    const haiPriceData = useMemo(() => {
+        const data = haiPriceHistory.result.data?.dailyStats
+            || haiPriceHistory.result.data?.hourlyStats
+            || []
+        return [
+            {
+                id: 'Market Price',
+                color: 'hsl(49, 84%, 68%)',
+                data: data.map(({ timestamp, marketPriceUsd }) => ({
+                    x: new Date(Number(timestamp) * 1000),
+                    y: parseFloat(marketPriceUsd)
+                }))
+            },
+            {
+                id: 'Redemption Price',
+                color: 'hsl(115, 70%, 84%)',
+                data: data.map(({ timestamp, redemptionPrice }) => ({
+                    x: new Date(Number(timestamp) * 1000),
+                    y: parseFloat(redemptionPrice.value)
+                }))
+            }
+        ]
+    }, [haiPriceHistory])
+
+    const redemptionRateData = useMemo(() => {
+        const data = redemptionRateHistory.result.data?.dailyStats
+            || redemptionRateHistory.result.data?.hourlyStats
+            || []
+        return [{
+            id: 'Redemption Rate',
+            color: 'hsl(115, 70%, 84%)',
+            data: data.map(({ timestamp, redemptionRate }) => ({
+                x: new Date(Number(timestamp) * 1000),
+                y: getRatePercentage(redemptionRate.annualizedRate, 4)
+            }))
+        }]
+    }, [redemptionRateHistory])
 
     // TODO: remove and use actual data
-    const dummyPriceData = useDummyLineData(dummyPriceDataBase, {
-        timeframe,
-        min: 0.9,
-        max: 1.1
-    })
-    const dummyRedemptionData = useDummyLineData(dummyRedemptionDataBase, {
-        min: 0.01,
-        max: 0.1
-    })
     const dummyPieData = useDummyPieData(dummyPieDataBase, {
         min: 30_000,
         max: 100_000
@@ -100,7 +111,7 @@ export function Numbers() {
                         tooltip: 'Hello world'
                     }}/>
                     <Stat stat={{
-                        header: erc20Supply,
+                        header: erc20Supply.formatted,
                         label: 'Outstanding $HAI',
                         tooltip: 'Hello world'
                     }}/>
@@ -110,7 +121,7 @@ export function Numbers() {
                         tooltip: 'Hello world'
                     }}/>
                     <Stat stat={{
-                        header: '876',
+                        header: Number(graphData?.systemStates[0].totalActiveSafeCount || '0').toLocaleString(),
                         label: 'Total Active Vaults',
                         tooltip: 'Hello world'
                     }}/>
@@ -130,42 +141,40 @@ export function Numbers() {
                             $gap={24}>
                             <PriceDisplay
                                 token="HAI"
-                                price={marketPrice}
+                                price={marketPrice.formatted}
                                 label="$HAI Market Price"
                                 tooltip={`Time-weighted average HAI market price derived from UniV3 HAI/WETH pool and Chainlink WETH/USD feed.`}
                             />
                             <PriceDisplay
                                 token="HAI"
-                                price={redemptionPrice}
+                                price={redemptionPrice.formatted}
                                 label="$HAI Redemption Price"
                                 tooltip={`HAI's "moving peg". It's the price at which HAI is minted or repaid inside the protocol. The HAI market price is expected to fluctuate around the redemption price.`}
                             />
                         </Flex>
                         <ToggleSlider
-                            selectedIndex={timeframe}
-                            setSelectedIndex={(index: number) => {
-                                setTimeframe(index)
-                            }}>
+                            selectedIndex={haiPriceHistory.timeframe}
+                            setSelectedIndex={haiPriceHistory.setTimeframe}>
                             <TimeframeLabel>24HR</TimeframeLabel>
                             <TimeframeLabel>1WK</TimeframeLabel>
                             <TimeframeLabel>1M</TimeframeLabel>
-                            <TimeframeLabel>1YR</TimeframeLabel>
+                            {/* <TimeframeLabel>1YR</TimeframeLabel> */}
                         </ToggleSlider>
                     </Flex>
                     <ChartContainer>
                         <LineChart
-                            data={dummyPriceData}
-                            timeframe={timeframe}
+                            data={haiPriceData}
+                            timeframe={haiPriceHistory.timeframe}
                             yScale={{
                                 type: 'linear',
-                                min: 0.9,
-                                max: 1.1
+                                // min: 0.9,
+                                // max: 1.1
                             }}
                             axisRight={{
                                 format: value => `$${parseFloat(parseFloat(value).toFixed(3))}`
                             }}
                         />
-                        <Legend data={dummyPriceData}/>
+                        <Legend data={haiPriceData}/>
                     </ChartContainer>
                 </SectionContent>
             </Section>
@@ -174,56 +183,70 @@ export function Numbers() {
                 <SectionContent>
                     <Flex
                         $width="100%"
-                        $justify="flex-start"
+                        $justify="space-between"
                         $align="center"
-                        $gap={36}>
-                        <Stat
-                            stat={{
-                                header: annualRate,
-                                label: 'Annual Redemption Rate',
-                                tooltip: `Annualized rate of change of the redemption price. The rate is set by the PI controller and depends on the deviation between the redemption price and the HAI TWAP price. If the rate is positive, the redemption price will increase. If the rate is negative, the redemption price will decrease. The rate is generated by the combinated effect of two terms: pRate and iRate.`
-                            }}
-                            unbordered
-                        />
-                        <Stat
-                            stat={{
-                                header: eightRate,
-                                label: 'Main Rate',
-                                tooltip: `Redemption Rate over an 8hr period`
-                            }}
-                            unbordered
-                        />
-                        <Stat
-                            stat={{
-                                header: pRate,
-                                label: 'pRate',
-                                tooltip: 'Hello world'
-                            }}
-                            unbordered
-                        />
-                        <Stat
-                            stat={{
-                                header: iRate,
-                                label: 'iRate',
-                                tooltip: 'Hello world'
-                            }}
-                            unbordered
-                        />
+                        $gap={24}>
+                        <Flex
+                            $width="100%"
+                            $justify="flex-start"
+                            $align="center"
+                            $gap={36}>
+                            <Stat
+                                stat={{
+                                    header: annualRate,
+                                    label: 'Annual Redemption Rate',
+                                    tooltip: `Annualized rate of change of the redemption price. The rate is set by the PI controller and depends on the deviation between the redemption price and the HAI TWAP price. If the rate is positive, the redemption price will increase. If the rate is negative, the redemption price will decrease. The rate is generated by the combinated effect of two terms: pRate and iRate.`
+                                }}
+                                unbordered
+                            />
+                            <Stat
+                                stat={{
+                                    header: eightRate,
+                                    label: 'Main Rate',
+                                    tooltip: `Redemption Rate over an 8hr period`
+                                }}
+                                unbordered
+                            />
+                            <Stat
+                                stat={{
+                                    header: pRate,
+                                    label: 'pRate',
+                                    tooltip: 'Hello world'
+                                }}
+                                unbordered
+                            />
+                            <Stat
+                                stat={{
+                                    header: iRate,
+                                    label: 'iRate',
+                                    tooltip: 'Hello world'
+                                }}
+                                unbordered
+                            />
+                        </Flex>
+                        <ToggleSlider
+                            selectedIndex={redemptionRateHistory.timeframe}
+                            setSelectedIndex={redemptionRateHistory.setTimeframe}>
+                            <TimeframeLabel>24HR</TimeframeLabel>
+                            <TimeframeLabel>1WK</TimeframeLabel>
+                            <TimeframeLabel>1M</TimeframeLabel>
+                            {/* <TimeframeLabel>1YR</TimeframeLabel> */}
+                        </ToggleSlider>
                     </Flex>
                     <ChartContainer>
                         <LineChart
-                            data={dummyRedemptionData}
-                            timeframe={Timeframe.ONE_WEEK}
+                            data={redemptionRateData}
+                            timeframe={redemptionRateHistory.timeframe}
                             yScale={{
                                 type: 'linear',
-                                min: 0.01,
-                                max: 0.10
+                                // min: 1,
+                                // max: 10
                             }}
                             axisRight={{
-                                format: value => parseFloat((100 * value).toFixed(2)) + '%'
+                                format: value => parseFloat(parseFloat(value.toString()).toFixed(2)) + '%'
                             }}
                         />
-                        <Legend data={dummyRedemptionData}/>
+                        <Legend data={redemptionRateData}/>
                     </ChartContainer>
                 </SectionContent>
             </Section>
@@ -288,12 +311,12 @@ export function Numbers() {
                         tooltip: 'Hello world'
                     }}/>
                     <Stat stat={{
-                        header: surplusInTreasury,
+                        header: surplusInTreasury.formatted,
                         label: 'Surplus in Treasury',
                         tooltip: `Total HAI accrued by the system's stability fees. It's stored in the Stability Fee Treasury accountance`
                     }}/>
                     <Stat stat={{
-                        header: globalDebt,
+                        header: globalDebt.formatted,
                         label: 'Debt to Settle',
                         tooltip: 'Total HAI minted in the system'
                     }}/>

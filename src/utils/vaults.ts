@@ -77,3 +77,7 @@ export type SummaryItem<T = {}> = {
     current?: SummaryItemValue<T>,
     after: SummaryItemValue<T>
 }
+export type SummaryCurrency = {
+    usdRaw: string,
+    usdFormatted: string
+}

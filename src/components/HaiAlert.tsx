@@ -20,9 +20,9 @@ export function HaiAlert() {
                 <Text>
                     <strong>$HAI ALERT</strong>
                     {` • `}
-                    {isLargerThanSmall ? `MARKET PRICE `: `MP `}<strong>{marketPrice}</strong>
+                    {isLargerThanSmall ? `MARKET PRICE `: `MP `}<strong>{marketPrice.formatted}</strong>
                     {` • `}
-                    {isLargerThanSmall ? `REDEMPTION PRICE `: `RP `}<strong>{redemptionPrice}</strong>
+                    {isLargerThanSmall ? `REDEMPTION PRICE `: `RP `}<strong>{redemptionPrice.formatted}</strong>
                     {` • `}
                     {isLargerThanSmall ? `PRICE DIFFERENCE `: `DIFF. `}<strong>{parseFloat(priceDiff.toFixed(2))}%</strong>
                 </Text>

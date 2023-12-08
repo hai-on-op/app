@@ -22,6 +22,7 @@
         "react-dom": "17.0.1"
     },
     "dependencies": {
+        "@apollo/client": "^3.8.8",
         "@ethersproject/experimental": "5.4.0",
         "@ethersproject/providers": "5.4.5",
         "@hai-on-op/sdk": "1.2.2-24d701f2.0",
@@ -35,6 +36,7 @@
         "easy-peasy": "3.3.1",
         "ethers": "5.4.7",
         "gh-pages": "4.0.0",
+        "graphql": "^16.8.1",
         "i18next": "19.7.0",
         "numeral": "2.0.6",
         "postcss": "8.4.28",

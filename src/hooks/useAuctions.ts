@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useStoreActions, useStoreState } from '~/store'
-import { BigNumber, utils } from 'ethers'
+import { BigNumber } from 'ethers'
+import { formatEther } from 'ethers/lib/utils'
 import {
     utils as gebUtils,
     type AuctionData,
@@ -9,11 +10,11 @@ import {
     type ICollateralAuction as SDKCollateralAuction,
 } from '@hai-on-op/sdk'
 import { useAccount } from 'wagmi'
-import _ from '~/utils/lodash'
 
-import type { AuctionEventType, IAuction, IAuctionBidder, ICollateralAuction } from '~/types'
-import { useGeb } from './useGeb'
+import type { AuctionEventType, IAuction, ICollateralAuction } from '~/types'
 import { floatsTypes } from '~/utils'
+import _ from '~/utils/lodash'
+import { useGeb } from './useGeb'
 
 export function useGetAuctions(type: AuctionEventType, tokenSymbol?: string) {
     const { auctionModel } = useStoreState((state) => state)
@@ -26,12 +27,13 @@ export function useGetAuctions(type: AuctionEventType, tokenSymbol?: string) {
                 return auctionModel.debtAuctions || []
             case 'COLLATERAL':
                 return tokenSymbol
-                    ? auctionModel.collateralAuctions[tokenSymbol] || []
-                    : Object.values(auctionModel.collateralAuctions)
-                        .reduce((arr, innerArr) => ([
-                            ...innerArr,
+                    ? (auctionModel.collateralAuctions[tokenSymbol] || [])
+                        .map(auction => convertCollateralAuction(auction, tokenSymbol))
+                    : Object.entries(auctionModel.collateralAuctions)
+                        .reduce((arr, [tokenSymbol, innerArr]) => ([
+                            ...innerArr.map(auction => convertCollateralAuction(auction, tokenSymbol)),
                             ...arr
-                        ]), [] as ICollateralAuction[])
+                        ]), [] as IAuction[])
             default:
                 return []
         }
@@ -40,136 +42,32 @@ export function useGetAuctions(type: AuctionEventType, tokenSymbol?: string) {
     return auctions
 }
 
-// list auctions data
-export function useAuctions(type: AuctionEventType, tokenSymbol?: string) {
-    const { connectWalletModel: connectWalletState } = useStoreState((state) => state)
-
-    // Temporary casting. We need to know how to manage the collateralAuctions as those are different types
-    const auctionsList = useGetAuctions(type, tokenSymbol)
-    const userProxy: string = _.get(connectWalletState, 'proxyAddress', '')
-
-    const auctions: IAuction[] = useMemo(() => {
-        if (auctionsList.length === 0) {
-            return []
-        }
-        // show auctions less than one month old only
-        // const oneMonthOld = new Date().setMonth(new Date().getMonth() - 1)
-        const filteredAuctions: IAuction[] = auctionsList.map((auc, index) => {
-            const {
-                // isClaimed,
-                auctionDeadline = 0,
-                // startedBy,
-                createdAt,
-                initialBid = '',
-                createdAtTransaction,
-                biddersList,
-                auctionId,
-            } = auc as any
-
-            // if auction is settled, winner is the last bidder
-            const winner = _.get(
-                auc,
-                'winner',
-                // winner === currentWinner
-                // so we set the last bidder as currentWinner
-                biddersList && biddersList.length > 0 ? biddersList.reverse()[0].bidder : ''
-            )
-
-            let sellInitialAmount = _.get(auc, 'amount', '0')
-            const startedBy = _.get(auc, 'startedBy', '')
-            const isClaimed = _.get(auc, 'isClaimed', false)
-            const buyToken = _.get(auc, 'buyToken', 'PROTOCOL_TOKEN')
-            const sellToken = _.get(auc, 'sellToken', 'COIN')
-            const englishAuctionType: AuctionEventType = _.get(auc, 'englishAuctionType', 'SURPLUS')
-            const englishAuctionConfiguration = _.get(auc, 'englishAuctionConfiguration', {
-                bidDuration: '',
-                bidIncrease: '1',
-                totalAuctionLength: '',
-                DEBT_amountSoldIncrease: '1',
-            })
-            const tokenSymbol = _.get(auc, 'tokenSymbol', undefined)
-
-            const buyDecimals = englishAuctionType === 'SURPLUS' ? 18 : 45
-            const sellDecimals = englishAuctionType === 'SURPLUS' ? 45 : 18
-
-            const isOngoingAuction = Number(auctionDeadline) * 1000 > Date.now()
-            const bidders = biddersList?.sort((a: any, b: any) => (
-                Number(a.createdAt) - Number(b.createdAt)
-            )) || []
-            const kickBidder = {
-                bidder: startedBy,
-                buyAmount: utils.formatUnits(initialBid, buyDecimals),
-                createdAt,
-                sellAmount: utils.formatUnits(sellInitialAmount, sellDecimals),
-                createdAtTransaction,
-            }
-            const formattedInitialBids: IAuctionBidder[] = bidders.map((bid: any) => {
-                return {
-                    bidder: bid.bidder,
-                    buyAmount: utils.formatUnits(bid.bid, buyDecimals),
-                    createdAt: bid.createdAt,
-                    sellAmount: utils.formatUnits(bid.buyAmount, sellDecimals),
-                    createdAtTransaction: bid.createdAtTransaction,
-                }
-            })
-
-            const initialBids = [...[kickBidder], ...formattedInitialBids]
-            if (!isOngoingAuction && isClaimed) {
-                initialBids.push(formattedInitialBids[formattedInitialBids.length - 1])
-            }
-
-            return {
-                biddersList: initialBids.reverse(),
-                englishAuctionBids: initialBids,
-                winner,
-                buyToken,
-                englishAuctionType,
-                sellToken,
-                startedBy,
-                englishAuctionConfiguration,
-                auctionDeadline,
-                buyAmount: initialBids[0]?.buyAmount || '0',
-                buyInitialAmount: utils.formatUnits(initialBid, buyDecimals),
-                sellAmount: initialBids[0]?.sellAmount || utils.formatUnits(sellInitialAmount, sellDecimals),
-                sellInitialAmount: utils.formatUnits(sellInitialAmount, sellDecimals),
-                auctionId,
-                createdAt,
-                createdAtTransaction,
-                isClaimed,
-                tokenSymbol,
-            }
-        })
-
-        const onGoingAuctions = filteredAuctions.filter(
-            (auction: IAuction) => Number(auction.auctionDeadline) * 1000 > Date.now()
-        )
-
-        const myAuctions = filteredAuctions
-            .filter(
-                (auction: IAuction) =>
-                    auction.winner &&
-                    userProxy &&
-                    auction.winner.toLowerCase() === userProxy.toLowerCase() &&
-                    !auction.isClaimed
-            )
-            .sort(
-                (a: { auctionDeadline: any }, b: { auctionDeadline: any }) =>
-                    Number(b.auctionDeadline) - Number(a.auctionDeadline)
-            )
-
-        const auctionsToRestart = filteredAuctions
-            .filter((auction: IAuction) => !auction.englishAuctionBids?.length)
-            .sort(
-                (a: { auctionDeadline: any }, b: { auctionDeadline: any }) =>
-                    Number(b.auctionDeadline) - Number(a.auctionDeadline)
-            )
-
-        return Array.from(
-            new Set([...onGoingAuctions, ...myAuctions, ...auctionsToRestart, ...filteredAuctions])
-        )
-    }, [auctionsList, userProxy])
-
-    return auctions
+export function convertCollateralAuction(auction: SDKCollateralAuction, tokenSymbol: string): IAuction {
+    return {
+        ...auction,
+        auctionDeadline: '',
+        biddersList: auction.biddersList.map(bid => ({
+            ...bid,
+            buyAmount: formatEther(bid.buyAmount || '0'),
+            sellAmount: ''
+        })),
+        buyAmount: '',
+        buyInitialAmount: formatEther(auction.amountToRaise),
+        buyToken: 'HAI',
+        englishAuctionBids: [],
+        englishAuctionConfiguration: {
+            bidDuration: '',
+            bidIncrease: '',
+            totalAuctionLength: '',
+            DEBT_amountSoldIncrease: ''
+        },
+        englishAuctionType: 'COLLATERAL',
+        sellAmount: formatEther(auction.amountToSell || '0'),
+        sellInitialAmount: formatEther(auction.amountToSell || '0'),
+        sellToken: tokenSymbol,
+        startedBy: auction.auctioneer,
+        winner: ''
+    }
 }
 
 export function useCollateralAuctions(tokenSymbol: string): ICollateralAuction[] | null {

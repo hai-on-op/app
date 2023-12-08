@@ -2,10 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Geb } from '@hai-on-op/sdk'
 import { useAccount } from 'wagmi'
 
+import { EMPTY_ADDRESS, getNetworkName, formatNumber } from '~/utils'
+import { useStoreActions, useStoreState } from '~/store'
 import { useEthersSigner, usePublicProvider } from './useEthersAdapters'
-import store, { useStoreActions, useStoreState } from '~/store'
-import { EMPTY_ADDRESS, getNetworkName } from '~/utils/constants'
-import { formatNumber } from '~/utils/helper'
 
 type TokenType = 'ETH' | 'HAI' | 'WETH'
 

@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useState } from 'react'
 
-import { handleTransactionError, useStartAuction, usePublicGeb, useAuctions } from '~/hooks'
+import { handleTransactionError, useStartAuction, usePublicGeb, useGetAuctions } from '~/hooks'
 import { useStoreActions, useStoreState } from '~/store'
 import { AuctionsList } from './AuctionsList'
 
@@ -72,9 +72,9 @@ export function Auctions() {
     }
 
     // const auctions = useGetAuctions(type, selectedItem)
-    const collateralAuctions = useAuctions('COLLATERAL')
-    const debtAuctions = useAuctions('DEBT')
-    const surplusAuctions = useAuctions('SURPLUS')
+    const collateralAuctions = useGetAuctions('COLLATERAL')
+    const debtAuctions = useGetAuctions('DEBT')
+    const surplusAuctions = useGetAuctions('SURPLUS')
 
     // fetch collateral price every time selectedItem changes
     useEffect(() => {

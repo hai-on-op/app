@@ -6,6 +6,7 @@ import { getAddress } from 'viem'
 import { ETHERSCAN_PREFIXES, Status, floatsTypes } from './constants'
 import { ChainId, type ILiquidationData, type ISafe, type ITransaction } from './interfaces'
 import { sanitizeDecimals } from './removeDecimals'
+import { type SummaryCurrency, type SummaryItem } from './vaults'
 
 export const IS_IN_IFRAME = window.parent !== window
 
@@ -376,4 +377,50 @@ export const returnState = (state: number) => {
 export const returnFiatValue = (value: string, price: number) => {
     if (!value || !price) return '0.00'
     return formatNumber(numeral(value).multiply(price).value().toString(), 2)
+}
+
+export const formatSummaryValue = (
+    value: string | undefined,
+    options: FormatOptions = { maxDecimals: 3 }
+) => {
+    if (!value) return undefined
+
+    return {
+        raw: value,
+        formatted: formatNumberWithStyle(value, options)
+    }
+}
+
+export const formatSummaryCurrency = (
+    value: string | undefined,
+    conversionFactor?: string
+) => {
+    if (!value) return undefined
+
+    const usdRaw = (parseFloat(value) * parseFloat(conversionFactor || '0')).toString()
+    const summary: SummaryItem<SummaryCurrency>['current'] = {
+        raw: value,
+        formatted: formatNumberWithStyle(value, { maxDecimals: 4 }),
+        usdRaw,
+        usdFormatted: formatNumberWithStyle(usdRaw, { style: 'currency' })
+    }
+    return summary
+}
+
+export const formatSummaryPercentage = (
+    value: string | undefined,
+    scalingFactor?: number
+) => {
+    if (typeof value === 'undefined') return undefined
+
+    return {
+        raw: value,
+        formatted: value && !isNaN(Number(value))
+            ? formatNumberWithStyle(value, {
+                scalingFactor,
+                style: 'percent',
+                maxDecimals: 4
+            })
+            : '--%'
+    }
 }

@@ -31,6 +31,7 @@ const Container = styled(Grid)`
     position: relative;
     border-radius: 999px;
     background: ${({ theme }) => theme.colors.gradientCool};
+    flex-shrink: 0;
 `
 
 const Wrapper = styled(CenteredFlex)`

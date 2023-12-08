@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 
 import { type AuctionEventType, type IAuction } from '~/types'
-import { useAuctions } from '~/hooks'
+import { useGetAuctions } from '~/hooks'
 
 import { CenteredFlex, Text } from '~/styles'
 import { NavContainer } from '~/components/NavContainer'
@@ -43,9 +43,9 @@ export function AuctionsList({ isLoading }: AuctionsListProps) {
     const [saleAssetsFilter, setSaleAssetsFilter] = useState<string>()
     const [buyAssetsFilter, setBuyAssetsFilter] = useState<string>()
 
-    const collateralAuctions = useAuctions('COLLATERAL', saleAssetsFilter)
-    const debtAuctions = useAuctions('DEBT')
-    const surplusAuctions = useAuctions('SURPLUS')
+    const collateralAuctions = useGetAuctions('COLLATERAL', saleAssetsFilter)
+    const debtAuctions = useGetAuctions('DEBT')
+    const surplusAuctions = useGetAuctions('SURPLUS')
 
     const auctions = useMemo(() => {
         let temp: IAuction[] = []

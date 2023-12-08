@@ -2,16 +2,15 @@ import {
     type Collateral,
     type Debt,
     type ISafe,
+    type SummaryCurrency,
     type SummaryItem,
     type SummaryItemValue,
-    formatNumberWithStyle,
-    getRatePercentage
+    getRatePercentage,
+    formatSummaryCurrency,
+    formatSummaryPercentage,
+    formatSummaryValue
 } from "~/utils"
 
-type SummaryCurrency = {
-    usdRaw: string,
-    usdFormatted: string
-}
 export type Summary = {
     collateral: SummaryItem<SummaryCurrency>,
     debt: SummaryItem<SummaryCurrency>,
@@ -58,51 +57,15 @@ export function useSummary({
                 formatted: '--%'
             },
         liquidationPrice: {
-            current: vault?.liquidationPrice
-                ? {
-                    raw: vault.liquidationPrice,
-                    formatted: formatNumberWithStyle(vault.liquidationPrice, {
-                        maxDecimals: 3,
-                        style: 'currency'
-                    })
-                }
-                : undefined,
-            after: {
-                raw: liquidationPrice,
-                formatted: formatNumberWithStyle(liquidationPrice || '0', {
-                    maxDecimals: 3,
-                    style: 'currency'
-                })
-            }
+            current: formatSummaryValue(vault?.liquidationPrice, {
+                maxDecimals: 3,
+                style: 'currency'
+            }),
+            after: formatSummaryValue(liquidationPrice || '0', {
+                maxDecimals: 3,
+                style: 'currency'
+            })!
         }
-    }
-}
-
-function formatSummaryCurrency(value: string | undefined, conversionFactor?: string) {
-    if (!value) return undefined
-
-    const usdRaw = (parseFloat(value) * parseFloat(conversionFactor || '0')).toString()
-    const summary: SummaryItem<SummaryCurrency>['current'] = {
-        raw: value,
-        formatted: formatNumberWithStyle(value, { maxDecimals: 4 }),
-        usdRaw,
-        usdFormatted: formatNumberWithStyle(usdRaw, { style: 'currency' })
-    }
-    return summary
-}
-
-function formatSummaryPercentage(value: string | undefined, scalingFactor?: number) {
-    if (typeof value === 'undefined') return undefined
-
-    return {
-        raw: value,
-        formatted: value && !isNaN(Number(value))
-            ? formatNumberWithStyle(value, {
-                scalingFactor,
-                style: 'percent',
-                maxDecimals: 4
-            })
-            : '--%'
     }
 }
 

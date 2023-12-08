@@ -51,13 +51,13 @@ export function Header({ tickerActive = false }: HeaderProps) {
         const arr = [
             [
                 'HAI (MP)',
-                marketPrice,
+                marketPrice.formatted,
                 '↑34%',
                 '\u2022'
             ],
             [
                 'HAI (RP)',
-                redemptionPrice,
+                redemptionPrice.formatted,
                 '↑34%',
                 '\u2022'
             ]
