@@ -3,7 +3,7 @@ import { type HTMLProps, useState } from 'react'
 import type { ReactChildren } from '~/types'
 import { useOutsideClick } from '~/hooks'
 
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Popout } from '~/styles'
 import { Caret } from './Icons/Caret'
 
@@ -61,13 +61,14 @@ export const DropdownOption = styled(Flex).attrs(props => ({
     $align: 'center',
     $gap: 12,
     ...props
-}))`
+}))<{ $active?: boolean }>`
     min-width: 160px;
     padding: 8px 16px;
     border-radius: 999px;
     border: 2px solid rgba(0,0,0,0.1);
     cursor: pointer;
 
+    ${({ $active }) => !!$active && css`background-color: rgba(0,0,0,0.1);`}
     &:hover {
         background-color: rgba(0,0,0,0.1);
     }

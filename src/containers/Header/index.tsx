@@ -168,14 +168,14 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                     <PassLink
                                         href="/auctions"
                                         $textDecoration="none">
-                                        <DropdownOption>
+                                        <DropdownOption $active={location.pathname === '/auctions'}>
                                             Auctions
                                         </DropdownOption>
                                     </PassLink>
                                     <PassLink
                                         href="/analytics"
                                         $textDecoration="none">
-                                        <DropdownOption>
+                                        <DropdownOption $active={location.pathname === '/analytics'}>
                                             Analytics
                                         </DropdownOption>
                                     </PassLink>
