@@ -191,8 +191,8 @@ export const haiTheme = merge(rainbowDarkTheme(), {
     },
     shadows: {
         // connectButton: '...',
-        // dialog: '...',
-        // profileDetailsAction: '...',
+        dialog: '0 0 0 2px black',
+        profileDetailsAction: '0 0 0 2px black',
         // selectedOption: '...',
         // selectedWallet: '...',
         // walletLogo: '...',
