@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useReducer, useState } from 'react'
+import { BigNumber } from 'ethers'
+import { formatEther } from 'ethers/lib/utils'
 
 import type { IAuction } from '~/types'
-import { Status, formatNumber, parseRemainingTime } from '~/utils'
+import { Status, formatNumberWithStyle, parseRemainingTime } from '~/utils'
+import { useStoreState } from '~/store'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
@@ -17,16 +20,22 @@ const tokenMap: Record<string, string> = {
 }
 
 type AuctionTableRowProps = {
-    auction: IAuction,
+    auction: (IAuction & { myBids?: number }),
     expanded: boolean,
     onSelect?: () => void
 }
 export function AuctionTableRow({ auction, expanded, onSelect }: AuctionTableRowProps) {
+    const { safeModel: { liquidationData } } = useStoreState(state => state)
+
     const [timeEl, setTimeEl] = useState<HTMLElement | null>(null)
     const [refresher, forceTimeRefresh] = useReducer(x => x + 1, 0)
 
     useEffect(() => {
         if (!timeEl) return
+        if (!auction.auctionDeadline) {
+            timeEl.textContent = 'No deadline'
+            return
+        }
 
         const parsedMs = 1000 * parseInt(auction.auctionDeadline)
         if (parsedMs - Date.now() < 0) {
@@ -80,7 +89,6 @@ export function AuctionTableRow({ auction, expanded, onSelect }: AuctionTableRow
         auctionId,
         englishAuctionType,
         sellToken,
-        sellInitialAmount,
         buyToken,
         buyInitialAmount,
         auctionDeadline,
@@ -95,6 +103,47 @@ export function AuctionTableRow({ auction, expanded, onSelect }: AuctionTableRow
         // eslint-disable-next-line
     }, [auction.auctionDeadline, auction.isClaimed, auction.winner, refresher])
 
+    const tokenSymbol = useMemo(() => tokenMap[sellToken] || sellToken, [sellToken])
+
+    const sellUsdPrice = useMemo(() => {
+        switch(tokenSymbol) {
+            case 'HAI':
+                return liquidationData?.currentRedemptionPrice || '0'
+            case 'KITE':
+                return '0'
+            default:
+                return liquidationData?.collateralLiquidationData[tokenSymbol]?.currentPrice.value || '0'
+        }
+    }, [tokenSymbol, liquidationData?.currentRedemptionPrice, liquidationData?.collateralLiquidationData])
+
+    const remainingToSell = useMemo(() => {
+        if (auction.englishAuctionType !== 'COLLATERAL') return undefined
+
+        let rem = parseFloat(auction.sellInitialAmount)
+        auction.biddersList.forEach(({ sellAmount = '0' }) => {
+            rem = Math.max(0, rem - parseFloat(sellAmount))
+        })
+        return formatNumberWithStyle(rem, { maxDecimals: 3 })
+    }, [auction])
+
+    const [initialToRaise, remainingToRaise] = useMemo(() => {
+        if (auction.englishAuctionType !== 'COLLATERAL') return []
+
+        const initial = formatEther(
+            BigNumber
+            .from(auction.buyInitialAmount.split('.')[0])
+            .div(1e9)
+        )
+        let rem = parseFloat(initial)
+        auction.biddersList.forEach(({ buyAmount = '0' }) => {
+            rem = Math.max(0, rem - parseFloat(buyAmount))
+        })
+        return [
+            formatNumberWithStyle(initial, { maxDecimals: 3 }),
+            formatNumberWithStyle(rem, { maxDecimals: 3 })
+        ]
+    }, [auction])
+
     return (
         <TableRow
             key={`${englishAuctionType}-${auctionId}`}
@@ -108,14 +157,36 @@ export function AuctionTableRow({ auction, expanded, onSelect }: AuctionTableRow
                     $align="center"
                     $gap={8}>
                     <TokenPair
-                        tokens={[(tokenMap[sellToken] || sellToken) as any]}
+                        tokens={[tokenSymbol as any]}
                         hideLabel
                     />
                     <Flex
                         $column
                         $align="flex-start">
-                        <Text>{sellInitialAmount}</Text>
-                        <Text $fontSize="0.6rem">$XX,XXX</Text>
+                        <Text>
+                            {auction.englishAuctionType === 'COLLATERAL'
+                                ? remainingToSell || '--'
+                                : formatNumberWithStyle(
+                                    auction.sellInitialAmount,
+                                    { maxDecimals: 3 }
+                                )
+                            } {tokenSymbol}
+                        </Text>
+                        <Text $fontSize="0.6rem">
+                            {auction.englishAuctionType === 'COLLATERAL'
+                                ? `Start: ${formatNumberWithStyle(
+                                    auction.sellInitialAmount,
+                                    { maxDecimals: 3 }
+                                )}`
+                                : formatNumberWithStyle(
+                                    parseFloat(auction.sellInitialAmount) * parseFloat(sellUsdPrice),
+                                    {
+                                        maxDecimals: 2,
+                                        style: 'currency'
+                                    }
+                                )
+                            }
+                        </Text>
                     </Flex>
                 </Flex>
                 <Flex
@@ -129,15 +200,31 @@ export function AuctionTableRow({ auction, expanded, onSelect }: AuctionTableRow
                     <Flex
                         $column
                         $align="flex-start">
-                        <Text>{tokenMap[buyToken] || buyToken}</Text>
-                        <Text $fontSize="0.6rem">Bid: {formatNumber(biddersList[0].buyAmount || buyInitialAmount, 2)}</Text>
+                        <Text>
+                            {auction.englishAuctionType === 'COLLATERAL'
+                                ? remainingToRaise || '--'
+                                : ''
+                            } {tokenMap[buyToken] || buyToken}
+                        </Text>
+                        <Text $fontSize="0.6rem">
+                            {auction.englishAuctionType === 'COLLATERAL'
+                                ? `Start: ${initialToRaise || '--'}`
+                                : `Bid: ${formatNumberWithStyle(
+                                    biddersList[0].buyAmount || buyInitialAmount,
+                                    { maxDecimals: 3 }
+                                )}`
+                            }
+                        </Text>
                     </Flex>
                 </Flex>
                 <Flex
                     $column
                     $align="flex-start">
                     <Text $fontWeight={700}>
-                        {(new Date(parseInt(auctionDeadline) * 1000)).toLocaleDateString()}
+                        {auctionDeadline
+                            ? (new Date(parseInt(auctionDeadline) * 1000)).toLocaleDateString()
+                            : '--'
+                        }
                     </Text>
                     <Text
                         ref={setTimeEl}
@@ -145,7 +232,7 @@ export function AuctionTableRow({ auction, expanded, onSelect }: AuctionTableRow
                         --
                     </Text>
                 </Flex>
-                <Text>-</Text>
+                <Text>{auction.myBids || '--'}</Text>
                 <Flex>
                     <StatusLabel
                         status={status}

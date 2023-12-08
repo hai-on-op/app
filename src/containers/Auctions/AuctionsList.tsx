@@ -85,7 +85,7 @@ export function AuctionsList({ isLoading }: AuctionsListProps) {
             })
         }
         return temp.sort(sortByTimeCreated)
-    }, [collateralAuctions, debtAuctions, surplusAuctions, typeFilter, filterMyBids, typeFilter, saleAssetsFilter, buyAssetsFilter])
+    }, [collateralAuctions, debtAuctions, surplusAuctions, typeFilter, typeFilter, saleAssetsFilter, buyAssetsFilter])
 
     return (
         <NavContainer
@@ -159,6 +159,7 @@ export function AuctionsList({ isLoading }: AuctionsListProps) {
             )}>
             <AuctionTable
                 auctions={auctions}
+                filterMyBids={filterMyBids}
                 isLoading={isLoading}
             />
         </NavContainer>

@@ -1,7 +1,7 @@
 import { type Dispatch, type SetStateAction, useMemo, useState } from 'react'
 import { BigNumber } from 'ethers'
 
-import { type AvailableVaultPair } from '~/utils'
+import { getRatePercentage, type AvailableVaultPair, formatNumberWithStyle } from '~/utils'
 import { useStoreState } from '~/store'
 import { useVault } from '~/providers/VaultProvider'
 
@@ -20,24 +20,6 @@ const assets = [
     'OP'
 ]
 
-const dummyVaults: AvailableVaultPair[] = [
-    {
-        collateralName: 'WETH',
-        collateralizationFactor: '110',
-        apy: '110'
-    },
-    {
-        collateralName: 'WSTETH',
-        collateralizationFactor: '110',
-        apy: '110'
-    },
-    {
-        collateralName: 'OP',
-        collateralizationFactor: '110',
-        apy: '110'
-    }
-]
-
 type VaultsListProps = {
     navIndex: number,
     setNavIndex: Dispatch<SetStateAction<number>>
@@ -50,6 +32,7 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
 
     const {
         connectWalletModel: {
+            tokensData,
             tokensFetchedData
         },
         safeModel: safeState
@@ -64,15 +47,32 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
         ))
     }, [safeState.list, assetsFilter])
 
-    const availableVaults = useMemo(() => {
-        return dummyVaults.map(pair => ({
-            ...pair,
-            eligibleBalance: tokensFetchedData[pair.collateralName]?.balanceE18 || '0',
-            myVaults: safeState.list.filter(({ collateralName }) => (
-                collateralName === pair.collateralName
-            ))
-        }))
-    }, [eligibleOnly, tokensFetchedData, safeState.list])
+    const availableVaults: AvailableVaultPair[] = useMemo(() => {
+        return Object.values(tokensData || {})
+            .filter(({ isCollateral }) => isCollateral)
+            .map(({ symbol }) => {
+                const {
+                    liquidationCRatio,
+                    totalAnnualizedStabilityFee
+                } = safeState.liquidationData?.collateralLiquidationData[symbol] || {}
+                return {
+                    collateralName: symbol,
+                    collateralizationFactor: liquidationCRatio
+                        ? formatNumberWithStyle(liquidationCRatio, {
+                            maxDecimals: 0,
+                            style: 'percent'
+                        })
+                        : '--%',
+                    apy: totalAnnualizedStabilityFee
+                        ? getRatePercentage(totalAnnualizedStabilityFee).toString()
+                        : '',
+                    eligibleBalance: tokensFetchedData[symbol]?.balanceE18 || '0',
+                    myVaults: safeState.list.filter(({ collateralName }) => (
+                        collateralName === symbol
+                    ))
+                }
+            })
+    }, [eligibleOnly, tokensData, tokensFetchedData, safeState.list, safeState.liquidationData])
 
     const filteredAvailableVaults = useMemo(() => {
         if (!eligibleOnly) return availableVaults

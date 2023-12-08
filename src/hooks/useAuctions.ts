@@ -42,17 +42,20 @@ export function useGetAuctions(type: AuctionEventType, tokenSymbol?: string) {
     return auctions
 }
 
-export function convertCollateralAuction(auction: SDKCollateralAuction, tokenSymbol: string): IAuction {
+export function convertCollateralAuction(
+    auction: SDKCollateralAuction,
+    tokenSymbol: string
+): IAuction {
     return {
         ...auction,
         auctionDeadline: '',
         biddersList: auction.biddersList.map(bid => ({
             ...bid,
             buyAmount: formatEther(bid.buyAmount || '0'),
-            sellAmount: ''
+            sellAmount: formatEther(bid.bid || '0')
         })),
-        buyAmount: '',
-        buyInitialAmount: formatEther(auction.amountToRaise),
+        buyAmount: formatEther(auction.amountToRaise || '0'),
+        buyInitialAmount: formatEther(auction.amountToRaise || '0'),
         buyToken: 'HAI',
         englishAuctionBids: [],
         englishAuctionConfiguration: {

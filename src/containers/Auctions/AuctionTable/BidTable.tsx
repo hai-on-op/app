@@ -3,7 +3,7 @@ import { useNetwork } from 'wagmi'
 import dayjs from 'dayjs'
 
 import type { IAuction, IAuctionBidder, SortableHeader } from '~/types'
-import { type ChainId, formatNumber, parseRemainingTime } from '~/utils'
+import { type ChainId, parseRemainingTime, formatNumberWithStyle } from '~/utils'
 
 import styled from 'styled-components'
 import { Flex, Grid, Text } from '~/styles'
@@ -22,6 +22,14 @@ const sortableHeaders: SortableHeader[] = [
     { label: 'Transaction Hash' },
     { label: 'Time' }
 ]
+const sortableHeadersWithSell: SortableHeader[] = [
+    { label: 'Event' },
+    { label: 'Bidder' },
+    { label: 'Sell Amount' },
+    { label: 'Buy Amount' },
+    { label: 'Transaction Hash' },
+    { label: 'Time' }
+]
 
 type BidTableProps = {
     auction: IAuction
@@ -29,10 +37,12 @@ type BidTableProps = {
 export function BidTable({ auction }: BidTableProps) {
     const hasSettled = auction.isClaimed && auction.winner
 
+    const withSell = auction.englishAuctionType === 'COLLATERAL'
+
     return (
         <Table>
-            <TableHeader>
-                {sortableHeaders.map(({ label }) => (
+            <TableHeader $withSell={withSell}>
+                {(withSell ? sortableHeadersWithSell: sortableHeaders).map(({ label }) => (
                     <TableHeaderItem key={label}>
                         <Text>{label}</Text>
                     </TableHeaderItem>
@@ -44,12 +54,14 @@ export function BidTable({ auction }: BidTableProps) {
                     key={i}
                     bid={bid}
                     bidToken={tokenMap[auction.buyToken] || auction.buyToken}
+                    sellToken={tokenMap[auction.sellToken] || auction.sellToken}
                     eventType={i === auction.biddersList.length - 1
                         ? 'Start'
                         : hasSettled && i === 0
                             ? 'Settle'
                             : 'Buy'
                     }
+                    withSell={withSell}
                 />
             ))}
         </Table>
@@ -64,8 +76,11 @@ const Table = styled(Flex).attrs(props => ({
     $gap: 12,
     ...props
 }))``
-const TableHeader = styled(Grid)`
-    grid-template-columns: 140px 240px 1fr 200px 1fr;
+const TableHeader = styled(Grid)<{ $withSell?: boolean }>`
+    grid-template-columns: ${({ $withSell }) => $withSell
+        ? '140px 200px 1fr 1fr 200px 120px'
+        : '140px 200px 1fr 200px 120px'
+    };
     align-items: center;
     padding: 4px 32px;
     font-size: 0.67rem;
@@ -97,9 +112,11 @@ const TableRow = styled(TableHeader)`
 type BidTableRowProps = {
     bid: IAuctionBidder,
     bidToken: string,
-    eventType: 'Start' | 'Buy' | 'Settle'
+    sellToken?: string,
+    eventType: 'Start' | 'Buy' | 'Settle',
+    withSell?: boolean
 }
-function BidTableRow({ bid, eventType, bidToken }: BidTableRowProps) {
+function BidTableRow({ bid, eventType, bidToken, sellToken, withSell }: BidTableRowProps) {
     const { chain } = useNetwork()
 
     const [timeLabel, timestamp] = useMemo(() => {
@@ -113,7 +130,7 @@ function BidTableRow({ bid, eventType, bidToken }: BidTableRowProps) {
     }, [bid.createdAt])
 
     return (
-        <TableRow>
+        <TableRow $withSell={withSell}>
             <Text>{eventType}</Text>
             <Flex>
                 {eventType === 'Start'
@@ -126,8 +143,19 @@ function BidTableRow({ bid, eventType, bidToken }: BidTableRowProps) {
                     )
                 }
             </Flex>
+            {!!withSell && (
+                <Text>
+                    {eventType === 'Start'
+                        ? '--'
+                        : `${formatNumberWithStyle(bid.sellAmount, { maxDecimals: 4 })} ${sellToken}`
+                    }
+                </Text>
+            )}
             <Text>
-                {formatNumber(bid.buyAmount, 2)} {bidToken}
+                {eventType === 'Start'
+                    ? '--'
+                    : `${formatNumberWithStyle(bid.buyAmount, { maxDecimals: 4 })} ${bidToken}`
+                }
             </Text>
             <Flex>
                 <AddressLink
