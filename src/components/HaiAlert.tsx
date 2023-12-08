@@ -1,7 +1,7 @@
 import { useMediaQuery } from '~/hooks'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 
-import styled from 'styled-components'
+import styled, { keyframes } from 'styled-components'
 import { CenteredFlex, Flex, Text } from '~/styles'
 import { HaiFace } from './Icons/HaiFace'
 import { Elf } from './BrandElements/Elf'
@@ -65,6 +65,10 @@ export function HaiAlert() {
     )
 }
 
+const popup = keyframes`
+    0% { bottom: -80px; }
+    100% { bottom: 0px; }
+`
 const Container = styled(Flex).attrs(props => ({
     $width: '100%',
     $justify: 'space-between',
@@ -75,11 +79,12 @@ const Container = styled(Flex).attrs(props => ({
     position: fixed;
     left: 0px;
     right: 0px;
-    bottom: 0px;
+    bottom: -80px;
     height: 80px;
     padding-left: 24px;
     border-top: ${({ theme }) => theme.border.medium};
     background: ${({ theme }) => theme.colors.gradientSecondary};
+    animation: ${popup} 0.5s ease forwards;
 `
 const HaiIconContainer = styled(CenteredFlex).attrs(props => ({
     $shrink: 0,
