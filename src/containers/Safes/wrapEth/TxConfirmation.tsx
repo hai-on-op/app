@@ -1,10 +1,11 @@
 import { useTranslation } from 'react-i18next'
-import styled from 'styled-components'
 import { useAccount } from 'wagmi'
 
-import { handleTransactionError, useEthersSigner, useGeb } from '~/hooks'
-import TransactionOverview from '~/components/TransactionOverview'
 import { useStoreActions, useStoreState } from '~/store'
+import { handleTransactionError, useEthersSigner, useGeb } from '~/hooks'
+
+import styled from 'styled-components'
+import TransactionOverview from '~/components/TransactionOverview'
 import Button from '~/components/Button'
 import Results from './Results'
 
@@ -12,12 +13,12 @@ const TxConfirmation = () => {
     const { t } = useTranslation()
     const { address: account } = useAccount()
     const signer = useEthersSigner()
-    const { safeModel: safeState } = useStoreState((state) => state)
+    const { safeModel: safeState } = useStoreState(state => state)
     const {
         popupsModel: popupsActions,
         safeModel: safeActions,
         connectWalletModel: connectWalletActions,
-    } = useStoreActions((state) => state)
+    } = useStoreActions(actions => actions)
     const geb = useGeb()
 
     const handleBack = () => safeActions.setOperation(0)
@@ -32,7 +33,10 @@ const TxConfirmation = () => {
         })
 
         if (account && geb) {
-            connectWalletActions.fetchTokenData({ geb, user: account })
+            connectWalletActions.fetchTokenData({
+                geb,
+                user: account,
+            })
         }
     }
 
@@ -62,26 +66,32 @@ const TxConfirmation = () => {
         } catch (e) {
             reset()
             handleTransactionError(e)
-        } finally {
         }
     }
 
     return (
         <Container>
-            <>
-                <Body>
-                    <TransactionOverview
-                        title={t('confirm_transaction_details')}
-                        description={t('confirm_details_text')}
-                    />
-                    <Results amount={safeState.amount} />
-                </Body>
+            <Body>
+                <TransactionOverview
+                    title={t('confirm_transaction_details')}
+                    description={t('confirm_details_text')}
+                />
+                <Results amount={safeState.amount} />
+            </Body>
 
-                <Footer>
-                    <Button variant="dimmed" withArrow text={t('back')} onClick={handleBack} />
-                    <Button withArrow text={t('confirm_transaction')} onClick={handleConfirm} />
-                </Footer>
-            </>
+            <Footer>
+                <Button
+                    variant="dimmed"
+                    withArrow
+                    text={t('back')}
+                    onClick={handleBack}
+                />
+                <Button
+                    withArrow
+                    text={t('confirm_transaction')}
+                    onClick={handleConfirm}
+                />
+            </Footer>
         </Container>
     )
 }

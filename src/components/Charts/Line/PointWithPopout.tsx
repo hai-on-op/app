@@ -7,7 +7,7 @@ import { ChartTooltip } from '../ChartTooltip'
 
 type PointProps = Point & {
     formatX?: (value: string | number) => string,
-    formatY?: (value: string | number) => string
+    formatY?: (value: string | number) => string,
 }
 export const PointWithPopout = ({ serieId, x, y, data, serieColor, formatX, formatY }: PointProps) => {
     const [hovered, setHovered] = useState(false)
@@ -23,7 +23,7 @@ export const PointWithPopout = ({ serieId, x, y, data, serieColor, formatX, form
                 top: `${top + window.scrollY}px`,
                 left: `${left}px`,
                 width: `${width}px`,
-                height: `${height}px`
+                height: `${height}px`,
             })
         }
         onResize()

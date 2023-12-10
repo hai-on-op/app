@@ -180,7 +180,7 @@ const Body = styled.div`
 const Footer = styled(Flex).attrs(props => ({
     $justify: 'space-between',
     $align: 'center',
-    ...props
+    ...props,
 }))`
     padding: 20px;
 `
@@ -188,7 +188,7 @@ const Footer = styled(Flex).attrs(props => ({
 const HeaderContainer = styled(Flex).attrs(props => ({
     $justify: 'space-between',
     $align: 'center',
-    ...props
+    ...props,
 }))`
     border-bottom: ${({ theme }) => theme.border.thin};
 `

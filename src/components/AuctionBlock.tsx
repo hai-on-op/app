@@ -1,17 +1,19 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import styled from 'styled-components'
-import _ from '~/utils/lodash'
 import dayjs from 'dayjs'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useAccount, useNetwork } from 'wagmi'
 
-import { COIN_TICKER, formatNumber, getEtherscanLink, returnWalletAddress, ChainId, parseRad } from '~/utils'
-import { useStoreActions, useStoreState } from '~/store'
 import type { IAuction, IAuctionBidder } from '~/types'
+import { COIN_TICKER, formatNumber, getEtherscanLink, returnWalletAddress, ChainId, parseRad } from '~/utils'
+import _ from '~/utils/lodash'
+import { useStoreActions, useStoreState } from '~/store'
+
+import styled from 'styled-components'
 import { ExternalLinkArrow } from '~/styles'
 import AlertLabel from './AlertLabel'
 import Button from './Button'
+
 import debtImage from '~/assets/debt.svg'
 import collateralImage from '~/assets/collateral.svg'
 import surplusImage from '~/assets/surplus.svg'
@@ -70,7 +72,7 @@ const AuctionBlock = (auction: Props) => {
 
     const userProxy = _.get(connectWalletState, 'proxyAddress', '')
 
-    const returnWad = (amount: string, i: number) => {
+    const returnWad = (amount: string) => {
         if (!amount) return '0'
         return formatNumber(amount, 2)
     }
@@ -230,7 +232,7 @@ const AuctionBlock = (auction: Props) => {
                     </AlertContainer>
                 </RightAucInfo>
             </Header>
-            {collapse ? null : (
+            {!collapse && (
                 <Content>
                     <SectionContent>
                         <Bidders>
@@ -286,7 +288,7 @@ const AuctionBlock = (auction: Props) => {
                                         </ListItem>
                                         <ListItem>
                                             <ListItemLabel>Buy Amount</ListItemLabel>
-                                            {returnWad(bidder.buyAmount, i)} {buySymbol}
+                                            {returnWad(bidder.buyAmount)} {buySymbol}
                                         </ListItem>
                                         <ListItem>
                                             <ListItemLabel>TX</ListItemLabel>

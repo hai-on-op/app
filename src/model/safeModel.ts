@@ -124,7 +124,7 @@ const safeModel: SafeModel = {
             storeActions.connectWalletModel.setStep(2)
         }
     }),
-    repayAndWithdraw: thunk(async (actions, payload, { getStoreActions, getStoreState }) => {
+    repayAndWithdraw: thunk(async (actions, payload, { getStoreActions }) => {
         const storeActions = getStoreActions()
         const txResponse = await handleRepayAndWithdraw(payload.signer, payload.safeData, payload.safeId)
         if (txResponse) {

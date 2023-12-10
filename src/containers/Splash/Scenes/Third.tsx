@@ -21,19 +21,19 @@ const clouds: SplashImage[] = [
         width: '260px',
         style: {
             right: '30%',
-            bottom: '-150px'
+            bottom: '-150px',
         },
-        zIndex: 1
+        zIndex: 1,
     },
     {
         index: 1,
         width: '190px',
         style: {
             right: '-140px',
-            top: '-140px'
+            top: '-140px',
         },
-        zIndex: -1
-    }
+        zIndex: -1,
+    },
 ]
 
 const CANVAS_SIZE = { x: 300, y: 60 }
@@ -70,7 +70,7 @@ export function Third({ zIndex }: ZoomSceneProps) {
             const h = canvas.height - 2 * CANVAS_PADDING
             const start: [number, number] = [
                 CANVAS_PADDING,
-                canvas.height / 2 - (h / 2) * Math.sin(2 * Math.PI * progress)
+                canvas.height / 2 - (h / 2) * Math.sin(2 * Math.PI * progress),
             ]
 
             // dot
@@ -89,7 +89,7 @@ export function Third({ zIndex }: ZoomSceneProps) {
             }
             const end: [number, number] = [
                 CANVAS_PADDING + w,
-                canvas.height / 2 - (h / 2) * Math.sin(2 * Math.PI * progress)
+                canvas.height / 2 - (h / 2) * Math.sin(2 * Math.PI * progress),
             ]
             ctx.stroke()
 
@@ -157,8 +157,8 @@ export function Third({ zIndex }: ZoomSceneProps) {
                                 : '0.4rem'
                         }
                         $lineHeight={isLargerThanSmall
-                            ? "1.4"
-                            : "1.2"
+                            ? '1.4'
+                            : '1.2'
                         }
                     />
                     <Text $lineHeight="1.6">
@@ -213,7 +213,7 @@ export function Third({ zIndex }: ZoomSceneProps) {
                     style={{
                         bottom: '0px',
                         transform: 'scaleX(-1)',
-                        zIndex: 1
+                        zIndex: 1,
                     }}
                 />
             </FlyingElfContainer>
@@ -225,7 +225,7 @@ const Container = styled(Grid).attrs(props => ({
     $columns: '1fr min-content',
     $justify: 'center',
     $align: 'center',
-    ...props
+    ...props,
 }))`
     width: min(1100px, calc(100vw - 96px));
     padding: 72px 48px;
@@ -252,7 +252,7 @@ const SmoothContainer = styled(Flex).attrs(props => ({
     $column: true,
     $justify: 'space-between',
     $align: 'flex-start',
-    ...props
+    ...props,
 }))`
     width: 360px;
     max-width: calc(100% - 24px);

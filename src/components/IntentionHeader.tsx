@@ -15,23 +15,23 @@ type IntentionType = 'earn' | 'borrow' | 'auctions'
 const copy: Record<IntentionType, {
     subtitle: string,
     cta: string,
-    ctaLink: string
+    ctaLink: string,
 }> = {
     earn: {
         subtitle: 'Stake various liquidity positions to earn yields. ',
         cta: 'Read more about earning opportunities →',
-        ctaLink: LINK_TO_DOCS
+        ctaLink: LINK_TO_DOCS,
     },
     borrow: {
         subtitle: 'Mint & borrow HAI against your preferred collateral. ',
         cta: 'Read more about borrowing →',
-        ctaLink: LINK_TO_DOCS
+        ctaLink: LINK_TO_DOCS,
     },
     auctions: {
         subtitle: 'Buy your favorite crypto assets from liquidated loan auctions at a discount. ',
         cta: 'Read more about auctions →',
-        ctaLink: LINK_TO_DOCS
-    }
+        ctaLink: LINK_TO_DOCS,
+    },
 }
 
 const typeOptions = [
@@ -39,14 +39,14 @@ const typeOptions = [
         label: 'Get $HAI',
         value: 'borrow',
         icon: <HaiFace filled/>,
-        description: 'Mint & borrow $HAI stablecoin against your preferred collateral'
+        description: 'Mint & borrow $HAI stablecoin against your preferred collateral',
     },
     {
         label: 'Buy $HAI',
         value: '',
         icon: uniswapLogo,
         description: 'Market buy $HAI from various pairs on Uniswap',
-        href: 'https://app.uniswap.org/swap'
+        href: 'https://app.uniswap.org/swap',
     },
     {
         label: 'Earn Rewards',
@@ -54,9 +54,9 @@ const typeOptions = [
         icon: [
             TOKEN_LOGOS.OP,
             TOKEN_LOGOS.WETH,
-            TOKEN_LOGOS.WSTETH
+            TOKEN_LOGOS.WSTETH,
         ],
-        description: 'Earn long term yields by staking a growing list of crypto assets'
+        description: 'Earn long term yields by staking a growing list of crypto assets',
     },
     {
         label: 'Buy Liquidated Assets',
@@ -64,16 +64,16 @@ const typeOptions = [
         icon: [
             TOKEN_LOGOS.OP,
             TOKEN_LOGOS.WETH,
-            TOKEN_LOGOS.WSTETH
+            TOKEN_LOGOS.WSTETH,
         ],
-        description: 'Buy your favorite assets from liquidated loans at a discount'
-    }
+        description: 'Buy your favorite assets from liquidated loans at a discount',
+    },
 ]
 
 type IntentionHeaderProps = {
     type: 'earn' | 'borrow' | 'auctions',
     setType: (type: string) => void,
-    children?: ReactChildren
+    children?: ReactChildren,
 }
 export function IntentionHeader({ type, setType, children }: IntentionHeaderProps) {
     const { subtitle, cta, ctaLink } = copy[type]
@@ -112,7 +112,7 @@ export function IntentionHeader({ type, setType, children }: IntentionHeaderProp
 
 const Container = styled(BlurContainer).attrs(props => ({
     $width: '100%',
-    ...props
+    ...props,
 }))`
     overflow: visible;
     position: relative;
@@ -125,5 +125,5 @@ const Inner = styled(Flex).attrs(props => ({
     $justify: 'flex-start',
     $align: 'flex-start',
     $gap: 36,
-    ...props
+    ...props,
 }))``

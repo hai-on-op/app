@@ -7,7 +7,7 @@ const AuctionsModal = () => {
     const { popupsModel: popupsState } = useStoreState(state => state)
     const {
         popupsModel: popupsActions,
-        auctionModel: auctionsActions
+        auctionModel: auctionsActions,
     } = useStoreActions(actions => actions)
 
     const handleCancel = () => {

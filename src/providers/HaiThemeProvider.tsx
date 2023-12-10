@@ -1,4 +1,11 @@
-import { createContext, useContext, type Dispatch, type SetStateAction, type ReactNode, useState } from 'react'
+import {
+    type Dispatch,
+    type ReactNode,
+    type SetStateAction,
+    createContext,
+    useContext,
+    useState,
+} from 'react'
 import { ThemeProvider } from 'styled-components'
 import { type Theme } from '~/utils'
 import { darkTheme, lightTheme } from '~/styles/themes'
@@ -12,7 +19,7 @@ type HaiThemeContext = {
 const defaultState: HaiThemeContext = {
     themeId: 'dark',
     theme: darkTheme,
-    toggleTheme: () => undefined
+    toggleTheme: () => undefined,
 }
 
 const HaiThemeContext = createContext<HaiThemeContext>(defaultState)
@@ -20,7 +27,7 @@ const HaiThemeContext = createContext<HaiThemeContext>(defaultState)
 export const useHaiTheme = () => useContext(HaiThemeContext)
 
 type Props = {
-    children: ReactNode | ReactNode[]
+    children: ReactNode | ReactNode[],
 }
 export function HaiThemeProvider({ children }: Props) {
     const [themeId, toggleTheme] = useState<HaiThemeContext['themeId']>(defaultState.themeId)
@@ -31,7 +38,7 @@ export function HaiThemeProvider({ children }: Props) {
         <HaiThemeContext.Provider value={{
             themeId,
             theme,
-            toggleTheme
+            toggleTheme,
         }}>
             <ThemeProvider theme={theme}>
                 {children}

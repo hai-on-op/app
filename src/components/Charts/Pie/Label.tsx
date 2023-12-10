@@ -5,7 +5,7 @@ type LabelProps = {
         value: number
     },
     style: any,
-    total: number
+    total: number,
 }
 export const Label = ({ datum, style, total }: LabelProps) => (
     <animated.g

@@ -6,7 +6,7 @@ import { type PieChartDatum } from './index'
 type Options = {
     min?: number,
     max?: number,
-    enabled?: boolean
+    enabled?: boolean,
 }
 export function useDummyData(baseData: Omit<PieChartDatum, 'value'>[], options: Options = {}) {
     const data = useMemo(() => {
@@ -16,7 +16,7 @@ export function useDummyData(baseData: Omit<PieChartDatum, 'value'>[], options: 
 
         return baseData.map(d => ({
             ...d,
-            value: min + (max - min) * Math.random()
+            value: min + (max - min) * Math.random(),
         }))
     }, [baseData, options])
 

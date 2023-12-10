@@ -24,7 +24,7 @@ export function VaultActions() {
         updateForm,
         collateral,
         debt,
-        error
+        error,
     } = useVault()
 
     const [collateralApproval, approveCollateral] = useTokenApproval(
@@ -163,7 +163,7 @@ export function VaultActions() {
     }, [
         action, safeState, buttonActive, buttonLabel,
         collateral, collateralApproval, approveCollateral,
-        debtApproval, approveDebtUnlock
+        debtApproval, approveDebtUnlock,
     ])
 
     const isDepositBorrowOrCreate = action === VaultAction.DEPOSIT_BORROW || action === VaultAction.CREATE
@@ -301,7 +301,7 @@ export function VaultActions() {
 const Container = styled(Flex).attrs(props => ({
     $column: true,
     $shrink: 0,
-    ...props
+    ...props,
 }))`
     max-width: 100%;
     width: 360px;
@@ -317,7 +317,7 @@ const Header = styled(Flex).attrs(props => ({
     $justify: 'flex-end',
     $align: 'flex-start',
     $gap: 12,
-    ...props
+    ...props,
 }))<{ $pad?: boolean }>`
     padding-top: 24px;
     border-bottom: ${({ theme }) => theme.border.thin};
@@ -346,7 +346,7 @@ const Body = styled(Flex).attrs(props => ({
     $gap: 12,
     $grow: 1,
     $shrink: 1,
-    ...props
+    ...props,
 }))`
     height: 100%;
     padding: 24px;
@@ -356,7 +356,7 @@ const WrapEthText = styled(Text).attrs(props => ({
     $textAlign: 'right',
     $color: 'rgba(0,0,0,0.5)',
     $fontSize: '0.67em',
-    ...props
+    ...props,
 }))`
     width: 100%;
     margin-top: 8px;

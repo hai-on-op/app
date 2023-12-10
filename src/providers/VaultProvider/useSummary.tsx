@@ -8,15 +8,15 @@ import {
     getRatePercentage,
     formatSummaryCurrency,
     formatSummaryPercentage,
-    formatSummaryValue
-} from "~/utils"
+    formatSummaryValue,
+} from '~/utils'
 
 export type Summary = {
     collateral: SummaryItem<SummaryCurrency>,
     debt: SummaryItem<SummaryCurrency>,
     collateralRatio: SummaryItem,
     stabilityFee: SummaryItemValue,
-    liquidationPrice: SummaryItem
+    liquidationPrice: SummaryItem,
 }
 
 type Props = {
@@ -24,29 +24,29 @@ type Props = {
     collateral: Collateral,
     debt: Debt,
     simulatedCR?: string,
-    liquidationPrice: string
+    liquidationPrice: string,
 }
 export function useSummary({
     vault,
     collateral,
     debt,
     simulatedCR,
-    liquidationPrice
+    liquidationPrice,
 }: Props): Summary {
     const stabilityFee = vault?.totalAnnualizedStabilityFee
         || collateral.liquidationData?.totalAnnualizedStabilityFee
     return {
         collateral: {
             current: formatSummaryCurrency(vault?.collateral, collateral.priceInUSD),
-            after: formatSummaryCurrency(collateral.total || '0', collateral.priceInUSD)!
+            after: formatSummaryCurrency(collateral.total || '0', collateral.priceInUSD)!,
         },
         debt: {
             current: formatSummaryCurrency(vault?.debt, debt.priceInUSD),
-            after: formatSummaryCurrency(debt.total || '0', debt.priceInUSD)!
+            after: formatSummaryCurrency(debt.total || '0', debt.priceInUSD)!,
         },
         collateralRatio: {
             current: formatSummaryPercentage(vault?.collateralRatio, 0.01),
-            after: formatSummaryPercentage(simulatedCR || '0', 0.01)!
+            after: formatSummaryPercentage(simulatedCR || '0', 0.01)!,
         },
         stabilityFee: stabilityFee
             ? formatSummaryPercentage(
@@ -54,18 +54,18 @@ export function useSummary({
             )!
             : {
                 raw: '',
-                formatted: '--%'
+                formatted: '--%',
             },
         liquidationPrice: {
             current: formatSummaryValue(vault?.liquidationPrice, {
                 maxDecimals: 3,
-                style: 'currency'
+                style: 'currency',
             }),
             after: formatSummaryValue(liquidationPrice || '0', {
                 maxDecimals: 3,
-                style: 'currency'
-            })!
-        }
+                style: 'currency',
+            })!,
+        },
     }
 }
 
@@ -76,8 +76,8 @@ export const DEFAULT_SUMMARY: Summary = {
             raw: '',
             formatted: '',
             usdRaw: '',
-            usdFormatted: '$--'
-        }
+            usdFormatted: '$--',
+        },
     },
     debt: {
         current: undefined,
@@ -85,25 +85,25 @@ export const DEFAULT_SUMMARY: Summary = {
             raw: '',
             formatted: '',
             usdRaw: '',
-            usdFormatted: '$--'
-        }
+            usdFormatted: '$--',
+        },
     },
     collateralRatio: {
         current: undefined,
         after: {
             raw: '',
-            formatted: '--%'
-        }
+            formatted: '--%',
+        },
     },
     stabilityFee: {
         raw: '',
-        formatted: '--%'
+        formatted: '--%',
     },
     liquidationPrice: {
         current: undefined,
         after: {
             raw: '',
-            formatted: '$--'
-        }
-    }
+            formatted: '$--',
+        },
+    },
 }

@@ -14,8 +14,7 @@ type ButtonProps = Omit<HTMLProps<HTMLButtonElement>, 'ref' | 'as' | 'type' | 'c
     variant?: 'default' | 'primary' | 'secondary' | 'dimmed' | 'dimmedNormal' | 'bordered',
     withArrow?: boolean | 'left' | 'right',
     isLoading?: boolean,
-    isBordered?: boolean,
-    children?: ReactChildren
+    children?: ReactChildren,
 }
 
 const Button = ({
@@ -23,7 +22,6 @@ const Button = ({
     variant = 'default',
     withArrow = false,
     isLoading,
-    isBordered,
     children,
     ...props
 }: ButtonProps) => {
@@ -93,10 +91,10 @@ const Container = styled.button<{ variant: ButtonProps['variant'], isLoading?: b
     }
 
     &:disabled {
-        background: ${({ theme, isLoading }) => (isLoading
-            ? theme.colors.placeholder
-            : theme.colors.secondary
-        )};
+    background: ${({ theme, isLoading }) => (isLoading
+        ? theme.colors.placeholder
+        : theme.colors.secondary
+    )};
         cursor: not-allowed;
     }
 `

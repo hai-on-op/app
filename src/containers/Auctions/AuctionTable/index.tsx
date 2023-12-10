@@ -18,7 +18,7 @@ const headers: SortableHeader[] = [
     { label: 'Buy With' },
     { label: 'Time Left' },
     { label: 'My Bids' },
-    { label: 'Status' }
+    { label: 'Status' },
 ]
 
 type AuctionTableProps = {
@@ -33,11 +33,11 @@ export function AuctionTable({ auctions, filterMyBids, isLoading }: AuctionTable
 
     const [paging, setPaging] = useState<IPaging>({
         from: 0,
-        to: 5
+        to: 5,
     })
     const [sorting, setSorting] = useState<{ key: string, dir: 'asc' | 'desc'}>({
         key: 'Time Left',
-        dir: 'desc'
+        dir: 'desc',
     })
 
     const auctionsWithMyBids: (IAuction & { myBids?: number })[] = useMemo(() => {
@@ -49,7 +49,7 @@ export function AuctionTable({ auctions, filterMyBids, isLoading }: AuctionTable
                 myBids: auction.biddersList.reduce((total, { bidder }) => {
                     if (bidder && isAddressEqual(bidder as `0x${string}`, account)) return total + 1
                     return total
-                }, 0)
+                }, 0),
             }))
         return filterMyBids
             ? withBids.filter(({ myBids }) => !!myBids)
@@ -114,11 +114,11 @@ export function AuctionTable({ auctions, filterMyBids, isLoading }: AuctionTable
                 onSort={(label: string) => setSorting(s => {
                     if (s.key === label) return {
                         ...s,
-                        dir: s.dir === 'asc' ? 'desc': 'asc'
+                        dir: s.dir === 'asc' ? 'desc': 'asc',
                     }
                     return {
                         key: label,
-                        dir: 'desc'
+                        dir: 'desc',
                     }
                 })}
             />
@@ -132,7 +132,7 @@ export function AuctionTable({ auctions, filterMyBids, isLoading }: AuctionTable
                     </LoadingOrNotFound>
                 )
                 : sortedRows.slice(paging.from, paging.to).map(auction => {
-                    const key = `${auction.englishAuctionType}-${auction.auctionId}`
+                    const key = `${auction.englishAuctionType}-${auction.sellToken}-${auction.auctionId}`
                     return (
                         <AuctionTableRow
                             key={key}
@@ -163,12 +163,12 @@ const Table = styled(Flex).attrs(props => ({
     $justify: 'flex-start',
     $align: 'stretch',
     $gap: 12,
-    ...props
+    ...props,
 }))``
 
 const LoadingOrNotFound = styled(Text).attrs(props => ({
     $textAlign: 'center',
-    ...props
+    ...props,
 }))`
     width: 100%;
     padding: 12px 0;

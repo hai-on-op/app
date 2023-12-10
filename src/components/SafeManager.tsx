@@ -44,7 +44,7 @@ const SafeManager = () => {
                 address: value,
                 geb,
                 tokensData,
-                chainId: chain?.id || DEFAULT_NETWORK_ID
+                chainId: chain?.id || DEFAULT_NETWORK_ID,
             })
 
             if (!userSafes || (userSafes && !userSafes.safes.length)) {

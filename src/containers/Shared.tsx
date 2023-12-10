@@ -19,13 +19,13 @@ import {
     getNetworkName,
     NETWORK_ID,
 } from '~/utils'
-import { useTokenContract, useEthersSigner, useGeb, usePlaylist, usePrevious } from '~/hooks'
-import { useStoreState, useStoreActions } from '~/store'
 // import ApplicationUpdater from '~/services/ApplicationUpdater'
 // import MulticallUpdater from '~/services/MulticallUpdater'
 // import BalanceUpdater from '~/services/BalanceUpdater'
 import TransactionUpdater from '~/services/TransactionUpdater'
+import { useStoreState, useStoreActions } from '~/store'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
+import { useTokenContract, useEthersSigner, useGeb, usePlaylist, usePrevious } from '~/hooks'
 
 import styled, { css } from 'styled-components'
 import { CenteredFlex, Flex } from '~/styles'
@@ -52,11 +52,14 @@ import { AuctionStats } from './Auctions/Stats'
 
 const playlist = [
     '/audio/get-hai-together.wav',
-    '/audio/hai-as-fuck.wav'
+    '/audio/hai-as-fuck.wav',
 ]
 
+const toastId = 'networdToastHash'
+const successAccountConnection = 'successAccountConnection'
+
 type Props = {
-    children: ReactChildren
+    children: ReactChildren,
 }
 const Shared = ({ children }: Props) => {
     const { t } = useTranslation()
@@ -84,7 +87,7 @@ const Shared = ({ children }: Props) => {
         settingsModel: settingsState,
         connectWalletModel: connectWalletState,
         auctionModel: { auctionsData },
-    } = useStoreState((state) => state)
+    } = useStoreState(state => state)
 
     const {
         settingsModel: settingsActions,
@@ -92,24 +95,29 @@ const Shared = ({ children }: Props) => {
         popupsModel: popupsActions,
         transactionsModel: transactionsActions,
         safeModel: safeActions,
-        auctionModel: { setCoinBalances, setProtInternalBalance, setInternalBalance },
-    } = useStoreActions((state) => state)
-    const toastId = 'networdToastHash'
-    const successAccountConnection = 'successAccountConnection'
+        auctionModel: {
+            setCoinBalances,
+            setProtInternalBalance,
+            setInternalBalance,
+        },
+    } = useStoreActions(actions => actions)
 
-    const resetModals = () => {
+    const resetModals = useCallback(() => {
         popupsActions.setIsConnectedWalletModalOpen(false)
         popupsActions.setIsConnectModalOpen(false)
         popupsActions.setIsConnectorsWalletOpen(false)
-        popupsActions.setIsLoadingModalOpen({ text: '', isOpen: false })
         popupsActions.setIsScreenModalOpen(false)
         popupsActions.setIsSettingModalOpen(false)
-        popupsActions.setIsScreenModalOpen(false)
         popupsActions.setIsVotingModalOpen(false)
         popupsActions.setIsWaitingModalOpen(false)
         popupsActions.setShowSideMenu(false)
-    }
-    const forceUpdateTokens = connectWalletState.forceUpdateTokens
+        popupsActions.setIsLoadingModalOpen({
+            text: '',
+            isOpen: false,
+        })
+    }, [popupsActions])
+
+    const { forceUpdateTokens } = connectWalletState
 
     useEffect(() => {
         if (!account || !geb || !forceUpdateTokens) return
@@ -126,7 +134,7 @@ const Shared = ({ children }: Props) => {
                 balance: Number(utils.formatEther(balance)),
             })
         })
-    }, [account, signer, connectWalletState, chain?.id])
+    }, [account, signer, connectWalletState, connectWalletActions, chain?.id])
 
     useEffect(() => {
         if (!connectWalletState) return
@@ -152,7 +160,7 @@ const Shared = ({ children }: Props) => {
             const formattedAllowance = utils.formatEther(allowance)
             connectWalletActions.setCoinAllowance(formattedAllowance)
         })
-    }, [account, coinTokenContract, connectWalletActions, connectWalletState.proxyAddress, protTokenContract])
+    }, [account, coinTokenContract, connectWalletState.proxyAddress, connectWalletActions, protTokenContract])
 
     useEffect(() => {
         if (!auctionsData) return
@@ -169,13 +177,13 @@ const Shared = ({ children }: Props) => {
 
     useEffect(() => {
         connectWalletActions.setTokensData(tokensData)
-    }, [connectWalletActions, tokensData])
+    }, [tokensData, connectWalletActions])
 
     useEffect(() => {
         connectWalletActions.fetchFiatPrice()
     }, [connectWalletActions])
 
-    async function accountChecker() {
+    const accountChecker = useCallback(async () => {
         if (!account || !chain?.id || !signer || !geb) return
         popupsActions.setWaitingPayload({
             title: '',
@@ -185,7 +193,7 @@ const Shared = ({ children }: Props) => {
         try {
             connectWalletActions.setProxyAddress('')
             const userProxy = await geb.getProxyAction(account)
-            if (userProxy && userProxy.proxyAddress && userProxy.proxyAddress !== EMPTY_ADDRESS) {
+            if (userProxy?.proxyAddress && userProxy.proxyAddress !== EMPTY_ADDRESS) {
                 connectWalletActions.setProxyAddress(userProxy.proxyAddress)
             }
             const txs = localStorage.getItem(`${account}-${chain.id}`)
@@ -195,7 +203,7 @@ const Shared = ({ children }: Props) => {
             await timeout(200)
             if (!connectWalletState.ctHash) {
                 connectWalletActions.setStep(2)
-                const { pathname } = location
+                const { pathname } = window.location
 
                 let address = ''
                 if (pathname && pathname !== '/' && pathname !== '/safes') {
@@ -211,30 +219,32 @@ const Shared = ({ children }: Props) => {
                     chainId,
                 })
             }
-        } catch (error) {
+        } catch(error: any) {
             safeActions.setIsSafeCreated(false)
             connectWalletActions.setStep(1)
         }
 
-        await timeout(1000)
+        await timeout(500)
         popupsActions.setIsWaitingModalOpen(false)
-    }
+    }, [
+        account, chain?.id, signer, geb,
+        connectWalletActions, popupsActions, safeActions, transactionsActions,
+    ])
 
-    function accountChange() {
+    const accountChange = useCallback(() => {
         resetModals()
         const isAccountSwitched = account && previousAccount && account !== previousAccount
         if (!account) {
             connectWalletActions.setStep(0)
             safeActions.setIsSafeCreated(false)
-            transactionsActions.setTransactions({})
         }
         if (isAccountSwitched) {
             history.push('/')
-            transactionsActions.setTransactions({})
         }
-    }
+        transactionsActions.setTransactions({})
+    }, [account, previousAccount, history, connectWalletActions, safeActions, transactionsActions])
 
-    function networkChecker() {
+    const networkChecker = useCallback(() => {
         accountChange()
         const id: ChainId = chainId
         popupsActions.setIsSafeManagerOpen(false)
@@ -244,34 +254,48 @@ const Shared = ({ children }: Props) => {
             // settingsActions.setBlockBody(true)
             toast(
                 <ToastPayload
-                    icon={'AlertTriangle'}
+                    icon="AlertTriangle"
                     iconSize={40}
-                    iconColor={'orange'}
-                    textColor={'#272727'}
-                    text={`${t('wrong_network')} ${capitalizeName(chainName === '' ? 'Mainnet' : chainName)}`}
+                    iconColor="orange"
+                    textColor="#272727"
+                    text={`
+                        ${t('wrong_network')} ${capitalizeName(chainName === '' ? 'Mainnet' : chainName)}
+                    `}
                 />,
-                { autoClose: false, type: 'warning', toastId }
+                {
+                    autoClose: false,
+                    type: 'warning',
+                    toastId,
+                }
             )
         } else {
             toast.update(toastId, { autoClose: 1 })
             settingsActions.setBlockBody(false)
             connectWalletActions.setIsWrongNetwork(false)
             if (account) {
-                toast(<ToastPayload icon={'Check'} iconColor={'green'} text={t('wallet_connected')} />, {
-                    type: 'success',
-                    toastId: successAccountConnection,
-                })
+                toast(
+                    <ToastPayload
+                        icon="Check"
+                        iconColor="green"
+                        text={t('wallet_connected')}
+                    />,
+                    {
+                        type: 'success',
+                        toastId: successAccountConnection,
+                    }
+                )
                 connectWalletActions.setStep(1)
                 accountChecker()
             }
         }
-    }
-    /*eslint-disable-next-line*/
-    const networkCheckerCallBack = useCallback(networkChecker, [account, chain?.id, geb])
+    }, [
+        accountChange, accountChecker, account, chainId, chain?.id, geb,
+        connectWalletActions, popupsActions, settingsActions,
+    ])
 
     useEffect(() => {
-        networkCheckerCallBack()
-    }, [networkCheckerCallBack])
+        networkChecker()
+    }, [networkChecker])
 
     const { play, pause } = usePlaylist(playlist, 0.2)
 
@@ -368,40 +392,6 @@ export default Shared
 
 const Container = styled.div`
     min-height: 100vh;
-    .CookieConsent {
-        z-index: 999 !important;
-        bottom: 20px !important;
-        width: 90% !important;
-        max-width: 1280px;
-        margin: 0 auto;
-        right: 0;
-        border-radius: ${(props) => props.theme.global.borderRadius};
-        padding: 10px 20px;
-        background: ${(props) => props.theme.colors.foreground} !important;
-        button {
-            background: ${(props) => props.theme.colors.blueish} !important;
-            color: ${(props) => props.theme.colors.neutral} !important;
-            padding: 8px 15px !important;
-            background: ${(props) => props.theme.colors.gradient};
-            border-radius: 25px !important;
-            font-size: ${(props) => props.theme.font.small};
-            font-weight: 600;
-            cursor: pointer;
-            flex: 0 0 auto;
-            margin: 0px 15px 0px 0px !important;
-            text-align: center;
-            outline: none;
-            position: relative;
-            top: -5px;
-        }
-
-        @media (max-width: 991px) {
-            display: block !important;
-            button {
-                margin-left: 10px !important;
-            }
-        }
-    }
 `
 
 const BlockBodyContainer = styled.div`
@@ -438,7 +428,7 @@ const Content = styled(Flex).attrs(props => ({
     $justify: 'flex-start',
     $align: 'center',
     $gap: 48,
-    ...props
+    ...props,
 }))<{ $padTop?: boolean, $padBottom?: boolean, $maxWidth?: string }>`
     padding: 0 48px;
     ${({ $padBottom = false }) => $padBottom && css`padding-bottom: 120px;`}

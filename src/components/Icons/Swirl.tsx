@@ -1,7 +1,7 @@
 import type { IconProps } from '~/types'
 
 export function Swirl({ size = 20, ...props }: IconProps) {
-	return (
+    return (
         <svg
             width={size}
             height={0.9 * size}

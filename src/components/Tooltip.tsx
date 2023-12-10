@@ -9,7 +9,7 @@ import { Info } from './Icons/Info'
 type TooltipProps = PopoutProps & {
     size?: number,
     width?: string,
-    children?: ReactChildren
+    children?: ReactChildren,
 }
 export function Tooltip({ size = 14, width = 'auto', children, ...props }: TooltipProps) {
     const [hovered, setHovered] = useState(false)

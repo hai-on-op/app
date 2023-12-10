@@ -9,20 +9,20 @@ import { BorderedLine } from './BorderedLine'
 const formatMap: Record<Timeframe, { format: string, tickValues: number }> = {
     [Timeframe.ONE_DAY]: {
         format: `M/D HH:mm`,
-        tickValues: 4
+        tickValues: 4,
     },
     [Timeframe.ONE_WEEK]: {
         format: `M/D`,
-        tickValues: 7
+        tickValues: 7,
     },
     [Timeframe.ONE_MONTH]: {
         format: `M/D`,
-        tickValues: 4
+        tickValues: 4,
     },
     [Timeframe.ONE_YEAR]: {
         format: `'YY/M/D`,
-        tickValues: 4
-    }
+        tickValues: 4,
+    },
 }
 
 type LineChartProps = LineProps & {
@@ -37,7 +37,7 @@ export function LineChart({ data, timeframe, axisBottom, xScale, axisRight, ySca
             colors={d => d.color}
             xScale={{
                 type: 'time',
-                ...xScale
+                ...xScale,
             }}
             axisTop={null}
             axisBottom={{
@@ -47,28 +47,28 @@ export function LineChart({ data, timeframe, axisBottom, xScale, axisRight, ySca
                     const time = new Date(value).getTime() / 1000
                     return dayjs.unix(time).format(format)
                 },
-                ...axisBottom
+                ...axisBottom,
             }}
             yScale={{
                 type: 'linear',
-                ...yScale
+                ...yScale,
             }}
             axisLeft={{
                 tickSize: 0,
                 tickValues: 0,
-                tickPadding: -50
+                tickPadding: -50,
             }}
             axisRight={{
                 tickSize: 0,
                 tickValues: 5,
                 tickPadding: -50,
-                ...axisRight
+                ...axisRight,
             }}
             margin={{
                 top: 32,
                 left: 0,
                 right: 0,
-                bottom: 32
+                bottom: 32,
             }}
             lineWidth={10}
             enablePoints={false}
@@ -100,7 +100,7 @@ export function LineChart({ data, timeframe, axisBottom, xScale, axisRight, ySca
                         />
                     ))
                 },
-                'legends'
+                'legends',
             ]}
         />
     )

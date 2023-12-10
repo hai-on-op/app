@@ -17,21 +17,21 @@ const elves: SplashImage[] = [
         width: 'min(210px, 40vw)',
         style: {
             right: '6vw',
-            top: '-80px'
+            top: '-80px',
         },
         rotation: 20,
-        zIndex: 1
+        zIndex: 1,
     },
     {
         index: 4,
         width: 'min(200px, 45vw)',
         style: {
             left: '-10px',
-            bottom: '-80px'
+            bottom: '-80px',
         },
         rotation: -20,
-        zIndex: 1
-    }
+        zIndex: 1,
+    },
 ]
 
 const clouds: SplashImage[] = [
@@ -40,34 +40,34 @@ const clouds: SplashImage[] = [
         width: 'min(280px, 50vw)',
         style: {
             left: 'max(-160px, -25vw)',
-            top: 'max(-190px, -35vw)'
+            top: 'max(-190px, -35vw)',
         },
-        zIndex: -2
+        zIndex: -2,
     },
     {
         index: 1,
         width: 'min(220px, 42vw)',
         style: {
             right: '14vw',
-            bottom: '-80px'
+            bottom: '-80px',
         },
-        zIndex: 1
-    }
+        zIndex: 1,
+    },
 ]
 
 const cardTitles = [
     {
         title: 'BORROW HAI TO MULTIPLY YOUR CRYPTO EXPOSURE',
-        link: LINK_TO_DOCS
+        link: LINK_TO_DOCS,
     },
     {
         title: 'EARN KITE AND OP WHILE GETTING HAI',
-        link: LINK_TO_DOCS
+        link: LINK_TO_DOCS,
     },
     {
         title: 'FARM REWARDS BY PROVIDING LIQUIDITY',
-        link: LINK_TO_DOCS
-    }
+        link: LINK_TO_DOCS,
+    },
 ]
 
 const CARDS_WIDTH = 424 * cardTitles.length + 72
@@ -111,7 +111,7 @@ const Container = styled(Flex).attrs(props => ({
     $justify: 'flex-start',
     $align: 'center',
     $gap: 24,
-    ...props
+    ...props,
 }))<{ $offset: string }>`
     position: relative;
     width: ${CARDS_WIDTH}px;
@@ -131,7 +131,7 @@ const Container = styled(Flex).attrs(props => ({
 
 const ArrowButton = styled(HaiButton).attrs(props => ({
     $variant: 'yellowish',
-    ...props
+    ...props,
 }))`
     position: absolute;
     width: 48px;

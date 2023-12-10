@@ -23,7 +23,6 @@ import {
     formatCollateralAuctions,
     SURPLUS_BATCH_SIZE,
     DEBT_BATCH_SIZE,
-    COLLATERAL_BATCH_SIZE,
 } from '~/utils'
 import { IAuctionBid, IAuction, AuctionEventType, LoadingAuctionsData } from '~/types'
 import { StoreModel } from '~/model'

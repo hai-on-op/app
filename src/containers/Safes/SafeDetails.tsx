@@ -1,11 +1,12 @@
 import { useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import styled from 'styled-components'
 import { useAccount } from 'wagmi'
 
-import { useIsOwner, useEthersSigner } from '~/hooks'
-import { useStoreActions, useStoreState } from '~/store'
 import { isNumeric, DEFAULT_SAFE_STATE } from '~/utils'
+import { useStoreActions, useStoreState } from '~/store'
+import { useIsOwner, useEthersSigner } from '~/hooks'
+
+import styled from 'styled-components'
 import AlertLabel from '~/components/AlertLabel'
 import SafeStats from '~/components/SafeStats'
 import ModifySafe from './ModifySafe'
@@ -16,34 +17,26 @@ const SafeDetails = ({ ...props }) => {
     const { address: account } = useAccount()
     const signer = useEthersSigner()
 
-    const { safeModel: safeActions } = useStoreActions((state) => state)
-
     const {
-        safeModel: { liquidationData, singleSafe },
-    } = useStoreState((state) => state)
+        liquidationData,
+        list,
+        singleSafe,
+    } = useStoreState(({ safeModel }) => safeModel)
+    const safeActions = useStoreActions(({ safeModel }) => safeModel)
 
     const safeId = props.match.params.id as string
 
     const isDeposit = useMemo(() => {
-        if (props.location) {
-            return props.location.pathname.includes('deposit')
-        }
-        return false
-    }, [props])
+        return !!props.location?.pathname.includes('deposit')
+    }, [props.location])
 
     const isWithdraw = useMemo(() => {
-        if (props.location) {
-            return props.location.pathname.includes('withdraw')
-        }
-        return false
-    }, [props])
+        return !!props.location?.pathname.includes('withdraw')
+    }, [props.location])
 
     const isOwner = useIsOwner(safeId)
 
-    const { safeModel: safeState } = useStoreState((state) => state)
-
-    const safes = safeState.list
-    const safe = safes.find((safe) => safe.id === safeId)
+    const safe = list.find((safe) => safe.id === safeId)
 
     useEffect(() => {
         if (safe) {
@@ -66,16 +59,33 @@ const SafeDetails = ({ ...props }) => {
 
     return (
         <Container>
-            {!isOwner ? (
+            {!isOwner && (
                 <LabelContainer>
-                    <AlertLabel isBlock={false} text={t('managed_safe_warning')} type="warning" />
+                    <AlertLabel
+                        isBlock={false}
+                        text={t('managed_safe_warning')}
+                        type="warning"
+                    />
                 </LabelContainer>
-            ) : null}
-            <SafeHeader safeId={safeId} isModifying={isDeposit || isWithdraw} isDeposit={isDeposit} />
+            )}
+            <SafeHeader
+                safeId={safeId}
+                isDeposit={isDeposit}
+            />
 
-            {!isLoading && <SafeStats isModifying={isDeposit || isWithdraw} isDeposit={isDeposit} isOwner={isOwner} />}
+            {!isLoading && (
+                <SafeStats
+                    isModifying={isDeposit || isWithdraw}
+                    isDeposit={isDeposit}
+                />
+            )}
 
-            {(isDeposit || isWithdraw) && !isLoading ? <ModifySafe isDeposit={isDeposit} isOwner={isOwner} /> : null}
+            {(isDeposit || isWithdraw) && !isLoading && (
+                <ModifySafe
+                    isDeposit={isDeposit}
+                    isOwner={isOwner}
+                />
+            )}
         </Container>
     )
 }

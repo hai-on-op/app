@@ -7,7 +7,7 @@ import {
     VaultAction,
     returnAvaiableDebt,
     returnTotalDebt,
-    returnTotalValue
+    returnTotalValue,
 } from '~/utils'
 import { useStoreState } from '~/store'
 
@@ -16,12 +16,12 @@ export function useDebt(action: VaultAction, collateralLiquidationData?: Collate
         safeModel: {
             liquidationData,
             safeData: { leftInput, rightInput },
-            singleSafe
+            singleSafe,
         },
         connectWalletModel: {
             tokensData,
-            tokensFetchedData
-        }
+            tokensFetchedData,
+        },
     } = useStoreState(state => state)
 
     const { accumulatedRate = '0' } = collateralLiquidationData || {}
@@ -76,6 +76,6 @@ export function useDebt(action: VaultAction, collateralLiquidationData?: Collate
             : total,
         available,
         balance: formatEther(tokensFetchedData.HAI?.balanceE18 || '0'),
-        priceInUSD: liquidationData?.currentRedemptionPrice || '1'
+        priceInUSD: liquidationData?.currentRedemptionPrice || '1',
     }
 }

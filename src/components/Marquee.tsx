@@ -22,7 +22,7 @@ export function Marquee({
     reverse = false,
     speed = 1,
     spacing = 12,
-    children
+    children,
 }: BannerHeaderProps) {
     const textArray = Array.isArray(text) ? text: [text]
 
@@ -105,7 +105,7 @@ const Container = styled(CenteredFlex)`
 const Banner = styled(Flex)<{
     $scrollDistance?: number,
     $speed: number,
-    $reverse?: boolean
+    $reverse?: boolean,
 }>`
     position: absolute;
     left: 0px;
@@ -128,5 +128,5 @@ export const MarqueeChunk = styled(Flex).attrs(props => ({
     $justify: 'space-between',
     $align: 'center',
     $shrink: 0,
-    ...props
+    ...props,
 }))``

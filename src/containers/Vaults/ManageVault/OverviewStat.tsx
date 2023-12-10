@@ -19,7 +19,7 @@ type OverviewStatProps = {
     simulatedValue?: string,
     fullWidth?: boolean,
     borderedRight?: boolean,
-    borderedBottom?: boolean
+    borderedBottom?: boolean,
 }
 export function OverviewStat({
     token,
@@ -30,7 +30,7 @@ export function OverviewStat({
     simulatedValue,
     fullWidth = false,
     borderedRight = false,
-    borderedBottom = false
+    borderedBottom = false,
 }: OverviewStatProps) {
     return (
         <StatContainer
@@ -108,7 +108,7 @@ export function OverviewProgressStat({
     labels,
     fullWidth = false,
     borderedRight = false,
-    borderedBottom = false
+    borderedBottom = false,
 }: OverviewProgressStatProps) {
     return (
         <StatContainer
@@ -173,7 +173,7 @@ const StatContainer = styled(Flex).attrs(props => ({
     $justify: 'space-between',
     $align: 'center',
     $borderOpacity: 0.2,
-    ...props
+    ...props,
 }))<DashedContainerProps & {
     $fullWidth?: boolean,
     $borderedBottom?: boolean,

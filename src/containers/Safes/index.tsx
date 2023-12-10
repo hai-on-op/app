@@ -1,13 +1,13 @@
 import { useEffect } from 'react'
-import styled from 'styled-components'
-import { useEthersSigner } from '~/hooks'
 import { useAccount, useNetwork } from 'wagmi'
 
+import { DEFAULT_NETWORK_ID, isAddress } from '~/utils'
 import { useStoreState, useStoreActions } from '~/store'
-import { useGeb } from '~/hooks'
+import { useEthersSigner, useGeb } from '~/hooks'
+
+import styled from 'styled-components'
 import Accounts from './Accounts'
 import SafeList from './SafeList'
-import { DEFAULT_NETWORK_ID, isAddress } from '~/utils'
 
 const OnBoarding = ({ ...props }) => {
     const { address: account } = useAccount()
@@ -19,8 +19,8 @@ const OnBoarding = ({ ...props }) => {
         connectWalletModel: connectWalletState,
         safeModel: safeState,
         popupsModel: popupsState,
-    } = useStoreState((state) => state)
-    const { safeModel: safeActions } = useStoreActions((state) => state)
+    } = useStoreState(state => state)
+    const { safeModel: safeActions } = useStoreActions(actions => actions)
 
     const address: string = props.match.params.address ?? ''
 
@@ -38,7 +38,7 @@ const OnBoarding = ({ ...props }) => {
                 address: address || (account as string),
                 geb,
                 tokensData: connectWalletState.tokensData,
-                chainId: chain?.id || DEFAULT_NETWORK_ID
+                chainId: chain?.id || DEFAULT_NETWORK_ID,
             })
         }
         fetchSafes()
@@ -59,11 +59,12 @@ const OnBoarding = ({ ...props }) => {
     return (
         <Container id="app-page">
             <Content>
-                {safeState.safeCreated ? (
-                    <SafeList address={address} />
-                ) : popupsState.isWaitingModalOpen ? null : (
-                    <Accounts />
-                )}
+                {safeState.safeCreated
+                    ? <SafeList address={address} />
+                    : !popupsState.isWaitingModalOpen
+                        ? <Accounts />
+                        : null
+                }
             </Content>
         </Container>
     )

@@ -6,7 +6,7 @@ import { CenteredFlex, Flex, Text } from '~/styles'
 export type ProgressBarProps = {
     progress: number,
     colorLimits?: [number, number],
-    labels?: { progress: number, label: string }[]
+    labels?: { progress: number, label: string }[],
 }
 export function ProgressBar({ progress, colorLimits, labels }: ProgressBarProps) {
     return (
@@ -65,7 +65,7 @@ const Indicator = styled(Flex).attrs(props => ({
     $column: true,
     $justify: 'flex-end',
     $align: 'center',
-    ...props
+    ...props,
 }))<{ $left: string }>`
     position: absolute;
     top: 0px;

@@ -7,13 +7,13 @@ import {
     type WalletClient,
     useNetwork,
     usePublicClient,
-    useWalletClient
+    useWalletClient,
 } from 'wagmi'
 
 import {
     DEFAULT_NETWORK_ID,
     VITE_MAINNET_PUBLIC_RPC,
-    VITE_TESTNET_PUBLIC_RPC
+    VITE_TESTNET_PUBLIC_RPC,
 } from '~/utils'
 
 export const useCustomPublicClient = (): PublicClient => {

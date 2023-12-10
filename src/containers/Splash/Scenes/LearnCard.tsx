@@ -9,7 +9,7 @@ import { HaiArrow } from '~/components/Icons/HaiArrow'
 type LearnCardProps = {
     title: string,
     link: string,
-    titleColorOffset?: number
+    titleColorOffset?: number,
 }
 export function LearnCard({ title, link, titleColorOffset }: LearnCardProps) {
     const isLargerThanExtraSmall = useMediaQuery('upToExtraSmall')
@@ -52,7 +52,7 @@ const Container = styled(Flex).attrs(props => ({
     $justify: 'space-between',
     $align: 'flex-start',
     $shrink: 0,
-    ...props
+    ...props,
 }))`
     position: relative;
     width: min(calc(100vw - 48px), 400px);

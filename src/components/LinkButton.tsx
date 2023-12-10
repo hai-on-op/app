@@ -26,15 +26,28 @@ const LinkButton = ({
     color = 'blueish',
     ...rest
 }: Props) => {
-    return isExternal ? (
-        <ExtLink id={id} {...rest} href={url} target="_blank" rel="norefferer" disabled={disabled} color={color}>
+    if (isExternal) return (
+        <ExtLink
+            id={id}
+            {...rest}
+            href={url}
+            target="_blank"
+            rel="norefferer"
+            disabled={disabled}
+            color={color}>
             {children}
-            <span>{text}</span> {withArrow ? <ArrowRightCircle size={'18'} /> : null}
+            <span>{text}</span> {withArrow && <ArrowRightCircle size={'18'}/>}
         </ExtLink>
-    ) : (
-        <CustomLink id={id} {...rest} to={url} color={color} disabled={disabled}>
+    )
+    return (
+        <CustomLink
+            id={id}
+            {...rest}
+            to={url}
+            color={color}
+            disabled={disabled}>
             {children}
-            <span>{text}</span> {withArrow ? <ArrowRightCircle size={'18'} /> : null}
+            <span>{text}</span> {withArrow && <ArrowRightCircle size={'18'}/>}
         </CustomLink>
     )
 }

@@ -10,7 +10,7 @@ import {
     handleTransactionError,
     useTransactionAdder,
     useEthersSigner,
-    useGeb
+    useGeb,
 } from '~/hooks'
 
 import styled from 'styled-components'
@@ -32,12 +32,12 @@ const ProxyModal = () => {
 
     const {
         popupsModel: popupsState,
-        connectWalletModel: connectWalletState
+        connectWalletModel: connectWalletState,
     } = useStoreState(state => state)
     const storeActions = useStoreActions(actions => actions)
     const {
         popupsModel: popupsActions,
-        connectWalletModel: connectWalletActions
+        connectWalletModel: connectWalletActions,
     } = storeActions
 
     const { ctHash } = connectWalletState
@@ -70,7 +70,7 @@ const ProxyModal = () => {
             addTransaction(
                 {
                     ...txResponse,
-                    blockNumber: blockNumber[chainId]
+                    blockNumber: blockNumber[chainId],
                 },
                 'Creating an account'
             )

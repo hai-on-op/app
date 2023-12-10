@@ -17,18 +17,18 @@ const sortableHeaders: SortableHeader[] = [
     { label: 'Coll. Factor' },
     { label: 'Net APY' },
     { label: 'My Eligible Collateral' },
-    { label: 'My Vaults' }
+    { label: 'My Vaults' },
 ]
 
 type AvailableVaultsTableProps = {
-    rows: AvailableVaultPair[]
+    rows: AvailableVaultPair[],
 }
 export function AvailableVaultsTable({ rows }: AvailableVaultsTableProps) {
     const { setActiveVault } = useVault()
 
     const [sorting, setSorting] = useState<{ key: string, dir: 'asc' | 'desc'}>({
         key: 'Coll. Factor',
-        dir: 'desc'
+        dir: 'desc',
     })
 
     const sortedRows = useMemo(() => {
@@ -95,11 +95,11 @@ export function AvailableVaultsTable({ rows }: AvailableVaultsTableProps) {
                             : () => setSorting(s => {
                                 if (s.key === label) return {
                                     ...s,
-                                    dir: s.dir === 'asc' ? 'desc': 'asc'
+                                    dir: s.dir === 'asc' ? 'desc': 'asc',
                                 }
                                 return {
                                     key: label,
-                                    dir: 'desc'
+                                    dir: 'desc',
                                 }
                             })
                         }
@@ -114,7 +114,7 @@ export function AvailableVaultsTable({ rows }: AvailableVaultsTableProps) {
                 collateralizationFactor,
                 apy,
                 eligibleBalance,
-                myVaults: existingVaults
+                myVaults: existingVaults,
             }, i) => {
                 return (
                     <TableRow key={i}>
@@ -176,7 +176,7 @@ export function AvailableVaultsTable({ rows }: AvailableVaultsTableProps) {
                         <CenteredFlex>
                             <BorrowButton onClick={() => setActiveVault({
                                 create: true,
-                                collateralName: sortedRows[i].collateralName
+                                collateralName: sortedRows[i].collateralName,
                             })}>
                                 Borrow
                             </BorrowButton>
@@ -194,7 +194,7 @@ const Table = styled(Flex).attrs(props => ({
     $justify: 'flex-start',
     $align: 'stretch',
     $gap: 12,
-    ...props
+    ...props,
 }))``
 const TableHeader = styled(Grid)`
     grid-template-columns: 3fr minmax(100px, 1fr) minmax(100px, 1fr) minmax(200px, 1fr) minmax(100px, 1fr) 120px;
@@ -228,7 +228,7 @@ const VaultLink = styled(Flex).attrs(props => ({
     $justify: 'space-between',
     $align: 'center',
     $gap: 12,
-    ...props
+    ...props,
 }))`
     padding: 8px 16px;
     border: 1px solid rgba(0,0,0,0.1);

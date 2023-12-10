@@ -15,19 +15,19 @@ const assets = [
     'KITE',
     'WETH',
     'WSTETH',
-    'OP'
+    'OP',
 ]
 
 const tokenMap: Record<string, string> = {
     'PROTOCOL_TOKEN': 'HAI',
-    'COIN': 'KITE'
+    'COIN': 'KITE',
 }
 
 const auctionFilters: (AuctionEventType | 'All')[] = [
     'All',
     'COLLATERAL',
     'DEBT',
-    'SURPLUS'
+    'SURPLUS',
 ]
 
 const sortByTimeCreated = ({ createdAt: a }: IAuction, { createdAt: b }: IAuction) => {
@@ -70,7 +70,7 @@ export function AuctionsList({ isLoading }: AuctionsListProps) {
                 temp = [
                     ...collateralAuctions,
                     ...debtAuctions,
-                    ...surplusAuctions
+                    ...surplusAuctions,
                 ]
                 break
             }
@@ -109,7 +109,7 @@ export function AuctionsList({ isLoading }: AuctionsListProps) {
                         {auctionFilters.map(label => (
                             <DropdownOption
                                 key={label}
-                                onClick={(e: any) => {
+                                onClick={() => {
                                     // e.stopPropagation()
                                     setTypeFilter(label === 'All' ? undefined: label)
                                 }}>
@@ -128,7 +128,7 @@ export function AuctionsList({ isLoading }: AuctionsListProps) {
                             {assets.map(label => (
                                 <DropdownOption
                                     key={label}
-                                    onClick={(e: any) => {
+                                    onClick={() => {
                                         // e.stopPropagation()
                                         setSaleAssetsFilter(label === 'All' ? undefined: label)
                                     }}>
@@ -146,7 +146,7 @@ export function AuctionsList({ isLoading }: AuctionsListProps) {
                             {assets.map(label => (
                                 <DropdownOption
                                     key={label}
-                                    onClick={(e: any) => {
+                                    onClick={() => {
                                         // e.stopPropagation()
                                         setBuyAssetsFilter(label === 'All' ? undefined: label)
                                     }}>

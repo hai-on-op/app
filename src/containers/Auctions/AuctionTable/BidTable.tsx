@@ -12,7 +12,7 @@ import { AddressLink } from '~/components/AddressLink'
 
 const tokenMap: Record<string, string> = {
     'PROTOCOL_TOKEN': 'HAI',
-    'COIN': 'KITE'
+    'COIN': 'KITE',
 }
 
 const sortableHeaders: SortableHeader[] = [
@@ -20,7 +20,7 @@ const sortableHeaders: SortableHeader[] = [
     { label: 'Bidder' },
     { label: 'Buy Amount' },
     { label: 'Transaction Hash' },
-    { label: 'Time' }
+    { label: 'Time' },
 ]
 const sortableHeadersWithSell: SortableHeader[] = [
     { label: 'Event' },
@@ -28,7 +28,7 @@ const sortableHeadersWithSell: SortableHeader[] = [
     { label: 'Sell Amount' },
     { label: 'Buy Amount' },
     { label: 'Transaction Hash' },
-    { label: 'Time' }
+    { label: 'Time' },
 ]
 
 type BidTableProps = {
@@ -74,13 +74,13 @@ const Table = styled(Flex).attrs(props => ({
     $justify: 'flex-start',
     $align: 'stretch',
     $gap: 12,
-    ...props
+    ...props,
 }))``
 const TableHeader = styled(Grid)<{ $withSell?: boolean }>`
-    grid-template-columns: ${({ $withSell }) => $withSell
+    grid-template-columns: ${({ $withSell }) => ($withSell
         ? '140px 200px 1fr 1fr 200px 120px'
         : '140px 200px 1fr 200px 120px'
-    };
+    )};
     align-items: center;
     padding: 4px 32px;
     font-size: 0.67rem;

@@ -9,7 +9,7 @@ type LegendProps = FlexProps & {
         label?: string,
         color: string
     }[],
-    style?: CSSProperties
+    style?: CSSProperties,
 }
 export const Legend = ({ data, ...props }: LegendProps) => (
     <Container

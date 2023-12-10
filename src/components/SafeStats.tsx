@@ -9,15 +9,11 @@ import { useTokenBalanceInUSD, useSafeInfo } from '~/hooks'
 import { formatNumber, getRatePercentage, ratioChecker, returnState } from '~/utils'
 import { useStoreState } from '~/store'
 
-const SafeStats = ({
-    isModifying,
-    isDeposit,
-    isOwner,
-}: {
-    isModifying: boolean
-    isDeposit: boolean
-    isOwner: boolean
-}) => {
+type Props = {
+    isModifying: boolean,
+    isDeposit: boolean,
+}
+const SafeStats = ({ isModifying, isDeposit }: Props) => {
     const { t } = useTranslation()
     const {
         totalDebt: newDebt,
@@ -103,16 +99,15 @@ const SafeStats = ({
                                 {collateral} <span>{singleSafe?.collateralName}</span>
                             </MainValue>
                             <MainChange>
-                                {modified ? (
-                                    <>
+                                {modified
+                                    ? (<>
                                         After:{' '}
                                         <span className={isDeposit ? 'green' : 'yellow'}>
                                             {newCollateral} {singleSafe?.collateralName}
                                         </span>
-                                    </>
-                                ) : (
-                                    `$${collateralInUSD}`
-                                )}
+                                    </>)
+                                    : `$${collateralInUSD}`
+                                }
                             </MainChange>
                         </Main>
 
@@ -123,13 +118,12 @@ const SafeStats = ({
                             </MainValue>
                             <MainChange>
                                 {' '}
-                                {modified ? (
-                                    <>
+                                {modified
+                                    ? (<>
                                         After: <span className={isDeposit ? 'green' : 'yellow'}>{newDebt} HAI</span>
-                                    </>
-                                ) : (
-                                    `$${totalDebtInUSD}`
-                                )}
+                                    </>)
+                                    : `$${totalDebtInUSD}`
+                                }
                             </MainChange>
                         </Main>
 
@@ -151,20 +145,16 @@ const SafeStats = ({
                             </MainLabel>
                             <MainValue>{singleSafe?.collateralRatio}%</MainValue>
                             <MainChange>
-                                {modified ? (
-                                    <>
-                                        After:{' '}
-                                        <span
-                                            className={returnState(
-                                                ratioChecker(Number(newCollateralRatio), Number(collateralRatio))
-                                            ).toLowerCase()}
-                                        >
-                                            {newCollateralRatio}%
-                                        </span>
-                                    </>
-                                ) : (
-                                    ''
-                                )}
+                                {!!modified && (<>
+                                    After:{' '}
+                                    <span
+                                        className={returnState(
+                                            ratioChecker(Number(newCollateralRatio), Number(collateralRatio))
+                                        ).toLowerCase()}
+                                    >
+                                        {newCollateralRatio}%
+                                    </span>
+                                </>)}
                             </MainChange>
                         </Main>
                     </Inner>
@@ -194,14 +184,14 @@ const SafeStats = ({
                             </InfoIcon>
                             <SideTitle>
                                 Liquidation Price
-                                {modified ? (
+                                {!!modified && (
                                     <div className="sideNote">
                                         After:{' '}
                                         <span className={`${isDeposit ? 'green' : 'yellow'}`}>
                                             ${newLiquidationPrice}
                                         </span>
                                     </div>
-                                ) : null}
+                                )}
                             </SideTitle>
                             <SideValue>{`$${singleSafe?.liquidationPrice || '-'}`}</SideValue>
                         </Side>

@@ -1,14 +1,16 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import styled from 'styled-components'
 import { Plus } from 'react-feather'
+import { isAddressEqual } from 'viem'
 import { useAccount } from 'wagmi'
 
+import { returnState, type ISafe } from '~/utils'
 import { useStoreState } from '~/store'
+
+import styled from 'styled-components'
 import LinkButton from '~/components/LinkButton'
 import SafeBlock from '~/components/SafeBlock'
 import CheckBox from '~/components/CheckBox'
-import { returnState, type ISafe } from '~/utils'
 
 const SafeList = ({ address }: { address?: string }) => {
     const [showEmpty, setShowEmpty] = useState(true)
@@ -17,73 +19,80 @@ const SafeList = ({ address }: { address?: string }) => {
 
     const { t } = useTranslation()
 
-    const { connectWalletModel: connectWalletState, safeModel: safeState } = useStoreState((state) => state)
+    const {
+        connectWalletModel: connectWalletState,
+        safeModel: {
+            list,
+            safeCreated,
+        },
+    } = useStoreState(state => state)
 
-    const safes = useMemo(() => {
-        if (safeState.list.length > 0) {
-            return showEmpty ? safeState.list : safeState.list.filter((safe) => returnState(safe.riskState) !== '')
-        }
-        return []
-    }, [safeState.list, showEmpty])
+    const safes = useMemo(() => (showEmpty
+        ? list
+        : list.filter(safe => returnState(safe.riskState) !== '')
+    ), [list, showEmpty])
 
-    const isOwner = useMemo(
-        () => (address && account ? account.toLowerCase() === address.toLowerCase() : true),
-        [account, address]
+    const isOwner = useMemo(() => {
+        if (address && account) return isAddressEqual(account, address as `0x${string}`)
+        
+        return true
+    }, [account, address])
+
+    if (!list.length) return null
+    
+    return (
+        <Container>
+            <Header>
+                <Col>
+                    <Title>{'Accounts'}</Title>
+                </Col>
+                <Col>
+                    {/* <Button
+                        data-test-id="topup-btn"
+                        disabled={connectWalletState.isWrongNetwork}
+                        onClick={() => popupsActions.setIsSafeManagerOpen(true)}
+                    >
+                        <BtnInner>{t('manage_other_safes')}</BtnInner>
+                    </Button> */}
+                    {safeCreated && isOwner && (
+                        <LinkButton
+                            id="create-safe"
+                            disabled={connectWalletState.isWrongNetwork}
+                            url={'/safes/create'}>
+                            <BtnInner>
+                                <Plus size={18} />
+                                {t('new_safe')}
+                            </BtnInner>
+                        </LinkButton>
+                    )}
+                </Col>
+            </Header>
+
+            <SafeBlocks>
+                <Header className="safesList">
+                    <Col>Safes ({list.length})</Col>
+                    <Col>Risk</Col>
+                </Header>
+                {safes.map((safe: ISafe) => (
+                    <div key={safe.id}>
+                        {safe.collateralName && (
+                            <SafeBlock
+                                className="safeBlock"
+                                {...safe}
+                            />
+                        )}
+                    </div>
+                ))}
+            </SafeBlocks>
+            <CheckboxContainer>
+                <CheckBox
+                    checked={showEmpty}
+                    onChange={setShowEmpty}
+                />
+                <span>Show empty safes</span>
+            </CheckboxContainer>
+        </Container>
     )
-
-    const returnSafeList = () => {
-        if (safeState.list.length > 0) {
-            return (
-                <Container>
-                    <Header>
-                        <Col>
-                            <Title>{'Accounts'}</Title>
-                        </Col>
-                        <Col>
-                            {/* <Button
-                                data-test-id="topup-btn"
-                                disabled={connectWalletState.isWrongNetwork}
-                                onClick={() => popupsActions.setIsSafeManagerOpen(true)}
-                            >
-                                <BtnInner>{t('manage_other_safes')}</BtnInner>
-                            </Button> */}
-                            {safeState.safeCreated && isOwner ? (
-                                <LinkButton
-                                    id="create-safe"
-                                    disabled={connectWalletState.isWrongNetwork}
-                                    url={'/safes/create'}
-                                >
-                                    <BtnInner>
-                                        <Plus size={18} />
-                                        {t('new_safe')}
-                                    </BtnInner>
-                                </LinkButton>
-                            ) : null}
-                        </Col>
-                    </Header>
-
-                    <SafeBlocks>
-                        <Header className="safesList">
-                            <Col>Safes({safeState.list.length})</Col>
-                            <Col>Risk</Col>
-                        </Header>
-                        {safes.map((safe: ISafe) => (
-                            <div key={safe.id}>
-                                {safe.collateralName && <SafeBlock className="safeBlock" {...safe} />}
-                            </div>
-                        ))}
-                    </SafeBlocks>
-                    <CheckboxContainer>
-                        <CheckBox checked={showEmpty} onChange={setShowEmpty} />
-                        <span>Show empty safes</span>
-                    </CheckboxContainer>
-                </Container>
-            )
-        }
-        return null
-    }
-
-    return <>{returnSafeList()}</>
 }
 
 export default SafeList
@@ -118,12 +127,12 @@ const Header = styled.div`
     }
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
-     flex-direction: column;
-     gap: 20px;
-     &.safesList {
-        display: none;
-    }
-  `}
+        flex-direction: column;
+        gap: 20px;
+        &.safesList {
+            display: none;
+        }
+    `}
 `
 const Col = styled.div`
     display: flex;
@@ -136,8 +145,8 @@ const Col = styled.div`
     }
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
-     flex-direction: column;
-  `}
+        flex-direction: column;
+    `}
 `
 
 const BtnInner = styled.div`

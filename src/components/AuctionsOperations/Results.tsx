@@ -1,12 +1,16 @@
 import { useMemo } from 'react'
-import styled from 'styled-components'
 
-import { useStoreState } from '~/store'
 import { formatNumber, COIN_TICKER } from '~/utils'
 import _ from '~/utils/lodash'
+import { useStoreState } from '~/store'
+
+import styled from 'styled-components'
 
 const Results = () => {
-    const { auctionModel: auctionsState, popupsModel: popupsState } = useStoreState((state) => state)
+    const {
+        auctionModel: auctionsState,
+        popupsModel: popupsState,
+    } = useStoreState(state => state)
 
     const {
         selectedAuction: surplusOrDebtAuction,
@@ -27,15 +31,27 @@ const Results = () => {
     const sellAmount = _.get(selectedAuction, 'sellAmount', '0')
     const tokenSymbol = _.get(selectedAuction, 'tokenSymbol', undefined)
 
-    const buySymbol = buyToken === 'PROTOCOL_TOKEN_LP' ? 'KITE/ETH LP' : buyToken === 'COIN' ? COIN_TICKER : 'KITE'
-    const sellSymbol = sellToken === 'PROTOCOL_TOKEN_LP' ? 'KITE/ETH LP' : sellToken === 'COIN' ? COIN_TICKER : 'KITE'
+    const buySymbol = buyToken === 'PROTOCOL_TOKEN_LP'
+        ? 'KITE/ETH LP'
+        : buyToken === 'COIN'
+            ? COIN_TICKER
+            : 'KITE'
+    const sellSymbol = sellToken === 'PROTOCOL_TOKEN_LP'
+        ? 'KITE/ETH LP'
+        : sellToken === 'COIN'
+            ? COIN_TICKER
+            : 'KITE'
 
     const isClaim = popupsState.auctionOperationPayload.type.includes('claim')
     const isSettle = popupsState.auctionOperationPayload.type.includes('settle')
 
     const leftOverBalance = useMemo(() => {
-        const balance = Number(protInternalBalance) > Number(internalBalance) ? protInternalBalance : internalBalance
-        return Number(balance) < 0.0001 ? '< 0.0001' : formatNumber(balance, 2)
+        const balance = Number(protInternalBalance) > Number(internalBalance)
+            ? protInternalBalance
+            : internalBalance
+        return Number(balance) < 0.0001
+            ? '< 0.0001'
+            : formatNumber(balance, 2)
     }, [internalBalance, protInternalBalance])
 
     const resultSection = (function () {
@@ -62,33 +78,43 @@ const Results = () => {
                     secondValue: amount,
                 }
             default:
-                return { firstLabel: '', firstValue: '', secondLabel: '', secondValue: '' }
+                return {
+                    firstLabel: '',
+                    firstValue: '',
+                    secondLabel: '',
+                    secondValue: '',
+                }
         }
     })()
 
     return (
         <Result>
             <Block>
-                {isClaim ? (
-                    <Item>
-                        <Label>{`${
-                            Number(protInternalBalance) > Number(internalBalance) ? 'KITE' : 'HAI'
-                        } Amount`}</Label>
-                        <Value>{`${leftOverBalance}`}</Value>
-                    </Item>
-                ) : (
-                    <>
+                {isClaim
+                    ? (
+                        <Item>
+                            <Label>
+                                {`${Number(protInternalBalance) > Number(internalBalance)
+                                    ? 'KITE'
+                                    : 'HAI'
+                                } Amount`}
+                            </Label>
+                            <Value>{`${leftOverBalance}`}</Value>
+                        </Item>
+                    )
+                    : (<>
                         <Item>
                             <Label>{`Auction #`}</Label>
                             <Value>{`${auctionId}`}</Value>
                         </Item>
-                        {isSettle ? (
-                            <Item>
-                                <Label>{`Claimable ${sellSymbol}`}</Label>
-                                <Value>{`${formatNumber(sellAmount, 2)}`}</Value>
-                            </Item>
-                        ) : (
-                            <>
+                        {isSettle
+                            ? (
+                                <Item>
+                                    <Label>{`Claimable ${sellSymbol}`}</Label>
+                                    <Value>{`${formatNumber(sellAmount, 2)}`}</Value>
+                                </Item>
+                            )
+                            : (<>
                                 <Item>
                                     <Label>{resultSection.firstLabel}</Label>
                                     <Value>{`${formatNumber(
@@ -98,14 +124,17 @@ const Results = () => {
                                 </Item>
                                 <Item>
                                     <Label>
-                                        {auctionType === 'DEBT' ? `${sellSymbol} to Receive` : `${buySymbol} to Bid`}
+                                        {auctionType === 'DEBT'
+                                            ? `${sellSymbol} to Receive`
+                                            : `${buySymbol} to Bid`
+                                        }
                                     </Label>
                                     <Value>{`${formatNumber(amount, 2)}`}</Value>
                                 </Item>
-                            </>
-                        )}
-                    </>
-                )}
+                            </>)
+                        }
+                    </>)
+                }
             </Block>
         </Result>
     )

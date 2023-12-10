@@ -13,18 +13,18 @@ const dummyNotifications = [
     {
         message: 'Vault #423: Health Factor at 12%',
         timestamp: Date.now() / 1000 - 1 * 24 * 60 * 60,
-        unread: true
+        unread: true,
     },
     {
         message: '7,879 OP available to claim',
         timestamp: Date.now() / 1000 - 2 * 24 * 60 * 60,
-        unread: false
+        unread: false,
     },
     {
         message: 'WBTC/KITE farm now available',
         timestamp: Date.now() / 1000 - 3 * 24 * 60 * 60,
-        unread: false
-    }
+        unread: false,
+    },
 ]
 
 type NotificationsProps = {
@@ -143,7 +143,7 @@ const Inner = styled(Flex).attrs(props => ({
     $justify: 'flex-start',
     $align: 'stretch',
     $gap: 12,
-    ...props
+    ...props,
 }))``
 
 const NotificationContainer = styled(Grid).attrs(props => ({
@@ -151,7 +151,7 @@ const NotificationContainer = styled(Grid).attrs(props => ({
     $columns: '1fr 32px',
     $align: 'center',
     $gap: 12,
-    ...props
+    ...props,
 }))`
     padding: 12px 16px;
     border-radius: 12px;

@@ -1,14 +1,15 @@
 import { useRef } from 'react'
 import { CSSTransition, SwitchTransition } from 'react-transition-group'
 import { useTranslation } from 'react-i18next'
-import styled from 'styled-components'
 
-import ApproveToken from '~/components/ApproveToken'
-import { useStoreActions, useStoreState } from '~/store'
-import AuctionsTransactions from './AuctionsTransactions'
-import AuctionsPayment from './AuctionsPayment'
 import { COIN_TICKER } from '~/utils'
 import _ from '~/utils/lodash'
+import { useStoreActions, useStoreState } from '~/store'
+
+import styled from 'styled-components'
+import ApproveToken from '~/components/ApproveToken'
+import AuctionsTransactions from './AuctionsTransactions'
+import AuctionsPayment from './AuctionsPayment'
 
 const AuctionsOperations = () => {
     const { t } = useTranslation()
@@ -18,7 +19,7 @@ const AuctionsOperations = () => {
         auctionModel: auctionsState,
         popupsModel: popupsState,
         connectWalletModel: connectWalletState,
-    } = useStoreState((state) => state)
+    } = useStoreState(state => state)
 
     const { selectedAuction: surplusOrDebtAuction, selectedCollateralAuction } = auctionsState
     const selectedAuction = surplusOrDebtAuction ? surplusOrDebtAuction : selectedCollateralAuction
@@ -41,49 +42,55 @@ const AuctionsOperations = () => {
     }
 
     return (
-        <SwitchTransition mode={'out-in'}>
-            <CSSTransition nodeRef={nodeRef} key={auctionsState.operation} timeout={250} classNames="fade">
+        <SwitchTransition mode="out-in">
+            <CSSTransition
+                nodeRef={nodeRef}
+                key={auctionsState.operation}
+                timeout={250}
+                classNames="fade">
                 <Fade
                     ref={nodeRef}
                     style={{
                         width: '100%',
                         maxWidth: '720px',
-                    }}
-                >
-                    {auctionsState.operation === 1 ? (
-                        <ApproveToken
-                            handleBackBtn={() => auctionsActions.setOperation(0)}
-                            handleSuccess={() => auctionsActions.setOperation(2)}
-                            amount={amount}
-                            bids={bids}
-                            allowance={
-                                auctionType === 'DEBT' || auctionType === 'COLLATERAL' ? raiCoinAllowance : flxAllowance
-                            }
-                            coinName={
-                                auctionType === 'DEBT' || auctionType === 'COLLATERAL'
+                    }}>
+                    {auctionsState.operation === 1
+                        ? (
+                            <ApproveToken
+                                handleBackBtn={() => auctionsActions.setOperation(0)}
+                                handleSuccess={() => auctionsActions.setOperation(2)}
+                                amount={amount}
+                                bids={bids}
+                                allowance={auctionType === 'DEBT' || auctionType === 'COLLATERAL'
+                                    ? raiCoinAllowance
+                                    : flxAllowance
+                                }
+                                coinName={auctionType === 'DEBT' || auctionType === 'COLLATERAL'
                                     ? (COIN_TICKER as string)
                                     : 'KITE'
-                            }
-                            methodName={
-                                auctionType === 'DEBT' || auctionType === 'COLLATERAL' ? 'systemCoin' : 'protocolToken'
-                            }
-                            auctionType={auctionType}
-                        />
-                    ) : (
-                        <ModalContent
-                            style={{
-                                width: '100%',
-                                maxWidth: '720px',
-                            }}
-                        >
-                            <Header>
-                                {t(popupsState.auctionOperationPayload.type, {
-                                    hai: COIN_TICKER,
-                                })}
-                            </Header>
-                            {returnBody()}
-                        </ModalContent>
-                    )}
+                                }
+                                methodName={auctionType === 'DEBT' || auctionType === 'COLLATERAL'
+                                    ? 'systemCoin'
+                                    : 'protocolToken'
+                                }
+                                auctionType={auctionType}
+                            />
+                        )
+                        : (
+                            <ModalContent
+                                style={{
+                                    width: '100%',
+                                    maxWidth: '720px',
+                                }}>
+                                <Header>
+                                    {t(popupsState.auctionOperationPayload.type, {
+                                        hai: COIN_TICKER,
+                                    })}
+                                </Header>
+                                {returnBody()}
+                            </ModalContent>
+                        )
+                    }
                 </Fade>
             </CSSTransition>
         </SwitchTransition>

@@ -8,7 +8,7 @@ import {
     getCollateralRatio,
     getLiquidationPrice,
     ratioChecker,
-    riskStateToStatus
+    riskStateToStatus,
 } from '~/utils'
 import { useStoreState } from '~/store'
 
@@ -17,14 +17,14 @@ export type Simulation = {
     debt?: string,
     collateralRatio?: string,
     riskStatus?: Status,
-    liquidationPrice?: string
+    liquidationPrice?: string,
 }
 
 type Props = {
     action: VaultAction,
     formState: any,
     collateral: Collateral,
-    debt: Debt
+    debt: Debt,
 }
 export function useSimulation({ action, formState, collateral, debt }: Props): Simulation | undefined {
     const { liquidationData } = useStoreState(({ safeModel }) => safeModel)
@@ -41,7 +41,7 @@ export function useSimulation({ action, formState, collateral, debt }: Props): S
                 if (Number(deposit) <= 0 && Number(borrow) <= 0) return undefined
                 return {
                     collateral: Number(deposit) > 0 ? deposit: undefined,
-                    debt: Number(borrow) > 0 ? borrow: undefined
+                    debt: Number(borrow) > 0 ? borrow: undefined,
                 }
             }
             case VaultAction.WITHDRAW_REPAY: {
@@ -49,7 +49,7 @@ export function useSimulation({ action, formState, collateral, debt }: Props): S
                 if (Number(withdraw) <= 0 && Number(repay) <= 0) return undefined
                 return {
                     collateral: Number(withdraw) > 0 ? withdraw: undefined,
-                    debt: Number(repay) > 0 ? repay: undefined
+                    debt: Number(repay) > 0 ? repay: undefined,
                 }
             }
             default: return undefined
@@ -75,7 +75,7 @@ export function useSimulation({ action, formState, collateral, debt }: Props): S
         const {
             currentPrice,
             liquidationCRatio,
-            safetyCRatio
+            safetyCRatio,
         } = collateral.liquidationData
         const cr = getCollateralRatio(
             collateral.total,
@@ -106,7 +106,7 @@ export function useSimulation({ action, formState, collateral, debt }: Props): S
             ...simulation,
             collateralRatio,
             riskStatus,
-            liquidationPrice
+            liquidationPrice,
         }
         : undefined
 }

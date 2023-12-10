@@ -8,14 +8,14 @@ type NavContainerProps = {
     selected: number,
     onSelect: (index: number) => void,
     headerContent?: ReactChildren,
-    children: ReactChildren
+    children: ReactChildren,
 }
 export function NavContainer({
     navItems,
     selected,
     onSelect,
     headerContent,
-    children
+    children,
 }: NavContainerProps) {
     return (
         <Container>
@@ -46,7 +46,7 @@ const Header = styled(Flex).attrs(props => ({
     $justify: 'space-between',
     $align: 'center',
     $gap: 24,
-    ...props
+    ...props,
 }))`
     position: relative;
     height: 144px;
@@ -56,7 +56,7 @@ const Header = styled(Flex).attrs(props => ({
 `
 const NavGrid = styled(Grid).attrs(props => ({
     $align: 'flex-end',
-    ...props
+    ...props,
 }))<{ $active?: boolean }>`
     height: 100%;
 `
@@ -77,7 +77,7 @@ const Nav = styled(CenteredFlex)<{ $active?: boolean }>`
 const Body = styled(Flex).attrs(props => ({
     $column: true,
     $gap: 24,
-    ...props
+    ...props,
 }))`
     width: 100%;
     padding: 48px;

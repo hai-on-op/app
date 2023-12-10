@@ -1,17 +1,18 @@
 import { useRef } from 'react'
 import { CSSTransition, SwitchTransition } from 'react-transition-group'
-import styled from 'styled-components'
 
 import { useStoreState } from '~/store'
+
+import styled from 'styled-components'
 import TxConfirmation from './TxConfirmation'
 import Wrap from './Wrap'
 
 const AuctionsOperations = () => {
     const nodeRef = useRef(null)
-    const { safeModel: safeState } = useStoreState((state) => state)
+    const { safeModel: safeState } = useStoreState(state => state)
 
     const returnBody = () => {
-        switch (safeState.operation) {
+        switch(safeState.operation) {
             case 0:
                 return <Wrap />
             case 2:
@@ -23,20 +24,22 @@ const AuctionsOperations = () => {
 
     return (
         <SwitchTransition mode={'out-in'}>
-            <CSSTransition nodeRef={nodeRef} key={safeState.operation} timeout={250} classNames="fade">
+            <CSSTransition
+                nodeRef={nodeRef}
+                key={safeState.operation}
+                timeout={250}
+                classNames="fade">
                 <Fade
                     ref={nodeRef}
                     style={{
                         width: '100%',
                         maxWidth: '720px',
-                    }}
-                >
+                    }}>
                     <ModalContent
                         style={{
                             width: '100%',
                             maxWidth: '720px',
-                        }}
-                    >
+                        }}>
                         <Header>Wrap ETH</Header>
                         {returnBody()}
                     </ModalContent>

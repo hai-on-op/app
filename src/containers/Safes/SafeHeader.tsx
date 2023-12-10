@@ -1,24 +1,21 @@
 import { useCallback } from 'react'
-import { ArrowLeft } from 'react-feather'
 import { useHistory } from 'react-router-dom'
-import styled from 'styled-components'
+import { ArrowLeft } from 'react-feather'
 
-import Button from '~/components/Button'
-import LinkButton from '~/components/LinkButton'
 import { useStoreActions, useStoreState } from '~/store'
 
-const SafeHeader = ({
-    safeId,
-    isModifying,
-    isDeposit,
-}: {
-    safeId: string
-    isModifying: boolean
-    isDeposit: boolean
-}) => {
+import styled from 'styled-components'
+import Button from '~/components/Button'
+import LinkButton from '~/components/LinkButton'
+
+type Props = {
+    safeId: string,
+    isDeposit: boolean,
+}
+const SafeHeader = ({ safeId, isDeposit }: Props) => {
     const history = useHistory()
-    const { openLiquidateSafeModal } = useStoreActions((state) => state.popupsModel)
-    const { singleSafe } = useStoreState((state) => state.safeModel)
+    const { singleSafe } = useStoreState(({ safeModel }) => safeModel)
+    const { openLiquidateSafeModal } = useStoreActions(({ popupsModel }) => popupsModel)
 
     const handleBack = useCallback(() => {
         history.push(`/safes`)
@@ -28,7 +25,9 @@ const SafeHeader = ({
 
     return (
         <Container>
-            <BackBtn id="back-btn" onClick={handleBack}>
+            <BackBtn
+                id="back-btn"
+                onClick={handleBack}>
                 <ArrowLeft size="16" /> Back
             </BackBtn>
             <HeaderContainer>
@@ -49,13 +48,13 @@ const SafeHeader = ({
                     )}
                     <LinkButton
                         id="deposit_borrow"
-                        text={'Deposit & Borrow'}
+                        text="Deposit & Borrow"
                         url={`/safes/${safeId}/deposit`}
                         color={isDeposit ? 'blueish' : 'colorPrimary'}
                     />
                     <LinkButton
                         id="repay_withdraw"
-                        text={'Repay & Withdraw'}
+                        text="Repay & Withdraw"
                         url={`/safes/${safeId}/withdraw`}
                         color={!isDeposit ? 'blueish' : 'colorPrimary'}
                     />

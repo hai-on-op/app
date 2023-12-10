@@ -23,19 +23,19 @@ export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
 
     const {
         connectWalletModel: { tokensData },
-        safeModel: { safeData, singleSafe }
+        safeModel: { safeData, singleSafe },
     } = useStoreState(state => state)
     const {
         connectWalletModel: connectWalletActions,
         popupsModel: popupsActions,
-        safeModel: safeActions
+        safeModel: safeActions,
     } = useStoreActions(actions => actions)
 
     const {
         action,
         updateForm,
         collateral,
-        summary
+        summary,
     } = useVault()
 
     const reset = useCallback(() => {
@@ -47,7 +47,7 @@ export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
             address: account as string,
             geb,
             tokensData,
-            chainId: chain?.id || DEFAULT_NETWORK_ID
+            chainId: chain?.id || DEFAULT_NETWORK_ID,
         })
     }, [updateForm, safeActions, connectWalletActions, account, geb, tokensData])
 
@@ -60,7 +60,7 @@ export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
             title: 'Waiting For Confirmation',
             text: action === VaultAction.CREATE ? 'Create Vault': 'Modify Vault',
             hint: 'Confirm this transaction in your wallet',
-            status: 'loading'
+            status: 'loading',
         })
         try {
             connectWalletActions.setIsStepLoading(true)
@@ -68,7 +68,7 @@ export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
                 case VaultAction.CREATE: {
                     await safeActions.depositAndBorrow({
                         safeData,
-                        signer
+                        signer,
                     })
                     history.push('/vaults')
                     break
@@ -78,7 +78,7 @@ export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
                     await safeActions.depositAndBorrow({
                         safeData,
                         signer,
-                        safeId: singleSafe.id
+                        safeId: singleSafe.id,
                     })
                     break
                 }
@@ -87,7 +87,7 @@ export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
                     await safeActions.repayAndWithdraw({
                         safeData,
                         signer,
-                        safeId: singleSafe.id
+                        safeId: singleSafe.id,
                     })
                     break
                 }
@@ -104,7 +104,7 @@ export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
         }
     }, [
         onClose, account, signer, history,
-        action, safeData, singleSafe, connectWalletActions, popupsActions, safeActions, reset
+        action, safeData, singleSafe, connectWalletActions, popupsActions, safeActions, reset,
     ])
 
     return (
@@ -130,31 +130,31 @@ export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
                         value: {
                             current: summary.collateral.current?.formatted,
                             after: summary.collateral.after.formatted,
-                            label: collateral.name
-                        }
+                            label: collateral.name,
+                        },
                     },
                     {
                         label: 'Debt',
                         value: {
                             current: summary.debt.current?.formatted,
                             after: summary.debt.after.formatted,
-                            label: 'HAI'
-                        }
+                            label: 'HAI',
+                        },
                     },
                     {
                         label: 'Collateral Ratio',
                         value: {
                             current: summary.collateralRatio.current?.formatted,
-                            after: summary.collateralRatio.after.formatted
-                        }
+                            after: summary.collateralRatio.after.formatted,
+                        },
                     },
                     {
                         label: 'Liquidation Price',
                         value: {
                             current: summary.liquidationPrice.current?.formatted,
-                            after: summary.liquidationPrice.after.formatted
-                        }
-                    }
+                            after: summary.liquidationPrice.after.formatted,
+                        },
+                    },
                 ]}
             />
         </Modal>
@@ -167,5 +167,5 @@ const Footer = styled(Flex).attrs(props => ({
     $width: '100%',
     $justify: 'flex-end',
     $align: 'center',
-    ...props
+    ...props,
 }))``

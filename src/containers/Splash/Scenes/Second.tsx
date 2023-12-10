@@ -17,11 +17,11 @@ const elves: SplashImage[] = [
         width: 'min(180px, 28vw)',
         style: {
             right: '30%',
-            top: '-120px'
+            top: '-120px',
         },
         rotation: -20,
-        zIndex: 1
-    }
+        zIndex: 1,
+    },
 ]
 
 const clouds: SplashImage[] = [
@@ -30,19 +30,19 @@ const clouds: SplashImage[] = [
         width: '340px',
         style: {
             left: '-140px',
-            bottom: '-200px'
+            bottom: '-200px',
         },
-        zIndex: 1
+        zIndex: 1,
     },
     {
         index: 1,
         width: '190px',
         style: {
             right: '-50px',
-            bottom: '-70px'
+            bottom: '-70px',
         },
-        zIndex: 1
-    }
+        zIndex: 1,
+    },
 ]
 
 const coins: SplashImage[] = [
@@ -51,21 +51,21 @@ const coins: SplashImage[] = [
         width: 'min(180px, 25vw)',
         style: {
             right: '24%',
-            bottom: 'clamp(-60px, calc(-240px + 25vw), 0px)'
+            bottom: 'clamp(-60px, calc(-240px + 25vw), 0px)',
         },
         rotation: -20,
-        zIndex: 1
+        zIndex: 1,
     },
     {
         index: 1,
         width: 'min(100px, 20vw)',
         style: {
             top: '-20px',
-            right: '0px'
+            right: '0px',
         },
         rotation: 20,
-        zIndex: 1
-    }
+        zIndex: 1,
+    },
 ]
 
 export function Second({ zIndex }: ZoomSceneProps) {
@@ -99,8 +99,8 @@ export function Second({ zIndex }: ZoomSceneProps) {
                                 : '0.5rem'
                         }
                         $lineHeight={isLargerThanSmall
-                            ? "1.4"
-                            : "1.2"
+                            ? '1.4'
+                            : '1.2'
                         }
                     />
                     <Subtitle>
@@ -134,7 +134,7 @@ export function Second({ zIndex }: ZoomSceneProps) {
                             colorLimits={[0.25, 0.75]}
                             labels={[{
                                 progress: 0.24,
-                                label: '100%'
+                                label: '100%',
                             }]}
                         />
                     </Grid>
@@ -167,7 +167,7 @@ const Container = styled(Grid).attrs(props => ({
     $columns: '1fr min-content',
     $justify: 'center',
     $align: 'center',
-    ...props
+    ...props,
 }))`
     width: min(1100px, calc(100vw - 48px));
     padding: 72px 48px;
@@ -190,7 +190,7 @@ const Container = styled(Grid).attrs(props => ({
 `
 const Subtitle = styled(Text).attrs(props => ({
     $lineHeight: '1.6',
-    ...props
+    ...props,
 }))`
     max-width: max(300px, 75%);
 `
@@ -198,7 +198,7 @@ const PairContainer = styled(Flex).attrs(props => ({
     $column: true,
     $justify: 'space-between',
     $align: 'flex-start',
-    ...props
+    ...props,
 }))`
     width: 320px;
     padding: 24px;

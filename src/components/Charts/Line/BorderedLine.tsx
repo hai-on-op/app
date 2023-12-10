@@ -5,7 +5,7 @@ export const BorderedLine: CustomLayer = ({ series, lineGenerator, xScale, yScal
     return series.map(({ id, data, color }) => {
         const line = lineGenerator(data.map(d => ({
             x: (xScale as any)(d.data.x),
-            y: (yScale as any)(d.data.y)
+            y: (yScale as any)(d.data.y),
         }))) ?? undefined
 
         return (

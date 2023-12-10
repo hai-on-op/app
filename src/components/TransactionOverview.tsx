@@ -10,21 +10,21 @@ interface Props {
 }
 
 const TransactionOverview = ({ title, description, isChecked }: Props) => {
-    return (
-        <>
-            <IconsHolder>
-                <Reflexer />
-                {isChecked ? (
-                    <>
-                        <img className="sep" src={arrow} alt="" />
-                        <LogoIcon src={uniswapIcon} />{' '}
-                    </>
-                ) : null}
-            </IconsHolder>
-            <Title>{title}</Title>
-            <Description>{description}</Description>
-        </>
-    )
+    return (<>
+        <IconsHolder>
+            <Reflexer />
+            {!!isChecked && (<>
+                <img
+                    className="sep"
+                    src={arrow}
+                    alt=""
+                />
+                <LogoIcon src={uniswapIcon} />{' '}
+            </>)}
+        </IconsHolder>
+        <Title>{title}</Title>
+        <Description>{description}</Description>
+    </>)
 }
 
 export default TransactionOverview

@@ -3,15 +3,13 @@ import { ArrowUpRight, ChevronDown } from 'react-feather'
 import Scrollbars from 'react-custom-scrollbars'
 import styled from 'styled-components'
 
-type Item =
-    | string
-    | {
-          name: string
-          icon: string
-          href?: string
-          isExternal?: boolean
-          [U: string]: boolean | number | string | undefined
-      }
+type Item = string | {
+    name: string
+    icon: string
+    href?: string
+    isExternal?: boolean
+    [U: string]: boolean | number | string | undefined
+}
 interface Props {
     itemSelected: Item
     items: Array<Item>
@@ -91,31 +89,35 @@ const Dropdown = (props: Props) => {
                 >
                     <span className="text">
                         <span>{extraWord}</span>{' '}
-                        {typeof selectedItem === 'string' ? (
-                            selectedItem
-                        ) : (
-                            <ItemImg>
-                                <img
-                                    src={selectedItem.icon}
-                                    alt=""
-                                    style={{
-                                        width: imgSize || '20px',
-                                    }}
-                                />{' '}
-                                {selectedItem.href ? (
-                                    <Link href={selectedItem.href} target={selectedItem.isExternal ? '_blank' : ''}>
-                                        {selectedItem.name} <ArrowUpRight width={17} height={17} />
-                                    </Link>
-                                ) : (
-                                    selectedItem.name
-                                )}
-                            </ItemImg>
-                        )}
+                        {typeof selectedItem === 'string'
+                            ? selectedItem
+                            : (
+                                <ItemImg>
+                                    <img
+                                        src={selectedItem.icon}
+                                        alt=""
+                                        style={{
+                                            width: imgSize || '20px',
+                                        }}
+                                    />{' '}
+                                    {selectedItem.href
+                                        ? (
+                                            <Link
+                                                href={selectedItem.href}
+                                                target={selectedItem.isExternal ? '_blank' : ''}>
+                                                {selectedItem.name} <ArrowUpRight width={17} height={17} />
+                                            </Link>
+                                        )
+                                        : selectedItem.name
+                                    }
+                                </ItemImg>
+                            )
+                        }
                     </span>
 
-                    {items.length > 0 ? <ChevronDown size="16" /> : null}
+                    {items.length > 0 && <ChevronDown size="16" />}
                 </DropdownBtn>
-                {items.length > 0 ? (
+                {items.length > 0 && (
                     <DropdownMenu
                         style={{
                             display: isOpen ? 'block' : 'none',
@@ -129,25 +131,24 @@ const Dropdown = (props: Props) => {
                                     onClick={() => handleItemClick(item)}
                                     style={{ padding: itemPadding || '20px' }}
                                 >
-                                    {typeof item === 'string' ? (
-                                        item
-                                    ) : (
-                                        <ItemImg>
-                                            <img
-                                                src={item.icon}
-                                                alt=""
-                                                style={{
-                                                    width: imgSize || '20px',
-                                                }}
-                                            />{' '}
-                                            {item.name}
-                                        </ItemImg>
-                                    )}
+                                    {typeof item === 'string'
+                                        ? item
+                                        : (
+                                            <ItemImg>
+                                                <img
+                                                    src={item.icon}
+                                                    alt=""
+                                                    style={{ width: imgSize || '20px' }}
+                                                />{' '}
+                                                {item.name}
+                                            </ItemImg>
+                                        )
+                                    }
                                 </DropDownItem>
                             ))}
                         </Scrollbars>
                     </DropdownMenu>
-                ) : null}
+                )}
             </InnerContainer>
         </Container>
     )

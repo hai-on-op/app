@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { utils as gebUtils } from '@hai-on-op/sdk'
 import { useTranslation } from 'react-i18next'
-import styled from 'styled-components'
+import { utils as gebUtils } from '@hai-on-op/sdk'
 import { BigNumber, ethers, constants } from 'ethers'
-import _ from '~/utils/lodash'
 
-import { useStoreActions, useStoreState } from '~/store'
 import { COIN_TICKER, formatNumber, sanitizeDecimals, toFixedString } from '~/utils'
+import _ from '~/utils/lodash'
+import { useStoreActions, useStoreState } from '~/store'
+
+import styled from 'styled-components'
 import DecimalInput from '~/components/DecimalInput'
 import Button from '~/components/Button'
 import Results from './Results'
@@ -371,8 +372,8 @@ const AuctionsPayment = () => {
 
     return (
         <Container>
-            {!isSettle && !isClaim ? (
-                <>
+            {!isSettle && !isClaim
+                ? (<>
                     <DecimalInput
                         disabled={auctionType !== 'COLLATERAL'}
                         onChange={handleCollateralAmountChange}
@@ -386,26 +387,28 @@ const AuctionsPayment = () => {
                         value={lowerInput.value}
                         label={lowerInput.label}
                         maxText={auctionType === 'DEBT' || auctionType === 'COLLATERAL' ? 'max' : 'min'}
-                        disableMax={
-                            auctionType !== 'COLLATERAL' ? Number(buyAmount) === 0 || Number(sellAmount) === 0 : false
+                        disableMax={auctionType !== 'COLLATERAL'
+                            ? Number(buyAmount) === 0 || Number(sellAmount) === 0
+                            : false
                         }
                         handleMaxClick={() => handleAmountChange(maxAmount)}
                     />
-                </>
-            ) : (
-                <DecimalInput
-                    disabled
-                    onChange={() => {}}
-                    value={
-                        isClaim
-                            ? Number(returnClaimValues().amount) < 0.0001
-                                ? '< 0.0001'
-                                : returnClaimValues().amount
-                            : sellAmount
-                    }
-                    label={`Claimable ${isClaim ? returnClaimValues().symbol : sellSymbol}`}
-                />
-            )}
+                </>)
+                : (
+                    <DecimalInput
+                        disabled
+                        onChange={() => {}}
+                        value={
+                            isClaim
+                                ? Number(returnClaimValues().amount) < 0.0001
+                                    ? '< 0.0001'
+                                    : returnClaimValues().amount
+                                : sellAmount
+                        }
+                        label={`Claimable ${isClaim ? returnClaimValues().symbol : sellSymbol}`}
+                    />
+                )
+            }
             {error && <Error>{error}</Error>}
             <Results />
             <Footer>

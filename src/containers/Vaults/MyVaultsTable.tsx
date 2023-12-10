@@ -15,7 +15,7 @@ const sortableHeaders: SortableHeader[] = [
     { label: 'Risk Ratio' },
     { label: 'Collateral' },
     { label: 'Debt' },
-    { label: 'Net APY' }
+    { label: 'Net APY' },
 ]
 
 type MyVaultsTableProps = {
@@ -26,7 +26,7 @@ export function MyVaultsTable({ rows }: MyVaultsTableProps) {
 
     const [sorting, setSorting] = useState<{ key: string, dir: 'asc' | 'desc'}>({
         key: 'Risk Ratio',
-        dir: 'asc'
+        dir: 'asc',
     })
 
     const sortedRows = useMemo(() => {
@@ -96,11 +96,11 @@ export function MyVaultsTable({ rows }: MyVaultsTableProps) {
                             : () => setSorting(s => {
                                 if (s.key === label) return {
                                     ...s,
-                                    dir: s.dir === 'asc' ? 'desc': 'asc'
+                                    dir: s.dir === 'asc' ? 'desc': 'asc',
                                 }
                                 return {
                                     key: label,
-                                    dir: 'desc'
+                                    dir: 'desc',
                                 }
                             })
                         }
@@ -118,7 +118,7 @@ export function MyVaultsTable({ rows }: MyVaultsTableProps) {
                     riskState,
                     collateral,
                     debt,
-                    totalAnnualizedStabilityFee
+                    totalAnnualizedStabilityFee,
                 } = vault
 
                 return (
@@ -141,7 +141,7 @@ export function MyVaultsTable({ rows }: MyVaultsTableProps) {
                             <Text>
                                 {formatNumberWithStyle(collateralRatio, {
                                     scalingFactor: 0.01,
-                                    style: 'percent'
+                                    style: 'percent',
                                 })}
                             </Text>
                             <StatusLabel
@@ -166,7 +166,7 @@ export function MyVaultsTable({ rows }: MyVaultsTableProps) {
                                 getRatePercentage(totalAnnualizedStabilityFee, 4),
                                 {
                                     scalingFactor: 0.01,
-                                    style: 'percent'
+                                    style: 'percent',
                                 }
                             )}
                         </Text>
@@ -188,7 +188,7 @@ const Table = styled(Flex).attrs(props => ({
     $justify: 'flex-start',
     $align: 'stretch',
     $gap: 12,
-    ...props
+    ...props,
 }))``
 const TableHeader = styled(Grid)`
     grid-template-columns: 3fr minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) 120px;

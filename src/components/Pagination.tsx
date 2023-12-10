@@ -9,7 +9,7 @@ import { Caret } from './Icons/Caret'
 interface Props {
     items: any[]
     perPage: number
-    handlePagingMargin: ({ from, to }: IPaging) => void
+    handlePagingMargin: ({ from, to }: IPaging) => void,
 }
 
 const Pagination = ({ items, handlePagingMargin, perPage = 5 }: Props) => {
@@ -32,7 +32,7 @@ const Pagination = ({ items, handlePagingMargin, perPage = 5 }: Props) => {
                 onPageChange={({ selected }: any) => {
                     handlePagingMargin({
                         from: selected * perPage,
-                        to: (selected + 1) * perPage
+                        to: (selected + 1) * perPage,
                     })
                 }}
                 breakLabel="..."

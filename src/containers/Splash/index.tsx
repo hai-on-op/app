@@ -37,7 +37,7 @@ export default function Splash() {
         const onTouchMove = (e: TouchEvent) => {
             const delta = {
                 x: e.touches[0].clientX - touch.x,
-                y: e.touches[0].clientY - touch.y
+                y: e.touches[0].clientY - touch.y,
             }
             onTopLevelScroll({ deltaY: delta.y })
         }

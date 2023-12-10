@@ -7,7 +7,7 @@ export function parseRemainingTime(ms: number) {
         days: 0,
         hours: 0,
         minutes: 0,
-        seconds: 0
+        seconds: 0,
     }
     const days = Math.floor(ms / ONE_DAY_MS)
     const hours = Math.floor((ms % ONE_DAY_MS) / ONE_HOUR_MS)
@@ -18,7 +18,7 @@ export function parseRemainingTime(ms: number) {
         days,
         hours,
         minutes,
-        seconds
+        seconds,
     }
 }
 

@@ -17,7 +17,7 @@ export function TableHeaderItem({
     isSorting,
     onClick,
     tooltip,
-    children
+    children,
 }: TableHeaderItemProps) {
     return (
         <Container

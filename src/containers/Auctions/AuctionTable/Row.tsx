@@ -16,7 +16,7 @@ import { BidTable } from './BidTable'
 
 const tokenMap: Record<string, string> = {
     'PROTOCOL_TOKEN': 'HAI',
-    'COIN': 'KITE'
+    'COIN': 'KITE',
 }
 
 type AuctionTableRowProps = {
@@ -92,7 +92,7 @@ export function AuctionTableRow({ auction, expanded, onSelect }: AuctionTableRow
         buyToken,
         buyInitialAmount,
         auctionDeadline,
-        biddersList
+        biddersList,
     } = auction
 
     const status = useMemo(() => {
@@ -131,8 +131,8 @@ export function AuctionTableRow({ auction, expanded, onSelect }: AuctionTableRow
 
         const initial = formatEther(
             BigNumber
-            .from(auction.buyInitialAmount.split('.')[0])
-            .div(1e9)
+                .from(auction.buyInitialAmount.split('.')[0])
+                .div(1e9)
         )
         let rem = parseFloat(initial)
         auction.biddersList.forEach(({ buyAmount = '0' }) => {
@@ -140,7 +140,7 @@ export function AuctionTableRow({ auction, expanded, onSelect }: AuctionTableRow
         })
         return [
             formatNumberWithStyle(initial, { maxDecimals: 3 }),
-            formatNumberWithStyle(rem, { maxDecimals: 3 })
+            formatNumberWithStyle(rem, { maxDecimals: 3 }),
         ]
     }, [auction])
 
@@ -182,7 +182,7 @@ export function AuctionTableRow({ auction, expanded, onSelect }: AuctionTableRow
                                     parseFloat(auction.sellInitialAmount) * parseFloat(sellUsdPrice),
                                     {
                                         maxDecimals: 2,
-                                        style: 'currency'
+                                        style: 'currency',
                                     }
                                 )
                             }
@@ -263,7 +263,7 @@ const TableRow = styled(Flex).attrs(props => ({
     $column: true,
     $justify: 'stretch',
     $align: 'stretch',
-    ...props
+    ...props,
 }))<{ $expanded?: boolean }>`
     font-size: 1.1rem;
     transition: height 0.5s ease;
@@ -283,7 +283,7 @@ const TableRowBody = styled(Flex).attrs(props => ({
     $align: 'stretch',
     $grow: 1,
     $shrink: 1,
-    ...props
+    ...props,
 }))`
     max-height: calc(100% - 131px);
     padding: 8px 24px;
@@ -297,7 +297,7 @@ const TableRowFooter = styled(Flex).attrs(props => ({
     $align: 'center',
     $grow: 0,
     $shrink: 0,
-    ...props
+    ...props,
 }))`
     padding: 16px 24px;
 `

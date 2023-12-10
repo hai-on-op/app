@@ -7,7 +7,7 @@ type TokenKey = keyof typeof TOKEN_LOGOS
 type TokenPairProps = {
     tokens: [TokenKey] | [TokenKey, TokenKey],
     size?: number,
-    hideLabel?: boolean
+    hideLabel?: boolean,
 }
 export function TokenPair({ tokens, size = 64, hideLabel = false }: TokenPairProps) {
     return (

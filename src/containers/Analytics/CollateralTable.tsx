@@ -17,25 +17,25 @@ const sortableHeaders: SortableHeader[] = [
     {
         label: 'ERC20',
         tooltip: `Address of the ERC20 collateral token`,
-        unsortable: true
+        unsortable: true,
     },
     {
         label: 'Oracle',
         tooltip: `Delayed oracle address for the collateral`,
-        unsortable: true
+        unsortable: true,
     },
     {
         label: 'Delayed Price',
-        tooltip: `System price of the collateral, it is delayed from spot price, and updates every period to "Next Price"`
+        tooltip: `System price of the collateral, it is delayed from spot price, and updates every period to "Next Price"`,
     },
     {
         label: 'Next Price',
-        tooltip: `Next system price of the collateral, this value is already quoted, and will impact the system on the next price update`
+        tooltip: `Next system price of the collateral, this value is already quoted, and will impact the system on the next price update`,
     },
     {
         label: 'Stability Fee',
-        tooltip: `Annual interest rate paid by Safe owners on their debt`
-    }
+        tooltip: `Annual interest rate paid by Safe owners on their debt`,
+    },
 ]
 
 export function CollateralTable() {
@@ -44,7 +44,7 @@ export function CollateralTable() {
 
     const [sorting, setSorting] = useState<{ key: string, dir: 'asc' | 'desc'}>({
         key: 'Collateral Asset',
-        dir: 'desc'
+        dir: 'desc',
     })
 
     const sortedRows = useMemo(() => {
@@ -98,11 +98,11 @@ export function CollateralTable() {
                                 : () => setSorting(s => {
                                     if (s.key === label) return {
                                         ...s,
-                                        dir: s.dir === 'asc' ? 'desc': 'asc'
+                                        dir: s.dir === 'asc' ? 'desc': 'asc',
                                     }
                                     return {
                                         key: label,
-                                        dir: 'desc'
+                                        dir: 'desc',
                                     }
                                 })
                             }
@@ -147,7 +147,7 @@ const Table = styled(Flex).attrs(props => ({
     $justify: 'flex-start',
     $align: 'stretch',
     $gap: 12,
-    ...props
+    ...props,
 }))``
 const TableHeader = styled(Grid)`
     grid-template-columns: repeat(6, 1fr);

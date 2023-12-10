@@ -12,33 +12,33 @@ const elves = [
     {
         src: elf1,
         width: 446,
-        height: 550
+        height: 550,
     },
     {
         src: elf2,
         width: 420,
-        height: 476
+        height: 476,
     },
     {
         src: elf3,
         width: 400,
-        height: 580
+        height: 580,
     },
     {
         src: elf4,
         width: 459,
-        height: 459
+        height: 459,
     },
     {
         src: elf5,
         width: 545,
-        height: 545
+        height: 545,
     },
     {
         src: elf6,
         width: 400,
-        height: 503
-    }
+        height: 503,
+    },
 ]
 
 type ElfProps = {

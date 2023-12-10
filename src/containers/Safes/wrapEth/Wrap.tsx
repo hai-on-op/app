@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import styled from 'styled-components'
 import { useNetwork } from 'wagmi'
 
 import { useStoreActions, useStoreState } from '~/store'
+
+import styled from 'styled-components'
 import DecimalInput from '~/components/DecimalInput'
 import Button from '~/components/Button'
 import Results from './Results'
@@ -15,8 +16,12 @@ const Wrap = () => {
 
     const [value, setValue] = useState('')
     const [error, setError] = useState('')
-    const { popupsModel: popupsActions, safeModel: safeActions } = useStoreActions((state) => state)
-    const { connectWalletModel: connectWalletState } = useStoreState((state) => state)
+
+    const { connectWalletModel: connectWalletState } = useStoreState(state => state)
+    const {
+        popupsModel: popupsActions,
+        safeModel: safeActions,
+    } = useStoreActions(actions => actions)
 
     const ethBalance = useMemo(() => {
         let amount = 0
@@ -70,10 +75,21 @@ const Wrap = () => {
                 handleMaxClick={() => handleAmountChange(ethBalance)}
             />
             {error && <Error>{error}</Error>}
-            <Results amount={value} ethBalance={connectWalletState.ethBalance[chainId || 420].toString()} />
+            <Results
+                amount={value}
+                ethBalance={connectWalletState.ethBalance[chainId || 420].toString()}
+            />
             <Footer>
-                <Button variant="dimmed" text={t('cancel')} onClick={handleCancel} />
-                <Button withArrow onClick={handleSubmit} text={t('review_transaction')} />
+                <Button
+                    variant="dimmed"
+                    text={t('cancel')}
+                    onClick={handleCancel}
+                />
+                <Button
+                    withArrow
+                    onClick={handleSubmit}
+                    text={t('review_transaction')}
+                />
             </Footer>
         </Container>
     )

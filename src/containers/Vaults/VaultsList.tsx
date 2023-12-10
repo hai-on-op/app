@@ -17,7 +17,7 @@ const assets = [
     'All',
     'WETH',
     'WSTETH',
-    'OP'
+    'OP',
 ]
 
 type VaultsListProps = {
@@ -33,9 +33,9 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
     const {
         connectWalletModel: {
             tokensData,
-            tokensFetchedData
+            tokensFetchedData,
         },
-        safeModel: safeState
+        safeModel: safeState,
     } = useStoreState(state => state)
 
     const myVaults = useMemo(() => {
@@ -53,14 +53,14 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
             .map(({ symbol }) => {
                 const {
                     liquidationCRatio,
-                    totalAnnualizedStabilityFee
+                    totalAnnualizedStabilityFee,
                 } = safeState.liquidationData?.collateralLiquidationData[symbol] || {}
                 return {
                     collateralName: symbol,
                     collateralizationFactor: liquidationCRatio
                         ? formatNumberWithStyle(liquidationCRatio, {
                             maxDecimals: 0,
-                            style: 'percent'
+                            style: 'percent',
                         })
                         : '--%',
                     apy: totalAnnualizedStabilityFee
@@ -69,7 +69,7 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
                     eligibleBalance: tokensFetchedData[symbol]?.balanceE18 || '0',
                     myVaults: safeState.list.filter(({ collateralName }) => (
                         collateralName === symbol
-                    ))
+                    )),
                 }
             })
     }, [eligibleOnly, tokensData, tokensFetchedData, safeState.list, safeState.liquidationData])
@@ -87,7 +87,7 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
         <NavContainer
             navItems={[
                 `All Vaults (${availableVaults.length})`,
-                `My Vaults (${safeState.list.length})`
+                `My Vaults (${safeState.list.length})`,
             ]}
             selected={navIndex}
             onSelect={(i: number) => setNavIndex(i)}
@@ -111,7 +111,7 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
                         {assets.map(label => (
                             <DropdownOption
                                 key={label}
-                                onClick={(e: any) => {
+                                onClick={() => {
                                     // e.stopPropagation()
                                     setAssetsFilter(label === 'All' ? undefined: label)
                                 }}>
@@ -128,14 +128,12 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
                             <Text>No available vaults matched your search criteria</Text>
                         </CenteredFlex>
                     )
-                    : (
-                        <AvailableVaultsTable rows={filteredAvailableVaults}/>
-                    )
+                    : <AvailableVaultsTable rows={filteredAvailableVaults}/>
                 : (
                     <ProxyPrompt onCreateVault={!safeState.list.length
                         ? () => setActiveVault({
                             create: true,
-                            collateralName: 'WETH'
+                            collateralName: 'WETH',
                         })
                         : undefined
                     }>

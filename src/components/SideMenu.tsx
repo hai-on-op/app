@@ -9,14 +9,16 @@ const SideMenu = () => {
     const nodeRef = useRef(null)
 
     const [isOpen, setIsOpen] = useState(false)
-    const { popupsModel: popupsActions } = useStoreActions((state) => state)
-    const { popupsModel: popupsState } = useStoreState((state) => state)
+    const { popupsModel: popupsActions } = useStoreActions(actions => actions)
+    const { popupsModel: popupsState } = useStoreState(state => state)
 
     useEffect(() => {
         setIsOpen(popupsState.showSideMenu)
     }, [popupsState.showSideMenu])
 
-    return isOpen ? (
+    if (!isOpen) return null
+
+    return (
         <CSSTransition
             in={isOpen}
             timeout={300}
@@ -24,22 +26,24 @@ const SideMenu = () => {
             nodeRef={nodeRef}
             classNames="fade"
             unmountOnExit
-            mountOnEnter
-        >
+            mountOnEnter>
             <Container ref={nodeRef}>
                 <Inner>
                     <Overlay onClick={() => popupsActions.setShowSideMenu(false)} />
 
                     <InnerContainer>
                         <AccountBalance>
-                            <ConnectButton showBalance={false} accountStatus="address" />
+                            <ConnectButton
+                                showBalance={false}
+                                accountStatus="address"
+                            />
                         </AccountBalance>
                         {/* <NavLinks /> */}
                     </InnerContainer>
                 </Inner>
             </Container>
         </CSSTransition>
-    ) : null
+    )
 }
 
 export default SideMenu

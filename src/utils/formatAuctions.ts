@@ -131,7 +131,7 @@ export const formatCollateralAuctions = (auctionsList: any[], tokenSymbol: strin
             return []
         }
 
-        const filteredAuctions = auctionsList.map((colAuction: ICollateralAuction, index) => {
+        const filteredAuctions = auctionsList.map((colAuction: ICollateralAuction) => {
             const { createdAt, createdAtTransaction, amountToSell, amountToRaise, biddersList } = colAuction
 
             const startedBy = customLodash.get(colAuction, 'startedBy', '')

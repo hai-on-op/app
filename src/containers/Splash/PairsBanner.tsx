@@ -10,7 +10,7 @@ const PAIR_WIDTH = 180
 const pairs: [string, string][] = [
     ['OP', TOKEN_LOGOS.OP],
     ['WETH', TOKEN_LOGOS.WETH],
-    ['WSTETH', TOKEN_LOGOS.WSTETH]
+    ['WSTETH', TOKEN_LOGOS.WSTETH],
 ]
 
 export function PairsBanner() {
@@ -30,8 +30,8 @@ export function PairsBanner() {
         return () => window.removeEventListener('resize', onResize)
     }, [])
 
-	return (
-		<Container>
+    return (
+        <Container>
             <Inner>
                 {Array.from({ length: repeat }, () => ([...pairs])).flat().map(([ticker, logo], i) => (
                     <Pair key={i}>
@@ -48,7 +48,7 @@ export function PairsBanner() {
                 ))}
             </Inner>
         </Container>
-	)
+    )
 }
 
 const rightToLeft = keyframes`
@@ -59,7 +59,7 @@ const rightToLeft = keyframes`
 const Container = styled(Flex).attrs(props => ({
     $justify: 'flex-start',
     $align: 'center',
-    ...props
+    ...props,
 }))`
     position: absolute;
     left: 0px;
@@ -77,7 +77,7 @@ const Inner = styled(Flex).attrs(props => ({
     $justify: 'flex-start',
     $align: 'center',
     $gap: 24,
-    ...props
+    ...props,
 }))`
     position: absolute;
     left: 0%;
@@ -89,7 +89,7 @@ const Pair = styled(Flex).attrs(props => ({
     $align: 'center',
     $gap: 12,
     $shrink: 0,
-    ...props
+    ...props,
 }))`
     width: ${PAIR_WIDTH}px;
     height: 80px;

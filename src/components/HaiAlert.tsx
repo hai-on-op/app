@@ -20,11 +20,14 @@ export function HaiAlert() {
                 <Text>
                     <strong>$HAI ALERT</strong>
                     {` • `}
-                    {isLargerThanSmall ? `MARKET PRICE `: `MP `}<strong>{marketPrice.formatted}</strong>
+                    {isLargerThanSmall ? `MARKET PRICE `: `MP `}
+                    <strong>{marketPrice.formatted}</strong>
                     {` • `}
-                    {isLargerThanSmall ? `REDEMPTION PRICE `: `RP `}<strong>{redemptionPrice.formatted}</strong>
+                    {isLargerThanSmall ? `REDEMPTION PRICE `: `RP `}
+                    <strong>{redemptionPrice.formatted}</strong>
                     {` • `}
-                    {isLargerThanSmall ? `PRICE DIFFERENCE `: `DIFF. `}<strong>{parseFloat(priceDiff.toFixed(2))}%</strong>
+                    {isLargerThanSmall ? `PRICE DIFFERENCE `: `DIFF. `}
+                    <strong>{parseFloat(priceDiff.toFixed(2))}%</strong>
                 </Text>
             </CenteredFlex>
             <ElfContainer>
@@ -35,7 +38,7 @@ export function HaiAlert() {
                     style={{
                         bottom: '0px',
                         left: '0px',
-                        zIndex: 0
+                        zIndex: 0,
                     }}
                 />
                 <Elf
@@ -46,7 +49,7 @@ export function HaiAlert() {
                         bottom: '0px',
                         right: '6%',
                         transform: 'rotate(-10deg)',
-                        zIndex: 1
+                        zIndex: 1,
                     }}
                 />
                 <Elf
@@ -57,7 +60,7 @@ export function HaiAlert() {
                         transform: 'scaleX(-1)',
                         bottom: '0px',
                         right: '0px',
-                        zIndex: 0
+                        zIndex: 0,
                     }}
                 />
             </ElfContainer>
@@ -74,7 +77,7 @@ const Container = styled(Flex).attrs(props => ({
     $justify: 'space-between',
     $align: 'center',
     $gap: 12,
-    ...props
+    ...props,
 }))`
     position: fixed;
     left: 0px;
@@ -88,7 +91,7 @@ const Container = styled(Flex).attrs(props => ({
 `
 const HaiIconContainer = styled(CenteredFlex).attrs(props => ({
     $shrink: 0,
-    ...props
+    ...props,
 }))`
     width: 48px;
     height: 48px;

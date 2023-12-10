@@ -10,7 +10,7 @@ import { Caret } from './Icons/Caret'
 type ButtonProps = Omit<HTMLProps<HTMLButtonElement>, 'ref' | 'as' | 'type' | 'label' | 'children'>
 type BrandedDropdownProps = ButtonProps & {
     label: ReactChildren,
-    children: ReactChildren
+    children: ReactChildren,
 }
 export function BrandedDropdown({ label, children, ...props }: BrandedDropdownProps) {
     const [container, setContainer] = useState<HTMLElement | null>(null)
@@ -60,7 +60,7 @@ export const DropdownOption = styled(Flex).attrs(props => ({
     $width: '100%',
     $align: 'center',
     $gap: 12,
-    ...props
+    ...props,
 }))<{ $active?: boolean }>`
     min-width: 160px;
     padding: 8px 16px;

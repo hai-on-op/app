@@ -11,31 +11,31 @@ const dummyRows: DummyStrategy[] = [
     {
         pair: ['WETH', 'HAI'],
         rewards: ['OP', 'KITE'],
-        tvl: "$5.6M",
-        vol24hr: "$4.6M",
+        tvl: '$5.6M',
+        vol24hr: '$4.6M',
         apy: 0.19,
-        userPosition: "$300k",
+        userPosition: '$300k',
         userApy: 0.15,
-        earnPlatform: 'uniswap'
+        earnPlatform: 'uniswap',
     },
     {
         pair: ['WBTC', 'HAI'],
         rewards: ['OP', 'KITE'],
-        tvl: "$5.5M",
-        vol24hr: "$5.1M",
+        tvl: '$5.5M',
+        vol24hr: '$5.1M',
         apy: 0.11,
-        earnPlatform: 'velodrome'
+        earnPlatform: 'velodrome',
     },
     {
         pair: ['KITE', 'OP'],
         rewards: ['OP', 'KITE'],
-        tvl: "$4.6M",
-        vol24hr: "$1.2M",
+        tvl: '$4.6M',
+        vol24hr: '$1.2M',
         apy: 0.09,
-        userPosition: "$169k",
+        userPosition: '$169k',
         userApy: 0.11,
-        earnPlatform: 'velodrome'
-    }
+        earnPlatform: 'velodrome',
+    },
 ]
 
 const strategies: EarnStrategyProps[] = [
@@ -44,15 +44,15 @@ const strategies: EarnStrategyProps[] = [
         status: 'NOW LIVE',
         description: 'Earn OP tokens by minting & borrowing HAI',
         ctaLink: LINK_TO_DOCS,
-        tokenImages: ['OP']
+        tokenImages: ['OP'],
     },
     {
         heading: 'KITE REWARDS',
         status: 'NOW LIVE',
         description: 'Earn KITE tokens by minting & borrowing HAI',
         ctaLink: LINK_TO_DOCS,
-        tokenImages: ['KITE']
-    }
+        tokenImages: ['KITE'],
+    },
 ]
 
 export function Earn() {

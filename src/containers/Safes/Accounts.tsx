@@ -1,14 +1,35 @@
-import styled from 'styled-components'
-import Lottie from 'react-lottie-player'
 import { isMobile } from 'react-device-detect'
-import Steps from '~/components/Steps'
-import { useStoreState } from '~/store'
-import LottieWallet from '~/utils/Lotties/wallet.json'
+import Lottie from 'react-lottie-player'
+
 import LottieRegister from '~/utils/Lotties/register.json'
 import LottieSafe from '~/utils/Lotties/vault.json'
+import LottieWallet from '~/utils/Lotties/wallet.json'
+import { useStoreState } from '~/store'
+
+import styled from 'styled-components'
+import Steps from '~/components/Steps'
+
 import accountImg from '~/assets/account-img.png'
-import walletImg from '~/assets/wallet-img.png'
 import safeImg from '~/assets/safe-img.png'
+import walletImg from '~/assets/wallet-img.png'
+
+const lotties = Object.values({
+    register: {
+        mobileImg: accountImg,
+        animation: LottieRegister,
+        size: 400,
+    },
+    safe: {
+        mobileImg: safeImg,
+        animation: LottieSafe,
+        size: 400,
+    },
+    wallet: {
+        mobileImg: walletImg,
+        animation: LottieWallet,
+        size: 350,
+    },
+})
 
 const Accounts = () => {
     const { connectWalletModel: connectWalletState } = useStoreState((state) => state)
@@ -16,31 +37,34 @@ const Accounts = () => {
     const { step } = connectWalletState
 
     const returnLottie = () => {
-        switch (step) {
-            case 1:
-                return isMobile ? (
-                    <img src={accountImg} alt="" />
-                ) : (
-                    <Lottie loop animationData={LottieRegister} play style={{ width: 400, height: 400 }} />
-                )
-            case 2:
-                return isMobile ? (
-                    <img src={safeImg} alt="" />
-                ) : (
-                    <Lottie loop animationData={LottieSafe} play style={{ width: 400, height: 400 }} />
-                )
-            default:
-                return isMobile ? (
-                    <img src={walletImg} alt="" />
-                ) : (
-                    <Lottie loop animationData={LottieWallet} play style={{ width: 350, height: 350 }} />
-                )
-        }
+        if (!lotties[step]) return null
+
+        const { mobileImg, animation, size } = lotties[step]
+
+        if (isMobile) return (
+            <img
+                src={mobileImg}
+                alt=""
+            />
+        )
+        return (
+            <Lottie
+                loop
+                play
+                animationData={animation}
+                style={{
+                    width: size,
+                    height: size,
+                }}
+            />
+        )
     }
     return (
         <Container>
             <Content>
-                <LottieContainer>{returnLottie()}</LottieContainer>
+                <LottieContainer>
+                    {returnLottie()}
+                </LottieContainer>
                 <Steps />
             </Content>
         </Container>
@@ -62,12 +86,12 @@ const LottieContainer = styled.div`
     @media (max-width: 767px) {
         text-align: center;
     }
-    img {
+    & img {
         border-radius: 20px;
         max-width: 250px;
         margin: 0 auto;
     }
-    > div {
+    & > div {
         margin: 0 auto;
     }
 `

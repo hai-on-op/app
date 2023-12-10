@@ -9,15 +9,15 @@ export function useCollateral(action: VaultAction): Collateral {
         safeModel: {
             safeData: {
                 collateral,
-                leftInput
+                leftInput,
             },
             singleSafe,
-            liquidationData
+            liquidationData,
         },
         connectWalletModel: {
             tokensData,
-            tokensFetchedData
-        }
+            tokensFetchedData,
+        },
     } = useStoreState(state => state)
 
     const name = useMemo(() => (
@@ -56,6 +56,6 @@ export function useCollateral(action: VaultAction): Collateral {
         available,
         balance,
         priceInUSD: collateralLiquidationData?.currentPrice?.value || '0',
-        liquidationData: collateralLiquidationData
+        liquidationData: collateralLiquidationData,
     }
 }

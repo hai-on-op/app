@@ -11,19 +11,20 @@ import _ from '~/utils/lodash'
 import { ExternalLinkArrow } from '~/styles'
 
 const Privacy = ({ ...props }) => {
-    const privacyRef = useRef(null)
+    const privacyRef = useRef<HTMLElement>(null)
 
     useEffect(() => {
         setTimeout(() => {
             if (_.get(props.location, 'state.goToCookies', false) && privacyRef.current) {
-                // @ts-ignore
                 privacyRef.current.scrollIntoView({ behavior: 'smooth' })
             } else {
-                window.scrollTo({ top: 0, behavior: 'smooth' })
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth',
+                })
             }
         }, 500)
-        // eslint-disable-next-line
-    }, [])
+    }, [props.location])
 
     return (
         <GridContainer>

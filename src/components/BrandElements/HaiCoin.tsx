@@ -10,7 +10,7 @@ type HaiCoinProps = {
     width?: string,
     style?: object,
     animated?: boolean,
-    thickness?: number
+    thickness?: number,
 }
 
 export function HaiCoin({ variant = 'HAI', width, animated, thickness, ...props }: HaiCoinProps) {
@@ -66,7 +66,7 @@ const BackFace = styled(Face)`
 const Inner = styled(CenteredFlex)<{
     $variant?: HaiCoinProps['variant'],
     $animated?: boolean,
-    $animDur: number
+    $animDur: number,
 }>`
     width: 100%;
     height: 100%;

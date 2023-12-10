@@ -46,7 +46,7 @@ const Container = styled.div<{ isBlock?: boolean }>`
     letter-spacing: -0.09px;
     &.alert {
         border: 1px solid ${(props) => props.theme.colors.alertBorder};
-        border-width: ${({ theme, isBlock }) => (isBlock ? '0' : '1px')};
+        border-width: ${({ isBlock }) => (isBlock ? '0' : '1px')};
         background: ${({ theme, isBlock }) => (isBlock ? 'transparent' : theme.colors.alertBackground)};
         color: ${({ theme, isBlock }) => (isBlock ? theme.colors.customSecondary : theme.colors.alertColor)};
         ${Circle} {
@@ -55,7 +55,7 @@ const Container = styled.div<{ isBlock?: boolean }>`
     }
     &.success {
         border: 1px solid ${(props) => props.theme.colors.successBorder};
-        border-width: ${({ theme, isBlock }) => (isBlock ? '0' : '1px')};
+        border-width: ${({ isBlock }) => (isBlock ? '0' : '1px')};
         background: ${({ theme, isBlock }) => (isBlock ? 'transparent' : theme.colors.successBackground)};
         color: ${({ theme, isBlock }) => (isBlock ? theme.colors.customSecondary : theme.colors.successColor)};
         ${Circle} {
@@ -64,7 +64,7 @@ const Container = styled.div<{ isBlock?: boolean }>`
     }
     &.danger {
         border: 1px solid ${(props) => props.theme.colors.dangerColor};
-        border-width: ${({ theme, isBlock }) => (isBlock ? '0' : '1px')};
+        border-width: ${({ isBlock }) => (isBlock ? '0' : '1px')};
         background: ${({ theme, isBlock }) => (isBlock ? 'transparent' : theme.colors.dangerBackground)};
         color: ${({ theme, isBlock }) => (isBlock ? theme.colors.customSecondary : theme.colors.dangerColor)};
         ${Circle} {
@@ -73,7 +73,7 @@ const Container = styled.div<{ isBlock?: boolean }>`
     }
     &.warning {
         border: 1px solid ${(props) => props.theme.colors.warningBorder};
-        border-width: ${({ theme, isBlock }) => (isBlock ? '0' : '1px')};
+        border-width: ${({ isBlock }) => (isBlock ? '0' : '1px')};
         background: ${({ theme, isBlock }) => (isBlock ? 'transparent' : theme.colors.warningBackground)};
         color: ${({ theme, isBlock }) => (isBlock ? theme.colors.customSecondary : theme.colors.warningColor)};
         ${Circle} {
@@ -114,5 +114,5 @@ const Container = styled.div<{ isBlock?: boolean }>`
         right: 0;
         z-index: 996;
     }
-    border-width: ${({ theme, isBlock }) => (isBlock ? '0' : '1px')};
+    border-width: ${({ isBlock }) => (isBlock ? '0' : '1px')};
 `

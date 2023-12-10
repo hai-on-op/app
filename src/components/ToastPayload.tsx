@@ -1,9 +1,10 @@
 import { useTranslation } from 'react-i18next'
-import styled from 'styled-components'
 
-import FeatherIconWrapper, { IconName } from './FeatherIconWrapper'
-import { ExternalLinkArrow } from '~/styles'
 import { getEtherscanLink } from '~/utils'
+
+import styled from 'styled-components'
+import { ExternalLinkArrow } from '~/styles'
+import FeatherIconWrapper, { type IconName } from './FeatherIconWrapper'
 
 interface Props {
     icon: IconName
@@ -21,10 +22,14 @@ const ToastPayload = ({ icon, iconColor, text, textColor, iconSize, payload }: P
     const { t } = useTranslation()
     return (
         <Container>
-            <FeatherIconWrapper name={icon} color={iconColor} size={iconSize || 20} />
+            <FeatherIconWrapper
+                name={icon}
+                color={iconColor}
+                size={iconSize || 20}
+            />
             <div>
                 <Text color={textColor}>{text}</Text>
-                {payload ? (
+                {!!payload && (
                     <a
                         href={getEtherscanLink(payload.chainId, payload.value, payload.type)}
                         target="_blank"
@@ -32,7 +37,7 @@ const ToastPayload = ({ icon, iconColor, text, textColor, iconSize, payload }: P
                     >
                         {t('view_etherscan')}
                     </a>
-                ) : null}
+                )}
             </div>
         </Container>
     )

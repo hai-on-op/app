@@ -104,7 +104,7 @@ const Container = styled(Flex).attrs(props => ({
     $column: true,
     $justify: 'stretch',
     $align: 'stretch',
-    ...props
+    ...props,
 }))`
     position: relative;
     overflow: hidden;
@@ -121,7 +121,7 @@ const Inner = styled(Flex).attrs(props => ({
     $justify: 'space-between',
     $align: 'flex-start',
     $gap: 48,
-    ...props
+    ...props,
 }))`
     padding: 48px;
     padding-top: 72px;
@@ -139,7 +139,7 @@ const Description = styled(Grid).attrs(props => ({
     $columns: '1fr',
     $align: 'flex-start',
     $gap: 24,
-    ...props
+    ...props,
 }))`
     max-width: 400px;
 
@@ -175,7 +175,7 @@ const LinksContainer = styled(Flex).attrs(props => ({
     $justify: 'space-between',
     $align: 'stretch',
     $gap: 48,
-    ...props
+    ...props,
 }))`
     max-width: min(calc(100vw - 48px), 480px);
     
@@ -188,7 +188,7 @@ const IconContainer = styled(Flex).attrs(props => ({
     $justify: 'center',
     $align: 'flex-start',
     $gap: 24,
-    ...props
+    ...props,
 }))`
     & svg {
         height: 24px;
@@ -201,7 +201,7 @@ const EmailContainer = styled(Flex).attrs(props => ({
     $column: true,
     $align: 'flex-start',
     $gap: 24,
-    ...props
+    ...props,
 }))`
     width: 100%;
     padding: 24px;
@@ -259,7 +259,7 @@ const Bottom = styled(Flex).attrs(props => ({
     $width: '100%',
     $justify: 'flex-start',
     $align: 'center',
-    ...props
+    ...props,
 }))`
     padding: 24px 48px;
     border-top: ${({ theme }) => theme.border.thin};

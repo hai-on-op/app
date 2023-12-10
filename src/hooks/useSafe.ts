@@ -1,13 +1,11 @@
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { BigNumber, ethers } from 'ethers'
 import numeral from 'numeral'
+import { BigNumber, ethers } from 'ethers'
 import { useAccount } from 'wagmi'
 
-import { useProxyAddress } from '~/hooks'
-import { useStoreActions, useStoreState } from '~/store'
-import { DEFAULT_SAFE_STATE } from '~/utils/constants'
 import {
+    DEFAULT_SAFE_STATE,
     formatNumber,
     getCollateralRatio,
     getLiquidationPrice,
@@ -19,6 +17,8 @@ import {
     toFixedString,
     toPercentage,
 } from '~/utils'
+import { useStoreActions, useStoreState } from '~/store'
+import { useProxyAddress } from '~/hooks'
 
 export const LIQUIDATION_RATIO = 135 // percent
 export const ONE_DAY_WORTH_SF = ethers.utils.parseEther('0.00001')
@@ -33,21 +33,19 @@ export type Stats = {
     }>
 }
 
-// returns safe model state from store
-export function useSafeState() {
-    const { safeModel: safeState } = useStoreState((state) => state)
-    return useMemo(() => safeState, [safeState])
-}
-
 // returns all safe info from amounts, debt, collateral and other helper attributes
 export function useSafeInfo(type: SafeTypes = 'create') {
     const { address: account } = useAccount()
     const proxyAddress = useProxyAddress()
     const { t } = useTranslation()
     const {
-        safeModel: { safeData, singleSafe, liquidationData },
+        safeModel: {
+            safeData,
+            singleSafe,
+            liquidationData,
+        },
         connectWalletModel: { tokensFetchedData },
-    } = useStoreState((state) => state)
+    } = useStoreState(state => state)
 
     // parsed amounts of deposit/repay withdraw/borrow as in left input and right input, they get switched based on if its Deposit & Borrow or Repay & Withdraw
     const parsedAmounts = useMemo(() => {
@@ -322,7 +320,8 @@ export function useSafeInfo(type: SafeTypes = 'create') {
 }
 // returns totalCollateral
 export function useTotalCollateral(leftInput: string, type: SafeTypes) {
-    const { singleSafe } = useSafeState()
+    const { singleSafe } = useStoreState(({ safeModel }) => safeModel)
+
     const totalCollateral = useMemo(() => {
         if (singleSafe) {
             if (type === 'repay_withdraw') {
@@ -337,7 +336,7 @@ export function useTotalCollateral(leftInput: string, type: SafeTypes) {
 }
 // returns total debt
 export function useTotalDebt(rightInput: string, type: SafeTypes) {
-    const { singleSafe, liquidationData } = useSafeState()
+    const { singleSafe, liquidationData } = useStoreState(({ safeModel }) => safeModel)
 
     const collateralLiquidationData = liquidationData!.collateralLiquidationData
     const accumulatedRate = singleSafe?.collateralName
@@ -382,12 +381,14 @@ export function useLiquidationPrice(
         return getLiquidationPrice(totalCollateral, totalDebt, liquidationCRatio, currentRedemptionPrice)
     }, [currentRedemptionPrice, liquidationCRatio, totalCollateral, totalDebt])
 }
-// handles input data validation and storing them into store
-export function useInputsHandlers(): {
+
+type InputsHandlers = {
     onLeftInput: (typedValue: string) => void
     onRightInput: (typedValue: string) => void
     onClearAll: () => void
-} {
+}
+// handles input data validation and storing them into store
+export function useInputsHandlers(): InputsHandlers {
     const { safeModel: safeActions } = useStoreActions((state) => state)
     const {
         safeModel: { safeData },

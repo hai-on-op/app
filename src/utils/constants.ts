@@ -7,7 +7,7 @@ export const {
     VITE_WALLETCONNECT_ID,
     VITE_ALCHEMY_KEY,
     VITE_MAINNET_PUBLIC_RPC,
-    VITE_TESTNET_PUBLIC_RPC
+    VITE_TESTNET_PUBLIC_RPC,
 } = import.meta.env
 
 export const NETWORK_ID = parseInt(VITE_NETWORK_ID ?? '10')
@@ -43,7 +43,7 @@ export const MEDIA_WIDTHS = {
 export const mediaWidthTemplates: {
     [width in keyof typeof MEDIA_WIDTHS]: typeof css
 } = Object.keys(MEDIA_WIDTHS).reduce((accumulator, size) => {
-    ;(accumulator as any)[size] = (a: any, b: any, c: any) => css`
+    (accumulator as any)[size] = (a: any, b: any, c: any) => css`
         @media (max-width: ${(MEDIA_WIDTHS as any)[size]}px) {
             ${css(a, b, c)}
         }

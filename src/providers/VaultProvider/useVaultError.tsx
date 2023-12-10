@@ -8,7 +8,7 @@ import {
     VaultAction,
     VaultInfoError,
     formatNumber,
-    toFixedString
+    toFixedString,
 } from '~/utils'
 import { useStoreState } from '~/store'
 import { useProxyAddress } from '~/hooks'
@@ -18,14 +18,14 @@ type Props = {
     collateral: Collateral,
     debt: Debt,
     collateralRatio: string,
-    isSafe: boolean
+    isSafe: boolean,
 }
 export function useVaultError({
     action,
     collateral,
     debt,
     collateralRatio,
-    isSafe
+    isSafe,
 }: Props) {
     const { address: account } = useAccount()
     const proxyAddress = useProxyAddress()
@@ -44,11 +44,11 @@ export function useVaultError({
 
     const {
         globalDebtCeiling,
-        perSafeDebtCeiling
+        perSafeDebtCeiling,
     } = liquidationData || {}
     const {
         debtFloor,
-        safetyCRatio
+        safetyCRatio,
     } = collateral.liquidationData || {}
     
     const debtFloorBN = BigNumber.from(toFixedString(debtFloor || '0', 'WAD'))
@@ -83,25 +83,25 @@ export function useVaultError({
         const debtFloorFormatted = Math.ceil(Number(formatNumber(debtFloor)))
         return {
             error: VaultInfoError.DEBT_TOTAL,
-            errorMessage: `The minimum amount of debt per vault is ${debtFloorFormatted} HAI`
+            errorMessage: `The minimum amount of debt per vault is ${debtFloorFormatted} HAI`,
         }
     }
     if (!isSafe && Number(collateralRatio) >= 0) {
         return {
             error: VaultInfoError.COLLATERAL_RATIO,
-            errorMessage: `Too much debt, which would bring vault below ${Number(safetyCRatio) * 100}% collateralization ratio`
+            errorMessage: `Too much debt, which would bring vault below ${Number(safetyCRatio) * 100}% collateralization ratio`,
         }
     }
     if (numeral(debt).value() > numeral(globalDebtCeiling).value()) {
         return {
             error: VaultInfoError.GLOBAL_DEBT_CEILING,
-            errorMessage: `Cannot exceed global debt ceiling (${globalDebtCeiling})`
+            errorMessage: `Cannot exceed global debt ceiling (${globalDebtCeiling})`,
         }
     }
     if (numeral(debt).value() > numeral(perSafeDebtCeiling).value()) {
         return {
             error: VaultInfoError.HAI_DEBT_CEILING,
-            errorMessage: `Cannot exceed per vault $HAI debt ceiling (${perSafeDebtCeiling})`
+            errorMessage: `Cannot exceed per vault $HAI debt ceiling (${perSafeDebtCeiling})`,
         }
     }
     if (action === VaultAction.CREATE) {
@@ -117,7 +117,7 @@ export function useVaultError({
         if (totalDebtBN.gte(perSafeDebtCeilingBN)) {
             return {
                 error: VaultInfoError.INDIVIDUAL_DEBT_CEILING,
-                errorMessage: `Individual safe can't have more than ${perSafeDebtCeiling} HAI of debt`
+                errorMessage: `Individual safe can't have more than ${perSafeDebtCeiling} HAI of debt`,
             }
         }
     }

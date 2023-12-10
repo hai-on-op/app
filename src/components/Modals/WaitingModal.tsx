@@ -16,7 +16,7 @@ const WaitingModal = () => {
 
     const {
         popupsModel: popupsState,
-        safeModel: safeState
+        safeModel: safeState,
     } = useStoreState(state => state)
     const { popupsModel: popupsActions } = useStoreActions(actions => actions)
     const { title, text, hint, status, hash, isCreate } = popupsState.waitingPayload

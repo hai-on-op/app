@@ -1,13 +1,20 @@
 import { useEffect, useMemo } from 'react'
 import { toast } from 'react-toastify'
-import ToastPayload from '~/components/ToastPayload'
-import store, { useStoreState } from '~/store'
-import { useEthersProvider } from '~/hooks'
 import { useNetwork } from 'wagmi'
 
+import store, { useStoreState } from '~/store'
+import { useEthersProvider } from '~/hooks'
+
+import ToastPayload from '~/components/ToastPayload'
+
+type CheckTransaction = {
+    addedTime: number,
+    receipt?: any,
+    lastCheckedBlockNumber?: number
+}
 export function shouldCheck(
     lastBlockNumber: number,
-    tx: { addedTime: number; receipt?: {}; lastCheckedBlockNumber?: number }
+    tx: CheckTransaction
 ): boolean {
     if (tx.receipt) return false
     if (!tx.lastCheckedBlockNumber) return true

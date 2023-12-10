@@ -8,7 +8,7 @@ import {
     formatSummaryValue,
     transformToAnnualRate,
     transformToEightHourlyRate,
-    transformToWadPercentage
+    transformToWadPercentage,
 } from '~/utils'
 import { usePublicGeb } from '~/hooks'
 
@@ -59,14 +59,14 @@ export function useGebAnalytics() {
                         formatEther(result.globalDebt).toString(),
                         {
                             maxDecimals: 0,
-                            style: 'currency'
+                            style: 'currency',
                         }
                     )!,
                     globalDebtCeiling: formatSummaryValue(
                         formatEther(result.globalDebtCeiling).toString(),
                         {
                             maxDecimals: 0,
-                            style: 'currency'
+                            style: 'currency',
                         }
                     )!,
                     globalDebtUtilization: transformToWadPercentage(
@@ -77,16 +77,16 @@ export function useGebAnalytics() {
                         formatEther(result.surplusInTreasury).toString(),
                         {
                             maxDecimals: 0,
-                            style: 'currency'
+                            style: 'currency',
                         }
                     )!,
                     marketPrice: formatSummaryValue(marketPrice, {
                         maxDecimals: 3,
-                        style: 'currency'
+                        style: 'currency',
                     })!,
                     redemptionPrice: formatSummaryValue(redemptionPrice, {
                         maxDecimals: 3,
-                        style: 'currency'
+                        style: 'currency',
                     })!,
                     priceDiff,
                     annualRate: transformToAnnualRate(result.redemptionRate, 27),
@@ -96,8 +96,8 @@ export function useGebAnalytics() {
                     tokenAnalyticsData: Object.entries(result.tokenAnalyticsData)
                         .map(([key, value]) => ({
                             symbol: key,
-                            ...value
-                        }))
+                            ...value,
+                        })),
                 }))
             } catch(e: any) {
                 console.error(e)
@@ -109,40 +109,40 @@ export function useGebAnalytics() {
 
     return {
         data,
-        forceRefresh
+        forceRefresh,
     }
 }
 
 export const DEFAULT_ANALYTICS_DATA: GebAnalyticsData = {
     erc20Supply: {
         raw: '',
-        formatted: '--'
+        formatted: '--',
     },
     globalDebt: {
         raw: '',
-        formatted: '--'
+        formatted: '--',
     },
     globalDebtUtilization: '--%',
     globalDebtCeiling: {
         raw: '',
-        formatted: '--'
+        formatted: '--',
     },
     surplusInTreasury: {
         raw: '',
-        formatted: '--'
+        formatted: '--',
     },
     marketPrice: {
         raw: '',
-        formatted: '$--'
+        formatted: '$--',
     },
     redemptionPrice: {
         raw: '',
-        formatted: '$--'
+        formatted: '$--',
     },
     priceDiff: 0,
     annualRate: '--%',
     eightRate: '--%',
     pRate: '--%',
     iRate: '--%',
-    tokenAnalyticsData: []
+    tokenAnalyticsData: [],
 }

@@ -69,11 +69,16 @@ const TokenInput = ({
             <Content className={disabled ? 'disabled' : ''}>
                 <Flex>
                     <TokenBox>
-                        {token?.icon ? (
-                            <Icon src={token?.icon} width={iconSize || '24px'} height={iconSize || '24px'} />
-                        ) : (
-                            <Loader width={iconSize || '24px'} />
-                        )}
+                        {token?.icon
+                            ? (
+                                <Icon
+                                    src={token?.icon}
+                                    width={iconSize || '24px'}
+                                    height={iconSize || '24px'}
+                                />
+                            )
+                            : <Loader width={iconSize || '24px'}/>
+                        }
                         {token?.name}
                     </TokenBox>
                     <CustomInput
@@ -92,9 +97,13 @@ const TokenInput = ({
                 <Flex>
                     <Label data-test-id={data_test_id + '_label'}>
                         {label}{' '}
-                        {disableMax || disabled ? null : <MaxBtn onClick={handleMaxClick}>({t(maxText)})</MaxBtn>}
+                        {!(disableMax || disabled) && (
+                            <MaxBtn onClick={handleMaxClick}>
+                                ({t(maxText)})
+                            </MaxBtn>
+                        )}
                     </Label>
-                    {rightLabel ? <Label>{rightLabel}</Label> : null}
+                    {!!rightLabel && <Label>{rightLabel}</Label>}
                 </Flex>
             </Content>
         </Container>

@@ -23,7 +23,7 @@ export function Modal({
     footerContent,
     overrideContent,
     onClose,
-    maxWidth
+    maxWidth,
 }: ModalProps) {
     const [container, setContainer] = useState<HTMLElement | null>(null)
 
@@ -103,7 +103,7 @@ export const ModalContainer = styled(Flex).attrs(props => ({
     $column: true,
     $justify: 'stretch',
     $align: 'stretch',
-    ...props
+    ...props,
 }))<{ $maxWidth?: string }>`
     position: absolute;
     width: 100%;
@@ -127,7 +127,7 @@ export const ModalHeader = styled(Flex).attrs(props => ({
     $gap: 12,
     $grow: 0,
     $shrink: 0,
-    ...props
+    ...props,
 }))`
     padding: 24px 36px;
 
@@ -148,7 +148,7 @@ export const ModalBody = styled(Flex).attrs(props => ({
     $align: 'center',
     $grow: 1,
     $gap: 24,
-    ...props
+    ...props,
 }))`
     overflow: hidden auto;
     padding: 0 36px;
@@ -167,10 +167,10 @@ const clouds: FloatingElementsProps['clouds'] = [
         style: {
             right: '-140px',
             bottom: '-190px',
-            filter: 'brightness(0.6)'
+            filter: 'brightness(0.6)',
         },
         flip: true,
-        zIndex: -3
+        zIndex: -3,
     },
     {
         index: 1,
@@ -178,17 +178,17 @@ const clouds: FloatingElementsProps['clouds'] = [
         style: {
             right: '-220px',
             bottom: '-120px',
-            filter: 'brightness(0.8)'
+            filter: 'brightness(0.8)',
         },
-        zIndex: -2
+        zIndex: -2,
     },
     {
         index: 0,
         width: '200px',
         style: {
             left: '-90px',
-            top: '-100px'
+            top: '-100px',
         },
-        zIndex: 2
-    }
+        zIndex: 2,
+    },
 ]

@@ -4,11 +4,12 @@ import { MaxUint256 } from '@ethersproject/constants'
 import { BigNumber, ethers } from 'ethers'
 import { useAccount } from 'wagmi'
 
+import { sanitizeDecimals } from '~/utils'
+import store from '~/store'
+
 import { calculateGasMargin, handleTransactionError } from './TransactionHooks'
 import { useTokenContract } from './useContract'
 import { useGeb } from './useGeb'
-import store from '~/store'
-import { sanitizeDecimals } from '~/utils'
 
 const decimals18 = BigNumber.from(10).pow(18)
 

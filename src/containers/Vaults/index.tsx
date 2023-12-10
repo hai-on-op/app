@@ -22,9 +22,9 @@ export function Vaults(props: RouteComponentProps<{ address?: string }>) {
     const {
         connectWalletModel: {
             tokensData,
-            isWrongNetwork
+            isWrongNetwork,
         },
-        safeModel: { singleSafe }
+        safeModel: { singleSafe },
     } = useStoreState(state => state)
     const { safeModel: safeActions } = useStoreActions(actions => actions)
 
@@ -43,7 +43,7 @@ export function Vaults(props: RouteComponentProps<{ address?: string }>) {
                 address: address || (account as string),
                 geb,
                 tokensData,
-                chainId: chain?.id || DEFAULT_NETWORK_ID
+                chainId: chain?.id || DEFAULT_NETWORK_ID,
             })
         }
         fetchSafes()

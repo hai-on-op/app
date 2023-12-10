@@ -24,7 +24,7 @@ import { MobileMenu } from './MobileMenu'
 import haiLogo from '~/assets/logo.png'
 
 type HeaderProps = {
-    tickerActive?: boolean
+    tickerActive?: boolean,
 }
 export function Header({ tickerActive = false }: HeaderProps) {
     const location = useLocation()
@@ -35,7 +35,7 @@ export function Header({ tickerActive = false }: HeaderProps) {
 
     const {
         safeModel: { liquidationData },
-        settingsModel: { isPlayingMusic }
+        settingsModel: { isPlayingMusic },
     } = useStoreState(state => state)
     const { setIsPlayingMusic } = useStoreActions(actions => actions.settingsModel)
 
@@ -53,14 +53,14 @@ export function Header({ tickerActive = false }: HeaderProps) {
                 'HAI (MP)',
                 marketPrice.formatted,
                 '↑34%',
-                '\u2022'
+                '\u2022',
             ],
             [
                 'HAI (RP)',
                 redemptionPrice.formatted,
                 '↑34%',
-                '\u2022'
-            ]
+                '\u2022',
+            ],
         ]
         if (liquidationData) {
             Object.entries(liquidationData.collateralLiquidationData)
@@ -70,10 +70,10 @@ export function Header({ tickerActive = false }: HeaderProps) {
                         token,
                         formatNumberWithStyle(data.currentPrice.value, {
                             style: 'currency',
-                            maxDecimals: 3
+                            maxDecimals: 3,
                         }),
                         '↑34%',
-                        '\u2022'
+                        '\u2022',
                     ])
                 })
         }
@@ -229,7 +229,7 @@ const Container = styled(Flex).attrs(props => ({
     $column: true,
     $justify: 'space-between',
     $align: 'stretch',
-    ...props
+    ...props,
 }))<{ $tickerActive: boolean }>`
     position: fixed;
     top: 0px;
@@ -273,7 +273,7 @@ const Inner = styled(Flex).attrs(props => ({
     $justify: 'space-between',
     $align: 'center',
     $gap: 24,
-    ...props
+    ...props,
 }))<{ $blur?: boolean }>`
     height: 100%;
     padding: 0 42px;
@@ -301,7 +301,7 @@ const HeaderLink = styled(Title).attrs(props => ({
     $fontSize: '1.6em',
     $letterSpacing: '0.2rem',
     $textTransform: 'uppercase',
-    ...props
+    ...props,
 }))<{ $active?: boolean }>`
     text-shadow: none;
     -webkit-text-stroke: 0px;

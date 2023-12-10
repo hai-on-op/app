@@ -39,7 +39,7 @@ export const HaiButton = styled.button.attrs(props => ({
     $justify: 'space-between',
     $align: 'center',
     $gap: 12,
-    ...props
+    ...props,
 }))<HaiButtonProps>`
     ${FlexStyle}
     outline: none;

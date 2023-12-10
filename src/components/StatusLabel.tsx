@@ -9,7 +9,7 @@ type StatusLabelProps = FlexProps & {
     size?: number,
     color?: string,
     background?: string,
-    children?: ReactChildren
+    children?: ReactChildren,
 }
 export function StatusLabel({
     status,
@@ -34,7 +34,12 @@ export function StatusLabel({
     )
 }
 
-const Container = styled(Flex)<{ $status: Status, $size: number, $color?: string, $bg?: string }>`
+const Container = styled(Flex)<{
+    $status: Status,
+    $size: number,
+    $color?: string,
+    $bg?: string,
+}>`
     padding: 8px 12px;
     font-size: ${({ $size }) => $size * 0.8}rem;
     font-weight: 700;

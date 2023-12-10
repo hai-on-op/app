@@ -5,10 +5,11 @@ import { utils as ethersUtils } from 'ethers'
 import styled from 'styled-components'
 import { useAccount } from 'wagmi'
 
-import { useTokenContract, useTransactionAdder, useGeb } from '~/hooks'
-import { useStoreActions, useStoreState } from '~/store'
 import type { AuctionEventType, IAuctionBidder } from '~/types'
 import { timeout } from '~/utils'
+import { useStoreActions, useStoreState } from '~/store'
+import { useTokenContract, useTransactionAdder, useGeb } from '~/hooks'
+
 import Button from './Button'
 import { Loader } from './Loader'
 
@@ -25,7 +26,15 @@ interface Props {
     auctionType: AuctionEventType
 }
 
-const ApproveToken = ({ bids, amount, handleBackBtn, handleSuccess, methodName, coinName, auctionType }: Props) => {
+const ApproveToken = ({
+    bids,
+    amount,
+    handleBackBtn,
+    handleSuccess,
+    methodName,
+    coinName,
+    auctionType,
+}: Props) => {
     const TEXT_PAYLOAD_DEFAULT_STATE = {
         title: `${coinName} Allowance`,
         text: `Allow your account to manage your ${coinName}`,

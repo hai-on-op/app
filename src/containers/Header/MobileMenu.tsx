@@ -92,7 +92,7 @@ const HeaderLink = styled(Title).attrs(props => ({
     $fontSize: '1.6em',
     $letterSpacing: '0.2rem',
     $textTransform: 'uppercase',
-    ...props
+    ...props,
 }))<{ $active?: boolean }>`
     text-shadow: none;
     -webkit-text-stroke: 0px;

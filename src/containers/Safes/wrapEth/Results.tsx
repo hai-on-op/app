@@ -2,7 +2,11 @@ import styled from 'styled-components'
 
 import { formatNumber } from '~/utils'
 
-const Results = ({ amount, ethBalance }: { amount: string; ethBalance?: string }) => {
+type Props = {
+    amount: string,
+    ethBalance?: string,
+}
+const Results = ({ amount, ethBalance }: Props) => {
     return (
         <Result>
             <Block>

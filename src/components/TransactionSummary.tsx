@@ -6,17 +6,19 @@ type TransactionItem = {
     value: {
         current?: string,
         after: string,
-        label?: string
-    }
+        label?: string,
+    },
 }
 
 type TransactionSummaryProps = {
-    items: TransactionItem[]
+    items: TransactionItem[],
 }
 export function TransactionSummary({ items }: TransactionSummaryProps) {
     return (
         <Container>
-            <Text $fontWeight={700}>Transaction Summary</Text>
+            <Text $fontWeight={700}>
+                Transaction Summary
+            </Text>
             <Inner>
                 {items.map(({ label, value }, i) => (
                     <Detail key={i}>
@@ -45,7 +47,7 @@ const Container = styled(Flex).attrs(props => ({
     $justify: 'flex-start',
     $align: 'flex-start',
     $gap: 12,
-    ...props
+    ...props,
 }))`
     padding: 12px;
     border-radius: 8px;
@@ -58,14 +60,14 @@ const Inner = styled(Flex).attrs(props => ({
     $justify: 'flex-start',
     $align: 'flex-start',
     $gap: 4,
-    ...props
+    ...props,
 }))``
 
 const Detail = styled(Flex).attrs(props => ({
     $width: '100%',
     $justify: 'space-between',
     $align: 'center',
-    ...props
+    ...props,
 }))`
     & > *:nth-child(2) {
         font-weight: 700;

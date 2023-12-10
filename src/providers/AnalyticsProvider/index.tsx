@@ -1,5 +1,4 @@
 import { createContext, useContext } from 'react'
-import { type AnalyticsData } from '@hai-on-op/sdk'
 import { useQuery } from '@apollo/client'
 
 import type { ReactChildren } from '~/types'
@@ -25,8 +24,8 @@ const defaultState: AnalyticsContext = {
         result: {
             loading: false,
             error: undefined,
-            data: {}
-        }
+            data: {},
+        },
     },
     redemptionRateHistory: {
         timeframe: Timeframe.ONE_WEEK,
@@ -34,9 +33,9 @@ const defaultState: AnalyticsContext = {
         result: {
             loading: false,
             error: undefined,
-            data: {}
-        }
-    }
+            data: {},
+        },
+    },
 }
 
 const AnalyticsContext = createContext<AnalyticsContext>(defaultState)
@@ -61,7 +60,7 @@ export function AnalyticsProvider({ children }: Props) {
             data,
             graphData,
             haiPriceHistory,
-            redemptionRateHistory
+            redemptionRateHistory,
         }}>
             {children}
         </AnalyticsContext.Provider>

@@ -12,7 +12,10 @@ interface Props {
 }
 
 class ErrorBoundary extends React.Component<Props, State> {
-    state: State = { error: null, errorInfo: null }
+    state: State = {
+        error: null,
+        errorInfo: null,
+    }
 
     componentDidCatch(error: any, errorInfo: any) {
         this.setState({

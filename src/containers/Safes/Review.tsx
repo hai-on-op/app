@@ -1,9 +1,10 @@
 import { useTranslation } from 'react-i18next'
-import styled from 'styled-components'
 import { Info } from 'react-feather'
 import ReactTooltip from 'react-tooltip'
 
 import { type SafeTypes, type StatsType, useSafeInfo } from '~/hooks'
+
+import styled from 'styled-components'
 import TransactionOverview from '~/components/TransactionOverview'
 
 const ReviewTransaction = ({ type }: { type: SafeTypes }) => {
@@ -26,15 +27,19 @@ const ReviewTransaction = ({ type }: { type: SafeTypes }) => {
                                 return (
                                     <Flex key={item.label}>
                                         <Label color={isPrimary ? 'primary' : 'secondary'}>
-                                            {item.tip ? (
+                                            {!!item.tip && (
                                                 <InfoIcon data-tip={item.tip}>
                                                     <Info size="13" />
                                                 </InfoIcon>
-                                            ) : null}
+                                            )}
                                             {item.label}
                                         </Label>
                                         <Value>{item.value}</Value>
-                                        <ReactTooltip multiline type="light" data-effect="solid" />
+                                        <ReactTooltip
+                                            multiline
+                                            type="light"
+                                            data-effect="solid"
+                                        />
                                     </Flex>
                                 )
                             })}
@@ -47,7 +52,9 @@ const ReviewTransaction = ({ type }: { type: SafeTypes }) => {
 }
 
 export default ReviewTransaction
+
 const Box = styled.div``
+
 const Stats = styled.div`
     padding: 20px;
     border-radius: 10px;

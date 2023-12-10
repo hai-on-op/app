@@ -6,7 +6,7 @@ import {
     HOURLY_STATS_QUERY,
     ONE_DAY_MS,
     type HistoricalStats,
-    Timeframe
+    Timeframe,
 } from '~/utils'
 
 export type StatsQueryResult = {
@@ -38,20 +38,11 @@ export function useHistoricalStats(initialTimeframe = Timeframe.ONE_WEEK): Histo
         }
     }, [timeframe])
 
-    const result = useQuery<StatsQueryResult>(query, {
-        variables: { since }
-    })
+    const result = useQuery<StatsQueryResult>(query, { variables: { since } })
 
     return {
         timeframe,
         setTimeframe,
-        result
+        result,
     }
-}
-
-const timeframeToNumber = {
-    [Timeframe.ONE_DAY]: 12,
-    [Timeframe.ONE_WEEK]: 7,
-    [Timeframe.ONE_MONTH]: 30,
-    [Timeframe.ONE_YEAR]: 12
 }

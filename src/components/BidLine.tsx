@@ -1,9 +1,11 @@
 import dayjs from 'dayjs'
-import styled from 'styled-components'
-
-import { ExternalLinkArrow } from '~/styles'
-import { ChainId, formatNumber, getEtherscanLink, returnWalletAddress } from '~/utils'
 import { useNetwork } from 'wagmi'
+
+import { ChainId, formatNumber, getEtherscanLink, returnWalletAddress } from '~/utils'
+
+import styled from 'styled-components'
+import { ExternalLinkArrow } from '~/styles'
+
 type Props = {
     eventType: string
     bidder: string
@@ -15,7 +17,16 @@ type Props = {
     createdAtTransaction: string
 }
 
-const BidLine = ({ eventType, bidder, date, bid, buyAmount, buySymbol, sellSymbol, createdAtTransaction }: Props) => {
+const BidLine = ({
+    eventType,
+    bidder,
+    date,
+    bid,
+    buyAmount,
+    buySymbol,
+    sellSymbol,
+    createdAtTransaction,
+}: Props) => {
     const { chain } = useNetwork()
 
     const chainId = chain?.id

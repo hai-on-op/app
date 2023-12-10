@@ -9,7 +9,7 @@ type ChartTooltipProps = Omit<HTMLProps<HTMLDivElement>, 'children' | 'ref' | 'a
     label?: string | number,
     color: string,
     size?: number,
-    active?: boolean
+    active?: boolean,
 }
 export const ChartTooltip = forwardRef<HTMLDivElement, ChartTooltipProps>(({
     heading,
@@ -58,7 +58,7 @@ const GraphPopout = styled(Popout).attrs(props => ({
     $margin: '20px',
     $gap: 4,
     $shrink: 0,
-    ...props
+    ...props,
 }))`
     min-width: fit-content;
     padding: 12px 24px;

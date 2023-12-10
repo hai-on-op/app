@@ -6,12 +6,12 @@ const dummyStats: StatProps[] = [
     {
         header: '7',
         label: 'My Active Bids',
-        tooltip: 'Hello World'
+        tooltip: 'Hello World',
     },
     {
         header: '$45,600',
         label: 'My Active Bids Value',
-        tooltip: 'Hello World'
+        tooltip: 'Hello World',
     },
     {
         header: '$7,000',
@@ -23,8 +23,8 @@ const dummyStats: StatProps[] = [
         ),
         label: 'My Auction Winnings',
         tooltip: 'Hello World',
-        button: <HaiButton $variant="yellowish">Claim</HaiButton>
-    }
+        button: <HaiButton $variant="yellowish">Claim</HaiButton>,
+    },
 ]
 
 export function AuctionStats() {

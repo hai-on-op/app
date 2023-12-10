@@ -14,12 +14,15 @@ import { Overview } from './Overview'
 import { VaultActions } from './VaultActions'
 
 type ManageVaultProps = {
-    headerContent?: ReactChildren
+    headerContent?: ReactChildren,
 }
 export function ManageVault({ headerContent }: ManageVaultProps) {
     const {
         connectWalletModel: { tokensData },
-        safeModel: { safeData }
+        safeModel: {
+            safeData,
+            singleSafe,
+        },
     } = useStoreState(state => state)
     const { safeModel: safeActions } = useStoreActions(actions => actions)
 
@@ -34,39 +37,41 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
         .filter(({ isCollateral }) => isCollateral)
         .map(({ symbol }) => symbol)
     const onCollateralSelect = (collateralName: string) => {
+        updateForm('clear')
         safeActions.setSafeData({
             ...safeData,
-            collateral: collateralName
+            collateral: collateralName,
         })
-        updateForm('clear')
     }
 
     return (
         <Container>
             <Header>
                 <CenteredFlex $gap={12}>
-                    <BrandedDropdown
-                        label={(<>
-                            <TokenPair
-                                tokens={[collateral.name as any, 'HAI']}
-                                hideLabel
-                            />
-                            <CenteredFlex $gap={8}>
-                                <Text>{collateral.name} / HAI</Text>
-                                <Text>•</Text>
-                                <Text>{symbols.indexOf(collateral.name) + 1} of {symbols.length}</Text>
-                            </CenteredFlex>
-                        </>)}
-                        style={{ paddingLeft: '8px' }}>
-                        {symbols.map(symbol => (
-                            <DropdownOption
-                                key={symbol}
-                                $active={symbol === collateral.name}
-                                onClick={() => onCollateralSelect(symbol)}>
-                                {symbol}
-                            </DropdownOption>
-                        ))}
-                    </BrandedDropdown>
+                    {!singleSafe && (
+                        <BrandedDropdown
+                            label={(<>
+                                <TokenPair
+                                    tokens={[collateral.name as any, 'HAI']}
+                                    hideLabel
+                                />
+                                <CenteredFlex $gap={8}>
+                                    <Text>{collateral.name} / HAI</Text>
+                                    <Text>•</Text>
+                                    <Text>{symbols.indexOf(collateral.name) + 1} of {symbols.length}</Text>
+                                </CenteredFlex>
+                            </>)}
+                            style={{ paddingLeft: '8px' }}>
+                            {symbols.map(symbol => (
+                                <DropdownOption
+                                    key={symbol}
+                                    $active={symbol === collateral.name}
+                                    onClick={() => onCollateralSelect(symbol)}>
+                                    {symbol}
+                                </DropdownOption>
+                            ))}
+                        </BrandedDropdown>
+                    )}
                     <RewardsTokenPair tokens={['OP']}/>
                 </CenteredFlex>
                 <Text>
@@ -100,7 +105,7 @@ const Header = styled(Flex).attrs(props => ({
     $justify: 'space-between',
     $align: 'center',
     $gap: 24,
-    ...props
+    ...props,
 }))`
     position: relative;
     padding: 24px 48px;
@@ -113,7 +118,7 @@ const Body = styled(Flex).attrs(props => ({
     $justify: 'space-between',
     $align: 'flex-start',
     $gap: 48,
-    ...props
+    ...props,
 }))`
     padding: 48px;
 `

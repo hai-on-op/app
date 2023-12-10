@@ -62,7 +62,9 @@ export const formatNumber = (value: string, digits = 6, round = false) => {
     }
 
     const nOfWholeDigits = value.split('.')[0].length
-    const nOfDigits = nOfWholeDigits > digits - 1 ? '00' : Array.from(Array(digits - nOfWholeDigits), (_) => 0).join('')
+    const nOfDigits = nOfWholeDigits > digits - 1
+        ? '00'
+        : Array.from(Array(digits - nOfWholeDigits), () => 0).join('')
     let val
     if (round) {
         val = numeral(n).format(`0.${nOfDigits}`)
@@ -85,7 +87,7 @@ export const formatNumberWithStyle = (value: number | string, options: FormatOpt
     return scaledValue.toLocaleString(undefined, {
         style,
         currency: style === 'currency' ? 'USD': undefined,
-        maximumFractionDigits: maxDecimals
+        maximumFractionDigits: maxDecimals,
     })
 }
 
@@ -357,7 +359,7 @@ export const riskStateToStatus: Record<RiskState | number, Status> = {
     [RiskState.MEDIUM]: Status.OKAY,
     [RiskState.HIGH]: Status.DANGER,
     [RiskState.LIQUIDATION]: Status.DANGER,
-    [RiskState.UNKNOWN]: Status.UNKNOWN
+    [RiskState.UNKNOWN]: Status.UNKNOWN,
 }
 export const returnState = (state: number) => {
     switch (state) {
@@ -387,7 +389,7 @@ export const formatSummaryValue = (
 
     return {
         raw: value,
-        formatted: formatNumberWithStyle(value, options)
+        formatted: formatNumberWithStyle(value, options),
     }
 }
 
@@ -402,7 +404,7 @@ export const formatSummaryCurrency = (
         raw: value,
         formatted: formatNumberWithStyle(value, { maxDecimals: 4 }),
         usdRaw,
-        usdFormatted: formatNumberWithStyle(usdRaw, { style: 'currency' })
+        usdFormatted: formatNumberWithStyle(usdRaw, { style: 'currency' }),
     }
     return summary
 }
@@ -419,8 +421,8 @@ export const formatSummaryPercentage = (
             ? formatNumberWithStyle(value, {
                 scalingFactor,
                 style: 'percent',
-                maxDecimals: 4
+                maxDecimals: 4,
             })
-            : '--%'
+            : '--%',
     }
 }

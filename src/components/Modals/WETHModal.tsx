@@ -7,7 +7,7 @@ const WethModal = () => {
     const { popupsModel: popupsState } = useStoreState(state => state)
     const {
         popupsModel: popupsActions,
-        safeModel: safeActions
+        safeModel: safeActions,
     } = useStoreActions(actions => actions)
 
     const handleCancel = () => {

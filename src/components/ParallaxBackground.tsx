@@ -12,20 +12,20 @@ const els: FloatingElementsProps = {
             width: '160px',
             style: {
                 left: '10px',
-                top: '160px'
+                top: '160px',
             },
-            zIndex: -3
+            zIndex: -3,
         },
         {
             index: 1,
             width: '240px',
             style: {
                 right: '-100px',
-                top: '640px'
+                top: '640px',
             },
-            zIndex: -1
-        }
-    ]
+            zIndex: -1,
+        },
+    ],
 }
 
 export function ParallaxBackground() {

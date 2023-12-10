@@ -14,7 +14,7 @@ export function BrandedTitle({ textContent, colorOffset = 0, ...props }: Branded
                     key={i}
                     as="span"
                     $color={colors[(i + colorOffset) % colors.length]}>
-                    {str + " "}
+                    {str + ' '}
                 </Text>
             ))}
         </Title>

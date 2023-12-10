@@ -128,12 +128,10 @@ const Steps = () => {
     return (
         <StepsContainer>
             <StepsBars>
-                {step !== 0 ? (
-                    <>
-                        <StepBar className={step !== 0 ? 'active' : ''} />
-                        <StepBar className={step === 2 ? 'active' : ''} />
-                    </>
-                ) : null}
+                {step !== 0 && (<>
+                    <StepBar className={step !== 0 ? 'active' : ''} />
+                    <StepBar className={step === 2 ? 'active' : ''} />
+                </>)}
             </StepsBars>
             {returnSteps(step)}
         </StepsContainer>

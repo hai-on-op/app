@@ -19,7 +19,7 @@ type BrandedSelectProps = TextProps & {
     width?: string,
     options: BrandedSelectOption[],
     value: string,
-    onChange: (value: string) => void
+    onChange: (value: string) => void,
 }
 export function BrandedSelect({ width, options, value, onChange, ...props }: BrandedSelectProps) {
     const [container, setContainer] = useState<HTMLElement | null>(null)
@@ -31,6 +31,7 @@ export function BrandedSelect({ width, options, value, onChange, ...props }: Bra
     return (
         <Container
             ref={setContainer}
+            $width={width}
             $gap={8}
             // onPointerOver={() => setActive(true)}
             // onPointerLeave={() => setActive(false)}
@@ -163,7 +164,7 @@ const DropdownOption = styled(Flex).attrs(props => ({
     $justify: 'flex-start',
     $align: 'center',
     $gap: 12,
-    ...props
+    ...props,
 }))<{ $active?: boolean }>`
     padding: 12px;
     border-radius: 12px;

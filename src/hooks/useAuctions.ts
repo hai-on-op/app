@@ -32,7 +32,7 @@ export function useGetAuctions(type: AuctionEventType, tokenSymbol?: string) {
                     : Object.entries(auctionModel.collateralAuctions)
                         .reduce((arr, [tokenSymbol, innerArr]) => ([
                             ...innerArr.map(auction => convertCollateralAuction(auction, tokenSymbol)),
-                            ...arr
+                            ...arr,
                         ]), [] as IAuction[])
             default:
                 return []
@@ -52,7 +52,7 @@ export function convertCollateralAuction(
         biddersList: auction.biddersList.map(bid => ({
             ...bid,
             buyAmount: formatEther(bid.buyAmount || '0'),
-            sellAmount: formatEther(bid.bid || '0')
+            sellAmount: formatEther(bid.bid || '0'),
         })),
         buyAmount: formatEther(auction.amountToRaise || '0'),
         buyInitialAmount: formatEther(auction.amountToRaise || '0'),
@@ -62,14 +62,14 @@ export function convertCollateralAuction(
             bidDuration: '',
             bidIncrease: '',
             totalAuctionLength: '',
-            DEBT_amountSoldIncrease: ''
+            DEBT_amountSoldIncrease: '',
         },
         englishAuctionType: 'COLLATERAL',
         sellAmount: formatEther(auction.amountToSell || '0'),
         sellInitialAmount: formatEther(auction.amountToSell || '0'),
         sellToken: tokenSymbol,
         startedBy: auction.auctioneer,
-        winner: ''
+        winner: '',
     }
 }
 
@@ -84,7 +84,7 @@ export function useCollateralAuctions(tokenSymbol: string): ICollateralAuction[]
                 return []
             }
 
-            const filteredAuctions = auctionsList.map((auc: SDKCollateralAuction, index) => {
+            const filteredAuctions = auctionsList.map((auc: SDKCollateralAuction) => {
                 const { createdAt, createdAtTransaction, amountToSell, amountToRaise, biddersList } = auc
 
                 const startedBy = _.get(auc, 'startedBy', '')
@@ -98,7 +98,7 @@ export function useCollateralAuctions(tokenSymbol: string): ICollateralAuction[]
                     BigNumber.from(amountToRaise),
                     floatsTypes.WAD - floatsTypes.RAD
                 )
-                let remainingToRaiseE18Raw = amountToRaiseE18.sub(raised).toString()
+                const remainingToRaiseE18Raw = amountToRaiseE18.sub(raised).toString()
 
                 const remainingToRaiseE18 = remainingToRaiseE18Raw > '0' ? remainingToRaiseE18Raw : '0'
 

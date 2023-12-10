@@ -7,7 +7,7 @@ export type PieChartDatum = {
     id: string,
     label?: string,
     value: number,
-    color: string
+    color: string,
 }
 type PieChartProps = Omit<PieSvgProps<PieChartDatum>, 'width' | 'height'>
 export function PieChart({ data, valueFormat, ...props }: PieChartProps) {
@@ -21,7 +21,7 @@ export function PieChart({ data, valueFormat, ...props }: PieChartProps) {
                 top: 12,
                 left: 24,
                 right: 24,
-                bottom: 12
+                bottom: 12,
             }}
             innerRadius={0.5}
             arcLabelsComponent={labelProps => (

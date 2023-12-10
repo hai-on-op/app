@@ -66,13 +66,15 @@ export const vaultInfoErrors: Record<number, string> = {
     [VaultInfoError.ZERO_AMOUNT]: `Please enter a non-zero amount of collateral and/or $HAI`,
     [VaultInfoError.GLOBAL_DEBT_CEILING]: `Cannot exceed global debt ceiling`,
     [VaultInfoError.HAI_DEBT_CEILING]: `Cannot exceed HAI debt ceiling`,
-    [VaultInfoError.MINIMUM_MINT]: `You must mint at least 1 $HAI to create a Vault`
+    [VaultInfoError.MINIMUM_MINT]: `You must mint at least 1 $HAI to create a Vault`,
 }
 
+/* eslint-disable-next-line */
 export type SummaryItemValue<T = {}> = T & {
     raw: string,
     formatted: string
 }
+/* eslint-disable-next-line */
 export type SummaryItem<T = {}> = {
     current?: SummaryItemValue<T>,
     after: SummaryItemValue<T>

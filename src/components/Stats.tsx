@@ -11,13 +11,13 @@ export type StatProps = {
     headerStatus?: ReactChildren,
     label: string,
     tooltip?: string,
-    button?: ReactChildren
+    button?: ReactChildren,
 }
 
 type StatsProps = {
     stats?: StatProps[],
     columns?: string,
-    children?: ReactNode[]
+    children?: ReactNode[],
 }
 export function Stats({ stats, columns, children }: StatsProps) {
     return (
@@ -70,7 +70,7 @@ const StatContainer = styled(Flex).attrs(props => ({
     $align: 'center',
     $gap: 12,
     $flexWrap: true,
-    ...props
+    ...props,
 }))<{ $unbordered?: boolean }>`
     padding: 20px 24px;
 
@@ -98,12 +98,12 @@ const StatText = styled(Flex).attrs(props => ({
     $justify: 'center',
     $align: 'flex-start',
     $gap: 12,
-    ...props
+    ...props,
 }))`
     font-size: 0.7rem;
 `
 const StatHeaderText = styled(Text).attrs(props => ({
     $fontSize: '2.2em',
     $fontWeight: 700,
-    ...props
+    ...props,
 }))``

@@ -20,7 +20,7 @@ export function WrapETHModal(props: ModalProps) {
     const {
         connectWalletModel: connectWalletActions,
         popupsModel: popupsActions,
-        safeModel: safeActions
+        safeModel: safeActions,
     } = useStoreActions(actions => actions)
 
     const [wrapValue, setWrapValue] = useState('')
@@ -110,5 +110,5 @@ const Footer = styled(Flex).attrs(props => ({
     $width: '100%',
     $justify: 'space-between',
     $align: 'center',
-    ...props
+    ...props,
 }))``

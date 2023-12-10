@@ -7,13 +7,13 @@ const clouds = [
     {
         src: cloud1,
         width: 446,
-        height: 550
+        height: 550,
     },
     {
         src: cloud2,
         width: 571,
-        height: 528
-    }
+        height: 528,
+    },
 ]
 
 type CloudProps = {

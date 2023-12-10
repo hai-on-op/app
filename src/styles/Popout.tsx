@@ -3,6 +3,8 @@ import { Flex, FlexProps } from './Flex'
 
 import popoutSVG from '~/assets/popout.svg'
 
+/* eslint-disable indent */
+
 const anim = (deltaY: number | string, transform = '') => keyframes`
     0% {
         opacity: 0;
@@ -27,7 +29,7 @@ export const Popout = styled(Flex).attrs((props => ({
     $column: true,
     $justify: 'center',
     $align: 'center',
-    ...props
+    ...props,
 })))<PopoutProps>`
     position: absolute;
     ${({ $float = 'center' }) => ($float === 'center'

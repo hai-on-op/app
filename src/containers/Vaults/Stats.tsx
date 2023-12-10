@@ -11,8 +11,8 @@ export function BorrowStats() {
     const {
         safeModel: {
             list,
-            liquidationData
-        }
+            liquidationData,
+        },
     } = useStoreState(state => state)
 
     const stats: StatProps[] = useMemo(() => {
@@ -32,26 +32,26 @@ export function BorrowStats() {
                 header: totalCollateralInUSD
                     ? formatNumberWithStyle(totalCollateralInUSD.toString(), {
                         style: 'currency',
-                        maxDecimals: 0
+                        maxDecimals: 0,
                     })
                     : '--',
                 label: 'My Locked Collateral',
-                tooltip: 'Hello world'
+                tooltip: 'Hello world',
             },
             {
                 header: totalDebtInUSD
                     ? formatNumberWithStyle(totalDebtInUSD.toString(), {
                         style: 'currency',
-                        maxDecimals: 0
+                        maxDecimals: 0,
                     })
                     : '--',
                 label: 'My Total Debt',
-                tooltip: 'Hello World'
+                tooltip: 'Hello World',
             },
             {
                 header: '7.8%',
                 label: 'My Net APY',
-                tooltip: 'Hello World'
+                tooltip: 'Hello World',
             },
             {
                 header: '$7,000',
@@ -67,8 +67,8 @@ export function BorrowStats() {
                     <HaiButton $variant="yellowish">
                         Claim
                     </HaiButton>
-                )
-            }
+                ),
+            },
         ]
     }, [list, liquidationData])
 

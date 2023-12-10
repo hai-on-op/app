@@ -41,7 +41,7 @@ const transactionsModel: TransactionsModel = {
             JSON.stringify(state.transactions)
         )
     }),
-    clearTransactions: action((state, payload) => {
+    clearTransactions: action((state) => {
         state.transactions = {}
     }),
     setTransactions: action((state, payload) => {

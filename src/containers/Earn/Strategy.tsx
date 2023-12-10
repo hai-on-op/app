@@ -13,7 +13,7 @@ export type EarnStrategyProps = {
     cta?: string,
     ctaLink: string,
     tokenImages: (keyof typeof TOKEN_LOGOS)[],
-    bgVariant?: number
+    bgVariant?: number,
 }
 export function EarnStrategy({
     heading,
@@ -22,7 +22,7 @@ export function EarnStrategy({
     cta = 'Get HAI to Earn',
     ctaLink,
     tokenImages,
-    bgVariant = 0
+    bgVariant = 0,
 }: EarnStrategyProps) {
     const { clouds = [], coins = [] } = backgroundElementTransforms[
         bgVariant % backgroundElementTransforms.length
@@ -35,7 +35,7 @@ export function EarnStrategy({
                     clouds={clouds}
                     coins={coins.map((coin, i) => ({
                         ...coin,
-                        index: tokenImages[i % tokenImages.length]
+                        index: tokenImages[i % tokenImages.length],
                     }))}
                 />
             </FloatingContainer>
@@ -72,7 +72,7 @@ const Container = styled(Flex).attrs(props => ({
     $justify: 'space-between',
     $align: 'center',
     $gap: 24,
-    ...props
+    ...props,
 }))`
     ${DashedContainerStyle}
     padding: 36px;
@@ -88,7 +88,7 @@ const Header = styled(Flex).attrs(props => ({
     $justify: 'flex-start',
     $align: 'center',
     $gap: 12,
-    ...props
+    ...props,
 }))`
     font-size: 1.6rem;
     letter-spacing: 0.4rem;
@@ -103,19 +103,19 @@ const backgroundElementTransforms: Pick<FloatingElementsProps, 'clouds' | 'coins
                 width: '160px',
                 style: {
                     right: '80px',
-                    bottom: '-60px'
+                    bottom: '-60px',
                 },
-                zIndex: -1
+                zIndex: -1,
             },
             {
                 index: 0,
                 width: '80px',
                 style: {
                     right: '320px',
-                    top: '-30px'
+                    top: '-30px',
                 },
-                zIndex: -2
-            }
+                zIndex: -2,
+            },
         ],
         coins: [
             {
@@ -123,57 +123,57 @@ const backgroundElementTransforms: Pick<FloatingElementsProps, 'clouds' | 'coins
                 width: '120px',
                 style: {
                     right: '260px',
-                    bottom: '-30px'
+                    bottom: '-30px',
                 },
                 rotation: -30,
                 thickness: 10,
-                zIndex: 0
+                zIndex: 0,
             },
             {
                 index: 0,
                 width: '80px',
                 style: {
                     right: '-20px',
-                    bottom: 'calc(50% - 40px)'
+                    bottom: 'calc(50% - 40px)',
                 },
                 rotation: 45,
                 thickness: 8,
-                zIndex: -1
+                zIndex: -1,
             },
             {
                 index: 0,
                 width: '40px',
                 style: {
                     right: '240px',
-                    top: '-10px'
+                    top: '-10px',
                 },
                 rotation: 225,
                 thickness: 4,
-                zIndex: -2
+                zIndex: -2,
             },
             {
                 index: 0,
                 width: '20px',
                 style: {
                     right: '120px',
-                    top: '20px'
+                    top: '20px',
                 },
                 rotation: -15,
                 thickness: 2,
-                zIndex: -4
+                zIndex: -4,
             },
             {
                 index: 0,
                 width: '20px',
                 style: {
                     right: '440px',
-                    top: '40px'
+                    top: '40px',
                 },
                 rotation: -65,
                 thickness: 2,
-                zIndex: -4
-            }
-        ]
+                zIndex: -4,
+            },
+        ],
     },
     // second
     {
@@ -183,30 +183,30 @@ const backgroundElementTransforms: Pick<FloatingElementsProps, 'clouds' | 'coins
                 width: '160px',
                 style: {
                     right: '180px',
-                    bottom: '-50px'
+                    bottom: '-50px',
                 },
                 flip: true,
-                zIndex: -1
+                zIndex: -1,
             },
             {
                 index: 0,
                 width: '80px',
                 style: {
                     right: '60px',
-                    top: '-30px'
+                    top: '-30px',
                 },
                 flip: true,
-                zIndex: -2
+                zIndex: -2,
             },
             {
                 index: 1,
                 width: '50px',
                 style: {
                     right: '420px',
-                    top: '0px'
+                    top: '0px',
                 },
-                zIndex: -4
-            }
+                zIndex: -4,
+            },
         ],
         coins: [
             {
@@ -214,56 +214,56 @@ const backgroundElementTransforms: Pick<FloatingElementsProps, 'clouds' | 'coins
                 width: '120px',
                 style: {
                     right: '300px',
-                    bottom: '-30px'
+                    bottom: '-30px',
                 },
                 rotation: 20,
                 thickness: 10,
-                zIndex: 0
+                zIndex: 0,
             },
             {
                 index: 0,
                 width: '60px',
                 style: {
                     right: '40px',
-                    bottom: '10px'
+                    bottom: '10px',
                 },
                 rotation: -15,
                 thickness: 5,
-                zIndex: -1
+                zIndex: -1,
             },
             {
                 index: 0,
                 width: '60px',
                 style: {
                     right: '210px',
-                    top: '-10px'
+                    top: '-10px',
                 },
                 rotation: -75,
                 thickness: 7,
-                zIndex: -2
+                zIndex: -2,
             },
             {
                 index: 0,
                 width: '20px',
                 style: {
                     right: '150px',
-                    bottom: '20px'
+                    bottom: '20px',
                 },
                 rotation: 65,
                 thickness: 2,
-                zIndex: -4
+                zIndex: -4,
             },
             {
                 index: 0,
                 width: '20px',
                 style: {
                     right: '480px',
-                    top: '60px'
+                    top: '60px',
                 },
                 rotation: -160,
                 thickness: 2,
-                zIndex: -4
-            }
-        ]
-    }
+                zIndex: -4,
+            },
+        ],
+    },
 ]

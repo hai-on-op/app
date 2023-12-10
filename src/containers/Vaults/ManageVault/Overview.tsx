@@ -20,12 +20,12 @@ export function Overview() {
         safetyRatio,
         collateralRatio,
         simulation,
-        summary
+        summary,
     } = useVault()
 
     const progressProps = useMemo(() => {
         if (!collateralRatio || !safetyRatio) return {
-            progress: 0
+            progress: 0,
         }
 
         const MAX_FACTOR = 2.5
@@ -35,13 +35,13 @@ export function Overview() {
         const labels = [
             { progress: 1 / MAX_FACTOR, label: `${Math.floor(min)}%` },
             { progress: 1.5 / MAX_FACTOR, label: `${Math.floor(1.5 * min)}%` },
-            { progress: 2.2 / MAX_FACTOR, label: `${Math.floor(2.2 * min)}%` }
+            { progress: 2.2 / MAX_FACTOR, label: `${Math.floor(2.2 * min)}%` },
         ]
         
         return {
             progress: Math.min(parseFloat(collateralRatio), max) / max,
             labels,
-            colorLimits: [100 / max, 2 / MAX_FACTOR] as [number, number]
+            colorLimits: [100 / max, 2 / MAX_FACTOR] as [number, number],
         }
     }, [collateralRatio, safetyRatio])
 
@@ -80,7 +80,7 @@ export function Overview() {
                     }
                     alert={{
                         value: '7.2% APY',
-                        status: Status.POSITIVE
+                        status: Status.POSITIVE,
                     }}
                     fullWidth
                     borderedBottom
@@ -98,7 +98,7 @@ export function Overview() {
                     }
                     alert={{
                         value: '-7.2% APY',
-                        status: Status.NEGATIVE
+                        status: Status.NEGATIVE,
                     }}
                     fullWidth
                     borderedBottom
@@ -154,7 +154,7 @@ const Container = styled(Flex).attrs(props => ({
     $column: true,
     $justify: 'flex-start',
     $align: 'flex-start',
-    ...props
+    ...props,
 }))`
     max-width: 560px;
 `
@@ -163,7 +163,7 @@ const Header = styled(Flex).attrs(props => ({
     $justify: 'flex-start',
     $align: 'center',
     $gap: 12,
-    ...props
+    ...props,
 }))`
     height: 60px;
     padding: 24px 0px;
@@ -173,7 +173,7 @@ const Inner = styled(Grid).attrs(props => ({
     $width: '100%',
     $columns: '1fr 1fr',
     $align: 'center',
-    ...props
+    ...props,
 }))<DashedContainerProps>`
     ${DashedContainerStyle}
     & > * {

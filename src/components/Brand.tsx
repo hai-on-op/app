@@ -1,15 +1,17 @@
 import styled from 'styled-components'
+
 import Logo from '~/assets/hai-logo.png'
 
-interface Props {
-    height?: number
-}
-
-const Brand = ({ height }: Props) => {
+const Brand = () => {
     return (
         <Container>
             <a href={'/'}>
-                <img src={Logo} alt="HAI" height={'25px'} width={'25px'} />
+                <img
+                    src={Logo}
+                    alt="HAI"
+                    height="25px"
+                    width="25px"
+                />
             </a>
         </Container>
     )

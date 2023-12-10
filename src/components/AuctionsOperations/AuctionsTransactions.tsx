@@ -1,15 +1,16 @@
 import { useTranslation } from 'react-i18next'
-import styled from 'styled-components'
 import { useAccount } from 'wagmi'
 
-import { handleTransactionError, useGeb, useEthersSigner } from '~/hooks'
-import TransactionOverview from '~/components/TransactionOverview'
+import type { AuctionEventType } from '~/types'
 import { COIN_TICKER } from '~/utils'
+import _ from '~/utils/lodash'
 import { useStoreActions, useStoreState } from '~/store'
-import { AuctionEventType } from '~/types'
+import { handleTransactionError, useGeb, useEthersSigner } from '~/hooks'
+
+import styled from 'styled-components'
+import TransactionOverview from '~/components/TransactionOverview'
 import Button from '~/components/Button'
 import Results from './Results'
-import _ from '~/utils/lodash'
 
 const AuctionsTransactions = () => {
     const { t } = useTranslation()
@@ -132,7 +133,6 @@ const AuctionsTransactions = () => {
         } catch (e) {
             reset()
             handleTransactionError(e)
-        } finally {
         }
     }
 

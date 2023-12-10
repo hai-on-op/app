@@ -61,13 +61,13 @@ const BalanceContainer = styled(Text).attrs(props => ({
     $textAlign: 'center',
     $fontWeight: 700,
     $fontSize: '0.8rem',
-    ...props
+    ...props,
 }))`
     padding: 0 24px;
 `
 const Button = styled(HaiButton).attrs(props => ({
     $variant: 'yellowish',
-    ...props
+    ...props,
 }))`
     height: calc(100% + 4px);
     margin: -2px;

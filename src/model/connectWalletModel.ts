@@ -61,7 +61,7 @@ const connectWalletModel: ConnectWalletModel = {
     ctHash: ctHashState || '',
     isStepLoading: false,
     isWrongNetwork: false,
-    fetchFiatPrice: thunk(async (actions, payload) => {
+    fetchFiatPrice: thunk(async (actions) => {
         const res = await api.fetchFiatPrice()
         if (res && res.usd) {
             actions.setFiatPrice(res.usd)

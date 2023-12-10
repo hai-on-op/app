@@ -15,12 +15,12 @@ import { ExternalLink } from './ExternalLink'
 enum PromptStep {
     CONNECT_WALLET,
     CREATE_PROXY,
-    CREATE_SAFE
+    CREATE_SAFE,
 }
 
 type ProxyPromptProps = {
     children: ReactChildren,
-    onCreateVault?: () => void
+    onCreateVault?: () => void,
 }
 export function ProxyPrompt({ children, onCreateVault }: ProxyPromptProps) {
     const { t } = useTranslation()
@@ -34,7 +34,7 @@ export function ProxyPrompt({ children, onCreateVault }: ProxyPromptProps) {
     const { connectWalletModel: connectWalletState } = useStoreState(state => state)
     const {
         connectWalletModel: connectWalletActions,
-        popupsModel: popupsActions
+        popupsModel: popupsActions,
     } = useStoreActions(actions => actions)
 
     const addTransaction = useTransactionAdder()
@@ -57,7 +57,7 @@ export function ProxyPrompt({ children, onCreateVault }: ProxyPromptProps) {
             addTransaction(
                 {
                     ...txResponse,
-                    blockNumber: connectWalletState.blockNumber[chainId]
+                    blockNumber: connectWalletState.blockNumber[chainId],
                 },
                 'Creating an account'
             )
@@ -136,7 +136,7 @@ const Container = styled(CenteredFlex).attrs(props => ({
     $width: '100%',
     $column: true,
     $gap: 12,
-    ...props
+    ...props,
 }))`
     padding: 12px;
 

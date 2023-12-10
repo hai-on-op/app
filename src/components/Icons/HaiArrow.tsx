@@ -8,7 +8,7 @@ const transforms = {
     upRight: `rotate(-135 10 10)`,
     upLeft: `rotate(135 10 10)`,
     downRight: `rotate(-45 10 10)`,
-    downLeft: `rotate(45 10 10)`
+    downLeft: `rotate(45 10 10)`,
 }
 
 export function HaiArrow({ size = 20, direction = 'down', ...props }: DirectionalIconProps) {

@@ -14,7 +14,7 @@ import velodromeLogo from '~/assets/velodrome-img.svg'
 
 const logoMap = {
     uniswap: uniswapLogo,
-    velodrome: velodromeLogo
+    velodrome: velodromeLogo,
 }
 
 type TokenKey = keyof typeof TOKEN_LOGOS
@@ -26,7 +26,7 @@ export type DummyStrategy = {
     apy: number,
     userPosition?: string,
     userApy?: number,
-    earnPlatform: 'uniswap' | 'velodrome'
+    earnPlatform: 'uniswap' | 'velodrome',
 }
 
 const sortableHeaders: SortableHeader[] = [
@@ -35,7 +35,7 @@ const sortableHeaders: SortableHeader[] = [
     { label: 'Vol. 24hr' },
     { label: 'APY' },
     { label: 'My Position' },
-    { label: 'My APY' }
+    { label: 'My APY' },
 ]
 
 type StrategyTableProps = {
@@ -44,7 +44,7 @@ type StrategyTableProps = {
 export function StrategyTable({ rows }: StrategyTableProps) {
     const [sorting, setSorting] = useState<{ key: string, dir: 'asc' | 'desc'}>({
         key: 'My Position',
-        dir: 'desc'
+        dir: 'desc',
     })
 
     const sortedRows = useMemo(() => {
@@ -112,11 +112,11 @@ export function StrategyTable({ rows }: StrategyTableProps) {
                             : () => setSorting(s => {
                                 if (s.key === label) return {
                                     ...s,
-                                    dir: s.dir === 'asc' ? 'desc': 'asc'
+                                    dir: s.dir === 'asc' ? 'desc': 'asc',
                                 }
                                 return {
                                     key: label,
-                                    dir: 'desc'
+                                    dir: 'desc',
                                 }
                             })
                         }
@@ -175,7 +175,7 @@ const Table = styled(Flex).attrs(props => ({
     $justify: 'flex-start',
     $align: 'stretch',
     $gap: 12,
-    ...props
+    ...props,
 }))``
 const TableHeader = styled(Grid)`
     grid-template-columns: 3fr minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) 224px;

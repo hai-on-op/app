@@ -62,7 +62,7 @@ export const darkTheme: Theme = {
             border-image-source: url('${dashedBorderImage}');
             border-image-slice: 2;
             border-image-repeat: round;
-        `
+        `,
     },
     global: {
         gridMaxWidth: '1454px',
@@ -131,7 +131,7 @@ export const lightTheme: Theme = {
             border-image-source: url('${dashedBorderImage}');
             border-image-slice: 2;
             border-image-repeat: round;
-        `
+        `,
     },
     global: {
         gridMaxWidth: '1500px',

@@ -27,33 +27,37 @@ const NotificationPopup = () => {
 
     return (
         <InnerContent ref={wrapperRef}>
-            <BellBtn className={isOpen ? 'active' : ''} onClick={() => setIsOpen(!isOpen)}>
+            <BellBtn
+                className={isOpen ? 'active' : ''}
+                onClick={() => setIsOpen(!isOpen)}>
                 <Bell />
             </BellBtn>
-            {isOpen ? (
-                <>
-                    <CaretImg src={caretUp} />
+            {isOpen && (<>
+                <CaretImg src={caretUp} />
 
-                    <Menu>
-                        <Scrollbars autoHide style={{ width: '100%' }} autoHeight autoHeightMax={'calc(100vh - 100px)'}>
-                            {[...new Array(4)].map((_) => (
-                                <NotificationItem key={Math.random()}>
-                                    <Left>
-                                        <Label>Recieved ETH</Label>
-                                        <Date>June 12, 2012</Date>
-                                    </Left>
-                                    <Right>
-                                        <Value>0.000</Value>
-                                        <ExternalLink href="">
-                                            Etherscan <img src={arrowUp} alt="" />
-                                        </ExternalLink>
-                                    </Right>
-                                </NotificationItem>
-                            ))}
-                        </Scrollbars>
-                    </Menu>
-                </>
-            ) : null}
+                <Menu>
+                    <Scrollbars
+                        autoHide
+                        style={{ width: '100%' }}
+                        autoHeight
+                        autoHeightMax="calc(100vh - 100px)">
+                        {[...new Array(4)].map(() => (
+                            <NotificationItem key={Math.random()}>
+                                <Left>
+                                    <Label>Recieved ETH</Label>
+                                    <Date>June 12, 2012</Date>
+                                </Left>
+                                <Right>
+                                    <Value>0.000</Value>
+                                    <ExternalLink href="">
+                                        Etherscan <img src={arrowUp} alt="" />
+                                    </ExternalLink>
+                                </Right>
+                            </NotificationItem>
+                        ))}
+                    </Scrollbars>
+                </Menu>
+            </>)}
         </InnerContent>
     )
 }
@@ -66,17 +70,17 @@ const InnerContent = styled.div`
 `
 
 const Menu = styled.div`
-    background: ${(props) => props.theme.colors.background};
-    border-radius: ${(props) => props.theme.global.borderRadius};
-    border: 1px solid ${(props) => props.theme.colors.border};
+    background: ${({ theme }) => theme.colors.background};
+    border-radius: ${({ theme }) => theme.global.borderRadius};
+    border: 1px solid ${({ theme }) => theme.colors.border};
     position: absolute;
     top: 65px;
     left: -30px;
     width: 340px;
     ${({ theme }) => theme.mediaWidth.upToExtraSmall`
-    width:290px;
-    left:-143px;
-  `}
+        width: 290px;
+        left: -143px;
+    `}
 `
 
 const CaretImg = styled.img`
@@ -108,11 +112,11 @@ const BellBtn = styled.div`
     }
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
-    svg {
-      width:24px;
-      height:24px;
-    }
-  `}
+        svg {
+            width: 24px;
+            height: 24px;
+        }
+    `}
 `
 
 const NotificationItem = styled.div`

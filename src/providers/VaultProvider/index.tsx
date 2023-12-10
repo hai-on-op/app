@@ -7,7 +7,7 @@ import {
     useEffect,
     useMemo,
     useReducer,
-    useRef
+    useRef,
 } from 'react'
 
 import type { ReactChildren } from '~/types'
@@ -25,7 +25,7 @@ import {
     safeIsSafe,
     ratioChecker,
     riskStateToStatus,
-    vaultInfoErrors
+    vaultInfoErrors,
 } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 
@@ -76,20 +76,20 @@ const defaultState: VaultContext = {
         name: 'WETH',
         total: '',
         available: '',
-        balance: ''
+        balance: '',
     },
     debt: {
         total: '',
         available: '',
         balance: '',
-        priceInUSD: '1'
+        priceInUSD: '1',
     },
     collateralRatio: '',
     liquidationPrice: '',
     riskStatus: Status.UNKNOWN,
     isSafe: true,
     liquidationPenaltyPercentage: 0,
-    summary: DEFAULT_SUMMARY
+    summary: DEFAULT_SUMMARY,
 }
 
 const VaultContext = createContext<VaultContext>(defaultState)
@@ -102,7 +102,11 @@ type Props = {
     children: ReactChildren
 }
 export function VaultProvider({ action, setAction, children }: Props) {
-    const { liquidationData, safeData, singleSafe } = useStoreState(({ safeModel }) => safeModel)
+    const {
+        liquidationData,
+        safeData,
+        singleSafe,
+    } = useStoreState(({ safeModel }) => safeModel)
     const { safeModel: safeActions } = useStoreActions(actions => actions)
 
     const dataRef = useRef(safeData)
@@ -111,11 +115,11 @@ export function VaultProvider({ action, setAction, children }: Props) {
     const setActiveVault: VaultContext['setActiveVault'] = useCallback(({
         create,
         collateralName,
-        vault
+        vault,
     }: SetActiveVaultProps) => {
         safeActions.setSafeData({
             ...DEFAULT_SAFE_STATE,
-            collateral: collateralName || vault?.collateralName || 'WETH'
+            collateral: collateralName || vault?.collateralName || 'WETH',
         })
         safeActions.setSingleSafe(create ? undefined: vault)
         setAction(create ? VaultAction.CREATE: VaultAction.DEPOSIT_BORROW)
@@ -129,7 +133,7 @@ export function VaultProvider({ action, setAction, children }: Props) {
 
         return {
             ...previous,
-            ...update
+            ...update,
         }
     }, {})
 
@@ -138,27 +142,27 @@ export function VaultProvider({ action, setAction, children }: Props) {
             safeActions.setSafeData({
                 ...dataRef.current,
                 leftInput: formState.deposit?.toString() || '',
-                rightInput: formState.borrow?.toString() || ''
+                rightInput: formState.borrow?.toString() || '',
             })
         }
         else if (action === VaultAction.WITHDRAW_REPAY) {
             safeActions.setSafeData({
                 ...dataRef.current,
                 leftInput: formState.withdraw?.toString() || '',
-                rightInput: formState.repay?.toString() || ''
+                rightInput: formState.repay?.toString() || '',
             })
         }
         else safeActions.setSafeData({
             ...dataRef.current,
             leftInput: '',
-            rightInput: ''
+            rightInput: '',
         })
 
         return () => {
             safeActions.setSafeData({
                 ...dataRef.current,
                 leftInput: '',
-                rightInput: ''
+                rightInput: '',
             })
         }
     }, [action, formState, safeActions])
@@ -206,7 +210,7 @@ export function VaultProvider({ action, setAction, children }: Props) {
             safetyRatio: safetyCRatio
                 ? 100 * parseFloat(safetyCRatio.toString())
                 : undefined,
-            riskStatus: status
+            riskStatus: status,
         }
     }, [collateral.liquidationData, singleSafe, collateralRatio])
 
@@ -228,7 +232,7 @@ export function VaultProvider({ action, setAction, children }: Props) {
         action,
         formState,
         collateral,
-        debt
+        debt,
     })
 
     const summary = useSummary({
@@ -236,7 +240,7 @@ export function VaultProvider({ action, setAction, children }: Props) {
         collateral,
         debt,
         simulatedCR: simulation?.collateralRatio,
-        liquidationPrice
+        liquidationPrice,
     })
 
     const { error, errorMessage } = useVaultError({
@@ -244,7 +248,7 @@ export function VaultProvider({ action, setAction, children }: Props) {
         collateral,
         debt,
         collateralRatio,
-        isSafe
+        isSafe,
     })
 
     return (
@@ -268,7 +272,7 @@ export function VaultProvider({ action, setAction, children }: Props) {
             error,
             errorMessage: error
                 ? errorMessage || vaultInfoErrors[error] || undefined
-                : undefined
+                : undefined,
         }}>
             {children}
         </VaultContext.Provider>

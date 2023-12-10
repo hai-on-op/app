@@ -1,20 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { TokenData } from '@hai-on-op/sdk'
-import { ArrowLeft, Info, Loader } from 'react-feather'
-import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router'
+import { useTranslation } from 'react-i18next'
+import { ArrowLeft, Info, Loader } from 'react-feather'
 import ReactTooltip from 'react-tooltip'
-import styled from 'styled-components'
+import { TokenData } from '@hai-on-op/sdk'
 import { ethers, utils } from 'ethers'
 import { useAccount, useNetwork } from 'wagmi'
 
 import { DEFAULT_NETWORK_ID, DEFAULT_SAFE_STATE, TOKEN_LOGOS, formatNumber } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
-import TokenInput from '~/components/TokenInput'
-import Modal from '~/components/Modals/Modal'
-import Dropdown from '~/components/Dropdown'
-import Button from '~/components/Button'
-import Review from './Review'
 import {
     handleTransactionError,
     useTokenBalanceInUSD,
@@ -26,17 +20,29 @@ import {
     useEthersSigner,
 } from '~/hooks'
 
-const CreateSafe = ({
-    selectedItem,
-    setSelectedItem,
-    collaterals,
-}: {
+import styled from 'styled-components'
+import TokenInput from '~/components/TokenInput'
+import Modal from '~/components/Modals/Modal'
+import Dropdown from '~/components/Dropdown'
+import Button from '~/components/Button'
+import Review from './Review'
+
+type Props = {
     selectedItem: string
     setSelectedItem: (item: string) => void
     collaterals: TokenData[]
-}) => {
-    const { stats, error, availableHai, parsedAmounts, totalCollateral, totalDebt, collateralRatio, liquidationPrice } =
-        useSafeInfo('create')
+}
+const CreateSafe = ({ selectedItem, setSelectedItem, collaterals }: Props) => {
+    const {
+        stats,
+        error,
+        availableHai,
+        parsedAmounts,
+        totalCollateral,
+        totalDebt,
+        collateralRatio,
+        liquidationPrice,
+    } = useSafeInfo('create')
 
     const { address: account } = useAccount()
     const signer = useEthersSigner()
@@ -44,24 +50,31 @@ const CreateSafe = ({
     const { chain } = useNetwork()
     const chainId = chain?.id || DEFAULT_NETWORK_ID
 
+    const history = useHistory()
+
     const {
         safeModel: safeState,
-        connectWalletModel: { proxyAddress, tokensData, tokensFetchedData },
-    } = useStoreState((state) => state)
-    const history = useHistory()
+        connectWalletModel: {
+            proxyAddress,
+            tokensData,
+            tokensFetchedData,
+        },
+    } = useStoreState(state => state)
     const {
         safeModel: safeActions,
         connectWalletModel: connectWalletActions,
         popupsModel: popupsActions,
-    } = useStoreActions((state) => state)
+    } = useStoreActions(actions => actions)
+    
     const { leftInput, rightInput } = parsedAmounts
     const { onLeftInput, onRightInput, onClearAll: clearAll } = useInputsHandlers()
     const { t } = useTranslation()
     const isValid = !error
 
-    const collateralsDropdown = collaterals.map((collateral) => {
-        return { name: collateral.symbol, icon: TOKEN_LOGOS[collateral.symbol] }
-    })
+    const collateralsDropdown = collaterals.map((collateral) => ({
+        name: collateral.symbol,
+        icon: (TOKEN_LOGOS as any)[collateral.symbol],
+    }))
 
     const dropdownSelected = collateralsDropdown.find((item) => item.name === selectedItem)!
 
@@ -106,8 +119,8 @@ const CreateSafe = ({
 
     const handleSubmit = () => {
         safeActions.setSafeData({
-            leftInput: parsedAmounts.leftInput ? parsedAmounts.leftInput : '0',
-            rightInput: parsedAmounts.rightInput ? parsedAmounts.rightInput : '0',
+            leftInput: parsedAmounts.leftInput || '0',
+            rightInput: parsedAmounts.rightInput || '0',
             totalCollateral,
             totalDebt,
             collateralRatio: collateralRatio as number,
@@ -137,38 +150,37 @@ const CreateSafe = ({
     }
 
     const handleConfirm = async () => {
-        if (account && signer) {
+        if (!account || !signer) return
+        safeActions.setIsSuccessfulTx(false)
+        setShowPreview(false)
+        popupsActions.setIsWaitingModalOpen(true)
+        popupsActions.setWaitingPayload({
+            title: 'Waiting For Confirmation',
+            text: handleWaitingTitle(),
+            hint: 'Confirm this transaction in your wallet',
+            status: 'loading',
+        })
+        safeActions.setSafeData({
+            ...safeState.safeData,
+            leftInput: parsedAmounts.leftInput || '0',
+            rightInput: parsedAmounts.rightInput || '0',
+            totalCollateral,
+            totalDebt,
+        })
+        try {
+            connectWalletActions.setIsStepLoading(true)
+            await safeActions.depositAndBorrow({
+                safeData: safeState.safeData,
+                signer,
+            })
+            history.push('/safes')
+            safeActions.setIsSuccessfulTx(true)
+            popupsActions.setIsWaitingModalOpen(false)
+        } catch (e) {
             safeActions.setIsSuccessfulTx(false)
-            setShowPreview(false)
-            popupsActions.setIsWaitingModalOpen(true)
-            popupsActions.setWaitingPayload({
-                title: 'Waiting For Confirmation',
-                text: handleWaitingTitle(),
-                hint: 'Confirm this transaction in your wallet',
-                status: 'loading',
-            })
-            safeActions.setSafeData({
-                ...safeState.safeData,
-                leftInput: parsedAmounts.leftInput || '0',
-                rightInput: parsedAmounts.rightInput || '0',
-                totalCollateral,
-                totalDebt,
-            })
-            try {
-                connectWalletActions.setIsStepLoading(true)
-                await safeActions.depositAndBorrow({
-                    safeData: safeState.safeData,
-                    signer,
-                })
-                history.push('/safes')
-                safeActions.setIsSuccessfulTx(true)
-                popupsActions.setIsWaitingModalOpen(false)
-            } catch (e) {
-                safeActions.setIsSuccessfulTx(false)
-                handleTransactionError(e)
-            } finally {
-                reset()
-            }
+            handleTransactionError(e)
+        } finally {
+            reset()
         }
     }
 
@@ -181,49 +193,53 @@ const CreateSafe = ({
     )
 
     useEffect(() => {
-        if (signer) {
-            signer.getBalance().then((balance) => {
+        if (!signer) return
+
+        signer.getBalance()
+            .then((balance) => {
                 connectWalletActions.updateEthBalance({
                     chainId: chainId,
                     balance: Number(utils.formatEther(balance)),
                 })
             })
-        }
     }, [account, signer])
 
-    return (
-        <>
-            <Modal
-                isModalOpen={showPreview}
-                closeModal={() => setShowPreview(false)}
-                maxWidth={'450px'}
-                backDropClose
-                hideHeader
-                hideFooter
-                handleModalContent
-            >
-                <ReviewContainer>
-                    <Review type={'create'} />
-                    <BtnContainer>
-                        <Button id="create_confirm" onClick={handleConfirm}>
-                            {'Confirm Transaction'}
-                        </Button>{' '}
-                    </BtnContainer>
-                </ReviewContainer>
-            </Modal>
-            <InnerContent>
-                <Content>
-                    <Header>
-                        <Btn>
-                            <ArrowLeft onClick={() => history.goBack()} />
-                        </Btn>
-                        <span className="title"> {t('create_safe')}</span>
-                        <Btn className="clear" onClick={reset}>
-                            Clear All
-                        </Btn>
-                    </Header>
-                    <Box>
-                        {selectedCollateral ? (
+    return (<>
+        <Modal
+            isModalOpen={showPreview}
+            closeModal={() => setShowPreview(false)}
+            maxWidth="450px"
+            backDropClose
+            hideHeader
+            hideFooter
+            handleModalContent>
+            <ReviewContainer>
+                <Review type="create" />
+                <BtnContainer>
+                    <Button
+                        id="create_confirm"
+                        onClick={handleConfirm}>
+                        {'Confirm Transaction'}
+                    </Button>{' '}
+                </BtnContainer>
+            </ReviewContainer>
+        </Modal>
+        <InnerContent>
+            <Content>
+                <Header>
+                    <Btn>
+                        <ArrowLeft onClick={() => history.goBack()} />
+                    </Btn>
+                    <span className="title"> {t('create_safe')}</span>
+                    <Btn
+                        className="clear"
+                        onClick={reset}>
+                        Clear All
+                    </Btn>
+                </Header>
+                <Box>
+                    {selectedCollateral
+                        ? (
                             <Col>
                                 <DropDownContainer>
                                     <SideLabel>{`Select Collateral Type`}</SideLabel>
@@ -234,8 +250,10 @@ const CreateSafe = ({
                                     />
                                     {dropdownSelected.name === 'WETH' && (
                                         <WrapBox>
-                                            Don't have WETH?{' '}
-                                            <WrapBtn onClick={wrapEth} color="secondary">
+                                            {`Don't have WETH?`}{' '}
+                                            <WrapBtn
+                                                onClick={wrapEth}
+                                                color="secondary">
                                                 Wrap ETH
                                             </WrapBtn>
                                         </WrapBox>
@@ -243,16 +261,17 @@ const CreateSafe = ({
                                 </DropDownContainer>
 
                                 <Inputs>
-                                    <SideLabel>{`Deposit ${selectedItem} and Borrow HAI`}</SideLabel>
+                                    <SideLabel>
+                                        {`Deposit ${selectedItem} and Borrow HAI`}
+                                    </SideLabel>
 
                                     <TokenInput
-                                        token={
-                                            selectedCollateral?.symbol
-                                                ? {
-                                                      name: selectedCollateral?.symbol || '-',
-                                                      icon: TOKEN_LOGOS[selectedCollateral?.symbol],
-                                                  }
-                                                : undefined
+                                        token={selectedCollateral?.symbol
+                                            ? {
+                                                name: selectedCollateral?.symbol || '-',
+                                                icon: (TOKEN_LOGOS as any)[selectedCollateral?.symbol],
+                                            }
+                                            : undefined
                                         }
                                         label={`Balance: ${selectedTokenBalance} ${selectedCollateral?.symbol}`}
                                         rightLabel={`~$${selectedTokenBalanceInUSD}`}
@@ -265,12 +284,10 @@ const CreateSafe = ({
 
                                     <br />
                                     <TokenInput
-                                        token={
-                                            tokensData.HAI && {
-                                                icon: TOKEN_LOGOS[tokensData.HAI.symbol],
-                                                name: tokensData.HAI.symbol,
-                                            }
-                                        }
+                                        token={tokensData.HAI && {
+                                            icon: (TOKEN_LOGOS as any)[tokensData.HAI.symbol],
+                                            name: tokensData.HAI.symbol,
+                                        }}
                                         label={`Borrow HAI: ${formatNumber(availableHai, 2)} ${tokensData.HAI?.symbol}`}
                                         rightLabel={`~$${haiBalanceUSD}`}
                                         onChange={onRightInput}
@@ -280,64 +297,79 @@ const CreateSafe = ({
                                     />
                                 </Inputs>
                             </Col>
-                        ) : (
+                        )
+                        : (
                             <Col>
                                 <Loader width={'100%'} />
                             </Col>
-                        )}
+                        )
+                    }
 
-                        <Col>
-                            <Stats>
-                                {Object.keys(stats).map((key) => {
-                                    const isPrimary = key === 'data'
-                                    return (
-                                        <div key={key} className="blockie">
-                                            {stats[key as StatsType].map((item) => {
-                                                return (
-                                                    <Flex key={item.label}>
-                                                        <Label color={isPrimary ? 'primary' : 'secondary'}>
-                                                            {item.tip ? (
-                                                                <InfoIcon data-tip={item.tip}>
-                                                                    <Info size="13" />
-                                                                </InfoIcon>
-                                                            ) : null}
-                                                            {item.label}
-                                                        </Label>
-                                                        <Value>{item.value}</Value>
-                                                    </Flex>
-                                                )
-                                            })}
-                                        </div>
-                                    )
-                                })}
-                            </Stats>
-                        </Col>
-                    </Box>
+                    <Col>
+                        <Stats>
+                            {Object.keys(stats).map((key) => {
+                                const isPrimary = key === 'data'
+                                return (
+                                    <div
+                                        key={key}
+                                        className="blockie">
+                                        {stats[key as StatsType].map((item) => {
+                                            return (
+                                                <Flex key={item.label}>
+                                                    <Label color={isPrimary ? 'primary' : 'secondary'}>
+                                                        {!!item.tip && (
+                                                            <InfoIcon data-tip={item.tip}>
+                                                                <Info size="13" />
+                                                            </InfoIcon>
+                                                        )}
+                                                        {item.label}
+                                                    </Label>
+                                                    <Value>{item.value}</Value>
+                                                </Flex>
+                                            )
+                                        })}
+                                    </div>
+                                )
+                            })}
+                        </Stats>
+                    </Col>
+                </Box>
 
-                    <Flex className="hasBtn">
-                        <Note data-test-id="debt_floor_note">
-                            <span>Note:</span>
-                            {` The minimum amount to mint per safe is ${debtFloor} HAI`}
-                        </Note>
-                        {approvalState === ApprovalState.APPROVED && (
-                            <Button onClick={handleSubmit} disabled={!isValid}>
-                                {error ?? 'Review Transaction'}
-                            </Button>
-                        )}
+                <Flex className="hasBtn">
+                    <Note data-test-id="debt_floor_note">
+                        <span>Note:</span>
+                        {` The minimum amount to mint per safe is ${debtFloor} HAI`}
+                    </Note>
+                    {approvalState === ApprovalState.APPROVED && (
+                        <Button
+                            onClick={handleSubmit}
+                            disabled={!isValid}>
+                            {error ?? 'Review Transaction'}
+                        </Button>
+                    )}
 
-                        {approvalState === ApprovalState.PENDING && <Button disabled={true}>Pending Approval..</Button>}
+                    {approvalState === ApprovalState.PENDING && (
+                        <Button disabled>
+                            Pending Approval..
+                        </Button>
+                    )}
 
-                        {(approvalState === ApprovalState.NOT_APPROVED || approvalState === ApprovalState.UNKNOWN) && (
-                            <Button onClick={approve} disabled={!isValid}>
-                                {error ?? `Approve ${selectedItem}`}
-                            </Button>
-                        )}
-                    </Flex>
-                    <ReactTooltip multiline type="light" data-effect="solid" />
-                </Content>
-            </InnerContent>
-        </>
-    )
+                    {(approvalState === ApprovalState.NOT_APPROVED || approvalState === ApprovalState.UNKNOWN) && (
+                        <Button
+                            onClick={approve}
+                            disabled={!isValid}>
+                            {error ?? `Approve ${selectedItem}`}
+                        </Button>
+                    )}
+                </Flex>
+                <ReactTooltip
+                    multiline
+                    type="light"
+                    data-effect="solid"
+                />
+            </Content>
+        </InnerContent>
+    </>)
 }
 
 const CreateSafeContainer = () => {
@@ -346,12 +378,15 @@ const CreateSafeContainer = () => {
             liquidationData,
             safeData: { collateral },
         },
-        connectWalletModel: { tokensData, tokensFetchedData },
-    } = useStoreState((state) => state)
-    const collaterals = tokensData ? Object.values(tokensData).filter((token) => token.isCollateral) : []
-    const [selectedItem, setSelectedItem] = useState<string>('')
+        connectWalletModel: {
+            tokensData,
+            tokensFetchedData,
+        },
+    } = useStoreState(state => state)
+    const { safeModel: safeActions } = useStoreActions(actions => actions)
 
-    const { safeModel: safeActions } = useStoreActions((state) => state)
+    const collaterals = Object.values(tokensData || {}).filter((token) => token.isCollateral)
+    const [selectedItem, setSelectedItem] = useState<string>('')
 
     useEffect(() => {
         safeActions.setSafeData({ ...DEFAULT_SAFE_STATE, collateral: selectedItem })
@@ -364,8 +399,12 @@ const CreateSafeContainer = () => {
 
     return (
         <Container>
-            {liquidationData && tokensData && collateral && collateral !== '' && tokensFetchedData[selectedItem] && (
-                <CreateSafe selectedItem={selectedItem} setSelectedItem={setSelectedItem} collaterals={collaterals} />
+            {liquidationData && tokensData && collateral && tokensFetchedData[selectedItem] && (
+                <CreateSafe
+                    selectedItem={selectedItem}
+                    setSelectedItem={setSelectedItem}
+                    collaterals={collaterals}
+                />
             )}
         </Container>
     )

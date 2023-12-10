@@ -3,7 +3,7 @@ import { useWindowSize } from '~/hooks'
 
 type Props = {
     start: boolean,
-    variant?: string
+    variant?: string,
 }
 export default function Confetti({ start, variant }: Props) {
     const { width, height } = useWindowSize()

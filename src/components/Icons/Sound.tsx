@@ -3,8 +3,8 @@ import type { IconProps } from '~/types'
 type SoundIconProps = IconProps & {
     muted: boolean
 }
-export function Sound({ muted, size = 20, fill = "black", ...props }: SoundIconProps) {
-    const color = fill || "#000000"
+export function Sound({ muted, size = 20, fill = 'black', ...props }: SoundIconProps) {
+    const color = fill || '#000000'
 
     return (
         <svg
@@ -27,19 +27,19 @@ export function Sound({ muted, size = 20, fill = "black", ...props }: SoundIconP
                 d="M48,27.6a19.5,19.5 0 0 1 0,21.4M55.1,20.5a30,30 0 0 1 0,35.6M61.6,14a38.8,38.8 0 0 1 0,48.6"
                 fill="none"
                 stroke={color}
-                visibility={!muted ? "visible": "hidden"}
+                visibility={!muted ? 'visible': 'hidden'}
             />
             <line
                 x1="50" y1="30"
                 x2="65" y2="45"
                 stroke={color}
-                visibility={!muted ? "hidden": "visible"}
+                visibility={!muted ? 'hidden': 'visible'}
             />
             <line
                 x1="65" y1="30"
                 x2="50" y2="45"
                 stroke={color}
-                visibility={!muted ? "hidden": "visible"}
+                visibility={!muted ? 'hidden': 'visible'}
             />
         </svg>
     )

@@ -11,13 +11,15 @@ import { Loader } from './Loader'
 const Transaction = ({ hash }: { hash: string }) => {
     const { chain } = useNetwork()
     const chainId = chain?.id
-    const { transactionsModel: transactionsState } = useStoreState((state) => state)
+
+    const { transactionsModel: transactionsState } = useStoreState(state => state)
 
     const { summary, receipt } = transactionsState.transactions?.[hash] || {}
     const pending = !receipt
     const success = !pending && (receipt.status === 1 || typeof receipt.status === 'undefined')
 
     if (!chainId) return null
+
     return (
         <Container>
             <a
@@ -25,7 +27,7 @@ const Transaction = ({ hash }: { hash: string }) => {
                 target="_blank"
                 rel="noopener noreferrer">
                 <Text>
-                    {summary ?? hash} <ArrowUpRight />
+                    {summary ?? hash} <ArrowUpRight/>
                 </Text>
                 <IconWrapper
                     pending={pending}
@@ -33,8 +35,8 @@ const Transaction = ({ hash }: { hash: string }) => {
                     {pending
                         ? <Loader />
                         : success
-                            ? <CheckCircle size="16" />
-                            : <AlertTriangle size="16" />
+                            ? <CheckCircle size="16"/>
+                            : <AlertTriangle size="16"/>
                     }
                 </IconWrapper>
             </a>

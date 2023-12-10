@@ -12,7 +12,7 @@ type NumberInputProps = FlexProps & {
     conversion?: string,
     onChange: (value: string) => void,
     onMax?: () => void,
-    hidden?: boolean
+    hidden?: boolean,
 }
 export function NumberInput({
     label,
@@ -67,7 +67,7 @@ export function NumberInput({
 const Container = styled(Flex).attrs(props => ({
     $width: '100%',
     $column: true,
-    ...props
+    ...props,
 }))<{ hidden: boolean }>`
     ${({ hidden }) => hidden && css`display: none;`}
 `
@@ -76,7 +76,7 @@ const InputContainer = styled(Flex).attrs(props => ({
     $width: '100%',
     $justify: 'flex-start',
     $align: 'center',
-    ...props
+    ...props,
 }))`
     border: ${({ theme }) => theme.border.medium};
     border-radius: 8px;
@@ -94,7 +94,7 @@ const Input = styled.input`
 const InputLabel = styled(Text).attrs(props => ({
     $fontSize: '0.8em',
     $fontWeight: 700,
-    ...props
+    ...props,
 }))`
     min-width: 48px;
     flex-shrink: 0;
@@ -105,7 +105,7 @@ const ConversionText = styled(Text).attrs(props => ({
     $fontSize: '0.67rem',
     $color: 'rgba(0,0,0,0.5)',
     $textAlign: 'left',
-    ...props
+    ...props,
 }))`
     width: 75px;
     flex-shrink: 0;

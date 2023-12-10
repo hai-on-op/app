@@ -43,7 +43,7 @@ const settingsModel: SettingsModel = {
     setIsPlayingMusic: action((state, payload) => {
         state.isPlayingMusic = payload
         localStorage.setItem('musicDisabled', payload.toString())
-    })
+    }),
 }
 
 export default settingsModel

@@ -1,23 +1,23 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { BrowserRouter } from 'react-router-dom'
-import { StoreProvider } from 'easy-peasy'
-import App from '~/App'
-import store from '~/store'
 import { HelmetProvider } from 'react-helmet-async'
-
-import '@rainbow-me/rainbowkit/styles.css'
-import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
+import { StoreProvider } from 'easy-peasy'
 import { configureChains, createConfig, WagmiConfig } from 'wagmi'
-import { optimismGoerli, optimism } from 'wagmi/chains'
+import { optimismGoerli } from 'wagmi/chains'
 import { alchemyProvider } from 'wagmi/providers/alchemy'
 import { publicProvider } from 'wagmi/providers/public'
+import { RainbowKitProvider, connectorsForWallets } from '@rainbow-me/rainbowkit'
 import { injectedWallet, rainbowWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets'
-import { connectorsForWallets } from '@rainbow-me/rainbowkit'
+import '@rainbow-me/rainbowkit/styles.css'
+
 import { VITE_ALCHEMY_KEY, VITE_WALLETCONNECT_ID } from '~/utils'
-import { haiTheme } from '~/styles/themes'
-import { CustomAvatar } from '~/components/CustomAvatar'
+import store from '~/store'
 import { HaiThemeProvider } from '~/providers/HaiThemeProvider'
+
+import { haiTheme } from '~/styles/themes'
+import App from '~/App'
+import { CustomAvatar } from '~/components/CustomAvatar'
 
 const projectId = VITE_WALLETCONNECT_ID!
 

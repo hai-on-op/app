@@ -12,7 +12,7 @@ export type FloatingElementsProps = {
     coins?: (Omit<SplashImage, 'index'> & {
         index: number | keyof typeof TOKEN_LOGOS,
         thickness?: number
-    })[]
+    })[],
 }
 export function FloatingElements({ elves, clouds, coins }: FloatingElementsProps) {
     return (<>
@@ -25,7 +25,7 @@ export function FloatingElements({ elves, clouds, coins }: FloatingElementsProps
                 style={{
                     ...style,
                     transform: `translateZ(${zIndex * 20}px) rotate(${rotation}deg)${flip ? ' scaleX(-1)': ''}`,
-                    zIndex
+                    zIndex,
                 }}
             />
         ))}
@@ -37,7 +37,7 @@ export function FloatingElements({ elves, clouds, coins }: FloatingElementsProps
                 style={{
                     ...style,
                     transform: `translateZ(${zIndex * 20}px) rotate(${rotation}deg)${flip ? ' scaleX(-1)': ''}`,
-                    zIndex
+                    zIndex,
                 }}
             />
         ))}
@@ -55,7 +55,7 @@ export function FloatingElements({ elves, clouds, coins }: FloatingElementsProps
                 style={{
                     ...style,
                     transform: `translateZ(${zIndex * 20}px) rotate(${rotation}deg)`,
-                    zIndex
+                    zIndex,
                 }}
                 thickness={thickness}
             />

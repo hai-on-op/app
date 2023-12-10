@@ -91,6 +91,6 @@ export function usePlaylist(songs: string[], volume = 1) {
         previous,
         playingIndex: index,
         isLoading,
-        isPlaying
+        isPlaying,
     }
 }

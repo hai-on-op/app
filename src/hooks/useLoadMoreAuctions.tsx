@@ -81,8 +81,8 @@ export const useLoadMoreAuctions = ({ auctions }: Props) => {
         <BtnContainer>
             {(!dimmedWithArrow || !hasAllAuctions) && (
                 <ShowMoreButton
-                    dimmedWithArrow={!!dimmedWithArrow}
-                    dimmed={!dimmedWithArrow}
+                    variant={dimmedWithArrow ? 'dimmed': undefined}
+                    withArrow={dimmedWithArrow}
                     disabled={!dimmedWithArrow}
                     text={showMoreText}
                     onClick={handleShowMoreAuctions}

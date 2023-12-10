@@ -17,7 +17,7 @@ const SafeBlock = ({ ...props }) => {
                     <BlockHeader>
                         <SafeInfo>
                             <img
-                                src={TOKEN_LOGOS[props.collateralName]}
+                                src={(TOKEN_LOGOS as any)[props.collateralName]}
                                 alt={props.collateralName}
                                 width={'24px'}
                                 height={'24px'}
