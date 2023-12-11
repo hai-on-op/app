@@ -38,7 +38,6 @@ import TopUpModal from '~/components/Modals/SafeManagerModal'
 import ScreenLoader from '~/components/Modals/ScreenLoader'
 import WaitingModal from '~/components/Modals/WaitingModal'
 import LoadingModal from '~/components/Modals/LoadingModal'
-import WethModal from '~/components/Modals/WETHModal'
 import BlockedAddress from '~/components/BlockedAddress'
 import ToastPayload from '~/components/ToastPayload'
 import AlertLabel from '~/components/AlertLabel'
@@ -110,7 +109,6 @@ const Shared = ({ children }: Props) => {
         popupsActions.setIsSettingModalOpen(false)
         popupsActions.setIsVotingModalOpen(false)
         popupsActions.setIsWaitingModalOpen(false)
-        popupsActions.setShowSideMenu(false)
         popupsActions.setIsLoadingModalOpen({
             text: '',
             isOpen: false,
@@ -334,7 +332,6 @@ const Shared = ({ children }: Props) => {
             <TransactionUpdater />
             <LoadingModal />
             <AuctionsModal />
-            <WethModal />
             <ScreenLoader />
             <LiquidateSafeModal />
             {!isSplash && <WaitingModal />}

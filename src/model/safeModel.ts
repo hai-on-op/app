@@ -1,17 +1,16 @@
-import { action, Action, thunk, Thunk } from 'easy-peasy'
+import { action, type Action, thunk, type Thunk } from 'easy-peasy'
+
 import { StoreModel } from '~/model'
 import { handleDepositAndBorrow, handleRepayAndWithdraw } from '~/services/blockchain'
 import { fetchUserSafes } from '~/services/safes'
-import {
-    timeout,
-    handleWrapEther,
-    WrapEtherProps,
+import type {
     IFetchSafesPayload,
     ILiquidationData,
     ISafe,
     ISafeData,
     ISafePayload,
-} from '~/utils'
+} from '~/types'
+import { timeout, handleWrapEther, WrapEtherProps } from '~/utils'
 
 export const DEFAULT_SAFE_STATE = {
     totalCollateral: '',

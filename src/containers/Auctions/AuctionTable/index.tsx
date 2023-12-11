@@ -2,8 +2,7 @@ import { useMemo, useState } from 'react'
 import { useAccount } from 'wagmi'
 import { isAddressEqual } from 'viem'
 
-import type { IAuction, SortableHeader } from '~/types'
-import { type IPaging } from '~/utils'
+import type { IAuction, IPaging, SortableHeader } from '~/types'
 
 import styled from 'styled-components'
 import { Flex, Text } from '~/styles'

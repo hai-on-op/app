@@ -1,11 +1,18 @@
 import { BigNumber } from 'ethers'
-import { Geb, utils, type TokenLiquidationData, fetchLiquidationData, type TokenData, fetchUserSafes } from '@hai-on-op/sdk'
-import type { ILiquidationResponse, IUserSafeList } from '../interfaces'
+import {
+    Geb,
+    type TokenData,
+    type TokenLiquidationData,
+    fetchLiquidationData,
+    fetchUserSafes,
+    utils,
+} from '@hai-on-op/sdk'
+import type { ILiquidationResponse, IUserSafeList } from '~/types'
 
-interface UserListConfig {
+type UserListConfig = {
     geb: Geb
     address: string
-    tokensData: { [key: string]: TokenData }
+    tokensData: Record<string, TokenData>
     proxy_not?: null
     safeId_not?: null
 }
@@ -13,7 +20,7 @@ interface UserListConfig {
 // returns LiquidationData
 const getLiquidationDataRpc = async (
     geb: Geb,
-    tokensData: { [key: string]: TokenData }
+    tokensData: Record<string, TokenData>
 ): Promise<ILiquidationResponse> => {
     const liquidationData = await fetchLiquidationData(geb, tokensData)
 
@@ -23,20 +30,24 @@ const getLiquidationDataRpc = async (
         },
         currentRedemptionRate: {
             // Calculate 8h exponentiation of the redemption rate
-            annualizedRate: Math.pow(Number(parseRay(liquidationData.redemptionRate)), 3600 * 24 * 365).toString(),
+            annualizedRate: Math.pow(
+                Number(parseRay(liquidationData.redemptionRate)),
+                3600 * 24 * 365
+            ).toString(),
         },
         globalDebt: parseRad(liquidationData.globalDebt),
         globalDebtCeiling: parseRad(liquidationData.globalDebtCeiling),
         perSafeDebtCeiling: parseWad(liquidationData.safeDebtCeiling),
     }
 
-    const parsedLiquidationData = liquidationData.tokensLiquidationData.map((tokenLiquidationData) =>
+    const parsedLiquidationData = liquidationData.tokensLiquidationData.map((tokenLiquidationData) => (
         parseTokenLiquidationData(liquidationData.redemptionPrice, tokenLiquidationData)
-    )
+    ))
 
-    const collateralLiquidationData = Object.keys(tokensData).reduce((accumulator, key, index) => {
-        return { ...accumulator, [key]: parsedLiquidationData[index] }
-    }, {})
+    const collateralLiquidationData = Object.keys(tokensData).reduce((accumulator, key, index) => ({
+        ...accumulator,
+        [key]: parsedLiquidationData[index],
+    }), {})
 
     return {
         systemState,
@@ -44,7 +55,10 @@ const getLiquidationDataRpc = async (
     }
 }
 
-function parseTokenLiquidationData(redemptionPrice: BigNumber, tokenLiquidationData: TokenLiquidationData) {
+function parseTokenLiquidationData(
+    redemptionPrice: BigNumber,
+    tokenLiquidationData: TokenLiquidationData
+) {
     return {
         accumulatedRate: parseRay(tokenLiquidationData.accumulatedRate),
         currentPrice: {
@@ -86,15 +100,13 @@ const getUserSafesRpc = async (config: UserListConfig): Promise<IUserSafeList> =
     return {
         safes,
         erc20Balances: [
-            {
-                balance: parseWad(userCoinBalance),
-            },
+            { balance: parseWad(userCoinBalance) },
         ],
         ...(await getLiquidationDataRpc(config.geb, config.tokensData)),
     }
 }
 
-const gebManager = {
+export const gebManager = {
     getUserSafesRpc,
     getLiquidationDataRpc,
 }
@@ -103,5 +115,3 @@ const gebManager = {
 export const parseWad = (val: BigNumber) => utils.wadToFixed(val).toString()
 export const parseRay = (val: BigNumber) => utils.rayToFixed(val).toString()
 export const parseRad = (val: BigNumber) => utils.radToFixed(val).toString()
-
-export default gebManager

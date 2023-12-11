@@ -3,7 +3,6 @@ import { useAccount } from 'wagmi'
 
 import type { AuctionEventType } from '~/types'
 import { COIN_TICKER } from '~/utils'
-import _ from '~/utils/lodash'
 import { useStoreActions, useStoreState } from '~/store'
 import { handleTransactionError, useGeb, useEthersSigner } from '~/hooks'
 
@@ -35,11 +34,16 @@ const AuctionsTransactions = () => {
         collateralAmount,
     } = auctionsState
 
-    const selectedAuction = surplusOrDebtAuction ? surplusOrDebtAuction : selectedCollateralAuction
+    const selectedAuction = surplusOrDebtAuction
+        ? surplusOrDebtAuction
+        : selectedCollateralAuction
 
-    const auctionId = _.get(selectedAuction, 'auctionId', '')
-    const auctionType = _.get(selectedAuction, 'englishAuctionType', 'DEBT')
-    const tokenSymbol = _.get(selectedAuction, 'tokenSymbol', 'WETH')
+    const {
+        auctionId = '',
+        englishAuctionType: auctionType = 'DEBT',
+        tokenSymbol = 'WETH',
+    } = selectedAuction as any
+
     const isClaim = popupsState.auctionOperationPayload.type.includes('claim')
     const isSettle = popupsState.auctionOperationPayload.type.includes('settle')
     const isBuy = popupsState.auctionOperationPayload.type.includes('buy')

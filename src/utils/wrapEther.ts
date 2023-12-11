@@ -4,11 +4,12 @@ import { Geb } from '@hai-on-op/sdk'
 
 import { getNetworkName } from './constants'
 
-export interface WrapEtherProps {
+export type WrapEtherProps = {
     signer: JsonRpcSigner
     amount: string
     title: string
 }
+
 export const handleWrapEther = async ({ signer, amount }: WrapEtherProps) => {
     if (!signer || !amount) {
         return false

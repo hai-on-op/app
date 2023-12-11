@@ -1,9 +1,8 @@
 import { useMemo } from 'react'
 import { formatEther } from 'ethers/lib/utils'
 
+import type { CollateralLiquidationData, Debt } from '~/types'
 import {
-    type CollateralLiquidationData,
-    type Debt,
     VaultAction,
     returnAvaiableDebt,
     returnTotalDebt,

@@ -1,8 +1,7 @@
 import { useMemo } from 'react'
 
+import type { Collateral, Debt } from '~/types'
 import {
-    type Collateral,
-    type Debt,
     Status,
     VaultAction,
     getCollateralRatio,

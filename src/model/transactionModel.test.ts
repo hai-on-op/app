@@ -1,8 +1,9 @@
 import { type TransactionReceipt } from '@ethersproject/providers'
-import { createStore, type EasyPeasyConfig, type Store } from 'easy-peasy'
-import transactionsModel, { type TransactionsModel } from './transactionsModel'
 import { BigNumber } from '@ethersproject/bignumber'
-import { type ITransaction } from '~/utils'
+import { createStore, type EasyPeasyConfig, type Store } from 'easy-peasy'
+
+import type { ITransaction } from '~/types'
+import transactionsModel, { type TransactionsModel } from './transactionsModel'
 
 const mockTx = (chainId: number, addon?: any) => {
     const txReceipt: TransactionReceipt = {

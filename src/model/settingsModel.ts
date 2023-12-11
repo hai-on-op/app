@@ -1,4 +1,4 @@
-import { action, Action } from 'easy-peasy'
+import { action, type Action } from 'easy-peasy'
 
 const language = localStorage.getItem('lang')
 const isLight = localStorage.getItem('isLight')

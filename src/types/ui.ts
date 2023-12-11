@@ -44,3 +44,41 @@ export type TableHeaderProps = {
     sorting: Sorting,
     onSort: (label: string) => void
 }
+
+export type LangOption = {
+    name: string
+    code: string
+}
+
+export type NavLinkType = {
+    type: string
+    text: string
+}
+
+export type IAlert = {
+    type: string
+    text: string
+}
+
+export type LoadingPayload = {
+    isOpen: boolean
+    text: string
+}
+
+export type IWaitingPayload = {
+    title?: string
+    text?: string
+    hint?: string
+    status: string
+    hash?: string
+    isCreate?: boolean
+}
+
+export type IOperation = {
+    isOpen: boolean
+    type: string
+}
+
+export type IAuctionOperation = IOperation & {
+    auctionType: string
+}

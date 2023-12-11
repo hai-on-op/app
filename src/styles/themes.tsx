@@ -1,6 +1,8 @@
 import merge from 'lodash.merge'
 import { darkTheme as rainbowDarkTheme, type Theme as RainbowTheme } from '@rainbow-me/rainbowkit'
-import { type Theme, mediaWidthTemplates } from '~/utils'
+
+import type { Theme } from '~/types'
+import { mediaWidthTemplates } from '~/utils'
 import { css } from 'styled-components'
 
 import dashedBorderImage from '~/assets/border-image.png'

@@ -6,7 +6,7 @@ import { useStoreActions, useStoreState } from '~/store'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { useMediaQuery } from '~/hooks'
 
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Title } from '~/styles'
 import { Twitter } from '~/components/Icons/Twitter'
 import { Telegram } from '~/components/Icons/Telegram'
@@ -82,7 +82,9 @@ export function Header({ tickerActive = false }: HeaderProps) {
 
     return (<>
         {wrapEthActive && <WrapETHModal onClose={() => setWrapEthActive(false)}/>}
-        <Container $tickerActive={tickerActive}>
+        <Container
+            $tickerActive={tickerActive}
+            $withBg={!isSplash}>
             {tickerActive && (
                 <Ticker>
                     <Marquee text={tickerText}/>
@@ -230,20 +232,22 @@ const Container = styled(Flex).attrs(props => ({
     $justify: 'space-between',
     $align: 'stretch',
     ...props,
-}))<{ $tickerActive: boolean }>`
+}))<{ $tickerActive: boolean, $withBg?: boolean }>`
     position: fixed;
     top: 0px;
     left: 0px;
     right: 0px;
     height: ${({ $tickerActive }) => $tickerActive ? 156: 96}px;
 
-    &::before {
-        content: '';
-        position: absolute;
-        inset: 0px;
-        background-color: rgba(255,255,255,0.3);
-        z-index: -1;
-    }
+    ${({ $withBg }) => !!$withBg && css`
+        &::before {
+            content: '';
+            position: absolute;
+            inset: 0px;
+            background-color: rgba(255,255,255,0.3);
+            z-index: -1;
+        }
+    `}
 
     ${({ theme, $tickerActive }) => theme.mediaWidth.upToSmall`
         height: ${$tickerActive ? 140: 80}px;

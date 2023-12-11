@@ -6,8 +6,10 @@ import {
     useContext,
     useState,
 } from 'react'
+
+import type { Theme } from '~/types'
+
 import { ThemeProvider } from 'styled-components'
-import { type Theme } from '~/utils'
 import { darkTheme, lightTheme } from '~/styles/themes'
 
 type HaiThemeContext = {

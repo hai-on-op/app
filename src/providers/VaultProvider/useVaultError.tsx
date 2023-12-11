@@ -2,9 +2,8 @@ import numeral from 'numeral'
 import { BigNumber } from 'ethers'
 import { useAccount } from 'wagmi'
 
+import type { Collateral, Debt } from '~/types'
 import {
-    type Collateral,
-    type Debt,
     VaultAction,
     VaultInfoError,
     formatNumber,

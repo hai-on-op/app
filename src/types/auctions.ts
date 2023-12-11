@@ -3,7 +3,7 @@ import { ICollateralAuction as SDKCollateralAuction } from '@hai-on-op/sdk'
 
 export type AuctionEventType = 'DEBT' | 'SURPLUS' | 'COLLATERAL'
 
-export interface IAuctionBidder {
+export type IAuctionBidder = {
     bidder: string
     buyAmount: string
     createdAt: string
@@ -11,7 +11,7 @@ export interface IAuctionBidder {
     createdAtTransaction: string
 }
 
-export interface IAuction {
+export type IAuction = {
     auctionDeadline: string
     auctionId: string
     buyAmount: string
@@ -37,7 +37,7 @@ export interface IAuction {
     tokenSymbol?: string
 }
 
-export interface IAuctionBid {
+export type IAuctionBid = {
     bid?: string
     auctionId: string
     title: string
@@ -46,14 +46,14 @@ export interface IAuctionBid {
     type?: AuctionEventType
 }
 
-export interface ICollateralAuction extends SDKCollateralAuction {
+export type ICollateralAuction = SDKCollateralAuction & {
     startedBy: string
     remainingToRaiseE18: string
     remainingCollateral: string
     tokenSymbol: string
 }
 
-export interface LoadingAuctionsData {
+export type LoadingAuctionsData = {
     surplusStartBlock?: number
     debtStartBlock?: number
     collateralStartBlock?: number

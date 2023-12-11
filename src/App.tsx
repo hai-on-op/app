@@ -4,8 +4,9 @@ import i18next from 'i18next'
 import { I18nextProvider } from 'react-i18next'
 import { ApolloProvider } from '@apollo/client'
 
+import type { Theme } from '~/types'
+import { client } from '~/utils'
 import { useStoreState } from '~/store'
-import { client, type Theme } from '~/utils'
 import { AnalyticsProvider } from '~/providers/AnalyticsProvider'
 
 import { GlobalStyle } from '~/styles'

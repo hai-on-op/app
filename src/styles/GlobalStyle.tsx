@@ -11,7 +11,7 @@ export const createFadeInAnimation = (move: string) => keyframes`
 	}
 `
 
-interface Props {
+type Props = {
     bodyOverflow?: boolean
 }
 

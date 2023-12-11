@@ -1,13 +1,6 @@
 import { useEffect, useRef } from 'react'
+
 import styled from 'styled-components'
-
-// Components
-import GridContainer from '~/components/GridContainer'
-
-// Utils
-import _ from '~/utils/lodash'
-
-// Styles
 import { ExternalLinkArrow } from '~/styles'
 
 const Privacy = ({ ...props }) => {
@@ -15,9 +8,10 @@ const Privacy = ({ ...props }) => {
 
     useEffect(() => {
         setTimeout(() => {
-            if (_.get(props.location, 'state.goToCookies', false) && privacyRef.current) {
+            if (props.location?.state?.goToCookies && privacyRef.current) {
                 privacyRef.current.scrollIntoView({ behavior: 'smooth' })
-            } else {
+            }
+            else {
                 window.scrollTo({
                     top: 0,
                     behavior: 'smooth',
@@ -27,13 +21,13 @@ const Privacy = ({ ...props }) => {
     }, [props.location])
 
     return (
-        <GridContainer>
+        <div>
             <InnterContent>
                 <Title>{/* Title */}</Title>
                 <Date>{/* Date */}</Date>
                 <p>{/* Content */}</p>
             </InnterContent>
-        </GridContainer>
+        </div>
     )
 }
 

@@ -3,8 +3,8 @@ import { formatEther } from 'ethers/lib/utils'
 import { useNetwork } from 'wagmi'
 import { type AnalyticsData, fetchAnalyticsData } from '@hai-on-op/sdk'
 
+import type { SummaryItemValue } from '~/types'
 import {
-    type SummaryItemValue,
     formatSummaryValue,
     transformToAnnualRate,
     transformToEightHourlyRate,

@@ -1,9 +1,8 @@
 import { BigNumber, utils } from 'ethers'
 import { ISurplusAuction as SDKAuction, ICollateralAuction, utils as gebUtils } from '@hai-on-op/sdk'
 
-import customLodash from '~/utils/lodash'
-import { AuctionEventType, IAuction, IAuctionBidder } from '~/types'
-import { floatsTypes } from './constants'
+import type { IAuction, IAuctionBidder } from '~/types'
+import { floatsTypes } from '../constants'
 
 export const formatSurplusAndDebtAuctions = (auctionsList: SDKAuction[], userProxy: string): IAuction[] => {
     if (auctionsList) {
@@ -17,31 +16,23 @@ export const formatSurplusAndDebtAuctions = (auctionsList: SDKAuction[], userPro
                 surplusAndDebtAuction
 
             // if auction is settled, winner is the last bidder
-            const winner = customLodash.get(
-                surplusAndDebtAuction,
-                'winner',
-                // winner === currentWinner
-                // so we set the last bidder as currentWinner
-                biddersList && biddersList.length > 0 ? biddersList.reverse()[0].bidder : ''
-            )
+            const winner = (surplusAndDebtAuction as any).winner || biddersList?.reverse()[0]?.bidder || ''
 
-            const sellInitialAmount = customLodash.get(surplusAndDebtAuction, 'amount', '0')
-            const startedBy = customLodash.get(surplusAndDebtAuction, 'startedBy', '')
-            const isClaimed = customLodash.get(surplusAndDebtAuction, 'isClaimed', false)
-            const buyToken = customLodash.get(surplusAndDebtAuction, 'buyToken', 'PROTOCOL_TOKEN')
-            const sellToken = customLodash.get(surplusAndDebtAuction, 'sellToken', 'COIN')
-            const englishAuctionType: AuctionEventType = customLodash.get(
-                surplusAndDebtAuction,
-                'englishAuctionType',
-                'SURPLUS'
-            )
-            const englishAuctionConfiguration = customLodash.get(surplusAndDebtAuction, 'englishAuctionConfiguration', {
-                bidDuration: '',
-                bidIncrease: '1',
-                totalAuctionLength: '',
-                DEBT_amountSoldIncrease: '1',
-            })
-            const tokenSymbol = customLodash.get(surplusAndDebtAuction, 'tokenSymbol', undefined)
+            const {
+                amount: sellInitialAmount = '0',
+                startedBy = '',
+                isClaimed = false,
+                buyToken = 'PROTOCOL_TOKEN',
+                sellToken = 'COIN',
+                englishAuctionType = 'SURPLUS',
+                englishAuctionConfiguration = {
+                    bidDuration: '',
+                    bidIncrease: '1',
+                    totalAuctionLength: '',
+                    DEBT_amountSoldIncrease: '1',
+                },
+                tokenSymbol,
+            } = surplusAndDebtAuction as any
 
             const buyDecimals = englishAuctionType === 'SURPLUS' ? 18 : 45
             const sellDecimals = englishAuctionType === 'SURPLUS' ? 45 : 18
@@ -134,7 +125,7 @@ export const formatCollateralAuctions = (auctionsList: any[], tokenSymbol: strin
         const filteredAuctions = auctionsList.map((colAuction: ICollateralAuction) => {
             const { createdAt, createdAtTransaction, amountToSell, amountToRaise, biddersList } = colAuction
 
-            const startedBy = customLodash.get(colAuction, 'startedBy', '')
+            const { startedBy = '' } = colAuction as any
             // Amount to sell = collateral
             // Amout to raise = hai
             const collateralBought = biddersList.reduce(

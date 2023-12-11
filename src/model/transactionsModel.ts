@@ -1,5 +1,7 @@
 import { action, Action } from 'easy-peasy'
-import { DEFAULT_NETWORK_ID, ITransaction } from '~/utils'
+
+import type { ITransaction } from '~/types'
+import { DEFAULT_NETWORK_ID } from '~/utils'
 
 export interface TransactionsModel {
     transactions: { [hash: string]: ITransaction }

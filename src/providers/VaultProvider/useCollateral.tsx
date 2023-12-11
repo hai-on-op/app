@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
 import { formatEther } from 'ethers/lib/utils'
 
-import { type Collateral, VaultAction, formatNumber, returnTotalValue } from '~/utils'
+import type { Collateral } from '~/types'
+import { VaultAction, formatNumber, returnTotalValue } from '~/utils'
 import { useStoreState } from '~/store'
 
 export function useCollateral(action: VaultAction): Collateral {

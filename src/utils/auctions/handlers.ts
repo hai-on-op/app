@@ -3,10 +3,10 @@ import { Geb } from '@hai-on-op/sdk'
 import { JsonRpcSigner } from '@ethersproject/providers'
 
 import type { IAuctionBid } from '~/types'
+import { getNetworkName } from '../constants'
 import { handlePreTxGasEstimate } from '~/hooks'
-import { getNetworkName } from './constants'
 
-export interface IAuctionBuy {
+export type IAuctionBuy = {
     signer: JsonRpcSigner
     haiAmount: string
     collateral: string
@@ -14,7 +14,13 @@ export interface IAuctionBuy {
     auctionId: string
     title: string
 }
-export const handleAuctionBuy = async ({ signer, haiAmount, auctionId, collateral, collateralAmount }: IAuctionBuy) => {
+export const handleAuctionBuy = async ({
+    signer,
+    haiAmount,
+    auctionId,
+    collateral,
+    collateralAmount,
+}: IAuctionBuy) => {
     if (!signer || !auctionId || !haiAmount || !collateral || !collateralAmount) {
         return false
     }
@@ -85,11 +91,16 @@ export const handleAuctionClaim = async ({ signer, auctionId, auctionType }: IAu
     return txData
 }
 
-export interface IClaimInternalBalance extends IAuctionBid {
+export type IClaimInternalBalance = IAuctionBid & {
     token: 'COIN' | 'PROTOCOL_TOKEN'
 }
 
-export const handleClaimInternalBalance = async ({ signer, type, bid: amount, token }: IClaimInternalBalance) => {
+export const handleClaimInternalBalance = async ({
+    signer,
+    type,
+    bid: amount,
+    token,
+}: IClaimInternalBalance) => {
     if (!signer) {
         return false
     }

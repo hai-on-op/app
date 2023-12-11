@@ -3,7 +3,6 @@ import { CSSTransition, SwitchTransition } from 'react-transition-group'
 import { useTranslation } from 'react-i18next'
 
 import { COIN_TICKER } from '~/utils'
-import _ from '~/utils/lodash'
 import { useStoreActions, useStoreState } from '~/store'
 
 import styled from 'styled-components'
@@ -16,22 +15,30 @@ const AuctionsOperations = () => {
     const nodeRef = useRef(null)
     const { auctionModel: auctionsActions } = useStoreActions((state) => state)
     const {
-        auctionModel: auctionsState,
+        auctionModel: {
+            amount = '0',
+            operation,
+            selectedAuction: surplusOrDebtAuction,
+            selectedCollateralAuction,
+        },
         popupsModel: popupsState,
-        connectWalletModel: connectWalletState,
+        connectWalletModel: {
+            coinAllowance: raiCoinAllowance = '0',
+            protAllowance: flxAllowance = '0',
+        },
     } = useStoreState(state => state)
 
-    const { selectedAuction: surplusOrDebtAuction, selectedCollateralAuction } = auctionsState
-    const selectedAuction = surplusOrDebtAuction ? surplusOrDebtAuction : selectedCollateralAuction
+    const selectedAuction = surplusOrDebtAuction
+        ? surplusOrDebtAuction
+        : selectedCollateralAuction
 
-    const raiCoinAllowance = _.get(connectWalletState, 'coinAllowance', '0')
-    const flxAllowance = _.get(connectWalletState, 'protAllowance', '0')
-    const auctionType = _.get(selectedAuction, 'englishAuctionType', 'DEBT')
-    const bids = _.get(selectedAuction, 'englishAuctionBids', '[]')
-    const amount = _.get(auctionsState, 'amount', '0')
+    const {
+        englishAuctionType: auctionType = 'DEBT',
+        englishAuctionBids: bids = [],
+    } = selectedAuction as any
 
     const returnBody = () => {
-        switch (auctionsState.operation) {
+        switch (operation) {
             case 0:
                 return <AuctionsPayment />
             case 2:
@@ -45,7 +52,7 @@ const AuctionsOperations = () => {
         <SwitchTransition mode="out-in">
             <CSSTransition
                 nodeRef={nodeRef}
-                key={auctionsState.operation}
+                key={operation}
                 timeout={250}
                 classNames="fade">
                 <Fade
@@ -54,7 +61,7 @@ const AuctionsOperations = () => {
                         width: '100%',
                         maxWidth: '720px',
                     }}>
-                    {auctionsState.operation === 1
+                    {operation === 1
                         ? (
                             <ApproveToken
                                 handleBackBtn={() => auctionsActions.setOperation(0)}

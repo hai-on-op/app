@@ -1,5 +1,5 @@
+import { zeroAddress } from 'viem'
 import { css } from 'styled-components'
-import { ChainId } from './interfaces'
 
 export const {
     VITE_SYSTEM_STATUS,
@@ -10,22 +10,29 @@ export const {
     VITE_TESTNET_PUBLIC_RPC,
 } = import.meta.env
 
+export enum ChainId {
+    MAINNET = 10,
+    OPTIMISM_GOERLI = 420,
+}
+
 export const NETWORK_ID = parseInt(VITE_NETWORK_ID ?? '10')
 export const DEFAULT_NETWORK_ID = 10
 
-export const getNetworkName = (chainId: number) => {
-    switch (chainId) {
-        case 10:
+export const getNetworkName = (chainId: ChainId | number) => {
+    switch(chainId) {
+        case ChainId.MAINNET:
             return 'mainnet'
-        case 420:
+        case ChainId.OPTIMISM_GOERLI:
             return 'optimism-goerli'
         default:
             return 'mainnet'
     }
 }
 
+export const NETWORK_NAME = getNetworkName(NETWORK_ID)
+
 export const COIN_TICKER = 'HAI'
-export const EMPTY_ADDRESS = '0x0000000000000000000000000000000000000000'
+export const EMPTY_ADDRESS = zeroAddress
 export const SYSTEM_STATUS = VITE_SYSTEM_STATUS || ''
 
 export const ETHERSCAN_PREFIXES: { [chainId in ChainId]: string } = {
@@ -64,16 +71,6 @@ export enum Status {
     OKAY = 'OKAY',
     UNKNOWN = 'UNKNOWN',
     CUSTOM = 'CUSTOM'
-}
-
-export const DEFAULT_SAFE_STATE = {
-    totalCollateral: '',
-    totalDebt: '',
-    leftInput: '',
-    rightInput: '',
-    collateralRatio: 0,
-    liquidationPrice: 0,
-    collateral: '',
 }
 
 export const floatsTypes = {

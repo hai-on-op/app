@@ -1,5 +1,12 @@
 import { action, type Action } from 'easy-peasy'
-import type { IAlert, IAuctionOperation, IOperation, IWaitingPayload, LoadingPayload } from '~/utils'
+
+import type {
+    IAlert,
+    IAuctionOperation,
+    IOperation,
+    IWaitingPayload,
+    LoadingPayload,
+} from '~/types'
 
 export interface PopupsModel {
     isSettingsModalOpen: boolean
@@ -7,7 +14,6 @@ export interface PopupsModel {
     isConnectedWalletModalOpen: boolean
     isConnectorsWalletOpen: boolean
     isLiquidateSafeModalOpen: boolean
-    showSideMenu: boolean
     isSafeManagerOpen: boolean
     isClaimPopupOpen: boolean
     returnProxyFunction: (actions: any) => void | null
@@ -27,7 +33,6 @@ export interface PopupsModel {
     setIsSettingModalOpen: Action<PopupsModel, boolean>
     setIsConnectModalOpen: Action<PopupsModel, boolean>
     setIsConnectedWalletModalOpen: Action<PopupsModel, boolean>
-    setShowSideMenu: Action<PopupsModel, boolean>
     setIsScreenModalOpen: Action<PopupsModel, boolean>
     setIsConnectorsWalletOpen: Action<PopupsModel, boolean>
     setIsLoadingModalOpen: Action<PopupsModel, LoadingPayload>
@@ -84,7 +89,6 @@ const popupsModel: PopupsModel = {
     },
     isVotingModalOpen: false,
     isConnectorsWalletOpen: false,
-    showSideMenu: false,
     isLoadingModalOpen: {
         isOpen: false,
         text: '',
@@ -111,9 +115,6 @@ const popupsModel: PopupsModel = {
     closeLiquidateSafeModal: action((state) => {
         state.isLiquidateSafeModalOpen = false
         state.liquidateSafePayload = null
-    }),
-    setShowSideMenu: action((state, payload) => {
-        state.showSideMenu = payload
     }),
     setIsScreenModalOpen: action((state, payload) => {
         state.isScreenModalOpen = payload

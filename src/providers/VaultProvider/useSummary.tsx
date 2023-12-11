@@ -1,10 +1,12 @@
+import type {
+    Collateral,
+    Debt,
+    ISafe,
+    SummaryCurrency,
+    SummaryItem,
+    SummaryItemValue,
+} from '~/types'
 import {
-    type Collateral,
-    type Debt,
-    type ISafe,
-    type SummaryCurrency,
-    type SummaryItem,
-    type SummaryItemValue,
     getRatePercentage,
     formatSummaryCurrency,
     formatSummaryPercentage,

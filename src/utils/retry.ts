@@ -1,10 +1,4 @@
-function wait(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms))
-}
-
-function waitRandom(min: number, max: number): Promise<void> {
-    return wait(min + Math.round(Math.random() * Math.max(0, max - min)))
-}
+import { waitRandom } from './time'
 
 /**
  * This error is thrown if the function is cancelled before completing
@@ -23,13 +17,13 @@ export class RetryableError extends Error {
     public isRetryableError = true
 }
 
-export interface RetryOptions {
+export type RetryOptions = {
     n: number
     minWait: number
     maxWait: number
 }
 
-export interface RetryResult<T> {
+export type RetryResult<T> = {
     promise: Promise<T>,
     cancel: () => void
 }

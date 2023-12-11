@@ -3,8 +3,9 @@ import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { useAccount, useNetwork } from 'wagmi'
 
+import type { IUserSafeList } from '~/types'
 import { fetchUserSafesRaw } from '~/services/safes'
-import { timeout, type IUserSafeList, isAddress, DEFAULT_NETWORK_ID } from '~/utils'
+import { timeout, isAddress, DEFAULT_NETWORK_ID } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { useGeb } from '~/hooks'
 

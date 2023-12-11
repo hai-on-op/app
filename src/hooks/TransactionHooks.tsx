@@ -5,7 +5,8 @@ import { utils as gebUtils } from '@hai-on-op/sdk'
 import { BigNumber } from 'ethers'
 import { useAccount, useNetwork } from 'wagmi'
 
-import { newTransactionsFirst, type ITransaction } from '~/utils'
+import type { ITransaction } from '~/types'
+import { newTransactionsFirst } from '~/utils'
 import store, { useStoreDispatch, useStoreState } from '~/store'
 
 type TransactionAdder = (

@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import ReactPaginate from 'react-paginate'
 
-import { type IPaging } from '~/utils'
+import type { IPaging } from '~/types'
 
 import styled from 'styled-components'
 import { Caret } from './Icons/Caret'

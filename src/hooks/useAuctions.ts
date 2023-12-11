@@ -13,7 +13,6 @@ import { useAccount } from 'wagmi'
 
 import type { AuctionEventType, IAuction, ICollateralAuction } from '~/types'
 import { floatsTypes } from '~/utils'
-import _ from '~/utils/lodash'
 import { useGeb } from './useGeb'
 
 export function useGetAuctions(type: AuctionEventType, tokenSymbol?: string) {
@@ -85,9 +84,15 @@ export function useCollateralAuctions(tokenSymbol: string): ICollateralAuction[]
             }
 
             const filteredAuctions = auctionsList.map((auc: SDKCollateralAuction) => {
-                const { createdAt, createdAtTransaction, amountToSell, amountToRaise, biddersList } = auc
+                const {
+                    createdAt,
+                    createdAtTransaction,
+                    amountToSell,
+                    amountToRaise,
+                    biddersList,
+                } = auc
+                const { startedBy = '' } = auc as any
 
-                const startedBy = _.get(auc, 'startedBy', '')
                 // Amount to sell = collateral
                 // Amout to raise = hai
                 const collateralBought = biddersList.reduce((acc, bid) => acc.add(bid.bid), BigNumber.from('0'))

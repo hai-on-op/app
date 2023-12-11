@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 
-import type { SortableHeader } from '~/types'
-import { Status, type ISafe, formatNumberWithStyle, riskStateToStatus, getRatePercentage } from '~/utils'
+import type { ISafe, SortableHeader } from '~/types'
+import { Status, formatNumberWithStyle, riskStateToStatus, getRatePercentage } from '~/utils'
 import { useVault } from '~/providers/VaultProvider'
 
 import styled from 'styled-components'

@@ -4,7 +4,6 @@ import { utils as gebUtils } from '@hai-on-op/sdk'
 import { BigNumber, ethers, constants } from 'ethers'
 
 import { COIN_TICKER, formatNumber, sanitizeDecimals, toFixedString } from '~/utils'
-import _ from '~/utils/lodash'
 import { useStoreActions, useStoreState } from '~/store'
 
 import styled from 'styled-components'
@@ -19,8 +18,11 @@ const AuctionsPayment = () => {
     const [error, setError] = useState('')
     const {
         auctionModel: auctionsState,
-        popupsModel: popupsState,
-        connectWalletModel: connectWalletState,
+        popupsModel: { auctionOperationPayload },
+        connectWalletModel: {
+            coinAllowance: haiAllowance = '0',
+            protAllowance: kiteAllowance = '0',
+        },
     } = useStoreState((state) => state)
     const { auctionModel: auctionsActions, popupsModel: popupsActions } = useStoreActions((state) => state)
 
@@ -35,50 +37,42 @@ const AuctionsPayment = () => {
 
     const selectedAuction = surplusOrDebtAuction ? surplusOrDebtAuction : selectedCollateralAuction
 
-    const sectionType = popupsState.auctionOperationPayload.auctionType
-    const isSettle = popupsState.auctionOperationPayload.type.includes('settle')
-    const isBid = popupsState.auctionOperationPayload.type.includes('bid')
-    const isClaim = popupsState.auctionOperationPayload.type.includes('claim')
-    const isBuyCollateral = popupsState.auctionOperationPayload.type.includes('buy')
+    const sectionType = auctionOperationPayload.auctionType
+    const isSettle = auctionOperationPayload.type.includes('settle')
+    const isBid = auctionOperationPayload.type.includes('bid')
+    const isClaim = auctionOperationPayload.type.includes('claim')
+    const isBuyCollateral = auctionOperationPayload.type.includes('buy')
 
-    const tokenSymbol = _.get(selectedAuction, 'tokenSymbol', undefined)
-    const auctionType = _.get(selectedAuction, 'englishAuctionType', 'DEBT')
-    const buyInitialAmount = _.get(selectedAuction, 'buyInitialAmount', '0')
-    const sellInitialAmount = _.get(selectedAuction, 'sellInitialAmount', '0')
-    const bids = _.get(selectedAuction, 'englishAuctionBids', '[]')
-    const biddersList = _.get(selectedAuction, 'biddersList', '[]')
-    const remainingCollateral = _.get(selectedAuction, 'remainingCollateral', '0')
-    const remainingToRaise = _.get(selectedAuction, 'remainingToRaiseE18', '0')
+    const {
+        tokenSymbol,
+        englishAuctionType: auctionType = 'DEBT',
+        buyInitialAmount = '0',
+        sellInitialAmount = '0',
+        englishAuctionBids: bids = [],
+        biddersList = [],
+        remainingCollateral = '0',
+        remainingToRaiseE18: remainingToRaise = '0',
+        sellAmount = '0',
+        buyAmount = '0',
+        buyToken = 'COIN',
+        sellToken = 'PROTOCOL_TOKEN',
+        auctionId = 1,
+        auctionDeadline = '',
+    } = selectedAuction as any
 
-    const sellAmount = _.get(selectedAuction, 'sellAmount', '0')
-    const buyAmount = _.get(selectedAuction, 'buyAmount', '0')
-
-    const buyToken = _.get(selectedAuction, 'buyToken', 'COIN')
-    const sellToken = _.get(selectedAuction, 'sellToken', 'PROTOCOL_TOKEN')
-    const auctionId = _.get(selectedAuction, 'auctionId', 1)
-
-    // const bidIncrease: string = _.get(selectedAuction, 'englishAuctionConfiguration.bidIncrease', '1')
-    const bidIncreaseBN = _.get(
-        auctionsState,
-        'auctionsData.surplusAuctionHouseParams.bidIncrease',
-        '1010000000000000000'
-    )
+    // const { bidIncrease = '1' } = (selectedAuction as any)?.englishAuctionConfiguration || {}
+    const bidIncreaseBN = auctionsState.auctionsData?.surplusAuctionHouseParams.bidIncrease || '1010000000000000000'
     const bidIncrease: string = ethers.utils.formatEther(bidIncreaseBN)
-    // const debt_amountSoldIncrease: string = _.get(
-    //     selectedAuction,
-    //     'englishAuctionConfiguration.DEBT_amountSoldIncrease',
-    //     '1'
-    // )
-    const bidDecreseBN = _.get(auctionsState, 'auctionsData.debtAuctionHouseParams.bidDecrease', '1050000000000000000')
-    const debt_amountSoldIncrease: string = ethers.utils.formatEther(bidDecreseBN)
+    // const debt_amountSoldIncrease = (selectedAuction as any)?.englishAuctionConfiguration.DEBT_amountSoldIncrease || '1'
+    const bidDecreaseBN = auctionsState.auctionsData?.debtAuctionHouseParams.bidDecrease || '1050000000000000000'
+    const debt_amountSoldIncrease: string = ethers.utils.formatEther(bidDecreaseBN)
 
-    const auctionDeadline = _.get(selectedAuction, 'auctionDeadline', '')
     const isOngoingAuction = auctionDeadline ? Number(auctionDeadline) * 1000 > Date.now() : false
 
-    const haiBalance = _.get(coinBalances, 'hai', '0')
-    const kiteBalance = _.get(coinBalances, 'kite', '0')
-    const haiAllowance = _.get(connectWalletState, 'coinAllowance', '0')
-    const kiteAllowance = _.get(connectWalletState, 'protAllowance', '0')
+    const {
+        hai: haiBalance = '0',
+        kite: kiteBalance = '0',
+    } = coinBalances
 
     const buySymbol = buyToken === 'COIN' ? COIN_TICKER : 'KITE'
     const sellSymbol = sellToken === 'COIN' ? COIN_TICKER : 'KITE'
@@ -130,7 +124,7 @@ const AuctionsPayment = () => {
                 if (isOngoingAuction) {
                     // We need to bid N% less than the current best bid
                     return gebUtils
-                        .wadToFixed(sellAmountBN.mul(100).div(bidDecreseBN).mul(gebUtils.WAD).div(100))
+                        .wadToFixed(sellAmountBN.mul(100).div(bidDecreaseBN).mul(gebUtils.WAD).div(100))
                         .toString()
                 } else {
                     // TODO: check those calcs
@@ -142,7 +136,7 @@ const AuctionsPayment = () => {
             } else {
                 // We need to bid N% less than the current best bid
                 return gebUtils
-                    .wadToFixed(sellAmountBN.mul(100).div(bidDecreseBN).mul(gebUtils.WAD).div(100))
+                    .wadToFixed(sellAmountBN.mul(100).div(bidDecreaseBN).mul(gebUtils.WAD).div(100))
                     .toString()
             }
         }

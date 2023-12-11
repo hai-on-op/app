@@ -1,5 +1,5 @@
 import { Geb, IDebtAuction, ICollateralAuction, ISurplusAuction } from '@hai-on-op/sdk'
-import { COLLATERAL_BATCH_SIZE, DEBT_BATCH_SIZE, SURPLUS_BATCH_SIZE } from './constants'
+import { COLLATERAL_BATCH_SIZE, DEBT_BATCH_SIZE, SURPLUS_BATCH_SIZE } from '../constants'
 
 async function fetchAuctions(
     fetchFunction: (startBlock: number, endBlock: number) => Promise<{ auctions: any[] }>,

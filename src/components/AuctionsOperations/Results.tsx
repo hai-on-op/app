@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 
 import { formatNumber, COIN_TICKER } from '~/utils'
-import _ from '~/utils/lodash'
 import { useStoreState } from '~/store'
 
 import styled from 'styled-components'
@@ -22,14 +21,16 @@ const Results = () => {
     } = auctionsState
     const selectedAuction = surplusOrDebtAuction ? surplusOrDebtAuction : selectedCollateralAuction
 
-    const buyInititalAmount = _.get(selectedAuction, 'buyInitialAmount', '0')
-    const sellInitialAmount = _.get(selectedAuction, 'sellInitialAmount', '0')
-    const auctionType = _.get(selectedAuction, 'englishAuctionType', 'DEBT')
-    const auctionId = _.get(selectedAuction, 'auctionId', '')
-    const buyToken = _.get(selectedAuction, 'buyToken', 'COIN')
-    const sellToken = _.get(selectedAuction, 'sellToken', 'PROTOCOL_TOKEN')
-    const sellAmount = _.get(selectedAuction, 'sellAmount', '0')
-    const tokenSymbol = _.get(selectedAuction, 'tokenSymbol', undefined)
+    const {
+        buyInitialAmount = '0',
+        sellInitialAmount = '0',
+        englishAuctionType: auctionType = 'DEBT',
+        auctionId = '',
+        buyToken = 'COIN',
+        sellToken = 'PROTOCOL_TOKEN',
+        sellAmount = '0',
+        tokenSymbol,
+    } = selectedAuction as any
 
     const buySymbol = buyToken === 'PROTOCOL_TOKEN_LP'
         ? 'KITE/ETH LP'
@@ -59,7 +60,7 @@ const Results = () => {
             case 'DEBT':
                 return {
                     firstLabel: `${buySymbol} to Bid`,
-                    firstValue: buyInititalAmount,
+                    firstValue: buyInitialAmount,
                     secondLabel: `${sellSymbol} to Receive`,
                     secondValue: amount,
                 }

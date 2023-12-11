@@ -1,5 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
+
 import error from './assets/error.svg'
 
 interface State {

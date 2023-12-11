@@ -1,28 +1,24 @@
-import {
-    getCollateralRatio,
-    getEtherscanLink,
-    getLiquidationPrice,
-    ratioChecker,
-    returnTotalValue,
-    safeIsSafe,
-} from './helper'
+import { ChainId } from './constants'
+import { getEtherscanLink } from './helper'
+import { returnTotalValue } from './math'
+import { getCollateralRatio, getLiquidationPrice, ratioChecker, safeIsSafe } from './vaults'
 
 describe('utils', () => {
     describe('#getEtherscanLink', () => {
         it('correct for tx', () => {
-            expect(getEtherscanLink(1, 'abc', 'transaction')).toEqual('https://optimistic.etherscan.io/tx/abc')
+            expect(getEtherscanLink(ChainId.MAINNET, 'abc', 'transaction')).toEqual('https://optimistic.etherscan.io/tx/abc')
         })
         it('correct for token', () => {
-            expect(getEtherscanLink(1, 'abc', 'token')).toEqual('https://optimistic.etherscan.io/token/abc')
+            expect(getEtherscanLink(ChainId.MAINNET, 'abc', 'token')).toEqual('https://optimistic.etherscan.io/token/abc')
         })
         it('correct for address', () => {
-            expect(getEtherscanLink(1, 'abc', 'address')).toEqual('https://optimistic.etherscan.io/address/abc')
+            expect(getEtherscanLink(ChainId.MAINNET, 'abc', 'address')).toEqual('https://optimistic.etherscan.io/address/abc')
         })
         it('unrecognized chain id defaults to mainnet', () => {
-            expect(getEtherscanLink(2, 'abc', 'address')).toEqual('https://optimistic.etherscan.io/address/abc')
+            expect(getEtherscanLink(2 as ChainId, 'abc', 'address')).toEqual('https://optimistic.etherscan.io/address/abc')
         })
         it('goerli optimism', () => {
-            expect(getEtherscanLink(420, 'abc', 'address')).toEqual('https://goerli-optimism.etherscan.io/address/abc')
+            expect(getEtherscanLink(ChainId.OPTIMISM_GOERLI, 'abc', 'address')).toEqual('https://goerli-optimism.etherscan.io/address/abc')
         })
     })
 

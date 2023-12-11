@@ -2,8 +2,9 @@ import { JsonRpcSigner } from '@ethersproject/providers/lib/json-rpc-provider'
 import { Geb, TransactionRequest } from '@hai-on-op/sdk'
 import { BigNumber, ethers, utils as ethersUtils } from 'ethers'
 
+import type { ISafeData } from '~/types'
+import { getNetworkName } from '~/utils'
 import { handlePreTxGasEstimate } from '~/hooks'
-import { ISafeData, getNetworkName } from '~/utils'
 
 const abi = ['function drop() public view returns ()']
 

@@ -10,13 +10,9 @@ import {
     useRef,
 } from 'react'
 
-import type { ReactChildren } from '~/types'
+import type { Collateral, Debt, FormState, ISafe, ReactChildren } from '~/types'
 import {
     DEFAULT_SAFE_STATE,
-    type Collateral,
-    type Debt,
-    type FormState,
-    type ISafe,
     Status,
     VaultAction,
     VaultInfoError,
