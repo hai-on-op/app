@@ -51,7 +51,7 @@ export function Overview() {
                 <Text $fontWeight={700}>
                     Vault Overview {vault ? `#${vault.id}`: ''}
                 </Text>
-                {!!simulation && (
+                {!!simulation && !!vault && (
                     <StatusLabel
                         status={Status.CUSTOM}
                         background="gradient">

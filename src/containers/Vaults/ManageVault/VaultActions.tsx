@@ -58,9 +58,9 @@ export function VaultActions() {
             case VaultAction.CREATE: {
                 const { deposit = '0', borrow = '0' } = formState
                 if (Number(deposit) <= 0 || Number(borrow) <= 0) {
-                    return [false, 'Create Vault']
+                    return [false, 'Open Vault']
                 }
-                label = 'Create Vault'
+                label = 'Open Vault'
                 break
             }
             case VaultAction.DEPOSIT_BORROW: {

@@ -88,7 +88,7 @@ export function Modal({
                     </>)}
                 </Hideable>
                 {/* handle transaction and other loading/success/error states without overwriting content */}
-                {!ignoreWaiting && isWaitingModalOpen && <WaitingModalContent/>}
+                {!ignoreWaiting && isWaitingModalOpen && <WaitingModalContent onClose={onClose}/>}
                 <FloatingElements clouds={clouds}/>
             </ModalContainer>
         </Overlay>,

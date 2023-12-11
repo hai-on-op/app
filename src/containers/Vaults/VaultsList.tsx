@@ -1,7 +1,8 @@
 import { type Dispatch, type SetStateAction, useMemo, useState } from 'react'
 import { BigNumber } from 'ethers'
 
-import { getRatePercentage, type AvailableVaultPair, formatNumberWithStyle } from '~/utils'
+import type { AvailableVaultPair } from '~/types'
+import { getRatePercentage, formatNumberWithStyle } from '~/utils'
 import { useStoreState } from '~/store'
 import { useVault } from '~/providers/VaultProvider'
 

@@ -58,7 +58,7 @@ export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
         popupsActions.setIsWaitingModalOpen(true)
         popupsActions.setWaitingPayload({
             title: 'Waiting For Confirmation',
-            text: action === VaultAction.CREATE ? 'Create Vault': 'Modify Vault',
+            text: action === VaultAction.CREATE ? 'Open Vault': 'Modify Vault',
             hint: 'Confirm this transaction in your wallet',
             status: ActionState.LOADING,
         })
