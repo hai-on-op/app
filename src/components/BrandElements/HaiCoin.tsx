@@ -1,12 +1,13 @@
 import { useState } from 'react'
 
+import type { TokenKey } from '~/types'
 import { TOKEN_LOGOS } from '~/utils'
 
 import styled, { css, keyframes } from 'styled-components'
 import { CenteredFlex } from '~/styles'
 
 type HaiCoinProps = {
-    variant?: keyof typeof TOKEN_LOGOS,
+    variant?: TokenKey,
     width?: string,
     style?: object,
     animated?: boolean,

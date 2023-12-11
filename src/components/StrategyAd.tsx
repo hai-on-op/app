@@ -1,4 +1,4 @@
-import { TOKEN_LOGOS } from '~/utils'
+import type { TokenKey } from '~/types'
 
 import styled from 'styled-components'
 import { DashedContainerStyle, Flex, HaiButton, Text } from '~/styles'
@@ -6,16 +6,16 @@ import { ExternalLink } from '~/components/ExternalLink'
 import { FloatingElements, type FloatingElementsProps } from '~/components/BrandElements/FloatingElements'
 import { HaiArrow } from '~/components/Icons/HaiArrow'
 
-export type EarnStrategyProps = {
+export type StrategyAdProps = {
     heading: string,
     status?: string,
     description: string,
     cta?: string,
     ctaLink: string,
-    tokenImages: (keyof typeof TOKEN_LOGOS)[],
+    tokenImages: TokenKey[],
     bgVariant?: number,
 }
-export function EarnStrategy({
+export function StrategyAd({
     heading,
     status = 'NOW LIVE',
     description,
@@ -23,7 +23,7 @@ export function EarnStrategy({
     ctaLink,
     tokenImages,
     bgVariant = 0,
-}: EarnStrategyProps) {
+}: StrategyAdProps) {
     const { clouds = [], coins = [] } = backgroundElementTransforms[
         bgVariant % backgroundElementTransforms.length
     ]

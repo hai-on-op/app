@@ -1,6 +1,4 @@
-import { TOKEN_LOGOS } from '~/utils'
-
-import type { SplashImage } from '~/types'
+import type { SplashImage, TokenKey } from '~/types'
 
 import { Cloud } from './Cloud'
 import { Elf } from './Elf'
@@ -10,7 +8,7 @@ export type FloatingElementsProps = {
     elves?: SplashImage[],
     clouds?: SplashImage[],
     coins?: (Omit<SplashImage, 'index'> & {
-        index: number | keyof typeof TOKEN_LOGOS,
+        index: number | TokenKey,
         thickness?: number
     })[],
 }

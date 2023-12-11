@@ -2,7 +2,7 @@ import { type Dispatch, type SetStateAction, useMemo, useState } from 'react'
 import { BigNumber } from 'ethers'
 
 import type { AvailableVaultPair } from '~/types'
-import { getRatePercentage, formatNumberWithStyle } from '~/utils'
+import { getRatePercentage, formatNumberWithStyle, LINK_TO_DOCS } from '~/utils'
 import { useStoreState } from '~/store'
 import { useVault } from '~/providers/VaultProvider'
 
@@ -11,6 +11,7 @@ import { NavContainer } from '~/components/NavContainer'
 import { CheckboxButton } from '~/components/CheckboxButton'
 import { BrandedDropdown, DropdownOption } from '~/components/BrandedDropdown'
 import { ProxyPrompt } from '~/components/ProxyPrompt'
+import { StrategyAd, type StrategyAdProps } from '~/components/StrategyAd'
 import { AvailableVaultsTable } from './AvailableVaultsTable'
 import { MyVaultsTable } from './MyVaultsTable'
 
@@ -19,6 +20,23 @@ const assets = [
     'WETH',
     'WSTETH',
     'OP',
+]
+
+const strategies: StrategyAdProps[] = [
+    {
+        heading: 'OP REWARDS',
+        status: 'NOW LIVE',
+        description: 'Earn OP tokens by minting & borrowing HAI',
+        ctaLink: LINK_TO_DOCS,
+        tokenImages: ['OP'],
+    },
+    {
+        heading: 'KITE REWARDS',
+        status: 'NOW LIVE',
+        description: 'Earn KITE tokens by minting & borrowing HAI',
+        ctaLink: LINK_TO_DOCS,
+        tokenImages: ['KITE'],
+    },
 ]
 
 type VaultsListProps = {
@@ -123,13 +141,23 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
                 )
             }>
             {navIndex === 0
-                ? !filteredAvailableVaults.length
-                    ? (
-                        <CenteredFlex $width="100%">
-                            <Text>No available vaults matched your search criteria</Text>
-                        </CenteredFlex>
-                    )
-                    : <AvailableVaultsTable rows={filteredAvailableVaults}/>
+                ? (<>
+                    {!filteredAvailableVaults.length
+                        ? (
+                            <CenteredFlex $width="100%">
+                                <Text>No available vaults matched your search criteria</Text>
+                            </CenteredFlex>
+                        )
+                        : <AvailableVaultsTable rows={filteredAvailableVaults}/>
+                    }
+                    {strategies.map((strat, i) => (
+                        <StrategyAd
+                            key={i}
+                            bgVariant={i}
+                            {...strat}
+                        />
+                    ))}
+                </>)
                 : (
                     <ProxyPrompt onCreateVault={!safeState.list.length
                         ? () => setActiveVault({

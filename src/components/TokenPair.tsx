@@ -1,9 +1,9 @@
+import type { TokenKey } from '~/types'
 import { TOKEN_LOGOS } from '~/utils'
 
 import styled, { css } from 'styled-components'
 import { CenteredFlex, Flex, Text } from '~/styles'
 
-type TokenKey = keyof typeof TOKEN_LOGOS
 type TokenPairProps = {
     tokens: [TokenKey] | [TokenKey, TokenKey],
     size?: number,

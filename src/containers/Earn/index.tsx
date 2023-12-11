@@ -1,13 +1,12 @@
 import { useMemo, useState } from 'react'
 
-import { LINK_TO_DOCS } from '~/utils'
+import type { Strategy } from '~/types'
 
 import { NavContainer } from '~/components/NavContainer'
-import { EarnStrategy, type EarnStrategyProps } from './Strategy'
-import { type DummyStrategy, StrategyTable } from './StrategyTable'
+import { StrategyTable } from './StrategyTable'
 import { CheckboxButton } from '~/components/CheckboxButton'
 
-const dummyRows: DummyStrategy[] = [
+const dummyRows: Strategy[] = [
     {
         pair: ['WETH', 'HAI'],
         rewards: ['OP', 'KITE'],
@@ -36,22 +35,41 @@ const dummyRows: DummyStrategy[] = [
         userApy: 0.11,
         earnPlatform: 'velodrome',
     },
-]
-
-const strategies: EarnStrategyProps[] = [
     {
-        heading: 'OP REWARDS',
-        status: 'NOW LIVE',
-        description: 'Earn OP tokens by minting & borrowing HAI',
-        ctaLink: LINK_TO_DOCS,
-        tokenImages: ['OP'],
+        pair: ['WETH'],
+        rewards: ['OP', 'KITE'],
+        tvl: '$4.6M',
+        vol24hr: '$1.2M',
+        apy: 0.09,
+        userPosition: '$169k',
+        userApy: 0.11,
     },
     {
-        heading: 'KITE REWARDS',
-        status: 'NOW LIVE',
-        description: 'Earn KITE tokens by minting & borrowing HAI',
-        ctaLink: LINK_TO_DOCS,
-        tokenImages: ['KITE'],
+        pair: ['OP'],
+        rewards: ['OP', 'KITE'],
+        tvl: '$4.6M',
+        vol24hr: '$1.2M',
+        apy: 0.09,
+        userPosition: '$169k',
+        userApy: 0.11,
+    },
+    {
+        pair: ['WBTC'],
+        rewards: ['OP', 'KITE'],
+        tvl: '$4.6M',
+        vol24hr: '$1.2M',
+        apy: 0.09,
+        userPosition: '$169k',
+        userApy: 0.11,
+    },
+    {
+        pair: ['WSTETH'],
+        rewards: ['OP', 'KITE'],
+        tvl: '$4.6M',
+        vol24hr: '$1.2M',
+        apy: 0.09,
+        userPosition: '$169k',
+        userApy: 0.11,
     },
 ]
 
@@ -77,13 +95,6 @@ export function Earn() {
                 </CheckboxButton>
             )}>
             <StrategyTable rows={filteredRows}/>
-            {strategies.map((strat, i) => (
-                <EarnStrategy
-                    key={i}
-                    bgVariant={i}
-                    {...strat}
-                />
-            ))}
         </NavContainer>
     )
 }

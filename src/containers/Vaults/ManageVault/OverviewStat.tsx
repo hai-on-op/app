@@ -1,4 +1,5 @@
-import { Status, TOKEN_LOGOS } from '~/utils'
+import type { TokenKey } from '~/types'
+import { Status } from '~/utils'
 
 import styled, { css } from 'styled-components'
 import { CenteredFlex, type DashedContainerProps, DashedContainerStyle, Flex, Text } from '~/styles'
@@ -8,7 +9,7 @@ import { Tooltip } from '~/components/Tooltip'
 import { ProgressBar, ProgressBarProps } from '~/components/ProgressBar'
 
 type OverviewStatProps = {
-    token?: keyof typeof TOKEN_LOGOS,
+    token?: TokenKey,
     value: string | number,
     label: string,
     tooltip?: string,

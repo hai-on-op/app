@@ -1,45 +1,25 @@
 import { useMemo, useState } from 'react'
 
-import type { SortableHeader } from '~/types'
-import { TOKEN_LOGOS } from '~/utils'
+import type { SortableHeader, Strategy } from '~/types'
 
 import styled from 'styled-components'
-import { CenteredFlex, Flex, Grid, HaiButton, Text } from '~/styles'
+import { Flex, Grid, Text } from '~/styles'
 import { RewardsTokenPair, TokenPair } from '~/components/TokenPair'
 import { TableHeaderItem } from '~/components/TableHeaderItem'
-import { HaiArrow } from '~/components/Icons/HaiArrow'
-
-import uniswapLogo from '~/assets/uniswap-icon.svg'
-import velodromeLogo from '~/assets/velodrome-img.svg'
-
-const logoMap = {
-    uniswap: uniswapLogo,
-    velodrome: velodromeLogo,
-}
-
-type TokenKey = keyof typeof TOKEN_LOGOS
-export type DummyStrategy = {
-    pair: [TokenKey, TokenKey],
-    rewards: [TokenKey, TokenKey],
-    tvl: string,
-    vol24hr: string,
-    apy: number,
-    userPosition?: string,
-    userApy?: number,
-    earnPlatform: 'uniswap' | 'velodrome',
-}
+import { StrategyTableButton } from './StrategyTableButton'
 
 const sortableHeaders: SortableHeader[] = [
     { label: 'Asset Pair' },
+    { label: 'Strategy' },
     { label: 'TVL' },
-    { label: 'Vol. 24hr' },
+    // { label: 'Vol. 24hr' },
     { label: 'APY' },
     { label: 'My Position' },
     { label: 'My APY' },
 ]
 
 type StrategyTableProps = {
-    rows: DummyStrategy[]
+    rows: Strategy[]
 }
 export function StrategyTable({ rows }: StrategyTableProps) {
     const [sorting, setSorting] = useState<{ key: string, dir: 'asc' | 'desc'}>({
@@ -56,6 +36,15 @@ export function StrategyTable({ rows }: StrategyTableProps) {
                         : (a[0] < b[0] ? 1: -1)
                 })
             }
+            case 'Strategy': {
+                return rows.sort(({ earnPlatform: a }, { earnPlatform: b}) => {
+                    const stratA = a ? 'farm': 'borrow'
+                    const stratB = b ? 'farm': 'borrow'
+                    return sorting.dir === 'desc'
+                        ? (stratA > stratB ? 1: -1)
+                        : (stratA < stratB ? 1: -1)
+                })
+            }
             case 'TVL': {
                 return rows.sort(({ tvl: a }, { tvl: b }) => {
                     return sorting.dir === 'desc'
@@ -63,13 +52,15 @@ export function StrategyTable({ rows }: StrategyTableProps) {
                         : (a > b ? 1: -1)
                 })
             }
-            case 'Vol. 24hr': {
-                return rows.sort(({ vol24hr: a }, { vol24hr: b }) => {
-                    return sorting.dir === 'desc'
-                        ? (a < b ? 1: -1)
-                        : (a > b ? 1: -1)
-                })
-            }
+            // case 'Vol. 24hr': {
+            //     return rows.sort(({ vol24hr: a }, { vol24hr: b }) => {
+            //         if (!b) return -1
+            //         if (!a) return 1
+            //         return sorting.dir === 'desc'
+            //             ? (a < b ? 1: -1)
+            //             : (a > b ? 1: -1)
+            //     })
+            // }
             case 'APY': {
                 return rows.sort(({ apy: a }, { apy: b }) => {
                     return sorting.dir === 'desc'
@@ -126,43 +117,41 @@ export function StrategyTable({ rows }: StrategyTableProps) {
                 ))}
                 <Text></Text>
             </TableHeader>
-            {sortedRows.map(({ pair, rewards, tvl, vol24hr, apy, userPosition, userApy, earnPlatform }, i) => (
+            {sortedRows.map(({
+                pair,
+                rewards,
+                tvl,
+                apy,
+                userPosition,
+                userApy,
+                earnPlatform,
+            }, i) => (
                 <TableRow key={i}>
                     <Grid
                         $columns="1fr min-content 12px"
                         $align="center"
                         $gap={12}>
-                        <TokenPair tokens={pair}/>
-                        <RewardsTokenPair tokens={rewards}/>
-                    </Grid>
-                    <Text $fontWeight={700}>{tvl}</Text>
-                    <Text $fontWeight={700}>{vol24hr}</Text>
-                    <Text $fontWeight={700}>{(apy * 100).toFixed(0)}%</Text>
-                    <Text $fontWeight={700}>{userPosition || '-'}</Text>
-                    <Text $fontWeight={700}>{userApy ? (userApy * 100).toFixed(0) + '%': '-'}</Text>
-                    <EarnButton>
-                        <CenteredFlex $gap={4}>
-                            <Text>Earn</Text>
-                            <HaiArrow
-                                size={15}
-                                direction="upRight"
-                            />
-                        </CenteredFlex>
                         <Flex
                             $justify="flex-start"
                             $align="center"
-                            $gap={earnPlatform === 'uniswap' ? 4: 12}>
-                            <img
-                                src={logoMap[earnPlatform]}
-                                alt=""
-                                width={earnPlatform === 'uniswap' ? 28: 20}
-                                height={earnPlatform === 'uniswap' ? 28: 20}
+                            $gap={8}>
+                            <TokenPair
+                                tokens={pair}
+                                hideLabel
                             />
-                            <Text>
-                                {earnPlatform.toUpperCase()}
-                            </Text>
+                            <Text $fontWeight={700}>{pair.join('/')}</Text>
                         </Flex>
-                    </EarnButton>
+                        <RewardsTokenPair tokens={rewards}/>
+                    </Grid>
+                    <Text $fontWeight={700}>{earnPlatform ? 'FARM': 'BORROW'}</Text>
+                    <Text $fontWeight={700}>{tvl}</Text>
+                    {/* <Text $fontWeight={700}>{vol24hr || '-'}</Text> */}
+                    <Text $fontWeight={700}>{(apy * 100).toFixed(0)}%</Text>
+                    <Text $fontWeight={700}>{userPosition || '-'}</Text>
+                    <Text $fontWeight={700}>{userApy ? (userApy * 100).toFixed(0) + '%': '-'}</Text>
+                    <Flex $justify="flex-end">
+                        <StrategyTableButton earnPlatform={earnPlatform}/>
+                    </Flex>
                 </TableRow>
             ))}
         </Table>
@@ -180,11 +169,11 @@ const Table = styled(Flex).attrs(props => ({
 const TableHeader = styled(Grid)`
     grid-template-columns: 3fr minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) 224px;
     align-items: center;
-    padding: 4px;
-    padding-left: 8px;
+    padding: 0px;
+    padding-left: 6px;
     font-size: 0.8rem;
 
-    & > * {
+    & > *:not(:last-child) {
         padding: 0 4px;
     }
 `
@@ -192,21 +181,5 @@ const TableRow = styled(TableHeader)`
     border-radius: 999px;
     &:hover {
         background-color: rgba(0,0,0,0.1);
-    }
-`
-
-const EarnButton = styled(HaiButton)`
-    height: 48px;
-    border: 2px solid rgba(0,0,0,0.1);
-    padding-left: 16px;
-    padding-right: 6px;
-    font-size: 0.8rem;
-
-    & > *:nth-child(2) {
-        background-color: white;
-        border-radius: 999px;
-        padding: 4px 12px;
-        width: 100%;
-        height: 36px;
     }
 `

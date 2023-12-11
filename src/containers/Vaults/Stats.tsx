@@ -22,6 +22,7 @@ export function BorrowStats() {
                 ?.currentPrice.value || '0'
             return total + parseFloat(collateral) * parseFloat(collateralPriceInUSD)
         }, 0)
+
         const totalDebtInUSD = list.reduce((total, { debt }) => {
             return total + parseFloat(debt) * parseFloat(liquidationData?.currentRedemptionPrice || '1')
         }, 0)
@@ -71,6 +72,8 @@ export function BorrowStats() {
             },
         ]
     }, [list, liquidationData])
+
+    if (!list.length) return null
 
     return (
         <Stats
