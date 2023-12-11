@@ -6,7 +6,7 @@ import { BigNumber } from 'ethers'
 import { useAccount, useNetwork } from 'wagmi'
 
 import type { ITransaction } from '~/types'
-import { newTransactionsFirst } from '~/utils'
+import { ActionState, newTransactionsFirst } from '~/utils'
 import store, { useStoreDispatch, useStoreState } from '~/store'
 
 type TransactionAdder = (
@@ -100,7 +100,7 @@ export async function handlePreTxGasEstimate(
         store.dispatch.popupsModel.setIsWaitingModalOpen(true)
         store.dispatch.popupsModel.setWaitingPayload({
             title: 'Transaction Failed.',
-            status: 'error',
+            status: ActionState.ERROR,
         })
         console.error(errorMessage)
         throw errorMessage
@@ -125,20 +125,20 @@ export function handleTransactionError(e: any) {
     if (typeof e === 'string' && (e.toLowerCase().includes('join') || e.toLowerCase().includes('exit'))) {
         popupsDispatch.setWaitingPayload({
             title: 'Cannot join/exit at this time.',
-            status: 'error',
+            status: ActionState.ERROR,
         })
         return
     }
     if (e?.code === 4001) {
         popupsDispatch.setWaitingPayload({
             title: 'Transaction Rejected.',
-            status: 'error',
+            status: ActionState.ERROR,
         })
         return
     }
     popupsDispatch.setWaitingPayload({
         title: 'Transaction Failed.',
-        status: 'error',
+        status: ActionState.ERROR,
     })
     console.error(`Transaction failed`, e)
     console.log('Required String', gebUtils.getRequireString(e))

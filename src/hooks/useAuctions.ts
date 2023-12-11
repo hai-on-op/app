@@ -12,7 +12,7 @@ import {
 import { useAccount } from 'wagmi'
 
 import type { AuctionEventType, IAuction, ICollateralAuction } from '~/types'
-import { floatsTypes } from '~/utils'
+import { ActionState, floatsTypes } from '~/utils'
 import { useGeb } from './useGeb'
 
 export function useGetAuctions(type: AuctionEventType, tokenSymbol?: string) {
@@ -236,7 +236,7 @@ export function useStartAuction() {
             popupsActions.setWaitingPayload({
                 title: 'Transaction Submitted',
                 hash: txResponse.hash,
-                status: 'success',
+                status: ActionState.SUCCESS,
             })
             await txResponse.wait()
         }
@@ -263,7 +263,7 @@ export function useStartAuction() {
             popupsActions.setWaitingPayload({
                 title: 'Transaction Submitted',
                 hash: txResponse.hash,
-                status: 'success',
+                status: ActionState.SUCCESS,
             })
             await txResponse.wait()
         }

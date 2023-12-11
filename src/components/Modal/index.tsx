@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import type { ReactChildren } from '~/types'
+import { useStoreState } from '~/store'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex } from '~/styles'
 import { X } from '../Icons/X'
 import { BrandedTitle } from '../BrandedTitle'
 import { FloatingElements, type FloatingElementsProps } from '../BrandElements/FloatingElements'
+import { WaitingModalContent } from './WaitingModalContent'
 
 export type ModalProps = {
     heading?: ReactChildren,
@@ -15,7 +17,8 @@ export type ModalProps = {
     footerContent?: ReactChildren,
     overrideContent?: ReactChildren,
     onClose?: () => void,
-    maxWidth?: string
+    maxWidth?: string,
+    ignoreWaiting?: boolean
 }
 export function Modal({
     heading,
@@ -24,7 +27,10 @@ export function Modal({
     overrideContent,
     onClose,
     maxWidth,
+    ignoreWaiting = false,
 }: ModalProps) {
+    const { isWaitingModalOpen } = useStoreState(({ popupsModel }) => popupsModel)
+
     const [container, setContainer] = useState<HTMLElement | null>(null)
 
     useEffect(() => {
@@ -38,7 +44,7 @@ export function Modal({
             start = start || timestamp
             const p = Math.min((timestamp - start) / duration, 1)
             const progress = 1 - Math.pow(1 - p, 3) // ease-out cubic
-            container.style.transform = `translateZ(${200 * (1 - progress)}px)`
+            container.style.transform = `translateZ(${-1000 * (1 - progress)}px)`
 
             if (progress < 1) anim = requestAnimationFrame(onLoop)
         }
@@ -54,30 +60,35 @@ export function Modal({
         <Overlay onClick={onClose}>
             <ModalContainer
                 ref={setContainer}
+                $width={!ignoreWaiting && isWaitingModalOpen ? '350px': '100%'}
                 $maxWidth={maxWidth}
                 onClick={(e: any) => e.stopPropagation()}>
-                {overrideContent || (<>
-                    <ModalHeader>
-                        {typeof heading === 'string'
-                            ? (
-                                <BrandedTitle
-                                    textContent={heading.toUpperCase()}
-                                    $fontSize="2.5em"
-                                />
-                            )
-                            : heading
-                        }
-                        {onClose && (
-                            <CloseContainer onClick={onClose}>
-                                <X size={14}/>
-                            </CloseContainer>
-                        )}
-                    </ModalHeader>
-                    <ModalBody>
-                        {children}
-                    </ModalBody>
-                    <ModalFooter>{footerContent}</ModalFooter>
-                </>)}
+                <Hideable hidden={!ignoreWaiting && isWaitingModalOpen}>
+                    {overrideContent || (<>
+                        <ModalHeader>
+                            {typeof heading === 'string'
+                                ? (
+                                    <BrandedTitle
+                                        textContent={heading.toUpperCase()}
+                                        $fontSize="2.5em"
+                                    />
+                                )
+                                : heading
+                            }
+                            {onClose && (
+                                <CloseContainer onClick={onClose}>
+                                    <X size={14}/>
+                                </CloseContainer>
+                            )}
+                        </ModalHeader>
+                        <ModalBody>
+                            {children}
+                        </ModalBody>
+                        <ModalFooter>{footerContent}</ModalFooter>
+                    </>)}
+                </Hideable>
+                {/* handle transaction and other loading/success/error states without overwriting content */}
+                {!ignoreWaiting && isWaitingModalOpen && <WaitingModalContent/>}
                 <FloatingElements clouds={clouds}/>
             </ModalContainer>
         </Overlay>,
@@ -99,14 +110,9 @@ const Overlay = styled(CenteredFlex)`
     z-index: 998;
 `
 
-export const ModalContainer = styled(Flex).attrs(props => ({
-    $column: true,
-    $justify: 'stretch',
-    $align: 'stretch',
-    ...props,
-}))<{ $maxWidth?: string }>`
+export const ModalContainer = styled(CenteredFlex)<{ $width?: string, $maxWidth?: string }>`
     position: absolute;
-    width: 100%;
+    width: ${({ $width = '100%' }) => $width};
     max-width: min(${({ $maxWidth = '720px' }) => $maxWidth}, calc(100vw - 48px));
     max-height: calc(100vh - 320px);
     z-index: 999;
@@ -115,9 +121,21 @@ export const ModalContainer = styled(Flex).attrs(props => ({
     border-radius: 24px;
     transform-style: preserve-3d;
 
+    transition: width 0.5s ease-out, height 0.5s ease-out;
+
     ${({ theme }) => theme.mediaWidth.upToExtraSmall`
         max-height: calc(100vh - 240px);
     `}
+`
+const Hideable = styled(Flex).attrs(props => ({
+    $column: true,
+    $justify: 'stretch',
+    $align: 'stretch',
+    ...props,
+}))`
+    width: 100%;
+    height: 100%;
+    display: ${({ hidden }) => hidden ? 'none': 'flex'};
 `
 
 export const ModalHeader = styled(Flex).attrs(props => ({

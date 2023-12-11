@@ -23,6 +23,7 @@ import {
     formatCollateralAuctions,
     SURPLUS_BATCH_SIZE,
     DEBT_BATCH_SIZE,
+    ActionState,
 } from '~/utils'
 import { IAuctionBid, IAuction, AuctionEventType, LoadingAuctionsData } from '~/types'
 import { StoreModel } from '~/model'
@@ -272,7 +273,7 @@ const auctionModel: AuctionModel = {
             storeActions.popupsModel.setWaitingPayload({
                 title: 'Transaction Submitted',
                 hash: txResponse.hash,
-                status: 'success',
+                status: ActionState.SUCCESS,
             })
             await txResponse.wait()
             actions.setIsSubmitting(false)
@@ -297,7 +298,7 @@ const auctionModel: AuctionModel = {
             storeActions.popupsModel.setWaitingPayload({
                 title: 'Transaction Submitted',
                 hash: txResponse.hash,
-                status: 'success',
+                status: ActionState.SUCCESS,
             })
             await txResponse.wait()
             actions.setIsSubmitting(false)
@@ -322,7 +323,7 @@ const auctionModel: AuctionModel = {
             storeActions.popupsModel.setWaitingPayload({
                 title: 'Transaction Submitted',
                 hash: txResponse.hash,
-                status: 'success',
+                status: ActionState.SUCCESS,
             })
             await txResponse.wait()
             actions.setIsSubmitting(false)
@@ -347,7 +348,7 @@ const auctionModel: AuctionModel = {
             storeActions.popupsModel.setWaitingPayload({
                 title: 'Transaction Submitted',
                 hash: txResponse.hash,
-                status: 'success',
+                status: ActionState.SUCCESS,
             })
             await txResponse.wait()
             actions.setIsSubmitting(false)

@@ -7,6 +7,7 @@ import type {
     IWaitingPayload,
     LoadingPayload,
 } from '~/types'
+import { ActionState } from '~/utils'
 
 export interface PopupsModel {
     isSettingsModalOpen: boolean
@@ -71,7 +72,7 @@ const popupsModel: PopupsModel = {
         title: '',
         text: '',
         hint: '',
-        status: 'loading',
+        status: ActionState.NONE,
         isCreate: false,
     },
     safeOperationPayload: {
@@ -147,7 +148,7 @@ const popupsModel: PopupsModel = {
                 title: '',
                 text: '',
                 hint: '',
-                status: 'loading',
+                status: ActionState.NONE,
                 isCreate: false,
             }
         }

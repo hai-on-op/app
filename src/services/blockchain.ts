@@ -84,10 +84,10 @@ export const handleRepayAndWithdraw = async (signer: JsonRpcSigner, safeData: IS
     const networkName = getNetworkName(chainId)
     const geb = new Geb(networkName, signer)
 
-    const totalDebtBN = ethersUtils.parseEther(safeData.totalDebt)
-    const totalCollateralBN = ethersUtils.parseEther(safeData.totalCollateral)
-    const collateralToFree = ethersUtils.parseEther(safeData.leftInput)
-    const haiToRepay = ethersUtils.parseEther(safeData.rightInput)
+    const totalDebtBN = ethersUtils.parseEther(safeData.totalDebt || '0')
+    const totalCollateralBN = ethersUtils.parseEther(safeData.totalCollateral || '0')
+    const collateralToFree = ethersUtils.parseEther(safeData.leftInput || '0')
+    const haiToRepay = ethersUtils.parseEther(safeData.rightInput || '0')
     const proxy = await geb.getProxyAction(signer._address)
 
     let txData: TransactionRequest = {}

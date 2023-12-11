@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useAccount, useNetwork } from 'wagmi'
 
-import { formatNumberWithStyle } from '~/utils'
+import { ActionState, formatNumberWithStyle } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { handleTransactionError, useEthersSigner, useGeb } from '~/hooks'
 
@@ -54,7 +54,7 @@ export function WrapETHModal(props: ModalProps) {
                 title: 'Waiting For Confirmation',
                 text: 'Wrapping ETH',
                 hint: 'Confirm this transaction in your wallet',
-                status: 'loading',
+                status: ActionState.LOADING,
             })
 
             await safeActions.wrapEther({

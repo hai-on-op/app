@@ -4,7 +4,7 @@ import { useAccount, useNetwork } from 'wagmi'
 
 import type { ReactChildren } from '~/types'
 import { useStoreActions, useStoreState } from '~/store'
-import { LINK_TO_DOCS, NETWORK_ID } from '~/utils'
+import { ActionState, LINK_TO_DOCS, NETWORK_ID } from '~/utils'
 import { handleTransactionError, useEthersSigner, useGeb, useTransactionAdder } from '~/hooks'
 
 import styled from 'styled-components'
@@ -50,7 +50,7 @@ export function ProxyPrompt({ children, onCreateVault }: ProxyPromptProps) {
                 title: 'Waiting For Confirmation',
                 text: `Creating new account`,
                 hint: 'Confirm this transaction in your wallet',
-                status: 'loading',
+                status: ActionState.LOADING,
             })
             const txResponse = await signer.sendTransaction(txData)
             connectWalletActions.setCtHash(txResponse.hash)
@@ -64,7 +64,7 @@ export function ProxyPrompt({ children, onCreateVault }: ProxyPromptProps) {
             popupsActions.setWaitingPayload({
                 title: 'Transaction Submitted',
                 hash: txResponse.hash,
-                status: 'success',
+                status: ActionState.SUCCESS,
             })
             // wait some blocks before continue to the next step
             await txResponse.wait(5)

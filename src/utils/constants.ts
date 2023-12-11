@@ -73,6 +73,13 @@ export enum Status {
     CUSTOM = 'CUSTOM'
 }
 
+export enum ActionState {
+    NONE = '',
+    LOADING = 'loading',
+    SUCCESS = 'success',
+    ERROR = 'error'
+}
+
 export const floatsTypes = {
     WAD: 18,
     RAY: 27,

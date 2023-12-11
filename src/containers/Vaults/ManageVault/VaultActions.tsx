@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 
-import { VaultAction, formatNumberWithStyle } from '~/utils'
-import { useStoreState } from '~/store'
+import { ActionState, VaultAction, formatNumberWithStyle } from '~/utils'
+import { useStoreActions, useStoreState } from '~/store'
 import { useVault } from '~/providers/VaultProvider'
 import { ApprovalState, useProxyAddress, useTokenApproval } from '~/hooks'
 
@@ -15,6 +15,7 @@ import { VaultActionError } from './VaultActionError'
 export function VaultActions() {
     const proxyAddress = useProxyAddress()
     const { safeModel: safeState } = useStoreState(state => state)
+    const { safeModel: safeActions } = useStoreActions(actions => actions)
 
     const {
         vault,
@@ -115,9 +116,9 @@ export function VaultActions() {
                                 $variant="yellowish"
                                 $width="100%"
                                 $justify="center"
-                                disabled={!buttonActive || !safeState.isSuccessfulTx}
+                                disabled={!buttonActive || safeState.transactionState === ActionState.LOADING}
                                 onClick={() => setReviewActive(true)}>
-                                {!safeState.isSuccessfulTx
+                                {safeState.transactionState === ActionState.LOADING
                                     ? 'Pending Transaction...'
                                     : `Review ${buttonLabel}`
                                 }
@@ -149,9 +150,9 @@ export function VaultActions() {
                                 $variant="yellowish"
                                 $width="100%"
                                 $justify="center"
-                                disabled={!buttonActive || !safeState.isSuccessfulTx}
+                                disabled={!buttonActive || safeState.transactionState === ActionState.LOADING}
                                 onClick={() => setReviewActive(true)}>
-                                {!safeState.isSuccessfulTx
+                                {safeState.transactionState === ActionState.LOADING
                                     ? 'Pending Transaction...'
                                     : `Review ${buttonLabel}`
                                 }
@@ -169,7 +170,12 @@ export function VaultActions() {
     const isDepositBorrowOrCreate = action === VaultAction.DEPOSIT_BORROW || action === VaultAction.CREATE
 
     return (<>
-        {reviewActive && <ReviewVaultTxModal onClose={() => setReviewActive(false)}/>}
+        {reviewActive && (
+            <ReviewVaultTxModal onClose={() => {
+                setReviewActive(false)
+                safeActions.setTransactionState(ActionState.NONE)
+            }}/>
+        )}
         <Container>
             <Header $pad={action === VaultAction.CREATE}>
                 <Flex

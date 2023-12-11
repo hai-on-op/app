@@ -4,7 +4,7 @@ import { MaxUint256 } from '@ethersproject/constants'
 import { BigNumber, ethers } from 'ethers'
 import { useAccount } from 'wagmi'
 
-import { sanitizeDecimals } from '~/utils'
+import { ActionState, sanitizeDecimals } from '~/utils'
 import store from '~/store'
 
 import { calculateGasMargin, handleTransactionError } from './TransactionHooks'
@@ -124,7 +124,7 @@ export function useTokenApproval(
         store.dispatch.popupsModel.setWaitingPayload({
             title: 'Waiting for confirmation',
             text: 'Confirm this transaction in your wallet',
-            status: 'loading',
+            status: ActionState.LOADING,
         })
 
         let useExact = exactApproval
@@ -155,7 +155,7 @@ export function useTokenApproval(
                 store.dispatch.popupsModel.setWaitingPayload({
                     title: 'Transaction Submitted',
                     hash: txResponse.hash,
-                    status: 'success',
+                    status: ActionState.SUCCESS,
                 })
                 // we need to wait until the transaction is mined to fetch the new allowance
                 txResponse.wait().then(() => {

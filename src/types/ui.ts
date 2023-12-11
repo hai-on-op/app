@@ -1,5 +1,7 @@
 import { type CSSProperties, type ReactNode, type SVGProps } from 'react'
 
+import { ActionState } from '~/utils'
+
 export type ReactChildren = JSX.Element | ReactNode | ReactNode[]
 
 export type IconProps = Omit<SVGProps<SVGElement>, 'ref'> & {
@@ -69,7 +71,7 @@ export type IWaitingPayload = {
     title?: string
     text?: string
     hint?: string
-    status: string
+    status: ActionState
     hash?: string
     isCreate?: boolean
 }

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { useAccount, useNetwork } from 'wagmi'
 
-import { DEFAULT_NETWORK_ID, DEFAULT_SAFE_STATE, VaultAction } from '~/utils'
+import { ActionState, DEFAULT_NETWORK_ID, DEFAULT_SAFE_STATE, VaultAction } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { useVault } from '~/providers/VaultProvider'
 import { handleTransactionError, useEthersSigner, useGeb } from '~/hooks'
@@ -54,13 +54,13 @@ export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
     const handleConfirm = useCallback(async () => {
         if (!account || !signer) return
 
-        safeActions.setIsSuccessfulTx(false)
+        safeActions.setTransactionState(ActionState.LOADING)
         popupsActions.setIsWaitingModalOpen(true)
         popupsActions.setWaitingPayload({
             title: 'Waiting For Confirmation',
             text: action === VaultAction.CREATE ? 'Create Vault': 'Modify Vault',
             hint: 'Confirm this transaction in your wallet',
-            status: 'loading',
+            status: ActionState.LOADING,
         })
         try {
             connectWalletActions.setIsStepLoading(true)
@@ -74,7 +74,7 @@ export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
                     break
                 }
                 case VaultAction.DEPOSIT_BORROW: {
-                    if (!singleSafe) throw new Error('Safe marked for modification, but no safe is selected')
+                    if (!singleSafe) throw new Error('Vault marked for modification, but no vault is selected')
                     await safeActions.depositAndBorrow({
                         safeData,
                         signer,
@@ -83,7 +83,7 @@ export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
                     break
                 }
                 case VaultAction.WITHDRAW_REPAY: {
-                    if (!singleSafe) throw new Error('Safe marked for modification, but no safe is selected')
+                    if (!singleSafe) throw new Error('Vault marked for modification, but no vault is selected')
                     await safeActions.repayAndWithdraw({
                         safeData,
                         signer,
@@ -93,13 +93,13 @@ export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
                 }
                 default: throw new Error(`Invalid operation (${action})`)
             }
-            safeActions.setIsSuccessfulTx(true)
+            safeActions.setTransactionState(ActionState.SUCCESS)
             safeActions.setIsSafeCreated(true)
             popupsActions.setIsWaitingModalOpen(false)
             onClose?.()
             reset()
         } catch(e: any) {
-            safeActions.setIsSuccessfulTx(false)
+            safeActions.setTransactionState(ActionState.ERROR)
             handleTransactionError(e)
         }
     }, [

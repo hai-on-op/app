@@ -134,24 +134,21 @@ export function VaultProvider({ action, setAction, children }: Props) {
     }, {})
 
     useEffect(() => {
-        if (action === VaultAction.DEPOSIT_BORROW || action === VaultAction.CREATE) {
-            safeActions.setSafeData({
-                ...dataRef.current,
-                leftInput: formState.deposit?.toString() || '',
-                rightInput: formState.borrow?.toString() || '',
-            })
-        }
-        else if (action === VaultAction.WITHDRAW_REPAY) {
-            safeActions.setSafeData({
-                ...dataRef.current,
-                leftInput: formState.withdraw?.toString() || '',
-                rightInput: formState.repay?.toString() || '',
-            })
-        }
-        else safeActions.setSafeData({
-            ...dataRef.current,
+        const inputs = {
             leftInput: '',
             rightInput: '',
+        }
+        if (action === VaultAction.DEPOSIT_BORROW || action === VaultAction.CREATE) {
+            inputs.leftInput = formState.deposit?.toString() || ''
+            inputs.rightInput = formState.borrow?.toString() || ''
+        }
+        else if (action === VaultAction.WITHDRAW_REPAY) {
+            inputs.leftInput = formState.withdraw?.toString() || ''
+            inputs.rightInput = formState.repay?.toString() || ''
+        }
+        safeActions.setSafeData({
+            ...dataRef.current,
+            ...inputs,
         })
 
         return () => {
@@ -246,6 +243,17 @@ export function VaultProvider({ action, setAction, children }: Props) {
         collateralRatio,
         isSafe,
     })
+
+    // update safeData as values change
+    useEffect(() => {
+        safeActions.setSafeData({
+            ...dataRef.current,
+            totalCollateral: collateral.total,
+            totalDebt: debt.total,
+            collateralRatio: parseFloat(collateralRatio),
+            liquidationPrice: parseFloat(liquidationPrice),
+        })
+    }, [collateral.total, debt.total, collateralRatio, liquidationPrice])
 
     return (
         <VaultContext.Provider value={{

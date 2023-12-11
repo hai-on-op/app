@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import { formatEther } from 'ethers/lib/utils'
 
-import type { SortableHeader } from '~/types'
-import { type AvailableVaultPair, formatNumberWithStyle } from '~/utils'
+import type { AvailableVaultPair, SortableHeader } from '~/types'
+import { formatNumberWithStyle } from '~/utils'
 import { useVault } from '~/providers/VaultProvider'
 
 import styled from 'styled-components'
@@ -210,6 +210,12 @@ const TableHeader = styled(Grid)`
 `
 const TableRow = styled(TableHeader)`
     border-radius: 999px;
+    padding: 0px;
+    padding-left: 6px;
+
+    & > *:last-child {
+        padding: 0px;
+    }
     &:hover {
         background-color: rgba(0,0,0,0.1);
     }

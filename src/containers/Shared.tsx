@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useMemo } from 'react'
+import { useEffect, useCallback, useMemo, useState } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
@@ -8,16 +8,17 @@ import { getTokenList } from '@hai-on-op/sdk'
 
 import type { ReactChildren } from '~/types'
 import {
+    EMPTY_ADDRESS,
     ETHERSCAN_PREFIXES,
+    NETWORK_ID,
+    SYSTEM_STATUS,
+    ActionState,
+    ChainId,
     blockedAddresses,
     capitalizeName,
-    EMPTY_ADDRESS,
-    SYSTEM_STATUS,
-    timeout,
-    ChainId,
-    isAddress,
     getNetworkName,
-    NETWORK_ID,
+    isAddress,
+    timeout,
 } from '~/utils'
 // import ApplicationUpdater from '~/services/ApplicationUpdater'
 // import MulticallUpdater from '~/services/MulticallUpdater'
@@ -36,7 +37,7 @@ import LiquidateSafeModal from '~/components/Modals/LiquidateSafeModal'
 import AuctionsModal from '~/components/Modals/AuctionsModal'
 import TopUpModal from '~/components/Modals/SafeManagerModal'
 import ScreenLoader from '~/components/Modals/ScreenLoader'
-import WaitingModal from '~/components/Modals/WaitingModal'
+import { InitializationModal } from '~/components/Modal/InitializationModal'
 import LoadingModal from '~/components/Modals/LoadingModal'
 import BlockedAddress from '~/components/BlockedAddress'
 import ToastPayload from '~/components/ToastPayload'
@@ -181,13 +182,15 @@ const Shared = ({ children }: Props) => {
         connectWalletActions.fetchFiatPrice()
     }, [connectWalletActions])
 
+    const [initializing, setInitializing] = useState(true)
+
     const accountChecker = useCallback(async () => {
         if (!account || !chain?.id || !signer || !geb) return
         popupsActions.setWaitingPayload({
             title: '',
-            status: 'loading',
+            status: ActionState.LOADING,
         })
-        popupsActions.setIsWaitingModalOpen(true)
+        setInitializing(true)
         try {
             connectWalletActions.setProxyAddress('')
             const userProxy = await geb.getProxyAction(account)
@@ -223,7 +226,7 @@ const Shared = ({ children }: Props) => {
         }
 
         await timeout(500)
-        popupsActions.setIsWaitingModalOpen(false)
+        setInitializing(false)
     }, [
         account, chain?.id, signer, geb,
         connectWalletActions, popupsActions, safeActions, transactionsActions,
@@ -334,7 +337,7 @@ const Shared = ({ children }: Props) => {
             <AuctionsModal />
             <ScreenLoader />
             <LiquidateSafeModal />
-            {!isSplash && <WaitingModal />}
+            {!isSplash && initializing && <InitializationModal />}
             <TopUpModal />
 
             {!isSplash && <ParallaxBackground/>}

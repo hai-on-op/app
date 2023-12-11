@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 
+import { ActionState } from '~/utils'
 import { liquidateSafe } from '~/services/blockchain'
 import { useStoreActions, useStoreState } from '~/store'
 import { handleTransactionError, useGeb } from '~/hooks'
@@ -37,7 +38,7 @@ const LiquidateSafeModal = () => {
             text: `Starting liquidation for safe #${safeId}...`,
             title: 'Waiting For Confirmation',
             hint: 'Confirm this transaction in your wallet',
-            status: 'loading',
+            status: ActionState.LOADING,
         })
 
         try {
@@ -56,7 +57,7 @@ const LiquidateSafeModal = () => {
                 title: 'Transaction Submitted',
                 text: `Starting liquidation for safe #${safeId}...`,
                 hash: txResponse.hash,
-                status: 'loading',
+                status: ActionState.LOADING,
             })
             await txResponse.wait()
             popupsModel.setIsWaitingModalOpen(false)

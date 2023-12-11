@@ -204,6 +204,12 @@ const TableHeader = styled(Grid)`
 `
 const TableRow = styled(TableHeader)`
     border-radius: 999px;
+    padding: 0px;
+    padding-left: 6px;
+
+    & > *:last-child {
+        padding: 0px;
+    }
     &:hover {
         background-color: rgba(0,0,0,0.1);
     }

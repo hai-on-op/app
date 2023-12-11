@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { useAccount } from 'wagmi'
 
 import type { AuctionEventType } from '~/types'
-import { COIN_TICKER } from '~/utils'
+import { ActionState, COIN_TICKER } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { handleTransactionError, useGeb, useEthersSigner } from '~/hooks'
 
@@ -95,7 +95,7 @@ const AuctionsTransactions = () => {
                     title: 'Waiting For Confirmation',
                     text: handleWaitingTitle,
                     hint: 'Confirm this transaction in your wallet',
-                    status: 'loading',
+                    status: ActionState.LOADING,
                 })
 
                 if (isBuy) {

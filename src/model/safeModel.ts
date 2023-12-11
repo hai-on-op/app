@@ -10,7 +10,7 @@ import type {
     ISafeData,
     ISafePayload,
 } from '~/types'
-import { timeout, handleWrapEther, WrapEtherProps } from '~/utils'
+import { timeout, handleWrapEther, WrapEtherProps, ActionState } from '~/utils'
 
 export const DEFAULT_SAFE_STATE = {
     totalCollateral: '',
@@ -35,7 +35,7 @@ export interface SafeModel {
     isES: boolean
     isUniSwapPoolChecked: boolean
     stage: number
-    isSuccessfulTx: boolean
+    transactionState: ActionState
     safeData: ISafeData
     liquidationData?: ILiquidationData
     uniSwapPool: ISafeData
@@ -60,7 +60,7 @@ export interface SafeModel {
     setUniSwapPool: Action<SafeModel, ISafeData>
     setIsUniSwapPoolChecked: Action<SafeModel, boolean>
     setStage: Action<SafeModel, number>
-    setIsSuccessfulTx: Action<SafeModel, boolean>
+    setTransactionState: Action<SafeModel, ActionState>
     setAmount: Action<SafeModel, string>
     setTargetedCRatio: Action<SafeModel, number>
     setIsMaxWithdraw: Action<SafeModel, boolean>
@@ -77,7 +77,7 @@ const safeModel: SafeModel = {
     singleSafe: undefined,
     totalEth: '0.00',
     totalHAI: '0.00',
-    isSuccessfulTx: true,
+    transactionState: ActionState.NONE,
     isES: true,
     isUniSwapPoolChecked: true,
     stage: 0,
@@ -102,14 +102,14 @@ const safeModel: SafeModel = {
                 storeActions.popupsModel.setWaitingPayload({
                     title: 'Transaction Submitted',
                     text: 'Adding a new safe...',
-                    status: 'success',
+                    status: ActionState.SUCCESS,
                     isCreate: true,
                 })
             } else {
                 storeActions.popupsModel.setWaitingPayload({
                     title: 'Transaction Submitted',
                     hash: txResponse.hash,
-                    status: 'success',
+                    status: ActionState.SUCCESS,
                 })
             }
 
@@ -140,7 +140,7 @@ const safeModel: SafeModel = {
             storeActions.popupsModel.setWaitingPayload({
                 title: 'Transaction Submitted',
                 hash: txResponse.hash,
-                status: 'success',
+                status: ActionState.SUCCESS,
             })
 
             await txResponse.wait()
@@ -175,7 +175,7 @@ const safeModel: SafeModel = {
     fetchUserSafes: thunk(async (actions, payload, { getStoreActions, getState }) => {
         const storeActions = getStoreActions()
         const state = getState()
-        const { isSuccessfulTx } = state
+        const { transactionState } = state
         const fetched = await fetchUserSafes(payload)
         const chainId = payload.chainId
 
@@ -184,7 +184,7 @@ const safeModel: SafeModel = {
             if (fetched.userSafes.length > 0) {
                 actions.setIsSafeCreated(true)
                 storeActions.connectWalletModel.setStep(2)
-            } else if (!fetched.userSafes.length && !isSuccessfulTx) {
+            } else if (transactionState === ActionState.ERROR) {
                 actions.setIsSafeCreated(false)
                 storeActions.connectWalletModel.setIsStepLoading(false)
             } else {
@@ -220,7 +220,7 @@ const safeModel: SafeModel = {
             storeActions.popupsModel.setWaitingPayload({
                 title: 'Transaction Submitted',
                 hash: txResponse.hash,
-                status: 'success',
+                status: ActionState.SUCCESS,
             })
             await txResponse.wait()
         }
@@ -264,8 +264,8 @@ const safeModel: SafeModel = {
     setStage: action((state, payload) => {
         state.stage = payload
     }),
-    setIsSuccessfulTx: action((state, payload) => {
-        state.isSuccessfulTx = payload
+    setTransactionState: action((state, payload) => {
+        state.transactionState = payload
     }),
     setAmount: action((state, payload) => {
         state.amount = payload
