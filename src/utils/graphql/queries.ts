@@ -1,44 +1,128 @@
 import { gql } from '@apollo/client'
+import {
+    CollateralTypeWithCollateralPriceFragment,
+    DailyStatFragment,
+    HourlyStatFragment,
+    SafeFragment,
+} from './fragments'
 
+// TODO: get refactored version with fragments working
 export const SYSTEMSTATE_QUERY = gql`
     query GetSystemState {
         systemStates {
             safeCount
-            globalDebt
+            unmanagedSafeCount
             totalActiveSafeCount
+            proxyCount
+            globalDebt
+            globalDebt24hAgo
+            globalUnbackedDebt
+            globalDebtCeiling
+            perSafeDebtCeiling
+            collateralCount
+            globalStabilityFee
+            savingsRate
+            collateralAuctionCount
+            erc20CoinTotalSupply
+            systemSurplus
+            debtAvailableToSettle
+            currentRedemptionRate {
+                perSecondRate
+                eightHourlyRate
+                twentyFourHourlyRate
+                hourlyRate
+                annualizedRate
+            }
             currentRedemptionPrice {
+                timestamp
+                redemptionRate
                 value
             }
         }
-        collateralPrices(orderBy: timestamp, orderDirection: desc, first: 1) {
-            collateral {
-                totalCollateral
-                currentPrice {
-                    value
-                }
+        collateralTypes {
+            id
+            debtAmount
+            totalCollateral
+            totalCollateralLockedInSafes
+            accumulatedRate
+            unmanagedSafeCount
+            safeCount
+            stabilityFee
+            totalAnnualizedStabilityFee
+            debtCeiling
+            debtFloor
+            safetyCRatio
+            liquidationCRatio
+            liquidationPenalty
+            collateralAuctionHouseAddress
+            liquidationQuantity
+            liquidationsStarted
+            activeLiquidations
+            currentPrice {
+                timestamp
+                safetyPrice
+                liquidationPrice
+                value
             }
         }
-        dailyStats(first: 1, orderBy: timestamp, orderDirection: desc) {
+        dailyStats(
+            first: 1,
+            orderBy: timestamp,
+            orderDirection: desc
+        ) {
             timestamp
             marketPriceUsd
-            redemptionPrice {
-                value
-            }
+            marketPriceEth
+            globalDebt
+            erc20CoinTotalSupply
         }
-        redemptionRates(first: 1, orderBy: createdAt, orderDirection: desc) {
+        redemptionRates(
+            first: 1,
+            orderBy: createdAt,
+            orderDirection: desc
+        ) {
+            perSecondRate
+            eightHourlyRate
+            twentyFourHourlyRate
+            hourlyRate
             annualizedRate
         }
         safes(first: 1) {
+            safeId
+            collateral
+            debt
+            owner {
+                address
+            }
+            createdAt
             collateralType {
-                safeCount
+                id
+                debtAmount
+                totalCollateral
+                totalCollateralLockedInSafes
                 accumulatedRate
+                unmanagedSafeCount
+                safeCount
+                stabilityFee
+                totalAnnualizedStabilityFee
+                debtCeiling
+                debtFloor
+                safetyCRatio
+                liquidationCRatio
+                liquidationPenalty
+                collateralAuctionHouseAddress
+                liquidationQuantity
+                liquidationsStarted
+                activeLiquidations
                 currentPrice {
-                    value
+                    timestamp
+                    safetyPrice
                     liquidationPrice
-                    collateral {
-                        liquidationCRatio
-                    }
+                    value
                 }
+            }
+            saviour {
+                allowed
             }
         }
     }
@@ -56,30 +140,9 @@ export const ALLSAFES_QUERY_WITH_ZERO = gql`
             skip: $skip
             orderBy: $orderBy
             orderDirection: $orderDirection
-        ) {
-            id
-            safeId
-            collateral
-            debt
-            owner {
-                address
-            }
-            collateralType {
-                safeCount
-                accumulatedRate
-                currentPrice {
-                    value
-                    liquidationPrice
-                    collateral {
-                        liquidationCRatio
-                    }
-                }
-            }
-            saviour {
-                allowed
-            }
-        }
+        ) { ...SafeFragment }
     }
+    ${SafeFragment}
 `
 
 export const ALLSAFES_QUERY_NOT_ZERO = gql`
@@ -95,61 +158,16 @@ export const ALLSAFES_QUERY_NOT_ZERO = gql`
             orderBy: $orderBy
             orderDirection: $orderDirection
             where: { collateral_not: "0" }
-        ) {
-            id
-            safeId
-            collateral
-            debt
-            owner {
-                address
-            }
-            collateralType {
-                safeCount
-                accumulatedRate
-                currentPrice {
-                    value
-                    liquidationPrice
-                    collateral {
-                        liquidationCRatio
-                    }
-                }
-            }
-            saviour {
-                allowed
-            }
-        }
+        ) { ...SafeFragment }
     }
+    ${SafeFragment}
 `
 
 export const SAFE_QUERY = gql`
     query GetSafe($id: String) {
-        safes(where: { safeId: $id }) {
-            id
-            safeId
-            collateral
-            debt
-            owner {
-                address
-            }
-            collateralType {
-                accumulatedRate
-                currentPrice {
-                    value
-                    liquidationPrice
-                    collateral {
-                        liquidationCRatio
-                    }
-                }
-            }
-        }
-        dailyStats(first: 1, orderBy: timestamp, orderDirection: desc) {
-            timestamp
-            marketPriceUsd
-            redemptionPrice {
-                value
-            }
-        }
+        safes(where: { safeId: $id }) { ...SafeFragment }
     }
+    ${SafeFragment}
 `
 
 export const SAFE_ACTIVITY_QUERY = gql`
@@ -174,23 +192,9 @@ export const HOURLY_STATS_QUERY = gql`
             where: {
                 timestamp_gt: $since
             }
-        ) {
-            timestamp
-            marketPriceEth
-            marketPriceUsd
-            redemptionPrice {
-                value
-            }
-            redemptionRate{
-                perSecondRate
-                hourlyRate
-                eightHourlyRate
-                twentyFourHourlyRate
-                annualizedRate
-            }
-            globalDebt
-        }
+        ) { ...HourlyStatFragment }
     }
+    ${HourlyStatFragment}
 `
 
 export const DAILY_STATS_QUERY = gql`
@@ -201,21 +205,16 @@ export const DAILY_STATS_QUERY = gql`
             where:{
                 timestamp_gt: $since
             }
-        ) {
-            timestamp
-            marketPriceEth
-            marketPriceUsd
-            redemptionPrice {
-                value
-            }
-            redemptionRate{
-                perSecondRate
-                hourlyRate
-                eightHourlyRate
-                twentyFourHourlyRate
-                annualizedRate
-            }
-            globalDebt
-        }
+        ) { ...DailyStatFragment }
     }
+    ${DailyStatFragment}
+`
+
+export const ALL_COLLATERAL_TYPES_QUERY = gql`
+    query AllCollateralTypes {
+        collateralTypes(
+            orderBy: id
+        ) { ...CollateralTypeWithCollateralPriceFragment }
+    }
+    ${CollateralTypeWithCollateralPriceFragment}
 `

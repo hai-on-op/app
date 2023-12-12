@@ -2,14 +2,14 @@ import { createContext, useContext } from 'react'
 import { useQuery } from '@apollo/client'
 
 import type { ReactChildren } from '~/types'
-import { type SystemStateQueryData, SYSTEMSTATE_QUERY, Timeframe } from '~/utils'
+import { type QuerySystemStateData, SYSTEMSTATE_QUERY, Timeframe } from '~/utils'
 import { HistoricalStatsReturn, useHistoricalStats } from './useHistoricalStats'
 import { DEFAULT_ANALYTICS_DATA, GebAnalyticsData, useGebAnalytics } from './useGebAnalytics'
 
 type AnalyticsContext = {
     forceRefresh: () => void,
     data: GebAnalyticsData,
-    graphData?: SystemStateQueryData,
+    graphData?: QuerySystemStateData,
     haiPriceHistory: HistoricalStatsReturn,
     redemptionRateHistory: HistoricalStatsReturn
 }
@@ -48,7 +48,7 @@ type Props = {
 export function AnalyticsProvider({ children }: Props) {
     const { forceRefresh, data } = useGebAnalytics()
 
-    const { data: graphData } = useQuery<SystemStateQueryData>(SYSTEMSTATE_QUERY)
+    const { data: graphData } = useQuery<QuerySystemStateData>(SYSTEMSTATE_QUERY)
 
     const haiPriceHistory = useHistoricalStats()
 

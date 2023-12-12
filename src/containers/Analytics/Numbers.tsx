@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { getRatePercentage } from '~/utils'
+import { formatNumberWithStyle, getRatePercentage } from '~/utils'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 
 import styled from 'styled-components'
@@ -34,6 +34,7 @@ const dummyPieDataBase = [
     },
 ]
 
+// TODO: check to make sure data usage and calculations are correct, fill out tooltips
 export function Numbers() {
     const {
         data: {
@@ -96,6 +97,54 @@ export function Numbers() {
         max: 100_000,
     })
 
+    const [
+        totalCollateralLocked = '',
+        globalLTV = '',
+        totalVaults,
+        systemSurplus,
+    ] = useMemo(() => {
+        if (!graphData) return []
+
+        const {
+            collateralTypes,
+            systemStates: [{
+                globalDebt,
+                systemSurplus,
+                totalActiveSafeCount,
+            }],
+        } = graphData
+        const total = collateralTypes.reduce((sum, {
+            totalCollateralLockedInSafes,
+            currentPrice,
+        }) => {
+            if (currentPrice) {
+                const collateralUSD = (
+                    parseFloat(currentPrice.value) * parseFloat(totalCollateralLockedInSafes)
+                )
+                return sum + collateralUSD
+            }
+            return sum
+        }, 0)
+
+        const ltv = parseFloat(globalDebt) * parseFloat(marketPrice.raw) / total
+
+        return [
+            formatNumberWithStyle(total.toString(), {
+                maxDecimals: 0,
+                style: 'currency',
+            }),
+            formatNumberWithStyle(ltv.toString(), {
+                maxDecimals: 1,
+                style: 'percent',
+            }),
+            Number(totalActiveSafeCount || '0').toLocaleString(),
+            formatNumberWithStyle(systemSurplus, {
+                maxDecimals: 0,
+                style: 'currency',
+            }),
+        ]
+    }, [graphData, marketPrice.raw])
+
     return (
         <Container>
             <Section>
@@ -106,24 +155,24 @@ export function Numbers() {
                 <Text>Explore global HAI protocol analytics.</Text>
                 <Stats>
                     <Stat stat={{
-                        header: '$45,600',
+                        header: totalCollateralLocked || '--',
                         label: 'Total Collateral Locked',
-                        tooltip: 'Hello world',
+                        tooltip: `Dollar value of all collateral currently locked in active vaults`,
                     }}/>
                     <Stat stat={{
                         header: erc20Supply.formatted,
                         label: 'Outstanding $HAI',
-                        tooltip: 'Hello world',
+                        tooltip: 'Total $HAI minted in the system',
                     }}/>
                     <Stat stat={{
-                        header: '75%',
-                        label: 'Global CR',
-                        tooltip: 'Hello world',
+                        header: globalLTV || '--',
+                        label: 'Global LTV',
+                        tooltip: `Ratio of the dollar value of all outstanding debt relative to the dollar value of all collateral locked in vaults`,
                     }}/>
                     <Stat stat={{
-                        header: Number(graphData?.systemStates[0].totalActiveSafeCount || '0').toLocaleString(),
+                        header: totalVaults,
                         label: 'Total Active Vaults',
-                        tooltip: 'Hello world',
+                        tooltip: 'The total number of active vaults in the system',
                     }}/>
                 </Stats>
             </Section>
@@ -306,7 +355,7 @@ export function Numbers() {
                 <SectionHeader>PROTOCOL BALANCE</SectionHeader>
                 <Stats>
                     <Stat stat={{
-                        header: '$45,600',
+                        header: systemSurplus || '--',
                         label: 'System Surplus',
                         tooltip: 'Hello world',
                     }}/>

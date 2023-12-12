@@ -5,13 +5,13 @@ import {
     DAILY_STATS_QUERY,
     HOURLY_STATS_QUERY,
     ONE_DAY_MS,
-    type HistoricalStats,
+    type QueryHistoricalStat,
     Timeframe,
 } from '~/utils'
 
 export type StatsQueryResult = {
-    hourlyStats?: HistoricalStats[],
-    dailyStats?: HistoricalStats[]
+    hourlyStats?: QueryHistoricalStat[],
+    dailyStats?: QueryHistoricalStat[]
 }
 
 export type HistoricalStatsReturn = {
