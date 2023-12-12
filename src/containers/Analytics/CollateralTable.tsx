@@ -34,7 +34,7 @@ const sortableHeaders: SortableHeader[] = [
     },
     {
         label: 'Stability Fee',
-        tooltip: `Annual interest rate paid by Safe owners on their debt`,
+        tooltip: `Annual interest rate paid by Vault owners on their debt`,
     },
 ]
 

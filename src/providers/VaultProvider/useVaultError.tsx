@@ -28,7 +28,7 @@ export function useVaultError({
 }: Props) {
     const { address: account } = useAccount()
     const proxyAddress = useProxyAddress()
-    const { liquidationData, safeData } = useStoreState(({ safeModel }) => safeModel)
+    const { liquidationData, vaultData } = useStoreState(({ vaultModel }) => vaultModel)
 
     if (!account) return { error: VaultInfoError.NO_WALLET }
     if (!proxyAddress) return { error: VaultInfoError.NO_PROXY }
@@ -38,12 +38,12 @@ export function useVaultError({
     const availableHaiBN = BigNumber.from(toFixedString(debt.available, 'WAD'))
     const haiBalanceBN = BigNumber.from(toFixedString(debt.balance || '0', 'WAD'))
 
-    const leftInputBN = BigNumber.from(toFixedString(safeData.leftInput || '0', 'WAD'))
-    const rightInputBN = BigNumber.from(toFixedString(safeData.rightInput || '0', 'WAD'))
+    const leftInputBN = BigNumber.from(toFixedString(vaultData.leftInput || '0', 'WAD'))
+    const rightInputBN = BigNumber.from(toFixedString(vaultData.rightInput || '0', 'WAD'))
 
     const {
         globalDebtCeiling,
-        perSafeDebtCeiling,
+        perVaultDebtCeiling,
     } = liquidationData || {}
     const {
         debtFloor,
@@ -97,10 +97,10 @@ export function useVaultError({
             errorMessage: `Cannot exceed global debt ceiling (${globalDebtCeiling})`,
         }
     }
-    if (numeral(debt).value() > numeral(perSafeDebtCeiling).value()) {
+    if (numeral(debt).value() > numeral(perVaultDebtCeiling).value()) {
         return {
             error: VaultInfoError.HAI_DEBT_CEILING,
-            errorMessage: `Cannot exceed per vault $HAI debt ceiling (${perSafeDebtCeiling})`,
+            errorMessage: `Cannot exceed per vault $HAI debt ceiling (${perVaultDebtCeiling})`,
         }
     }
     if (action === VaultAction.CREATE) {
@@ -111,12 +111,12 @@ export function useVaultError({
             return { error: VaultInfoError.MINIMUM_MINT }
         }
     }
-    else if (perSafeDebtCeiling) {
-        const perSafeDebtCeilingBN = BigNumber.from(toFixedString(perSafeDebtCeiling, 'WAD'))
-        if (totalDebtBN.gte(perSafeDebtCeilingBN)) {
+    else if (perVaultDebtCeiling) {
+        const perVaultDebtCeilingBN = BigNumber.from(toFixedString(perVaultDebtCeiling, 'WAD'))
+        if (totalDebtBN.gte(perVaultDebtCeilingBN)) {
             return {
                 error: VaultInfoError.INDIVIDUAL_DEBT_CEILING,
-                errorMessage: `Individual safe can't have more than ${perSafeDebtCeiling} HAI of debt`,
+                errorMessage: `Individual safe can't have more than ${perVaultDebtCeiling} HAI of debt`,
             }
         }
     }

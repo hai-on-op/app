@@ -20,9 +20,6 @@ import {
     isAddress,
     timeout,
 } from '~/utils'
-// import ApplicationUpdater from '~/services/ApplicationUpdater'
-// import MulticallUpdater from '~/services/MulticallUpdater'
-// import BalanceUpdater from '~/services/BalanceUpdater'
 import TransactionUpdater from '~/services/TransactionUpdater'
 import { useStoreState, useStoreActions } from '~/store'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
@@ -31,11 +28,9 @@ import { useTokenContract, useEthersSigner, useGeb, usePlaylist, usePrevious } f
 import styled from 'styled-components'
 import { CenteredFlex, Flex } from '~/styles'
 import ImagePreloader from '~/components/ImagePreloader'
-import LiquidateSafeModal from '~/components/Modals/LiquidateSafeModal'
-// import ProxyModal from '~/components/Modals/ProxyModal'
-// import WalletModal from '~/components/WalletModal'
+import LiquidateVaultModal from '~/components/Modals/LiquidateVaultModal'
 import AuctionsModal from '~/components/Modals/AuctionsModal'
-import TopUpModal from '~/components/Modals/SafeManagerModal'
+import TopUpModal from '~/components/Modals/VaultManagerModal'
 import ScreenLoader from '~/components/Modals/ScreenLoader'
 import { InitializationModal } from '~/components/Modal/InitializationModal'
 import LoadingModal from '~/components/Modals/LoadingModal'
@@ -94,7 +89,7 @@ const Shared = ({ children }: Props) => {
         connectWalletModel: connectWalletActions,
         popupsModel: popupsActions,
         transactionsModel: transactionsActions,
-        safeModel: safeActions,
+        vaultModel: vaultActions,
         auctionModel: {
             setCoinBalances,
             setProtInternalBalance,
@@ -168,10 +163,10 @@ const Shared = ({ children }: Props) => {
         setProtInternalBalance(ethers.utils.formatEther(protInternalBalance))
 
         // coinTokenSafeBalance has 45 decimals
-        const coinSafeBalance = auctionsData.coinTokenSafeBalance
+        const coinVaultBalance = auctionsData.coinTokenSafeBalance
 
-        // const coinInternalBalance = coinBalance.add(coinSafeBalance)
-        setInternalBalance(ethers.utils.formatUnits(coinSafeBalance, 45))
+        // const coinInternalBalance = coinBalance.add(coinVaultBalance)
+        setInternalBalance(ethers.utils.formatUnits(coinVaultBalance, 45))
     }, [auctionsData, setInternalBalance, setProtInternalBalance])
 
     useEffect(() => {
@@ -208,13 +203,13 @@ const Shared = ({ children }: Props) => {
                 const { pathname } = window.location
 
                 let address = ''
-                if (pathname && pathname !== '/' && pathname !== '/safes') {
+                if (pathname && pathname !== '/' && pathname !== '/vaults') {
                     const route = pathname.split('/')[1]
                     if (isAddress(route)) {
                         address = route.toLowerCase()
                     }
                 }
-                await safeActions.fetchUserSafes({
+                await vaultActions.fetchUserVaults({
                     address: address ? address : (account as string),
                     geb,
                     tokensData,
@@ -223,7 +218,7 @@ const Shared = ({ children }: Props) => {
             }
         } catch(error: any) {
             console.error(error)
-            safeActions.setIsSafeCreated(false)
+            vaultActions.setIsVaultCreated(false)
             connectWalletActions.setStep(1)
             setInitializing(false)
         }
@@ -232,7 +227,7 @@ const Shared = ({ children }: Props) => {
         setInitializing(false)
     }, [
         account, chain?.id, signer, geb,
-        connectWalletActions, popupsActions, safeActions, transactionsActions,
+        connectWalletActions, popupsActions, vaultActions, transactionsActions,
     ])
 
     const accountChange = useCallback(() => {
@@ -240,18 +235,18 @@ const Shared = ({ children }: Props) => {
         const isAccountSwitched = account && previousAccount && account !== previousAccount
         if (!account) {
             connectWalletActions.setStep(0)
-            safeActions.setIsSafeCreated(false)
+            vaultActions.setIsVaultCreated(false)
         }
         if (isAccountSwitched) {
             history.push('/')
         }
         transactionsActions.setTransactions({})
-    }, [account, previousAccount, history, connectWalletActions, safeActions, transactionsActions])
+    }, [account, previousAccount, history, connectWalletActions, vaultActions, transactionsActions])
 
     const networkChecker = useCallback(() => {
         accountChange()
         const id: ChainId = chainId
-        popupsActions.setIsSafeManagerOpen(false)
+        popupsActions.setIsVaultManagerOpen(false)
         if (chain?.id !== id) {
             const chainName = ETHERSCAN_PREFIXES[id]
             connectWalletActions.setIsWrongNetwork(true)
@@ -339,7 +334,7 @@ const Shared = ({ children }: Props) => {
             <LoadingModal />
             <AuctionsModal />
             <ScreenLoader />
-            <LiquidateSafeModal />
+            <LiquidateVaultModal />
             {!isSplash && initializing && <InitializationModal />}
             <TopUpModal />
 

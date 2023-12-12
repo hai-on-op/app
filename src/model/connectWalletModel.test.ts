@@ -1,7 +1,7 @@
 import { createStore, EasyPeasyConfig, Store } from 'easy-peasy'
 import connectWalletModel, { ConnectWalletModel } from './connectWalletModel'
 
-describe('safe model', () => {
+describe('connect wallet model', () => {
     let store: Store<ConnectWalletModel, EasyPeasyConfig<{}, any>>
     beforeEach(() => {
         store = createStore(connectWalletModel)

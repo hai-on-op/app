@@ -54,17 +54,17 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
             tokensData,
             tokensFetchedData,
         },
-        safeModel: safeState,
+        vaultModel: vaultState,
     } = useStoreState(state => state)
 
     const myVaults = useMemo(() => {
-        const temp = safeState.list
+        const temp = vaultState.list
         if (!assetsFilter) return temp
 
         return temp.filter(({ collateralName }) => (
             collateralName.toUpperCase() === assetsFilter
         ))
-    }, [safeState.list, assetsFilter])
+    }, [vaultState.list, assetsFilter])
 
     const availableVaults: AvailableVaultPair[] = useMemo(() => {
         return Object.values(tokensData || {})
@@ -73,7 +73,7 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
                 const {
                     liquidationCRatio,
                     totalAnnualizedStabilityFee,
-                } = safeState.liquidationData?.collateralLiquidationData[symbol] || {}
+                } = vaultState.liquidationData?.collateralLiquidationData[symbol] || {}
                 return {
                     collateralName: symbol,
                     collateralizationFactor: liquidationCRatio
@@ -86,12 +86,12 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
                         ? getRatePercentage(totalAnnualizedStabilityFee).toString()
                         : '',
                     eligibleBalance: tokensFetchedData[symbol]?.balanceE18 || '0',
-                    myVaults: safeState.list.filter(({ collateralName }) => (
+                    myVaults: vaultState.list.filter(({ collateralName }) => (
                         collateralName === symbol
                     )),
                 }
             })
-    }, [eligibleOnly, tokensData, tokensFetchedData, safeState.list, safeState.liquidationData])
+    }, [eligibleOnly, tokensData, tokensFetchedData, vaultState.list, vaultState.liquidationData])
 
     const filteredAvailableVaults = useMemo(() => {
         if (!eligibleOnly) return availableVaults
@@ -106,7 +106,7 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
         <NavContainer
             navItems={[
                 `All Vaults (${availableVaults.length})`,
-                `My Vaults (${safeState.list.length})`,
+                `My Vaults (${vaultState.list.length})`,
             ]}
             selected={navIndex}
             onSelect={(i: number) => setNavIndex(i)}
@@ -159,7 +159,7 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
                     ))}
                 </>)
                 : (
-                    <ProxyPrompt onCreateVault={!safeState.list.length
+                    <ProxyPrompt onCreateVault={!vaultState.list.length
                         ? () => setActiveVault({
                             create: true,
                             collateralName: 'WETH',

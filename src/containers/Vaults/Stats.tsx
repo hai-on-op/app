@@ -9,7 +9,7 @@ import { Stats, type StatProps } from '~/components/Stats'
 
 export function BorrowStats() {
     const {
-        safeModel: {
+        vaultModel: {
             list,
             liquidationData,
         },

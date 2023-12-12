@@ -24,9 +24,9 @@ export function Vaults(props: RouteComponentProps<{ address?: string }>) {
             tokensData,
             isWrongNetwork,
         },
-        safeModel: { singleSafe },
+        vaultModel: { singleVault },
     } = useStoreState(state => state)
-    const { safeModel: safeActions } = useStoreActions(actions => actions)
+    const { vaultModel: vaultActions } = useStoreActions(actions => actions)
 
     const { address = '' } = props.match.params
 
@@ -38,15 +38,15 @@ export function Vaults(props: RouteComponentProps<{ address?: string }>) {
             || isWrongNetwork
         ) return
 
-        async function fetchSafes() {
-            await safeActions.fetchUserSafes({
+        async function fetchVaults() {
+            await vaultActions.fetchUserVaults({
                 address: address || (account as string),
                 geb,
                 tokensData,
                 chainId: chain?.id || DEFAULT_NETWORK_ID,
             })
         }
-        fetchSafes()
+        fetchVaults()
         
         const interval = setInterval(() => {
             if (
@@ -54,11 +54,11 @@ export function Vaults(props: RouteComponentProps<{ address?: string }>) {
                 || (address && !isAddress(address.toLowerCase()))
                 || !signer
                 || isWrongNetwork
-            ) fetchSafes()
+            ) fetchVaults()
         }, 3000)
 
         return () => clearInterval(interval)
-    }, [account, address, isWrongNetwork, tokensData, geb, signer, safeActions])
+    }, [account, address, isWrongNetwork, tokensData, geb, signer, vaultActions])
 
     const [navIndex, setNavIndex] = useState(0)
     const [action, setAction] = useState<VaultAction>(VaultAction.INFO)
@@ -67,11 +67,11 @@ export function Vaults(props: RouteComponentProps<{ address?: string }>) {
         <VaultProvider
             action={action}
             setAction={setAction}>
-            {action === VaultAction.CREATE || singleSafe
+            {action === VaultAction.CREATE || singleVault
                 ? (
                     <ManageVault headerContent={(
                         <BackButton onClick={() => {
-                            safeActions.setSingleSafe(undefined)
+                            vaultActions.setSingleVault(undefined)
                             setAction(VaultAction.INFO)
                         }}>
                             <Caret direction="left"/>

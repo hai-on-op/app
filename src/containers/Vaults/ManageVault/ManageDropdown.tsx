@@ -10,12 +10,12 @@ import { TokenPair } from '~/components/TokenPair'
 export function ManageDropdown() {
     const {
         connectWalletModel: { tokensData },
-        safeModel: {
+        vaultModel: {
             list,
-            safeData,
+            vaultData,
         },
     } = useStoreState(state => state)
-    const { safeModel: safeActions } = useStoreActions(actions => actions)
+    const { vaultModel: vaultActions } = useStoreActions(actions => actions)
 
     const { vault, setActiveVault, updateForm, collateral } = useVault()
 
@@ -38,8 +38,8 @@ export function ManageDropdown() {
                     $active={symbol === collateral.name}
                     onClick={() => {
                         updateForm('clear')
-                        safeActions.setSafeData({
-                            ...safeData,
+                        vaultActions.setVaultData({
+                            ...vaultData,
                             collateral: symbol,
                         })
                     }}>
@@ -65,7 +65,7 @@ export function ManageDropdown() {
                 </DropdownOption>
             )),
         }
-    }, [vault, setActiveVault, updateForm, collateral, symbols, safeActions])
+    }, [vault, setActiveVault, updateForm, collateral, symbols, vaultActions])
 
     if (vault && !list.length) return null
     

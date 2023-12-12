@@ -16,7 +16,7 @@ const WaitingModal = () => {
 
     const {
         popupsModel: popupsState,
-        safeModel: safeState,
+        vaultModel: vaultState,
     } = useStoreState(state => state)
     const { popupsModel: popupsActions } = useStoreActions(actions => actions)
     const { title, text, hint, status, hash, isCreate } = popupsState.waitingPayload
@@ -26,7 +26,7 @@ const WaitingModal = () => {
         
         popupsActions.setIsWaitingModalOpen(false)
         // eslint-disable-next-line
-    }, [safeState.list.length])
+    }, [vaultState.list.length])
 
     const returnStatusIcon = (status: string) => {
         switch(status) {

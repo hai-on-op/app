@@ -140,7 +140,7 @@ export function Overview() {
                     tooltip={t('liquidation_price_tip')}
                 />
                 {/* <OverviewStat
-                    value={parseFloat((100 * parseFloat(singleSafe?.totalAnnualizedStabilityFee || '0')).toFixed(2)) + '%'}
+                    value={parseFloat((100 * parseFloat(vault?.totalAnnualizedStabilityFee || '0')).toFixed(2)) + '%'}
                     label="Rewards APY"
                     tooltip="Hello world"
                 /> */}

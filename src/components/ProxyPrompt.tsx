@@ -15,7 +15,7 @@ import { ExternalLink } from './ExternalLink'
 enum PromptStep {
     CONNECT_WALLET,
     CREATE_PROXY,
-    CREATE_SAFE,
+    CREATE_VAULT,
 }
 
 type ProxyPromptProps = {
@@ -116,7 +116,7 @@ export function ProxyPrompt({ children, onCreateVault }: ProxyPromptProps) {
         </Container>
     )
 
-    if (onCreateVault && connectWalletState.step === PromptStep.CREATE_SAFE) return (
+    if (onCreateVault && connectWalletState.step === PromptStep.CREATE_VAULT) return (
         <Container>
             <Text>
                 No active vaults associated with this address were found.
@@ -124,7 +124,7 @@ export function ProxyPrompt({ children, onCreateVault }: ProxyPromptProps) {
             <HaiButton
                 $variant="yellowish"
                 onClick={onCreateVault}>
-                {t('create_safe')}
+                {t('create_vault')}
             </HaiButton>
         </Container>
     )

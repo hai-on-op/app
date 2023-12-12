@@ -14,8 +14,8 @@ export interface PopupsModel {
     isConnectModalOpen: boolean
     isConnectedWalletModalOpen: boolean
     isConnectorsWalletOpen: boolean
-    isLiquidateSafeModalOpen: boolean
-    isSafeManagerOpen: boolean
+    isLiquidateVaultModalOpen: boolean
+    isVaultManagerOpen: boolean
     isClaimPopupOpen: boolean
     returnProxyFunction: (actions: any) => void | null
     blockBackdrop: boolean
@@ -24,10 +24,10 @@ export interface PopupsModel {
     isScreenModalOpen: boolean
     isVotingModalOpen: boolean
     auctionOperationPayload: IAuctionOperation
-    liquidateSafePayload: { safeId: string } | null
+    liquidateVaultPayload: { vaultId: string } | null
     alertPayload: IAlert | null
     ESMOperationPayload: IOperation
-    safeOperationPayload: IOperation & { isCreate: boolean }
+    vaultOperationPayload: IOperation & { isCreate: boolean }
     isLoadingModalOpen: LoadingPayload
     isWaitingModalOpen: boolean
     waitingPayload: IWaitingPayload
@@ -37,18 +37,18 @@ export interface PopupsModel {
     setIsScreenModalOpen: Action<PopupsModel, boolean>
     setIsConnectorsWalletOpen: Action<PopupsModel, boolean>
     setIsLoadingModalOpen: Action<PopupsModel, LoadingPayload>
-    setSafeOperationPayload: Action<PopupsModel, IOperation & { isCreate: boolean }>
+    setVaultOperationPayload: Action<PopupsModel, IOperation & { isCreate: boolean }>
     setAlertPayload: Action<PopupsModel, IAlert | null>
     setESMOperationPayload: Action<PopupsModel, IOperation>
     setIsVotingModalOpen: Action<PopupsModel, boolean>
-    openLiquidateSafeModal: Action<PopupsModel, { safeId: string }>
-    closeLiquidateSafeModal: Action<PopupsModel>
+    openLiquidateVaultModal: Action<PopupsModel, { vaultId: string }>
+    closeLiquidateVaultModal: Action<PopupsModel>
     setAuctionOperationPayload: Action<PopupsModel, IAuctionOperation>
     setIsWaitingModalOpen: Action<PopupsModel, boolean>
     setWaitingPayload: Action<PopupsModel, IWaitingPayload>
     setBlockBackdrop: Action<PopupsModel, boolean>
     setIsProxyModalOpen: Action<PopupsModel, boolean>
-    setIsSafeManagerOpen: Action<PopupsModel, boolean>
+    setIsVaultManagerOpen: Action<PopupsModel, boolean>
     setIsClaimPopupOpen: Action<PopupsModel, boolean>
     setHasFLXClaim: Action<PopupsModel, boolean>
     setReturnProxyFunction: Action<PopupsModel, (storeActions: any) => void | null>
@@ -58,15 +58,15 @@ const popupsModel: PopupsModel = {
     blockBackdrop: false,
     isSettingsModalOpen: false,
     isConnectModalOpen: false,
-    isLiquidateSafeModalOpen: false,
+    isLiquidateVaultModalOpen: false,
     isProxyModalOpen: false,
     hasFLXClaim: false,
     isConnectedWalletModalOpen: false,
     isScreenModalOpen: false,
     isWaitingModalOpen: false,
-    isSafeManagerOpen: false,
+    isVaultManagerOpen: false,
     isClaimPopupOpen: false,
-    liquidateSafePayload: null,
+    liquidateVaultPayload: null,
     returnProxyFunction: () => {},
     waitingPayload: {
         title: '',
@@ -75,7 +75,7 @@ const popupsModel: PopupsModel = {
         status: ActionState.NONE,
         isCreate: false,
     },
-    safeOperationPayload: {
+    vaultOperationPayload: {
         isOpen: false,
         type: '',
         isCreate: false,
@@ -109,13 +109,13 @@ const popupsModel: PopupsModel = {
     setIsConnectedWalletModalOpen: action((state, payload) => {
         state.isConnectedWalletModalOpen = payload
     }),
-    openLiquidateSafeModal: action((state, payload) => {
-        state.isLiquidateSafeModalOpen = true
-        state.liquidateSafePayload = payload
+    openLiquidateVaultModal: action((state, payload) => {
+        state.isLiquidateVaultModalOpen = true
+        state.liquidateVaultPayload = payload
     }),
-    closeLiquidateSafeModal: action((state) => {
-        state.isLiquidateSafeModalOpen = false
-        state.liquidateSafePayload = null
+    closeLiquidateVaultModal: action((state) => {
+        state.isLiquidateVaultModalOpen = false
+        state.liquidateVaultPayload = null
     }),
     setIsScreenModalOpen: action((state, payload) => {
         state.isScreenModalOpen = payload
@@ -126,8 +126,8 @@ const popupsModel: PopupsModel = {
     setIsLoadingModalOpen: action((state, payload) => {
         state.isLoadingModalOpen = payload
     }),
-    setSafeOperationPayload: action((state, payload) => {
-        state.safeOperationPayload = payload
+    setVaultOperationPayload: action((state, payload) => {
+        state.vaultOperationPayload = payload
     }),
     setAlertPayload: action((state, payload) => {
         state.alertPayload = payload
@@ -165,8 +165,8 @@ const popupsModel: PopupsModel = {
     setReturnProxyFunction: action((state, payload) => {
         state.returnProxyFunction = payload
     }),
-    setIsSafeManagerOpen: action((state, payload) => {
-        state.isSafeManagerOpen = payload
+    setIsVaultManagerOpen: action((state, payload) => {
+        state.isVaultManagerOpen = payload
     }),
     setIsClaimPopupOpen: action((state, payload) => {
         state.isClaimPopupOpen = payload

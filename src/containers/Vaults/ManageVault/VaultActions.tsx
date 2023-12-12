@@ -14,8 +14,8 @@ import { VaultActionError } from './VaultActionError'
 
 export function VaultActions() {
     const proxyAddress = useProxyAddress()
-    const { safeModel: safeState } = useStoreState(state => state)
-    const { safeModel: safeActions } = useStoreActions(actions => actions)
+    const { vaultModel: vaultState } = useStoreState(state => state)
+    const { vaultModel: vaultActions } = useStoreActions(actions => actions)
 
     const {
         vault,
@@ -116,9 +116,9 @@ export function VaultActions() {
                                 $variant="yellowish"
                                 $width="100%"
                                 $justify="center"
-                                disabled={!buttonActive || safeState.transactionState === ActionState.LOADING}
+                                disabled={!buttonActive || vaultState.transactionState === ActionState.LOADING}
                                 onClick={() => setReviewActive(true)}>
-                                {safeState.transactionState === ActionState.LOADING
+                                {vaultState.transactionState === ActionState.LOADING
                                     ? 'Pending Transaction...'
                                     : `Review ${buttonLabel}`
                                 }
@@ -150,9 +150,9 @@ export function VaultActions() {
                                 $variant="yellowish"
                                 $width="100%"
                                 $justify="center"
-                                disabled={!buttonActive || safeState.transactionState === ActionState.LOADING}
+                                disabled={!buttonActive || vaultState.transactionState === ActionState.LOADING}
                                 onClick={() => setReviewActive(true)}>
-                                {safeState.transactionState === ActionState.LOADING
+                                {vaultState.transactionState === ActionState.LOADING
                                     ? 'Pending Transaction...'
                                     : `Review ${buttonLabel}`
                                 }
@@ -162,7 +162,7 @@ export function VaultActions() {
             }
         }
     }, [
-        action, safeState, buttonActive, buttonLabel,
+        action, vaultState, buttonActive, buttonLabel,
         collateral, collateralApproval, approveCollateral,
         debtApproval, approveDebtUnlock,
     ])
@@ -173,7 +173,7 @@ export function VaultActions() {
         {reviewActive && (
             <ReviewVaultTxModal onClose={() => {
                 setReviewActive(false)
-                safeActions.setTransactionState(ActionState.NONE)
+                vaultActions.setTransactionState(ActionState.NONE)
             }}/>
         )}
         <Container>

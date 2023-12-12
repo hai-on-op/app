@@ -2,30 +2,25 @@ import { action, type Action, thunk, type Thunk } from 'easy-peasy'
 
 import { StoreModel } from '~/model'
 import { handleDepositAndBorrow, handleRepayAndWithdraw } from '~/services/blockchain'
-import { fetchUserSafes } from '~/services/safes'
+import { fetchUserVaults } from '~/services/vaults'
 import type {
-    IFetchSafesPayload,
+    IFetchVaultsPayload,
     ILiquidationData,
-    ISafe,
-    ISafeData,
-    ISafePayload,
+    IVault,
+    IVaultData,
+    IVaultPayload,
 } from '~/types'
-import { timeout, handleWrapEther, WrapEtherProps, ActionState } from '~/utils'
+import {
+    ActionState,
+    WrapEtherProps,
+    handleWrapEther,
+    timeout,
+} from '~/utils'
 
-export const DEFAULT_SAFE_STATE = {
-    totalCollateral: '',
-    totalDebt: '',
-    leftInput: '',
-    rightInput: '',
-    collateralRatio: 0,
-    liquidationPrice: 0,
-    collateral: '',
-}
-
-export interface SafeModel {
-    list: Array<ISafe>
-    safeCreated: boolean
-    singleSafe?: ISafe
+export interface VaultModel {
+    list: Array<IVault>
+    vaultCreated: boolean
+    singleVault?: IVault
     operation: number
     targetedCRatio: number
     totalEth: string
@@ -36,72 +31,82 @@ export interface SafeModel {
     isUniSwapPoolChecked: boolean
     stage: number
     transactionState: ActionState
-    safeData: ISafeData
+    vaultData: IVaultData
     liquidationData?: ILiquidationData
-    uniSwapPool: ISafeData
-    depositAndBorrow: Thunk<SafeModel, ISafePayload & { safeId?: string }, any, StoreModel>
-    repayAndWithdraw: Thunk<SafeModel, ISafePayload & { safeId: string }, any, StoreModel>
-    fetchUserSafes: Thunk<SafeModel, IFetchSafesPayload, any, StoreModel>
+    uniSwapPool: IVaultData
+    depositAndBorrow: Thunk<VaultModel, IVaultPayload & { vaultId?: string }, any, StoreModel>
+    repayAndWithdraw: Thunk<VaultModel, IVaultPayload & { vaultId: string }, any, StoreModel>
+    fetchUserVaults: Thunk<VaultModel, IFetchVaultsPayload, any, StoreModel>
     // collectETH: Thunk<
-    //     SafeModel,
-    //     { signer: JsonRpcSigner; safe: ISafe },
+    //     VaultModel,
+    //     { signer: JsonRpcSigner; vault: IVault },
     //     any,
     //     StoreModel
     // >
-    setIsSafeCreated: Action<SafeModel, boolean>
-    setList: Action<SafeModel, Array<ISafe>>
-    setSingleSafe: Action<SafeModel, ISafe | undefined>
-    setOperation: Action<SafeModel, number>
-    setTotalEth: Action<SafeModel, string>
-    setTotalHAI: Action<SafeModel, string>
-    setIsES: Action<SafeModel, boolean>
-    setLiquidationData: Action<SafeModel, ILiquidationData>
-    setSafeData: Action<SafeModel, ISafeData>
-    setUniSwapPool: Action<SafeModel, ISafeData>
-    setIsUniSwapPoolChecked: Action<SafeModel, boolean>
-    setStage: Action<SafeModel, number>
-    setTransactionState: Action<SafeModel, ActionState>
-    setAmount: Action<SafeModel, string>
-    setTargetedCRatio: Action<SafeModel, number>
-    setIsMaxWithdraw: Action<SafeModel, boolean>
-    wrapEther: Thunk<SafeModel, WrapEtherProps, any, StoreModel>
+    setIsVaultCreated: Action<VaultModel, boolean>
+    setList: Action<VaultModel, Array<IVault>>
+    setSingleVault: Action<VaultModel, IVault | undefined>
+    setOperation: Action<VaultModel, number>
+    setTotalEth: Action<VaultModel, string>
+    setTotalHAI: Action<VaultModel, string>
+    setIsES: Action<VaultModel, boolean>
+    setLiquidationData: Action<VaultModel, ILiquidationData>
+    setVaultData: Action<VaultModel, IVaultData>
+    setUniSwapPool: Action<VaultModel, IVaultData>
+    setIsUniSwapPoolChecked: Action<VaultModel, boolean>
+    setStage: Action<VaultModel, number>
+    setTransactionState: Action<VaultModel, ActionState>
+    setAmount: Action<VaultModel, string>
+    setTargetedCRatio: Action<VaultModel, number>
+    setIsMaxWithdraw: Action<VaultModel, boolean>
+    wrapEther: Thunk<VaultModel, WrapEtherProps, any, StoreModel>
 }
 
-const safeModel: SafeModel = {
+const DEFAULT_VAULT_DATA: IVaultData = {
+    totalCollateral: '',
+    totalDebt: '',
+    leftInput: '',
+    rightInput: '',
+    collateralRatio: 0,
+    liquidationPrice: 0,
+    collateral: '',
+}
+
+const vaultModel: VaultModel = {
     list: [],
-    safeCreated: false,
+    vaultCreated: false,
     isMaxWithdraw: false,
     operation: 0,
     amount: '',
     targetedCRatio: 0,
-    singleSafe: undefined,
+    singleVault: undefined,
     totalEth: '0.00',
     totalHAI: '0.00',
     transactionState: ActionState.NONE,
     isES: true,
     isUniSwapPoolChecked: true,
     stage: 0,
-    safeData: DEFAULT_SAFE_STATE,
+    vaultData: DEFAULT_VAULT_DATA,
     liquidationData: undefined,
-    uniSwapPool: DEFAULT_SAFE_STATE,
+    uniSwapPool: DEFAULT_VAULT_DATA,
     depositAndBorrow: thunk(async (actions, payload, { getStoreActions }) => {
         const storeActions = getStoreActions()
-        const txResponse = await handleDepositAndBorrow(payload.signer, payload.safeData, payload.safeId)
+        const txResponse = await handleDepositAndBorrow(payload.signer, payload.vaultData, payload.vaultId)
         if (txResponse) {
             const { hash, chainId } = txResponse
             storeActions.transactionsModel.addTransaction({
                 chainId,
                 hash,
                 from: txResponse.from,
-                summary: payload.safeId ? 'Modifying Safe' : 'Creating a new Safe',
+                summary: payload.vaultId ? 'Modifying Vault' : 'Opening a new Vault',
                 addedTime: new Date().getTime(),
                 originalTx: txResponse,
             })
             storeActions.popupsModel.setIsWaitingModalOpen(true)
-            if (!payload.safeId) {
+            if (!payload.vaultId) {
                 storeActions.popupsModel.setWaitingPayload({
                     title: 'Transaction Submitted',
-                    text: 'Adding a new safe...',
+                    text: 'Adding a new vault...',
                     status: ActionState.SUCCESS,
                     isCreate: true,
                 })
@@ -115,8 +120,8 @@ const safeModel: SafeModel = {
 
             await txResponse.wait()
             actions.setStage(0)
-            actions.setUniSwapPool(DEFAULT_SAFE_STATE)
-            actions.setSafeData(DEFAULT_SAFE_STATE)
+            actions.setUniSwapPool(DEFAULT_VAULT_DATA)
+            actions.setVaultData(DEFAULT_VAULT_DATA)
             storeActions.connectWalletModel.setForceUpdateTokens(true)
         } else {
             storeActions.connectWalletModel.setIsStepLoading(false)
@@ -125,14 +130,14 @@ const safeModel: SafeModel = {
     }),
     repayAndWithdraw: thunk(async (actions, payload, { getStoreActions }) => {
         const storeActions = getStoreActions()
-        const txResponse = await handleRepayAndWithdraw(payload.signer, payload.safeData, payload.safeId)
+        const txResponse = await handleRepayAndWithdraw(payload.signer, payload.vaultData, payload.vaultId)
         if (txResponse) {
             const { hash, chainId } = txResponse
             storeActions.transactionsModel.addTransaction({
                 chainId,
                 hash,
                 from: txResponse.from,
-                summary: 'Modifying Safe',
+                summary: 'Modifying Vault',
                 addedTime: new Date().getTime(),
                 originalTx: txResponse,
             })
@@ -145,14 +150,14 @@ const safeModel: SafeModel = {
 
             await txResponse.wait()
             actions.setStage(0)
-            actions.setUniSwapPool(DEFAULT_SAFE_STATE)
-            actions.setSafeData(DEFAULT_SAFE_STATE)
+            actions.setUniSwapPool(DEFAULT_VAULT_DATA)
+            actions.setVaultData(DEFAULT_VAULT_DATA)
             storeActions.connectWalletModel.setForceUpdateTokens(true)
         }
     }),
     // collectETH: thunk(async (actions, payload, { getStoreActions }) => {
     //     const storeActions = getStoreActions()
-    //     const txResponse = await handleCollectETH(payload.signer, payload.safe)
+    //     const txResponse = await handleCollectETH(payload.signer, payload.vault)
     //     if (txResponse) {
     //         const { hash, chainId } = txResponse
     //         storeActions.transactionsModel.addTransaction({
@@ -172,23 +177,23 @@ const safeModel: SafeModel = {
     //         await txResponse.wait()
     //     }
     // }),
-    fetchUserSafes: thunk(async (actions, payload, { getStoreActions, getState }) => {
+    fetchUserVaults: thunk(async (actions, payload, { getStoreActions, getState }) => {
         const storeActions = getStoreActions()
         const state = getState()
         const { transactionState } = state
-        const fetched = await fetchUserSafes(payload)
+        const fetched = await fetchUserVaults(payload)
         const chainId = payload.chainId
 
         if (fetched) {
-            actions.setList(fetched.userSafes)
-            if (fetched.userSafes.length > 0) {
-                actions.setIsSafeCreated(true)
+            actions.setList(fetched.userVaults)
+            if (fetched.userVaults.length > 0) {
+                actions.setIsVaultCreated(true)
                 storeActions.connectWalletModel.setStep(2)
             } else if (transactionState === ActionState.ERROR) {
-                actions.setIsSafeCreated(false)
+                actions.setIsVaultCreated(false)
                 storeActions.connectWalletModel.setIsStepLoading(false)
             } else {
-                actions.setIsSafeCreated(false)
+                actions.setIsVaultCreated(false)
             }
             actions.setLiquidationData(fetched.liquidationData)
 
@@ -226,14 +231,14 @@ const safeModel: SafeModel = {
         }
     }),
 
-    setIsSafeCreated: action((state, payload) => {
-        state.safeCreated = payload
+    setIsVaultCreated: action((state, payload) => {
+        state.vaultCreated = payload
     }),
     setList: action((state, payload) => {
         state.list = payload
     }),
-    setSingleSafe: action((state, payload) => {
-        state.singleSafe = payload
+    setSingleVault: action((state, payload) => {
+        state.singleVault = payload
     }),
     setOperation: action((state, payload) => {
         state.operation = payload
@@ -252,8 +257,8 @@ const safeModel: SafeModel = {
         state.liquidationData = payload
     }),
 
-    setSafeData: action((state, payload) => {
-        state.safeData = payload
+    setVaultData: action((state, payload) => {
+        state.vaultData = payload
     }),
     setUniSwapPool: action((state, payload) => {
         state.uniSwapPool = payload
@@ -278,4 +283,4 @@ const safeModel: SafeModel = {
     }),
 }
 
-export default safeModel
+export default vaultModel

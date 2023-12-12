@@ -9,9 +9,6 @@ import uniswapIcon from '~/assets/uniswap-icon.svg'
 import velodromeIcon from '~/assets/velodrome-img.svg'
 import haiLogo from '~/assets/logo.png'
 import logo192 from '~/assets/logo192.png'
-import accountImg from '~/assets/account-img.png'
-import walletImg from '~/assets/wallet-img.png'
-import safeImg from '~/assets/safe-img.png'
 
 const INITIAL_STATE = [
     darkArrow,
@@ -25,9 +22,6 @@ const INITIAL_STATE = [
     velodromeIcon,
     haiLogo,
     logo192,
-    accountImg,
-    walletImg,
-    safeImg,
 ]
 
 const ImagePreloader = () => {

@@ -10,15 +10,15 @@ import {
     useRef,
 } from 'react'
 
-import type { Collateral, Debt, FormState, ISafe, ReactChildren } from '~/types'
+import type { Collateral, Debt, FormState, IVault, ReactChildren } from '~/types'
 import {
-    DEFAULT_SAFE_STATE,
+    DEFAULT_VAULT_DATA,
     Status,
     VaultAction,
     VaultInfoError,
     getCollateralRatio,
     getLiquidationPrice,
-    safeIsSafe,
+    vaultIsSafe,
     ratioChecker,
     riskStateToStatus,
     vaultInfoErrors,
@@ -38,11 +38,11 @@ type SetActiveVaultProps = {
 } | {
     create?: false,
     collateralName?: undefined,
-    vault: ISafe
+    vault: IVault
 }
 
 type VaultContext = {
-    vault?: ISafe,
+    vault?: IVault,
     setActiveVault: (props: SetActiveVaultProps) => void,
     action: VaultAction,
     setAction: Dispatch<SetStateAction<VaultAction>>,
@@ -100,26 +100,26 @@ type Props = {
 export function VaultProvider({ action, setAction, children }: Props) {
     const {
         liquidationData,
-        safeData,
-        singleSafe,
-    } = useStoreState(({ safeModel }) => safeModel)
-    const { safeModel: safeActions } = useStoreActions(actions => actions)
+        vaultData,
+        singleVault,
+    } = useStoreState(({ vaultModel }) => vaultModel)
+    const { vaultModel: vaultActions } = useStoreActions(actions => actions)
 
-    const dataRef = useRef(safeData)
-    dataRef.current = safeData
+    const dataRef = useRef(vaultData)
+    dataRef.current = vaultData
 
     const setActiveVault: VaultContext['setActiveVault'] = useCallback(({
         create,
         collateralName,
         vault,
     }: SetActiveVaultProps) => {
-        safeActions.setSafeData({
-            ...DEFAULT_SAFE_STATE,
+        vaultActions.setVaultData({
+            ...DEFAULT_VAULT_DATA,
             collateral: collateralName || vault?.collateralName || 'WETH',
         })
-        safeActions.setSingleSafe(create ? undefined: vault)
+        vaultActions.setSingleVault(create ? undefined: vault)
         setAction(create ? VaultAction.CREATE: VaultAction.DEPOSIT_BORROW)
-    }, [safeActions])
+    }, [vaultActions])
 
     const [formState, updateForm] = useReducer((
         previous: FormState,
@@ -146,19 +146,19 @@ export function VaultProvider({ action, setAction, children }: Props) {
             inputs.leftInput = formState.withdraw?.toString() || ''
             inputs.rightInput = formState.repay?.toString() || ''
         }
-        safeActions.setSafeData({
+        vaultActions.setVaultData({
             ...dataRef.current,
             ...inputs,
         })
 
         return () => {
-            safeActions.setSafeData({
+            vaultActions.setVaultData({
                 ...dataRef.current,
                 leftInput: '',
                 rightInput: '',
             })
         }
-    }, [action, formState, safeActions])
+    }, [action, formState, vaultActions])
 
     const collateral = useCollateral(action)
     const debt = useDebt(action, collateral.liquidationData)
@@ -178,7 +178,7 @@ export function VaultProvider({ action, setAction, children }: Props) {
     }, [collateral, debt, liquidationData])
 
     const collateralRatio = useMemo(() => {
-        if (singleSafe?.collateralRatio) return singleSafe.collateralRatio
+        if (singleVault?.collateralRatio) return singleVault.collateralRatio
 
         const { currentPrice, liquidationCRatio } = collateral.liquidationData || {}
         if (!currentPrice?.liquidationPrice || !liquidationCRatio) return '0'
@@ -189,12 +189,12 @@ export function VaultProvider({ action, setAction, children }: Props) {
             currentPrice.liquidationPrice,
             liquidationCRatio
         ).toString()
-    }, [singleSafe, collateral, debt])
+    }, [singleVault, collateral, debt])
 
     const { safetyRatio, riskStatus } = useMemo(() => {
         const { safetyCRatio } = collateral.liquidationData || {}
         const cr = parseFloat(
-            (singleSafe?.collateralRatio || collateralRatio).toString()
+            (singleVault?.collateralRatio || collateralRatio).toString()
         )
         const state = ratioChecker(cr, Number(safetyCRatio))
         const status = riskStateToStatus[state] || Status.UNKNOWN
@@ -205,7 +205,7 @@ export function VaultProvider({ action, setAction, children }: Props) {
                 : undefined,
             riskStatus: status,
         }
-    }, [collateral.liquidationData, singleSafe, collateralRatio])
+    }, [collateral.liquidationData, singleVault, collateralRatio])
 
     const liquidationPenaltyPercentage = Number(collateral.liquidationData?.liquidationPenalty || 0) - 1
 
@@ -214,7 +214,7 @@ export function VaultProvider({ action, setAction, children }: Props) {
     const isSafe = useMemo(() => {
         if (!collateral.liquidationData?.currentPrice.safetyPrice) return true
 
-        return safeIsSafe(
+        return vaultIsSafe(
             collateral.total || '0',
             debt.total || '0',
             collateral.liquidationData.currentPrice.safetyPrice
@@ -229,7 +229,7 @@ export function VaultProvider({ action, setAction, children }: Props) {
     })
 
     const summary = useSummary({
-        vault: singleSafe,
+        vault: singleVault,
         collateral,
         debt,
         simulatedCR: simulation?.collateralRatio,
@@ -244,9 +244,9 @@ export function VaultProvider({ action, setAction, children }: Props) {
         isSafe,
     })
 
-    // update safeData as values change
+    // update vaultData as values change
     useEffect(() => {
-        safeActions.setSafeData({
+        vaultActions.setVaultData({
             ...dataRef.current,
             totalCollateral: collateral.total,
             totalDebt: debt.total,
@@ -257,7 +257,7 @@ export function VaultProvider({ action, setAction, children }: Props) {
 
     return (
         <VaultContext.Provider value={{
-            vault: singleSafe,
+            vault: singleVault,
             setActiveVault,
             action,
             setAction,

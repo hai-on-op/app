@@ -7,12 +7,12 @@ import { useStoreState } from '~/store'
 
 export function useCollateral(action: VaultAction): Collateral {
     const {
-        safeModel: {
-            safeData: {
+        vaultModel: {
+            vaultData: {
                 collateral,
                 leftInput,
             },
-            singleSafe,
+            singleVault,
             liquidationData,
         },
         connectWalletModel: {
@@ -22,17 +22,17 @@ export function useCollateral(action: VaultAction): Collateral {
     } = useStoreState(state => state)
 
     const name = useMemo(() => (
-        singleSafe?.collateralName || collateral
-    ), [singleSafe, collateral])
+        singleVault?.collateralName || collateral
+    ), [singleVault, collateral])
 
     const total = useMemo(() => {
-        if (!singleSafe) return leftInput
+        if (!singleVault) return leftInput
 
         if (action === VaultAction.WITHDRAW_REPAY) {
-            return returnTotalValue(singleSafe.collateral, leftInput, true, true).toString()
+            return returnTotalValue(singleVault.collateral, leftInput, true, true).toString()
         }
-        return returnTotalValue(singleSafe.collateral, leftInput).toString()
-    }, [singleSafe, leftInput, action])
+        return returnTotalValue(singleVault.collateral, leftInput).toString()
+    }, [singleVault, leftInput, action])
 
     const balance = useMemo(() => (
         formatEther(tokensFetchedData[name]?.balanceE18 || '0')
@@ -43,12 +43,12 @@ export function useCollateral(action: VaultAction): Collateral {
     const available = useMemo(() => {
         if (
             (action !== VaultAction.DEPOSIT_BORROW && action !== VaultAction.CREATE)
-            || (singleSafe && !singleSafe.collateralName)
+            || (singleVault && !singleVault.collateralName)
         ) {
-            return singleSafe?.collateral || '0'
+            return singleVault?.collateral || '0'
         }
         return formatNumber(balance, 2).toString()
-    }, [singleSafe, balance, action])
+    }, [singleVault, balance, action])
 
     return {
         name,

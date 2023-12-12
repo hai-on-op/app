@@ -12,10 +12,10 @@ import { useStoreState } from '~/store'
 
 export function useDebt(action: VaultAction, collateralLiquidationData?: CollateralLiquidationData): Debt {
     const {
-        safeModel: {
+        vaultModel: {
             liquidationData,
-            safeData: { leftInput, rightInput },
-            singleSafe,
+            vaultData: { leftInput, rightInput },
+            singleVault,
         },
         connectWalletModel: {
             tokensData,
@@ -26,21 +26,21 @@ export function useDebt(action: VaultAction, collateralLiquidationData?: Collate
     const { accumulatedRate = '0' } = collateralLiquidationData || {}
 
     const total = useMemo(() => {
-        if (!singleSafe) return rightInput
+        if (!singleVault) return rightInput
 
         if (action === VaultAction.WITHDRAW_REPAY) {
             return returnTotalValue(
-                returnTotalDebt(singleSafe.debt, accumulatedRate) as string,
+                returnTotalDebt(singleVault.debt, accumulatedRate) as string,
                 rightInput,
                 true,
                 true
             ).toString()
         }
         return returnTotalValue(
-            returnTotalDebt(singleSafe.debt, accumulatedRate) as string,
+            returnTotalDebt(singleVault.debt, accumulatedRate) as string,
             rightInput
         ).toString()
-    }, [singleSafe, rightInput, action, accumulatedRate])
+    }, [singleVault, rightInput, action, accumulatedRate])
 
     const available = useMemo(() => {
         if (!collateralLiquidationData?.currentPrice.safetyPrice) return '0.00'
@@ -52,21 +52,21 @@ export function useDebt(action: VaultAction, collateralLiquidationData?: Collate
                 leftInput
             )
         }
-        if (singleSafe) {
+        if (singleVault) {
             if (action === VaultAction.DEPOSIT_BORROW) {
                 return returnAvaiableDebt(
                     collateralLiquidationData.currentPrice.safetyPrice,
                     accumulatedRate,
                     leftInput,
-                    singleSafe.collateral,
-                    singleSafe.debt
+                    singleVault.collateral,
+                    singleVault.debt
                 )
             }
-            return returnTotalDebt(singleSafe.debt, accumulatedRate).toString()
+            return returnTotalDebt(singleVault.debt, accumulatedRate).toString()
         }
 
         return '0.00'
-    }, [collateralLiquidationData, accumulatedRate, singleSafe, action, leftInput])
+    }, [collateralLiquidationData, accumulatedRate, singleVault, action, leftInput])
 
     return {
         data: tokensData?.HAI,

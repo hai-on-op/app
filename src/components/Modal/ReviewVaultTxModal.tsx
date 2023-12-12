@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { useAccount, useNetwork } from 'wagmi'
 
-import { ActionState, DEFAULT_NETWORK_ID, DEFAULT_SAFE_STATE, VaultAction } from '~/utils'
+import { DEFAULT_NETWORK_ID, DEFAULT_VAULT_DATA, ActionState, VaultAction } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { useVault } from '~/providers/VaultProvider'
 import { handleTransactionError, useEthersSigner, useGeb } from '~/hooks'
@@ -23,12 +23,12 @@ export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
 
     const {
         connectWalletModel: { tokensData },
-        safeModel: { safeData, singleSafe },
+        vaultModel: { vaultData, singleVault },
     } = useStoreState(state => state)
     const {
         connectWalletModel: connectWalletActions,
         popupsModel: popupsActions,
-        safeModel: safeActions,
+        vaultModel: vaultActions,
     } = useStoreActions(actions => actions)
 
     const {
@@ -40,21 +40,21 @@ export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
 
     const reset = useCallback(() => {
         updateForm('clear')
-        safeActions.setSafeData(DEFAULT_SAFE_STATE)
+        vaultActions.setVaultData(DEFAULT_VAULT_DATA)
         connectWalletActions.setIsStepLoading(true)
-        safeActions.setIsSafeCreated(true)
-        safeActions.fetchUserSafes({
+        vaultActions.setIsVaultCreated(true)
+        vaultActions.fetchUserVaults({
             address: account as string,
             geb,
             tokensData,
             chainId: chain?.id || DEFAULT_NETWORK_ID,
         })
-    }, [updateForm, safeActions, connectWalletActions, account, geb, tokensData])
+    }, [updateForm, vaultActions, connectWalletActions, account, geb, tokensData])
 
     const handleConfirm = useCallback(async () => {
         if (!account || !signer) return
 
-        safeActions.setTransactionState(ActionState.LOADING)
+        vaultActions.setTransactionState(ActionState.LOADING)
         popupsActions.setIsWaitingModalOpen(true)
         popupsActions.setWaitingPayload({
             title: 'Waiting For Confirmation',
@@ -66,45 +66,45 @@ export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
             connectWalletActions.setIsStepLoading(true)
             switch(action) {
                 case VaultAction.CREATE: {
-                    await safeActions.depositAndBorrow({
-                        safeData,
+                    await vaultActions.depositAndBorrow({
+                        vaultData,
                         signer,
                     })
                     history.push('/vaults')
                     break
                 }
                 case VaultAction.DEPOSIT_BORROW: {
-                    if (!singleSafe) throw new Error('Vault marked for modification, but no vault is selected')
-                    await safeActions.depositAndBorrow({
-                        safeData,
+                    if (!singleVault) throw new Error('Vault marked for modification, but no vault is selected')
+                    await vaultActions.depositAndBorrow({
+                        vaultData,
                         signer,
-                        safeId: singleSafe.id,
+                        vaultId: singleVault.id,
                     })
                     break
                 }
                 case VaultAction.WITHDRAW_REPAY: {
-                    if (!singleSafe) throw new Error('Vault marked for modification, but no vault is selected')
-                    await safeActions.repayAndWithdraw({
-                        safeData,
+                    if (!singleVault) throw new Error('Vault marked for modification, but no vault is selected')
+                    await vaultActions.repayAndWithdraw({
+                        vaultData,
                         signer,
-                        safeId: singleSafe.id,
+                        vaultId: singleVault.id,
                     })
                     break
                 }
                 default: throw new Error(`Invalid operation (${action})`)
             }
-            safeActions.setTransactionState(ActionState.SUCCESS)
-            safeActions.setIsSafeCreated(true)
+            vaultActions.setTransactionState(ActionState.SUCCESS)
+            vaultActions.setIsVaultCreated(true)
             popupsActions.setIsWaitingModalOpen(false)
             onClose?.()
             reset()
         } catch(e: any) {
-            safeActions.setTransactionState(ActionState.ERROR)
+            vaultActions.setTransactionState(ActionState.ERROR)
             handleTransactionError(e)
         }
     }, [
         onClose, account, signer, history,
-        action, safeData, singleSafe, connectWalletActions, popupsActions, safeActions, reset,
+        action, vaultData, singleVault, connectWalletActions, popupsActions, vaultActions, reset,
     ])
 
     return (

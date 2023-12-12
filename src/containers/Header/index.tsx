@@ -34,7 +34,7 @@ export function Header({ tickerActive = false }: HeaderProps) {
     const isLargerThanSmall = useMediaQuery('upToSmall')
 
     const {
-        safeModel: { liquidationData },
+        vaultModel: { liquidationData },
         settingsModel: { isPlayingMusic },
     } = useStoreState(state => state)
     const { setIsPlayingMusic } = useStoreActions(actions => actions.settingsModel)

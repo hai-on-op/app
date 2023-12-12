@@ -2,7 +2,7 @@ import numeral from 'numeral'
 import { type TokenData, utils as gebUtils } from '@hai-on-op/sdk'
 import { BigNumber } from 'ethers'
 
-import type { ILiquidationData, ISafe, ISafeData } from '~/types'
+import type { ILiquidationData, IVault, IVaultData } from '~/types'
 import { Status } from './constants'
 import { formatNumber, toFixedString } from './formatting'
 import { returnTotalValue } from './math'
@@ -42,7 +42,7 @@ export const vaultInfoErrors: Record<number, string> = {
     [VaultInfoError.MINIMUM_MINT]: `You must mint at least 1 $HAI to create a Vault`,
 }
 
-export const DEFAULT_SAFE_STATE: ISafeData = {
+export const DEFAULT_VAULT_DATA: IVaultData = {
     totalCollateral: '',
     totalDebt: '',
     leftInput: '',
@@ -52,11 +52,11 @@ export const DEFAULT_SAFE_STATE: ISafeData = {
     collateral: '',
 }
 
-export const formatUserSafe = (
-    safes: Array<any>,
+export const formatUserVault = (
+    vaults: Array<any>,
     liquidationData: ILiquidationData,
     tokensData: { [key: string]: TokenData }
-): Array<ISafe> => {
+): Array<IVault> => {
     const collateralBytes32: { [key: string]: string } = Object.values(tokensData)
         .filter((token) => token.isCollateral)
         .reduce((accum, token) => {
@@ -65,7 +65,7 @@ export const formatUserSafe = (
 
     const { currentRedemptionPrice, currentRedemptionRate, collateralLiquidationData } = liquidationData
 
-    return safes
+    return vaults
         .filter((s) => s.collateralType in collateralBytes32)
         .map((s) => {
             const token = collateralBytes32[s.collateralType]
@@ -95,8 +95,8 @@ export const formatUserSafe = (
             )
 
             return {
-                id: s.safeId,
-                safeHandler: s.safeHandler,
+                id: s.safeId || s.vaultId,
+                vaultHandler: s.safeHandler || s.vaultHandler,
                 date: s.createdAt,
                 riskState: ratioChecker(Number(collateralRatio), Number(safetyCRatio)),
                 collateral: s.collateral,
@@ -115,7 +115,7 @@ export const formatUserSafe = (
                 liquidationPrice,
                 totalAnnualizedStabilityFee: totalAnnualizedStabilityFee || '0',
                 currentRedemptionRate: currentRedemptionRate || '0',
-            } as ISafe
+            } as IVault
         })
         .sort((a, b) => Number(b.riskState) - Number(a.riskState) || Number(b.debt) - Number(a.debt))
 }
@@ -160,7 +160,7 @@ export const getLiquidationPrice = (
     return formatNumber(numerator.value().toString())
 }
 
-export const safeIsSafe = (totalCollateral: string, totalDebt: string, safetyPrice: string) => {
+export const vaultIsSafe = (totalCollateral: string, totalDebt: string, safetyPrice: string) => {
     if (isNaN(Number(totalDebt))) return true
     const totalDebtBN = BigNumber.from(toFixedString(totalDebt, 'WAD'))
     const totalCollateralBN = BigNumber.from(toFixedString(totalCollateral, 'WAD'))

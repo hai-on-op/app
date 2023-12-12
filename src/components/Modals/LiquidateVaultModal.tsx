@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 
 import { ActionState } from '~/utils'
-import { liquidateSafe } from '~/services/blockchain'
+import { liquidateVault } from '~/services/blockchain'
 import { useStoreActions, useStoreState } from '~/store'
 import { handleTransactionError, useGeb } from '~/hooks'
 
@@ -14,7 +14,7 @@ import AlertLabel from '~/components/AlertLabel'
 import Button from '~/components/Button'
 import CheckBox from '~/components/CheckBox'
 
-const LiquidateSafeModal = () => {
+const LiquidateVaultModal = () => {
     const { t } = useTranslation()
     const geb = useGeb()
     const history = useHistory()
@@ -26,36 +26,36 @@ const LiquidateSafeModal = () => {
 
     const closeModal = () => {
         setAccepted(false)
-        popupsModel.closeLiquidateSafeModal()
+        popupsModel.closeLiquidateVaultModal()
     }
 
-    const startSafeLiquidation = async () => {
-        if (!popupsState.liquidateSafePayload || !geb) return
-        const { safeId } = popupsState.liquidateSafePayload
+    const startVaultLiquidation = async () => {
+        if (!popupsState.liquidateVaultPayload || !geb) return
+        const { vaultId } = popupsState.liquidateVaultPayload
         
         popupsModel.setIsWaitingModalOpen(true)
         popupsModel.setWaitingPayload({
-            text: `Starting liquidation for safe #${safeId}...`,
+            text: `Starting liquidation for vault #${vaultId}...`,
             title: 'Waiting For Confirmation',
             hint: 'Confirm this transaction in your wallet',
             status: ActionState.LOADING,
         })
 
         try {
-            const txResponse = await liquidateSafe(geb, safeId)
+            const txResponse = await liquidateVault(geb, vaultId)
             if (!txResponse) return
             const { hash, chainId, from } = txResponse
             transactionsModel.addTransaction({
                 chainId,
                 hash,
                 from,
-                summary: `Liquidate Safe #${safeId}`,
+                summary: `Liquidate Vault #${vaultId}`,
                 addedTime: new Date().getTime(),
                 originalTx: txResponse,
             })
             popupsModel.setWaitingPayload({
                 title: 'Transaction Submitted',
-                text: `Starting liquidation for safe #${safeId}...`,
+                text: `Starting liquidation for vault #${vaultId}...`,
                 hash: txResponse.hash,
                 status: ActionState.LOADING,
             })
@@ -70,17 +70,17 @@ const LiquidateSafeModal = () => {
 
     return (
         <Modal
-            title="Liquidate Safe"
+            title="Liquidate Vault"
             maxWidth="400px"
             borderRadius="20px"
-            isModalOpen={popupsState.isLiquidateSafeModalOpen}
+            isModalOpen={popupsState.isLiquidateVaultModalOpen}
             closeModal={closeModal}
             showXButton
             backDropClose>
             <AlertContainer>
                 <AlertLabel
                     isBlock={false}
-                    text={t('liquidate_safe_warning')}
+                    text={t('liquidate_vault_warning')}
                     type="danger"
                 />
             </AlertContainer>
@@ -96,16 +96,16 @@ const LiquidateSafeModal = () => {
             <ButtonContainer>
                 <Button
                     disabled={!accepted}
-                    onClick={startSafeLiquidation}>
+                    onClick={startVaultLiquidation}>
                     {t('liquidate_button')}
-                    {popupsState.liquidateSafePayload?.safeId}
+                    {popupsState.liquidateVaultPayload?.vaultId}
                 </Button>
             </ButtonContainer>
         </Modal>
     )
 }
 
-export default LiquidateSafeModal
+export default LiquidateVaultModal
 
 const AlertContainer = styled.div`
     margin-bottom: 20px;

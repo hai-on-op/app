@@ -26,7 +26,7 @@ type Props = {
     debt: Debt,
 }
 export function useSimulation({ action, formState, collateral, debt }: Props): Simulation | undefined {
-    const { liquidationData } = useStoreState(({ safeModel }) => safeModel)
+    const { liquidationData } = useStoreState(({ vaultModel }) => vaultModel)
 
     const simulation = useMemo(() => {
         if (!Object.values(formState).some((value = '0') => Number(value) > 0)) {
@@ -57,15 +57,15 @@ export function useSimulation({ action, formState, collateral, debt }: Props): S
 
     // TODO: clarify accumulatedRate as it affects total debt calculations
     // const simulatedDebt = useMemo(() => {
-    //     if (!vault || Number(safeData.rightInput || '0') <= 0) return undefined
+    //     if (!vault || Number(vaultData.rightInput || '0') <= 0) return undefined
 
     //     const currentDebt = parseFloat(vault.debt)
-    //     const inputDebt = parseFloat(safeData.rightInput)
+    //     const inputDebt = parseFloat(vaultData.rightInput)
     //     if (vaultInfo.action === VaultAction.WITHDRAW_REPAY) {
     //         return Math.max(currentDebt - inputDebt, 0)
     //     }
     //     return currentDebt + inputDebt
-    // }, [vault, vaultInfo, safeData])
+    // }, [vault, vaultInfo, vaultData])
 
     const [collateralRatio, riskStatus] = useMemo(() => {
         if (!simulation) return []

@@ -3,10 +3,10 @@ import { Geb, type TokenData } from '@hai-on-op/sdk'
 
 import type { SystemSate } from './system'
 
-export type ISafe = {
+export type IVault = {
     id: string
     date: string
-    safeHandler: string
+    vaultHandler: string
     riskState: number
     collateral: string
     debt: string
@@ -26,7 +26,7 @@ export type ISafe = {
     collateralName: string
 }
 
-export type ISafeData = {
+export type IVaultData = {
     totalCollateral: string
     totalDebt: string
     leftInput: string
@@ -41,13 +41,13 @@ export type ILiquidationData = {
     currentRedemptionPrice: string
     currentRedemptionRate: string
     globalDebt: string
-    perSafeDebtCeiling: string
+    perVaultDebtCeiling: string
     globalDebtCeiling: string
     collateralLiquidationData: { [key: string]: CollateralLiquidationData }
 }
 
-export type ISafePayload = {
-    safeData: ISafeData
+export type IVaultPayload = {
+    vaultData: IVaultData
     signer: JsonRpcSigner
 }
 
@@ -65,27 +65,27 @@ export type CollateralLiquidationData = {
     totalAnnualizedStabilityFee: string
 }
 
-export type ISafeResponse = {
+export type IVaultResponse = {
     collateral: string
     createdAt: string | null // Will be null in RPC mode;
     debt: string
-    safeHandler: string
-    safeId: string
+    vaultHandler: string
+    vaultId: string
     collateralType: string
 }
 
-// query responses for the safes
+// query responses for the vaults
 export type ILiquidationResponse = {
     collateralLiquidationData: { [key: string]: CollateralLiquidationData }
     systemState: SystemSate
 }
 
-export type IUserSafeList = ILiquidationResponse & {
+export type IUserVaultList = ILiquidationResponse & {
     erc20Balances: Array<{ balance: string }>
-    safes: Array<ISafeResponse>
+    vaults: Array<IVaultResponse>
 }
 
-export type IModifySAFECollateralization = {
+export type IModifyVAULTCollateralization = {
     deltaDebt: string
     deltaCollateral: string
     createdAt: string
@@ -100,21 +100,21 @@ export type ILiquidationFixedDiscount = {
     createdAtTransaction: string
 }
 
-export type ISingleSafe = {
-    safeId: string
-    safeHandler: string
+export type ISingleVault = {
+    vaultId: string
+    vaultHandler: string
     collateral: string
     createdAt: string | null // Will be null in RPC mode
     debt: string
     internalCollateralBalance: {
         balance: string
     }
-    modifySAFECollateralization: Array<IModifySAFECollateralization> | null // Will be null over RPC;
+    modifyVAULTCollateralization: Array<IModifyVAULTCollateralization> | null // Will be null over RPC;
     liquidationDiscount: Array<ILiquidationFixedDiscount> | null // Will be null over RPC
 }
-export type ISafeQuery = ILiquidationResponse & {
+export type IVaultQuery = ILiquidationResponse & {
     erc20Balances: Array<{ balance: string }>
-    safes: Array<ISingleSafe>
+    vaults: Array<ISingleVault>
     userProxies: [
         {
             address: string
@@ -125,19 +125,19 @@ export type ISafeQuery = ILiquidationResponse & {
     ]
 }
 
-export type IFetchSafesPayload = {
+export type IFetchVaultsPayload = {
     address: string
     geb: Geb
     tokensData: { [key: string]: TokenData }
     chainId: number
 }
 
-export type IFetchSafeById = IFetchSafesPayload & {
-    safeId: string
+export type IFetchVaultById = IFetchVaultsPayload & {
+    vaultId: string
 }
 
-export type IManageSafe = {
-    safeId: string
+export type IManageVault = {
+    vaultId: string
     owner: {
         id: string
     }
@@ -150,7 +150,7 @@ export type AvailableVaultPair = {
     collateralizationFactor: string,
     apy: string,
     eligibleBalance?: string,
-    myVaults?: ISafe[]
+    myVaults?: IVault[]
 }
 
 export type FormState = {

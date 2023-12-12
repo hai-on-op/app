@@ -20,7 +20,7 @@ export function WrapETHModal(props: ModalProps) {
     const {
         connectWalletModel: connectWalletActions,
         popupsModel: popupsActions,
-        safeModel: safeActions,
+        vaultModel: vaultActions,
     } = useStoreActions(actions => actions)
 
     const [wrapValue, setWrapValue] = useState('')
@@ -44,7 +44,7 @@ export function WrapETHModal(props: ModalProps) {
     const onWrap = async () => {
         if (!signer || !isNonZero || insufficientFunds) return
         try {
-            popupsActions.setSafeOperationPayload({
+            popupsActions.setVaultOperationPayload({
                 isCreate: false,
                 isOpen: false,
                 type: '',
@@ -57,7 +57,7 @@ export function WrapETHModal(props: ModalProps) {
                 status: ActionState.LOADING,
             })
 
-            await safeActions.wrapEther({
+            await vaultActions.wrapEther({
                 signer,
                 title: 'Wrapping ETH',
                 amount: wrapValue,

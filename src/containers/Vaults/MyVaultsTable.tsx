@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 
-import type { ISafe, SortableHeader } from '~/types'
+import type { IVault, SortableHeader } from '~/types'
 import { Status, formatNumberWithStyle, riskStateToStatus, getRatePercentage } from '~/utils'
 import { useVault } from '~/providers/VaultProvider'
 
@@ -19,7 +19,7 @@ const sortableHeaders: SortableHeader[] = [
 ]
 
 type MyVaultsTableProps = {
-    rows: ISafe[]
+    rows: IVault[]
 }
 export function MyVaultsTable({ rows }: MyVaultsTableProps) {
     const { setActiveVault } = useVault()

@@ -1,7 +1,7 @@
 import type {
     Collateral,
     Debt,
-    ISafe,
+    IVault,
     SummaryCurrency,
     SummaryItem,
     SummaryItemValue,
@@ -22,7 +22,7 @@ export type Summary = {
 }
 
 type Props = {
-    vault?: ISafe,
+    vault?: IVault,
     collateral: Collateral,
     debt: Debt,
     simulatedCR?: string,

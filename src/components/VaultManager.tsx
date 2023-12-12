@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { useAccount, useNetwork } from 'wagmi'
 
-import type { IUserSafeList } from '~/types'
-import { fetchUserSafesRaw } from '~/services/safes'
+import type { IUserVaultList } from '~/types'
+import { fetchUserVaultsRaw } from '~/services/vaults'
 import { timeout, isAddress, DEFAULT_NETWORK_ID } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { useGeb } from '~/hooks'
@@ -12,7 +12,7 @@ import { useGeb } from '~/hooks'
 import styled from 'styled-components'
 import Button from './Button'
 
-const SafeManager = () => {
+const VaultManager = () => {
     const { t } = useTranslation()
     const { address: account } = useAccount()
     const { chain } = useNetwork()
@@ -26,7 +26,7 @@ const SafeManager = () => {
     const { tokensData } = useStoreState((state) => state.connectWalletModel)
 
     const handleCancel = () => {
-        popupsActions.setIsSafeManagerOpen(false)
+        popupsActions.setIsVaultManagerOpen(false)
     }
 
     const handleSubmit = async () => {
@@ -41,15 +41,15 @@ const SafeManager = () => {
         }
 
         try {
-            const userSafes: IUserSafeList | undefined = await fetchUserSafesRaw({
+            const userVaults: IUserVaultList | undefined = await fetchUserVaultsRaw({
                 address: value,
                 geb,
                 tokensData,
                 chainId: chain?.id || DEFAULT_NETWORK_ID,
             })
 
-            if (!userSafes || (userSafes && !userSafes.safes.length)) {
-                setError('Address has no Safes')
+            if (!userVaults?.vaults?.length) {
+                setError('Address has no Vaults')
                 return
             }
             popupsActions.setIsWaitingModalOpen(true)
@@ -82,7 +82,7 @@ const SafeManager = () => {
     )
 }
 
-export default SafeManager
+export default VaultManager
 
 const Body = styled.div`
     padding: 20px;

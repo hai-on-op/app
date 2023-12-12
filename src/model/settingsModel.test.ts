@@ -1,7 +1,7 @@
 import { createStore, EasyPeasyConfig, Store } from 'easy-peasy'
 import settingsModel, { SettingsModel } from './settingsModel'
 
-describe('safe model', () => {
+describe('settings model', () => {
     let store: Store<SettingsModel, EasyPeasyConfig<{}, any>>
     beforeEach(() => {
         store = createStore(settingsModel)

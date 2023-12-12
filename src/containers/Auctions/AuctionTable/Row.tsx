@@ -25,7 +25,7 @@ type AuctionTableRowProps = {
     onSelect?: () => void
 }
 export function AuctionTableRow({ auction, expanded, onSelect }: AuctionTableRowProps) {
-    const { safeModel: { liquidationData } } = useStoreState(state => state)
+    const { vaultModel: { liquidationData } } = useStoreState(state => state)
 
     const [timeEl, setTimeEl] = useState<HTMLElement | null>(null)
     const [refresher, forceTimeRefresh] = useReducer(x => x + 1, 0)

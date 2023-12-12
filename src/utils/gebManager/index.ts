@@ -7,7 +7,7 @@ import {
     fetchUserSafes,
     utils,
 } from '@hai-on-op/sdk'
-import type { ILiquidationResponse, IUserSafeList } from '~/types'
+import type { ILiquidationResponse, IUserVaultList } from '~/types'
 
 type UserListConfig = {
     geb: Geb
@@ -84,21 +84,21 @@ function parseTokenLiquidationData(
     }
 }
 
-// Returns list of user safes
-const getUserSafesRpc = async (config: UserListConfig): Promise<IUserSafeList> => {
-    const [userCoinBalance, safesData] = await fetchUserSafes(config.geb, config.address)
+// Returns list of user vaults
+const getUserVaultsRpc = async (config: UserListConfig): Promise<IUserVaultList> => {
+    const [userCoinBalance, vaultsData] = await fetchUserSafes(config.geb, config.address)
 
-    const safes = safesData.map((safe) => ({
-        collateral: parseWad(safe.lockedCollateral),
-        debt: parseWad(safe.generatedDebt),
+    const vaults = vaultsData.map((vault) => ({
+        collateral: parseWad(vault.lockedCollateral),
+        debt: parseWad(vault.generatedDebt),
         createdAt: null,
-        safeHandler: safe.addy,
-        safeId: safe.id.toString(),
-        collateralType: safe.collateralType,
+        vaultHandler: vault.addy,
+        vaultId: vault.id.toString(),
+        collateralType: vault.collateralType,
     }))
 
     return {
-        safes,
+        vaults,
         erc20Balances: [
             { balance: parseWad(userCoinBalance) },
         ],
@@ -107,7 +107,7 @@ const getUserSafesRpc = async (config: UserListConfig): Promise<IUserSafeList> =
 }
 
 export const gebManager = {
-    getUserSafesRpc,
+    getUserVaultsRpc,
     getLiquidationDataRpc,
 }
 

@@ -4,9 +4,9 @@ import { useStoreActions, useStoreState } from '~/store'
 
 import styled from 'styled-components'
 import Modal from './Modal'
-import SafeManager from '~/components/SafeManager'
+import VaultManager from '~/components/VaultManager'
 
-const SafeManagerModal = () => {
+const VaultManagerModal = () => {
     const { t } = useTranslation()
     const { popupsModel: popupsState } = useStoreState(state => state)
     const { popupsModel: popupsActions } = useStoreActions(actions => actions)
@@ -14,19 +14,19 @@ const SafeManagerModal = () => {
     return (
         <Modal
             title="settings"
-            isModalOpen={popupsState.isSafeManagerOpen}
-            closeModal={() => popupsActions.setIsSafeManagerOpen(false)}
+            isModalOpen={popupsState.isVaultManagerOpen}
+            closeModal={() => popupsActions.setIsVaultManagerOpen(false)}
             backDropClose
             handleModalContent>
             <ModalContent>
                 <Header>{t('manage_other_safes')}</Header>
-                <SafeManager/>
+                <VaultManager/>
             </ModalContent>
         </Modal>
     )
 }
 
-export default SafeManagerModal
+export default VaultManagerModal
 
 const ModalContent = styled.div`
     max-width: 720px;
