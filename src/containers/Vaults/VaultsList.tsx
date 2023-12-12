@@ -2,7 +2,7 @@ import { type Dispatch, type SetStateAction, useMemo, useState } from 'react'
 import { BigNumber } from 'ethers'
 
 import type { AvailableVaultPair } from '~/types'
-import { getRatePercentage, formatNumberWithStyle, LINK_TO_DOCS } from '~/utils'
+import { getRatePercentage, formatNumberWithStyle } from '~/utils'
 import { useStoreState } from '~/store'
 import { useVault } from '~/providers/VaultProvider'
 
@@ -27,14 +27,14 @@ const strategies: StrategyAdProps[] = [
         heading: 'OP REWARDS',
         status: 'NOW LIVE',
         description: 'Earn OP tokens by minting & borrowing HAI',
-        ctaLink: LINK_TO_DOCS,
+        ctaLink: '/earn',
         tokenImages: ['OP'],
     },
     {
         heading: 'KITE REWARDS',
         status: 'NOW LIVE',
         description: 'Earn KITE tokens by minting & borrowing HAI',
-        ctaLink: LINK_TO_DOCS,
+        ctaLink: '/earn',
         tokenImages: ['KITE'],
     },
 ]

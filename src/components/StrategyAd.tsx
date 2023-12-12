@@ -2,9 +2,10 @@ import type { TokenKey } from '~/types'
 
 import styled from 'styled-components'
 import { DashedContainerStyle, Flex, HaiButton, Text } from '~/styles'
+import { HaiArrow } from '~/components/Icons/HaiArrow'
+import { PassLink } from '~/components/PassLink'
 import { ExternalLink } from '~/components/ExternalLink'
 import { FloatingElements, type FloatingElementsProps } from '~/components/BrandElements/FloatingElements'
-import { HaiArrow } from '~/components/Icons/HaiArrow'
 
 export type StrategyAdProps = {
     heading: string,
@@ -50,19 +51,38 @@ export function StrategyAd({
                 </Header>
                 <Text $fontSize="0.8rem">{description}</Text>
             </Flex>
-            <ExternalLink
-                href={ctaLink}
-                $textDecoration="none">
-                <HaiButton
-                    $variant="yellowish"
-                    $gap={8}>
-                    <Text>{cta}</Text>
-                    <HaiArrow
-                        size={15}
-                        direction="upRight"
-                    />
-                </HaiButton>
-            </ExternalLink>
+            {ctaLink.startsWith('/')
+                ? (
+                    <PassLink
+                        href={ctaLink}
+                        $textDecoration="none">
+                        <HaiButton
+                            $variant="yellowish"
+                            $gap={8}>
+                            <Text>{cta}</Text>
+                            <HaiArrow
+                                size={15}
+                                direction="upRight"
+                            />
+                        </HaiButton>
+                    </PassLink>
+                )
+                : (
+                    <ExternalLink
+                        href={ctaLink}
+                        $textDecoration="none">
+                        <HaiButton
+                            $variant="yellowish"
+                            $gap={8}>
+                            <Text>{cta}</Text>
+                            <HaiArrow
+                                size={15}
+                                direction="upRight"
+                            />
+                        </HaiButton>
+                    </ExternalLink>
+                )
+            }
         </Container>
     )
 }
