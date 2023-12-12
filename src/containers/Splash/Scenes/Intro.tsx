@@ -1,4 +1,3 @@
-import type { SplashImage } from '~/types'
 import { useMediaQuery } from '~/hooks'
 
 import styled from 'styled-components'
@@ -7,9 +6,9 @@ import { ZoomScene, type ZoomSceneProps } from './ZoomScene'
 import { BrandedTitle } from '~/components/BrandedTitle'
 import { Swirl } from '~/components/Icons/Swirl'
 import { PairsBanner } from '../PairsBanner'
-import { FloatingElements } from '~/components/BrandElements/FloatingElements'
+import { FloatingElements, type FloatingElementsProps } from '~/components/BrandElements/FloatingElements'
 
-const elves: SplashImage[] = [
+const elves: FloatingElementsProps['elves'] = [
     {
         index: 0,
         width: 'min(240px, 30vw)',
@@ -42,7 +41,7 @@ const elves: SplashImage[] = [
     },
 ]
 
-const clouds: SplashImage[] = [
+const clouds: FloatingElementsProps['clouds'] = [
     {
         index: 0,
         width: '220px',
@@ -74,9 +73,9 @@ const clouds: SplashImage[] = [
     },
 ]
 
-const coins: SplashImage[] = [
+const coins: FloatingElementsProps['coins'] = [
     {
-        index: 0,
+        index: 'HAI',
         width: 'min(150px, 25vw)',
         style: {
             right: '12vw',
@@ -86,7 +85,7 @@ const coins: SplashImage[] = [
         zIndex: 1,
     },
     {
-        index: 0,
+        index: 'HAI',
         width: '130px',
         style: {
             right: '-40px',
@@ -96,8 +95,9 @@ const coins: SplashImage[] = [
         zIndex: -2,
     },
     {
-        index: 0,
+        index: 'HAI',
         width: '100px',
+        thickness: 9,
         style: {
             right: '-100px',
             top: '-150px',

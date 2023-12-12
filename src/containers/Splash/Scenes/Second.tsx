@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 
-import type { SplashImage } from '~/types'
 import { useMediaQuery } from '~/hooks'
 
 import styled from 'styled-components'
@@ -8,10 +7,10 @@ import { Flex, Grid, HaiButton, Text } from '~/styles'
 import {  ZoomScene, type ZoomSceneProps } from './ZoomScene'
 import { BrandedTitle } from '~/components/BrandedTitle'
 import { ProgressBar } from '~/components/ProgressBar'
-import { FloatingElements } from '~/components/BrandElements/FloatingElements'
+import { FloatingElements, type FloatingElementsProps } from '~/components/BrandElements/FloatingElements'
 import { TokenPair } from '~/components/TokenPair'
 
-const elves: SplashImage[] = [
+const elves: FloatingElementsProps['elves'] = [
     {
         index: 1,
         width: 'min(180px, 28vw)',
@@ -24,7 +23,7 @@ const elves: SplashImage[] = [
     },
 ]
 
-const clouds: SplashImage[] = [
+const clouds: FloatingElementsProps['clouds'] = [
     {
         index: 0,
         width: '340px',
@@ -45,9 +44,9 @@ const clouds: SplashImage[] = [
     },
 ]
 
-const coins: SplashImage[] = [
+const coins: FloatingElementsProps['coins'] = [
     {
-        index: 0,
+        index: 'HAI',
         width: 'min(180px, 25vw)',
         style: {
             right: '24%',
@@ -57,8 +56,9 @@ const coins: SplashImage[] = [
         zIndex: 1,
     },
     {
-        index: 1,
+        index: 'KITE',
         width: 'min(100px, 20vw)',
+        thickness: 9,
         style: {
             top: '-20px',
             right: '0px',

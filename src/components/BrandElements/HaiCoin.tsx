@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { HTMLProps, useState } from 'react'
 
 import type { TokenKey } from '~/types'
 import { TOKEN_LOGOS } from '~/utils'
@@ -6,15 +6,22 @@ import { TOKEN_LOGOS } from '~/utils'
 import styled, { css, keyframes } from 'styled-components'
 import { CenteredFlex } from '~/styles'
 
-type HaiCoinProps = {
+type HaiCoinProps = Omit<HTMLProps<HTMLDivElement>, 'ref' | 'as'> & {
     variant?: TokenKey,
     width?: string,
-    style?: object,
     animated?: boolean,
     thickness?: number,
+    rotateOnAxis?: number
 }
 
-export function HaiCoin({ variant = 'HAI', width, animated, thickness, ...props }: HaiCoinProps) {
+export function HaiCoin({
+    variant = 'HAI',
+    width,
+    animated,
+    thickness,
+    rotateOnAxis,
+    ...props
+}: HaiCoinProps) {
     const [animDuration] = useState(1.5 + 0.75 * Math.random())
 
     return (
@@ -24,10 +31,12 @@ export function HaiCoin({ variant = 'HAI', width, animated, thickness, ...props 
             <Inner
                 $variant={variant}
                 $animated={animated}
-                $animDur={animDuration}>
+                $animDur={animDuration}
+                $rotateOnAxis={rotateOnAxis}>
                 <Face $thickness={thickness}>
                     <img src={TOKEN_LOGOS[variant]} alt=""/>
                 </Face>
+                <InsidePiece $thickness={thickness}/>
                 <BackFace $thickness={thickness}/>
             </Inner>
         </HaiCoinImage>
@@ -52,7 +61,7 @@ const Face = styled(CenteredFlex)<{ $thickness?: number }>`
     border-radius: 50%;
     background-color: ${({ theme }) => theme.colors.greenish};
     transform: translateZ(${({ $thickness = 12 }) => $thickness}px);
-    z-index: 2;
+    z-index: 3;
 
     & svg, & img {
         width: 80%;
@@ -64,16 +73,29 @@ const BackFace = styled(Face)`
     transform: translateZ(-${({ $thickness = 12 }) => $thickness}px);
     z-index: 1;
 `
+const InsidePiece = styled.div<{ $thickness?: number }>`
+    position: absolute;
+    width: ${({ $thickness = 12 }) => 2 * $thickness}px;
+    height: 100%;
+    transform: rotateY(90deg);
+    z-index: 2;
+`
 const Inner = styled(CenteredFlex)<{
     $variant?: HaiCoinProps['variant'],
     $animated?: boolean,
     $animDur: number,
+    $rotateOnAxis?: number,
 }>`
     width: 100%;
     height: 100%;
     perspective: 1000px;
     transform-style: preserve-3d;
-    ${({ $animated, $animDur }) => $animated && css`animation: ${rotate} ${$animDur}s ease-in-out infinite alternate;`}
+    ${({ $animated, $animDur, $rotateOnAxis }) => ($rotateOnAxis
+        ? css`transform: rotateY(${$rotateOnAxis}deg);`
+        : $animated && css`
+            animation: ${rotate} ${$animDur}s ease-in-out infinite alternate;
+        `
+    )}
 
     ${({ theme, $variant = 'HAI' }) => {
         let frontColor = theme.colors.greenish
@@ -101,6 +123,9 @@ const Inner = styled(CenteredFlex)<{
                 background-color: ${frontColor};
             }
             & ${BackFace} {
+                background-color: ${backColor};
+            }
+            & ${InsidePiece} {
                 background-color: ${backColor};
             }
         `

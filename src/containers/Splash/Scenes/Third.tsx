@@ -8,12 +8,11 @@ import styled, { keyframes } from 'styled-components'
 import { CenteredFlex, Flex, Grid, Text } from '~/styles'
 import { ZoomScene, type ZoomSceneProps } from './ZoomScene'
 import { FloatingElements } from '~/components/BrandElements/FloatingElements'
+import { HaiCoin } from '~/components/BrandElements/HaiCoin'
 import { Elf } from '~/components/BrandElements/Elf'
 import { BrandedTitle } from '~/components/BrandedTitle'
 import { HaiFace } from '~/components/Icons/HaiFace'
 import { ExternalLink } from '~/components/ExternalLink'
-
-import elfKite from '~/assets/splash/elf-kite.png'
 
 const clouds: SplashImage[] = [
     {
@@ -199,11 +198,16 @@ export function Third({ zIndex }: ZoomSceneProps) {
             </Container>
             <FloatingElements clouds={clouds}/>
             <FlyingElfContainer>
-                <ElfKite
-                    src={elfKite}
-                    width={457}
-                    height={261}
-                    alt=""
+                <HaiCoin
+                    variant="KITE"
+                    width="66%"
+                    rotateOnAxis={65}
+                    style={{
+                        top: '-18%',
+                        left: '17%',
+                        transform: 'rotate(84deg)',
+                        zIndex: 0,
+                    }}
                 />
                 <Wire/>
                 <Wire/>
@@ -231,8 +235,6 @@ const Container = styled(Grid).attrs(props => ({
     padding: 72px 48px;
     border: ${({ theme }) => theme.border.medium};
     border-radius: 24px;
-    /* background-color: #f1f1fb77; */
-    /* backdrop-filter: blur(13px); */
     background-color: rgba(255,255,255,0.5);
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
@@ -291,7 +293,7 @@ const SmoothCanvas = styled.canvas`
 `
 
 const float = keyframes`
-    0% { transform: translateZ(40px) translateY(0px) rotate(-3deg); }
+    0% { transform: translateZ(40px) translateY(-8px) rotate(-3deg); }
     100% { transform: translateZ(40px) translateY(-36px) rotate(5deg); }
 `
 const FlyingElfContainer = styled(CenteredFlex)`
@@ -311,22 +313,10 @@ const FlyingElfContainer = styled(CenteredFlex)`
 
     z-index: 2;
 `
-const ElfKite = styled.img`
-    position: absolute;
-    top: 0px;
-    left: 2%;
-    width: 90%;
-    height: auto;
-    z-index: 0;
-`
 const Wire = styled.div`
     position: absolute;
     width: 1px;
     background-color: rgba(0,0,0,0.1);
-    /* height: 70%;
-    transform: rotate(-17.5deg);
-    left: 27%;
-    bottom: 30px; */
     height: 82%;
     transform: rotate(-1deg);
     left: 40.5%;
@@ -337,7 +327,7 @@ const Wire = styled.div`
         left: auto;
         right: 34.5%;
         bottom: 45px;
-        height: 62.5%;
+        height: 64.5%;
     }
 
     z-index: 0;
