@@ -28,7 +28,7 @@ import { useStoreState, useStoreActions } from '~/store'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { useTokenContract, useEthersSigner, useGeb, usePlaylist, usePrevious } from '~/hooks'
 
-import styled, { css } from 'styled-components'
+import styled from 'styled-components'
 import { CenteredFlex, Flex } from '~/styles'
 import ImagePreloader from '~/components/ImagePreloader'
 import LiquidateSafeModal from '~/components/Modals/LiquidateSafeModal'
@@ -182,10 +182,11 @@ const Shared = ({ children }: Props) => {
         connectWalletActions.fetchFiatPrice()
     }, [connectWalletActions])
 
-    const [initializing, setInitializing] = useState(true)
+    const [initializing, setInitializing] = useState(false)
 
     const accountChecker = useCallback(async () => {
-        if (!account || !chain?.id || !signer || !geb) return
+        if (!account || !chain?.id || !signer || !geb) return setInitializing(false)
+
         popupsActions.setWaitingPayload({
             title: '',
             status: ActionState.LOADING,
@@ -221,8 +222,10 @@ const Shared = ({ children }: Props) => {
                 })
             }
         } catch(error: any) {
+            console.error(error)
             safeActions.setIsSafeCreated(false)
             connectWalletActions.setStep(1)
+            setInitializing(false)
         }
 
         await timeout(500)
@@ -355,7 +358,10 @@ const Shared = ({ children }: Props) => {
                 : (
                     <Content
                         $padTop={!isSplash}
-                        $padBottom={!isSplash && haiAlertActive}
+                        $padBottom={!isSplash
+                            ? haiAlertActive ? '120px': '48px'
+                            : undefined
+                        }
                         $maxWidth={!isSplash ? 'min(1200px, calc(100vw - 96px))': undefined}>
                         {(isEarn || isVaults || isAuctions) && (
                             <IntentionHeader
@@ -429,9 +435,13 @@ const Content = styled(Flex).attrs(props => ({
     $align: 'center',
     $gap: 48,
     ...props,
-}))<{ $padTop?: boolean, $padBottom?: boolean, $maxWidth?: string }>`
+}))<{
+    $padTop?: boolean,
+    $padBottom?: string,
+    $maxWidth?: string,
+}>`
     padding: 0 48px;
-    ${({ $padBottom = false }) => $padBottom && css`padding-bottom: 120px;`}
+    padding-bottom: ${({ $padBottom = '0px' }) => $padBottom};
     margin-top: ${({ $padTop = false }) => $padTop ? '240px': '0px'};
 
     & > * {
