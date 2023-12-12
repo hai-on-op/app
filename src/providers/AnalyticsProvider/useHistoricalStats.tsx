@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction, useMemo, useState } from 'react'
-import { type QueryResult, useQuery } from '@apollo/client'
+import { useQuery, ApolloError } from '@apollo/client'
 
 import {
     DAILY_STATS_QUERY,
@@ -10,14 +10,19 @@ import {
 } from '~/utils'
 
 export type StatsQueryResult = {
-    hourlyStats?: QueryHistoricalStat[],
-    dailyStats?: QueryHistoricalStat[]
+    hourlyStats: QueryHistoricalStat[],
+    dailyStats: undefined,
+} | {
+    hourlyStats: undefined,
+    dailyStats: QueryHistoricalStat[]
 }
 
 export type HistoricalStatsReturn = {
     timeframe: Timeframe,
     setTimeframe: Dispatch<SetStateAction<Timeframe>>,
-    result: Pick<QueryResult<StatsQueryResult>, 'loading' | 'error' | 'data'>
+    loading: boolean,
+    error?: ApolloError,
+    data?: StatsQueryResult
 }
 
 export function useHistoricalStats(initialTimeframe = Timeframe.ONE_WEEK): HistoricalStatsReturn {
@@ -38,11 +43,13 @@ export function useHistoricalStats(initialTimeframe = Timeframe.ONE_WEEK): Histo
         }
     }, [timeframe])
 
-    const result = useQuery<StatsQueryResult>(query, { variables: { since } })
+    const { loading, error, data } = useQuery<StatsQueryResult>(query, { variables: { since } })
 
     return {
         timeframe,
         setTimeframe,
-        result,
+        loading,
+        error,
+        data,
     }
 }

@@ -1,15 +1,16 @@
 import { createContext, useContext } from 'react'
-import { useQuery } from '@apollo/client'
 
 import type { ReactChildren } from '~/types'
-import { type QuerySystemStateData, SYSTEMSTATE_QUERY, Timeframe } from '~/utils'
+import { Timeframe } from '~/utils'
 import { HistoricalStatsReturn, useHistoricalStats } from './useHistoricalStats'
 import { DEFAULT_ANALYTICS_DATA, GebAnalyticsData, useGebAnalytics } from './useGebAnalytics'
+import { SystemData, useSystemData } from './useSystemData'
 
 type AnalyticsContext = {
     forceRefresh: () => void,
     data: GebAnalyticsData,
-    graphData?: QuerySystemStateData,
+    graphData?: SystemData['data'],
+    graphSummary?: SystemData['summary'],
     haiPriceHistory: HistoricalStatsReturn,
     redemptionRateHistory: HistoricalStatsReturn
 }
@@ -17,24 +18,19 @@ type AnalyticsContext = {
 const defaultState: AnalyticsContext = {
     forceRefresh: () => undefined,
     data: DEFAULT_ANALYTICS_DATA,
-    graphData: undefined,
     haiPriceHistory: {
         timeframe: Timeframe.ONE_WEEK,
         setTimeframe: () => undefined,
-        result: {
-            loading: false,
-            error: undefined,
-            data: {},
-        },
+        loading: false,
+        error: undefined,
+        data: undefined,
     },
     redemptionRateHistory: {
         timeframe: Timeframe.ONE_WEEK,
         setTimeframe: () => undefined,
-        result: {
-            loading: false,
-            error: undefined,
-            data: {},
-        },
+        loading: false,
+        error: undefined,
+        data: undefined,
     },
 }
 
@@ -48,7 +44,7 @@ type Props = {
 export function AnalyticsProvider({ children }: Props) {
     const { forceRefresh, data } = useGebAnalytics()
 
-    const { data: graphData } = useQuery<QuerySystemStateData>(SYSTEMSTATE_QUERY)
+    const { data: graphData, summary: graphSummary } = useSystemData()
 
     const haiPriceHistory = useHistoricalStats()
 
@@ -59,6 +55,7 @@ export function AnalyticsProvider({ children }: Props) {
             forceRefresh,
             data,
             graphData,
+            graphSummary,
             haiPriceHistory,
             redemptionRateHistory,
         }}>

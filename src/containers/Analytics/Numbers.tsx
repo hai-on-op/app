@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { formatNumberWithStyle, getRatePercentage } from '~/utils'
+import { getRatePercentage } from '~/utils'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 
 import styled from 'styled-components'
@@ -48,14 +48,14 @@ export function Numbers() {
             surplusInTreasury,
             globalDebt,
         },
-        graphData,
+        graphSummary,
         haiPriceHistory,
         redemptionRateHistory,
     } = useAnalytics()
 
     const haiPriceData = useMemo(() => {
-        const data = haiPriceHistory.result.data?.dailyStats
-            || haiPriceHistory.result.data?.hourlyStats
+        const data = haiPriceHistory.data?.dailyStats
+            || haiPriceHistory.data?.hourlyStats
             || []
         return [
             {
@@ -78,8 +78,8 @@ export function Numbers() {
     }, [haiPriceHistory])
 
     const redemptionRateData = useMemo(() => {
-        const data = redemptionRateHistory.result.data?.dailyStats
-            || redemptionRateHistory.result.data?.hourlyStats
+        const data = haiPriceHistory.data?.dailyStats
+            || haiPriceHistory.data?.hourlyStats
             || []
         return [{
             id: 'Redemption Rate',
@@ -97,54 +97,6 @@ export function Numbers() {
         max: 100_000,
     })
 
-    const [
-        totalCollateralLocked = '',
-        globalLTV = '',
-        totalVaults,
-        systemSurplus,
-    ] = useMemo(() => {
-        if (!graphData) return []
-
-        const {
-            collateralTypes,
-            systemStates: [{
-                globalDebt,
-                systemSurplus,
-                totalActiveSafeCount,
-            }],
-        } = graphData
-        const total = collateralTypes.reduce((sum, {
-            totalCollateralLockedInSafes,
-            currentPrice,
-        }) => {
-            if (currentPrice) {
-                const collateralUSD = (
-                    parseFloat(currentPrice.value) * parseFloat(totalCollateralLockedInSafes)
-                )
-                return sum + collateralUSD
-            }
-            return sum
-        }, 0)
-
-        const ltv = parseFloat(globalDebt) * parseFloat(marketPrice.raw) / total
-
-        return [
-            formatNumberWithStyle(total.toString(), {
-                maxDecimals: 0,
-                style: 'currency',
-            }),
-            formatNumberWithStyle(ltv.toString(), {
-                maxDecimals: 1,
-                style: 'percent',
-            }),
-            Number(totalActiveSafeCount || '0').toLocaleString(),
-            formatNumberWithStyle(systemSurplus, {
-                maxDecimals: 0,
-                style: 'currency',
-            }),
-        ]
-    }, [graphData, marketPrice.raw])
-
     return (
         <Container>
             <Section>
@@ -155,7 +107,7 @@ export function Numbers() {
                 <Text>Explore global HAI protocol analytics.</Text>
                 <Stats>
                     <Stat stat={{
-                        header: totalCollateralLocked || '--',
+                        header: graphSummary?.totalCollateralLocked.formatted || '--',
                         label: 'Total Collateral Locked',
                         tooltip: `Dollar value of all collateral currently locked in active vaults`,
                     }}/>
@@ -165,12 +117,12 @@ export function Numbers() {
                         tooltip: 'Total $HAI minted in the system',
                     }}/>
                     <Stat stat={{
-                        header: globalLTV || '--',
+                        header: graphSummary?.globalLTV.formatted || '--',
                         label: 'Global LTV',
                         tooltip: `Ratio of the dollar value of all outstanding debt relative to the dollar value of all collateral locked in vaults`,
                     }}/>
                     <Stat stat={{
-                        header: totalVaults,
+                        header: graphSummary?.totalVaults.formatted,
                         label: 'Total Active Vaults',
                         tooltip: 'The total number of active vaults in the system',
                     }}/>
@@ -355,7 +307,7 @@ export function Numbers() {
                 <SectionHeader>PROTOCOL BALANCE</SectionHeader>
                 <Stats>
                     <Stat stat={{
-                        header: systemSurplus || '--',
+                        header: graphSummary?.systemSurplus.formatted || '--',
                         label: 'System Surplus',
                         tooltip: 'Hello world',
                     }}/>

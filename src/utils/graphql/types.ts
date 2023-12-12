@@ -127,11 +127,11 @@ export type QuerySafe = {
 }
 
 export type QuerySystemStateData = {
-    systemStates: QuerySystemState[],
+    systemStates: [QuerySystemState],
     collateralTypes: [QueryCollateralType],
-    dailyStats: [QueryHistoricalStat],
-    redemptionRates: [QueryRedemptionRate],
-    safes: [QuerySafe]
+    // dailyStats: [QueryHistoricalStat],
+    // redemptionRates: [QueryRedemptionRate],
+    // safes: [QuerySafe]
 }
 
 export type QueryUniswapPair = {

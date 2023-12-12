@@ -9,7 +9,11 @@ import {
 // TODO: get refactored version with fragments working
 export const SYSTEMSTATE_QUERY = gql`
     query GetSystemState {
-        systemStates {
+        systemStates(
+            first: 1,
+            orderBy: createdAt,
+            orderDirection: desc
+        ) {
             safeCount
             unmanagedSafeCount
             totalActiveSafeCount
@@ -63,66 +67,6 @@ export const SYSTEMSTATE_QUERY = gql`
                 safetyPrice
                 liquidationPrice
                 value
-            }
-        }
-        dailyStats(
-            first: 1,
-            orderBy: timestamp,
-            orderDirection: desc
-        ) {
-            timestamp
-            marketPriceUsd
-            marketPriceEth
-            globalDebt
-            erc20CoinTotalSupply
-        }
-        redemptionRates(
-            first: 1,
-            orderBy: createdAt,
-            orderDirection: desc
-        ) {
-            perSecondRate
-            eightHourlyRate
-            twentyFourHourlyRate
-            hourlyRate
-            annualizedRate
-        }
-        safes(first: 1) {
-            safeId
-            collateral
-            debt
-            owner {
-                address
-            }
-            createdAt
-            collateralType {
-                id
-                debtAmount
-                totalCollateral
-                totalCollateralLockedInSafes
-                accumulatedRate
-                unmanagedSafeCount
-                safeCount
-                stabilityFee
-                totalAnnualizedStabilityFee
-                debtCeiling
-                debtFloor
-                safetyCRatio
-                liquidationCRatio
-                liquidationPenalty
-                collateralAuctionHouseAddress
-                liquidationQuantity
-                liquidationsStarted
-                activeLiquidations
-                currentPrice {
-                    timestamp
-                    safetyPrice
-                    liquidationPrice
-                    value
-                }
-            }
-            saviour {
-                allowed
             }
         }
     }
