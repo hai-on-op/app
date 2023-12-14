@@ -38,9 +38,9 @@ import {
     SYSTEM_STATUS,
     timeout,
     ChainId,
-    ETH_NETWORK,
-    NETWORK_ID,
     isAddress,
+    DEFAULT_NETWORK_ID,
+    getNetworkName,
 } from '~/utils'
 
 interface Props {
@@ -52,7 +52,7 @@ const Shared = ({ children, ...rest }: Props) => {
     const { chain } = useNetwork()
     const { address: account } = useAccount()
     const signer = useEthersSigner()
-    const chainId = chain?.id
+    const chainId = chain?.id || DEFAULT_NETWORK_ID
     const geb = useGeb()
     const history = useHistory()
 
@@ -61,8 +61,10 @@ const Shared = ({ children, ...rest }: Props) => {
     const location = useLocation()
     const isSplash = location.pathname === '/'
     const tokensData = geb?.tokenList
-    const coinTokenContract = useTokenContract(getTokenList(ETH_NETWORK).HAI.address)
-    const protTokenContract = useTokenContract(getTokenList(ETH_NETWORK).KITE.address)
+    const networkName = getNetworkName(chainId)
+
+    const coinTokenContract = useTokenContract(getTokenList(networkName).HAI.address)
+    const protTokenContract = useTokenContract(getTokenList(networkName).KITE.address)
 
     const {
         settingsModel: settingsState,
@@ -105,7 +107,7 @@ const Shared = ({ children, ...rest }: Props) => {
         if (connectWalletState && signer) {
             signer.getBalance().then((balance) => {
                 connectWalletActions.updateEthBalance({
-                    chainId: chainId || NETWORK_ID,
+                    chainId: chainId,
                     balance: Number(utils.formatEther(balance)),
                 })
             })
@@ -192,6 +194,7 @@ const Shared = ({ children, ...rest }: Props) => {
                     address: address ? address : (account as string),
                     geb,
                     tokensData,
+                    chainId,
                 })
             }
         } catch (error) {
@@ -219,7 +222,7 @@ const Shared = ({ children, ...rest }: Props) => {
 
     function networkChecker() {
         accountChange()
-        const id: ChainId = NETWORK_ID
+        const id: ChainId = chainId
         popupsActions.setIsSafeManagerOpen(false)
         if (chainId && chainId !== id) {
             const chainName = ETHERSCAN_PREFIXES[id]

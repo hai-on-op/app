@@ -4,7 +4,7 @@ import { JsonRpcSigner } from '@ethersproject/providers'
 
 import { IAuctionBid } from '~/types'
 import { handlePreTxGasEstimate } from '~/hooks'
-import { ETH_NETWORK } from './constants'
+import { getNetworkName } from './constants'
 
 export interface IAuctionBuy {
     signer: JsonRpcSigner
@@ -18,13 +18,14 @@ export const handleAuctionBuy = async ({ signer, haiAmount, auctionId, collatera
     if (!signer || !auctionId || !haiAmount || !collateral || !collateralAmount) {
         return false
     }
+    const chainId = await signer.getChainId()
+    const networkName = getNetworkName(chainId)
+    const geb = new Geb(networkName, signer)
 
-    const geb = new Geb(ETH_NETWORK, signer)
     const proxy = await geb.getProxyAction(signer._address)
     const haiAmountBN = ethers.utils.parseUnits(haiAmount, 18)
     const collateralAmountBN = ethers.utils.parseUnits(collateralAmount, 18)
 
-    console.log('calling buyCollateral')
     const tx = await proxy.buyCollateral(collateral, auctionId, collateralAmountBN, haiAmountBN)
 
     if (!tx) throw new Error('No transaction request!')
@@ -39,18 +40,19 @@ export const handleAuctionBid = async ({ signer, bid, auctionId, auctionType }: 
         return false
     }
 
-    const geb = new Geb(ETH_NETWORK, signer)
+    const chainId = await signer.getChainId()
+    const networkName = getNetworkName(chainId)
+    const geb = new Geb(networkName, signer)
+
     const proxy = await geb.getProxyAction(signer._address)
     const bidBN = ethers.utils.parseEther(bid)
 
     let tx: any
     if (auctionType === 'DEBT') {
-        console.log('calling debtAuctionDecreaseSoldAmount', { bidBN, auctionId })
         tx = await proxy.debtAuctionDecreaseSoldAmount(bidBN, auctionId)
     }
 
     if (auctionType === 'SURPLUS') {
-        console.log('calling surplusIncreaseBidSize', { bidBN, auctionId })
         tx = await proxy.surplusIncreaseBidSize(bidBN, auctionId)
     }
 
@@ -63,16 +65,18 @@ export const handleAuctionClaim = async ({ signer, auctionId, auctionType }: IAu
     if (!signer || !auctionId || !auctionType) {
         return false
     }
-    const geb = new Geb(ETH_NETWORK, signer)
+
+    const chainId = await signer.getChainId()
+    const networkName = getNetworkName(chainId)
+    const geb = new Geb(networkName, signer)
+
     const proxy = await geb.getProxyAction(signer._address)
 
     let tx
     if (auctionType === 'DEBT') {
-        console.log('calling debtAuctionSettleAuction')
         tx = await proxy.debtAuctionSettleAuction(auctionId)
     }
     if (auctionType === 'SURPLUS') {
-        console.log('calling surplusSettleAuction')
         tx = await proxy.surplusSettleAuction(auctionId)
     }
 
@@ -89,15 +93,16 @@ export const handleClaimInternalBalance = async ({ signer, type, bid: amount, to
     if (!signer) {
         return false
     }
-    const geb = new Geb(ETH_NETWORK, signer)
+
+    const chainId = await signer.getChainId()
+    const networkName = getNetworkName(chainId)
+    const geb = new Geb(networkName, signer)
     const proxy = await geb.getProxyAction(signer._address)
-    console.log({ signer, type, bid: amount, token })
+
     let txData: ethers.PopulatedTransaction
     if (token === 'PROTOCOL_TOKEN') {
-        console.log('calling collectProtocolTokens')
         txData = await proxy.collectProtocolTokens()
     } else {
-        console.log('calling exitAllCoin')
         txData = await proxy.exitAllCoin()
     }
 
