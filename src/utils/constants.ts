@@ -68,5 +68,5 @@ export const floatsTypes = {
 // Auctions
 export const NUMBER_OF_AUCTIONS_TO_SHOW = 15
 export const SURPLUS_BATCH_SIZE = 5_000_000 // blocks
-export const DEBT_BATCH_SIZE = 200_000 // blocks
-export const COLLATERAL_BATCH_SIZE = 200_000 // blocks
+export const DEBT_BATCH_SIZE = 5_000_000 // blocks
+export const COLLATERAL_BATCH_SIZE = 5_000_000 // blocks
