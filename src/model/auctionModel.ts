@@ -173,7 +173,7 @@ const auctionModel: AuctionModel = {
                 const { auctions, endBlock } = await getCollateralAuctions(
                     geb,
                     tokenSymbol || 'WETH',
-                    latestBlock - 1000000,
+                    latestBlock - COLLATERAL_BATCH_SIZE,
                     latestBlock
                 )
 
