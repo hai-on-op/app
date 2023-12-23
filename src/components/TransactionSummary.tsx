@@ -11,13 +11,14 @@ type TransactionItem = {
 }
 
 type TransactionSummaryProps = {
+    heading?: string,
     items: TransactionItem[],
 }
-export function TransactionSummary({ items }: TransactionSummaryProps) {
+export function TransactionSummary({ heading = 'Transaction Summary', items }: TransactionSummaryProps) {
     return (
         <Container>
             <Text $fontWeight={700}>
-                Transaction Summary
+                {heading}
             </Text>
             <Inner>
                 {items.map(({ label, value }, i) => (

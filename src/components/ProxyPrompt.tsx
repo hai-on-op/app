@@ -19,10 +19,11 @@ enum PromptStep {
 }
 
 type ProxyPromptProps = {
-    children: ReactChildren,
+    continueText?: string,
     onCreateVault?: () => void,
+    children: ReactChildren,
 }
-export function ProxyPrompt({ children, onCreateVault }: ProxyPromptProps) {
+export function ProxyPrompt({ continueText = 'continue', onCreateVault, children }: ProxyPromptProps) {
     const { t } = useTranslation()
     const { chain } = useNetwork()
     const chainId = chain?.id
@@ -90,14 +91,14 @@ export function ProxyPrompt({ children, onCreateVault }: ProxyPromptProps) {
 
     if (connectWalletState.step === PromptStep.CONNECT_WALLET) return (
         <Container>
-            <Text>Please connect a wallet to continue</Text>
+            <Text>Please connect a wallet to {continueText}</Text>
             <ConnectButton/>
         </Container>
     )
 
     if (chain?.id !== NETWORK_ID) return (
         <Container>
-            <Text>Please switch the connected network to continue</Text>
+            <Text>Please switch the connected network to {continueText}</Text>
             <ConnectButton/>
         </Container>
     )
@@ -105,7 +106,7 @@ export function ProxyPrompt({ children, onCreateVault }: ProxyPromptProps) {
     if (connectWalletState.step === PromptStep.CREATE_PROXY) return (
         <Container>
             <Text>
-                To continue, please create a proxy contract. A proxy contract allows for transaction bundling as well as other unique features.&nbsp;
+                To {continueText}, please create a proxy contract. A proxy contract allows for transaction bundling as well as other unique features.&nbsp;
                 <ExternalLink href={LINK_TO_DOCS}>Read more →</ExternalLink>
             </Text>
             <HaiButton

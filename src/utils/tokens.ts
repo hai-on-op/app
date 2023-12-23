@@ -29,3 +29,9 @@ export const TOKEN_LOGOS = {
     WETH: wethImg,
     WSTETH: wstethImg,
 }
+
+export const tokenMap: Record<string, string> = {
+    'PROTOCOL_TOKEN': 'HAI',
+    'COIN': 'KITE',
+    'PROTOCOL_TOKEN_LP': 'KITE/ETH LP',
+}

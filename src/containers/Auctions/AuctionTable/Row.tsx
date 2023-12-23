@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useReducer, useState } from 'react'
-import { BigNumber } from 'ethers'
-import { formatEther } from 'ethers/lib/utils'
+import { useCallback, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { IAuction } from '~/types'
-import { Status, formatNumberWithStyle, parseRemainingTime } from '~/utils'
-import { useStoreState } from '~/store'
+import { Status, formatNumberWithStyle, stringsExistAndAreEqual } from '~/utils'
+import { useStoreActions, useStoreState } from '~/store'
+import { useAuction } from '~/hooks'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
@@ -13,11 +13,7 @@ import { TokenPair } from '~/components/TokenPair'
 import { StatusLabel } from '~/components/StatusLabel'
 import { Caret } from '~/components/Icons/Caret'
 import { BidTable } from './BidTable'
-
-const tokenMap: Record<string, string> = {
-    'PROTOCOL_TOKEN': 'HAI',
-    'COIN': 'KITE',
-}
+import { ProxyPrompt } from '~/components/ProxyPrompt'
 
 type AuctionTableRowProps = {
     auction: (IAuction & { myBids?: number }),
@@ -25,124 +21,78 @@ type AuctionTableRowProps = {
     onSelect?: () => void
 }
 export function AuctionTableRow({ auction, expanded, onSelect }: AuctionTableRowProps) {
-    const { vaultModel: { liquidationData } } = useStoreState(state => state)
+    const { t } = useTranslation()
 
-    const [timeEl, setTimeEl] = useState<HTMLElement | null>(null)
-    const [refresher, forceTimeRefresh] = useReducer(x => x + 1, 0)
+    const {
+        connectWalletModel: { proxyAddress },
+        auctionModel: auctionState,
+    } = useStoreState(state => state)
+    const {
+        auctionModel: auctionActions,
+        popupsModel: popupsActions,
+    } = useStoreActions(actions => actions)
 
-    useEffect(() => {
-        if (!timeEl) return
-        if (!auction.auctionDeadline) {
-            timeEl.textContent = 'No deadline'
-            return
-        }
+    const [timeEl, setTimeEl] = useState<HTMLElement | null>()
 
-        const parsedMs = 1000 * parseInt(auction.auctionDeadline)
-        if (parsedMs - Date.now() < 0) {
-            const { days, hours, minutes } = parseRemainingTime(Date.now() - parsedMs)
-            if (days > 60) timeEl.textContent = 'Ended months ago'
-            else if (days > 10) timeEl.textContent = 'Ended weeks ago'
-            else if (days > 5) timeEl.textContent = 'Ended about a week ago'
-            else if (days > 1) timeEl.textContent = 'Ended a few days ago'
-            else if (hours > 1) timeEl.textContent = 'Ended hours ago'
-            else if (minutes > 1) timeEl.textContent = 'Ended minutes ago'
-            else timeEl.textContent = `Ended seconds ago`
-            return
-        }
-
-        const { days, hours, minutes, seconds } = parseRemainingTime(parsedMs - Date.now())
-        if (days > 0) {
-            timeEl.textContent = `${days}d ${hours}hr`
-            // refresh in an hour
-            const to = setTimeout(forceTimeRefresh, 60 * 60 * 1000)
-            return () => clearTimeout(to)
-        }
-        if (hours > 0) {
-            timeEl.textContent = `${hours}hr ${minutes}min`
-            const int: any = setInterval(() => {
-                const { hours, minutes } = parseRemainingTime(parsedMs - Date.now())
-                timeEl.textContent = `${hours}hr ${minutes}min`
-                // refresh when down to minutes
-                if (hours <= 0) {
-                    clearInterval(int)
-                    forceTimeRefresh()
-                }
-            }, 60 * 1000)
-            return () => clearInterval(int)
-        }
-
-        timeEl.textContent = `${minutes}min ${seconds}s`
-        const int: any = setInterval(() => {
-            const { minutes, seconds } = parseRemainingTime(parsedMs - Date.now())
-            // end when ended
-            if (!minutes && !seconds) {
-                clearInterval(int)
-                timeEl.textContent = 'Ended seconds ago'
-                return
-            }
-            timeEl.textContent = `${minutes}min ${seconds}s`
-        }, 1000)
-        return () => clearInterval(int)
-    }, [timeEl, auction.auctionDeadline, refresher])
+    const {
+        // forceTimeRefresh,
+        sellToken,
+        buyToken,
+        status,
+        sellUsdPrice,
+        remainingToSell,
+        initialToRaise,
+        remainingToRaise,
+    } = useAuction(auction, timeEl)
 
     const {
         auctionId,
         englishAuctionType,
-        sellToken,
-        buyToken,
         buyInitialAmount,
         auctionDeadline,
         biddersList,
     } = auction
 
-    const status = useMemo(() => {
-        if (1000 * parseInt(auction.auctionDeadline) > Date.now()) return Status.LIVE
-        if (auction.isClaimed && auction.winner) return Status.COMPLETED
-        if (!auction.isClaimed && !auction.winner) return Status.RESTARTING
-        return Status.SETTLING
-        // eslint-disable-next-line
-    }, [auction.auctionDeadline, auction.isClaimed, auction.winner, refresher])
+    const onButtonClick = useCallback((type: string) => {
+        popupsActions.setAuctionOperationPayload({
+            isOpen: true,
+            type,
+            auctionType: auction.englishAuctionType,
+        })
+        auctionActions.setSelectedAuction(auction)
+    }, [auction, auctionActions, popupsActions])
 
-    const tokenSymbol = useMemo(() => tokenMap[sellToken] || sellToken, [sellToken])
-
-    const sellUsdPrice = useMemo(() => {
-        switch(tokenSymbol) {
-            case 'HAI':
-                return liquidationData?.currentRedemptionPrice || '0'
-            case 'KITE':
-                return '0'
-            default:
-                return liquidationData?.collateralLiquidationData[tokenSymbol]?.currentPrice.value || '0'
+    const button = useMemo(() => {
+        const isWinner = stringsExistAndAreEqual(proxyAddress, auction.winner)
+        if (status === Status.SETTLING && isWinner && auction.biddersList.length) {
+            return (
+                <HaiButton
+                    $variant="yellowish"
+                    disabled={auctionState.isSubmitting}
+                    onClick={() => onButtonClick('settle')}>
+                    {t('Settle')}
+                </HaiButton>
+            )
         }
-    }, [tokenSymbol, liquidationData?.currentRedemptionPrice, liquidationData?.collateralLiquidationData])
-
-    const remainingToSell = useMemo(() => {
-        if (auction.englishAuctionType !== 'COLLATERAL') return undefined
-
-        let rem = parseFloat(auction.sellInitialAmount)
-        auction.biddersList.forEach(({ sellAmount = '0' }) => {
-            rem = Math.max(0, rem - parseFloat(sellAmount))
-        })
-        return formatNumberWithStyle(rem, { maxDecimals: 3 })
-    }, [auction])
-
-    const [initialToRaise, remainingToRaise] = useMemo(() => {
-        if (auction.englishAuctionType !== 'COLLATERAL') return []
-
-        const initial = formatEther(
-            BigNumber
-                .from(auction.buyInitialAmount.split('.')[0])
-                .div(1e9)
-        )
-        let rem = parseFloat(initial)
-        auction.biddersList.forEach(({ buyAmount = '0' }) => {
-            rem = Math.max(0, rem - parseFloat(buyAmount))
-        })
-        return [
-            formatNumberWithStyle(initial, { maxDecimals: 3 }),
-            formatNumberWithStyle(rem, { maxDecimals: 3 }),
-        ]
-    }, [auction])
+        if (
+            status === Status.LIVE
+            || !auction.biddersList.length
+            || (isWinner && !auction.isClaimed && auction.englishAuctionType !== 'COLLATERAL')
+        ) {
+            return (
+                <HaiButton
+                    $variant="yellowish"
+                    disabled={!proxyAddress
+                        || auctionState.isSubmitting
+                        || (status === Status.LIVE && isWinner)
+                    }
+                    onClick={() => onButtonClick('hai_bid')}>
+                    Place Bid
+                </HaiButton>
+            )
+        }
+        return null
+    }, [status, proxyAddress, auctionState.isSubmitting, auction, onButtonClick, t])
 
     return (
         <TableRow
@@ -157,7 +107,7 @@ export function AuctionTableRow({ auction, expanded, onSelect }: AuctionTableRow
                     $align="center"
                     $gap={8}>
                     <TokenPair
-                        tokens={[tokenSymbol as any]}
+                        tokens={[sellToken as any]}
                         hideLabel
                     />
                     <Flex
@@ -170,7 +120,7 @@ export function AuctionTableRow({ auction, expanded, onSelect }: AuctionTableRow
                                     auction.sellInitialAmount,
                                     { maxDecimals: 3 }
                                 )
-                            } {tokenSymbol}
+                            } {sellToken}
                         </Text>
                         <Text $fontSize="0.6rem">
                             {auction.englishAuctionType === 'COLLATERAL'
@@ -194,7 +144,7 @@ export function AuctionTableRow({ auction, expanded, onSelect }: AuctionTableRow
                     $align="center"
                     $gap={8}>
                     <TokenPair
-                        tokens={[(tokenMap[buyToken] || buyToken) as any]}
+                        tokens={[buyToken as any]}
                         hideLabel
                     />
                     <Flex
@@ -204,7 +154,7 @@ export function AuctionTableRow({ auction, expanded, onSelect }: AuctionTableRow
                             {auction.englishAuctionType === 'COLLATERAL'
                                 ? remainingToRaise || '--'
                                 : ''
-                            } {tokenMap[buyToken] || buyToken}
+                            } {buyToken}
                         </Text>
                         <Text $fontSize="0.6rem">
                             {auction.englishAuctionType === 'COLLATERAL'
@@ -247,12 +197,9 @@ export function AuctionTableRow({ auction, expanded, onSelect }: AuctionTableRow
                 <BidTable auction={auction}/>
             </TableRowBody>
             <TableRowFooter>
-                {/* TODO: hook up place bid button and only display when auction is active */}
-                <HaiButton
-                    $variant="yellowish"
-                    onClick={() => {}}>
-                    Place Bid
-                </HaiButton>
+                <ProxyPrompt continueText="interact with this auction">
+                    {button}
+                </ProxyPrompt>
             </TableRowFooter>
         </TableRow>
     )

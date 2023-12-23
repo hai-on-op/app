@@ -5,7 +5,6 @@ export const fetchUserVaults = async (config: IFetchVaultsPayload) => {
     const response = await fetchUserVaultsRaw(config)
     if (!response) return
 
-    console.log(response)
     const vaultsResponse: IUserVaultList = response
 
     const liquidationData = {

@@ -2,7 +2,7 @@ import { useEffect, useCallback, useMemo, useState } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
-import { ethers, utils } from 'ethers'
+import { utils } from 'ethers'
 import { useAccount, useNetwork } from 'wagmi'
 import { getTokenList } from '@hai-on-op/sdk'
 
@@ -29,7 +29,7 @@ import styled from 'styled-components'
 import { CenteredFlex, Flex } from '~/styles'
 import ImagePreloader from '~/components/ImagePreloader'
 import LiquidateVaultModal from '~/components/Modals/LiquidateVaultModal'
-import AuctionsModal from '~/components/Modals/AuctionsModal'
+// import AuctionsModal from '~/components/Modals/AuctionsModal'
 import TopUpModal from '~/components/Modals/VaultManagerModal'
 import ScreenLoader from '~/components/Modals/ScreenLoader'
 import { InitializationModal } from '~/components/Modal/InitializationModal'
@@ -160,13 +160,13 @@ const Shared = ({ children }: Props) => {
         if (!auctionsData) return
         
         const protInternalBalance = auctionsData.protocolTokenProxyBalance
-        setProtInternalBalance(ethers.utils.formatEther(protInternalBalance))
+        setProtInternalBalance(utils.formatEther(protInternalBalance))
 
         // coinTokenSafeBalance has 45 decimals
         const coinVaultBalance = auctionsData.coinTokenSafeBalance
 
         // const coinInternalBalance = coinBalance.add(coinVaultBalance)
-        setInternalBalance(ethers.utils.formatUnits(coinVaultBalance, 45))
+        setInternalBalance(utils.formatUnits(coinVaultBalance, 45))
     }, [auctionsData, setInternalBalance, setProtInternalBalance])
 
     useEffect(() => {
@@ -332,7 +332,7 @@ const Shared = ({ children }: Props) => {
             {/* <ConnectedWalletModal /> */}
             <TransactionUpdater />
             <LoadingModal />
-            <AuctionsModal />
+            {/* <AuctionsModal /> */}
             <ScreenLoader />
             <LiquidateVaultModal />
             {!isSplash && initializing && <InitializationModal />}

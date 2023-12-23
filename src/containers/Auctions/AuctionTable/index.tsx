@@ -1,14 +1,17 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useAccount } from 'wagmi'
-import { isAddressEqual } from 'viem'
 
 import type { IAuction, IPaging, SortableHeader } from '~/types'
+import { getAuctionStatus, stringsExistAndAreEqual, tokenMap } from '~/utils'
+import { useStoreActions, useStoreState } from '~/store'
+import { useGeb } from '~/hooks'
 
 import styled from 'styled-components'
 import { Flex, Text } from '~/styles'
 import { AuctionTableHeader } from './Header'
 import { AuctionTableRow } from './Row'
 import Pagination from '~/components/Pagination'
+import { AuctionModal } from '~/components/Modal/AuctionModal'
 
 const headers: SortableHeader[] = [
     { label: 'Auction #' },
@@ -28,6 +31,27 @@ type AuctionTableProps = {
 export function AuctionTable({ auctions, filterMyBids, isLoading }: AuctionTableProps) {
     const { address: account } = useAccount()
 
+    const { auctionModel: { selectedAuction } } = useStoreState(state => state)
+    const {
+        auctionModel: auctionActions,
+        popupsModel: popupsActions,
+    } = useStoreActions(actions => actions)
+
+    const geb = useGeb()
+
+    useEffect(() => {
+        if (!selectedAuction) return
+
+        const { sellToken } = selectedAuction
+        auctionActions.fetchCollateralData({
+            geb,
+            collateral: tokenMap[sellToken] || sellToken,
+            auctionIds: auctions
+                .filter(({ sellToken: token }) => token === sellToken)
+                .map(({ auctionId }) => auctionId),
+        })
+    }, [selectedAuction, auctions])
+
     const [expandedId, setExpandedId] = useState<string>()
 
     const [paging, setPaging] = useState<IPaging>({
@@ -39,16 +63,17 @@ export function AuctionTable({ auctions, filterMyBids, isLoading }: AuctionTable
         dir: 'desc',
     })
 
-    const auctionsWithMyBids: (IAuction & { myBids?: number })[] = useMemo(() => {
+    const auctionWithExtras = useMemo(() => {
         if (!account) return auctions
 
-        const withBids: (IAuction & { myBids?: number })[] = auctions
+        const withBids = auctions
             .map(auction => ({
                 ...auction,
                 myBids: auction.biddersList.reduce((total, { bidder }) => {
-                    if (bidder && isAddressEqual(bidder as `0x${string}`, account)) return total + 1
+                    if (stringsExistAndAreEqual(bidder, account)) return total + 1
                     return total
                 }, 0),
+                status: getAuctionStatus(auction),
             }))
         return filterMyBids
             ? withBids.filter(({ myBids }) => !!myBids)
@@ -58,7 +83,7 @@ export function AuctionTable({ auctions, filterMyBids, isLoading }: AuctionTable
     const sortedRows = useMemo(() => {
         switch(sorting.key) {
             case 'Auction #': {
-                return auctionsWithMyBids.sort(({ auctionId: a }, { auctionId: b }) => {
+                return auctionWithExtras.sort(({ auctionId: a }, { auctionId: b }) => {
                     const aId = parseInt(a)
                     const bId = parseInt(b)
                     return sorting.dir === 'desc'
@@ -67,45 +92,64 @@ export function AuctionTable({ auctions, filterMyBids, isLoading }: AuctionTable
                 })
             }
             case 'Auction Type': {
-                return auctionsWithMyBids.sort(({ englishAuctionType: a }, { englishAuctionType: b }) => {
+                return auctionWithExtras.sort(({ englishAuctionType: a }, { englishAuctionType: b }) => {
                     return sorting.dir === 'desc'
                         ? (a > b ? 1: -1)
                         : (a < b ? 1: -1)
                 })
             }
             case 'For Sale': {
-                return auctionsWithMyBids.sort(({ sellToken: a }, { sellToken: b }) => {
+                return auctionWithExtras.sort(({ sellToken: a }, { sellToken: b }) => {
                     return sorting.dir === 'desc'
                         ? (a > b ? 1: -1)
                         : (a < b ? 1: -1)
                 })
             }
             case 'Buy With': {
-                return auctionsWithMyBids.sort(({ buyToken: a }, { buyToken: b }) => {
+                return auctionWithExtras.sort(({ buyToken: a }, { buyToken: b }) => {
                     return sorting.dir === 'desc'
                         ? (a > b ? 1: -1)
                         : (a < b ? 1: -1)
                 })
             }
             case 'My Bids': {
-                return auctionsWithMyBids.sort(({ myBids: a = 0 }, { myBids: b = 0 }) => {
+                return auctionWithExtras.sort(({ myBids: a = 0 }, { myBids: b = 0 }) => {
                     return sorting.dir === 'desc'
                         ? b - a
                         : a - b
                 })
             }
+            case 'Status': {
+                return auctionWithExtras.sort(({ status: a }, { status: b }) => {
+                    if (!b) return -1
+                    if (!a) return 1
+                    return sorting.dir === 'desc'
+                        ? (a > b ? 1: -1)
+                        : (a < b ? 1: -1)
+                })
+            }
             case 'Time Left':
             default: {
-                return auctionsWithMyBids.sort(({ auctionDeadline: a }, { auctionDeadline: b }) => {
+                return auctionWithExtras.sort(({ auctionDeadline: a }, { auctionDeadline: b }) => {
                     return sorting.dir === 'desc'
                         ? parseInt(b) - parseInt(a)
                         : parseInt(a) - parseInt(b)
                 })
             }
         }
-    }, [auctionsWithMyBids, sorting])
+    }, [auctionWithExtras, sorting])
     
-    return (
+    return (<>
+        {!!selectedAuction && (
+            <AuctionModal onClose={() => {
+                auctionActions.setSelectedAuction(null)
+                popupsActions.setAuctionOperationPayload({
+                    isOpen: false,
+                    type: '',
+                    auctionType: '',
+                })
+            }}/>
+        )}
         <Table>
             <AuctionTableHeader
                 headers={headers}
@@ -153,7 +197,7 @@ export function AuctionTable({ auctions, filterMyBids, isLoading }: AuctionTable
                 handlePagingMargin={setPaging}
             />
         </Table>
-    )
+    </>)
 }
 
 const Table = styled(Flex).attrs(props => ({

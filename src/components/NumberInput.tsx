@@ -12,6 +12,7 @@ type NumberInputProps = FlexProps & {
     conversion?: string,
     onChange: (value: string) => void,
     onMax?: () => void,
+    disabled?: boolean,
     hidden?: boolean,
 }
 export function NumberInput({
@@ -23,6 +24,7 @@ export function NumberInput({
     conversion,
     onChange,
     onMax,
+    disabled = false,
     hidden = false,
     ...props
 }: NumberInputProps) {
@@ -52,6 +54,7 @@ export function NumberInput({
             <InputContainer onClick={() => input.current?.click()}>
                 <Input
                     ref={input}
+                    disabled={disabled}
                     type="number"
                     value={value || ''}
                     placeholder={placeholder}

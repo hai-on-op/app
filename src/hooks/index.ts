@@ -1,4 +1,5 @@
 export * from './TransactionHooks'
+export * from './useAuction'
 export * from './useAuctions'
 export * from './useContract'
 export * from './useDebounce'

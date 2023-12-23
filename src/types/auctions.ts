@@ -1,6 +1,8 @@
 import { JsonRpcSigner } from '@ethersproject/providers'
 import { ICollateralAuction as SDKCollateralAuction } from '@hai-on-op/sdk'
 
+import { Status } from '~/utils/constants'
+
 export type AuctionEventType = 'DEBT' | 'SURPLUS' | 'COLLATERAL'
 
 export type IAuctionBidder = {
@@ -34,7 +36,9 @@ export type IAuction = {
     sellInitialAmount: string
     sellToken: string
     winner: string
-    tokenSymbol?: string
+    tokenSymbol?: string,
+    myBids?: number,
+    status?: Status
 }
 
 export type IAuctionBid = {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useLayoutEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import type { ReactChildren } from '~/types'
@@ -33,27 +33,12 @@ export function Modal({
 
     const [container, setContainer] = useState<HTMLElement | null>(null)
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         if (!container) return
 
-        const duration = 1000
+        setTimeout(() => { container.style.transform = `translateZ(0px)` }, 0)
 
-        let start = 0
-        let anim: number
-        const onLoop = (timestamp: number) => {
-            start = start || timestamp
-            const p = Math.min((timestamp - start) / duration, 1)
-            const progress = 1 - Math.pow(1 - p, 3) // ease-out cubic
-            container.style.transform = `translateZ(${-1000 * (1 - progress)}px)`
-
-            if (progress < 1) anim = requestAnimationFrame(onLoop)
-        }
-        anim = requestAnimationFrame(onLoop)
-
-        return () => {
-            Object.assign(container, { transform: null })
-            cancelAnimationFrame(anim)
-        }
+        return () => Object.assign(container.style, { transform: null })
     }, [container])
 
     return createPortal(
@@ -120,8 +105,9 @@ export const ModalContainer = styled(CenteredFlex)<{ $width?: string, $maxWidth?
     border: ${({ theme }) => theme.border.medium};
     border-radius: 24px;
     transform-style: preserve-3d;
+    transform: translateZ(-1000px);
 
-    transition: width 0.5s ease-out, height 0.5s ease-out;
+    transition: width 0.5s ease-out, height 0.5s ease-out, transform 1s cubic-bezier(0.33, 1, 0.68, 1);
 
     ${({ theme }) => theme.mediaWidth.upToExtraSmall`
         max-height: calc(100vh - 240px);
