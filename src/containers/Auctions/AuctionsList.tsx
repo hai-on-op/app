@@ -41,7 +41,6 @@ export function AuctionsList({ isLoading }: AuctionsListProps) {
     const [filterMyBids, setFilterMyBids] = useState(false)
     const [typeFilter, setTypeFilter] = useState<AuctionEventType>()
     const [saleAssetsFilter, setSaleAssetsFilter] = useState<string>()
-    const [buyAssetsFilter, setBuyAssetsFilter] = useState<string>()
 
     const collateralAuctions = useGetAuctions('COLLATERAL', saleAssetsFilter)
     const debtAuctions = useGetAuctions('DEBT')
@@ -75,11 +74,9 @@ export function AuctionsList({ isLoading }: AuctionsListProps) {
                 break
             }
         }
-        if (buyAssetsFilter || saleAssetsFilter) {
-            temp = temp.filter(({ buyToken, sellToken }) => {
-                const parsedBuyToken = tokenMap[buyToken] || buyToken
+        if (saleAssetsFilter) {
+            temp = temp.filter(({ sellToken }) => {
                 const parsedSellToken = tokenMap[sellToken] || sellToken
-                if (buyAssetsFilter && buyAssetsFilter !== parsedBuyToken) return false
                 if (saleAssetsFilter && saleAssetsFilter !== parsedSellToken) return false
                 return true
             })
@@ -87,7 +84,7 @@ export function AuctionsList({ isLoading }: AuctionsListProps) {
         return temp.sort(sortByTimeCreated)
     }, [
         collateralAuctions, debtAuctions, surplusAuctions,
-        typeFilter, typeFilter, saleAssetsFilter, buyAssetsFilter,
+        typeFilter, typeFilter, saleAssetsFilter,
     ])
 
     return (
@@ -120,7 +117,7 @@ export function AuctionsList({ isLoading }: AuctionsListProps) {
                             </DropdownOption>
                         ))}
                     </BrandedDropdown>
-                    {(!typeFilter || typeFilter === 'COLLATERAL') && (<>
+                    {(!typeFilter || typeFilter === 'COLLATERAL') && (
                         <BrandedDropdown label={(
                             <Text
                                 $fontWeight={400}
@@ -139,25 +136,7 @@ export function AuctionsList({ isLoading }: AuctionsListProps) {
                                 </DropdownOption>
                             ))}
                         </BrandedDropdown>
-                        <BrandedDropdown label={(
-                            <Text
-                                $fontWeight={400}
-                                $textAlign="left">
-                                Buy With Asset: <strong>{buyAssetsFilter || 'All'}</strong>
-                            </Text>
-                        )}>
-                            {assets.map(label => (
-                                <DropdownOption
-                                    key={label}
-                                    onClick={() => {
-                                        // e.stopPropagation()
-                                        setBuyAssetsFilter(label === 'All' ? undefined: label)
-                                    }}>
-                                    {label}
-                                </DropdownOption>
-                            ))}
-                        </BrandedDropdown>
-                    </>)}
+                    )}
                 </CenteredFlex>
             )}>
             <AuctionTable

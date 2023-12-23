@@ -43,7 +43,7 @@ export function useSummary({
             after: formatSummaryCurrency(collateral.total || '0', collateral.priceInUSD)!,
         },
         debt: {
-            current: formatSummaryCurrency(vault?.debt, debt.priceInUSD),
+            current: formatSummaryCurrency(vault?.totalDebt, debt.priceInUSD),
             after: formatSummaryCurrency(debt.total || '0', debt.priceInUSD)!,
         },
         collateralRatio: {

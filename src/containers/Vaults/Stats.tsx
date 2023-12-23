@@ -51,7 +51,12 @@ export function BorrowStats() {
             },
             {
                 header: '7.8%',
-                label: 'My Net APY',
+                label: 'My Net Stability Fee',
+                tooltip: 'Hello World',
+            },
+            {
+                header: '7.8%',
+                label: 'My Net Rewards APY',
                 tooltip: 'Hello World',
             },
             {
@@ -78,7 +83,7 @@ export function BorrowStats() {
     return (
         <Stats
             stats={stats}
-            columns="repeat(3, 1fr) 1.6fr"
+            columns="repeat(4, 1fr) 1.6fr"
         />
     )
 }

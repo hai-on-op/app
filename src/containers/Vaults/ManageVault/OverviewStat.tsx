@@ -13,6 +13,7 @@ type OverviewStatProps = {
     value: string | number,
     label: string,
     tooltip?: string,
+    convertedValue?: string | number,
     alert?: {
         value?: string,
         status: Status
@@ -27,6 +28,7 @@ export function OverviewStat({
     value,
     label,
     tooltip,
+    convertedValue,
     alert,
     simulatedValue,
     fullWidth = false,
@@ -53,11 +55,21 @@ export function OverviewStat({
                     $justify="center"
                     $align="flex-start"
                     $gap={4}>
-                    <Text
-                        $fontSize="1.25em"
-                        $fontWeight={700}>
-                        {value || '--'} {token}
-                    </Text>
+                    <Flex
+                        $justify="flex-start"
+                        $align="center"
+                        $gap={8}>
+                        <Text
+                            $fontSize="1.25em"
+                            $fontWeight={700}>
+                            {value || '--'} {token}
+                        </Text>
+                        <Text
+                            $fontSize="0.8em"
+                            $color="rgba(0,0,0,0.6)">
+                            {convertedValue}
+                        </Text>
+                    </Flex>
                     <Flex
                         $justify="flex-start"
                         $align="center"
@@ -105,6 +117,7 @@ export function OverviewProgressStat({
     alert,
     simulatedValue,
     progress,
+    simulatedProgress,
     colorLimits,
     labels,
     fullWidth = false,
@@ -162,6 +175,7 @@ export function OverviewProgressStat({
                 </Flex>
                 <ProgressBar
                     progress={progress}
+                    simulatedProgress={simulatedProgress}
                     colorLimits={colorLimits}
                     labels={labels}
                 />

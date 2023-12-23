@@ -5,7 +5,7 @@ import { formatNumberWithStyle } from '~/utils'
 import { useVault } from '~/providers/VaultProvider'
 
 import styled from 'styled-components'
-import { BlurContainer, CenteredFlex, Flex, Text } from '~/styles'
+import { BlurContainer, CenteredFlex, Flex, Grid, Text } from '~/styles'
 import { RewardsTokenPair } from '~/components/TokenPair'
 import { ProxyPrompt } from '~/components/ProxyPrompt'
 import { Overview } from './Overview'
@@ -16,16 +16,10 @@ type ManageVaultProps = {
     headerContent?: ReactChildren,
 }
 export function ManageVault({ headerContent }: ManageVaultProps) {
-    const {
-        updateForm,
-        collateral,
-        debt,
-    } = useVault()
+    const { updateForm, collateral } = useVault()
 
     // clear form inputs when unmounting
     useEffect(() => () => updateForm('clear'), [updateForm])
-
-    const relativePrice = parseFloat(collateral.priceInUSD || '0') / parseFloat(debt.priceInUSD)
 
     return (
         <Container>
@@ -35,20 +29,28 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
                     <RewardsTokenPair tokens={['OP']}/>
                 </CenteredFlex>
                 <Text>
-                    Market Price:&nbsp;
+                    Market Price: ({collateral.name})&nbsp;
                     <strong>
-                        {relativePrice
-                            ? formatNumberWithStyle(relativePrice.toString(), { maxDecimals: 2 })
+                        {collateral.priceInUSD
+                            ? formatNumberWithStyle(collateral.priceInUSD.toString(), {
+                                maxDecimals: 2,
+                                style: 'currency',
+                            })
                             : '--'
-                        } HAI / {collateral.name}
+                        }
                     </strong>
                 </Text>
                 {headerContent}
             </Header>
             <Body>
                 <ProxyPrompt>
-                    <Overview/>
-                    <VaultActions/>
+                    <Grid
+                        $width="100%"
+                        $columns="5fr 3fr"
+                        $gap={48}>
+                        <Overview/>
+                        <VaultActions/>
+                    </Grid>
                 </ProxyPrompt>
             </Body>
         </Container>

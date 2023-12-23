@@ -12,7 +12,7 @@ import { CenteredFlex } from '~/styles'
 import Modal from './Modal'
 import AlertLabel from '~/components/AlertLabel'
 import Button from '~/components/Button'
-import CheckBox from '~/components/CheckBox'
+import { CheckBox } from '~/components/CheckBox'
 
 const LiquidateVaultModal = () => {
     const { t } = useTranslation()

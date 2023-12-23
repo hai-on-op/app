@@ -18,7 +18,7 @@ import { ExternalLink } from '~/components/ExternalLink'
 import { ConnectButton } from '~/components/ConnectButton'
 import { BrandedDropdown, DropdownOption } from '~/components/BrandedDropdown'
 import { WrapETHModal } from '~/components/Modal/WrapETHModal'
-import { Notifications } from './Notifications'
+// import { Notifications } from './Notifications'
 import { MobileMenu } from './MobileMenu'
 
 import haiLogo from '~/assets/logo.png'
@@ -42,7 +42,7 @@ export function Header({ tickerActive = false }: HeaderProps) {
     const { data: { marketPrice, redemptionPrice } } = useAnalytics()
 
     const [dropdownActive, setDropdownActive] = useState(false)
-    const [notificationsActive, setNotificationsActive] = useState(false)
+    // const [notificationsActive, setNotificationsActive] = useState(false)
 
     const [wrapEthActive, setWrapEthActive] = useState(false)
 
@@ -142,11 +142,15 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                         </HeaderLink>
                                     )}
                                 />
-                                <ExternalLink
-                                    href={LINK_TO_DOCS}
-                                    $textDecoration="none">
-                                    <HeaderLink>LEARN</HeaderLink>
-                                </ExternalLink>
+                                <PassLink
+                                    href="/learn"
+                                    $textDecoration="none"
+                                    content={(
+                                        <HeaderLink $active={location.pathname === '/learn'}>
+                                            LEARN
+                                        </HeaderLink>
+                                    )}
+                                />
                             </>)
                     )}
                 </CenteredFlex>
@@ -181,6 +185,13 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                             Analytics
                                         </DropdownOption>
                                     </PassLink>
+                                    <PassLink
+                                        href="/contracts"
+                                        $textDecoration="none">
+                                        <DropdownOption $active={location.pathname === '/contracts'}>
+                                            Contracts
+                                        </DropdownOption>
+                                    </PassLink>
                                     <DropdownOption onClick={() => {
                                         setDropdownActive(false)
                                         setWrapEthActive(true)
@@ -208,10 +219,10 @@ export function Header({ tickerActive = false }: HeaderProps) {
                         )
                         : (<>
                             {isLargerThanSmall && <ConnectButton showBalance/>}
-                            <Notifications
+                            {/* <Notifications
                                 active={notificationsActive}
                                 setActive={setNotificationsActive}
-                            />
+                            /> */}
                         </>)
                     }
                     {!isLargerThanSmall && (

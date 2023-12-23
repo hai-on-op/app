@@ -5,10 +5,16 @@ import { CenteredFlex, Flex, Text } from '~/styles'
 
 export type ProgressBarProps = {
     progress: number,
+    simulatedProgress?: number,
     colorLimits?: [number, number],
     labels?: { progress: number, label: string }[],
 }
-export function ProgressBar({ progress, colorLimits, labels }: ProgressBarProps) {
+export function ProgressBar({
+    progress,
+    simulatedProgress,
+    colorLimits,
+    labels,
+}: ProgressBarProps) {
     return (
         <Container>
             <Inner>
@@ -16,6 +22,12 @@ export function ProgressBar({ progress, colorLimits, labels }: ProgressBarProps)
                     $progress={progress}
                     $limits={colorLimits}
                 />
+                {simulatedProgress !== undefined && (
+                    <Bar
+                        $progress={simulatedProgress}
+                        style={{ zIndex: simulatedProgress > progress ? -1: 1 }}
+                    />
+                )}
             </Inner>
             {labels?.map(({ progress: p, label }, i) => (
                 <Indicator
@@ -54,12 +66,16 @@ const Bar = styled.div<{ $progress: number, $limits?: [number, number] }>`
     width: ${({ $progress }) => (Math.min($progress, 1) * 100).toFixed(2)}%;
     border-radius: 999px;
     border: ${({ theme }) => theme.border.medium};
-    background-color: ${({ $progress, $limits = [0, 1] }) => {
+    background: ${({ $progress, $limits = [0, 1] }) => {
         const p = clamp(($progress - $limits[0]) / ($limits[1] - $limits[0]), 0, 1)
         return `rgb(${255 - (255 - 192) * p}, ${243 * p}, ${187 * p})`
     }};
     transition: all 1s ease;
     z-index: 0;
+
+    &:nth-child(2) {
+        background: ${({ theme }) => theme.colors.gradient};
+    }
 `
 const Indicator = styled(Flex).attrs(props => ({
     $column: true,

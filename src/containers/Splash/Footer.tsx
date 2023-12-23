@@ -1,7 +1,7 @@
 import { LINK_TO_DOCS, LINK_TO_TELEGRAM, LINK_TO_TWITTER } from '~/utils'
 
 import styled from 'styled-components'
-import { CenteredFlex, Flex, Grid, HaiButton, Text } from '~/styles'
+import { CenteredFlex, Flex, Grid, Text } from '~/styles'
 import { Elf } from '~/components/BrandElements/Elf'
 import { Twitter } from '~/components/Icons/Twitter'
 import { Telegram } from '~/components/Icons/Telegram'
@@ -73,18 +73,6 @@ export function Footer() {
                             </ExternalLink>
                         </IconContainer>
                     </Grid>
-                    <EmailContainer>
-                        <Text $fontWeight={700}>SUBSCRIBE FOR UPDATES</Text>
-                        <EmailInputContainer>
-                            <EmailInput
-                                type="email"
-                                placeholder="YOUR EMAIL"
-                            />
-                            <HaiButton $variant="yellowish">
-                                Subscribe
-                            </HaiButton>
-                        </EmailInputContainer>
-                    </EmailContainer>
                 </LinksContainer>
                 <ElfContainer $shrink={0}>
                     <Elf
@@ -124,7 +112,7 @@ const Inner = styled(Flex).attrs(props => ({
     ...props,
 }))`
     padding: 48px;
-    padding-top: 72px;
+    padding-top: 60px;
     ${({ theme }) => theme.mediaWidth.upToMedium`
         flex-direction: column;
         align-items: center;
@@ -141,7 +129,7 @@ const Description = styled(Grid).attrs(props => ({
     $gap: 24,
     ...props,
 }))`
-    max-width: 400px;
+    max-width: 520px;
 
     ${({ theme }) => theme.mediaWidth.upToMedium`
         max-width: 480px;
@@ -177,7 +165,7 @@ const LinksContainer = styled(Flex).attrs(props => ({
     $gap: 48,
     ...props,
 }))`
-    max-width: min(calc(100vw - 48px), 480px);
+    max-width: min(calc(100vw - 48px), 400px);
     
     ${({ theme }) => theme.mediaWidth.upToSmall`
         max-width: 100%;
@@ -197,43 +185,7 @@ const IconContainer = styled(Flex).attrs(props => ({
         stroke: none;
     }
 `
-const EmailContainer = styled(Flex).attrs(props => ({
-    $column: true,
-    $align: 'flex-start',
-    $gap: 24,
-    ...props,
-}))`
-    width: 100%;
-    padding: 24px;
-    border-radius: 24px;
-    border: ${({ theme }) => theme.border.medium};
-    background-color: rgba(255,255,255,0.1);
 
-    ${({ theme }) => theme.mediaWidth.upToExtraSmall`
-        padding: 16px;
-        gap: 12px;
-    `}
-`
-const EmailInputContainer = styled(Flex)`
-    width: 100%;
-    border: ${({ theme }) => theme.border.medium};
-    border-radius: 999px;
-    & > ${HaiButton} {
-        margin: -2px;
-    }
-`
-const EmailInput = styled.input`
-    width: 100%;
-    padding-left: 24px;
-    background-color: rgba(255,255,255,0.1);
-    outline: none;
-    border: none;
-
-    &::placeholder {
-        color: black;
-        font-weight: 700;
-    }
-`
 const ElfContainer = styled(CenteredFlex)`
     position: relative;
     width: 100%;

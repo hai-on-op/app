@@ -21,7 +21,7 @@ const dummyStats: StatProps[] = [
                 hideLabel
             />
         ),
-        label: 'My Auction Winnings',
+        label: 'My Claimable Assets',
         tooltip: 'Hello World',
         button: <HaiButton $variant="yellowish">Claim</HaiButton>,
     },

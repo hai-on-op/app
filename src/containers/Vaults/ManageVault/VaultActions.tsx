@@ -5,12 +5,13 @@ import { useStoreActions, useStoreState } from '~/store'
 import { useVault } from '~/providers/VaultProvider'
 import { ApprovalState, useProxyAddress, useTokenApproval } from '~/hooks'
 
-import styled, { css } from 'styled-components'
-import { CenteredFlex, Flex, Grid, HaiButton, Text } from '~/styles'
+import styled from 'styled-components'
+import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
 import { NumberInput } from '~/components/NumberInput'
 import { WrapETHModal } from '~/components/Modal/WrapETHModal'
 import { ReviewVaultTxModal } from '~/components/Modal/ReviewVaultTxModal'
 import { VaultActionError } from './VaultActionError'
+import { CheckBox } from '~/components/CheckBox'
 
 export function VaultActions() {
     const proxyAddress = useProxyAddress()
@@ -105,7 +106,7 @@ export function VaultActions() {
                                 onClick={approveCollateral}>
                                 {collateralApproval === ApprovalState.PENDING
                                     ? 'Pending Approval..'
-                                    : `Unlock ${collateral.name}`
+                                    : `Approve ${collateral.name}`
                                 }
                             </HaiButton>
                         )
@@ -139,7 +140,7 @@ export function VaultActions() {
                                 onClick={approveDebtUnlock}>
                                 {collateralApproval === ApprovalState.PENDING
                                     ? 'Pending Approval..'
-                                    : `Unlock HAI`
+                                    : `Approve HAI`
                                 }
                             </HaiButton>
                         )
@@ -177,7 +178,7 @@ export function VaultActions() {
             }}/>
         )}
         <Container>
-            <Header $pad={action === VaultAction.CREATE}>
+            <Header>
                 <Flex
                     $width="100%"
                     $justify="space-between"
@@ -199,7 +200,7 @@ export function VaultActions() {
                         </Text>
                     )}
                 </Flex>
-                {action !== VaultAction.CREATE && (
+                {/* {action !== VaultAction.CREATE && (
                     <Grid $columns="1fr 1fr">
                         <HeaderNav
                             $active={action === VaultAction.DEPOSIT_BORROW}
@@ -212,17 +213,24 @@ export function VaultActions() {
                             Withdraw & Pay Back
                         </HeaderNav>
                     </Grid>
-                )}
+                )} */}
             </Header>
             <Body>
                 <NumberInput
-                    label="Deposit"
+                    label={(
+                        <CenteredFlex $gap={8}>
+                            <CheckBox
+                                checked={isDepositBorrowOrCreate}
+                                size={14}
+                            />
+                            <Text>Deposit</Text>
+                        </CenteredFlex>
+                    )}
                     subLabel={`Max ${formatNumberWithStyle(collateral.balance, { maxDecimals: 4 })} ${collateral.name}`}
                     placeholder="Deposit Amount"
                     unitLabel={collateral.name}
                     onChange={(value: string) => updateForm({ deposit: value || undefined })}
                     value={formState.deposit}
-                    hidden={!isDepositBorrowOrCreate}
                     onMax={() => updateForm({ deposit: collateral.balance })}
                     conversion={formState.deposit && Number(formState.deposit) > 0
                         ? `~${formatNumberWithStyle(
@@ -231,15 +239,28 @@ export function VaultActions() {
                         )}`
                         : ''
                     }
+                    onFocus={() => setAction(VaultAction.DEPOSIT_BORROW)}
+                    style={action !== VaultAction.WITHDRAW_REPAY
+                        ? undefined
+                        : { opacity: 0.4 }
+                    }
                 />
                 <NumberInput
-                    label="Withdraw"
+                    label={(
+                        <CenteredFlex $gap={8}>
+                            <CheckBox
+                                checked={!isDepositBorrowOrCreate}
+                                size={14}
+                            />
+                            <Text>Withdraw</Text>
+                        </CenteredFlex>
+                    )}
                     subLabel={`Max ${collateral.available} ${collateral.name}`}
                     placeholder="Withdraw Amount"
                     unitLabel={collateral.name}
                     onChange={(value: string) => updateForm({ withdraw: value || undefined })}
                     value={formState.withdraw}
-                    hidden={action !== VaultAction.WITHDRAW_REPAY}
+                    disabled={action === VaultAction.CREATE}
                     onMax={() => updateForm({ withdraw: collateral.available })}
                     conversion={formState.withdraw && Number(formState.withdraw) > 0
                         ? `~${formatNumberWithStyle(
@@ -248,15 +269,30 @@ export function VaultActions() {
                         )}`
                         : ''
                     }
+                    onFocus={action === VaultAction.CREATE
+                        ? undefined
+                        : () => setAction(VaultAction.WITHDRAW_REPAY)
+                    }
+                    style={action === VaultAction.WITHDRAW_REPAY
+                        ? undefined
+                        : { opacity: 0.4 }
+                    }
                 />
                 <NumberInput
-                    label="Borrow"
+                    label={(
+                        <CenteredFlex $gap={8}>
+                            <CheckBox
+                                checked={isDepositBorrowOrCreate}
+                                size={14}
+                            />
+                            <Text>Borrow</Text>
+                        </CenteredFlex>
+                    )}
                     subLabel={`Max ${formatNumberWithStyle(debt.available, { maxDecimals: 4 })} HAI`}
                     placeholder="Borrow Amount"
                     unitLabel="HAI"
                     onChange={(value: string) => updateForm({ borrow: value || undefined })}
                     value={formState.borrow}
-                    hidden={!isDepositBorrowOrCreate}
                     onMax={() => updateForm({ borrow: debt.available })}
                     conversion={formState.borrow && Number(formState.borrow) > 0
                         ? `~${formatNumberWithStyle(
@@ -265,15 +301,29 @@ export function VaultActions() {
                         )}`
                         : ''
                     }
+                    onFocus={() => setAction(VaultAction.DEPOSIT_BORROW)}
+                    style={action !== VaultAction.WITHDRAW_REPAY
+                        ? undefined
+                        : { opacity: 0.4 }
+                    }
                 />
                 <NumberInput
-                    label="Pay Back"
+                    label={(
+                        <CenteredFlex $gap={8}>
+                            <CheckBox
+                                checked={!isDepositBorrowOrCreate}
+                                size={14}
+                            />
+                            <Text>Pay Back</Text>
+                        </CenteredFlex>
+                    )}
                     subLabel={`Max ${formatNumberWithStyle(debt.available, { maxDecimals: 4 })} HAI`}
                     placeholder="Pay Back Amount"
                     unitLabel="HAI"
                     onChange={(value: string) => updateForm({ repay: value || undefined })}
                     value={formState.repay}
-                    hidden={action !== VaultAction.WITHDRAW_REPAY}
+                    disabled={action === VaultAction.CREATE}
+                    // hidden={action !== VaultAction.WITHDRAW_REPAY}
                     onMax={() => updateForm({ repay: debt.available })}
                     conversion={formState.repay && Number(formState.repay) > 0
                         ? `~${formatNumberWithStyle(
@@ -281,6 +331,14 @@ export function VaultActions() {
                             { style: 'currency' }
                         )}`
                         : ''
+                    }
+                    onFocus={action === VaultAction.CREATE
+                        ? undefined
+                        : () => setAction(VaultAction.WITHDRAW_REPAY)
+                    }
+                    style={action === VaultAction.WITHDRAW_REPAY
+                        ? undefined
+                        : { opacity: 0.4 }
                     }
                 />
                 {collateral.name === 'WETH' && isDepositBorrowOrCreate && (<>
@@ -310,7 +368,7 @@ const Container = styled(Flex).attrs(props => ({
     ...props,
 }))`
     max-width: 100%;
-    width: 360px;
+    /* width: 360px; */
     height: 564px;
     margin-bottom: -140px;
     background-color: ${({ theme }) => theme.colors.background};
@@ -324,32 +382,21 @@ const Header = styled(Flex).attrs(props => ({
     $align: 'flex-start',
     $gap: 12,
     ...props,
-}))<{ $pad?: boolean }>`
+}))`
     padding-top: 24px;
+    padding-bottom: 20px;
     border-bottom: ${({ theme }) => theme.border.thin};
-    padding-bottom: ${({ $pad }) => $pad ? '24px': '0px'};
 
     & > *:first-child {
         padding: 0 24px;
     }
-`
-const HeaderNav = styled(CenteredFlex)<{ $active?: boolean, $disabled?: boolean }>`
-    padding: 12px;
-    border-bottom: 2px solid ${({ $active }) => $active ? 'black': 'transparent'};
-    font-size: 0.8em;
-    cursor: pointer;
-
-    ${({ $disabled = false }) => $disabled && css`
-        opacity: 0.5;
-        cursor: not-allowed;
-    `}
 `
 const Body = styled(Flex).attrs(props => ({
     $width: '100%',
     $column: true,
     $justify: 'flex-start',
     $align: 'flex-start',
-    $gap: 12,
+    $gap: 24,
     $grow: 1,
     $shrink: 1,
     ...props,

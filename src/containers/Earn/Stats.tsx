@@ -10,7 +10,7 @@ const dummyStats: StatProps[] = [
     },
     {
         header: '7.8%',
-        label: 'My Net Farm APY',
+        label: 'My Net Farm Rewards APY',
         tooltip: 'Hello World',
     },
     {

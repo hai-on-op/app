@@ -40,10 +40,13 @@ export function Overview() {
         
         return {
             progress: Math.min(parseFloat(collateralRatio), max) / max,
+            simulatedProgress: simulation?.collateralRatio
+                ? Math.min(parseFloat(simulation.collateralRatio), max) / max
+                : undefined,
             labels,
             colorLimits: [100 / max, 2 / MAX_FACTOR] as [number, number],
         }
-    }, [collateralRatio, safetyRatio])
+    }, [collateralRatio, safetyRatio, simulation?.collateralRatio])
 
     return (
         <Container>
@@ -74,14 +77,14 @@ export function Overview() {
                     }
                     token={collateral.name as any}
                     label="Collateral Asset"
+                    convertedValue={
+                        summary.collateral.current?.usdFormatted
+                        || summary.collateral.after.usdFormatted
+                    }
                     simulatedValue={vault && simulation?.collateral
                         ? summary.collateral.after.formatted
                         : ''
                     }
-                    alert={{
-                        value: '7.2% APY',
-                        status: Status.POSITIVE,
-                    }}
                     fullWidth
                     borderedBottom
                 />
@@ -92,12 +95,16 @@ export function Overview() {
                     }
                     token="HAI"
                     label="Debt Asset"
+                    convertedValue={
+                        summary.debt.current?.usdFormatted
+                        || summary.debt.after.usdFormatted
+                    }
                     simulatedValue={vault && simulation?.debt
                         ? summary.debt.after.formatted
                         : ''
                     }
                     alert={{
-                        value: '-7.2% APY',
+                        value: '7.2% Rewards APY',
                         status: Status.NEGATIVE,
                     }}
                     fullWidth
@@ -155,9 +162,7 @@ const Container = styled(Flex).attrs(props => ({
     $justify: 'flex-start',
     $align: 'flex-start',
     ...props,
-}))`
-    max-width: 560px;
-`
+}))``
 const Header = styled(Flex).attrs(props => ({
     $width: '100%',
     $justify: 'flex-start',

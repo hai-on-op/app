@@ -4,16 +4,18 @@ import styled, { css } from 'styled-components'
 import { Flex, type FlexProps, Text } from '~/styles'
 
 type NumberInputProps = FlexProps & {
-    label: string,
+    label: JSX.Element | string,
     subLabel: string,
     placeholder: string,
     unitLabel?: string,
     value?: string,
     conversion?: string,
     onChange: (value: string) => void,
+    onFocus?: () => void,
     onMax?: () => void,
     disabled?: boolean,
     hidden?: boolean,
+    style?: object
 }
 export function NumberInput({
     label,
@@ -23,6 +25,7 @@ export function NumberInput({
     value,
     conversion,
     onChange,
+    onFocus,
     onMax,
     disabled = false,
     hidden = false,
@@ -59,6 +62,7 @@ export function NumberInput({
                     value={value || ''}
                     placeholder={placeholder}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.currentTarget.value)}
+                    onFocus={onFocus}
                 />
                 {!!unitLabel && <InputLabel>{unitLabel}</InputLabel>}
                 {typeof conversion !== 'undefined' && <ConversionText>{conversion}</ConversionText>}

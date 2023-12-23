@@ -19,6 +19,8 @@ import { Auctions } from '~/containers/Auctions'
 import { Analytics } from '~/containers/Analytics'
 import { Earn } from '~/containers/Earn'
 import { Vaults } from '~/containers/Vaults'
+import { Contracts } from '~/containers/Contracts'
+import { Learn } from './containers/Learn'
 
 declare module 'styled-components' {
     export interface DefaultTheme extends Theme {}
@@ -44,6 +46,8 @@ const App = () => {
                                         <Route exact strict component={Privacy} path={'/privacy'} />
                                         <Route exact strict component={Auctions} path={'/auctions'} />
                                         <Route exact strict component={Analytics} path={'/analytics'} />
+                                        <Route exact strict component={Contracts} path={'/contracts'} />
+                                        <Route exact strict component={Learn} path={'/learn'} />
                                         <Route exact strict component={Earn} path={'/earn'}/>
                                         <Route exact strict component={Vaults} path={'/vaults/create'} />
                                         <Route exact component={Vaults} path={'/vaults/:id'} />

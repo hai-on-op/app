@@ -26,14 +26,16 @@ const strategies: StrategyAdProps[] = [
     {
         heading: 'OP REWARDS',
         status: 'NOW LIVE',
-        description: 'Earn OP tokens by minting & borrowing HAI',
+        description: 'Earn OP tokens by providing liquidity',
+        cta: 'LP to Earn',
         ctaLink: '/earn',
         tokenImages: ['OP'],
     },
     {
         heading: 'KITE REWARDS',
         status: 'NOW LIVE',
-        description: 'Earn KITE tokens by minting & borrowing HAI',
+        description: 'Earn KITE tokens by providing liquidity',
+        cta: 'LP to Earn',
         ctaLink: '/earn',
         tokenImages: ['KITE'],
     },

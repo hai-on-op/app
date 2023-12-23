@@ -13,9 +13,9 @@ const sortableHeaders: SortableHeader[] = [
     { label: 'Strategy' },
     { label: 'TVL' },
     // { label: 'Vol. 24hr' },
-    { label: 'APY' },
+    { label: 'Rewards APY' },
     { label: 'My Position' },
-    { label: 'My APY' },
+    // { label: 'My APY' },
 ]
 
 type StrategyTableProps = {
@@ -61,22 +61,22 @@ export function StrategyTable({ rows }: StrategyTableProps) {
             //             : (a > b ? 1: -1)
             //     })
             // }
-            case 'APY': {
+            case 'Rewards APY': {
                 return rows.sort(({ apy: a }, { apy: b }) => {
                     return sorting.dir === 'desc'
                         ? b - a
                         : a - b
                 })
             }
-            case 'My APY': {
-                return rows.sort(({ userApy: a }, { userApy: b }) => {
-                    if (!b) return -1
-                    if (!a) return 1
-                    return sorting.dir === 'desc'
-                        ? b - a
-                        : a - b
-                })
-            }
+            // case 'My APY': {
+            //     return rows.sort(({ userApy: a }, { userApy: b }) => {
+            //         if (!b) return -1
+            //         if (!a) return 1
+            //         return sorting.dir === 'desc'
+            //             ? b - a
+            //             : a - b
+            //     })
+            // }
             case 'My Position':
             default: {
                 return rows.sort(({ userPosition: a }, { userPosition: b }) => {
@@ -123,7 +123,6 @@ export function StrategyTable({ rows }: StrategyTableProps) {
                 tvl,
                 apy,
                 userPosition,
-                userApy,
                 earnPlatform,
             }, i) => (
                 <TableRow key={i}>
@@ -148,7 +147,7 @@ export function StrategyTable({ rows }: StrategyTableProps) {
                     {/* <Text $fontWeight={700}>{vol24hr || '-'}</Text> */}
                     <Text $fontWeight={700}>{(apy * 100).toFixed(0)}%</Text>
                     <Text $fontWeight={700}>{userPosition || '-'}</Text>
-                    <Text $fontWeight={700}>{userApy ? (userApy * 100).toFixed(0) + '%': '-'}</Text>
+                    {/* <Text $fontWeight={700}>{userApy ? (userApy * 100).toFixed(0) + '%': '-'}</Text> */}
                     <Flex $justify="flex-end">
                         <StrategyTableButton earnPlatform={earnPlatform}/>
                     </Flex>
@@ -167,7 +166,7 @@ const Table = styled(Flex).attrs(props => ({
     ...props,
 }))``
 const TableHeader = styled(Grid)`
-    grid-template-columns: 3fr minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) 224px;
+    grid-template-columns: 3fr minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) 224px;
     align-items: center;
     padding: 0px;
     padding-left: 6px;

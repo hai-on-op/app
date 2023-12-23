@@ -27,7 +27,7 @@ export function ManageDropdown() {
         if (!vault) return {
             label: (
                 <CenteredFlex $gap={8}>
-                    <Text>{collateral.name} / HAI</Text>
+                    <Text>{collateral.name}</Text>
                     <Text>•</Text>
                     <Text>{symbols.indexOf(collateral.name) + 1} of {symbols.length}</Text>
                 </CenteredFlex>
@@ -50,7 +50,7 @@ export function ManageDropdown() {
         return {
             label: (
                 <CenteredFlex $gap={8}>
-                    <Text>{collateral.name} / HAI</Text>
+                    <Text>{collateral.name}</Text>
                     <Text $fontWeight={400}>#{vault.id}</Text>
                     <Text>•</Text>
                     <Text>{list.findIndex(({ id }) => id === vault.id) + 1} of {list.length}</Text>
@@ -60,8 +60,16 @@ export function ManageDropdown() {
                 <DropdownOption
                     key={`${listVault.collateralName}-${listVault.id}`}
                     $active={listVault.id === vault.id}
-                    onClick={() => setActiveVault({ vault })}>
-                    #{listVault.id}
+                    onClick={() => setActiveVault({ vault })}
+                    style={{ paddingLeft: '10px' }}>
+                    <TokenPair
+                        tokens={[listVault.collateralName as any]}
+                        hideLabel
+                    />
+                    <CenteredFlex $gap={8}>
+                        <Text>{collateral.name}</Text>
+                        <Text $fontWeight={400}>#{listVault.id}</Text>
+                    </CenteredFlex>
                 </DropdownOption>
             )),
         }
@@ -74,12 +82,20 @@ export function ManageDropdown() {
             style={{ paddingLeft: '8px' }}
             label={(<>
                 <TokenPair
-                    tokens={[collateral.name as any, 'HAI']}
+                    tokens={[collateral.name as any]}
                     hideLabel
                 />
                 {label}
             </>)}>
             {options}
+            {!!vault && (
+                <DropdownOption onClick={() => setActiveVault({
+                    create: true,
+                    collateralName: vault.collateralName,
+                })}>
+                    Open New {vault.collateralName} Vault
+                </DropdownOption>
+            )}
         </BrandedDropdown>
     )
 }

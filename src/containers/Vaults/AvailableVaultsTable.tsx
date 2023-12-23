@@ -178,7 +178,7 @@ export function AvailableVaultsTable({ rows }: AvailableVaultsTableProps) {
                                 create: true,
                                 collateralName: sortedRows[i].collateralName,
                             })}>
-                                Borrow
+                                Open New
                             </BorrowButton>
                         </CenteredFlex>
                     </TableRow>

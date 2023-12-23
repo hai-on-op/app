@@ -10,7 +10,7 @@ export type SystemData = {
     data?: QuerySystemStateData,
     summary?: {
         totalCollateralLocked: SummaryItemValue,
-        globalLTV: SummaryItemValue,
+        globalCRatio: SummaryItemValue,
         totalVaults: SummaryItemValue,
         systemSurplus: SummaryItemValue,
     },
@@ -44,7 +44,7 @@ export function useSystemData(): SystemData {
             return sum
         }, 0)
     
-        const ltv = parseFloat(globalDebt) * parseFloat(currentRedemptionPrice.value || '0') / total
+        const cRatio = total / (parseFloat(globalDebt) * parseFloat(currentRedemptionPrice.value || '0'))
     
         return {
             totalCollateralLocked: {
@@ -54,9 +54,9 @@ export function useSystemData(): SystemData {
                     style: 'currency',
                 }),
             },
-            globalLTV: {
-                raw: ltv.toString(),
-                formatted: formatNumberWithStyle(ltv.toString(), {
+            globalCRatio: {
+                raw: cRatio.toString(),
+                formatted: formatNumberWithStyle(cRatio.toString(), {
                     maxDecimals: 1,
                     style: 'percent',
                 }),
