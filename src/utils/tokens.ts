@@ -35,3 +35,56 @@ export const tokenMap: Record<string, string> = {
     'COIN': 'KITE',
     'PROTOCOL_TOKEN_LP': 'KITE/ETH LP',
 }
+
+export type Token = {
+    symbol: string,
+    name: string,
+    icon: string,
+}
+export const tokenAssets: Record<string, Token> = {
+    HAI: {
+        symbol: 'HAI',
+        name: 'Hai',
+        icon: haiImg,
+    },
+    KITE: {
+        symbol: 'KITE',
+        name: 'Kite',
+        icon: kiteImg,
+    },
+    OP: {
+        symbol: 'OP',
+        name: 'Optimism Token',
+        icon: opImg,
+    },
+    SNX: {
+        symbol: 'SNX',
+        name: 'SNX',
+        icon: snxImg,
+    },
+    STN: {
+        symbol: 'STN',
+        name: 'STONES',
+        icon: stnImg,
+    },
+    TTM: {
+        symbol: 'TTM',
+        name: 'TOTEM',
+        icon: ttmImg,
+    },
+    WBTC: {
+        symbol: 'WBTC',
+        name: 'Wrapped Bitcoin',
+        icon: wbtcImg,
+    },
+    WETH: {
+        symbol: 'WETH',
+        name: 'Wrapped Ethereum',
+        icon: wethImg,
+    },
+    WSTETH: {
+        symbol: 'WSTETH',
+        name: 'Wrapped Staked Ethereum',
+        icon: wstethImg,
+    },
+}

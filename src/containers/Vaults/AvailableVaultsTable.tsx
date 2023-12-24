@@ -109,81 +109,90 @@ export function AvailableVaultsTable({ rows }: AvailableVaultsTableProps) {
                 ))}
                 <Text></Text>
             </TableHeader>
-            {sortedRows.map(({
-                collateralName,
-                collateralizationFactor,
-                apy,
-                eligibleBalance,
-                myVaults: existingVaults,
-            }, i) => {
-                return (
-                    <TableRow key={i}>
-                        <Grid
-                            $columns="2fr min-content 1fr"
-                            $align="center"
-                            $gap={12}>
-                            <TokenPair tokens={[collateralName.toUpperCase() as any, 'HAI']}/>
-                            <RewardsTokenPair tokens={['OP']}/>
-                        </Grid>
-                        <Flex
-                            $align="center"
-                            $gap={8}>
-                            <Text>{collateralizationFactor}</Text>
-                        </Flex>
-                        <Text>{apy}%</Text>
-                        <Flex
-                            $align="center"
-                            $gap={4}>
-                            <Text>
-                                {eligibleBalance && eligibleBalance !== '0'
-                                    ? formatNumberWithStyle(
-                                        formatEther(eligibleBalance),
-                                        { maxDecimals: 4 }
-                                    )
-                                    : '-'
-                                }
-                            </Text>
-                            {!!eligibleBalance && eligibleBalance !== '0' && <Text>{collateralName}</Text>}
-                        </Flex>
-                        <Flex>
-                            {!existingVaults?.length
-                                ? <Text>-</Text>
-                                : (
-                                    <CenteredFlex $gap={4}>
-                                        <Text>{existingVaults.length}</Text>
-                                        <Tooltip $gap={12}>
-                                            {existingVaults.map((vault) => (
-                                                <VaultLink
-                                                    key={vault.id}
-                                                    onClick={() => setActiveVault({ vault })}>
-                                                    <Text
-                                                        $whiteSpace="nowrap"
-                                                        $fontWeight={700}>
-                                                        Vault #{vault.id}
-                                                    </Text>
-                                                    <HaiArrow
-                                                        size={14}
-                                                        strokeWidth={2}
-                                                        direction="upRight"
-                                                    />
-                                                </VaultLink>
-                                            ))}
-                                        </Tooltip>
-                                    </CenteredFlex>
-                                )
-                            }
-                        </Flex>
-                        <CenteredFlex>
-                            <BorrowButton onClick={() => setActiveVault({
-                                create: true,
-                                collateralName: sortedRows[i].collateralName,
-                            })}>
-                                Open New
-                            </BorrowButton>
-                        </CenteredFlex>
-                    </TableRow>
+            {!sortedRows.length
+                ? (
+                    <CenteredFlex
+                        $width="100%"
+                        style={{ padding: '24px 0' }}>
+                        No vaults matched your search
+                    </CenteredFlex>
                 )
-            })}
+                : sortedRows.map(({
+                    collateralName,
+                    collateralizationFactor,
+                    apy,
+                    eligibleBalance,
+                    myVaults: existingVaults,
+                }, i) => {
+                    return (
+                        <TableRow key={i}>
+                            <Grid
+                                $columns="2fr min-content 1fr"
+                                $align="center"
+                                $gap={12}>
+                                <TokenPair tokens={[collateralName.toUpperCase() as any, 'HAI']}/>
+                                <RewardsTokenPair tokens={['OP']}/>
+                            </Grid>
+                            <Flex
+                                $align="center"
+                                $gap={8}>
+                                <Text>{collateralizationFactor}</Text>
+                            </Flex>
+                            <Text>{apy}%</Text>
+                            <Flex
+                                $align="center"
+                                $gap={4}>
+                                <Text>
+                                    {eligibleBalance && eligibleBalance !== '0'
+                                        ? formatNumberWithStyle(
+                                            formatEther(eligibleBalance),
+                                            { maxDecimals: 4 }
+                                        )
+                                        : '-'
+                                    }
+                                </Text>
+                                {!!eligibleBalance && eligibleBalance !== '0' && <Text>{collateralName}</Text>}
+                            </Flex>
+                            <Flex>
+                                {!existingVaults?.length
+                                    ? <Text>-</Text>
+                                    : (
+                                        <CenteredFlex $gap={4}>
+                                            <Text>{existingVaults.length}</Text>
+                                            <Tooltip $gap={12}>
+                                                {existingVaults.map((vault) => (
+                                                    <VaultLink
+                                                        key={vault.id}
+                                                        onClick={() => setActiveVault({ vault })}>
+                                                        <Text
+                                                            $whiteSpace="nowrap"
+                                                            $fontWeight={700}>
+                                                            Vault #{vault.id}
+                                                        </Text>
+                                                        <HaiArrow
+                                                            size={14}
+                                                            strokeWidth={2}
+                                                            direction="upRight"
+                                                        />
+                                                    </VaultLink>
+                                                ))}
+                                            </Tooltip>
+                                        </CenteredFlex>
+                                    )
+                                }
+                            </Flex>
+                            <CenteredFlex>
+                                <BorrowButton onClick={() => setActiveVault({
+                                    create: true,
+                                    collateralName: sortedRows[i].collateralName,
+                                })}>
+                                    Open New
+                                </BorrowButton>
+                            </CenteredFlex>
+                        </TableRow>
+                    )
+                })
+            }
         </Table>
     )
 }

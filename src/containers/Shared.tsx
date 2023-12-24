@@ -354,7 +354,7 @@ const Shared = ({ children }: Props) => {
                     <Content
                         $padTop={!isSplash}
                         $padBottom={!isSplash
-                            ? haiAlertActive ? '120px': '48px'
+                            ? haiAlertActive ? '240px': '168px'
                             : undefined
                         }
                         $maxWidth={!isSplash ? 'min(1200px, calc(100vw - 96px))': undefined}>

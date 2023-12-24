@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 
-import { type AuctionEventType, type IAuction } from '~/types'
+import type { AuctionEventType, IAuction } from '~/types'
+import { tokenMap } from '~/utils'
+import { useStoreState } from '~/store'
 import { useGetAuctions } from '~/hooks'
 
 import { CenteredFlex, Text } from '~/styles'
@@ -8,20 +10,6 @@ import { NavContainer } from '~/components/NavContainer'
 import { CheckboxButton } from '~/components/CheckboxButton'
 import { BrandedDropdown, DropdownOption } from '~/components/BrandedDropdown'
 import { AuctionTable } from './AuctionTable'
-
-const assets = [
-    'All',
-    'HAI',
-    'KITE',
-    'WETH',
-    'WSTETH',
-    'OP',
-]
-
-const tokenMap: Record<string, string> = {
-    'PROTOCOL_TOKEN': 'HAI',
-    'COIN': 'KITE',
-}
 
 const auctionFilters: (AuctionEventType | 'All')[] = [
     'All',
@@ -38,6 +26,12 @@ type AuctionsListProps = {
     isLoading: boolean
 }
 export function AuctionsList({ isLoading }: AuctionsListProps) {
+    const { connectWalletModel: { tokensData } } = useStoreState(state => state)
+
+    const symbols = Object.values(tokensData || {})
+        .filter(({ isCollateral }) => isCollateral)
+        .map(({ symbol }) => symbol)
+
     const [filterMyBids, setFilterMyBids] = useState(false)
     const [typeFilter, setTypeFilter] = useState<AuctionEventType>()
     const [saleAssetsFilter, setSaleAssetsFilter] = useState<string>()
@@ -125,7 +119,7 @@ export function AuctionsList({ isLoading }: AuctionsListProps) {
                                 For Sale Asset: <strong>{saleAssetsFilter || 'All'}</strong>
                             </Text>
                         )}>
-                            {assets.map(label => (
+                            {['All', ...symbols].map(label => (
                                 <DropdownOption
                                     key={label}
                                     onClick={() => {

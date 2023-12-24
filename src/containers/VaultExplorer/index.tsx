@@ -3,56 +3,58 @@ import { useQuery } from '@apollo/client'
 
 import type { SortableHeader, Sorting } from '~/types'
 import {
+    ALLSAFES_QUERY_NOT_ZERO,
     ALLSAFES_QUERY_WITH_ZERO,
-    QuerySafe,
+    type QuerySafe,
     Status,
     formatNumberWithStyle,
     getCollateralRatio,
+    tokenAssets,
 } from '~/utils'
+import { useStoreState } from '~/store'
 
 import styled from 'styled-components'
-import { BlurContainer, CenteredFlex, Flex, Grid, HaiButton, Text } from '~/styles'
+import { BlurContainer, CenteredFlex, Flex, type FlexProps, Grid, HaiButton, Text } from '~/styles'
 import { BrandedTitle } from '~/components/BrandedTitle'
 import { TableHeaderItem } from '~/components/TableHeaderItem'
 import { AddressLink } from '~/components/AddressLink'
 import { Pagination } from '~/components/Pagination'
 import { StatusLabel } from '~/components/StatusLabel'
 import { BrandedDropdown, DropdownOption } from '~/components/BrandedDropdown'
+import { TokenPair } from '~/components/TokenPair'
+import { CheckboxButton } from '~/components/CheckboxButton'
 
-const sortableHeaders: SortableHeader[] = [
-    { label: 'Vault' },
-    { label: 'Owner' },
-    { label: 'Collateral' },
-    { label: 'Debt' },
+const sortableHeaders: (SortableHeader & FlexProps)[] = [
+    {
+        label: 'Vault',
+        $justify: 'flex-start',
+    },
+    {
+        label: 'Owner',
+        $justify: 'flex-start',
+    },
+    {
+        label: 'Collateral',
+        $justify: 'flex-end',
+    },
+    {
+        label: 'Debt',
+        $justify: 'flex-end',
+    },
     { label: 'Collateral Ratio' },
 ]
-
-const assets = [
-    'All',
-    'HAI',
-    'KITE',
-    'WETH',
-    'WSTETH',
-    'OP',
-    'TTM',
-    'STN',
-    'WBTC',
-]
-const assetMap: Record<string, string> = {
-    HAI: 'HAI',
-    KITE: 'KITE',
-    WETH: 'WETH',
-    WSTETH: 'WSTETH',
-    OP: 'OP',
-    TOTEM: 'TTM',
-    STONES: 'STN',
-    WBTC: 'WBTC',
-}
 
 const MAX_VAULTS_TO_FETCH = 500
 const RECORDS_PER_PAGE = 10
 
 export function VaultExplorer() {
+    const { connectWalletModel: { tokensData } } = useStoreState(state => state)
+
+    const symbols = Object.values(tokensData || {})
+        .filter(({ isCollateral }) => isCollateral)
+        .map(({ symbol }) => symbol)
+
+    const [filterEmpty, setFilterEmpty] = useState(false)
     const [collateralFilter, setCollateralFilter] = useState<string>()
 
     const [sorting, setSorting] = useState<Sorting>({
@@ -63,7 +65,7 @@ export function VaultExplorer() {
     const [offset, setOffset] = useState(0)
 
     const { data, error, loading } = useQuery<{ safes: QuerySafe[] }>(
-        ALLSAFES_QUERY_WITH_ZERO,
+        filterEmpty ? ALLSAFES_QUERY_NOT_ZERO: ALLSAFES_QUERY_WITH_ZERO,
         {
             variables: {
                 first: MAX_VAULTS_TO_FETCH,
@@ -74,7 +76,7 @@ export function VaultExplorer() {
         }
     )
 
-    const vaultsWithCRatio = useMemo(() => {
+    const vaultsWithCRatioAndToken = useMemo(() => {
         if (!data?.safes?.length) return []
 
         return data.safes.map(vault => {
@@ -86,17 +88,22 @@ export function VaultExplorer() {
                     vault.collateralType.currentPrice!.liquidationPrice,
                     vault.collateralType.currentPrice!.collateral!.liquidationCRatio
                 )
+            const collateralToken = Object.values(tokenAssets).find(({ name, symbol }) => (
+                vault.collateralType.id === name || vault.collateralType.id === symbol
+            ))?.symbol || vault.collateralType.id
             return {
                 ...vault,
                 collateralRatio,
+                collateralToken,
             }
         })
     }, [data?.safes])
 
     const sortedRows = useMemo(() => {
+        const temp = [...vaultsWithCRatioAndToken]
         switch(sorting.key) {
             case 'Vault':
-                return vaultsWithCRatio.sort(({ safeId: a }, { safeId: b }) => {
+                return temp.sort(({ safeId: a }, { safeId: b }) => {
                     const aId = parseInt(a)
                     const bId = parseInt(b)
                     return sorting.dir === 'desc'
@@ -104,26 +111,26 @@ export function VaultExplorer() {
                         : aId - bId
                 })
             case 'Owner':
-                return vaultsWithCRatio.sort(({ owner: a }, { owner: b }) => {
+                return temp.sort(({ owner: a }, { owner: b }) => {
                     return sorting.dir === 'desc'
                         ? (a.address > b.address ? 1: -1)
                         : (a.address < b.address ? 1: -1)
                 })
             case 'Collateral':
-                return vaultsWithCRatio.sort(({ collateral: a }, { collateral: b }) => {
+                return temp.sort(({ collateral: a }, { collateral: b }) => {
                     return sorting.dir === 'desc'
-                        ? BigInt(a) > BigInt(b) ? -1: 1
-                        : BigInt(a) < BigInt(b) ? -1: 1
+                        ? parseFloat(b) - parseFloat(a)
+                        : parseFloat(a) - parseFloat(b)
                 })
             case 'Debt':
-                return vaultsWithCRatio.sort(({ debt: a }, { debt: b }) => {
+                return temp.sort(({ debt: a }, { debt: b }) => {
                     return sorting.dir === 'desc'
-                        ? BigInt(a) > BigInt(b) ? -1: 1
-                        : BigInt(a) < BigInt(b) ? -1: 1
+                        ? parseFloat(b) - parseFloat(a)
+                        : parseFloat(a) - parseFloat(b)
                 })
             case 'Collateral Ratio':
             default:
-                return vaultsWithCRatio.sort(({ collateralRatio: a }, { collateralRatio: b }) => {
+                return temp.sort(({ collateralRatio: a }, { collateralRatio: b }) => {
                     const aNum = parseFloat(a.toString())
                     const bNum = parseFloat(b.toString())
                     return sorting.dir === 'desc'
@@ -131,13 +138,13 @@ export function VaultExplorer() {
                         : aNum - bNum
                 })
         }
-    }, [vaultsWithCRatio, sorting])
+    }, [vaultsWithCRatioAndToken, sorting])
 
     const filteredAndSortedRows = useMemo(() => {
         if (!collateralFilter || collateralFilter === 'All') return sortedRows
 
-        return sortedRows.filter(({ collateralType }) => (
-            collateralFilter === (assetMap[collateralType.id] || collateralType.id)
+        return sortedRows.filter(({ collateralToken }) => (
+            collateralFilter === collateralToken
         ))
     }, [sortedRows, collateralFilter])
 
@@ -148,30 +155,38 @@ export function VaultExplorer() {
                     textContent="ALL VAULTS"
                     $fontSize="3rem"
                 />
-                <BrandedDropdown label={(
-                    <Text
-                        $fontWeight={400}
-                        $textAlign="left">
-                        Collateral: <strong>{collateralFilter || 'All'}</strong>
-                    </Text>
-                )}>
-                    {assets.map(label => (
-                        <DropdownOption
-                            key={label}
-                            onClick={() => {
-                                // e.stopPropagation()
-                                setCollateralFilter(label === 'All' ? undefined: label)
-                            }}>
-                            {label}
-                        </DropdownOption>
-                    ))}
-                </BrandedDropdown>
+                <CenteredFlex $gap={24}>
+                    <CheckboxButton
+                        checked={filterEmpty}
+                        toggle={() => setFilterEmpty(e => !e)}>
+                        Hide Empty Vaults
+                    </CheckboxButton>
+                    <BrandedDropdown label={(
+                        <Text
+                            $fontWeight={400}
+                            $textAlign="left">
+                            Collateral: <strong>{collateralFilter || 'All'}</strong>
+                        </Text>
+                    )}>
+                        {['All', ...symbols].map(label => (
+                            <DropdownOption
+                                key={label}
+                                onClick={() => {
+                                    // e.stopPropagation()
+                                    setCollateralFilter(label === 'All' ? undefined: label)
+                                }}>
+                                {label}
+                            </DropdownOption>
+                        ))}
+                    </BrandedDropdown>
+                </CenteredFlex>
             </Header>
             <Table>
                 <TableHeader>
-                    {sortableHeaders.map(({ label, tooltip, unsortable }) => (
+                    {sortableHeaders.map(({ label, tooltip, unsortable, ...props }) => (
                         <TableHeaderItem
                             key={label}
+                            $width="100%"
                             sortable={!unsortable}
                             isSorting={sorting.key === label ? sorting.dir: false}
                             onClick={unsortable
@@ -187,7 +202,8 @@ export function VaultExplorer() {
                                     }
                                 })
                             }
-                            tooltip={tooltip}>
+                            tooltip={tooltip}
+                            {...props}>
                             <Text $fontWeight={sorting.key === label ? 700: 400}>{label}</Text>
                         </TableHeaderItem>
                     ))}
@@ -225,25 +241,29 @@ export function VaultExplorer() {
                                     collateral,
                                     debt,
                                     collateralRatio,
-                                    collateralType,
+                                    collateralToken,
                                 }) => (
                                     <TableRow key={safeId}>
                                         <Text>#{safeId}</Text>
                                         <AddressLink address={owner.address}/>
                                         <Grid
-                                            $columns="1fr 48px"
+                                            $columns="1fr 24px 48px"
+                                            $align="center"
                                             $gap={8}>
                                             <Text $textAlign="right">
                                                 {formatNumberWithStyle(collateral, {
                                                     maxDecimals: 4,
                                                 })}
                                             </Text>
-                                            <Text>
-                                                {assetMap[collateralType.id] || collateralType.id}
-                                            </Text>
+                                            <TokenPair
+                                                tokens={[collateralToken as any]}
+                                                hideLabel
+                                                size={48}
+                                            />
+                                            <Text>{collateralToken}</Text>
                                         </Grid>
                                         <Grid
-                                            $columns="1fr 48px"
+                                            $columns="1fr 24px"
                                             $gap={8}>
                                             <Text $textAlign="right">
                                                 {formatNumberWithStyle(debt, {

@@ -15,13 +15,6 @@ import { StrategyAd, type StrategyAdProps } from '~/components/StrategyAd'
 import { AvailableVaultsTable } from './AvailableVaultsTable'
 import { MyVaultsTable } from './MyVaultsTable'
 
-const assets = [
-    'All',
-    'WETH',
-    'WSTETH',
-    'OP',
-]
-
 const strategies: StrategyAdProps[] = [
     {
         heading: 'OP REWARDS',
@@ -59,6 +52,12 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
         vaultModel: vaultState,
     } = useStoreState(state => state)
 
+    const symbols = useMemo(() => (
+        Object.values(tokensData || {})
+            .filter(({ isCollateral }) => isCollateral)
+            .map(({ symbol }) => symbol)
+    ), [tokensData])
+
     const myVaults = useMemo(() => {
         const temp = vaultState.list
         if (!assetsFilter) return temp
@@ -69,31 +68,29 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
     }, [vaultState.list, assetsFilter])
 
     const availableVaults: AvailableVaultPair[] = useMemo(() => {
-        return Object.values(tokensData || {})
-            .filter(({ isCollateral }) => isCollateral)
-            .map(({ symbol }) => {
-                const {
-                    liquidationCRatio,
-                    totalAnnualizedStabilityFee,
-                } = vaultState.liquidationData?.collateralLiquidationData[symbol] || {}
-                return {
-                    collateralName: symbol,
-                    collateralizationFactor: liquidationCRatio
-                        ? formatNumberWithStyle(liquidationCRatio, {
-                            maxDecimals: 0,
-                            style: 'percent',
-                        })
-                        : '--%',
-                    apy: totalAnnualizedStabilityFee
-                        ? getRatePercentage(totalAnnualizedStabilityFee).toString()
-                        : '',
-                    eligibleBalance: tokensFetchedData[symbol]?.balanceE18 || '0',
-                    myVaults: vaultState.list.filter(({ collateralName }) => (
-                        collateralName === symbol
-                    )),
-                }
-            })
-    }, [eligibleOnly, tokensData, tokensFetchedData, vaultState.list, vaultState.liquidationData])
+        return symbols.map(symbol => {
+            const {
+                liquidationCRatio,
+                totalAnnualizedStabilityFee,
+            } = vaultState.liquidationData?.collateralLiquidationData[symbol] || {}
+            return {
+                collateralName: symbol,
+                collateralizationFactor: liquidationCRatio
+                    ? formatNumberWithStyle(liquidationCRatio, {
+                        maxDecimals: 0,
+                        style: 'percent',
+                    })
+                    : '--%',
+                apy: totalAnnualizedStabilityFee
+                    ? getRatePercentage(totalAnnualizedStabilityFee).toString()
+                    : '',
+                eligibleBalance: tokensFetchedData[symbol]?.balanceE18 || '0',
+                myVaults: vaultState.list.filter(({ collateralName }) => (
+                    collateralName === symbol
+                )),
+            }
+        })
+    }, [eligibleOnly, symbols, tokensFetchedData, vaultState.list, vaultState.liquidationData])
 
     const filteredAvailableVaults = useMemo(() => {
         if (!eligibleOnly) return availableVaults
@@ -107,7 +104,7 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
     return (
         <NavContainer
             navItems={[
-                `All Vaults (${availableVaults.length})`,
+                `Available Vaults (${availableVaults.length})`,
                 `My Vaults (${vaultState.list.length})`,
             ]}
             selected={navIndex}
@@ -129,7 +126,7 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
                             Collateral Assets: <strong>{assetsFilter || 'All'}</strong>
                         </Text>
                     )}>
-                        {assets.map(label => (
+                        {['All', ...symbols].map(label => (
                             <DropdownOption
                                 key={label}
                                 onClick={() => {
@@ -168,7 +165,13 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
                         })
                         : undefined
                     }>
-                        <MyVaultsTable rows={myVaults}/>
+                        <MyVaultsTable
+                            rows={myVaults}
+                            onCreate={() => setActiveVault({
+                                create: true,
+                                collateralName: assetsFilter || 'WETH',
+                            })}
+                        />
                     </ProxyPrompt>
                 )
             }

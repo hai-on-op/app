@@ -1,11 +1,11 @@
 import type { ReactChildren } from '~/types'
 
 import styled, { css } from 'styled-components'
-import { CenteredFlex, Text } from '~/styles'
+import { Flex, type FlexProps, Text } from '~/styles'
 import { HaiArrow } from './Icons/HaiArrow'
 import { Tooltip } from './Tooltip'
 
-type TableHeaderItemProps = {
+type TableHeaderItemProps = FlexProps & {
     sortable?: boolean,
     isSorting?: 'asc' | 'desc' | false,
     onClick?: () => void,
@@ -18,12 +18,17 @@ export function TableHeaderItem({
     onClick,
     tooltip,
     children,
+    ...props
 }: TableHeaderItemProps) {
     return (
         <Container
+            $width="fit-content"
+            $justify="center"
+            $align="center"
             $gap={4}
             $grow={0}
-            onClick={onClick}>
+            onClick={onClick}
+            {...props}>
             {sortable && (
                 <HaiArrow
                     strokeWidth={isSorting ? 3: 2}
@@ -39,8 +44,7 @@ export function TableHeaderItem({
     )
 }
 
-const Container = styled(CenteredFlex)`
-    width: fit-content;
+const Container = styled(Flex)`
     ${({ onClick }) => !!onClick && css`cursor: pointer;`}
 
     & > svg {

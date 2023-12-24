@@ -19,9 +19,10 @@ const sortableHeaders: SortableHeader[] = [
 ]
 
 type MyVaultsTableProps = {
-    rows: IVault[]
+    rows: IVault[],
+    onCreate: () => void
 }
-export function MyVaultsTable({ rows }: MyVaultsTableProps) {
+export function MyVaultsTable({ rows, onCreate }: MyVaultsTableProps) {
     const { setActiveVault } = useVault()
 
     const [sorting, setSorting] = useState<{ key: string, dir: 'asc' | 'desc'}>({
@@ -110,74 +111,92 @@ export function MyVaultsTable({ rows }: MyVaultsTableProps) {
                 ))}
                 <Text></Text>
             </TableHeader>
-            {sortedRows.map((vault, i) => {
-                const {
-                    id,
-                    collateralName,
-                    collateralRatio,
-                    riskState,
-                    collateral,
-                    debt,
-                    totalAnnualizedStabilityFee,
-                } = vault
-
-                return (
-                    <TableRow key={i}>
-                        <Grid
-                            $columns="2fr min-content 1fr"
-                            $align="center"
-                            $gap={12}>
-                            <CenteredFlex
-                                $width="fit-content"
-                                $gap={4}>
-                                <TokenPair tokens={[collateralName as any, 'HAI']}/>
-                                <Text>#{id}</Text>
-                            </CenteredFlex>
-                            <RewardsTokenPair tokens={['OP']}/>
-                        </Grid>
-                        <Flex
-                            $align="center"
-                            $gap={12}>
-                            <Text>
-                                {formatNumberWithStyle(collateralRatio, {
-                                    scalingFactor: 0.01,
-                                    style: 'percent',
-                                })}
-                            </Text>
-                            <StatusLabel
-                                status={riskStateToStatus[riskState] || Status.UNKNOWN}
-                                size={0.8}
-                            />
-                        </Flex>
-                        <Flex
-                            $align="center"
-                            $gap={8}>
-                            <Text>{formatNumberWithStyle(collateral, { maxDecimals: 4 })}</Text>
-                            <Text>{collateralName.toUpperCase()}</Text>
-                        </Flex>
-                        <Flex
-                            $align="center"
-                            $gap={8}>
-                            <Text>{formatNumberWithStyle(debt)}</Text>
-                            <Text>HAI</Text>
-                        </Flex>
+            {!sortedRows.length
+                ? (
+                    <CenteredFlex
+                        $width="100%"
+                        $column
+                        $gap={12}
+                        style={{ padding: '24px 0' }}>
                         <Text>
-                            {formatNumberWithStyle(
-                                getRatePercentage(totalAnnualizedStabilityFee, 4),
-                                {
-                                    scalingFactor: 0.01,
-                                    style: 'percent',
-                                }
-                            )}
+                            No vaults were found or matched your search. Would you like to open a new one?
                         </Text>
-                        <CenteredFlex>
-                            <ManageButton onClick={() => setActiveVault({ vault })}>
-                                Manage
-                            </ManageButton>
-                        </CenteredFlex>
-                    </TableRow>
+                        <HaiButton
+                            $variant="yellowish"
+                            onClick={onCreate}>
+                            Open New Vault
+                        </HaiButton>
+                    </CenteredFlex>
                 )
-            })}
+                : sortedRows.map((vault, i) => {
+                    const {
+                        id,
+                        collateralName,
+                        collateralRatio,
+                        riskState,
+                        collateral,
+                        debt,
+                        totalAnnualizedStabilityFee,
+                    } = vault
+
+                    return (
+                        <TableRow key={i}>
+                            <Grid
+                                $columns="2fr min-content 1fr"
+                                $align="center"
+                                $gap={12}>
+                                <CenteredFlex
+                                    $width="fit-content"
+                                    $gap={4}>
+                                    <TokenPair tokens={[collateralName as any, 'HAI']}/>
+                                    <Text>#{id}</Text>
+                                </CenteredFlex>
+                                <RewardsTokenPair tokens={['OP']}/>
+                            </Grid>
+                            <Flex
+                                $align="center"
+                                $gap={12}>
+                                <Text>
+                                    {formatNumberWithStyle(collateralRatio, {
+                                        scalingFactor: 0.01,
+                                        style: 'percent',
+                                    })}
+                                </Text>
+                                <StatusLabel
+                                    status={riskStateToStatus[riskState] || Status.UNKNOWN}
+                                    size={0.8}
+                                />
+                            </Flex>
+                            <Flex
+                                $align="center"
+                                $gap={8}>
+                                <Text>{formatNumberWithStyle(collateral, { maxDecimals: 4 })}</Text>
+                                <Text>{collateralName.toUpperCase()}</Text>
+                            </Flex>
+                            <Flex
+                                $align="center"
+                                $gap={8}>
+                                <Text>{formatNumberWithStyle(debt)}</Text>
+                                <Text>HAI</Text>
+                            </Flex>
+                            <Text>
+                                {formatNumberWithStyle(
+                                    getRatePercentage(totalAnnualizedStabilityFee, 4),
+                                    {
+                                        scalingFactor: 0.01,
+                                        style: 'percent',
+                                    }
+                                )}
+                            </Text>
+                            <CenteredFlex>
+                                <ManageButton onClick={() => setActiveVault({ vault })}>
+                                    Manage
+                                </ManageButton>
+                            </CenteredFlex>
+                        </TableRow>
+                    )
+                })
+            }
         </Table>
     )
 }
