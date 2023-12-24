@@ -192,6 +192,13 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                             Contracts
                                         </DropdownOption>
                                     </PassLink>
+                                    <PassLink
+                                        href="/vaults/explore"
+                                        $textDecoration="none">
+                                        <DropdownOption $active={location.pathname === '/vaults/explore'}>
+                                            Vault Explorer
+                                        </DropdownOption>
+                                    </PassLink>
                                     <DropdownOption onClick={() => {
                                         setDropdownActive(false)
                                         setWrapEthActive(true)

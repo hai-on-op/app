@@ -59,12 +59,32 @@ export const SafeFragment = gql`
             address
         }
         createdAt
-        collateralType { ...CollateralTypeWithCollateralPrice }
+        collateralType {
+            id
+            debtAmount
+            totalCollateral
+            accumulatedRate
+            stabilityFee
+            totalAnnualizedStabilityFee
+            debtCeiling
+            debtFloor
+            safetyCRatio
+            liquidationCRatio
+            liquidationPenalty
+            currentPrice {
+                timestamp
+                safetyPrice
+                liquidationPrice
+                collateral {
+                    liquidationCRatio
+                }
+                value
+            }
+        }
         saviour {
             allowed
         }
     }
-    ${CollateralTypeWithCollateralPriceFragment}
 `
 
 export const RedemptionRateFragment = gql`

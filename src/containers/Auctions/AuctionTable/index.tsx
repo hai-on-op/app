@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useAccount } from 'wagmi'
 
-import type { IAuction, IPaging, SortableHeader } from '~/types'
+import type { IAuction, SortableHeader } from '~/types'
 import { getAuctionStatus, stringsExistAndAreEqual, tokenMap } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { useGeb } from '~/hooks'
@@ -10,7 +10,7 @@ import styled from 'styled-components'
 import { Flex, Text } from '~/styles'
 import { AuctionTableHeader } from './Header'
 import { AuctionTableRow } from './Row'
-import Pagination from '~/components/Pagination'
+import { Pagination } from '~/components/Pagination'
 import { AuctionModal } from '~/components/Modal/AuctionModal'
 
 const headers: SortableHeader[] = [
@@ -22,6 +22,8 @@ const headers: SortableHeader[] = [
     { label: 'My Bids' },
     { label: 'Status' },
 ]
+
+const ITEMS_PER_PAGE = 5
 
 type AuctionTableProps = {
     auctions: IAuction[],
@@ -54,10 +56,7 @@ export function AuctionTable({ auctions, filterMyBids, isLoading }: AuctionTable
 
     const [expandedId, setExpandedId] = useState<string>()
 
-    const [paging, setPaging] = useState<IPaging>({
-        from: 0,
-        to: 5,
-    })
+    const [paging, setPaging] = useState<number>(0)
     const [sorting, setSorting] = useState<{ key: string, dir: 'asc' | 'desc'}>({
         key: 'Time Left',
         dir: 'desc',
@@ -174,26 +173,28 @@ export function AuctionTable({ auctions, filterMyBids, isLoading }: AuctionTable
                         }
                     </LoadingOrNotFound>
                 )
-                : sortedRows.slice(paging.from, paging.to).map(auction => {
-                    const key = `${auction.englishAuctionType}-${auction.sellToken}-${auction.auctionId}`
-                    return (
-                        <AuctionTableRow
-                            key={key}
-                            auction={auction}
-                            expanded={expandedId === key}
-                            onSelect={() => {
-                                setExpandedId(currentId => currentId === key
-                                    ? undefined
-                                    : key
-                                )
-                            }}
-                        />
-                    )
-                })
+                : sortedRows
+                    .slice(paging * ITEMS_PER_PAGE, (paging + 1) * ITEMS_PER_PAGE)
+                    .map(auction => {
+                        const key = `${auction.englishAuctionType}-${auction.sellToken}-${auction.auctionId}`
+                        return (
+                            <AuctionTableRow
+                                key={key}
+                                auction={auction}
+                                expanded={expandedId === key}
+                                onSelect={() => {
+                                    setExpandedId(currentId => currentId === key
+                                        ? undefined
+                                        : key
+                                    )
+                                }}
+                            />
+                        )
+                    })
             }
             <Pagination
-                items={sortedRows}
-                perPage={5}
+                totalItems={sortedRows.length}
+                perPage={ITEMS_PER_PAGE}
                 handlePagingMargin={setPaging}
             />
         </Table>

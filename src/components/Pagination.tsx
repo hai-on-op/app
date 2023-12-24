@@ -1,25 +1,23 @@
 import { useMemo } from 'react'
 import ReactPaginate from 'react-paginate'
 
-import type { IPaging } from '~/types'
-
 import styled from 'styled-components'
 import { Caret } from './Icons/Caret'
 
 interface Props {
-    items: any[]
+    totalItems: number
     perPage: number
-    handlePagingMargin: ({ from, to }: IPaging) => void,
+    handlePagingMargin: (offset: number) => void,
 }
 
-const Pagination = ({ items, handlePagingMargin, perPage = 5 }: Props) => {
+export function Pagination({ totalItems, handlePagingMargin, perPage = 5 }: Props) {
     const total = useMemo(() => {
-        if (!items.length) return 1
+        if (!totalItems) return 1
 
-        return Math.ceil(items.length / perPage)
-    }, [items, perPage])
+        return Math.ceil(totalItems / perPage)
+    }, [totalItems, perPage])
 
-    if (items.length <= perPage) return null
+    if (totalItems <= perPage) return null
     
     return (
         <PaginationContainer>
@@ -30,10 +28,7 @@ const Pagination = ({ items, handlePagingMargin, perPage = 5 }: Props) => {
                 marginPagesDisplayed={2}
                 pageRangeDisplayed={4}
                 onPageChange={({ selected }: any) => {
-                    handlePagingMargin({
-                        from: selected * perPage,
-                        to: (selected + 1) * perPage,
-                    })
+                    handlePagingMargin(selected)
                 }}
                 breakLabel="..."
                 breakClassName="break-me"
@@ -43,8 +38,6 @@ const Pagination = ({ items, handlePagingMargin, perPage = 5 }: Props) => {
         </PaginationContainer>
     )
 }
-
-export default Pagination
 
 const PaginationContainer = styled.div`
     text-align: right;
