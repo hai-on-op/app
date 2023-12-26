@@ -38,6 +38,9 @@ export function ManageDropdown() {
                     $active={symbol === collateral.name}
                     onClick={() => {
                         updateForm('clear')
+                        const url = new URL(window.location.href)
+                        url.searchParams.set('collateral', symbol)
+                        window.history.replaceState({}, '', url)
                         vaultActions.setVaultData({
                             ...vaultData,
                             collateral: symbol,

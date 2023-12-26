@@ -1,67 +1,26 @@
-import { useEffect, useState } from 'react'
-import { type RouteComponentProps } from 'react-router-dom'
-import { useAccount, useNetwork } from 'wagmi'
+import { useState } from 'react'
+import { type RouteComponentProps, useHistory } from 'react-router-dom'
 
-import { DEFAULT_NETWORK_ID, VaultAction, isAddress } from '~/utils'
-import { useStoreActions, useStoreState } from '~/store'
+import { VaultAction } from '~/utils'
+import { useStoreState } from '~/store'
 import { VaultProvider } from '~/providers/VaultProvider'
-import { useEthersSigner, useGeb } from '~/hooks'
+import { useVaultRouting } from '~/hooks'
 
 import styled from 'styled-components'
 import { HaiButton, Text } from '~/styles'
+import { Caret } from '~/components/Icons/Caret'
 import { ManageVault } from './ManageVault'
 import { VaultsList } from './VaultsList'
-import { Caret } from '~/components/Icons/Caret'
 
 export function Vaults(props: RouteComponentProps<{ address?: string }>) {
-    const { address: account } = useAccount()
-    const { chain } = useNetwork()
-    const signer = useEthersSigner()
-    const geb = useGeb()
+    const history = useHistory()
 
-    const {
-        connectWalletModel: {
-            tokensData,
-            isWrongNetwork,
-        },
-        vaultModel: { singleVault },
-    } = useStoreState(state => state)
-    const { vaultModel: vaultActions } = useStoreActions(actions => actions)
+    const { vaultModel: { singleVault } } = useStoreState(state => state)
 
     const { address = '' } = props.match.params
-
-    useEffect(() => {
-        if (
-            (!account && !address)
-            || (address && !isAddress(address.toLowerCase()))
-            || !signer
-            || isWrongNetwork
-        ) return
-
-        async function fetchVaults() {
-            await vaultActions.fetchUserVaults({
-                address: address || (account as string),
-                geb,
-                tokensData,
-                chainId: chain?.id || DEFAULT_NETWORK_ID,
-            })
-        }
-        fetchVaults()
-        
-        const interval = setInterval(() => {
-            if (
-                (!account && !address)
-                || (address && !isAddress(address.toLowerCase()))
-                || !signer
-                || isWrongNetwork
-            ) fetchVaults()
-        }, 3000)
-
-        return () => clearInterval(interval)
-    }, [account, address, isWrongNetwork, tokensData, geb, signer, vaultActions])
+    const { action, setAction } = useVaultRouting(address)
 
     const [navIndex, setNavIndex] = useState(0)
-    const [action, setAction] = useState<VaultAction>(VaultAction.INFO)
 
     return (
         <VaultProvider
@@ -70,13 +29,10 @@ export function Vaults(props: RouteComponentProps<{ address?: string }>) {
             {action === VaultAction.CREATE || singleVault
                 ? (
                     <ManageVault headerContent={(
-                        <BackButton onClick={() => {
-                            vaultActions.setSingleVault(undefined)
-                            setAction(VaultAction.INFO)
-                        }}>
+                        <BackButton onClick={() => history.push(`/vaults`)}>
                             <Caret direction="left"/>
                             <Text>
-                                Back to {navIndex === 0 ? 'All': 'My'} Vaults
+                                Back to {navIndex === 0 ? 'Available': 'My'} Vaults
                             </Text>
                         </BackButton>
                     )}/>

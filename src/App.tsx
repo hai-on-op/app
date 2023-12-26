@@ -51,11 +51,12 @@ const App = () => {
                                         <Route exact strict component={Learn} path={'/learn'} />
                                         <Route exact strict component={Earn} path={'/earn'}/>
                                         <Route exact strict component={VaultExplorer} path={'/vaults/explore'} />
-                                        <Route exact strict component={Vaults} path={'/vaults/create'} />
-                                        <Route exact component={Vaults} path={'/vaults/:id'} />
+                                        <Route exact strict component={Vaults} path={'/vaults/manage'} />
+                                        <Route exact strict component={Vaults} path={'/vaults/open'} />
+                                        {/* <Route exact component={Vaults} path={'/vaults/:id'} /> */}
                                         <Route exact strict component={Vaults} path={'/vaults'} />
-                                        <Route exact strict component={Vaults} path={'/:address'} />
-
+                                        {/* <Route exact strict component={Vaults} path={'/:address'} /> */}
+                                        
                                         <Redirect from="*" to="/" />
                                     </Switch>
                                 </>

@@ -9,10 +9,11 @@ import {
     useReducer,
     useRef,
 } from 'react'
+import { useHistory } from 'react-router-dom'
 
 import type { Collateral, Debt, FormState, IVault, ReactChildren } from '~/types'
 import {
-    DEFAULT_VAULT_DATA,
+    // DEFAULT_VAULT_DATA,
     Status,
     VaultAction,
     VaultInfoError,
@@ -98,6 +99,8 @@ type Props = {
     children: ReactChildren
 }
 export function VaultProvider({ action, setAction, children }: Props) {
+    const history = useHistory()
+
     const {
         liquidationData,
         vaultData,
@@ -113,13 +116,17 @@ export function VaultProvider({ action, setAction, children }: Props) {
         collateralName,
         vault,
     }: SetActiveVaultProps) => {
-        vaultActions.setVaultData({
-            ...DEFAULT_VAULT_DATA,
-            collateral: collateralName || vault?.collateralName || 'WETH',
-        })
-        vaultActions.setSingleVault(create ? undefined: vault)
-        setAction(create ? VaultAction.CREATE: VaultAction.DEPOSIT_BORROW)
-    }, [vaultActions])
+        // vaultActions.setVaultData({
+        //     ...DEFAULT_VAULT_DATA,
+        //     collateral: collateralName || vault?.collateralName || 'WETH',
+        // })
+        // vaultActions.setSingleVault(create ? undefined: vault)
+        // setAction(create ? VaultAction.CREATE: VaultAction.DEPOSIT_BORROW)
+        history.push(create
+            ? `/vaults/open?collateral=${collateralName || 'WETH'}`
+            : `/vaults/manage${vault?.id ? `?id=${vault.id}`: ''}`
+        )
+    }, [history.push])
 
     const [formState, updateForm] = useReducer((
         previous: FormState,
