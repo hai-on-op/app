@@ -6,7 +6,7 @@ type TransactionItem = {
     value: {
         current?: string,
         after: string,
-        label?: string,
+        label?: JSX.Element | string,
     },
 }
 
@@ -33,7 +33,11 @@ export function TransactionSummary({ heading = 'Transaction Summary', items }: T
                                 <Text>→</Text>
                             </>)}
                             <Text>{value.after}</Text>
-                            {!!value.label && <Text>{value.label}</Text>}
+                            {!!value.label && (
+                                typeof value.label === 'string'
+                                    ? <Text>{value.label}</Text>
+                                    : value.label
+                            )}
                         </Flex>
                     </Detail>
                 ))}

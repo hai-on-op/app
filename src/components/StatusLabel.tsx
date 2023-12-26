@@ -9,6 +9,8 @@ type StatusLabelProps = FlexProps & {
     size?: number,
     color?: string,
     background?: string,
+    bordered?: boolean,
+    textOnly?: boolean,
     children?: ReactChildren,
 }
 export function StatusLabel({
@@ -16,6 +18,8 @@ export function StatusLabel({
     size = 1,
     color,
     background,
+    bordered = false,
+    textOnly = false,
     children,
     ...props
 }: StatusLabelProps) {
@@ -25,6 +29,8 @@ export function StatusLabel({
             $size={size}
             $color={color}
             $bg={background}
+            $bordered={bordered}
+            $textOnly={textOnly}
             $justify="space-between"
             $align="center"
             $gap={8}
@@ -39,11 +45,14 @@ const Container = styled(Flex)<{
     $size: number,
     $color?: string,
     $bg?: string,
+    $bordered: boolean,
+    $textOnly: boolean,
 }>`
-    padding: 8px 12px;
+    ${({ $textOnly }) => !$textOnly && css`padding: 8px 12px;`}
     font-size: ${({ $size }) => $size * 0.8}rem;
     font-weight: 700;
     border-radius: 999px;
+    ${({ theme, $bordered }) => $bordered && css`border: ${theme.border.thin};`}
 
     &::before {
         content: '';
@@ -99,4 +108,10 @@ const Container = styled(Flex)<{
             `
         }
     }};
+
+    ${({ $textOnly }) => $textOnly && css`
+        &::before {
+            display: none !important;
+        }
+    `}
 `

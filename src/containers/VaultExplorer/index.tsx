@@ -9,6 +9,8 @@ import {
     Status,
     formatNumberWithStyle,
     getCollateralRatio,
+    ratioChecker,
+    riskStateToStatus,
     tokenAssets,
 } from '~/utils'
 import { useStoreState } from '~/store'
@@ -23,6 +25,7 @@ import { StatusLabel } from '~/components/StatusLabel'
 import { BrandedDropdown, DropdownOption } from '~/components/BrandedDropdown'
 import { TokenPair } from '~/components/TokenPair'
 import { CheckboxButton } from '~/components/CheckboxButton'
+import { LiquidateVaultModal } from '~/components/Modal/LiquidateVaultModal'
 
 const sortableHeaders: (SortableHeader & FlexProps)[] = [
     {
@@ -81,13 +84,19 @@ export function VaultExplorer() {
 
         return data.safes.map(vault => {
             const collateralRatio = !vault.debt || vault.debt === '0'
-                ? Infinity
+                ? Infinity.toString()
                 : getCollateralRatio(
                     vault.collateral,
                     vault.debt,
                     vault.collateralType.currentPrice!.liquidationPrice,
                     vault.collateralType.currentPrice!.collateral!.liquidationCRatio
                 )
+            const status = riskStateToStatus[
+                ratioChecker(
+                    parseFloat(collateralRatio),
+                    parseFloat(vault.collateralType.safetyCRatio)
+                )
+            ]
             const collateralToken = Object.values(tokenAssets).find(({ name, symbol }) => (
                 vault.collateralType.id === name || vault.collateralType.id === symbol
             ))?.symbol || vault.collateralType.id
@@ -95,15 +104,15 @@ export function VaultExplorer() {
                 ...vault,
                 collateralRatio,
                 collateralToken,
+                status,
             }
         })
     }, [data?.safes])
 
     const sortedRows = useMemo(() => {
-        const temp = [...vaultsWithCRatioAndToken]
         switch(sorting.key) {
             case 'Vault':
-                return temp.sort(({ safeId: a }, { safeId: b }) => {
+                return vaultsWithCRatioAndToken.toSorted(({ safeId: a }, { safeId: b }) => {
                     const aId = parseInt(a)
                     const bId = parseInt(b)
                     return sorting.dir === 'desc'
@@ -111,26 +120,26 @@ export function VaultExplorer() {
                         : aId - bId
                 })
             case 'Owner':
-                return temp.sort(({ owner: a }, { owner: b }) => {
+                return vaultsWithCRatioAndToken.toSorted(({ owner: a }, { owner: b }) => {
                     return sorting.dir === 'desc'
                         ? (a.address > b.address ? 1: -1)
                         : (a.address < b.address ? 1: -1)
                 })
             case 'Collateral':
-                return temp.sort(({ collateral: a }, { collateral: b }) => {
+                return vaultsWithCRatioAndToken.toSorted(({ collateral: a }, { collateral: b }) => {
                     return sorting.dir === 'desc'
                         ? parseFloat(b) - parseFloat(a)
                         : parseFloat(a) - parseFloat(b)
                 })
             case 'Debt':
-                return temp.sort(({ debt: a }, { debt: b }) => {
+                return vaultsWithCRatioAndToken.toSorted(({ debt: a }, { debt: b }) => {
                     return sorting.dir === 'desc'
                         ? parseFloat(b) - parseFloat(a)
                         : parseFloat(a) - parseFloat(b)
                 })
             case 'Collateral Ratio':
             default:
-                return temp.sort(({ collateralRatio: a }, { collateralRatio: b }) => {
+                return vaultsWithCRatioAndToken.toSorted(({ collateralRatio: a }, { collateralRatio: b }) => {
                     const aNum = parseFloat(a.toString())
                     const bNum = parseFloat(b.toString())
                     return sorting.dir === 'desc'
@@ -148,7 +157,19 @@ export function VaultExplorer() {
         ))
     }, [sortedRows, collateralFilter])
 
-    return (
+    const [liquidateVault, setLiquidateVault] = useState<{
+        id: string,
+        collateralRatio: string,
+        status: Status,
+    }>()
+
+    return (<>
+        {!!liquidateVault && (
+            <LiquidateVaultModal
+                onClose={() => setLiquidateVault(undefined)}
+                {...liquidateVault}
+            />
+        )}
         <Container>
             <Header>
                 <BrandedTitle
@@ -242,6 +263,7 @@ export function VaultExplorer() {
                                     debt,
                                     collateralRatio,
                                     collateralToken,
+                                    status,
                                 }) => (
                                     <TableRow key={safeId}>
                                         <Text>#{safeId}</Text>
@@ -277,7 +299,7 @@ export function VaultExplorer() {
                                             $align="center"
                                             $gap={12}>
                                             <Text>
-                                                {collateralRatio === Infinity
+                                                {collateralRatio === Infinity.toString()
                                                     ? '--'
                                                     : formatNumberWithStyle(collateralRatio, {
                                                         style: 'percent',
@@ -286,11 +308,15 @@ export function VaultExplorer() {
                                                 }
                                             </Text>
                                             <StatusLabel
-                                                status={Status.SAFE}
+                                                status={status}
                                                 size={0.8}
                                             />
                                         </Flex>
-                                        <LiquidateButton>
+                                        <LiquidateButton onClick={() => setLiquidateVault({
+                                            id: safeId,
+                                            collateralRatio,
+                                            status,
+                                        })}>
                                             Liquidate
                                         </LiquidateButton>
                                     </TableRow>
@@ -304,7 +330,7 @@ export function VaultExplorer() {
                 />
             </Table>
         </Container>
-    )
+    </>)
 }
 
 const Container = styled(BlurContainer)`

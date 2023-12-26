@@ -36,10 +36,14 @@ const Container = styled(CenteredFlex)<{ $active?: boolean, $size: number }>`
         stroke: ${({ $active }) => $active ? 'white': 'transparent'};
         stroke-width: 3px;
     }
+
+    cursor: pointer;
 `
 
 const HiddenInput = styled.input`
-    visibility: hidden;
     position: absolute;
     inset: 0px;
+    opacity: 0;
+    z-index: 1;
+    cursor: pointer;
 `
