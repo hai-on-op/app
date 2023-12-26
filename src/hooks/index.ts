@@ -1,6 +1,7 @@
 export * from './TransactionHooks'
 export * from './useAuction'
 export * from './useAuctions'
+export * from './useBalance'
 export * from './useContract'
 export * from './useDebounce'
 export * from './useEthersAdapters'

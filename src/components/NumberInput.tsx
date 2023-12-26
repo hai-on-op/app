@@ -1,34 +1,30 @@
-import { type ChangeEvent, useRef } from 'react'
+import { type ChangeEvent, type HTMLProps, useRef } from 'react'
 
 import styled, { css } from 'styled-components'
-import { Flex, type FlexProps, Text } from '~/styles'
+import { Flex, Text } from '~/styles'
 
-type NumberInputProps = FlexProps & {
+type InputProps = Omit<HTMLProps<HTMLInputElement>, 'as' | 'ref' | 'label' | 'onChange'>
+type NumberInputProps = InputProps & {
     label: JSX.Element | string,
     subLabel: string,
-    placeholder: string,
     unitLabel?: string,
-    value?: string,
     conversion?: string,
     onChange: (value: string) => void,
-    onFocus?: () => void,
     onMax?: () => void,
     disabled?: boolean,
     hidden?: boolean,
-    style?: object
 }
 export function NumberInput({
     label,
     subLabel,
-    placeholder,
     unitLabel,
     value,
     conversion,
     onChange,
-    onFocus,
     onMax,
     disabled = false,
     hidden = false,
+    style,
     ...props
 }: NumberInputProps) {
     const input = useRef<HTMLInputElement | null>(null)
@@ -36,8 +32,8 @@ export function NumberInput({
     return (
         <Container
             $gap={12}
-            {...props}
-            hidden={hidden}>
+            hidden={hidden}
+            style={style}>
             <Flex
                 $width="100%"
                 $justify="space-between"
@@ -57,12 +53,12 @@ export function NumberInput({
             <InputContainer onClick={() => input.current?.click()}>
                 <Input
                     ref={input}
-                    disabled={disabled}
-                    type="number"
                     value={value || ''}
-                    placeholder={placeholder}
+                    step="0.01"
+                    {...props}
+                    type="number"
+                    disabled={disabled}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.currentTarget.value)}
-                    onFocus={onFocus}
                 />
                 {!!unitLabel && <InputLabel>{unitLabel}</InputLabel>}
                 {typeof conversion !== 'undefined' && <ConversionText>{conversion}</ConversionText>}

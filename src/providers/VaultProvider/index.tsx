@@ -73,12 +73,20 @@ const defaultState: VaultContext = {
         name: 'WETH',
         total: '',
         available: '',
-        balance: '',
+        balance: {
+            e18: '',
+            raw: '',
+            formatted: '',
+        },
     },
     debt: {
         total: '',
         available: '',
-        balance: '',
+        balance: {
+            e18: '',
+            raw: '',
+            formatted: '',
+        },
         priceInUSD: '1',
     },
     collateralRatio: '',

@@ -1,29 +1,43 @@
 import styled from 'styled-components'
-import { Flex, Text } from '~/styles'
+import { CenteredFlex, Flex, Text } from '~/styles'
+import { Tooltip } from './Tooltip'
 
 type TransactionItem = {
     label: string,
+    tooltip?: string,
     value: {
         current?: string,
         after: string,
         label?: JSX.Element | string,
+        tooltip?: string,
     },
 }
+
+const DEFAULT_HEADING = 'Transaction Summary'
 
 type TransactionSummaryProps = {
     heading?: string,
     items: TransactionItem[],
 }
-export function TransactionSummary({ heading = 'Transaction Summary', items }: TransactionSummaryProps) {
+export function TransactionSummary({ heading = DEFAULT_HEADING, items }: TransactionSummaryProps) {
     return (
         <Container>
             <Text $fontWeight={700}>
                 {heading}
             </Text>
             <Inner>
-                {items.map(({ label, value }, i) => (
+                {items.map(({ label, tooltip, value }, i) => (
                     <Detail key={i}>
-                        <Text>{label}</Text>
+                        <CenteredFlex $gap={4}>
+                            <Text>{label}</Text>
+                            {!!tooltip && (
+                                <Tooltip
+                                    $width="200px"
+                                    $float="right">
+                                    {tooltip}
+                                </Tooltip>
+                            )}
+                        </CenteredFlex>
                         <Flex
                             $justify="flex-end"
                             $align="center"
@@ -37,6 +51,13 @@ export function TransactionSummary({ heading = 'Transaction Summary', items }: T
                                 typeof value.label === 'string'
                                     ? <Text>{value.label}</Text>
                                     : value.label
+                            )}
+                            {!!value.tooltip && (
+                                <Tooltip
+                                    width="200px"
+                                    $float="left">
+                                    {value.tooltip}
+                                </Tooltip>
                             )}
                         </Flex>
                     </Detail>

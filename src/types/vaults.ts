@@ -2,6 +2,7 @@ import { JsonRpcSigner } from '@ethersproject/providers/lib/json-rpc-provider'
 import { Geb, type TokenData } from '@hai-on-op/sdk'
 
 import type { SystemSate } from './system'
+import type { FormattedBalance } from './wallet'
 
 export type IVault = {
     id: string
@@ -165,7 +166,7 @@ export type Collateral = {
     data?: TokenData,
     total: string,
     available: string,
-    balance: string,
+    balance: FormattedBalance,
     priceInUSD?: string,
     liquidationData?: CollateralLiquidationData
 }
@@ -174,7 +175,7 @@ export type Debt = {
     total: string,
     data?: TokenData,
     available: string,
-    balance: string,
+    balance: FormattedBalance,
     priceInUSD: string
 }
 

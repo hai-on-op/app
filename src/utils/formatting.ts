@@ -1,8 +1,8 @@
 import numeral from 'numeral'
 import { FixedNumber } from 'ethers'
-import { formatUnits } from 'ethers/lib/utils'
+import { formatEther, formatUnits } from 'ethers/lib/utils'
 
-import type { SummaryCurrency, SummaryItem } from '~/types'
+import type { FormattedBalance, SummaryCurrency, SummaryItem } from '~/types'
 import { floatsTypes } from './constants'
 import { sanitizeDecimals } from './helper'
 
@@ -166,5 +166,17 @@ export const formatSummaryPercentage = (
                 maxDecimals: 4,
             })
             : '--%',
+    }
+}
+
+export const formatBalance = (valueE18: string): FormattedBalance => {
+    const value = formatEther(valueE18)
+
+    return {
+        e18: valueE18,
+        raw: value,
+        formatted: formatNumberWithStyle(value, {
+            maxDecimals: 4,
+        }),
     }
 }

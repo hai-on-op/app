@@ -34,9 +34,9 @@ export function useVaultError({
     if (!proxyAddress) return { error: VaultInfoError.NO_PROXY }
 
     const availableCollateralBN = BigNumber.from(toFixedString(collateral.available, 'WAD'))
-    const collateralBalanceBN = BigNumber.from(toFixedString(collateral.balance, 'WAD'))
+    const collateralBalanceBN = BigNumber.from(toFixedString(collateral.balance.raw, 'WAD'))
     const availableHaiBN = BigNumber.from(toFixedString(debt.available, 'WAD'))
-    const haiBalanceBN = BigNumber.from(toFixedString(debt.balance || '0', 'WAD'))
+    const haiBalanceBN = BigNumber.from(toFixedString(debt.balance.raw || '0', 'WAD'))
 
     const leftInputBN = BigNumber.from(toFixedString(vaultData.leftInput || '0', 'WAD'))
     const rightInputBN = BigNumber.from(toFixedString(vaultData.rightInput || '0', 'WAD'))

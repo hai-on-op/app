@@ -1,5 +1,4 @@
 import { useMemo } from 'react'
-import { formatEther } from 'ethers/lib/utils'
 
 import type { CollateralLiquidationData, Debt } from '~/types'
 import {
@@ -9,6 +8,7 @@ import {
     returnTotalValue,
 } from '~/utils'
 import { useStoreState } from '~/store'
+import { useBalance } from '~/hooks'
 
 export function useDebt(action: VaultAction, collateralLiquidationData?: CollateralLiquidationData): Debt {
     const {
@@ -19,7 +19,6 @@ export function useDebt(action: VaultAction, collateralLiquidationData?: Collate
         },
         connectWalletModel: {
             tokensData,
-            tokensFetchedData,
         },
     } = useStoreState(state => state)
 
@@ -74,7 +73,7 @@ export function useDebt(action: VaultAction, collateralLiquidationData?: Collate
             ? '0'
             : total,
         available,
-        balance: formatEther(tokensFetchedData.HAI?.balanceE18 || '0'),
+        balance: useBalance('HAI'),
         priceInUSD: liquidationData?.currentRedemptionPrice || '1',
     }
 }

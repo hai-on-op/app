@@ -13,6 +13,7 @@ import type {
 import {
     ActionState,
     WrapEtherProps,
+    handleUnwrapEther,
     handleWrapEther,
     timeout,
 } from '~/utils'
@@ -67,7 +68,8 @@ export interface VaultModel {
     //     any,
     //     StoreModel
     // >
-    wrapEther: Thunk<VaultModel, WrapEtherProps, any, StoreModel>
+    wrapEther: Thunk<VaultModel, WrapEtherProps & { title: string }, any, StoreModel>
+    unwrapEther: Thunk<VaultModel, WrapEtherProps & { title: string }, any, StoreModel>
 
     transactionState: ActionState
     setTransactionState: Action<VaultModel, ActionState>
@@ -270,6 +272,28 @@ export const vaultModel: VaultModel = {
     wrapEther: thunk(async (actions, payload, { getStoreActions }) => {
         const storeActions = getStoreActions()
         const txResponse = await handleWrapEther(payload)
+        if (txResponse) {
+            const { hash, chainId } = txResponse
+            storeActions.transactionsModel.addTransaction({
+                chainId,
+                hash,
+                from: txResponse.from,
+                summary: payload.title,
+                addedTime: new Date().getTime(),
+                originalTx: txResponse,
+            })
+            storeActions.popupsModel.setIsWaitingModalOpen(true)
+            storeActions.popupsModel.setWaitingPayload({
+                title: 'Transaction Submitted',
+                hash: txResponse.hash,
+                status: ActionState.SUCCESS,
+            })
+            await txResponse.wait()
+        }
+    }),
+    unwrapEther: thunk(async (actions, payload, { getStoreActions }) => {
+        const storeActions = getStoreActions()
+        const txResponse = await handleUnwrapEther(payload)
         if (txResponse) {
             const { hash, chainId } = txResponse
             storeActions.transactionsModel.addTransaction({

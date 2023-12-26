@@ -226,12 +226,12 @@ export function VaultActions() {
                             <Text>Deposit</Text>
                         </CenteredFlex>
                     )}
-                    subLabel={`Max ${formatNumberWithStyle(collateral.balance, { maxDecimals: 4 })} ${collateral.name}`}
+                    subLabel={`Max ${collateral.balance.formatted} ${collateral.name}`}
                     placeholder="Deposit Amount"
                     unitLabel={collateral.name}
                     onChange={(value: string) => updateForm({ deposit: value || undefined })}
                     value={formState.deposit}
-                    onMax={() => updateForm({ deposit: collateral.balance })}
+                    onMax={() => updateForm({ deposit: collateral.balance.raw })}
                     conversion={formState.deposit && Number(formState.deposit) > 0
                         ? `~${formatNumberWithStyle(
                             parseFloat(collateral.priceInUSD || '0') * parseFloat(formState.deposit),
@@ -255,7 +255,7 @@ export function VaultActions() {
                             <Text>Withdraw</Text>
                         </CenteredFlex>
                     )}
-                    subLabel={`Max ${collateral.available} ${collateral.name}`}
+                    subLabel={`Max ${formatNumberWithStyle(collateral.available, { maxDecimals: 4 })} ${collateral.name}`}
                     placeholder="Withdraw Amount"
                     unitLabel={collateral.name}
                     onChange={(value: string) => updateForm({ withdraw: value || undefined })}

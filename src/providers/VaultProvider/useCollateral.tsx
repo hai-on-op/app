@@ -1,9 +1,9 @@
 import { useMemo } from 'react'
-import { formatEther } from 'ethers/lib/utils'
 
 import type { Collateral } from '~/types'
-import { VaultAction, formatNumber, returnTotalValue } from '~/utils'
+import { VaultAction, returnTotalValue } from '~/utils'
 import { useStoreState } from '~/store'
+import { useBalance } from '~/hooks'
 
 export function useCollateral(action: VaultAction): Collateral {
     const {
@@ -17,7 +17,6 @@ export function useCollateral(action: VaultAction): Collateral {
         },
         connectWalletModel: {
             tokensData,
-            tokensFetchedData,
         },
     } = useStoreState(state => state)
 
@@ -34,9 +33,7 @@ export function useCollateral(action: VaultAction): Collateral {
         return returnTotalValue(singleVault.collateral, leftInput).toString()
     }, [singleVault, leftInput, action])
 
-    const balance = useMemo(() => (
-        formatEther(tokensFetchedData[name]?.balanceE18 || '0')
-    ), [tokensFetchedData, name])
+    const balance = useBalance(name)
 
     const collateralLiquidationData = liquidationData?.collateralLiquidationData[name]
 
@@ -47,7 +44,7 @@ export function useCollateral(action: VaultAction): Collateral {
         ) {
             return singleVault?.collateral || '0'
         }
-        return formatNumber(balance, 2).toString()
+        return balance.raw
     }, [singleVault, balance, action])
 
     return {

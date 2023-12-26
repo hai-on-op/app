@@ -81,3 +81,9 @@ export type IVotingTx = {
     isCompleted: boolean
     isAbandoned: boolean
 }
+
+export type FormattedBalance = {
+    e18: string,
+    raw: string,
+    formatted: string
+}
