@@ -33,7 +33,7 @@ export function MyVaultsTable({ rows, onCreate }: MyVaultsTableProps) {
     const sortedRows = useMemo(() => {
         switch(sorting.key) {
             case 'Vault': {
-                return rows.sort(({ id: a }, { id: b }) => {
+                return rows.toSorted(({ id: a }, { id: b }) => {
                     if (!b) return -1
                     if (!a) return 1
                     return sorting.dir === 'desc'
@@ -42,7 +42,7 @@ export function MyVaultsTable({ rows, onCreate }: MyVaultsTableProps) {
                 })
             }
             case 'Risk Ratio': {
-                return rows.sort(({ collateralRatio: a }, { collateralRatio: b }) => {
+                return rows.toSorted(({ collateralRatio: a }, { collateralRatio: b }) => {
                     if (!b) return -1
                     if (!a) return 1
                     return sorting.dir === 'desc'
@@ -51,7 +51,7 @@ export function MyVaultsTable({ rows, onCreate }: MyVaultsTableProps) {
                 })
             }
             case 'Collateral': {
-                return rows.sort(({ collateral: a }, { collateral: b }) => {
+                return rows.toSorted(({ collateral: a }, { collateral: b }) => {
                     if (!b) return -1
                     if (!a) return 1
                     return sorting.dir === 'desc'
@@ -60,7 +60,7 @@ export function MyVaultsTable({ rows, onCreate }: MyVaultsTableProps) {
                 })
             }
             case 'Debt': {
-                return rows.sort(({ totalDebt: a }, { totalDebt: b }) => {
+                return rows.toSorted(({ totalDebt: a }, { totalDebt: b }) => {
                     if (!b) return -1
                     if (!a) return 1
                     return sorting.dir === 'desc'
@@ -70,7 +70,7 @@ export function MyVaultsTable({ rows, onCreate }: MyVaultsTableProps) {
             }
             case 'Net APY':
             default: {
-                return rows.sort((
+                return rows.toSorted((
                     { totalAnnualizedStabilityFee: a },
                     { totalAnnualizedStabilityFee: b }
                 ) => {

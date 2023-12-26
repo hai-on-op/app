@@ -5,7 +5,7 @@ import styled from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
 import { HaiArrow } from '~/components/Icons/HaiArrow'
 import { HaiFace } from '~/components/Icons/HaiFace'
-import { PassLink } from '~/components/PassLink'
+import { InternalLink } from '~/components/InternalLink'
 import { ExternalLink } from '~/components/ExternalLink'
 
 import uniswapLogo from '~/assets/uniswap-icon.svg'
@@ -37,7 +37,7 @@ export function StrategyTableButton({ earnPlatform }: Props) {
     const { logo, size, link } = platformMap[earnPlatform || 'hai']
 
     if (!earnPlatform) return (
-        <PassLink
+        <InternalLink
             href={link}
             $textDecoration="none"
             content={(

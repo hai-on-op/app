@@ -30,14 +30,14 @@ export function StrategyTable({ rows }: StrategyTableProps) {
     const sortedRows = useMemo(() => {
         switch(sorting.key) {
             case 'Asset Pair': {
-                return rows.sort(({ pair: a }, { pair: b }) => {
+                return rows.toSorted(({ pair: a }, { pair: b }) => {
                     return sorting.dir === 'desc'
                         ? (a[0] > b[0] ? 1: -1)
                         : (a[0] < b[0] ? 1: -1)
                 })
             }
             case 'Strategy': {
-                return rows.sort(({ earnPlatform: a }, { earnPlatform: b}) => {
+                return rows.toSorted(({ earnPlatform: a }, { earnPlatform: b}) => {
                     const stratA = a ? 'farm': 'borrow'
                     const stratB = b ? 'farm': 'borrow'
                     return sorting.dir === 'desc'
@@ -46,14 +46,14 @@ export function StrategyTable({ rows }: StrategyTableProps) {
                 })
             }
             case 'TVL': {
-                return rows.sort(({ tvl: a }, { tvl: b }) => {
+                return rows.toSorted(({ tvl: a }, { tvl: b }) => {
                     return sorting.dir === 'desc'
                         ? (a < b ? 1: -1)
                         : (a > b ? 1: -1)
                 })
             }
             // case 'Vol. 24hr': {
-            //     return rows.sort(({ vol24hr: a }, { vol24hr: b }) => {
+            //     return rows.toSorted(({ vol24hr: a }, { vol24hr: b }) => {
             //         if (!b) return -1
             //         if (!a) return 1
             //         return sorting.dir === 'desc'
@@ -62,14 +62,14 @@ export function StrategyTable({ rows }: StrategyTableProps) {
             //     })
             // }
             case 'Rewards APY': {
-                return rows.sort(({ apy: a }, { apy: b }) => {
+                return rows.toSorted(({ apy: a }, { apy: b }) => {
                     return sorting.dir === 'desc'
                         ? b - a
                         : a - b
                 })
             }
             // case 'My APY': {
-            //     return rows.sort(({ userApy: a }, { userApy: b }) => {
+            //     return rows.toSorted(({ userApy: a }, { userApy: b }) => {
             //         if (!b) return -1
             //         if (!a) return 1
             //         return sorting.dir === 'desc'
@@ -79,7 +79,7 @@ export function StrategyTable({ rows }: StrategyTableProps) {
             // }
             case 'My Position':
             default: {
-                return rows.sort(({ userPosition: a }, { userPosition: b }) => {
+                return rows.toSorted(({ userPosition: a }, { userPosition: b }) => {
                     if (!b) return -1
                     if (!a) return 1
                     return sorting.dir === 'desc'

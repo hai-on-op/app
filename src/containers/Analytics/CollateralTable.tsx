@@ -50,21 +50,21 @@ export function CollateralTable() {
     const sortedRows = useMemo(() => {
         switch(sorting.key) {
             case 'Delayed Price': {
-                return rows.sort(({ currentPrice: a }, { currentPrice: b }) => {
+                return rows.toSorted(({ currentPrice: a }, { currentPrice: b }) => {
                     return sorting.dir === 'desc'
                         ? BigInt(b.toString()) > BigInt(a.toString()) ? 1: -1
                         : BigInt(a.toString()) > BigInt(b.toString()) ? 1: -1
                 })
             }
             case 'Next Price': {
-                return rows.sort(({ nextPrice: a }, { nextPrice: b }) => {
+                return rows.toSorted(({ nextPrice: a }, { nextPrice: b }) => {
                     return sorting.dir === 'desc'
                         ? BigInt(b.toString()) > BigInt(a.toString()) ? 1: -1
                         : BigInt(a.toString()) > BigInt(b.toString()) ? 1: -1
                 })
             }
             case 'Stability Fee': {
-                return rows.sort(({ stabilityFee: a }, { stabilityFee: b }) => {
+                return rows.toSorted(({ stabilityFee: a }, { stabilityFee: b }) => {
                     return sorting.dir === 'desc'
                         ? BigInt(b.toString()) > BigInt(a.toString()) ? 1: -1
                         : BigInt(a.toString()) > BigInt(b.toString()) ? 1: -1
@@ -72,7 +72,7 @@ export function CollateralTable() {
             }
             case 'Collateral Asset':
             default: {
-                return rows.sort(({ symbol: a }, { symbol: b }) => {
+                return rows.toSorted(({ symbol: a }, { symbol: b }) => {
                     return sorting.dir === 'desc'
                         ? b < a ? 1: -1
                         : b < a ? -1: 1

@@ -13,7 +13,7 @@ import { Telegram } from '~/components/Icons/Telegram'
 import { Sound } from '~/components/Icons/Sound'
 import { HaiFace } from '~/components/Icons/HaiFace'
 import { Marquee, MarqueeChunk } from '~/components/Marquee'
-import { PassLink } from '~/components/PassLink'
+import { InternalLink } from '~/components/InternalLink'
 import { ExternalLink } from '~/components/ExternalLink'
 import { ConnectButton } from '~/components/ConnectButton'
 import { BrandedDropdown, DropdownOption } from '~/components/BrandedDropdown'
@@ -124,7 +124,7 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                 </ExternalLink>
                             </>)
                             : (<>
-                                <PassLink
+                                <InternalLink
                                     href="/vaults"
                                     $textDecoration="none"
                                     content={(
@@ -133,7 +133,7 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                         </HeaderLink>
                                     )}
                                 />
-                                <PassLink
+                                <InternalLink
                                     href="/earn"
                                     $textDecoration="none"
                                     content={(
@@ -142,7 +142,7 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                         </HeaderLink>
                                     )}
                                 />
-                                <PassLink
+                                <InternalLink
                                     href="/learn"
                                     $textDecoration="none"
                                     content={(
@@ -171,34 +171,34 @@ export function Header({ tickerActive = false }: HeaderProps) {
                             </>)
                             : (
                                 <BrandedDropdown label="More">
-                                    <PassLink
+                                    <InternalLink
                                         href="/auctions"
                                         $textDecoration="none">
                                         <DropdownOption $active={location.pathname === '/auctions'}>
                                             Auctions
                                         </DropdownOption>
-                                    </PassLink>
-                                    <PassLink
+                                    </InternalLink>
+                                    <InternalLink
                                         href="/analytics"
                                         $textDecoration="none">
                                         <DropdownOption $active={location.pathname === '/analytics'}>
                                             Analytics
                                         </DropdownOption>
-                                    </PassLink>
-                                    <PassLink
+                                    </InternalLink>
+                                    <InternalLink
                                         href="/contracts"
                                         $textDecoration="none">
                                         <DropdownOption $active={location.pathname === '/contracts'}>
                                             Contracts
                                         </DropdownOption>
-                                    </PassLink>
-                                    <PassLink
+                                    </InternalLink>
+                                    <InternalLink
                                         href="/vaults/explore"
                                         $textDecoration="none">
                                         <DropdownOption $active={location.pathname === '/vaults/explore'}>
                                             Vault Explorer
                                         </DropdownOption>
-                                    </PassLink>
+                                    </InternalLink>
                                     <DropdownOption onClick={() => {
                                         setDropdownActive(false)
                                         setWrapEthActive(true)
@@ -216,13 +216,13 @@ export function Header({ tickerActive = false }: HeaderProps) {
                     </MusicButton>
                     {isSplash
                         ? (
-                            <PassLink
+                            <InternalLink
                                 href="/vaults"
                                 $textDecoration="none">
                                 <HaiButton $variant="yellowish">
                                     Enter App
                                 </HaiButton>
-                            </PassLink>
+                            </InternalLink>
                         )
                         : (<>
                             {isLargerThanSmall && <ConnectButton showBalance/>}

@@ -5,7 +5,7 @@ import { CenteredFlex, Flex, Grid, Text } from '~/styles'
 import { Elf } from '~/components/BrandElements/Elf'
 import { Twitter } from '~/components/Icons/Twitter'
 import { Telegram } from '~/components/Icons/Telegram'
-import { PassLink } from '~/components/PassLink'
+import { InternalLink } from '~/components/InternalLink'
 import { ExternalLink } from '~/components/ExternalLink'
 
 import haiLogo from '~/assets/logo.png'
@@ -38,17 +38,17 @@ export function Footer() {
                             $column
                             $gap={12}>
                             <Text $fontWeight={700}>About</Text>
-                            <PassLink
+                            <InternalLink
                                 href="/privacy"
                                 $textDecoration="none">
                                 Privacy
-                            </PassLink>
+                            </InternalLink>
                             {/* TODO: replace link */}
-                            <PassLink
+                            <InternalLink
                                 href="/privacy"
                                 $textDecoration="none">
                                 Terms
-                            </PassLink>
+                            </InternalLink>
                         </Flex>
                         <Flex
                             $column

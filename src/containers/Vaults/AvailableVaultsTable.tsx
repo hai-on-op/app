@@ -34,7 +34,7 @@ export function AvailableVaultsTable({ rows }: AvailableVaultsTableProps) {
     const sortedRows = useMemo(() => {
         switch(sorting.key) {
             case 'Pair': {
-                return rows.sort(({ collateralName: a }, { collateralName: b }) => {
+                return rows.toSorted(({ collateralName: a }, { collateralName: b }) => {
                     if (!b) return -1
                     if (!a) return 1
                     return sorting.dir === 'desc'
@@ -43,7 +43,7 @@ export function AvailableVaultsTable({ rows }: AvailableVaultsTableProps) {
                 })
             }
             case 'Net APY': {
-                return rows.sort(({ apy: a }, { apy: b }) => {
+                return rows.toSorted(({ apy: a }, { apy: b }) => {
                     if (!b) return -1
                     if (!a) return 1
                     return sorting.dir === 'desc'
@@ -52,7 +52,7 @@ export function AvailableVaultsTable({ rows }: AvailableVaultsTableProps) {
                 })
             }
             case 'My Eligible Collateral': {
-                return rows.sort(({ eligibleBalance: a }, { eligibleBalance: b }) => {
+                return rows.toSorted(({ eligibleBalance: a }, { eligibleBalance: b }) => {
                     if (!b) return -1
                     if (!a) return 1
                     return sorting.dir === 'desc'
@@ -61,7 +61,7 @@ export function AvailableVaultsTable({ rows }: AvailableVaultsTableProps) {
                 })
             }
             case 'My Vaults': {
-                return rows.sort(({ myVaults: a }, { myVaults: b}) => {
+                return rows.toSorted(({ myVaults: a }, { myVaults: b}) => {
                     if (!b) return -1
                     if (!a) return 1
                     return sorting.dir === 'desc'
@@ -71,7 +71,7 @@ export function AvailableVaultsTable({ rows }: AvailableVaultsTableProps) {
             }
             case 'Coll. Factor':
             default: {
-                return rows.sort(({ collateralizationFactor: a }, { collateralizationFactor: b }) => {
+                return rows.toSorted(({ collateralizationFactor: a }, { collateralizationFactor: b }) => {
                     if (!b) return -1
                     if (!a) return 1
                     return sorting.dir === 'desc'

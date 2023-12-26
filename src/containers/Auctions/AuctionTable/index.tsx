@@ -82,7 +82,7 @@ export function AuctionTable({ auctions, filterMyBids, isLoading }: AuctionTable
     const sortedRows = useMemo(() => {
         switch(sorting.key) {
             case 'Auction #': {
-                return auctionWithExtras.sort(({ auctionId: a }, { auctionId: b }) => {
+                return auctionWithExtras.toSorted(({ auctionId: a }, { auctionId: b }) => {
                     const aId = parseInt(a)
                     const bId = parseInt(b)
                     return sorting.dir === 'desc'
@@ -91,35 +91,35 @@ export function AuctionTable({ auctions, filterMyBids, isLoading }: AuctionTable
                 })
             }
             case 'Auction Type': {
-                return auctionWithExtras.sort(({ englishAuctionType: a }, { englishAuctionType: b }) => {
+                return auctionWithExtras.toSorted(({ englishAuctionType: a }, { englishAuctionType: b }) => {
                     return sorting.dir === 'desc'
                         ? (a > b ? 1: -1)
                         : (a < b ? 1: -1)
                 })
             }
             case 'For Sale': {
-                return auctionWithExtras.sort(({ sellToken: a }, { sellToken: b }) => {
+                return auctionWithExtras.toSorted(({ sellToken: a }, { sellToken: b }) => {
                     return sorting.dir === 'desc'
                         ? (a > b ? 1: -1)
                         : (a < b ? 1: -1)
                 })
             }
             case 'Buy With': {
-                return auctionWithExtras.sort(({ buyToken: a }, { buyToken: b }) => {
+                return auctionWithExtras.toSorted(({ buyToken: a }, { buyToken: b }) => {
                     return sorting.dir === 'desc'
                         ? (a > b ? 1: -1)
                         : (a < b ? 1: -1)
                 })
             }
             case 'My Bids': {
-                return auctionWithExtras.sort(({ myBids: a = 0 }, { myBids: b = 0 }) => {
+                return auctionWithExtras.toSorted(({ myBids: a = 0 }, { myBids: b = 0 }) => {
                     return sorting.dir === 'desc'
                         ? b - a
                         : a - b
                 })
             }
             case 'Status': {
-                return auctionWithExtras.sort(({ status: a }, { status: b }) => {
+                return auctionWithExtras.toSorted(({ status: a }, { status: b }) => {
                     if (!b) return -1
                     if (!a) return 1
                     return sorting.dir === 'desc'
@@ -129,7 +129,7 @@ export function AuctionTable({ auctions, filterMyBids, isLoading }: AuctionTable
             }
             case 'Time Left':
             default: {
-                return auctionWithExtras.sort(({ auctionDeadline: a }, { auctionDeadline: b }) => {
+                return auctionWithExtras.toSorted(({ auctionDeadline: a }, { auctionDeadline: b }) => {
                     return sorting.dir === 'desc'
                         ? parseInt(b) - parseInt(a)
                         : parseInt(a) - parseInt(b)

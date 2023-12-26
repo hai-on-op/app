@@ -50,12 +50,12 @@ export function AuctionsList({ isLoading }: AuctionsListProps) {
             // TODO: check to make sure that debt and surplus auctions always have same
             // buy/sell assets and therefore should not be filterable by those assets
             case 'DEBT': {
-                return debtAuctions.sort(sortByTimeCreated)
+                return debtAuctions.toSorted(sortByTimeCreated)
                 // temp = [...debtAuctions]
                 // break
             }
             case 'SURPLUS': {
-                return surplusAuctions.sort(sortByTimeCreated)
+                return surplusAuctions.toSorted(sortByTimeCreated)
                 // temp = [...surplusAuctions]
                 // break
             }

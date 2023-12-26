@@ -7,19 +7,19 @@ import styled from 'styled-components'
 import { type FlexProps, FlexStyle, Text, type TextProps } from '~/styles'
 
 type CleanAnchorProps = Omit<HTMLProps<HTMLAnchorElement>, 'ref' | 'as' | 'href' | 'content' | 'children'>
-type PassLinkProps = TextProps & FlexProps & CleanAnchorProps & {
+type InternalLinkProps = TextProps & FlexProps & CleanAnchorProps & {
     href: string,
     content?: ReactChildren,
     children?: ReactChildren
 }
-export function PassLink({
+export function InternalLink({
     href,
     content,
     children,
     onClick,
     style,
     ...props
-}: PassLinkProps) {
+}: InternalLinkProps) {
     return (
         <CustomLink
             to={href}

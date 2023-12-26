@@ -27,7 +27,7 @@ export function Pagination({ totalItems, handlePagingMargin, perPage = 5 }: Prop
                 pageCount={total}
                 marginPagesDisplayed={2}
                 pageRangeDisplayed={4}
-                onPageChange={({ selected }: any) => {
+                onPageChange={({ selected }) => {
                     handlePagingMargin(selected)
                 }}
                 breakLabel="..."

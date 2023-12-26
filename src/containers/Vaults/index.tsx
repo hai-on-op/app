@@ -9,7 +9,7 @@ import { useVaultRouting } from '~/hooks'
 import styled from 'styled-components'
 import { HaiButton, Text } from '~/styles'
 import { Caret } from '~/components/Icons/Caret'
-import { ManageVault } from './ManageVault'
+import { ManageVault } from './Manage'
 import { VaultsList } from './VaultsList'
 
 export function Vaults(props: RouteComponentProps<{ address?: string }>) {

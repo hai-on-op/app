@@ -5,7 +5,7 @@ import { NUMBER_OF_AUCTIONS_TO_SHOW } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 
 import styled from 'styled-components'
-import Button from '~/components/Button'
+import { HaiButton } from '~/styles'
 import { usePublicGeb } from './useGeb'
 
 interface Props {
@@ -86,12 +86,11 @@ export const useLoadMoreAuctions = ({ auctions }: Props) => {
         <BtnContainer>
             {(!dimmedWithArrow || !hasAllAuctions) && (
                 <ShowMoreButton
-                    variant={dimmedWithArrow ? 'dimmed': undefined}
-                    withArrow={dimmedWithArrow}
+                    $variant={dimmedWithArrow ? 'unblurred': undefined}
                     disabled={!dimmedWithArrow}
-                    text={showMoreText}
-                    onClick={handleShowMoreAuctions}
-                />
+                    onClick={handleShowMoreAuctions}>
+                    {showMoreText}
+                </ShowMoreButton>
             )}
         </BtnContainer>
     )
@@ -107,7 +106,7 @@ export const BtnContainer = styled.div`
     border-top: 1px solid ${(props) => props.theme.colors.border};
 `
 
-export const ShowMoreButton = styled(Button)`
+export const ShowMoreButton = styled(HaiButton)`
     display: flex;
     align-items: center;
     justify-content: center;

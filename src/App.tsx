@@ -21,7 +21,7 @@ import { Earn } from '~/containers/Earn'
 import { Vaults } from '~/containers/Vaults'
 import { Contracts } from '~/containers/Contracts'
 import { Learn } from './containers/Learn'
-import { VaultExplorer } from './containers/VaultExplorer'
+import { VaultExplorer } from './containers/Vaults/Explore'
 
 declare module 'styled-components' {
     export interface DefaultTheme extends Theme {}
@@ -56,7 +56,7 @@ const App = () => {
                                         {/* <Route exact component={Vaults} path={'/vaults/:id'} /> */}
                                         <Route exact strict component={Vaults} path={'/vaults'} />
                                         {/* <Route exact strict component={Vaults} path={'/:address'} /> */}
-                                        
+
                                         <Redirect from="*" to="/" />
                                     </Switch>
                                 </>

@@ -7,7 +7,10 @@ export type ProgressBarProps = {
     progress: number,
     simulatedProgress?: number,
     colorLimits?: [number, number],
-    labels?: { progress: number, label: string }[],
+    labels?: {
+        progress: number,
+        label: string,
+    }[],
 }
 export function ProgressBar({
     progress,

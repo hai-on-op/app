@@ -3,7 +3,7 @@ import type { TokenKey } from '~/types'
 import styled from 'styled-components'
 import { DashedContainerStyle, Flex, HaiButton, Text } from '~/styles'
 import { HaiArrow } from '~/components/Icons/HaiArrow'
-import { PassLink } from '~/components/PassLink'
+import { InternalLink } from '~/components/InternalLink'
 import { ExternalLink } from '~/components/ExternalLink'
 import { FloatingElements, type FloatingElementsProps } from '~/components/BrandElements/FloatingElements'
 
@@ -53,7 +53,7 @@ export function StrategyAd({
             </Flex>
             {ctaLink.startsWith('/')
                 ? (
-                    <PassLink
+                    <InternalLink
                         href={ctaLink}
                         $textDecoration="none">
                         <HaiButton
@@ -65,7 +65,7 @@ export function StrategyAd({
                                 direction="upRight"
                             />
                         </HaiButton>
-                    </PassLink>
+                    </InternalLink>
                 )
                 : (
                     <ExternalLink
