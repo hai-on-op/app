@@ -1,10 +1,8 @@
 import { useTranslation } from 'react-i18next'
 
-import { getEtherscanLink } from '~/utils'
-
 import styled from 'styled-components'
-import { ExternalLinkArrow } from '~/styles'
 import FeatherIconWrapper, { type IconName } from './FeatherIconWrapper'
+import { AddressLink } from './AddressLink'
 
 interface Props {
     icon: IconName
@@ -13,12 +11,12 @@ interface Props {
     text: string
     textColor?: string
     payload?: {
-        type: 'address' | 'transaction' | 'token' | 'block'
+        type: 'address' | 'transaction'
         value: string
         chainId: number
     }
 }
-const ToastPayload = ({ icon, iconColor, text, textColor, iconSize, payload }: Props) => {
+export function ToastPayload({ icon, iconColor, text, textColor, iconSize, payload }: Props) {
     const { t } = useTranslation()
     return (
         <Container>
@@ -30,30 +28,23 @@ const ToastPayload = ({ icon, iconColor, text, textColor, iconSize, payload }: P
             <div>
                 <Text color={textColor}>{text}</Text>
                 {!!payload && (
-                    <a
-                        href={getEtherscanLink(payload.chainId, payload.value, payload.type)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
+                    <AddressLink
+                        chainId={payload.chainId}
+                        address={payload.value}
+                        type={payload.type}>
                         {t('view_etherscan')}
-                    </a>
+                    </AddressLink>
                 )}
             </div>
         </Container>
     )
 }
 
-export default ToastPayload
-
 const Container = styled.div`
     display: flex;
     align-items: center;
     svg {
         margin-right: 15px;
-    }
-    a {
-        ${ExternalLinkArrow}
-        font-size: ${(props) => props.theme.font.extraSmall};
     }
 `
 

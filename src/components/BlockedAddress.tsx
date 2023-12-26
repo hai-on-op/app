@@ -1,14 +1,12 @@
 import styled from 'styled-components'
 
-const BlockedAddress = () => {
+export function BlockedAddress() {
     return (
         <Container>
             <Box>Sorry, you cannot use the app!</Box>
         </Container>
     )
 }
-
-export default BlockedAddress
 
 const Box = styled.div`
     background: ${(props) => props.theme.colors.colorSecondary};

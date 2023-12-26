@@ -11,7 +11,7 @@ import {
     EMPTY_ADDRESS,
     ETHERSCAN_PREFIXES,
     NETWORK_ID,
-    SYSTEM_STATUS,
+    // SYSTEM_STATUS,
     ActionState,
     ChainId,
     blockedAddresses,
@@ -27,23 +27,15 @@ import { useTokenContract, useEthersSigner, useGeb, usePlaylist, usePrevious } f
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex } from '~/styles'
-import ImagePreloader from '~/components/ImagePreloader'
-import LiquidateVaultModal from '~/components/Modals/LiquidateVaultModal'
-// import AuctionsModal from '~/components/Modals/AuctionsModal'
-import TopUpModal from '~/components/Modals/VaultManagerModal'
-import ScreenLoader from '~/components/Modals/ScreenLoader'
-import { InitializationModal } from '~/components/Modal/InitializationModal'
-import LoadingModal from '~/components/Modals/LoadingModal'
-import BlockedAddress from '~/components/BlockedAddress'
-import ToastPayload from '~/components/ToastPayload'
-import AlertLabel from '~/components/AlertLabel'
-import { IntentionHeader } from '~/components/IntentionHeader'
+import { ImagePreloader } from '~/components/ImagePreloader'
+import { BlockedAddress } from '~/components/BlockedAddress'
+import { ToastPayload } from '~/components/ToastPayload'
 import { ParallaxBackground } from '~/components/ParallaxBackground'
-import { HaiAlert } from '~/components/HaiAlert'
 import { Header } from './Header'
-import { EarnStats } from './Earn/Stats'
-import { BorrowStats } from './Vaults/Stats'
-import { AuctionStats } from './Auctions/Stats'
+import { InitializationModal } from '~/components/Modal/InitializationModal'
+import { ClaimModal } from '~/components/Modal/ClaimModal'
+import { IntentionHeader } from '~/components/IntentionHeader'
+import { HaiAlert } from '~/components/HaiAlert'
 
 const playlist = [
     '/audio/get-hai-together.wav',
@@ -58,22 +50,18 @@ type Props = {
 }
 const Shared = ({ children }: Props) => {
     const { t } = useTranslation()
+
+    const { address: account } = useAccount()
+    const previousAccount = usePrevious(account)
     const { chain } = useNetwork()
     const chainId = chain?.id || NETWORK_ID
-    const { address: account } = useAccount()
+    const networkName = getNetworkName(chainId)
     const signer = useEthersSigner()
     const geb = useGeb()
+
     const history = useHistory()
-
-    const previousAccount = usePrevious(account)
-
     const location = useLocation()
     const isSplash = location.pathname === '/'
-    const isEarn = location.pathname === '/earn'
-    const isVaults = location.pathname === '/vaults'
-    const isAuctions = location.pathname === '/auctions'
-    const tokensData = geb?.tokenList
-    const networkName = getNetworkName(chainId)
 
     const coinTokenContract = useTokenContract(getTokenList(networkName).HAI.address)
     const protTokenContract = useTokenContract(getTokenList(networkName).KITE.address)
@@ -85,7 +73,6 @@ const Shared = ({ children }: Props) => {
     } = useStoreState(state => state)
 
     const {
-        settingsModel: settingsActions,
         connectWalletModel: connectWalletActions,
         popupsModel: popupsActions,
         transactionsModel: transactionsActions,
@@ -98,26 +85,15 @@ const Shared = ({ children }: Props) => {
     } = useStoreActions(actions => actions)
 
     const resetModals = useCallback(() => {
-        popupsActions.setIsConnectedWalletModalOpen(false)
-        popupsActions.setIsConnectModalOpen(false)
-        popupsActions.setIsConnectorsWalletOpen(false)
-        popupsActions.setIsScreenModalOpen(false)
-        popupsActions.setIsSettingModalOpen(false)
-        popupsActions.setIsVotingModalOpen(false)
+        popupsActions.setIsClaimPopupOpen(false)
         popupsActions.setIsWaitingModalOpen(false)
-        popupsActions.setIsLoadingModalOpen({
-            text: '',
-            isOpen: false,
-        })
     }, [popupsActions])
 
-    const { forceUpdateTokens } = connectWalletState
-
     useEffect(() => {
-        if (!account || !geb || !forceUpdateTokens) return
+        if (!account || !geb || !connectWalletState?.forceUpdateTokens) return
         
         connectWalletActions.fetchTokenData({ geb, user: account })
-    }, [account, geb, forceUpdateTokens, connectWalletActions])
+    }, [account, geb, connectWalletState?.forceUpdateTokens, connectWalletActions])
 
     useEffect(() => {
         if (!connectWalletState || !signer) return
@@ -170,8 +146,8 @@ const Shared = ({ children }: Props) => {
     }, [auctionsData, setInternalBalance, setProtInternalBalance])
 
     useEffect(() => {
-        connectWalletActions.setTokensData(tokensData)
-    }, [tokensData, connectWalletActions])
+        connectWalletActions.setTokensData(geb?.tokenList)
+    }, [geb?.tokenList, connectWalletActions])
 
     useEffect(() => {
         connectWalletActions.fetchFiatPrice()
@@ -212,7 +188,7 @@ const Shared = ({ children }: Props) => {
                 await vaultActions.fetchUserVaults({
                     address: address ? address : (account as string),
                     geb,
-                    tokensData,
+                    tokensData: geb.tokenList,
                     chainId,
                 })
             }
@@ -246,11 +222,9 @@ const Shared = ({ children }: Props) => {
     const networkChecker = useCallback(() => {
         accountChange()
         const id: ChainId = chainId
-        popupsActions.setIsVaultManagerOpen(false)
         if (chain?.id !== id) {
             const chainName = ETHERSCAN_PREFIXES[id]
             connectWalletActions.setIsWrongNetwork(true)
-            // settingsActions.setBlockBody(true)
             toast(
                 <ToastPayload
                     icon="AlertTriangle"
@@ -269,7 +243,6 @@ const Shared = ({ children }: Props) => {
             )
         } else {
             toast.update(toastId, { autoClose: 1 })
-            settingsActions.setBlockBody(false)
             connectWalletActions.setIsWrongNetwork(false)
             if (account) {
                 toast(
@@ -287,10 +260,7 @@ const Shared = ({ children }: Props) => {
                 accountChecker()
             }
         }
-    }, [
-        accountChange, accountChecker, account, chainId, chain?.id, geb,
-        connectWalletActions, popupsActions, settingsActions,
-    ])
+    }, [accountChange, accountChecker, account, chainId, chain?.id, geb, connectWalletActions])
 
     useEffect(() => {
         networkChecker()
@@ -311,6 +281,8 @@ const Shared = ({ children }: Props) => {
 
     return (
         <Container>
+            <TransactionUpdater />
+
             <Background>
                 <video
                     src="/assets/tie-dye-reduced.mov"
@@ -322,32 +294,19 @@ const Shared = ({ children }: Props) => {
                     loop
                 />
             </Background>
-            <Header tickerActive={!isSplash}/>
-            {settingsState.blockBody && <BlockBodyContainer/>}
-            {/* <WalletModal /> */}
-            {/* <MulticallUpdater /> */}
-            {/* <ApplicationUpdater /> */}
-            {/* <BalanceUpdater /> */}
-            {/* <ProxyModal /> */}
-            {/* <ConnectedWalletModal /> */}
-            <TransactionUpdater />
-            <LoadingModal />
-            {/* <AuctionsModal /> */}
-            <ScreenLoader />
-            <LiquidateVaultModal />
-            {!isSplash && initializing && <InitializationModal />}
-            <TopUpModal />
-
             {!isSplash && <ParallaxBackground/>}
+            <Header tickerActive={!isSplash}/>
+            <ClaimModal />
+            {!isSplash && initializing && <InitializationModal />}
 
-            {SYSTEM_STATUS && SYSTEM_STATUS.toLowerCase() === 'shutdown' && (
+            {/* {SYSTEM_STATUS && SYSTEM_STATUS.toLowerCase() === 'shutdown' && (
                 <AlertContainer>
                     <AlertLabel
                         type="danger"
                         text={t('shutdown_text')}
                     />
                 </AlertContainer>
-            )}
+            )} */}
             {account && blockedAddresses.includes(account.toLowerCase())
                 ? <BlockedAddress />
                 : (
@@ -358,27 +317,7 @@ const Shared = ({ children }: Props) => {
                             : undefined
                         }
                         $maxWidth={!isSplash ? 'min(1200px, calc(100vw - 96px))': undefined}>
-                        {(isEarn || isVaults || isAuctions) && (
-                            <IntentionHeader
-                                type={isEarn
-                                    ? 'earn'
-                                    : isVaults
-                                        ? 'borrow'
-                                        : 'auctions'
-                                }
-                                setType={(type: string) => {
-                                    history.push(`/${type === 'borrow' ? 'vaults': type}`)
-                                }}>
-                                {isEarn
-                                    ? <EarnStats/>
-                                    : isVaults
-                                        ? <BorrowStats/>
-                                        : isAuctions
-                                            ? <AuctionStats/>
-                                            : null
-                                }
-                            </IntentionHeader>
-                        )}
+                        <IntentionHeader/>
                         {children}
                     </Content>
                 )
@@ -393,17 +332,6 @@ export default Shared
 
 const Container = styled.div`
     min-height: 100vh;
-`
-
-const BlockBodyContainer = styled.div`
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 100%;
-    z-index: 1000;
-    background-color: rgba(35, 37, 39, 0.75);
-    -webkit-tap-highlight-color: transparent;
 `
 
 const Background = styled(CenteredFlex)`
@@ -447,8 +375,4 @@ const Content = styled(Flex).attrs(props => ({
         padding: 0 24px;
         margin-top: ${$padTop ? '200px': '0px'};
     `}
-`
-
-const AlertContainer = styled.div`
-    padding: 0 20px;
 `

@@ -5,7 +5,7 @@ import { useNetwork } from 'wagmi'
 import store, { useStoreState } from '~/store'
 import { useEthersProvider } from '~/hooks'
 
-import ToastPayload from '~/components/ToastPayload'
+import { ToastPayload } from '~/components/ToastPayload'
 
 type CheckTransaction = {
     addedTime: number,

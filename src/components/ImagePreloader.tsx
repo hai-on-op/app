@@ -24,7 +24,7 @@ const INITIAL_STATE = [
     logo192,
 ]
 
-const ImagePreloader = () => {
+export function ImagePreloader() {
     return (
         <div style={{ display: 'none' }}>
             {INITIAL_STATE.map((img: string, i: number) => (
@@ -33,5 +33,3 @@ const ImagePreloader = () => {
         </div>
     )
 }
-
-export default ImagePreloader

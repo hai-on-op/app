@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 
 import { formatNumberWithStyle } from '~/utils'
-import { useStoreState } from '~/store'
+import { useStoreActions, useStoreState } from '~/store'
 
 import { HaiButton } from '~/styles'
 import { RewardsTokenPair } from '~/components/TokenPair'
@@ -14,6 +14,7 @@ export function BorrowStats() {
             liquidationData,
         },
     } = useStoreState(state => state)
+    const { popupsModel: popupsActions } = useStoreActions(actions => actions)
 
     const stats: StatProps[] = useMemo(() => {
         const totalCollateralInUSD = list.reduce((total, { collateralName, collateral }) => {
@@ -70,13 +71,15 @@ export function BorrowStats() {
                 label: 'My Vault Rewards',
                 tooltip: 'Hello World',
                 button: (
-                    <HaiButton $variant="yellowish">
+                    <HaiButton
+                        $variant="yellowish"
+                        onClick={() => popupsActions.setIsClaimPopupOpen(true)}>
                         Claim
                     </HaiButton>
                 ),
             },
         ]
-    }, [list, liquidationData])
+    }, [list, liquidationData, popupsActions])
 
     if (!list.length) return null
 

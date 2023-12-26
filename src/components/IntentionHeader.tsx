@@ -1,35 +1,45 @@
+import { useMemo } from 'react'
+import { useHistory, useLocation } from 'react-router-dom'
+
 import type { ReactChildren } from '~/types'
 import { LINK_TO_DOCS, TOKEN_LOGOS } from '~/utils'
 
 import styled from 'styled-components'
 import { BlurContainer, Flex, Text } from '~/styles'
+import { HaiFace } from './Icons/HaiFace'
 import { BrandedTitle } from './BrandedTitle'
 import { ExternalLink } from './ExternalLink'
 import { BrandedSelect } from './BrandedSelect'
-import { HaiFace } from './Icons/HaiFace'
+import { BorrowStats } from '~/containers/Vaults/Stats'
+import { EarnStats } from '~/containers/Earn/Stats'
+import { AuctionStats } from '~/containers/Auctions/Stats'
 
 import uniswapLogo from '~/assets/uniswap-icon.svg'
 
-type IntentionType = 'earn' | 'borrow' | 'auctions'
+enum Intention {
+    AUCTION = 'auctions',
+    BORROW = 'vaults',
+    EARN = 'earn',
+}
 
-const copy: Record<IntentionType, {
+const copy: Record<Intention, {
     subtitle: string,
     cta: string,
     ctaLink: string,
 }> = {
-    earn: {
-        subtitle: 'Stake various liquidity positions to earn yields. ',
-        cta: 'Read more about earning opportunities →',
+    [Intention.AUCTION]: {
+        subtitle: 'Buy your favorite crypto assets from liquidated loan auctions at a discount. ',
+        cta: 'Read more about auctions →',
         ctaLink: LINK_TO_DOCS,
     },
-    borrow: {
+    [Intention.BORROW]: {
         subtitle: 'Mint & borrow HAI against your preferred collateral. ',
         cta: 'Read more about borrowing →',
         ctaLink: LINK_TO_DOCS,
     },
-    auctions: {
-        subtitle: 'Buy your favorite crypto assets from liquidated loan auctions at a discount. ',
-        cta: 'Read more about auctions →',
+    [Intention.EARN]: {
+        subtitle: 'Stake various liquidity positions to earn yields. ',
+        cta: 'Read more about earning opportunities →',
         ctaLink: LINK_TO_DOCS,
     },
 }
@@ -37,7 +47,7 @@ const copy: Record<IntentionType, {
 const typeOptions = [
     {
         label: 'Get $HAI',
-        value: 'borrow',
+        value: Intention.BORROW,
         icon: <HaiFace filled/>,
         description: 'Mint & borrow $HAI stablecoin against your preferred collateral',
     },
@@ -50,7 +60,7 @@ const typeOptions = [
     },
     {
         label: 'Earn Rewards',
-        value: 'earn',
+        value: Intention.EARN,
         icon: [
             TOKEN_LOGOS.OP,
             TOKEN_LOGOS.WETH,
@@ -60,7 +70,7 @@ const typeOptions = [
     },
     {
         label: 'Buy Liquidated Assets',
-        value: 'auctions',
+        value: Intention.AUCTION,
         icon: [
             TOKEN_LOGOS.OP,
             TOKEN_LOGOS.WETH,
@@ -71,11 +81,37 @@ const typeOptions = [
 ]
 
 type IntentionHeaderProps = {
-    type: 'earn' | 'borrow' | 'auctions',
-    setType: (type: string) => void,
     children?: ReactChildren,
 }
-export function IntentionHeader({ type, setType, children }: IntentionHeaderProps) {
+export function IntentionHeader({ children }: IntentionHeaderProps) {
+    const location = useLocation()
+    const history = useHistory()
+
+    const { type, stats } = useMemo(() => {
+        if (location.pathname.startsWith('/auctions')) {
+            return {
+                type: Intention.AUCTION,
+                stats: <AuctionStats/>,
+            }
+        }
+        if (location.pathname.startsWith('/earn')) {
+            return {
+                type: Intention.EARN,
+                stats: <EarnStats/>,
+            }
+        }
+        if (location.pathname.startsWith('/vaults')) {
+            return {
+                type: Intention.BORROW,
+                stats: <BorrowStats/>,
+            }
+        }
+
+        return {}
+    }, [location.pathname])
+
+    if (!type) return null
+
     const { subtitle, cta, ctaLink } = copy[type]
 
     return (
@@ -92,7 +128,7 @@ export function IntentionHeader({ type, setType, children }: IntentionHeaderProp
                     />
                     <BrandedSelect
                         value={type}
-                        onChange={(value: string) => !!value && setType(value)}
+                        onChange={(value: string) => !!value && history.push(`/${value}`)}
                         options={typeOptions}
                     />
                 </Flex>
@@ -104,6 +140,7 @@ export function IntentionHeader({ type, setType, children }: IntentionHeaderProp
                         {cta}
                     </ExternalLink>
                 </Text>
+                {stats}
                 {children}
             </Inner>
         </Container>
