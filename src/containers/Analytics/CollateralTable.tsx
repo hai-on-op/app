@@ -123,7 +123,10 @@ export function CollateralTable() {
                             />
                             <Text $fontWeight={700}>{symbol}</Text>
                         </Flex>
-                        <AddressLink address={geb.tokenList[symbol].address}/>
+                        {geb?.tokenList?.[symbol]
+                            ? <AddressLink address={geb.tokenList[symbol].address}/>
+                            : <Text>--</Text>
+                        }
                         <AddressLink address={delayedOracle}/>
                         <Text>
                             {formatDataNumber(currentPrice?.toString() || '0', 18, 2, true)}

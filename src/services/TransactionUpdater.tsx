@@ -2,7 +2,7 @@ import { useEffect, useMemo } from 'react'
 import { toast } from 'react-toastify'
 import { useNetwork } from 'wagmi'
 
-import store, { useStoreState } from '~/store'
+import { store, useStoreState } from '~/store'
 import { useEthersProvider } from '~/hooks'
 
 import { ToastPayload } from '~/components/ToastPayload'
@@ -33,7 +33,7 @@ export function shouldCheck(
     }
 }
 
-export default function TransactionUpdater(): null {
+export function TransactionUpdater(): null {
     const toastId = 'transactionId'
     const { chain } = useNetwork()
     const chainId = chain?.id

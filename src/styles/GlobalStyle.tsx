@@ -11,10 +11,6 @@ export const createFadeInAnimation = (move: string) => keyframes`
 	}
 `
 
-type Props = {
-    bodyOverflow?: boolean
-}
-
 export const GlobalStyle = createGlobalStyle`
     :root {
         /* --hai-orange: rgb(255, 157, 10); */
@@ -47,9 +43,8 @@ export const GlobalStyle = createGlobalStyle`
         font-family: Inter, sans-serif;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
-        color: ${(props) => props.theme.colors.primary};
-        background-color:${(props) => props.theme.colors.background};
-        overflow: ${(props: Props) => (props.bodyOverflow ? 'hidden' : 'visible')};
+        color: ${({ theme }) => theme.colors.primary};
+        background-color:${({ theme }) => theme.colors.background};
         line-height: 1.4;
 
         .web3modal-modal-lightbox {
@@ -84,23 +79,23 @@ export const GlobalStyle = createGlobalStyle`
         }
         .place-left {
             &:after{
-                border-left-color:${(props) => props.theme.colors.foreground} !important
+                border-left-color:${({ theme }) => theme.colors.foreground} !important
             }
         }
 
         .place-top {
             &:after{
-                border-top-color:${(props) => props.theme.colors.foreground} !important
+                border-top-color:${({ theme }) => theme.colors.foreground} !important
             }
         }
         .place-bottom {
             &:after{
-                border-bottom-color:${(props) => props.theme.colors.foreground} !important
+                border-bottom-color:${({ theme }) => theme.colors.foreground} !important
             }
         }
         .place-right {
             &:after{
-                border-right-color:${(props) => props.theme.colors.foreground} !important
+                border-right-color:${({ theme }) => theme.colors.foreground} !important
             }
         }
         .__react_component_tooltip {
@@ -108,10 +103,10 @@ export const GlobalStyle = createGlobalStyle`
             padding-top: 20px;
             padding-bottom: 20px;
             border-radius: 5px;
-            color:${(props) => props.theme.colors.primary};
+            color:${({ theme }) => theme.colors.primary};
             opacity: 1 !important;
-            background: ${(props) => props.theme.colors.foreground};
-            border: ${(props) => props.theme.colors.border} !important;
+            background: ${({ theme }) => theme.colors.foreground};
+            border: ${({ theme }) => theme.colors.border} !important;
             box-shadow: 0 0 6px rgba(0, 0, 0, 0.16);
         
         }

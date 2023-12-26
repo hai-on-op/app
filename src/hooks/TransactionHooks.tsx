@@ -7,7 +7,7 @@ import { useAccount, useNetwork } from 'wagmi'
 
 import type { ITransaction } from '~/types'
 import { ActionState, newTransactionsFirst } from '~/utils'
-import store, { useStoreDispatch, useStoreState } from '~/store'
+import { store, useStoreDispatch, useStoreState } from '~/store'
 
 type TransactionAdder = (
     response: TransactionResponse,

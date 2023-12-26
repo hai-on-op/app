@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 
 import styled from 'styled-components'
-import FeatherIconWrapper, { type IconName } from './FeatherIconWrapper'
+import { FeatherIconWrapper, type IconName } from './FeatherIconWrapper'
 import { AddressLink } from './AddressLink'
 
 interface Props {
@@ -49,6 +49,6 @@ const Container = styled.div`
 `
 
 const Text = styled.div<{ color?: string }>`
-    font-size: ${(props) => props.theme.font.small};
-    color: ${(props) => (props.color ? props.color : props.theme.colors.neutral)};
+    font-size: ${({ theme }) => theme.font.small};
+    color: ${({ theme, color }) => (color || theme.colors.neutral)};
 `

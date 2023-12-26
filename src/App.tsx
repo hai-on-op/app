@@ -6,15 +6,13 @@ import { ApolloProvider } from '@apollo/client'
 
 import type { Theme } from '~/types'
 import { client } from '~/utils'
-import { useStoreState } from '~/store'
 import { AnalyticsProvider } from '~/providers/AnalyticsProvider'
 
 import { GlobalStyle } from '~/styles'
-import ErrorBoundary from '~/ErrorBoundary'
-import Shared from '~/containers/Shared'
-
-import Splash from '~/containers/Splash'
-import Privacy from '~/containers/Privacy'
+import { ErrorBoundary } from '~/ErrorBoundary'
+import { Shared } from '~/containers/Shared'
+import { Splash } from '~/containers/Splash'
+import { Privacy } from '~/containers/Privacy'
 import { Auctions } from '~/containers/Auctions'
 import { Analytics } from '~/containers/Analytics'
 import { Earn } from '~/containers/Earn'
@@ -28,13 +26,9 @@ declare module 'styled-components' {
 }
 
 const App = () => {
-    const { settingsModel: settingsState } = useStoreState((state) => state)
-
-    const { bodyOverflow } = settingsState
-
     return (
         <I18nextProvider i18n={i18next}>
-            <GlobalStyle bodyOverflow={bodyOverflow} />
+            <GlobalStyle />
             <ErrorBoundary>
                 <ApolloProvider client={client}>
                     <AnalyticsProvider>

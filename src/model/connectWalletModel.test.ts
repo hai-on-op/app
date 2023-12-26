@@ -1,5 +1,5 @@
-import { createStore, EasyPeasyConfig, Store } from 'easy-peasy'
-import connectWalletModel, { ConnectWalletModel } from './connectWalletModel'
+import { type EasyPeasyConfig, type Store, createStore } from 'easy-peasy'
+import { type ConnectWalletModel, connectWalletModel } from './connectWalletModel'
 
 describe('connect wallet model', () => {
     let store: Store<ConnectWalletModel, EasyPeasyConfig<{}, any>>

@@ -100,7 +100,7 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
                 stats: <EarnStats/>,
             }
         }
-        if (location.pathname.startsWith('/vaults')) {
+        if (location.pathname.startsWith('/vaults') && location.pathname !== '/vaults/explore') {
             return {
                 type: Intention.BORROW,
                 stats: <BorrowStats/>,

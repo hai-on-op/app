@@ -9,7 +9,7 @@ export function BlockedAddress() {
 }
 
 const Box = styled.div`
-    background: ${(props) => props.theme.colors.colorSecondary};
+    background: ${({ theme }) => theme.colors.colorSecondary};
     padding: 30px;
     border-radius: 10px;
     text-align: center;

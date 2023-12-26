@@ -9,7 +9,7 @@ import { Third } from './Scenes/Third'
 import { Fourth } from './Scenes/Fourth'
 import { Footer } from './Footer'
 
-export default function Splash() {
+export function Splash() {
     const [container, setContainer] = useState<HTMLElement | null>(null)
     const [zoomContainer, setZoomContainer] = useState<HTMLElement | null>(null)
 

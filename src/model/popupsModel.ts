@@ -1,179 +1,141 @@
-import { action, type Action } from 'easy-peasy'
+import { type Action, action } from 'easy-peasy'
 
 import type {
-    IAlert,
+    // IAlert,
     IAuctionOperation,
-    IOperation,
+    // IOperation,
     IWaitingPayload,
-    LoadingPayload,
+    // LoadingPayload,
 } from '~/types'
 import { ActionState } from '~/utils'
 
 export interface PopupsModel {
-    isSettingsModalOpen: boolean
-    isConnectModalOpen: boolean
-    isConnectedWalletModalOpen: boolean
-    isConnectorsWalletOpen: boolean
-    isLiquidateVaultModalOpen: boolean
-    isVaultManagerOpen: boolean
-    isClaimPopupOpen: boolean
-    returnProxyFunction: (actions: any) => void | null
-    blockBackdrop: boolean
-    hasFLXClaim: boolean
-    isProxyModalOpen: boolean
-    isScreenModalOpen: boolean
-    isVotingModalOpen: boolean
-    auctionOperationPayload: IAuctionOperation
-    liquidateVaultPayload: { vaultId: string } | null
-    alertPayload: IAlert | null
-    ESMOperationPayload: IOperation
-    vaultOperationPayload: IOperation & { isCreate: boolean }
-    isLoadingModalOpen: LoadingPayload
+    // alertPayload: IAlert
+    // setAlertPayload: Action<PopupsModel, IAlert | undefined>
+
+    // isLoadingModalOpen: LoadingPayload
+    // setIsLoadingModalOpen: Action<PopupsModel, LoadingPayload>
+
     isWaitingModalOpen: boolean
-    waitingPayload: IWaitingPayload
-    setIsSettingModalOpen: Action<PopupsModel, boolean>
-    setIsConnectModalOpen: Action<PopupsModel, boolean>
-    setIsConnectedWalletModalOpen: Action<PopupsModel, boolean>
-    setIsScreenModalOpen: Action<PopupsModel, boolean>
-    setIsConnectorsWalletOpen: Action<PopupsModel, boolean>
-    setIsLoadingModalOpen: Action<PopupsModel, LoadingPayload>
-    setVaultOperationPayload: Action<PopupsModel, IOperation & { isCreate: boolean }>
-    setAlertPayload: Action<PopupsModel, IAlert | null>
-    setESMOperationPayload: Action<PopupsModel, IOperation>
-    setIsVotingModalOpen: Action<PopupsModel, boolean>
-    openLiquidateVaultModal: Action<PopupsModel, { vaultId: string }>
-    closeLiquidateVaultModal: Action<PopupsModel>
-    setAuctionOperationPayload: Action<PopupsModel, IAuctionOperation>
     setIsWaitingModalOpen: Action<PopupsModel, boolean>
-    setWaitingPayload: Action<PopupsModel, IWaitingPayload>
-    setBlockBackdrop: Action<PopupsModel, boolean>
-    setIsProxyModalOpen: Action<PopupsModel, boolean>
-    setIsVaultManagerOpen: Action<PopupsModel, boolean>
+    waitingPayload: IWaitingPayload
+    setWaitingPayload: Action<PopupsModel, IWaitingPayload | undefined>
+
+    // hasFLXClaim: boolean
+    // setHasFLXClaim: Action<PopupsModel, boolean>
+
+    // isSettingsModalOpen: boolean
+    // setIsSettingsModalOpen: Action<PopupsModel, boolean>
+
+    isClaimPopupOpen: boolean
     setIsClaimPopupOpen: Action<PopupsModel, boolean>
-    setHasFLXClaim: Action<PopupsModel, boolean>
-    setReturnProxyFunction: Action<PopupsModel, (storeActions: any) => void | null>
+
+    // isVotingModalOpen: boolean
+    // setIsVotingModalOpen: Action<PopupsModel, boolean>
+
+    auctionOperationPayload: IAuctionOperation
+    setAuctionOperationPayload: Action<PopupsModel, IAuctionOperation | undefined>
+
+    // ESMOperationPayload: IOperation
+    // setESMOperationPayload: Action<PopupsModel, IOperation>
+
+    // vaultOperationPayload: IOperation & { isCreate: boolean }
+    // setVaultOperationPayload: Action<PopupsModel, (IOperation & { isCreate: boolean }) | undefined>
+
+    // returnProxyFunction: ((actions: any) => void) | null
+    // setReturnProxyFunction: Action<PopupsModel, ((storeActions: any) => void) | null>
 }
 
-const popupsModel: PopupsModel = {
-    blockBackdrop: false,
-    isSettingsModalOpen: false,
-    isConnectModalOpen: false,
-    isLiquidateVaultModalOpen: false,
-    isProxyModalOpen: false,
-    hasFLXClaim: false,
-    isConnectedWalletModalOpen: false,
-    isScreenModalOpen: false,
-    isWaitingModalOpen: false,
-    isVaultManagerOpen: false,
-    isClaimPopupOpen: false,
-    liquidateVaultPayload: null,
-    returnProxyFunction: () => {},
-    waitingPayload: {
-        title: '',
-        text: '',
-        hint: '',
-        status: ActionState.NONE,
-        isCreate: false,
-    },
-    vaultOperationPayload: {
-        isOpen: false,
-        type: '',
-        isCreate: false,
-    },
-    alertPayload: {
-        type: '',
-        text: '',
-    },
-    ESMOperationPayload: {
-        isOpen: false,
-        type: '',
-    },
-    isVotingModalOpen: false,
-    isConnectorsWalletOpen: false,
-    isLoadingModalOpen: {
-        isOpen: false,
-        text: '',
-    },
-    auctionOperationPayload: {
-        isOpen: false,
-        type: '',
-        auctionType: '',
-    },
+const DEFAULT_WAITING_PAYLOAD: PopupsModel['waitingPayload'] = {
+    title: '',
+    text: '',
+    hint: '',
+    status: ActionState.NONE,
+    isCreate: false,
+}
+const DEFAULT_AUCTION_OPERATION_PAYLOAD: PopupsModel['auctionOperationPayload'] = {
+    isOpen: false,
+    type: '',
+    auctionType: '',
+}
+// const DEFAULT_VAULT_OPERATION_PAYLOAD: PopupsModel['vaultOperationPayload'] = {
+//     isOpen: false,
+//     type: '',
+//     isCreate: false,
+// }
 
-    setIsSettingModalOpen: action((state, payload) => {
-        state.isSettingsModalOpen = payload
-    }),
-    setIsConnectModalOpen: action((state, payload) => {
-        state.isConnectModalOpen = payload
-    }),
-    setIsConnectedWalletModalOpen: action((state, payload) => {
-        state.isConnectedWalletModalOpen = payload
-    }),
-    openLiquidateVaultModal: action((state, payload) => {
-        state.isLiquidateVaultModalOpen = true
-        state.liquidateVaultPayload = payload
-    }),
-    closeLiquidateVaultModal: action((state) => {
-        state.isLiquidateVaultModalOpen = false
-        state.liquidateVaultPayload = null
-    }),
-    setIsScreenModalOpen: action((state, payload) => {
-        state.isScreenModalOpen = payload
-    }),
-    setIsConnectorsWalletOpen: action((state, payload) => {
-        state.isConnectorsWalletOpen = payload
-    }),
-    setIsLoadingModalOpen: action((state, payload) => {
-        state.isLoadingModalOpen = payload
-    }),
-    setVaultOperationPayload: action((state, payload) => {
-        state.vaultOperationPayload = payload
-    }),
-    setAlertPayload: action((state, payload) => {
-        state.alertPayload = payload
-    }),
-    setESMOperationPayload: action((state, payload) => {
-        state.ESMOperationPayload = payload
-    }),
-    setIsVotingModalOpen: action((state, payload) => {
-        state.isVotingModalOpen = payload
-    }),
-    setAuctionOperationPayload: action((state, payload) => {
-        state.auctionOperationPayload = payload
-    }),
-    setIsWaitingModalOpen: action((state, payload) => {
-        state.isWaitingModalOpen = payload
-        if (!payload) {
-            state.waitingPayload = {
-                title: '',
-                text: '',
-                hint: '',
-                status: ActionState.NONE,
-                isCreate: false,
-            }
+export const popupsModel: PopupsModel = {
+    // alertPayload: {
+    //     type: '',
+    //     text: '',
+    // },
+    // setAlertPayload: action((state, payload) => {
+    //     state.alertPayload = payload || {
+    //         type: '',
+    //         text: '',
+    //     }
+    // }),
+
+    // isLoadingModalOpen: {
+    //     isOpen: false,
+    //     text: '',
+    // },
+    // setIsLoadingModalOpen: action((state, isOpen) => {
+    //     state.isLoadingModalOpen = isOpen
+    // }),
+
+    isWaitingModalOpen: false,
+    setIsWaitingModalOpen: action((state, isOpen) => {
+        state.isWaitingModalOpen = isOpen
+        if (!isOpen) {
+            state.waitingPayload = DEFAULT_WAITING_PAYLOAD
         }
     }),
-    setWaitingPayload: action((state, payload) => {
+    waitingPayload: DEFAULT_WAITING_PAYLOAD,
+    setWaitingPayload: action((state, payload = DEFAULT_WAITING_PAYLOAD) => {
         state.waitingPayload = payload
     }),
-    setBlockBackdrop: action((state, payload) => {
-        state.blockBackdrop = payload
-    }),
-    setIsProxyModalOpen: action((state, payload) => {
-        state.isProxyModalOpen = payload
-    }),
-    setReturnProxyFunction: action((state, payload) => {
-        state.returnProxyFunction = payload
-    }),
-    setIsVaultManagerOpen: action((state, payload) => {
-        state.isVaultManagerOpen = payload
-    }),
-    setIsClaimPopupOpen: action((state, payload) => {
-        state.isClaimPopupOpen = payload
-    }),
-    setHasFLXClaim: action((state, payload) => {
-        state.hasFLXClaim = payload
-    }),
-}
 
-export default popupsModel
+    // hasFLXClaim: false,
+    // setHasFLXClaim: action((state, hasClaim) => {
+    //     state.hasFLXClaim = hasClaim
+    // }),
+
+    // isSettingsModalOpen: false,
+    // setIsSettingsModalOpen: action((state, isOpen) => {
+    //     state.isSettingsModalOpen = isOpen
+    // }),
+
+    isClaimPopupOpen: false,
+    setIsClaimPopupOpen: action((state, isOpen) => {
+        state.isClaimPopupOpen = isOpen
+    }),
+
+    // isVotingModalOpen: false,
+    // setIsVotingModalOpen: action((state, isOpen) => {
+    //     state.isVotingModalOpen = isOpen
+    // }),
+
+    auctionOperationPayload: DEFAULT_AUCTION_OPERATION_PAYLOAD,
+    setAuctionOperationPayload: action((state, payload = DEFAULT_AUCTION_OPERATION_PAYLOAD) => {
+        state.auctionOperationPayload = payload
+    }),
+
+    // ESMOperationPayload: {
+    //     isOpen: false,
+    //     type: '',
+    // },
+    // setESMOperationPayload: action((state, payload) => {
+    //     state.ESMOperationPayload = payload
+    // }),
+
+    // vaultOperationPayload: DEFAULT_VAULT_OPERATION_PAYLOAD,
+    // setVaultOperationPayload: action((state, payload = DEFAULT_VAULT_OPERATION_PAYLOAD) => {
+    //     state.vaultOperationPayload = payload
+    // }),
+
+    // returnProxyFunction: null,
+    // setReturnProxyFunction: action((state, payload) => {
+    //     state.returnProxyFunction = payload
+    // }),
+}

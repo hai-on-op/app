@@ -103,7 +103,7 @@ export const BtnContainer = styled.div`
     padding-top: 15px;
     margin-bottom: -5px;
     margin-top: 10px;
-    border-top: 1px solid ${(props) => props.theme.colors.border};
+    border-top: 1px solid ${({ theme }) => theme.colors.border};
 `
 
 export const ShowMoreButton = styled(HaiButton)`

@@ -1,6 +1,6 @@
-import { action, type Action, thunk, type Thunk } from 'easy-peasy'
+import { type Action, type Thunk, action, thunk } from 'easy-peasy'
 
-import { StoreModel } from '~/model'
+import { type StoreModel } from './index'
 import { handleDepositAndBorrow, handleRepayAndWithdraw } from '~/services/blockchain'
 import { fetchUserVaults } from '~/services/vaults'
 import type {
@@ -19,47 +19,58 @@ import {
 
 export interface VaultModel {
     list: Array<IVault>
-    vaultCreated: boolean
+    setList: Action<VaultModel, Array<IVault>>
+    fetchUserVaults: Thunk<VaultModel, IFetchVaultsPayload, any, StoreModel>
+
     singleVault?: IVault
-    operation: number
-    targetedCRatio: number
-    totalEth: string
-    isMaxWithdraw: boolean
-    totalHAI: string
-    amount: string
-    isES: boolean
-    isUniSwapPoolChecked: boolean
-    stage: number
-    transactionState: ActionState
+    setSingleVault: Action<VaultModel, IVault | undefined>
+
     vaultData: IVaultData
+    setVaultData: Action<VaultModel, IVaultData>
+
     liquidationData?: ILiquidationData
-    uniSwapPool: IVaultData
+    setLiquidationData: Action<VaultModel, ILiquidationData>
+
+    // operation: number
+    // setOperation: Action<VaultModel, number>
+
+    amount: string
+    setAmount: Action<VaultModel, string>
+
+    // totalEth: string
+    // setTotalEth: Action<VaultModel, string>
+    // totalHAI: string
+    // setTotalHAI: Action<VaultModel, string>
+
+    // isMaxWithdraw: boolean
+    // setIsMaxWithdraw: Action<VaultModel, boolean>
+
+    // targetedCRatio: number
+    // setTargetedCRatio: Action<VaultModel, number>
+
+    // isES: boolean
+    // setIsES: Action<VaultModel, boolean>
+
+    // uniSwapPool: IVaultData
+    // setUniSwapPool: Action<VaultModel, IVaultData>
+    // isUniSwapPoolChecked: boolean
+    // setIsUniSwapPoolChecked: Action<VaultModel, boolean>
+
+    // stage: number
+    // setStage: Action<VaultModel, number>
+
     depositAndBorrow: Thunk<VaultModel, IVaultPayload & { vaultId?: string }, any, StoreModel>
     repayAndWithdraw: Thunk<VaultModel, IVaultPayload & { vaultId: string }, any, StoreModel>
-    fetchUserVaults: Thunk<VaultModel, IFetchVaultsPayload, any, StoreModel>
     // collectETH: Thunk<
     //     VaultModel,
     //     { signer: JsonRpcSigner; vault: IVault },
     //     any,
     //     StoreModel
     // >
-    setIsVaultCreated: Action<VaultModel, boolean>
-    setList: Action<VaultModel, Array<IVault>>
-    setSingleVault: Action<VaultModel, IVault | undefined>
-    setOperation: Action<VaultModel, number>
-    setTotalEth: Action<VaultModel, string>
-    setTotalHAI: Action<VaultModel, string>
-    setIsES: Action<VaultModel, boolean>
-    setLiquidationData: Action<VaultModel, ILiquidationData>
-    setVaultData: Action<VaultModel, IVaultData>
-    setUniSwapPool: Action<VaultModel, IVaultData>
-    setIsUniSwapPoolChecked: Action<VaultModel, boolean>
-    setStage: Action<VaultModel, number>
-    setTransactionState: Action<VaultModel, ActionState>
-    setAmount: Action<VaultModel, string>
-    setTargetedCRatio: Action<VaultModel, number>
-    setIsMaxWithdraw: Action<VaultModel, boolean>
     wrapEther: Thunk<VaultModel, WrapEtherProps, any, StoreModel>
+
+    transactionState: ActionState
+    setTransactionState: Action<VaultModel, ActionState>
 }
 
 const DEFAULT_VAULT_DATA: IVaultData = {
@@ -72,23 +83,101 @@ const DEFAULT_VAULT_DATA: IVaultData = {
     collateral: '',
 }
 
-const vaultModel: VaultModel = {
+export const vaultModel: VaultModel = {
     list: [],
-    vaultCreated: false,
-    isMaxWithdraw: false,
-    operation: 0,
-    amount: '',
-    targetedCRatio: 0,
+    setList: action((state, payload) => {
+        state.list = payload
+    }),
+    fetchUserVaults: thunk(async (actions, payload, { getStoreActions, getState }) => {
+        const storeActions = getStoreActions()
+        const state = getState()
+        const { transactionState } = state
+        const fetched = await fetchUserVaults(payload)
+        const chainId = payload.chainId
+
+        if (fetched) {
+            actions.setList(fetched.userVaults)
+            if (fetched.userVaults.length > 0) {
+                storeActions.connectWalletModel.setStep(2)
+            } else if (transactionState === ActionState.ERROR) {
+                storeActions.connectWalletModel.setIsStepLoading(false)
+            }
+            actions.setLiquidationData(fetched.liquidationData)
+
+            if (fetched.availableHAI && chainId) {
+                storeActions.connectWalletModel.updateHaiBalance({
+                    chainId,
+                    balance: fetched.availableHAI,
+                })
+            }
+            await timeout(200)
+            return fetched
+        }
+    }),
+
     singleVault: undefined,
-    totalEth: '0.00',
-    totalHAI: '0.00',
-    transactionState: ActionState.NONE,
-    isES: true,
-    isUniSwapPoolChecked: true,
-    stage: 0,
+    setSingleVault: action((state, payload) => {
+        state.singleVault = payload
+    }),
+
     vaultData: DEFAULT_VAULT_DATA,
+    setVaultData: action((state, payload) => {
+        state.vaultData = payload
+    }),
+
     liquidationData: undefined,
-    uniSwapPool: DEFAULT_VAULT_DATA,
+    setLiquidationData: action((state, payload) => {
+        state.liquidationData = payload
+    }),
+
+    // operation: 0,
+    // setOperation: action((state, payload) => {
+    //     state.operation = payload
+    // }),
+
+    amount: '',
+    setAmount: action((state, payload) => {
+        state.amount = payload
+    }),
+
+    // totalEth: '0.00',
+    // setTotalEth: action((state, payload) => {
+    //     state.totalEth = payload
+    // }),
+    // totalHAI: '0.00',
+    // setTotalHAI: action((state, payload) => {
+    //     state.totalHAI = payload
+    // }),
+
+    // isMaxWithdraw: false,
+    // setIsMaxWithdraw: action((state, payload) => {
+    //     state.isMaxWithdraw = payload
+    // }),
+
+    // targetedCRatio: 0,
+    // setTargetedCRatio: action((state, payload) => {
+    //     state.targetedCRatio = payload
+    // }),
+
+    // isES: true,
+    // setIsES: action((state, payload) => {
+    //     state.isES = payload
+    // }),
+
+    // uniSwapPool: DEFAULT_VAULT_DATA,
+    // setUniSwapPool: action((state, payload) => {
+    //     state.uniSwapPool = payload
+    // }),
+    // isUniSwapPoolChecked: true,
+    // setIsUniSwapPoolChecked: action((state, payload) => {
+    //     state.isUniSwapPoolChecked = payload
+    // }),
+
+    // stage: 0,
+    // setStage: action((state, payload) => {
+    //     state.stage = payload
+    // }),
+
     depositAndBorrow: thunk(async (actions, payload, { getStoreActions }) => {
         const storeActions = getStoreActions()
         const txResponse = await handleDepositAndBorrow(payload.signer, payload.vaultData, payload.vaultId)
@@ -119,8 +208,8 @@ const vaultModel: VaultModel = {
             }
 
             await txResponse.wait()
-            actions.setStage(0)
-            actions.setUniSwapPool(DEFAULT_VAULT_DATA)
+            // actions.setStage(0)
+            // actions.setUniSwapPool(DEFAULT_VAULT_DATA)
             actions.setVaultData(DEFAULT_VAULT_DATA)
             storeActions.connectWalletModel.setForceUpdateTokens(true)
         } else {
@@ -149,8 +238,8 @@ const vaultModel: VaultModel = {
             })
 
             await txResponse.wait()
-            actions.setStage(0)
-            actions.setUniSwapPool(DEFAULT_VAULT_DATA)
+            // actions.setStage(0)
+            // actions.setUniSwapPool(DEFAULT_VAULT_DATA)
             actions.setVaultData(DEFAULT_VAULT_DATA)
             storeActions.connectWalletModel.setForceUpdateTokens(true)
         }
@@ -177,36 +266,6 @@ const vaultModel: VaultModel = {
     //         await txResponse.wait()
     //     }
     // }),
-    fetchUserVaults: thunk(async (actions, payload, { getStoreActions, getState }) => {
-        const storeActions = getStoreActions()
-        const state = getState()
-        const { transactionState } = state
-        const fetched = await fetchUserVaults(payload)
-        const chainId = payload.chainId
-
-        if (fetched) {
-            actions.setList(fetched.userVaults)
-            if (fetched.userVaults.length > 0) {
-                actions.setIsVaultCreated(true)
-                storeActions.connectWalletModel.setStep(2)
-            } else if (transactionState === ActionState.ERROR) {
-                actions.setIsVaultCreated(false)
-                storeActions.connectWalletModel.setIsStepLoading(false)
-            } else {
-                actions.setIsVaultCreated(false)
-            }
-            actions.setLiquidationData(fetched.liquidationData)
-
-            if (fetched.availableHAI && chainId) {
-                storeActions.connectWalletModel.updateHaiBalance({
-                    chainId,
-                    balance: fetched.availableHAI,
-                })
-            }
-            await timeout(200)
-            return fetched
-        }
-    }),
 
     wrapEther: thunk(async (actions, payload, { getStoreActions }) => {
         const storeActions = getStoreActions()
@@ -231,56 +290,8 @@ const vaultModel: VaultModel = {
         }
     }),
 
-    setIsVaultCreated: action((state, payload) => {
-        state.vaultCreated = payload
-    }),
-    setList: action((state, payload) => {
-        state.list = payload
-    }),
-    setSingleVault: action((state, payload) => {
-        state.singleVault = payload
-    }),
-    setOperation: action((state, payload) => {
-        state.operation = payload
-    }),
-    setTotalEth: action((state, payload) => {
-        state.totalEth = payload
-    }),
-    setTotalHAI: action((state, payload) => {
-        state.totalHAI = payload
-    }),
-    setIsES: action((state, payload) => {
-        state.isES = payload
-    }),
-
-    setLiquidationData: action((state, payload) => {
-        state.liquidationData = payload
-    }),
-
-    setVaultData: action((state, payload) => {
-        state.vaultData = payload
-    }),
-    setUniSwapPool: action((state, payload) => {
-        state.uniSwapPool = payload
-    }),
-    setIsUniSwapPoolChecked: action((state, payload) => {
-        state.isUniSwapPoolChecked = payload
-    }),
-    setStage: action((state, payload) => {
-        state.stage = payload
-    }),
+    transactionState: ActionState.NONE,
     setTransactionState: action((state, payload) => {
         state.transactionState = payload
     }),
-    setAmount: action((state, payload) => {
-        state.amount = payload
-    }),
-    setTargetedCRatio: action((state, payload) => {
-        state.targetedCRatio = payload
-    }),
-    setIsMaxWithdraw: action((state, payload) => {
-        state.isMaxWithdraw = payload
-    }),
 }
-
-export default vaultModel

@@ -1,5 +1,5 @@
-import { createStore, EasyPeasyConfig, Store } from 'easy-peasy'
-import vaultModel, { VaultModel } from './vaultModel'
+import { type EasyPeasyConfig, type Store, createStore } from 'easy-peasy'
+import { type VaultModel, vaultModel } from './vaultModel'
 
 const liquidationDataMock = {
     currentRedemptionPrice: '3',

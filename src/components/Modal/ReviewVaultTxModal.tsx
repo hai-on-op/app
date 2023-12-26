@@ -42,7 +42,6 @@ export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
         updateForm('clear')
         vaultActions.setVaultData(DEFAULT_VAULT_DATA)
         connectWalletActions.setIsStepLoading(true)
-        vaultActions.setIsVaultCreated(true)
         vaultActions.fetchUserVaults({
             address: account as string,
             geb,
@@ -94,7 +93,6 @@ export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
                 default: throw new Error(`Invalid operation (${action})`)
             }
             vaultActions.setTransactionState(ActionState.SUCCESS)
-            vaultActions.setIsVaultCreated(true)
             popupsActions.setIsWaitingModalOpen(false)
             onClose?.()
             reset()

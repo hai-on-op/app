@@ -1,7 +1,6 @@
 export * from './BlurContainer'
 export * from './Button'
 export * from './DashedContainer'
-export * from './ExternalLinkArrow'
 export * from './Flex'
 export * from './GlobalStyle'
 export * from './Grid'

@@ -5,7 +5,7 @@ import { BigNumber, ethers } from 'ethers'
 import { useAccount } from 'wagmi'
 
 import { ActionState, sanitizeDecimals } from '~/utils'
-import store from '~/store'
+import { store } from '~/store'
 
 import { calculateGasMargin, handleTransactionError } from './TransactionHooks'
 import { useTokenContract } from './useContract'
@@ -120,7 +120,6 @@ export function useTokenApproval(
         }
 
         store.dispatch.popupsModel.setIsWaitingModalOpen(true)
-        store.dispatch.popupsModel.setBlockBackdrop(true)
         store.dispatch.popupsModel.setWaitingPayload({
             title: 'Waiting for confirmation',
             text: 'Confirm this transaction in your wallet',

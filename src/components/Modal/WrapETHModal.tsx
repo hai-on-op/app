@@ -44,11 +44,6 @@ export function WrapETHModal(props: ModalProps) {
     const onWrap = async () => {
         if (!signer || !isNonZero || insufficientFunds) return
         try {
-            popupsActions.setVaultOperationPayload({
-                isCreate: false,
-                isOpen: false,
-                type: '',
-            })
             popupsActions.setIsWaitingModalOpen(true)
             popupsActions.setWaitingPayload({
                 title: 'Waiting For Confirmation',

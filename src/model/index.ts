@@ -1,26 +1,24 @@
-import settingsModel, { SettingsModel } from './settingsModel'
-import popupsModel, { PopupsModel } from './popupsModel'
-import connectWalletModel, { ConnectWalletModel } from './connectWalletModel'
-import vaultModel, { VaultModel } from './vaultModel'
-import transactionsModel, { TransactionsModel } from './transactionsModel'
-import auctionModel, { AuctionModel } from './auctionModel'
+import { type SettingsModel, settingsModel } from './settingsModel'
+import { type PopupsModel, popupsModel } from './popupsModel'
+import { type ConnectWalletModel, connectWalletModel } from './connectWalletModel'
+import { type VaultModel, vaultModel } from './vaultModel'
+import { type TransactionsModel, transactionsModel } from './transactionsModel'
+import { type AuctionModel, auctionModel } from './auctionModel'
 
 export interface StoreModel {
-    settingsModel: SettingsModel
-    popupsModel: PopupsModel
-    connectWalletModel: ConnectWalletModel
-    vaultModel: VaultModel
-    transactionsModel: TransactionsModel
     auctionModel: AuctionModel
+    connectWalletModel: ConnectWalletModel
+    popupsModel: PopupsModel
+    settingsModel: SettingsModel
+    transactionsModel: TransactionsModel
+    vaultModel: VaultModel
 }
 
-const model: StoreModel = {
-    settingsModel,
-    popupsModel,
-    connectWalletModel,
-    vaultModel,
-    transactionsModel,
+export const model: StoreModel = {
     auctionModel,
+    connectWalletModel,
+    popupsModel,
+    settingsModel,
+    transactionsModel,
+    vaultModel,
 }
-
-export default model

@@ -20,7 +20,7 @@ import {
     isAddress,
     timeout,
 } from '~/utils'
-import TransactionUpdater from '~/services/TransactionUpdater'
+import { TransactionUpdater } from '~/services/TransactionUpdater'
 import { useStoreState, useStoreActions } from '~/store'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { useTokenContract, useEthersSigner, useGeb, usePlaylist, usePrevious } from '~/hooks'
@@ -48,7 +48,7 @@ const successAccountConnection = 'successAccountConnection'
 type Props = {
     children: ReactChildren,
 }
-const Shared = ({ children }: Props) => {
+export function Shared({ children }: Props) {
     const { t } = useTranslation()
 
     const { address: account } = useAccount()
@@ -194,7 +194,6 @@ const Shared = ({ children }: Props) => {
             }
         } catch(error: any) {
             console.error(error)
-            vaultActions.setIsVaultCreated(false)
             connectWalletActions.setStep(1)
             setInitializing(false)
         }
@@ -211,7 +210,6 @@ const Shared = ({ children }: Props) => {
         const isAccountSwitched = account && previousAccount && account !== previousAccount
         if (!account) {
             connectWalletActions.setStep(0)
-            vaultActions.setIsVaultCreated(false)
         }
         if (isAccountSwitched) {
             history.push('/')
@@ -327,8 +325,6 @@ const Shared = ({ children }: Props) => {
         </Container>
     )
 }
-
-export default Shared
 
 const Container = styled.div`
     min-height: 100vh;

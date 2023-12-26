@@ -14,15 +14,15 @@ export const ButtonStyle = css<ButtonProps>`
     border: none;
     box-shadow: none;
     line-height: 24px;
-    font-size: ${(props) => props.theme.font.small};
+    font-size: ${({ theme }) => theme.font.small};
     font-weight: 600;
     padding: 8px 30px;
-    color: ${(props) => props.theme.colors.neutral};
+    color: ${({ theme }) => theme.colors.neutral};
     background: ${({ theme, disabled, color = 'blueish' }) => (disabled
         ? theme.colors.dimmedBackground
         : theme.colors[color]
     )};
-    border-radius: ${(props) => props.theme.global.borderRadius};
+    border-radius: ${({ theme }) => theme.global.borderRadius};
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
@@ -46,7 +46,7 @@ export const HaiButton = styled.button.attrs(props => ({
     border: ${({ theme, $unbordered }) => $unbordered ? 'none': theme.border.medium};
     box-shadow: none;
     line-height: 24px;
-    font-size: ${(props) => props.theme.font.small};
+    font-size: ${({ theme }) => theme.font.small};
     font-weight: 600;
     white-space: nowrap;
     padding: 8px 20px;

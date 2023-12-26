@@ -12,7 +12,7 @@ interface Props {
     children?: any
 }
 
-class ErrorBoundary extends React.Component<Props, State> {
+export class ErrorBoundary extends React.Component<Props, State> {
     state: State = {
         error: null,
         errorInfo: null,
@@ -45,8 +45,6 @@ class ErrorBoundary extends React.Component<Props, State> {
         return children
     }
 }
-
-export default ErrorBoundary
 
 const Container = styled.div`
     width: 100%;

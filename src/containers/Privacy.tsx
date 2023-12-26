@@ -1,9 +1,8 @@
 import { useEffect, useRef } from 'react'
 
-import styled from 'styled-components'
-import { ExternalLinkArrow } from '~/styles'
+import styled, { css } from 'styled-components'
 
-const Privacy = ({ ...props }) => {
+export function Privacy({ ...props }) {
     const privacyRef = useRef<HTMLElement>(null)
 
     useEffect(() => {
@@ -31,7 +30,34 @@ const Privacy = ({ ...props }) => {
     )
 }
 
-export default Privacy
+const ExternalLinkArrow = css`
+    border: 0;
+    cursor: pointer;
+    box-shadow: none;
+    outline: none;
+    padding: 0;
+    margin: 0;
+    color: ${({ theme }) => theme.colors.blueish};
+    font-size: ${({ theme }) => theme.font.small};
+    font-weight: 600;
+    line-height: 24px;
+    letter-spacing: -0.18px;
+    &:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+        &:hover {
+            opacity: 0.5;
+        }
+    }
+    transition: all 0.3s ease;
+    &:hover {
+        opacity: 0.8;
+    }
+    img {
+        position: relative;
+        top: 1px;
+    }
+`
 
 const Title = styled.h1`
     font-weight: 600;
@@ -39,7 +65,7 @@ const Title = styled.h1`
     max-width: 450px;
     margin: 0 auto 60px auto;
     font-size: 50px;
-    color: ${(props) => props.theme.colors.primary};
+    color: ${({ theme }) => theme.colors.primary};
     ${({ theme }) => theme.mediaWidth.upToSmall`
         font-size:35px;
     `}
@@ -60,7 +86,7 @@ const InnterContent = styled.div`
             line-height: 2;
             font-weight: 600;
             margin: 0;
-            color: ${(props) => props.theme.colors.primary};
+            color: ${({ theme }) => theme.colors.primary};
             a {
                 ${ExternalLinkArrow}
                 display: inline;
@@ -77,7 +103,7 @@ const InnterContent = styled.div`
     }
     
     p, li {
-        color: ${(props) => props.theme.colors.secondary};
+        color: ${({ theme }) => theme.colors.secondary};
         font-weight: 600;
         font-size: calc(0.46vw + 0.46vh + 0.5vmin);
         ${({ theme }) => theme.mediaWidth.upToSmall`
@@ -97,7 +123,7 @@ const InnterContent = styled.div`
     h3 {
         font-size: calc(0.8vw + 0.8vh + 0.5vmin);
         font-weight: 600;
-        color: ${(props) => props.theme.colors.primary};
+        color: ${({ theme }) => theme.colors.primary};
         margin-top: 60px;
         margin-bottom: 20px;
         ${({ theme }) => theme.mediaWidth.upToSmall`
@@ -110,7 +136,7 @@ const InnterContent = styled.div`
         font-size: calc(0.6vw + 0.6vh + 0.5vmin);
         line-height: 2;
         margin: 20px 0 0 0;
-        color: ${(props) => props.theme.colors.primary};
+        color: ${({ theme }) => theme.colors.primary};
         font-weight: 600;
         a {
             ${ExternalLinkArrow}
@@ -147,7 +173,7 @@ const InnterContent = styled.div`
 `
 
 const Date = styled.div`
-    color: ${(props) => props.theme.colors.secondary};
+    color: ${({ theme }) => theme.colors.secondary};
     text-align: center;
     margin: 30px 0 80px 0;
     font-weight: bold;
