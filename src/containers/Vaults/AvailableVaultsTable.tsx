@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { formatEther } from 'ethers/lib/utils'
 
-import type { AvailableVaultPair, SortableHeader } from '~/types'
+import type { AvailableVaultPair, SortableHeader, Sorting } from '~/types'
 import { formatNumberWithStyle } from '~/utils'
 import { useVault } from '~/providers/VaultProvider'
 
@@ -26,7 +26,7 @@ type AvailableVaultsTableProps = {
 export function AvailableVaultsTable({ rows }: AvailableVaultsTableProps) {
     const { setActiveVault } = useVault()
 
-    const [sorting, setSorting] = useState<{ key: string, dir: 'asc' | 'desc'}>({
+    const [sorting, setSorting] = useState<Sorting>({
         key: 'Coll. Factor',
         dir: 'desc',
     })

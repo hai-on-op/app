@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useAccount } from 'wagmi'
 
-import type { IAuction, SortableHeader } from '~/types'
+import type { IAuction, SortableHeader, Sorting } from '~/types'
 import { getAuctionStatus, stringsExistAndAreEqual, tokenMap } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { useGeb } from '~/hooks'
@@ -57,7 +57,7 @@ export function AuctionTable({ auctions, filterMyBids, isLoading }: AuctionTable
     const [expandedId, setExpandedId] = useState<string>()
 
     const [paging, setPaging] = useState<number>(0)
-    const [sorting, setSorting] = useState<{ key: string, dir: 'asc' | 'desc'}>({
+    const [sorting, setSorting] = useState<Sorting>({
         key: 'Time Left',
         dir: 'desc',
     })

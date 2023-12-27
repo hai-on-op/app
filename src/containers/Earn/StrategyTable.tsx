@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 
-import type { SortableHeader, Strategy } from '~/types'
+import type { SortableHeader, Sorting, Strategy } from '~/types'
 
 import styled from 'styled-components'
 import { Flex, Grid, Text } from '~/styles'
@@ -22,7 +22,7 @@ type StrategyTableProps = {
     rows: Strategy[]
 }
 export function StrategyTable({ rows }: StrategyTableProps) {
-    const [sorting, setSorting] = useState<{ key: string, dir: 'asc' | 'desc'}>({
+    const [sorting, setSorting] = useState<Sorting>({
         key: 'My Position',
         dir: 'desc',
     })

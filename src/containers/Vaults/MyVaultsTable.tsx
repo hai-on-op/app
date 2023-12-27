@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 
-import type { IVault, SortableHeader } from '~/types'
+import type { IVault, SortableHeader, Sorting } from '~/types'
 import { Status, formatNumberWithStyle, riskStateToStatus, getRatePercentage } from '~/utils'
 import { useVault } from '~/providers/VaultProvider'
 
@@ -25,7 +25,7 @@ type MyVaultsTableProps = {
 export function MyVaultsTable({ rows, onCreate }: MyVaultsTableProps) {
     const { setActiveVault } = useVault()
 
-    const [sorting, setSorting] = useState<{ key: string, dir: 'asc' | 'desc'}>({
+    const [sorting, setSorting] = useState<Sorting>({
         key: 'Risk Ratio',
         dir: 'asc',
     })

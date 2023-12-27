@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 
-import type { SortableHeader } from '~/types'
+import type { SortableHeader, Sorting } from '~/types'
 import { formatDataNumber, transformToAnnualRate } from '~/utils'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { usePublicGeb } from '~/hooks'
@@ -42,7 +42,7 @@ export function CollateralTable() {
     const geb = usePublicGeb()
     const { data: { tokenAnalyticsData: rows } } = useAnalytics()
 
-    const [sorting, setSorting] = useState<{ key: string, dir: 'asc' | 'desc'}>({
+    const [sorting, setSorting] = useState<Sorting>({
         key: 'Collateral Asset',
         dir: 'desc',
     })
