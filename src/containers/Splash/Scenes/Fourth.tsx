@@ -83,7 +83,7 @@ export function Fourth({ zIndex }: ZoomSceneProps) {
             style={{ marginTop: '100px' }}>
             <Container $offset={isLargerThanWidth
                 ? 'calc(0px)'
-                : `max(calc(${-100 * index}vw + ${24 * index}px), ${-424 * index}px)`
+                : `max(calc(${-100 * index}vw + ${36 * index}px), ${-424 * index}px)`
             }>
                 {cardTitles.map(({ title, link }, i) => (
                     <LearnCard
@@ -110,13 +110,13 @@ export function Fourth({ zIndex }: ZoomSceneProps) {
 const Container = styled(Flex).attrs(props => ({
     $justify: 'flex-start',
     $align: 'center',
-    $gap: 24,
     ...props,
 }))<{ $offset: string }>`
     position: relative;
     width: ${CARDS_WIDTH}px;
     max-width: 100vw;
     padding: 12px 48px;
+    gap: 24px;
     overflow: hidden;
 
     & > *:first-child {
@@ -125,7 +125,8 @@ const Container = styled(Flex).attrs(props => ({
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
         width: 100vw;
-        padding: 12px 24px;
+        padding: 12px 36px;
+        gap: 36px;
     `}
 `
 
@@ -146,10 +147,10 @@ const ArrowButton = styled(HaiButton).attrs(props => ({
     }
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
-        left: 0px;
+        left: 12px;
         &:last-of-type {
             left: auto;
-            right: 0px;
+            right: 12px;
         }
     `}
 

@@ -55,7 +55,7 @@ const Container = styled(Flex).attrs(props => ({
     ...props,
 }))`
     position: relative;
-    width: min(calc(100vw - 48px), 400px);
+    width: min(calc(100vw - 72px), 400px);
     height: 500px;
     border: ${({ theme }) => theme.border.medium};
     border-radius: 24px;
