@@ -18,6 +18,8 @@ export interface SettingsModel {
     // setBodyOverFlow: Action<SettingsModel, boolean>
     // blockBody: boolean
     // setBlockBody: Action<SettingsModel, boolean>
+    headerBgActive: boolean
+    setHeaderBgActive: Action<SettingsModel, boolean>
 
     isPlayingMusic: boolean
     setIsPlayingMusic: Action<SettingsModel, boolean>
@@ -46,6 +48,10 @@ export const settingsModel: SettingsModel = {
     // setBlockBody: action((state, payload) => {
     //     state.blockBody = payload
     // }),
+    headerBgActive: false,
+    setHeaderBgActive: action((state, payload) => {
+        state.headerBgActive = payload
+    }),
 
     isPlayingMusic: shouldPlayMusic,
     setIsPlayingMusic: action((state, payload) => {

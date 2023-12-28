@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 
+import { useStoreActions } from '~/store'
+
 import styled from 'styled-components'
 import { CenteredFlex } from '~/styles'
 import { ZoomScene } from './Scenes/ZoomScene'
@@ -10,6 +12,8 @@ import { Fourth } from './Scenes/Fourth'
 import { Footer } from './Footer'
 
 export function Splash() {
+    const { settingsModel: settingsActions } = useStoreActions(actions => actions)
+
     const [container, setContainer] = useState<HTMLElement | null>(null)
     const [zoomContainer, setZoomContainer] = useState<HTMLElement | null>(null)
 
@@ -58,8 +62,10 @@ export function Splash() {
                 zoomContainer.style.top = `${-offset}vh`
                 zoomContainer.style.bottom = `${offset}vh`
                 zoomContainer.style.pointerEvents = 'all'
+                settingsActions.setHeaderBgActive(true)
                 return
             }
+            settingsActions.setHeaderBgActive(false)
             zoomContainer.style.top = '0px'
             zoomContainer.style.bottom = '0px'
 
@@ -69,7 +75,9 @@ export function Splash() {
                 if (z < 190 && z > -240) scene.style.display = 'flex'
                 else scene.style.display = 'none'
                 const opacity = z < 0 ? Math.max(0, 1 - (-z / 240)).toString(): '1'
-                Array.from(scene.children).forEach(child => { (child as HTMLElement).style.opacity = opacity })
+                Array.from(scene.children).forEach(child => {
+                    (child as HTMLElement).style.opacity = opacity
+                })
             })
             zoomContainer.style.pointerEvents = 'all'
         }
@@ -82,7 +90,7 @@ export function Splash() {
             zoomContainer.removeEventListener('touchmove', onTouchMove)
             container.removeEventListener('scroll', onScroll)
         }
-    }, [container, zoomContainer])
+    }, [container, zoomContainer, settingsActions])
 
     return (
         <Container ref={setContainer}>

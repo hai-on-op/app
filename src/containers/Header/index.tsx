@@ -35,7 +35,10 @@ export function Header({ tickerActive = false }: HeaderProps) {
 
     const {
         vaultModel: { liquidationData },
-        settingsModel: { isPlayingMusic },
+        settingsModel: {
+            headerBgActive,
+            isPlayingMusic,
+        },
     } = useStoreState(state => state)
     const { setIsPlayingMusic } = useStoreActions(actions => actions.settingsModel)
 
@@ -84,13 +87,13 @@ export function Header({ tickerActive = false }: HeaderProps) {
         {wrapEthActive && <WrapETHModal onClose={() => setWrapEthActive(false)}/>}
         <Container
             $tickerActive={tickerActive}
-            $withBg={!isSplash}>
+            $withBg={!isSplash || headerBgActive}>
             {tickerActive && (
                 <Ticker>
                     <Marquee text={tickerText}/>
                 </Ticker>
             )}
-            <Inner $blur={!isSplash}>
+            <Inner $blur={!isSplash || headerBgActive}>
                 <CenteredFlex $gap={isLargerThanSmall ? 48: 24}>
                     {isLargerThanExtraSmall
                         ? (
