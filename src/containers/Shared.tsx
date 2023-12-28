@@ -36,6 +36,7 @@ import { InitializationModal } from '~/components/Modal/InitializationModal'
 import { ClaimModal } from '~/components/Modal/ClaimModal'
 import { IntentionHeader } from '~/components/IntentionHeader'
 import { HaiAlert } from '~/components/HaiAlert'
+import { StartAuction } from './Auctions/StartAuction'
 
 const playlist = [
     '/audio/get-hai-together.wav',
@@ -315,7 +316,11 @@ export function Shared({ children }: Props) {
                             : undefined
                         }
                         $maxWidth={!isSplash ? 'min(1200px, calc(100vw - 96px))': undefined}>
-                        <IntentionHeader/>
+                        <IntentionHeader>
+                            {location.pathname === '/auctions' && (
+                                <StartAuction/>
+                            )}
+                        </IntentionHeader>
                         {children}
                     </Content>
                 )
