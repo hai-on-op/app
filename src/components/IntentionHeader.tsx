@@ -3,6 +3,7 @@ import { useHistory, useLocation } from 'react-router-dom'
 
 import type { ReactChildren } from '~/types'
 import { LINK_TO_DOCS, TOKEN_LOGOS } from '~/utils'
+import { useMediaQuery } from '~/hooks'
 
 import styled from 'styled-components'
 import { BlurContainer, Flex, Text } from '~/styles'
@@ -87,6 +88,8 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
     const location = useLocation()
     const history = useHistory()
 
+    const isLargerThanExtraSmall = useMediaQuery('upToExtraSmall')
+
     const { type, stats } = useMemo(() => {
         if (location.pathname.startsWith('/auctions')) {
             return {
@@ -124,12 +127,13 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
                     $flexWrap>
                     <BrandedTitle
                         textContent="I WANT TO"
-                        $fontSize="3.2em"
+                        $fontSize={isLargerThanExtraSmall ? '3.2em': '2.5em'}
                     />
                     <BrandedSelect
                         value={type}
                         onChange={(value: string) => !!value && history.push(`/${value}`)}
                         options={typeOptions}
+                        $fontSize={isLargerThanExtraSmall ? '3.2em': '2.5em'}
                     />
                 </Flex>
                 <Text>

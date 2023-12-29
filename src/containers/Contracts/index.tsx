@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 
 import type { SortableHeader } from '~/types'
 import { contractsDescriptions } from '~/utils/contractsDescription'
-import { usePublicGeb } from '~/hooks'
+import { useMediaQuery, usePublicGeb } from '~/hooks'
 
 import styled from 'styled-components'
 import { BlurContainer, Flex, Grid, Text } from '~/styles'
@@ -31,29 +31,33 @@ export function Contracts() {
             }))
     }, [geb])
 
+    const isLargerThanSmall = useMediaQuery('upToSmall')
+
     return (
         <Container>
             <Header>
                 <BrandedTitle
                     textContent="CONTRACTS"
-                    $fontSize="3rem"
+                    $fontSize={isLargerThanSmall ? '3rem': '2.4rem'}
                 />
             </Header>
             <Table>
-                <TableHeader>
-                    {sortableHeaders.map(({ label, tooltip }) => (
-                        <TableHeaderItem
-                            key={label}
-                            sortable={false}
-                            tooltip={tooltip}>
-                            <Text $fontWeight={700}>{label}</Text>
-                        </TableHeaderItem>
-                    ))}
-                    <Text></Text>
-                </TableHeader>
+                {isLargerThanSmall && (
+                    <TableHeader>
+                        {sortableHeaders.map(({ label, tooltip }) => (
+                            <TableHeaderItem
+                                key={label}
+                                sortable={false}
+                                tooltip={tooltip}>
+                                <Text $fontWeight={700}>{label}</Text>
+                            </TableHeaderItem>
+                        ))}
+                        <Text></Text>
+                    </TableHeader>
+                )}
                 {contracts.map(({ name, address, description }) => (
                     <TableRow key={name}>
-                        <Text>{name}</Text>
+                        <Text $fontWeight={isLargerThanSmall ? 400: 700}>{name}</Text>
                         <AddressLink address={address}/>
                         <Text>{description}</Text>
                     </TableRow>
@@ -80,6 +84,11 @@ const Header = styled(Flex).attrs(props => ({
     position: relative;
     padding: 48px;
     border-bottom: ${({ theme }) => theme.border.medium};
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        padding: 24px;
+    `}
+
     z-index: 1;
 `
 
@@ -93,6 +102,11 @@ const Table = styled(Flex).attrs(props => ({
 }))`
     padding: 48px;
     padding-top: 24px;
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        padding: 0px;
+        gap: 0px;
+    `}
 `
 const TableHeader = styled(Grid)`
     grid-template-columns: 240px 120px 1fr;
@@ -110,7 +124,16 @@ const TableRow = styled(TableHeader)`
     &:nth-child(2n) {
         background-color: rgba(0,0,0,0.05);
     }
-    /* &:hover {
-        background-color: rgba(0,0,0,0.1);
-    } */
+    
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        padding: 24px;
+        grid-template-columns: 1fr;
+        grid-gap: 12px;
+        border-radius: 0px;
+        background-color: unset;
+
+        &:not(:first-child) {
+            border-top: ${theme.border.medium};
+        }
+    `}
 `

@@ -4,11 +4,13 @@ import dayjs from 'dayjs'
 
 import type { IAuction, IAuctionBidder, SortableHeader } from '~/types'
 import { type ChainId, parseRemainingTime, formatNumberWithStyle } from '~/utils'
+import { useMediaQuery } from '~/hooks'
 
 import styled from 'styled-components'
 import { Flex, Grid, Text } from '~/styles'
 import { TableHeaderItem } from '~/components/TableHeaderItem'
 import { AddressLink } from '~/components/AddressLink'
+import { TableRow } from '~/components/TableRow'
 
 const tokenMap: Record<string, string> = {
     'PROTOCOL_TOKEN': 'HAI',
@@ -35,20 +37,24 @@ type BidTableProps = {
     auction: IAuction
 }
 export function BidTable({ auction }: BidTableProps) {
+    const isLargerThanSmall = useMediaQuery('upToSmall')
+
     const hasSettled = auction.isClaimed && auction.winner
 
     const withSell = auction.englishAuctionType === 'COLLATERAL'
 
     return (
         <Table>
-            <TableHeader $withSell={withSell}>
-                {(withSell ? sortableHeadersWithSell: sortableHeaders).map(({ label }) => (
-                    <TableHeaderItem key={label}>
-                        <Text>{label}</Text>
-                    </TableHeaderItem>
-                ))}
-                <Text></Text>
-            </TableHeader>
+            {isLargerThanSmall && (
+                <TableHeader $withSell={withSell}>
+                    {(withSell ? sortableHeadersWithSell: sortableHeaders).map(({ label }) => (
+                        <TableHeaderItem key={label}>
+                            <Text>{label}</Text>
+                        </TableHeaderItem>
+                    ))}
+                    <Text></Text>
+                </TableHeader>
+            )}
             {auction.biddersList.map((bid, i) => (
                 <BidTableRow
                     key={i}
@@ -90,7 +96,7 @@ const TableHeader = styled(Grid)<{ $withSell?: boolean }>`
         padding: 0 4px;
     }
 `
-const TableRow = styled(TableHeader)`
+const TableRowContainer = styled(TableHeader)`
     position: relative;
     height: 48px;
     border-radius: 999px;
@@ -107,6 +113,14 @@ const TableRow = styled(TableHeader)`
             z-index: -1;
         }
     }
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        height: auto;
+        padding: 24px;
+        grid-template-columns: 1fr 1fr;
+        grid-gap: 12px;
+        border-radius: 12px;
+    `}
 `
 
 type BidTableRowProps = {
@@ -130,41 +144,67 @@ function BidTableRow({ bid, eventType, bidToken, sellToken, withSell }: BidTable
     }, [bid.createdAt])
 
     return (
-        <TableRow $withSell={withSell}>
-            <Text>{eventType}</Text>
-            <Flex>
-                {eventType === 'Start'
-                    ? <Text>--</Text>
-                    : (
-                        <AddressLink
-                            chainId={chain?.id as ChainId}
-                            address={bid.bidder}
-                        />
-                    )
-                }
-            </Flex>
-            {!!withSell && (
-                <Text>
-                    {eventType === 'Start'
-                        ? '--'
-                        : `${formatNumberWithStyle(bid.sellAmount, { maxDecimals: 4 })} ${sellToken}`
-                    }
-                </Text>
-            )}
-            <Text>
-                {eventType === 'Start'
-                    ? '--'
-                    : `${formatNumberWithStyle(bid.buyAmount, { maxDecimals: 4 })} ${bidToken}`
-                }
-            </Text>
-            <Flex>
-                <AddressLink
-                    chainId={chain?.id as ChainId}
-                    address={bid.createdAtTransaction}
-                    type="transaction"
-                />
-            </Flex>
-            <Text title={timestamp}>{timeLabel}</Text>
-        </TableRow>
+        <TableRow
+            container={TableRowContainer}
+            headers={withSell ? sortableHeadersWithSell: sortableHeaders}
+            items={[
+                {
+                    content: <Text>{eventType}</Text>,
+                },
+                {
+                    content: (
+                        <Flex>
+                            {eventType === 'Start'
+                                ? <Text>--</Text>
+                                : (
+                                    <AddressLink
+                                        chainId={chain?.id as ChainId}
+                                        address={bid.bidder}
+                                    />
+                                )
+                            }
+                        </Flex>
+                    ),
+                },
+                ...(withSell
+                    ? [{
+                        content: (
+                            <Text>
+                                {eventType === 'Start'
+                                    ? '--'
+                                    : `${formatNumberWithStyle(bid.sellAmount, { maxDecimals: 4 })} ${sellToken}`
+                                }
+                            </Text>
+                        ),
+                    }]
+                    : []
+                ),
+                {
+                    content: (
+                        <Text>
+                            {eventType === 'Start'
+                                ? '--'
+                                : `${formatNumberWithStyle(bid.buyAmount, { maxDecimals: 4 })} ${bidToken}`
+                            }
+                        </Text>
+                    ),
+                },
+                {
+                    content: (
+                        <Flex>
+                            <AddressLink
+                                chainId={chain?.id as ChainId}
+                                address={bid.createdAtTransaction}
+                                type="transaction"
+                            />
+                        </Flex>
+                    ),
+                },
+                {
+                    content: <Text title={timestamp}>{timeLabel}</Text>,
+                },
+            ]}
+            $withSell={withSell}
+        />
     )
 }

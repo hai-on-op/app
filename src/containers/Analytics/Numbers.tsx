@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 
 import { getRatePercentage } from '~/utils'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
+import { useMediaQuery } from '~/hooks'
 
 import styled from 'styled-components'
 import {
@@ -96,6 +97,8 @@ export function Numbers() {
         max: 100_000,
     })
 
+    const isLargerThanSmall = useMediaQuery('upToSmall')
+
     return (
         <Container>
             <Section>
@@ -131,13 +134,15 @@ export function Numbers() {
                 <SectionHeader>PRICES</SectionHeader>
                 <SectionContent>
                     <Flex
+                        $column={!isLargerThanSmall}
                         $width="100%"
                         $justify="space-between"
-                        $align="center"
+                        $align={!isLargerThanSmall ? 'flex-start': 'center'}
                         $gap={24}>
                         <Flex
+                            $column={!isLargerThanSmall}
                             $justify="flex-start"
-                            $align="center"
+                            $align={!isLargerThanSmall ? 'flex-start': 'center'}
                             $gap={24}>
                             <PriceDisplay
                                 token="HAI"
@@ -182,15 +187,17 @@ export function Numbers() {
                 <SectionHeader>REDEMPTION</SectionHeader>
                 <SectionContent>
                     <Flex
+                        $column={!isLargerThanSmall}
                         $width="100%"
                         $justify="space-between"
-                        $align="center"
+                        $align={!isLargerThanSmall ? 'flex-start': 'center'}
                         $gap={24}>
                         <Flex
+                            $column={!isLargerThanSmall}
                             $width="100%"
                             $justify="flex-start"
-                            $align="center"
-                            $gap={36}>
+                            $align={!isLargerThanSmall ? 'flex-start': 'center'}
+                            $gap={!isLargerThanSmall ? 12: 36}>
                             <Stat
                                 stat={{
                                     header: annualRate,
@@ -199,22 +206,24 @@ export function Numbers() {
                                 }}
                                 unbordered
                             />
-                            <Stat
-                                stat={{
-                                    header: pRate,
-                                    label: 'pRate',
-                                    tooltip: 'Hello world',
-                                }}
-                                unbordered
-                            />
-                            <Stat
-                                stat={{
-                                    header: iRate,
-                                    label: 'iRate',
-                                    tooltip: 'Hello world',
-                                }}
-                                unbordered
-                            />
+                            <CenteredFlex $gap={!isLargerThanSmall ? 12: 36}>
+                                <Stat
+                                    stat={{
+                                        header: pRate,
+                                        label: 'pRate',
+                                        tooltip: 'Hello world',
+                                    }}
+                                    unbordered
+                                />
+                                <Stat
+                                    stat={{
+                                        header: iRate,
+                                        label: 'iRate',
+                                        tooltip: 'Hello world',
+                                    }}
+                                    unbordered
+                                />
+                            </CenteredFlex>
                         </Flex>
                         <ToggleSlider
                             selectedIndex={redemptionRateHistory.timeframe}
@@ -246,10 +255,11 @@ export function Numbers() {
                 <SectionHeader>LIQUIDITY</SectionHeader>
                 <SectionContent $gap={0}>
                     <Flex
+                        $column={!isLargerThanSmall}
                         $width="100%"
                         $justify="flex-start"
-                        $align="center"
-                        $gap={36}>
+                        $align={!isLargerThanSmall ? 'flex-start': 'center'}
+                        $gap={!isLargerThanSmall ? 12: 36}>
                         <Stat
                             stat={{
                                 header: `$${dummyPieData[0].value.toLocaleString('en-US', {
@@ -327,6 +337,10 @@ const Container = styled(BlurContainer).attrs(props => ({
     & > * {
         padding: 0px;
     }
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        padding: 24px;
+    `}
 `
 
 const Section = styled.section.attrs(props => ({
@@ -357,6 +371,10 @@ const SectionContent = styled(Flex).attrs(props => ({
 }))<DashedContainerProps>`
     ${DashedContainerStyle}
     padding: 24px;
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        gap: 12px;
+    `}
 `
 
 const ChartContainer = styled(CenteredFlex)`
@@ -397,4 +415,8 @@ const PieContainer = styled(CenteredFlex)`
         background: ${({ theme }) => theme.colors.gradientCool};
         z-index: 0;
     }
+
+    ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+        height: 240px;
+    `}
 `

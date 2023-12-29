@@ -1,12 +1,11 @@
-import { type Dispatch, type SetStateAction, useMemo, useState } from 'react'
-import { BigNumber } from 'ethers'
+import { useMemo } from 'react'
 
-import type { AvailableVaultPair } from '~/types'
-import { getRatePercentage, formatNumberWithStyle } from '~/utils'
+import type { SetState } from '~/types'
 import { useStoreState } from '~/store'
 import { useVault } from '~/providers/VaultProvider'
+import { useAvailableVaults, useMediaQuery, useMyVaults } from '~/hooks'
 
-import { CenteredFlex, Text } from '~/styles'
+import { Text } from '~/styles'
 import { NavContainer } from '~/components/NavContainer'
 import { CheckboxButton } from '~/components/CheckboxButton'
 import { BrandedDropdown, DropdownOption } from '~/components/BrandedDropdown'
@@ -14,6 +13,7 @@ import { ProxyPrompt } from '~/components/ProxyPrompt'
 import { StrategyAd, type StrategyAdProps } from '~/components/StrategyAd'
 import { AvailableVaultsTable } from './AvailableVaultsTable'
 import { MyVaultsTable } from './MyVaultsTable'
+import { SortByDropdown } from '~/components/SortByDropdown'
 
 const strategies: StrategyAdProps[] = [
     {
@@ -36,18 +36,16 @@ const strategies: StrategyAdProps[] = [
 
 type VaultsListProps = {
     navIndex: number,
-    setNavIndex: Dispatch<SetStateAction<number>>
+    setNavIndex: SetState<number>
 }
 export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
     const { setActiveVault } = useVault()
 
-    const [eligibleOnly, setEligibleOnly] = useState(false)
-    const [assetsFilter, setAssetsFilter] = useState<string>()
+    const isLargerThanSmall = useMediaQuery('upToSmall')
 
     const {
         connectWalletModel: {
             tokensData,
-            tokensFetchedData,
         },
         vaultModel: vaultState,
     } = useStoreState(state => state)
@@ -58,66 +56,54 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
             .map(({ symbol }) => symbol)
     ), [tokensData])
 
-    const myVaults = useMemo(() => {
-        const temp = vaultState.list
-        if (!assetsFilter) return temp
-
-        return temp.filter(({ collateralName }) => (
-            collateralName.toUpperCase() === assetsFilter
-        ))
-    }, [vaultState.list, assetsFilter])
-
-    const availableVaults: AvailableVaultPair[] = useMemo(() => {
-        return symbols.map(symbol => {
-            const {
-                liquidationCRatio,
-                totalAnnualizedStabilityFee,
-            } = vaultState.liquidationData?.collateralLiquidationData[symbol] || {}
-            return {
-                collateralName: symbol,
-                collateralizationFactor: liquidationCRatio
-                    ? formatNumberWithStyle(liquidationCRatio, {
-                        maxDecimals: 0,
-                        style: 'percent',
-                    })
-                    : '--%',
-                apy: totalAnnualizedStabilityFee
-                    ? getRatePercentage(totalAnnualizedStabilityFee).toString()
-                    : '',
-                eligibleBalance: tokensFetchedData[symbol]?.balanceE18 || '0',
-                myVaults: vaultState.list.filter(({ collateralName }) => (
-                    collateralName === symbol
-                )),
-            }
-        })
-    }, [eligibleOnly, symbols, tokensFetchedData, vaultState.list, vaultState.liquidationData])
-
-    const filteredAvailableVaults = useMemo(() => {
-        if (!eligibleOnly) return availableVaults
-
-        return availableVaults.filter(({ collateralName }) => {
-            const balance = tokensFetchedData[collateralName]?.balanceE18 || '0'
-            return !BigNumber.from(balance).isZero()
-        })
-    }, [availableVaults, eligibleOnly])
+    const {
+        headers: availableHeaders,
+        rows: availableVaults,
+        sorting: availableSorting,
+        setSorting: setAvailableSorting,
+        eligibleOnly,
+        setEligibleOnly,
+    } = useAvailableVaults()
+    
+    const {
+        headers: myVaultsHeaders,
+        rows: myVaults,
+        sorting: myVaultsSorting,
+        setSorting: setMyVaultsSorting,
+        assetsFilter,
+        setAssetsFilter,
+    } = useMyVaults()
 
     return (
         <NavContainer
-            navItems={[
-                `Available Vaults (${availableVaults.length})`,
-                `My Vaults (${vaultState.list.length})`,
-            ]}
+            navItems={isLargerThanSmall
+                ? [
+                    `Available Vaults (${availableVaults.length})`,
+                    `My Vaults (${vaultState.list.length})`,
+                ]
+                : [
+                    'Available Vaults',
+                    'My Vaults',
+                ]
+            }
             selected={navIndex}
             onSelect={(i: number) => setNavIndex(i)}
             headerContent={navIndex === 0
-                ? (
+                ? (<>
+                    {!isLargerThanSmall && (
+                        <SortByDropdown
+                            headers={availableHeaders}
+                            sorting={availableSorting}
+                            setSorting={setAvailableSorting}
+                        />
+                    )}
                     <CheckboxButton
                         checked={eligibleOnly}
                         toggle={() => setEligibleOnly(e => !e)}>
                         Eligible Vaults Only
                     </CheckboxButton>
-                )
-                : (
+                </>)
+                : (<>
                     <BrandedDropdown label={(
                         <Text
                             $fontWeight={400}
@@ -129,6 +115,7 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
                         {['All', ...symbols].map(label => (
                             <DropdownOption
                                 key={label}
+                                $active={assetsFilter === label}
                                 onClick={() => {
                                     // e.stopPropagation()
                                     setAssetsFilter(label === 'All' ? undefined: label)
@@ -137,18 +124,23 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
                             </DropdownOption>
                         ))}
                     </BrandedDropdown>
-                )
+                    {!isLargerThanSmall && (
+                        <SortByDropdown
+                            headers={myVaultsHeaders}
+                            sorting={myVaultsSorting}
+                            setSorting={setMyVaultsSorting}
+                        />
+                    )}
+                </>)
             }>
             {navIndex === 0
                 ? (<>
-                    {!filteredAvailableVaults.length
-                        ? (
-                            <CenteredFlex $width="100%">
-                                <Text>No available vaults matched your search criteria</Text>
-                            </CenteredFlex>
-                        )
-                        : <AvailableVaultsTable rows={filteredAvailableVaults}/>
-                    }
+                    <AvailableVaultsTable
+                        headers={availableHeaders}
+                        rows={availableVaults}
+                        sorting={availableSorting}
+                        setSorting={setAvailableSorting}
+                    />
                     {strategies.map((strat, i) => (
                         <StrategyAd
                             key={i}
@@ -166,7 +158,10 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
                         : undefined
                     }>
                         <MyVaultsTable
+                            headers={myVaultsHeaders}
                             rows={myVaults}
+                            sorting={myVaultsSorting}
+                            setSorting={setMyVaultsSorting}
                             onCreate={() => setActiveVault({
                                 create: true,
                                 collateralName: assetsFilter || 'WETH',

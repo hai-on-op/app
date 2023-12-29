@@ -46,6 +46,8 @@ export const GlobalStyle = createGlobalStyle`
         color: ${({ theme }) => theme.colors.primary};
         background-color:${({ theme }) => theme.colors.background};
         line-height: 1.4;
+        max-height: 100vh;
+        overflow: hidden auto;
 
         .web3modal-modal-lightbox {
             z-index: 999;

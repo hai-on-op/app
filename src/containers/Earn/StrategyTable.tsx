@@ -1,123 +1,48 @@
-import { useMemo, useState } from 'react'
-
-import type { SortableHeader, Sorting, Strategy } from '~/types'
+import type { SetState, SortableHeader, Sorting, Strategy } from '~/types'
+import { useMediaQuery } from '~/hooks'
 
 import styled from 'styled-components'
 import { Flex, Grid, Text } from '~/styles'
 import { RewardsTokenPair, TokenPair } from '~/components/TokenPair'
 import { TableHeaderItem } from '~/components/TableHeaderItem'
 import { StrategyTableButton } from './StrategyTableButton'
-
-const sortableHeaders: SortableHeader[] = [
-    { label: 'Asset Pair' },
-    { label: 'Strategy' },
-    { label: 'TVL' },
-    // { label: 'Vol. 24hr' },
-    { label: 'Rewards APY' },
-    { label: 'My Position' },
-    // { label: 'My APY' },
-]
+import { TableRow } from '~/components/TableRow'
 
 type StrategyTableProps = {
+    headers: SortableHeader[],
     rows: Strategy[]
+    sorting: Sorting,
+    setSorting: SetState<Sorting>
 }
-export function StrategyTable({ rows }: StrategyTableProps) {
-    const [sorting, setSorting] = useState<Sorting>({
-        key: 'My Position',
-        dir: 'desc',
-    })
+export function StrategyTable({ headers, rows, sorting, setSorting }: StrategyTableProps) {
+    const isLargerThanSmall = useMediaQuery('upToSmall')
 
-    const sortedRows = useMemo(() => {
-        switch(sorting.key) {
-            case 'Asset Pair': {
-                return rows.toSorted(({ pair: a }, { pair: b }) => {
-                    return sorting.dir === 'desc'
-                        ? (a[0] > b[0] ? 1: -1)
-                        : (a[0] < b[0] ? 1: -1)
-                })
-            }
-            case 'Strategy': {
-                return rows.toSorted(({ earnPlatform: a }, { earnPlatform: b}) => {
-                    const stratA = a ? 'farm': 'borrow'
-                    const stratB = b ? 'farm': 'borrow'
-                    return sorting.dir === 'desc'
-                        ? (stratA > stratB ? 1: -1)
-                        : (stratA < stratB ? 1: -1)
-                })
-            }
-            case 'TVL': {
-                return rows.toSorted(({ tvl: a }, { tvl: b }) => {
-                    return sorting.dir === 'desc'
-                        ? (a < b ? 1: -1)
-                        : (a > b ? 1: -1)
-                })
-            }
-            // case 'Vol. 24hr': {
-            //     return rows.toSorted(({ vol24hr: a }, { vol24hr: b }) => {
-            //         if (!b) return -1
-            //         if (!a) return 1
-            //         return sorting.dir === 'desc'
-            //             ? (a < b ? 1: -1)
-            //             : (a > b ? 1: -1)
-            //     })
-            // }
-            case 'Rewards APY': {
-                return rows.toSorted(({ apy: a }, { apy: b }) => {
-                    return sorting.dir === 'desc'
-                        ? b - a
-                        : a - b
-                })
-            }
-            // case 'My APY': {
-            //     return rows.toSorted(({ userApy: a }, { userApy: b }) => {
-            //         if (!b) return -1
-            //         if (!a) return 1
-            //         return sorting.dir === 'desc'
-            //             ? b - a
-            //             : a - b
-            //     })
-            // }
-            case 'My Position':
-            default: {
-                return rows.toSorted(({ userPosition: a }, { userPosition: b }) => {
-                    if (!b) return -1
-                    if (!a) return 1
-                    return sorting.dir === 'desc'
-                        ? (a < b ? 1: -1)
-                        : (a > b ? 1: -1)
-                })
-            }
-        }
-    }, [rows, sorting])
-    
     return (
         <Table>
-            <TableHeader>
-                {sortableHeaders.map(({ label, tooltip, unsortable }) => (
-                    <TableHeaderItem
-                        key={label}
-                        sortable={!unsortable}
-                        isSorting={sorting.key === label ? sorting.dir: false}
-                        onClick={unsortable
-                            ? undefined
-                            : () => setSorting(s => {
-                                if (s.key === label) return {
-                                    ...s,
-                                    dir: s.dir === 'asc' ? 'desc': 'asc',
-                                }
-                                return {
+            {isLargerThanSmall && (
+                <TableHeader>
+                    {headers.map(({ label, tooltip, unsortable }) => (
+                        <TableHeaderItem
+                            key={label}
+                            sortable={!unsortable}
+                            isSorting={sorting.key === label ? sorting.dir: false}
+                            onClick={unsortable
+                                ? undefined
+                                : () => setSorting(s => ({
                                     key: label,
-                                    dir: 'desc',
-                                }
-                            })
-                        }
-                        tooltip={tooltip}>
-                        <Text $fontWeight={sorting.key === label ? 700: 400}>{label}</Text>
-                    </TableHeaderItem>
-                ))}
-                <Text></Text>
-            </TableHeader>
-            {sortedRows.map(({
+                                    dir: s.key === label && s.dir === 'desc'
+                                        ? 'asc'
+                                        : 'desc',
+                                }))
+                            }
+                            tooltip={tooltip}>
+                            <Text $fontWeight={sorting.key === label ? 700: 400}>{label}</Text>
+                        </TableHeaderItem>
+                    ))}
+                    <Text></Text>
+                </TableHeader>
+            )}
+            {rows.map(({
                 pair,
                 rewards,
                 tvl,
@@ -125,33 +50,61 @@ export function StrategyTable({ rows }: StrategyTableProps) {
                 userPosition,
                 earnPlatform,
             }, i) => (
-                <TableRow key={i}>
-                    <Grid
-                        $columns="1fr min-content 12px"
-                        $align="center"
-                        $gap={12}>
-                        <Flex
-                            $justify="flex-start"
-                            $align="center"
-                            $gap={8}>
-                            <TokenPair
-                                tokens={pair}
-                                hideLabel
-                            />
-                            <Text $fontWeight={700}>{pair.join('/')}</Text>
-                        </Flex>
-                        <RewardsTokenPair tokens={rewards}/>
-                    </Grid>
-                    <Text $fontWeight={700}>{earnPlatform ? 'FARM': 'BORROW'}</Text>
-                    <Text $fontWeight={700}>{tvl}</Text>
-                    {/* <Text $fontWeight={700}>{vol24hr || '-'}</Text> */}
-                    <Text $fontWeight={700}>{(apy * 100).toFixed(0)}%</Text>
-                    <Text $fontWeight={700}>{userPosition || '-'}</Text>
-                    {/* <Text $fontWeight={700}>{userApy ? (userApy * 100).toFixed(0) + '%': '-'}</Text> */}
-                    <Flex $justify="flex-end">
-                        <StrategyTableButton earnPlatform={earnPlatform}/>
-                    </Flex>
-                </TableRow>
+                <TableRow
+                    key={i}
+                    container={TableRowContainer}
+                    headers={headers}
+                    items={[
+                        {
+                            content: (
+                                <Grid
+                                    $columns="1fr min-content 12px"
+                                    $align="center"
+                                    $gap={12}>
+                                    <Flex
+                                        $justify="flex-start"
+                                        $align="center"
+                                        $gap={8}>
+                                        <TokenPair
+                                            tokens={pair}
+                                            hideLabel
+                                        />
+                                        <Text $fontWeight={700}>{pair.join('/')}</Text>
+                                    </Flex>
+                                    <RewardsTokenPair tokens={rewards}/>
+                                </Grid>
+                            ),
+                            props: { $fontSize: 'inherit' },
+                            fullWidth: true,
+                        },
+                        {
+                            content: <Text $fontWeight={700}>{earnPlatform ? 'FARM': 'BORROW'}</Text>,
+                        },
+                        {
+                            content: <Text $fontWeight={700}>{tvl}</Text>,
+                        },
+                        // {
+                        //     content: <Text $fontWeight={700}>{vol24hr || '-'}</Text>,
+                        // },
+                        {
+                            content: <Text $fontWeight={700}>{(apy * 100).toFixed(0)}%</Text>,
+                        },
+                        {
+                            content: <Text $fontWeight={700}>{userPosition || '-'}</Text>,
+                        },
+                        // {
+                        //     content: <Text $fontWeight={700}>{userApy ? (userApy * 100).toFixed(0) + '%': '-'}</Text>,
+                        // },
+                        {
+                            content: (
+                                <ButtonContainer>
+                                    <StrategyTableButton earnPlatform={earnPlatform}/>
+                                </ButtonContainer>
+                            ),
+                            unwrapped: true,
+                        },
+                    ]}
+                />
             ))}
         </Table>
     )
@@ -176,9 +129,34 @@ const TableHeader = styled(Grid)`
         padding: 0 4px;
     }
 `
-const TableRow = styled(TableHeader)`
+const TableRowContainer = styled(TableHeader)`
     border-radius: 999px;
     &:hover {
         background-color: rgba(0,0,0,0.1);
     }
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        padding: 24px;
+        grid-template-columns: 1fr 1fr;
+        grid-gap: 12px;
+        border-radius: 0px;
+
+        &:not(:first-child) {
+            border-top: ${theme.border.medium};
+        }
+        &:hover {
+            background-color: unset;
+        }
+    `}
+`
+
+const ButtonContainer = styled(Flex).attrs(props => ({
+    $justify: 'flex-end',
+    $align: 'center',
+    ...props,
+}))`
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        justify-content: flex-start;
+        grid-column: 1 / -1;
+    `}
 `

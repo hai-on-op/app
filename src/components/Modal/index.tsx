@@ -191,7 +191,7 @@ const clouds: FloatingElementsProps['clouds'] = [
         width: '200px',
         style: {
             left: '-90px',
-            top: '-100px',
+            top: 'calc(min(100px, 20vw) - 200px)',
         },
         zIndex: 2,
     },

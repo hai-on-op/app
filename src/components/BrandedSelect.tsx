@@ -118,13 +118,14 @@ export function BrandedSelect({ width, options, value, onChange, ...props }: Bra
 
 const Container = styled(CenteredFlex)`
     position: relative;
-    height: 80px;
+    min-height: 80px;
     padding: 0 12px;
     border-bottom: 2px solid rgba(0,0,0,0.1);
     cursor: pointer;
 `
 const HiddenText = styled(Title)`
     visibility: hidden;
+    white-space: pre-wrap;
 `
 
 const Select = styled(Title)`
@@ -137,6 +138,7 @@ const Select = styled(Title)`
     outline: none;
     border: none;
     pointer-events: none;
+    white-space: pre-wrap;
 `
 const IconContainer = styled(CenteredFlex)<{ $active?: boolean }>`
     margin-top: 8px;
@@ -154,6 +156,7 @@ const IconContainer = styled(CenteredFlex)<{ $active?: boolean }>`
 
 const Dropdown = styled(Popout)`
     width: 400px;
+    max-width: calc(100vw - 72px);
     padding: 24px;
     margin-right: -14px;
     gap: 12px;

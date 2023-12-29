@@ -1,6 +1,7 @@
-import { Dispatch, SetStateAction, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useQuery, ApolloError } from '@apollo/client'
 
+import type { SetState } from '~/types'
 import {
     DAILY_STATS_QUERY,
     HOURLY_STATS_QUERY,
@@ -19,7 +20,7 @@ export type StatsQueryResult = {
 
 export type HistoricalStatsReturn = {
     timeframe: Timeframe,
-    setTimeframe: Dispatch<SetStateAction<Timeframe>>,
+    setTimeframe: SetState<Timeframe>,
     loading: boolean,
     error?: ApolloError,
     data?: StatsQueryResult

@@ -1,8 +1,16 @@
-import { type CSSProperties, type ReactNode, type SVGProps } from 'react'
+import {
+    type CSSProperties,
+    type Dispatch,
+    type ReactNode,
+    type SetStateAction,
+    type SVGProps,
+} from 'react'
 
 import { ActionState } from '~/utils'
 
 export type ReactChildren = JSX.Element | ReactNode | ReactNode[]
+
+export type SetState<T> = Dispatch<SetStateAction<T>>
 
 export type IconProps = Omit<SVGProps<SVGElement>, 'ref'> & {
     size?: number

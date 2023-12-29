@@ -1,6 +1,7 @@
-import { type Dispatch, type SetStateAction, useState, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import dayjs from 'dayjs'
 
+import type { SetState } from '~/types'
 import { parseRemainingTime } from '~/utils'
 import { useOutsideClick } from '~/hooks'
 
@@ -29,7 +30,7 @@ const dummyNotifications = [
 
 type NotificationsProps = {
     active: boolean,
-    setActive: Dispatch<SetStateAction<boolean>>
+    setActive: SetState<boolean>
 }
 export function Notifications({ active, setActive }: NotificationsProps) {
     const [button, setButton] = useState<HTMLElement | null>(null)

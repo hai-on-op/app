@@ -1,8 +1,9 @@
 import styled, { css } from 'styled-components'
+import { type TextProps, TextStyle } from './Text'
 
 type Alignment = 'stretch' | 'flex-start' | 'center' | 'flex-end' | 'space-between' | 'space-around' | 'space-evenly'
 
-export type FlexProps = {
+export type FlexProps = TextProps & {
     $direction?: 'row' | 'row-reverse' | 'column' | 'column-reverse',
     $column?: boolean,
     $justify?: Alignment,
@@ -15,6 +16,7 @@ export type FlexProps = {
 }
 
 export const FlexStyle = css<FlexProps>`
+    ${TextStyle}
     display: flex;
     flex-direction: ${({ $direction = undefined, $column }) => $direction || ($column ? 'column': 'row')};
     justify-content: ${({ $justify = 'stretch' }) => $justify};

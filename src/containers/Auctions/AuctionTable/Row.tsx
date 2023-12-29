@@ -1,10 +1,10 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { IAuction } from '~/types'
+import type { IAuction, SortableHeader } from '~/types'
 import { Status, formatNumberWithStyle, stringsExistAndAreEqual } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
-import { useAuction } from '~/hooks'
+import { useAuction, useMediaQuery } from '~/hooks'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
@@ -14,13 +14,15 @@ import { StatusLabel } from '~/components/StatusLabel'
 import { Caret } from '~/components/Icons/Caret'
 import { BidTable } from './BidTable'
 import { ProxyPrompt } from '~/components/ProxyPrompt'
+import { TableRow } from '~/components/TableRow'
 
 type AuctionTableRowProps = {
+    headers: SortableHeader[],
     auction: (IAuction & { myBids?: number }),
     expanded: boolean,
     onSelect?: () => void
 }
-export function AuctionTableRow({ auction, expanded, onSelect }: AuctionTableRowProps) {
+export function AuctionTableRow({ headers, auction, expanded, onSelect }: AuctionTableRowProps) {
     const { t } = useTranslation()
 
     const {
@@ -31,6 +33,8 @@ export function AuctionTableRow({ auction, expanded, onSelect }: AuctionTableRow
         auctionModel: auctionActions,
         popupsModel: popupsActions,
     } = useStoreActions(actions => actions)
+
+    const isLargerThanSmall = useMediaQuery('upToSmall')
 
     const [timeEl, setTimeEl] = useState<HTMLElement | null>()
 
@@ -95,104 +99,156 @@ export function AuctionTableRow({ auction, expanded, onSelect }: AuctionTableRow
     }, [status, proxyAddress, auctionState.isSubmitting, auction, onButtonClick, t])
 
     return (
-        <TableRow
-            key={`${englishAuctionType}-${auctionId}`}
+        <TableRowContainer
             onClick={onSelect}
             $expanded={expanded}>
-            <TableRowHeader>
-                <Text $fontWeight={700}>#{auctionId}</Text>
-                <Text $fontWeight={700}>{englishAuctionType}</Text>
-                <Flex
-                    $justify="flex-start"
-                    $align="center"
-                    $gap={8}>
-                    <TokenPair
-                        tokens={[sellToken as any]}
-                        hideLabel
-                    />
-                    <Flex
-                        $column
-                        $align="flex-start">
-                        <Text>
-                            {auction.englishAuctionType === 'COLLATERAL'
-                                ? remainingToSell || '--'
-                                : formatNumberWithStyle(
-                                    auction.sellInitialAmount,
-                                    { maxDecimals: 3 }
-                                )
-                            } {sellToken}
-                        </Text>
-                        <Text $fontSize="0.6rem">
-                            {auction.englishAuctionType === 'COLLATERAL'
-                                ? `Start: ${formatNumberWithStyle(
-                                    auction.sellInitialAmount,
-                                    { maxDecimals: 3 }
-                                )}`
-                                : formatNumberWithStyle(
-                                    parseFloat(auction.sellInitialAmount) * parseFloat(sellUsdPrice),
-                                    {
-                                        maxDecimals: 2,
-                                        style: 'currency',
+            <TableRow
+                container={TableRowHeader}
+                headers={headers}
+                items={[
+                    {
+                        content: <Text $fontWeight={700}>#{auctionId}</Text>,
+                    },
+                    {
+                        content: <Text $fontWeight={700}>{englishAuctionType}</Text>,
+                    },
+                    {
+                        content: (
+                            <Flex
+                                $justify="flex-start"
+                                $align="center"
+                                $gap={8}>
+                                <TokenPair
+                                    tokens={[sellToken as any]}
+                                    hideLabel
+                                />
+                                <Flex
+                                    $column
+                                    $align="flex-start">
+                                    <Text>
+                                        {auction.englishAuctionType === 'COLLATERAL'
+                                            ? remainingToSell || '--'
+                                            : formatNumberWithStyle(
+                                                auction.sellInitialAmount,
+                                                { maxDecimals: 3 }
+                                            )
+                                        } {sellToken}
+                                    </Text>
+                                    <Text $fontSize="0.6rem">
+                                        {auction.englishAuctionType === 'COLLATERAL'
+                                            ? `Start: ${formatNumberWithStyle(
+                                                auction.sellInitialAmount,
+                                                { maxDecimals: 3 }
+                                            )}`
+                                            : formatNumberWithStyle(
+                                                parseFloat(auction.sellInitialAmount) * parseFloat(sellUsdPrice),
+                                                {
+                                                    maxDecimals: 2,
+                                                    style: 'currency',
+                                                }
+                                            )
+                                        }
+                                    </Text>
+                                </Flex>
+                            </Flex>
+                        ),
+                        props: { $fontSize: 'inherit' },
+                    },
+                    {
+                        content: (
+                            <Flex
+                                $justify="flex-start"
+                                $align="center"
+                                $gap={8}>
+                                <TokenPair
+                                    tokens={[buyToken as any]}
+                                    hideLabel
+                                />
+                                <Flex
+                                    $column
+                                    $align="flex-start">
+                                    <Text>
+                                        {auction.englishAuctionType === 'COLLATERAL'
+                                            ? remainingToRaise || '--'
+                                            : ''
+                                        } {buyToken}
+                                    </Text>
+                                    <Text $fontSize="0.6rem">
+                                        {auction.englishAuctionType === 'COLLATERAL'
+                                            ? `Start: ${initialToRaise || '--'}`
+                                            : `Bid: ${formatNumberWithStyle(
+                                                biddersList[0].buyAmount || buyInitialAmount,
+                                                { maxDecimals: 3 }
+                                            )}`
+                                        }
+                                    </Text>
+                                </Flex>
+                            </Flex>
+                        ),
+                        props: { $fontSize: 'inherit' },
+                    },
+                    {
+                        content: (
+                            <Flex
+                                $column
+                                $align="flex-start">
+                                <Text $fontWeight={700}>
+                                    {auctionDeadline
+                                        ? (new Date(parseInt(auctionDeadline) * 1000)).toLocaleDateString()
+                                        : '--'
                                     }
-                                )
-                            }
-                        </Text>
-                    </Flex>
-                </Flex>
-                <Flex
-                    $justify="flex-start"
-                    $align="center"
-                    $gap={8}>
-                    <TokenPair
-                        tokens={[buyToken as any]}
-                        hideLabel
-                    />
-                    <Flex
-                        $column
-                        $align="flex-start">
-                        <Text>
-                            {auction.englishAuctionType === 'COLLATERAL'
-                                ? remainingToRaise || '--'
-                                : ''
-                            } {buyToken}
-                        </Text>
-                        <Text $fontSize="0.6rem">
-                            {auction.englishAuctionType === 'COLLATERAL'
-                                ? `Start: ${initialToRaise || '--'}`
-                                : `Bid: ${formatNumberWithStyle(
-                                    biddersList[0].buyAmount || buyInitialAmount,
-                                    { maxDecimals: 3 }
-                                )}`
-                            }
-                        </Text>
-                    </Flex>
-                </Flex>
-                <Flex
-                    $column
-                    $align="flex-start">
-                    <Text $fontWeight={700}>
-                        {auctionDeadline
-                            ? (new Date(parseInt(auctionDeadline) * 1000)).toLocaleDateString()
-                            : '--'
-                        }
-                    </Text>
-                    <Text
-                        ref={setTimeEl}
-                        $fontSize="0.6rem">
-                        --
-                    </Text>
-                </Flex>
-                <Text>{auction.myBids || '--'}</Text>
-                <Flex>
-                    <StatusLabel
-                        status={status}
-                        size={0.8}
-                    />
-                </Flex>
-                <DropdownIcon $expanded={expanded}>
-                    <Caret direction="down"/>
-                </DropdownIcon>
-            </TableRowHeader>
+                                </Text>
+                                <Text
+                                    ref={setTimeEl}
+                                    $fontSize="0.6rem">
+                                    --
+                                </Text>
+                            </Flex>
+                        ),
+                    },
+                    {
+                        content: <Text>{auction.myBids || '--'}</Text>,
+                    },
+                    {
+                        content: (
+                            <Flex>
+                                <StatusLabel
+                                    status={status}
+                                    size={0.8}
+                                />
+                            </Flex>
+                        ),
+                    },
+                    {
+                        content: isLargerThanSmall
+                            ? (
+                                <DropdownIcon $expanded={expanded}>
+                                    <Caret direction="down"/>
+                                </DropdownIcon>
+                            )
+                            : (
+                                <Flex
+                                    $column
+                                    $justify="flex-end"
+                                    $align="stretch"
+                                    style={{ height: '100%' }}>
+                                    <Flex
+                                        $width="100%"
+                                        $justify="flex-end"
+                                        $align="center"
+                                        $gap={12}>
+                                        <Text $textDecoration="underline">
+                                            {expanded ? 'Hide': 'View'} Bids
+                                        </Text>
+                                        <DropdownIcon $expanded={expanded}>
+                                            <Caret direction="down"/>
+                                        </DropdownIcon>
+                                    </Flex>
+                                </Flex>
+                            ),
+                        unwrapped: true,
+                    },
+                ]}/>
             <TableRowBody>
                 <BidTable auction={auction}/>
             </TableRowBody>
@@ -201,11 +257,11 @@ export function AuctionTableRow({ auction, expanded, onSelect }: AuctionTableRow
                     {button}
                 </ProxyPrompt>
             </TableRowFooter>
-        </TableRow>
+        </TableRowContainer>
     )
 }
 
-const TableRow = styled(Flex).attrs(props => ({
+const TableRowContainer = styled(Flex).attrs(props => ({
     $width: '100%',
     $column: true,
     $justify: 'stretch',
@@ -218,10 +274,35 @@ const TableRow = styled(Flex).attrs(props => ({
     border-radius: 18px;
     border: 2px solid rgba(0,0,0,0.1);
     overflow: hidden;
+
+    ${({ theme, $expanded }) => theme.mediaWidth.upToSmall`
+        height: ${$expanded ? 652: 312}px;
+        border-radius: 0px;
+        border: none;
+        &:not(:first-child) {
+            border-top: ${theme.border.medium};
+        }
+    `}
 `
 const TableRowHeader = styled(TableHeader)`
     height: 55px;
     cursor: pointer;
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        height: 312px;
+        padding: 24px;
+        grid-template-columns: 1fr 1fr;
+        grid-gap: 12px;
+        align-items: flex-start;
+        border-radius: 0px;
+
+        &:not(:first-child) {
+            border-top: ${theme.border.medium};
+        }
+        &:hover {
+            background-color: unset;
+        }
+    `}
 `
 const TableRowBody = styled(Flex).attrs(props => ({
     $width: '100%',

@@ -1,22 +1,11 @@
-import { useMemo, useState } from 'react'
-import { useQuery } from '@apollo/client'
+import { useState } from 'react'
 
-import type { SortableHeader, Sorting } from '~/types'
-import {
-    ALLSAFES_QUERY_NOT_ZERO,
-    ALLSAFES_QUERY_WITH_ZERO,
-    type QuerySafe,
-    Status,
-    formatNumberWithStyle,
-    getCollateralRatio,
-    ratioChecker,
-    riskStateToStatus,
-    tokenAssets,
-} from '~/utils'
+import { Status, formatNumberWithStyle } from '~/utils'
 import { useStoreState } from '~/store'
+import { useAllVaults, useMediaQuery } from '~/hooks'
 
-import styled from 'styled-components'
-import { BlurContainer, CenteredFlex, Flex, type FlexProps, Grid, HaiButton, Text } from '~/styles'
+import styled, { css } from 'styled-components'
+import { BlurContainer, CenteredFlex, Flex, Grid, HaiButton, Text } from '~/styles'
 import { BrandedTitle } from '~/components/BrandedTitle'
 import { TableHeaderItem } from '~/components/TableHeaderItem'
 import { AddressLink } from '~/components/AddressLink'
@@ -26,28 +15,10 @@ import { BrandedDropdown, DropdownOption } from '~/components/BrandedDropdown'
 import { TokenPair } from '~/components/TokenPair'
 import { CheckboxButton } from '~/components/CheckboxButton'
 import { LiquidateVaultModal } from '~/components/Modal/LiquidateVaultModal'
+import { ContentWithStatus } from '~/components/ContentWithStatus'
+import { TableRow } from '~/components/TableRow'
+import { SortByDropdown } from '~/components/SortByDropdown'
 
-const sortableHeaders: (SortableHeader & FlexProps)[] = [
-    {
-        label: 'Vault',
-        $justify: 'flex-start',
-    },
-    {
-        label: 'Owner',
-        $justify: 'flex-start',
-    },
-    {
-        label: 'Collateral',
-        $justify: 'flex-end',
-    },
-    {
-        label: 'Debt',
-        $justify: 'flex-end',
-    },
-    { label: 'Collateral Ratio' },
-]
-
-const MAX_VAULTS_TO_FETCH = 500
 const RECORDS_PER_PAGE = 10
 
 export function VaultExplorer() {
@@ -56,106 +27,23 @@ export function VaultExplorer() {
     const symbols = Object.values(tokensData || {})
         .filter(({ isCollateral }) => isCollateral)
         .map(({ symbol }) => symbol)
+    
+    const isLargerThanSmall = useMediaQuery('upToSmall')
 
-    const [filterEmpty, setFilterEmpty] = useState(false)
-    const [collateralFilter, setCollateralFilter] = useState<string>()
-
-    const [sorting, setSorting] = useState<Sorting>({
-        key: 'Collateral Ratio',
-        dir: 'asc',
-    })
+    const {
+        error,
+        loading,
+        headers,
+        rows,
+        sorting,
+        setSorting,
+        filterEmpty,
+        setFilterEmpty,
+        collateralFilter,
+        setCollateralFilter,
+    } = useAllVaults()
 
     const [offset, setOffset] = useState(0)
-
-    const { data, error, loading } = useQuery<{ safes: QuerySafe[] }>(
-        filterEmpty ? ALLSAFES_QUERY_NOT_ZERO: ALLSAFES_QUERY_WITH_ZERO,
-        {
-            variables: {
-                first: MAX_VAULTS_TO_FETCH,
-                skip: 0,
-                orderBy: 'collateral',
-                orderDirection: 'desc',
-            },
-        }
-    )
-
-    const vaultsWithCRatioAndToken = useMemo(() => {
-        if (!data?.safes?.length) return []
-
-        return data.safes.map(vault => {
-            const collateralRatio = !vault.debt || vault.debt === '0'
-                ? Infinity.toString()
-                : getCollateralRatio(
-                    vault.collateral,
-                    vault.debt,
-                    vault.collateralType.currentPrice!.liquidationPrice,
-                    vault.collateralType.currentPrice!.collateral!.liquidationCRatio
-                )
-            const status = riskStateToStatus[
-                ratioChecker(
-                    parseFloat(collateralRatio),
-                    parseFloat(vault.collateralType.safetyCRatio)
-                )
-            ]
-            const collateralToken = Object.values(tokenAssets).find(({ name, symbol }) => (
-                vault.collateralType.id === name || vault.collateralType.id === symbol
-            ))?.symbol || vault.collateralType.id
-            return {
-                ...vault,
-                collateralRatio,
-                collateralToken,
-                status,
-            }
-        })
-    }, [data?.safes])
-
-    const sortedRows = useMemo(() => {
-        switch(sorting.key) {
-            case 'Vault':
-                return vaultsWithCRatioAndToken.toSorted(({ safeId: a }, { safeId: b }) => {
-                    const aId = parseInt(a)
-                    const bId = parseInt(b)
-                    return sorting.dir === 'desc'
-                        ? bId - aId
-                        : aId - bId
-                })
-            case 'Owner':
-                return vaultsWithCRatioAndToken.toSorted(({ owner: a }, { owner: b }) => {
-                    return sorting.dir === 'desc'
-                        ? (a.address > b.address ? 1: -1)
-                        : (a.address < b.address ? 1: -1)
-                })
-            case 'Collateral':
-                return vaultsWithCRatioAndToken.toSorted(({ collateral: a }, { collateral: b }) => {
-                    return sorting.dir === 'desc'
-                        ? parseFloat(b) - parseFloat(a)
-                        : parseFloat(a) - parseFloat(b)
-                })
-            case 'Debt':
-                return vaultsWithCRatioAndToken.toSorted(({ debt: a }, { debt: b }) => {
-                    return sorting.dir === 'desc'
-                        ? parseFloat(b) - parseFloat(a)
-                        : parseFloat(a) - parseFloat(b)
-                })
-            case 'Collateral Ratio':
-            default:
-                return vaultsWithCRatioAndToken.toSorted(({ collateralRatio: a }, { collateralRatio: b }) => {
-                    const aNum = parseFloat(a.toString())
-                    const bNum = parseFloat(b.toString())
-                    return sorting.dir === 'desc'
-                        ? bNum - aNum
-                        : aNum - bNum
-                })
-        }
-    }, [vaultsWithCRatioAndToken, sorting])
-
-    const filteredAndSortedRows = useMemo(() => {
-        if (!collateralFilter || collateralFilter === 'All') return sortedRows
-
-        return sortedRows.filter(({ collateralToken }) => (
-            collateralFilter === collateralToken
-        ))
-    }, [sortedRows, collateralFilter])
 
     const [liquidateVault, setLiquidateVault] = useState<{
         id: string,
@@ -174,9 +62,11 @@ export function VaultExplorer() {
             <Header>
                 <BrandedTitle
                     textContent="ALL VAULTS"
-                    $fontSize="3rem"
+                    $fontSize={isLargerThanSmall ? '3rem': '2.4rem'}
                 />
-                <CenteredFlex $gap={24}>
+                <CenteredFlex
+                    $column={!isLargerThanSmall}
+                    $gap={24}>
                     <CheckboxButton
                         checked={filterEmpty}
                         toggle={() => setFilterEmpty(e => !e)}>
@@ -200,131 +90,176 @@ export function VaultExplorer() {
                             </DropdownOption>
                         ))}
                     </BrandedDropdown>
+                    {!isLargerThanSmall && (
+                        <SortByDropdown
+                            headers={headers}
+                            sorting={sorting}
+                            setSorting={setSorting}
+                        />
+                    )}
                 </CenteredFlex>
             </Header>
             <Table>
-                <TableHeader>
-                    {sortableHeaders.map(({ label, tooltip, unsortable, ...props }) => (
-                        <TableHeaderItem
-                            key={label}
-                            $width="100%"
-                            sortable={!unsortable}
-                            isSorting={sorting.key === label ? sorting.dir: false}
-                            onClick={unsortable
-                                ? undefined
-                                : () => setSorting(s => {
-                                    if (s.key === label) return {
-                                        ...s,
-                                        dir: s.dir === 'asc' ? 'desc': 'asc',
-                                    }
-                                    return {
-                                        key: label,
-                                        dir: 'desc',
-                                    }
-                                })
-                            }
-                            tooltip={tooltip}
-                            {...props}>
-                            <Text $fontWeight={sorting.key === label ? 700: 400}>{label}</Text>
-                        </TableHeaderItem>
-                    ))}
-                    <Text></Text>
-                </TableHeader>
-                {loading
-                    ? (
-                        <CenteredFlex
-                            $width="100%"
-                            style={{ padding: '48px 0' }}>
-                            Loading...
-                        </CenteredFlex>
-                    )
-                    : error
-                        ? (
-                            <CenteredFlex
+                {isLargerThanSmall && (
+                    <TableHeader>
+                        {headers.map(({ label, tooltip, unsortable, ...props }) => (
+                            <TableHeaderItem
+                                key={label}
                                 $width="100%"
-                                style={{ padding: '48px 0' }}>
-                                An error occurred
-                            </CenteredFlex>
-                        )
-                        : !filteredAndSortedRows.length
-                            ? (
-                                <CenteredFlex
-                                    $width="100%"
-                                    style={{ padding: '48px 0' }}>
-                                    No vaults were found or matched your search
-                                </CenteredFlex>
-                            )
-                            : filteredAndSortedRows
-                                .slice(RECORDS_PER_PAGE * offset, RECORDS_PER_PAGE * (offset + 1))
-                                .map(({
-                                    safeId,
-                                    owner,
-                                    collateral,
-                                    debt,
-                                    collateralRatio,
-                                    collateralToken,
-                                    status,
-                                }) => (
-                                    <TableRow key={safeId}>
-                                        <Text>#{safeId}</Text>
-                                        <AddressLink address={owner.address}/>
-                                        <Grid
-                                            $columns="1fr 24px 48px"
-                                            $align="center"
-                                            $gap={8}>
-                                            <Text $textAlign="right">
-                                                {formatNumberWithStyle(collateral, {
-                                                    maxDecimals: 4,
-                                                })}
-                                            </Text>
-                                            <TokenPair
-                                                tokens={[collateralToken as any]}
-                                                hideLabel
-                                                size={48}
-                                            />
-                                            <Text>{collateralToken}</Text>
-                                        </Grid>
-                                        <Grid
-                                            $columns="1fr 24px"
-                                            $gap={8}>
-                                            <Text $textAlign="right">
-                                                {formatNumberWithStyle(debt, {
-                                                    maxDecimals: 4,
-                                                })}
-                                            </Text>
-                                            <Text>HAI</Text>
-                                        </Grid>
-                                        <Flex
-                                            $justify="center"
-                                            $align="center"
-                                            $gap={12}>
-                                            <Text>
-                                                {collateralRatio === Infinity.toString()
-                                                    ? '--'
-                                                    : formatNumberWithStyle(collateralRatio, {
-                                                        style: 'percent',
-                                                        scalingFactor: 0.01,
-                                                    })
-                                                }
-                                            </Text>
-                                            <StatusLabel
-                                                status={status}
-                                                size={0.8}
-                                            />
-                                        </Flex>
-                                        <LiquidateButton onClick={() => setLiquidateVault({
-                                            id: safeId,
-                                            collateralRatio,
-                                            status,
-                                        })}>
-                                            Liquidate
-                                        </LiquidateButton>
-                                    </TableRow>
-                                ))
-
-                }
+                                sortable={!unsortable}
+                                isSorting={sorting.key === label ? sorting.dir: false}
+                                onClick={unsortable
+                                    ? undefined
+                                    : () => setSorting(s => ({
+                                        key: label,
+                                        dir: s.key === label && s.dir === 'desc'
+                                            ? 'asc'
+                                            : 'desc',
+                                    }))
+                                }
+                                tooltip={tooltip}
+                                {...props}>
+                                <Text $fontWeight={sorting.key === label ? 700: 400}>{label}</Text>
+                            </TableHeaderItem>
+                        ))}
+                        <Text></Text>
+                    </TableHeader>
+                )}
+                <ContentWithStatus
+                    loading={loading}
+                    error={error?.message}
+                    isEmpty={!rows.length}>
+                    {rows
+                        .slice(RECORDS_PER_PAGE * offset, RECORDS_PER_PAGE * (offset + 1))
+                        .map(({
+                            safeId,
+                            owner,
+                            collateral,
+                            debt,
+                            collateralRatio,
+                            collateralToken,
+                            status,
+                        }) => (
+                            <TableRow
+                                key={safeId}
+                                container={TableRowContainer}
+                                headers={headers}
+                                items={[
+                                    {
+                                        content: <Text>#{safeId}</Text>,
+                                    },
+                                    {
+                                        content: <AddressLink address={owner.address}/>,
+                                    },
+                                    {
+                                        content: isLargerThanSmall
+                                            ? (
+                                                <Grid
+                                                    $columns="1fr 24px 48px"
+                                                    $align="center"
+                                                    $gap={8}>
+                                                    <Text $textAlign="right">
+                                                        {formatNumberWithStyle(collateral, {
+                                                            maxDecimals: 4,
+                                                        })}
+                                                    </Text>
+                                                    <TokenPair
+                                                        tokens={[collateralToken as any]}
+                                                        hideLabel
+                                                        size={48}
+                                                    />
+                                                    <Text>{collateralToken}</Text>
+                                                </Grid>
+                                            )
+                                            : (
+                                                <Flex
+                                                    $justify="flex-start"
+                                                    $align="center"
+                                                    $gap={8}>
+                                                    <Text $textAlign="right">
+                                                        {formatNumberWithStyle(collateral, {
+                                                            maxDecimals: 4,
+                                                        })}
+                                                    </Text>
+                                                    <TokenPair
+                                                        tokens={[collateralToken as any]}
+                                                        hideLabel
+                                                        size={48}
+                                                    />
+                                                    <Text>{collateralToken}</Text>
+                                                </Flex>
+                                            ),
+                                    },
+                                    {
+                                        content: isLargerThanSmall
+                                            ? (
+                                                <Grid
+                                                    $columns="1fr 24px"
+                                                    $gap={8}>
+                                                    <Text $textAlign="right">
+                                                        {formatNumberWithStyle(debt, {
+                                                            maxDecimals: 4,
+                                                        })}
+                                                    </Text>
+                                                    <Text>HAI</Text>
+                                                </Grid>
+                                            )
+                                            : (
+                                                <Flex
+                                                    $justify="flex-start"
+                                                    $align="center"
+                                                    $gap={8}>
+                                                    <Text $textAlign="right">
+                                                        {formatNumberWithStyle(debt, {
+                                                            maxDecimals: 4,
+                                                        })}
+                                                    </Text>
+                                                    <Text>HAI</Text>
+                                                </Flex>
+                                            ),
+                                    },
+                                    {
+                                        content: (
+                                            <Flex
+                                                $justify="center"
+                                                $align="center"
+                                                $gap={12}>
+                                                <Text>
+                                                    {collateralRatio === Infinity.toString()
+                                                        ? '--'
+                                                        : formatNumberWithStyle(collateralRatio, {
+                                                            style: 'percent',
+                                                            scalingFactor: 0.01,
+                                                        })
+                                                    }
+                                                </Text>
+                                                <StatusLabel
+                                                    status={status}
+                                                    size={0.8}
+                                                />
+                                            </Flex>
+                                        ),
+                                    },
+                                    {
+                                        content: (
+                                            <LiquidateButton
+                                                $variant={!isLargerThanSmall ? 'yellowish': undefined}
+                                                onClick={() => setLiquidateVault({
+                                                    id: safeId,
+                                                    collateralRatio,
+                                                    status,
+                                                })}>
+                                                Liquidate
+                                            </LiquidateButton>
+                                        ),
+                                        unwrapped: true,
+                                    },
+                                ]}
+                            />
+                        ))}
+                </ContentWithStatus>
                 <Pagination
-                    totalItems={filteredAndSortedRows.length}
+                    totalItems={rows.length}
                     perPage={RECORDS_PER_PAGE}
                     handlePagingMargin={setOffset}
                 />
@@ -351,6 +286,21 @@ const Header = styled(Flex).attrs(props => ({
     position: relative;
     padding: 48px;
     border-bottom: ${({ theme }) => theme.border.medium};
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        flex-direction: column;
+        padding: 24px;
+        & > * {
+            width: 100%;
+            &:nth-child(2) {
+                gap: 12px;
+                & > * {
+                    width: 100%;
+                }
+            }
+        }
+    `}
+
     z-index: 1;
 `
 
@@ -364,6 +314,11 @@ const Table = styled(Flex).attrs(props => ({
 }))`
     padding: 48px;
     padding-top: 24px;
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        flex-direction: column;
+        padding: 0px;
+    `}
 `
 const TableHeader = styled(Grid)`
     grid-template-columns: 80px 120px 180px 180px 1fr 120px;
@@ -376,19 +331,34 @@ const TableHeader = styled(Grid)`
         padding: 0 4px;
     }
 `
-const TableRow = styled(TableHeader)`
+const TableRowContainer = styled(TableHeader)`
     border-radius: 999px;
     padding: 0px;
     padding-left: 16px;
     &:hover {
         background-color: rgba(0,0,0,0.1);
     }
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        padding: 24px;
+        grid-template-columns: 1fr 1fr;
+        grid-gap: 12px;
+        border-radius: 0px;
+        border-bottom: ${theme.border.medium};
+        &:hover {
+            background-color: unset;
+        }
+    `}
 `
 
 const LiquidateButton = styled(HaiButton)`
     width: 100%;
     height: 48px;
     justify-content: center;
-    border: 2px solid rgba(0,0,0,0.1);
+    ${({ $variant }) => !$variant && css`border: 2px solid rgba(0,0,0,0.1);`}
     font-size: 0.8rem;
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        grid-column: 1 / -1;
+    `}
 `

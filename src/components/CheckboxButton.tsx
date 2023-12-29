@@ -22,4 +22,5 @@ const Button = styled(HaiButton)`
     height: 48px;
     padding-left: 12px;
     font-weight: 400;
+    justify-content: flex-start;
 `

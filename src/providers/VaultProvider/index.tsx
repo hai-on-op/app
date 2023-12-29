@@ -1,6 +1,5 @@
 import {
     type Dispatch,
-    type SetStateAction,
     createContext,
     useCallback,
     useContext,
@@ -11,7 +10,7 @@ import {
 } from 'react'
 import { useHistory } from 'react-router-dom'
 
-import type { Collateral, Debt, FormState, IVault, ReactChildren } from '~/types'
+import type { Collateral, Debt, FormState, IVault, ReactChildren, SetState } from '~/types'
 import {
     // DEFAULT_VAULT_DATA,
     Status,
@@ -46,7 +45,7 @@ type VaultContext = {
     vault?: IVault,
     setActiveVault: (props: SetActiveVaultProps) => void,
     action: VaultAction,
-    setAction: Dispatch<SetStateAction<VaultAction>>,
+    setAction: SetState<VaultAction>,
     formState: FormState,
     updateForm: Dispatch<Partial<FormState> | 'clear'>,
     collateral: Collateral,

@@ -17,6 +17,7 @@ export function Auctions() {
     const { auctionModel: auctionsActions } = useStoreActions(actions => actions)
     
     const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState('')
 
     // to avoid lag, don't fetch auctions until first render completes
     useLayoutEffect(() => {
@@ -28,6 +29,7 @@ export function Auctions() {
         
         async function fetchAuctions() {
             setIsLoading(true)
+            setError('')
             try {
                 await Promise.all([
                     ...symbols.map(symbol => (
@@ -46,13 +48,14 @@ export function Auctions() {
                         type: 'SURPLUS',
                     }),
                 ])
-                // setError('')
-                setIsLoading(false)
-            } catch (error) {
+            } catch(error: any) {
                 console.error(error)
+                setError(error?.message || 'An error occurred')
                 // if (error instanceof SyntaxError && error.message.includes('failed')) {
                 //     setError('Failed to fetch auctions from the graph node')
                 // }
+            } finally {
+                setIsLoading(false)
             }
         }
         fetchAuctions()
@@ -65,6 +68,9 @@ export function Auctions() {
     }, [auctionsActions, geb, proxyAddress, auctionsData])
 
     return (
-        <AuctionsList isLoading={isLoading}/>
+        <AuctionsList
+            isLoading={isLoading}
+            error={error}
+        />
     )
 }

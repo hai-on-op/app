@@ -4,11 +4,11 @@ import type { ReactChildren } from '~/types'
 import { useOutsideClick } from '~/hooks'
 
 import styled, { css } from 'styled-components'
-import { CenteredFlex, Flex, HaiButton, Popout } from '~/styles'
+import { CenteredFlex, Flex, HaiButton, type HaiButtonProps, Popout } from '~/styles'
 import { Caret } from './Icons/Caret'
 
 type ButtonProps = Omit<HTMLProps<HTMLButtonElement>, 'ref' | 'as' | 'type' | 'label' | 'children'>
-type BrandedDropdownProps = ButtonProps & {
+type BrandedDropdownProps = ButtonProps & HaiButtonProps & {
     label: ReactChildren,
     children: ReactChildren,
 }
@@ -23,12 +23,10 @@ export function BrandedDropdown({ label, children, ...props }: BrandedDropdownPr
             ref={setContainer}
             {...props}
             onClick={() => setExpanded(e => !e)}>
-            <CenteredFlex $gap={12}>
-                {label}
-                <IconContainer $rotate={expanded}>
-                    <Caret direction="down"/>
-                </IconContainer>
-            </CenteredFlex>
+            {label}
+            <IconContainer $rotate={expanded}>
+                <Caret direction="down"/>
+            </IconContainer>
             <Dropdown
                 $float="left"
                 $margin="20px"
@@ -41,11 +39,13 @@ export function BrandedDropdown({ label, children, ...props }: BrandedDropdownPr
 
 const Container = styled(HaiButton)`
     height: 48px;
+    z-index: 1;
 `
 
 const IconContainer = styled(CenteredFlex)<{ $rotate?: boolean }>`
     transition: all 0.5s ease;
     transform: ${({ $rotate }) => $rotate ? 'rotate(-180deg)': 'rotate(0deg)'};
+    margin-left: 12px;
 `
 
 const Dropdown = styled(Popout)`
@@ -54,6 +54,7 @@ const Dropdown = styled(Popout)`
     padding: 24px;
     margin-right: -16px;
     gap: 12px;
+    z-index: 2;
 `
 
 export const DropdownOption = styled(Flex).attrs(props => ({

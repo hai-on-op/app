@@ -1,15 +1,14 @@
-import { useMemo, useState } from 'react'
-
-import type { AuctionEventType, IAuction } from '~/types'
-import { tokenMap } from '~/utils'
+import type { AuctionEventType } from '~/types'
 import { useStoreState } from '~/store'
-import { useGetAuctions } from '~/hooks'
+import { useAuctionsData, useMediaQuery } from '~/hooks'
 
+import styled from 'styled-components'
 import { CenteredFlex, Text } from '~/styles'
 import { NavContainer } from '~/components/NavContainer'
 import { CheckboxButton } from '~/components/CheckboxButton'
 import { BrandedDropdown, DropdownOption } from '~/components/BrandedDropdown'
 import { AuctionTable } from './AuctionTable'
+import { SortByDropdown } from '~/components/SortByDropdown'
 
 const auctionFilters: (AuctionEventType | 'All')[] = [
     'All',
@@ -18,81 +17,51 @@ const auctionFilters: (AuctionEventType | 'All')[] = [
     'SURPLUS',
 ]
 
-const sortByTimeCreated = ({ createdAt: a }: IAuction, { createdAt: b }: IAuction) => {
-    return parseInt(b) - parseInt(a)
-}
-
 type AuctionsListProps = {
-    isLoading: boolean
+    isLoading: boolean,
+    error?: string
 }
-export function AuctionsList({ isLoading }: AuctionsListProps) {
+export function AuctionsList({ isLoading, error }: AuctionsListProps) {
     const { connectWalletModel: { tokensData } } = useStoreState(state => state)
 
     const symbols = Object.values(tokensData || {})
         .filter(({ isCollateral }) => isCollateral)
         .map(({ symbol }) => symbol)
+        
+    const {
+        headers,
+        rows,
+        sorting,
+        setSorting,
+        filterMyBids,
+        setFilterMyBids,
+        typeFilter,
+        setTypeFilter,
+        saleAssetsFilter,
+        setSaleAssetsFilter,
+    } = useAuctionsData()
 
-    const [filterMyBids, setFilterMyBids] = useState(false)
-    const [typeFilter, setTypeFilter] = useState<AuctionEventType>()
-    const [saleAssetsFilter, setSaleAssetsFilter] = useState<string>()
-
-    const collateralAuctions = useGetAuctions('COLLATERAL', saleAssetsFilter)
-    const debtAuctions = useGetAuctions('DEBT')
-    const surplusAuctions = useGetAuctions('SURPLUS')
-
-    const auctions = useMemo(() => {
-        let temp: IAuction[] = []
-        switch(typeFilter) {
-            case 'COLLATERAL': {
-                temp = [...collateralAuctions]
-                break
-            }
-            // TODO: check to make sure that debt and surplus auctions always have same
-            // buy/sell assets and therefore should not be filterable by those assets
-            case 'DEBT': {
-                return debtAuctions.toSorted(sortByTimeCreated)
-                // temp = [...debtAuctions]
-                // break
-            }
-            case 'SURPLUS': {
-                return surplusAuctions.toSorted(sortByTimeCreated)
-                // temp = [...surplusAuctions]
-                // break
-            }
-            default: {
-                temp = [
-                    ...collateralAuctions,
-                    ...debtAuctions,
-                    ...surplusAuctions,
-                ]
-                break
-            }
-        }
-        if (saleAssetsFilter) {
-            temp = temp.filter(({ sellToken }) => {
-                const parsedSellToken = tokenMap[sellToken] || sellToken
-                if (saleAssetsFilter && saleAssetsFilter !== parsedSellToken) return false
-                return true
-            })
-        }
-        return temp.sort(sortByTimeCreated)
-    }, [
-        collateralAuctions, debtAuctions, surplusAuctions,
-        typeFilter, typeFilter, saleAssetsFilter,
-    ])
+    const isLargerThanSmall = useMediaQuery('upToSmall')
 
     return (
         <NavContainer
-            navItems={[`All Auctions (${auctions.length.toLocaleString()})`]}
+            navItems={[`All Auctions (${rows.length.toLocaleString()})`]}
             selected={0}
             onSelect={() => 0}
             headerContent={(
-                <CenteredFlex $gap={24}>
+                <HeaderContainer>
                     <CheckboxButton
                         checked={filterMyBids}
                         toggle={() => setFilterMyBids(f => !f)}>
                         Only Show My Bids
                     </CheckboxButton>
+                    {!isLargerThanSmall && (
+                        <SortByDropdown
+                            headers={headers}
+                            sorting={sorting}
+                            setSorting={setSorting}
+                        />
+                    )}
                     <BrandedDropdown label={(
                         <Text
                             $fontWeight={400}
@@ -131,13 +100,28 @@ export function AuctionsList({ isLoading }: AuctionsListProps) {
                             ))}
                         </BrandedDropdown>
                     )}
-                </CenteredFlex>
+                </HeaderContainer>
             )}>
             <AuctionTable
-                auctions={auctions}
-                filterMyBids={filterMyBids}
+                headers={headers}
+                rows={rows}
+                sorting={sorting}
+                setSorting={setSorting}
                 isLoading={isLoading}
+                error={error}
             />
         </NavContainer>
     )
 }
+
+const HeaderContainer = styled(CenteredFlex)`
+    gap: 24px;
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        flex-direction: column;
+        gap: 12px;
+        & > * {
+            width: 100%;
+        }
+    `}
+`

@@ -3,7 +3,14 @@ import { type ReactNode } from 'react'
 import type { ReactChildren } from '~/types'
 
 import styled, { css } from 'styled-components'
-import { type DashedContainerProps, DashedContainerStyle, Flex, Grid, Text } from '~/styles'
+import {
+    type DashedContainerProps,
+    DashedContainerStyle,
+    Flex,
+    type FlexProps,
+    Grid,
+    Text,
+} from '~/styles'
 import { Tooltip } from '~/components/Tooltip'
 
 export type StatProps = {
@@ -14,12 +21,12 @@ export type StatProps = {
     button?: ReactChildren,
 }
 
-type StatsProps = {
+type StatsProps = FlexProps & {
     stats?: StatProps[],
     columns?: string,
     children?: ReactNode[],
 }
-export function Stats({ stats, columns, children }: StatsProps) {
+export function Stats({ stats, columns, children, ...props }: StatsProps) {
     return (
         <Container
             $borderOpacity={0.2}
@@ -28,6 +35,7 @@ export function Stats({ stats, columns, children }: StatsProps) {
                 <Stat
                     key={i}
                     stat={stat}
+                    {...props}
                 />
             ))}
             {children}
@@ -35,10 +43,17 @@ export function Stats({ stats, columns, children }: StatsProps) {
     )
 }
 
-export function Stat({ stat, unbordered }: { stat: StatProps, unbordered?: boolean }) {
+type StatElProps = FlexProps & {
+    stat: StatProps,
+    unbordered?: boolean
+}
+export function Stat({ stat, unbordered, ...props }: StatElProps) {
     const { header, headerStatus, label, tooltip, button } = stat
     return (
-        <StatContainer $unbordered={unbordered}>
+        <StatContainer
+            $unbordered={unbordered}
+            $hasButton={!!button}
+            {...props}>
             <StatText>
                 <Flex
                     $align="center"
@@ -60,37 +75,44 @@ const Container = styled(Grid)<DashedContainerProps>`
     ${DashedContainerStyle}
     width: 100%;
 
+    &::after {
+        border-top: none;
+        border-right: none;
+    }
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        grid-template-columns: 1fr 1fr;
+    `}
     ${({ theme }) => theme.mediaWidth.upToExtraSmall`
         grid-template-columns: 1fr;
     `}
 `
 
-const StatContainer = styled(Flex).attrs(props => ({
+const StatContainer = styled(Flex).attrs((props: FlexProps) => ({
     $justify: 'space-between',
     $align: 'center',
     $gap: 12,
     $flexWrap: true,
     ...props,
-}))<{ $unbordered?: boolean }>`
+}))<{ $unbordered?: boolean, $hasButton?: boolean }>`
     padding: 20px 24px;
 
-    ${({ $unbordered, theme }) => !$unbordered && css`
-        &:not(:first-of-type) {
-            ${DashedContainerStyle}
-            border-top: 2px solid transparent;
-            border-bottom: 2px solid transparent;
-            &::after {
-                opacity: 0.2;
-                border-top: none;
-                border-right: none;
-                border-bottom: none;
-            }
-        }
-
-        ${theme.mediaWidth.upToExtraSmall`
+    ${({ $unbordered }) => !$unbordered && css`
+        ${DashedContainerStyle}
+        &::after {
+            opacity: 0.2;
             border-left: none;
-            border-top: 2px dashed rgba(0,0,0,0.1);
-        `}
+            border-bottom: none;
+        }
+    `}
+
+    ${({ theme, $hasButton }) => theme.mediaWidth.upToSmall`
+        padding: 12px 16px;
+    ${($hasButton
+        ? css`grid-column: 1 / -1;`
+        // : css`justify-content: center;`
+        : ``
+    )}
     `}
 `
 const StatText = styled(Flex).attrs(props => ({

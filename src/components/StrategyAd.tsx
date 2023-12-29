@@ -97,6 +97,18 @@ const Container = styled(Flex).attrs(props => ({
     ${DashedContainerStyle}
     padding: 36px;
     overflow: hidden;
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        &::after {
+            border-left: none;
+            border-right: none;
+            border-bottom: none;
+        }
+        &:last-child {
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+    `}
 `
 const FloatingContainer = styled.div`
     position: absolute;
@@ -112,6 +124,13 @@ const Header = styled(Flex).attrs(props => ({
 }))`
     font-size: 1.6rem;
     letter-spacing: 0.4rem;
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        font-size: 1.1rem;
+        & > *:last-child {
+            display: none;
+        }
+    `}
 `
 
 const backgroundElementTransforms: Pick<FloatingElementsProps, 'clouds' | 'coins'>[] = [

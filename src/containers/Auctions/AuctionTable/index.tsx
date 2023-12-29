@@ -1,38 +1,36 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useAccount } from 'wagmi'
+import { useEffect, useState } from 'react'
 
-import type { IAuction, SortableHeader, Sorting } from '~/types'
-import { getAuctionStatus, stringsExistAndAreEqual, tokenMap } from '~/utils'
+import type { IAuction, SetState, SortableHeader, Sorting } from '~/types'
+import { tokenMap } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
-import { useGeb } from '~/hooks'
+import { useGeb, useMediaQuery } from '~/hooks'
 
 import styled from 'styled-components'
-import { Flex, Text } from '~/styles'
+import { Flex } from '~/styles'
 import { AuctionTableHeader } from './Header'
 import { AuctionTableRow } from './Row'
 import { Pagination } from '~/components/Pagination'
 import { AuctionModal } from '~/components/Modal/AuctionModal'
-
-const headers: SortableHeader[] = [
-    { label: 'Auction #' },
-    { label: 'Auction Type' },
-    { label: 'For Sale' },
-    { label: 'Buy With' },
-    { label: 'Time Left' },
-    { label: 'My Bids' },
-    { label: 'Status' },
-]
+import { ContentWithStatus } from '~/components/ContentWithStatus'
 
 const ITEMS_PER_PAGE = 5
 
 type AuctionTableProps = {
-    auctions: IAuction[],
-    filterMyBids?: boolean,
-    isLoading: boolean
+    headers: SortableHeader[],
+    rows: IAuction[],
+    sorting: Sorting,
+    setSorting: SetState<Sorting>,
+    isLoading: boolean,
+    error?: string,
 }
-export function AuctionTable({ auctions, filterMyBids, isLoading }: AuctionTableProps) {
-    const { address: account } = useAccount()
-
+export function AuctionTable({
+    headers,
+    rows,
+    sorting,
+    setSorting,
+    isLoading,
+    error,
+}: AuctionTableProps) {
     const { auctionModel: { selectedAuction } } = useStoreState(state => state)
     const {
         auctionModel: auctionActions,
@@ -48,95 +46,17 @@ export function AuctionTable({ auctions, filterMyBids, isLoading }: AuctionTable
         auctionActions.fetchCollateralData({
             geb,
             collateral: tokenMap[sellToken] || sellToken,
-            auctionIds: auctions
+            auctionIds: rows
                 .filter(({ sellToken: token }) => token === sellToken)
                 .map(({ auctionId }) => auctionId),
         })
-    }, [selectedAuction, auctions])
+    }, [selectedAuction, rows])
+
+    const isLargerThanSmall = useMediaQuery('upToSmall')
 
     const [expandedId, setExpandedId] = useState<string>()
 
     const [paging, setPaging] = useState<number>(0)
-    const [sorting, setSorting] = useState<Sorting>({
-        key: 'Time Left',
-        dir: 'desc',
-    })
-
-    const auctionWithExtras = useMemo(() => {
-        if (!account) return auctions
-
-        const withBids = auctions
-            .map(auction => ({
-                ...auction,
-                myBids: auction.biddersList.reduce((total, { bidder }) => {
-                    if (stringsExistAndAreEqual(bidder, account)) return total + 1
-                    return total
-                }, 0),
-                status: getAuctionStatus(auction),
-            }))
-        return filterMyBids
-            ? withBids.filter(({ myBids }) => !!myBids)
-            : withBids
-    }, [auctions, account, filterMyBids])
-
-    const sortedRows = useMemo(() => {
-        switch(sorting.key) {
-            case 'Auction #': {
-                return auctionWithExtras.toSorted(({ auctionId: a }, { auctionId: b }) => {
-                    const aId = parseInt(a)
-                    const bId = parseInt(b)
-                    return sorting.dir === 'desc'
-                        ? bId - aId
-                        : aId - bId
-                })
-            }
-            case 'Auction Type': {
-                return auctionWithExtras.toSorted(({ englishAuctionType: a }, { englishAuctionType: b }) => {
-                    return sorting.dir === 'desc'
-                        ? (a > b ? 1: -1)
-                        : (a < b ? 1: -1)
-                })
-            }
-            case 'For Sale': {
-                return auctionWithExtras.toSorted(({ sellToken: a }, { sellToken: b }) => {
-                    return sorting.dir === 'desc'
-                        ? (a > b ? 1: -1)
-                        : (a < b ? 1: -1)
-                })
-            }
-            case 'Buy With': {
-                return auctionWithExtras.toSorted(({ buyToken: a }, { buyToken: b }) => {
-                    return sorting.dir === 'desc'
-                        ? (a > b ? 1: -1)
-                        : (a < b ? 1: -1)
-                })
-            }
-            case 'My Bids': {
-                return auctionWithExtras.toSorted(({ myBids: a = 0 }, { myBids: b = 0 }) => {
-                    return sorting.dir === 'desc'
-                        ? b - a
-                        : a - b
-                })
-            }
-            case 'Status': {
-                return auctionWithExtras.toSorted(({ status: a }, { status: b }) => {
-                    if (!b) return -1
-                    if (!a) return 1
-                    return sorting.dir === 'desc'
-                        ? (a > b ? 1: -1)
-                        : (a < b ? 1: -1)
-                })
-            }
-            case 'Time Left':
-            default: {
-                return auctionWithExtras.toSorted(({ auctionDeadline: a }, { auctionDeadline: b }) => {
-                    return sorting.dir === 'desc'
-                        ? parseInt(b) - parseInt(a)
-                        : parseInt(a) - parseInt(b)
-                })
-            }
-        }
-    }, [auctionWithExtras, sorting])
     
     return (<>
         {!!selectedAuction && (
@@ -150,36 +70,30 @@ export function AuctionTable({ auctions, filterMyBids, isLoading }: AuctionTable
             }}/>
         )}
         <Table>
-            <AuctionTableHeader
-                headers={headers}
-                sorting={sorting}
-                onSort={(label: string) => setSorting(s => {
-                    if (s.key === label) return {
-                        ...s,
-                        dir: s.dir === 'asc' ? 'desc': 'asc',
-                    }
-                    return {
+            {isLargerThanSmall && (
+                <AuctionTableHeader
+                    headers={headers}
+                    sorting={sorting}
+                    onSort={(label: string) => setSorting(s => ({
                         key: label,
-                        dir: 'desc',
-                    }
-                })}
-            />
-            {!sortedRows.length
-                ? (
-                    <LoadingOrNotFound>
-                        {isLoading
-                            ? `Loading auctions...`
-                            : `No auctions matched the active filters`
-                        }
-                    </LoadingOrNotFound>
-                )
-                : sortedRows
+                        dir: s.key === label && s.dir === 'desc'
+                            ? 'asc'
+                            : 'desc',
+                    }))}
+                />
+            )}
+            <ContentWithStatus
+                loading={isLoading}
+                error={error}
+                isEmpty={!rows.length}>
+                {rows
                     .slice(paging * ITEMS_PER_PAGE, (paging + 1) * ITEMS_PER_PAGE)
                     .map(auction => {
                         const key = `${auction.englishAuctionType}-${auction.sellToken}-${auction.auctionId}`
                         return (
                             <AuctionTableRow
                                 key={key}
+                                headers={headers}
                                 auction={auction}
                                 expanded={expandedId === key}
                                 onSelect={() => {
@@ -190,13 +104,15 @@ export function AuctionTable({ auctions, filterMyBids, isLoading }: AuctionTable
                                 }}
                             />
                         )
-                    })
-            }
-            <Pagination
-                totalItems={sortedRows.length}
-                perPage={ITEMS_PER_PAGE}
-                handlePagingMargin={setPaging}
-            />
+                    })}
+            </ContentWithStatus>
+            <Footer $bordered={rows.length > ITEMS_PER_PAGE}>
+                <Pagination
+                    totalItems={rows.length}
+                    perPage={ITEMS_PER_PAGE}
+                    handlePagingMargin={setPaging}
+                />
+            </Footer>
         </Table>
     </>)
 }
@@ -208,12 +124,19 @@ const Table = styled(Flex).attrs(props => ({
     $align: 'stretch',
     $gap: 12,
     ...props,
-}))``
-
-const LoadingOrNotFound = styled(Text).attrs(props => ({
-    $textAlign: 'center',
-    ...props,
 }))`
-    width: 100%;
-    padding: 12px 0;
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        gap: 0px;
+    `}
+`
+
+const Footer = styled(Flex).attrs(props => ({
+    $justify: 'flex-end',
+    $align: 'center',
+    ...props,
+}))<{ $bordered: boolean }>`
+    ${({ theme, $bordered }) => theme.mediaWidth.upToSmall`
+        border-top: ${$bordered ? theme.border.medium: 'none'};
+        padding: 0 24px;
+    `}
 `

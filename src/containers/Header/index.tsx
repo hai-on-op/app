@@ -32,6 +32,8 @@ export function Header({ tickerActive = false }: HeaderProps) {
 
     const isLargerThanExtraSmall = useMediaQuery('upToExtraSmall')
     const isLargerThanSmall = useMediaQuery('upToSmall')
+    const isLargerThanMedium = useMediaQuery('upToMedium')
+    const isLargerThanLarge = useMediaQuery('upToLarge')
 
     const {
         vaultModel: { liquidationData },
@@ -94,7 +96,13 @@ export function Header({ tickerActive = false }: HeaderProps) {
                 </Ticker>
             )}
             <Inner $blur={!isSplash || headerBgActive}>
-                <CenteredFlex $gap={isLargerThanSmall ? 48: 24}>
+                <CenteredFlex $gap={
+                    isLargerThanLarge
+                        ? 48
+                        : isLargerThanSmall
+                            ? 36
+                            : 24
+                }>
                     {isLargerThanExtraSmall
                         ? (
                             <Logo
@@ -104,7 +112,12 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                 height={264}
                             />
                         )
-                        : <HaiFace filled/>
+                        : (
+                            <HaiFace
+                                filled
+                                size={56}
+                            />
+                        )
                     }
                     {isLargerThanSmall && (
                         isSplash
@@ -126,12 +139,12 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                     <HeaderLink>Community</HeaderLink>
                                 </ExternalLink>
                             </>)
-                            : (<>
+                            : isLargerThanMedium && (<>
                                 <InternalLink
                                     href="/vaults"
                                     $textDecoration="none"
                                     content={(
-                                        <HeaderLink $active={location.pathname === '/vaults'}>
+                                        <HeaderLink $active={location.pathname.startsWith('/vaults')}>
                                             GET HAI
                                         </HeaderLink>
                                     )}
@@ -145,15 +158,17 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                         </HeaderLink>
                                     )}
                                 />
-                                <InternalLink
-                                    href="/learn"
-                                    $textDecoration="none"
-                                    content={(
-                                        <HeaderLink $active={location.pathname === '/learn'}>
-                                            LEARN
-                                        </HeaderLink>
-                                    )}
-                                />
+                                {isLargerThanLarge && (
+                                    <InternalLink
+                                        href="/learn"
+                                        $textDecoration="none"
+                                        content={(
+                                            <HeaderLink $active={location.pathname === '/learn'}>
+                                                LEARN
+                                            </HeaderLink>
+                                        )}
+                                    />
+                                )}
                             </>)
                     )}
                 </CenteredFlex>
@@ -173,7 +188,32 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                 </ExternalLink>
                             </>)
                             : (
-                                <BrandedDropdown label="More">
+                                <BrandedDropdown label={!isLargerThanMedium ? 'Menu': 'More'}>
+                                    {!isLargerThanMedium && (<>
+                                        <InternalLink
+                                            href="/vaults"
+                                            $textDecoration="none">
+                                            <DropdownOption $active={location.pathname.startsWith('/vaults')}>
+                                                Get HAI
+                                            </DropdownOption>
+                                        </InternalLink>
+                                        <InternalLink
+                                            href="/earn"
+                                            $textDecoration="none">
+                                            <DropdownOption $active={location.pathname === '/earn'}>
+                                                Earn
+                                            </DropdownOption>
+                                        </InternalLink>
+                                    </>)}
+                                    {!isLargerThanLarge && (
+                                        <InternalLink
+                                            href="/learn"
+                                            $textDecoration="none">
+                                            <DropdownOption $active={location.pathname === '/learn'}>
+                                                Learn
+                                            </DropdownOption>
+                                        </InternalLink>
+                                    )}
                                     <InternalLink
                                         href="/auctions"
                                         $textDecoration="none">
@@ -239,6 +279,7 @@ export function Header({ tickerActive = false }: HeaderProps) {
                         <MobileMenu
                             active={dropdownActive}
                             setActive={setDropdownActive}
+                            showWrapEth={() => setWrapEthActive(true)}
                         />
                     )}
                 </RightSide>
@@ -275,7 +316,6 @@ const Container = styled(Flex).attrs(props => ({
     `}
     ${({ theme, $tickerActive }) => theme.mediaWidth.upToExtraSmall`
         height: ${$tickerActive ? 120: 60}px;
-        gap: 12px;
     `}
 
     z-index: 2;
@@ -308,9 +348,6 @@ const Inner = styled(Flex).attrs(props => ({
     ${({ theme }) => theme.mediaWidth.upToSmall`
         padding: 0 24px;
     `}
-    ${({ theme }) => theme.mediaWidth.upToExtraSmall`
-        padding: 0 12px;
-    `}
 `
 
 const Logo = styled.img`
@@ -326,6 +363,7 @@ const HeaderLink = styled(Title).attrs(props => ({
     $fontSize: '1.6em',
     $letterSpacing: '0.2rem',
     $textTransform: 'uppercase',
+    $whiteSpace: 'nowrap',
     ...props,
 }))<{ $active?: boolean }>`
     text-shadow: none;
@@ -336,7 +374,7 @@ const HeaderLink = styled(Title).attrs(props => ({
 const RightSide = styled(CenteredFlex)`
     gap: 36px;
 
-    ${({ theme }) => theme.mediaWidth.upToSmall`
+    ${({ theme }) => theme.mediaWidth.upToMedium`
         gap: 24px;
     `}
     ${({ theme }) => theme.mediaWidth.upToExtraSmall`

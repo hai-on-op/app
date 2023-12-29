@@ -315,7 +315,7 @@ export function Shared({ children }: Props) {
                             ? haiAlertActive ? '240px': '168px'
                             : undefined
                         }
-                        $maxWidth={!isSplash ? 'min(1200px, calc(100vw - 96px))': undefined}>
+                        $maxWidth={!isSplash ? 'min(1200px, calc(100vw - 48px))': undefined}>
                         <IntentionHeader>
                             {location.pathname === '/auctions' && (
                                 <StartAuction/>
@@ -332,7 +332,8 @@ export function Shared({ children }: Props) {
 }
 
 const Container = styled.div`
-    min-height: 100vh;
+    max-height: 100vh;
+    overflow: hidden auto;
 `
 
 const Background = styled(CenteredFlex)`
@@ -342,6 +343,7 @@ const Background = styled(CenteredFlex)`
     right: 0px;
     bottom: 0px;
     background-color: white;
+    pointer-events: none;
 
     & video {
         min-width: 100%;
@@ -372,8 +374,9 @@ const Content = styled(Flex).attrs(props => ({
         max-width: ${({ $maxWidth = 'auto' }) => $maxWidth};
     }
 
-    ${({ theme, $padTop = false }) => theme.mediaWidth.upToSmall`
+    ${({ theme, $padTop = false, $padBottom = '0px' }) => theme.mediaWidth.upToSmall`
         padding: 0 24px;
-        margin-top: ${$padTop ? '200px': '0px'};
+        padding-bottom: ${$padBottom};
+        margin-top: ${$padTop ? '152px': '0px'};
     `}
 `

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import type { ReactChildren } from '~/types'
+import { useOutsideClick } from '~/hooks'
 
 import styled, { css } from 'styled-components'
 import { CenteredFlex, Popout, type PopoutProps } from '~/styles'
@@ -18,17 +19,23 @@ export function Tooltip({
     children,
     ...props
 }: TooltipProps) {
+    const [container, setContainer] = useState<HTMLElement | null>(null)
     const [hovered, setHovered] = useState(false)
+    const [clicked, setClicked] = useState(false)
+
+    useOutsideClick(container, () => setClicked(false))
 
     return (
         <Container
+            ref={setContainer}
             $popoutWidth={width}
             $float={$float}
+            onClick={() => setClicked(c => !c)}
             onPointerEnter={() => setHovered(true)}
             onPointerLeave={() => setHovered(false)}>
             <Info size={size}/>
             <Popout
-                hidden={!hovered}
+                hidden={!hovered && !clicked}
                 $anchor="bottom"
                 $margin="20px"
                 $float={$float}

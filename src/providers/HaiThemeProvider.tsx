@@ -1,13 +1,11 @@
 import {
-    type Dispatch,
     type ReactNode,
-    type SetStateAction,
     createContext,
     useContext,
     useState,
 } from 'react'
 
-import type { Theme } from '~/types'
+import type { SetState, Theme } from '~/types'
 
 import { ThemeProvider } from 'styled-components'
 import { darkTheme, lightTheme } from '~/styles/themes'
@@ -15,7 +13,7 @@ import { darkTheme, lightTheme } from '~/styles/themes'
 type HaiThemeContext = {
 	themeId: 'dark' | 'light',
 	theme: Theme,
-	toggleTheme: Dispatch<SetStateAction<'dark' | 'light'>>
+	toggleTheme: SetState<'dark' | 'light'>
 }
 
 const defaultState: HaiThemeContext = {

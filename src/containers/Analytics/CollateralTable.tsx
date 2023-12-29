@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react'
 import type { SortableHeader, Sorting } from '~/types'
 import { formatDataNumber, transformToAnnualRate } from '~/utils'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
-import { usePublicGeb } from '~/hooks'
+import { useMediaQuery, usePublicGeb } from '~/hooks'
 
 import styled from 'styled-components'
 import { Flex, Grid, Text } from '~/styles'
@@ -11,6 +11,8 @@ import { TokenPair } from '~/components/TokenPair'
 import { TableHeaderItem } from '~/components/TableHeaderItem'
 import { NavContainer } from '~/components/NavContainer'
 import { AddressLink } from '~/components/AddressLink'
+import { SortByDropdown } from '~/components/SortByDropdown'
+import { TableRow } from '~/components/TableRow'
 
 const sortableHeaders: SortableHeader[] = [
     { label: 'Collateral Asset' },
@@ -80,64 +82,96 @@ export function CollateralTable() {
             }
         }
     }, [rows, sorting])
+
+    const isLargerThanSmall = useMediaQuery('upToSmall')
     
     return (
         <NavContainer
             navItems={[`Collaterals (${rows.length})`]}
             selected={0}
-            onSelect={() => 0}>
+            onSelect={() => 0}
+            headerContent={!isLargerThanSmall && (
+                <SortByDropdown
+                    headers={sortableHeaders}
+                    sorting={sorting}
+                    setSorting={setSorting}
+                />
+            )}>
             <Table>
-                <TableHeader>
-                    {sortableHeaders.map(({ label, tooltip, unsortable }) => (
-                        <TableHeaderItem
-                            key={label}
-                            sortable={!unsortable}
-                            isSorting={sorting.key === label ? sorting.dir: false}
-                            onClick={unsortable
-                                ? undefined
-                                : () => setSorting(s => {
-                                    if (s.key === label) return {
-                                        ...s,
-                                        dir: s.dir === 'asc' ? 'desc': 'asc',
-                                    }
-                                    return {
+                {isLargerThanSmall && (
+                    <TableHeader>
+                        {sortableHeaders.map(({ label, tooltip, unsortable }) => (
+                            <TableHeaderItem
+                                key={label}
+                                sortable={!unsortable}
+                                isSorting={sorting.key === label ? sorting.dir: false}
+                                onClick={unsortable
+                                    ? undefined
+                                    : () => setSorting(s => ({
                                         key: label,
-                                        dir: 'desc',
-                                    }
-                                })
-                            }
-                            tooltip={tooltip}>
-                            <Text $fontWeight={sorting.key === label ? 700: 400}>{label}</Text>
-                        </TableHeaderItem>
-                    ))}
-                    <Text></Text>
-                </TableHeader>
+                                        dir: s.key === label && s.dir === 'desc'
+                                            ? 'asc'
+                                            : 'desc',
+                                    }))
+                                }
+                                tooltip={tooltip}>
+                                <Text $fontWeight={sorting.key === label ? 700: 400}>{label}</Text>
+                            </TableHeaderItem>
+                        ))}
+                        <Text></Text>
+                    </TableHeader>
+                )}
                 {sortedRows.map(({ symbol, delayedOracle, currentPrice, nextPrice, stabilityFee }) => (
-                    <TableRow key={symbol}>
-                        <Flex
-                            $align="center"
-                            $gap={8}>
-                            <TokenPair
-                                tokens={[symbol as any]}
-                                hideLabel
-                            />
-                            <Text $fontWeight={700}>{symbol}</Text>
-                        </Flex>
-                        {geb?.tokenList?.[symbol]
-                            ? <AddressLink address={geb.tokenList[symbol].address}/>
-                            : <Text>--</Text>
-                        }
-                        <AddressLink address={delayedOracle}/>
-                        <Text>
-                            {formatDataNumber(currentPrice?.toString() || '0', 18, 2, true)}
-                        </Text>
-                        <Text>
-                            {formatDataNumber(nextPrice?.toString() || '0', 18, 2, true)}
-                        </Text>
-                        <Text>
-                            {transformToAnnualRate(stabilityFee?.toString() || '0', 27)}
-                        </Text>
-                    </TableRow>
+                    <TableRow
+                        key={symbol}
+                        container={TableRowContainer}
+                        headers={sortableHeaders}
+                        items={[
+                            {
+                                content: (
+                                    <Flex
+                                        $align="center"
+                                        $gap={8}>
+                                        <TokenPair
+                                            tokens={[symbol as any]}
+                                            hideLabel
+                                        />
+                                        <Text $fontWeight={700}>{symbol}</Text>
+                                    </Flex>
+                                ),
+                                // fullWidth: true,
+                            },
+                            {
+                                content: geb?.tokenList?.[symbol]
+                                    ? <AddressLink address={geb.tokenList[symbol].address}/>
+                                    : <Text>--</Text>,
+                            },
+                            {
+                                content: <AddressLink address={delayedOracle}/>,
+                            },
+                            {
+                                content: (
+                                    <Text>
+                                        {formatDataNumber(currentPrice?.toString() || '0', 18, 2, true)}
+                                    </Text>
+                                ),
+                            },
+                            {
+                                content: (
+                                    <Text>
+                                        {formatDataNumber(nextPrice?.toString() || '0', 18, 2, true)}
+                                    </Text>
+                                ),
+                            },
+                            {
+                                content: (
+                                    <Text>
+                                        {transformToAnnualRate(stabilityFee?.toString() || '0', 27)}
+                                    </Text>
+                                ),
+                            },
+                        ]}
+                    />
                 ))}
             </Table>
         </NavContainer>
@@ -163,9 +197,29 @@ const TableHeader = styled(Grid)`
         padding: 0 4px;
     }
 `
-const TableRow = styled(TableHeader)`
+const TableRowContainer = styled(TableHeader)`
     border-radius: 999px;
     &:hover {
         background-color: rgba(0,0,0,0.1);
     }
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        padding: 24px;
+        grid-template-columns: 1fr 1fr;
+        grid-gap: 12px;
+        align-items: flex-start;
+        border-radius: 0px;
+
+        &:not(:first-child) {
+            border-top: ${theme.border.medium};
+        }
+        &:hover {
+            background-color: unset;
+        }
+
+        & > *:last-child {
+            grid-row: 1;
+            grid-column: 2;
+        }
+    `}
 `

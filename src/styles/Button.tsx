@@ -35,7 +35,7 @@ export type HaiButtonProps = FlexProps & {
     $variant?: 'default' | 'unblurred' | 'blueish' | 'greenish' | 'pinkish' | 'yellowish' | 'orangeish',
     $unbordered?: boolean
 }
-export const HaiButton = styled.button.attrs(props => ({
+export const HaiButton = styled.button.attrs((props: HaiButtonProps) => ({
     $justify: 'space-between',
     $align: 'center',
     $gap: 12,

@@ -88,6 +88,8 @@ const Container = styled(Flex).attrs(props => ({
     border-top: ${({ theme }) => theme.border.medium};
     background: ${({ theme }) => theme.colors.gradientSecondary};
     animation: ${popup} 0.5s ease forwards;
+
+    z-index: 10;
 `
 const HaiIconContainer = styled(CenteredFlex).attrs(props => ({
     $shrink: 0,
