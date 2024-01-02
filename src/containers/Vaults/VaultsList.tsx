@@ -5,7 +5,7 @@ import { useStoreState } from '~/store'
 import { useVault } from '~/providers/VaultProvider'
 import { useAvailableVaults, useMediaQuery, useMyVaults } from '~/hooks'
 
-import { Text } from '~/styles'
+import { CenteredFlex, Text } from '~/styles'
 import { NavContainer } from '~/components/NavContainer'
 import { CheckboxButton } from '~/components/CheckboxButton'
 import { BrandedDropdown, DropdownOption } from '~/components/BrandedDropdown'
@@ -14,6 +14,7 @@ import { StrategyAd, type StrategyAdProps } from '~/components/StrategyAd'
 import { AvailableVaultsTable } from './AvailableVaultsTable'
 import { MyVaultsTable } from './MyVaultsTable'
 import { SortByDropdown } from '~/components/SortByDropdown'
+import styled from 'styled-components'
 
 const strategies: StrategyAdProps[] = [
     {
@@ -89,49 +90,53 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
             selected={navIndex}
             onSelect={(i: number) => setNavIndex(i)}
             headerContent={navIndex === 0
-                ? (<>
-                    {!isLargerThanSmall && (
-                        <SortByDropdown
-                            headers={availableHeaders}
-                            sorting={availableSorting}
-                            setSorting={setAvailableSorting}
-                        />
-                    )}
-                    <CheckboxButton
-                        checked={eligibleOnly}
-                        toggle={() => setEligibleOnly(e => !e)}>
-                        Eligible Vaults Only
-                    </CheckboxButton>
-                </>)
-                : (<>
-                    <BrandedDropdown label={(
-                        <Text
-                            $fontWeight={400}
-                            $textAlign="left"
-                            style={{ width: '160px' }}>
-                            Collateral Assets: <strong>{assetsFilter || 'All'}</strong>
-                        </Text>
-                    )}>
-                        {['All', ...symbols].map(label => (
-                            <DropdownOption
-                                key={label}
-                                $active={assetsFilter === label}
-                                onClick={() => {
-                                    // e.stopPropagation()
-                                    setAssetsFilter(label === 'All' ? undefined: label)
-                                }}>
-                                {label}
-                            </DropdownOption>
-                        ))}
-                    </BrandedDropdown>
-                    {!isLargerThanSmall && (
-                        <SortByDropdown
-                            headers={myVaultsHeaders}
-                            sorting={myVaultsSorting}
-                            setSorting={setMyVaultsSorting}
-                        />
-                    )}
-                </>)
+                ? (
+                    <HeaderContent>
+                        {!isLargerThanSmall && (
+                            <SortByDropdown
+                                headers={availableHeaders}
+                                sorting={availableSorting}
+                                setSorting={setAvailableSorting}
+                            />
+                        )}
+                        <CheckboxButton
+                            checked={eligibleOnly}
+                            toggle={() => setEligibleOnly(e => !e)}>
+                            Eligible Vaults Only
+                        </CheckboxButton>
+                    </HeaderContent>
+                )
+                : (
+                    <HeaderContent>
+                        <BrandedDropdown label={(
+                            <Text
+                                $fontWeight={400}
+                                $textAlign="left"
+                                style={{ width: '160px' }}>
+                                Collateral Assets: <strong>{assetsFilter || 'All'}</strong>
+                            </Text>
+                        )}>
+                            {['All', ...symbols].map(label => (
+                                <DropdownOption
+                                    key={label}
+                                    $active={assetsFilter === label}
+                                    onClick={() => {
+                                        // e.stopPropagation()
+                                        setAssetsFilter(label === 'All' ? undefined: label)
+                                    }}>
+                                    {label}
+                                </DropdownOption>
+                            ))}
+                        </BrandedDropdown>
+                        {!isLargerThanSmall && (
+                            <SortByDropdown
+                                headers={myVaultsHeaders}
+                                sorting={myVaultsSorting}
+                                setSorting={setMyVaultsSorting}
+                            />
+                        )}
+                    </HeaderContent>
+                )
             }>
             {navIndex === 0
                 ? (<>
@@ -173,3 +178,30 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
         </NavContainer>
     )
 }
+
+const HeaderContent = styled(CenteredFlex)`
+    gap: 24px;
+    
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        flex-direction: column;
+        gap: 12px;
+        & > * {
+            width: 100%;
+            &:nth-child(1) {
+                z-index: 5;
+            }
+            &:nth-child(2) {
+                z-index: 4;
+            }
+            &:nth-child(3) {
+                z-index: 3;
+            }
+            &:nth-child(4) {
+                z-index: 2;
+            }
+            &:nth-child(5) {
+                z-index: 1;
+            }
+        }
+    `}
+`

@@ -272,6 +272,21 @@ const Header = styled(Flex).attrs(props => ({
                 gap: 12px;
                 & > * {
                     width: 100%;
+                    &:nth-child(1) {
+                        z-index: 5;
+                    }
+                    &:nth-child(2) {
+                        z-index: 4;
+                    }
+                    &:nth-child(3) {
+                        z-index: 3;
+                    }
+                    &:nth-child(4) {
+                        z-index: 2;
+                    }
+                    &:nth-child(5) {
+                        z-index: 1;
+                    }
                 }
             }
         }
