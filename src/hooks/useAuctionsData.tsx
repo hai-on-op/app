@@ -88,7 +88,7 @@ export function useAuctionsData() {
 
     const sortedRows = useMemo(() => {
         switch(sorting.key) {
-            case 'Auction #': {
+            case 'Auction': {
                 return auctionWithExtras.toSorted(({ auctionId: a }, { auctionId: b }) => {
                     const aId = parseInt(a)
                     const bId = parseInt(b)

@@ -8,11 +8,10 @@ import { useMediaQuery, usePublicGeb } from '~/hooks'
 import styled from 'styled-components'
 import { Flex, Grid, Text } from '~/styles'
 import { TokenPair } from '~/components/TokenPair'
-import { TableHeaderItem } from '~/components/TableHeaderItem'
 import { NavContainer } from '~/components/NavContainer'
 import { AddressLink } from '~/components/AddressLink'
 import { SortByDropdown } from '~/components/SortByDropdown'
-import { TableRow } from '~/components/TableRow'
+import { Table } from '~/components/Table'
 
 const sortableHeaders: SortableHeader[] = [
     { label: 'Collateral Asset' },
@@ -37,6 +36,10 @@ const sortableHeaders: SortableHeader[] = [
     {
         label: 'Stability Fee',
         tooltip: `Annual interest rate paid by Vault owners on their debt`,
+    },
+    {
+        label: '',
+        unsortable: true,
     },
 ]
 
@@ -97,34 +100,21 @@ export function CollateralTable() {
                     setSorting={setSorting}
                 />
             )}>
-            <Table>
-                {isLargerThanSmall && (
-                    <TableHeader>
-                        {sortableHeaders.map(({ label, tooltip, unsortable }) => (
-                            <TableHeaderItem
-                                key={label}
-                                sortable={!unsortable}
-                                isSorting={sorting.key === label ? sorting.dir: false}
-                                onClick={unsortable
-                                    ? undefined
-                                    : () => setSorting(s => ({
-                                        key: label,
-                                        dir: s.key === label && s.dir === 'desc'
-                                            ? 'asc'
-                                            : 'desc',
-                                    }))
-                                }
-                                tooltip={tooltip}>
-                                <Text $fontWeight={sorting.key === label ? 700: 400}>{label}</Text>
-                            </TableHeaderItem>
-                        ))}
-                        <Text></Text>
-                    </TableHeader>
-                )}
-                {sortedRows.map(({ symbol, delayedOracle, currentPrice, nextPrice, stabilityFee }) => (
-                    <TableRow
+            <Table
+                headers={sortableHeaders}
+                headerContainer={TableHeader}
+                sorting={sorting}
+                setSorting={setSorting}
+                rows={sortedRows.map(({
+                    symbol,
+                    delayedOracle,
+                    currentPrice,
+                    nextPrice,
+                    stabilityFee,
+                }) => (
+                    <Table.Row
                         key={symbol}
-                        container={TableRowContainer}
+                        container={TableRow}
                         headers={sortableHeaders}
                         items={[
                             {
@@ -173,19 +163,11 @@ export function CollateralTable() {
                         ]}
                     />
                 ))}
-            </Table>
+            />
         </NavContainer>
     )
 }
 
-const Table = styled(Flex).attrs(props => ({
-    $width: '100%',
-    $column: true,
-    $justify: 'flex-start',
-    $align: 'stretch',
-    $gap: 12,
-    ...props,
-}))``
 const TableHeader = styled(Grid)`
     grid-template-columns: repeat(6, 1fr);
     align-items: center;
@@ -197,7 +179,7 @@ const TableHeader = styled(Grid)`
         padding: 0 4px;
     }
 `
-const TableRowContainer = styled(TableHeader)`
+const TableRow = styled(TableHeader)`
     border-radius: 999px;
     &:hover {
         background-color: rgba(0,0,0,0.1);

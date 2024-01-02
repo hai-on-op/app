@@ -2,8 +2,8 @@ import type { ReactChildren } from '~/types'
 
 import styled, { css } from 'styled-components'
 import { Flex, type FlexProps, Text } from '~/styles'
-import { HaiArrow } from './Icons/HaiArrow'
-import { Tooltip } from './Tooltip'
+import { HaiArrow } from '../Icons/HaiArrow'
+import { Tooltip } from '../Tooltip'
 
 type TableHeaderItemProps = FlexProps & {
     sortable?: boolean,

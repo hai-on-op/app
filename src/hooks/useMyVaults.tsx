@@ -9,6 +9,10 @@ const sortableHeaders: SortableHeader[] = [
     { label: 'Collateral' },
     { label: 'Debt' },
     { label: 'Net APY' },
+    {
+        label: '',
+        unsortable: true,
+    },
 ]
 
 export function useMyVaults() {

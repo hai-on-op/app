@@ -32,6 +32,10 @@ const sortableHeaders: (SortableHeader & FlexProps)[] = [
         $justify: 'flex-end',
     },
     { label: 'Collateral Ratio' },
+    {
+        label: '',
+        unsortable: true,
+    },
 ]
 
 const MAX_VAULTS_TO_FETCH = 500

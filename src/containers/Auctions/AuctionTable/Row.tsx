@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { type ComponentType, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { IAuction, SortableHeader } from '~/types'
@@ -8,21 +8,27 @@ import { useAuction, useMediaQuery } from '~/hooks'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
-import { TableHeader } from './Header'
 import { TokenPair } from '~/components/TokenPair'
 import { StatusLabel } from '~/components/StatusLabel'
 import { Caret } from '~/components/Icons/Caret'
 import { BidTable } from './BidTable'
 import { ProxyPrompt } from '~/components/ProxyPrompt'
-import { TableRow } from '~/components/TableRow'
+import { TableRow } from '~/components/Table/TableRow'
 
 type AuctionTableRowProps = {
     headers: SortableHeader[],
     auction: (IAuction & { myBids?: number }),
+    container: ComponentType,
     expanded: boolean,
     onSelect?: () => void
 }
-export function AuctionTableRow({ headers, auction, expanded, onSelect }: AuctionTableRowProps) {
+export function AuctionTableRow({
+    headers,
+    auction,
+    container,
+    expanded,
+    onSelect,
+}: AuctionTableRowProps) {
     const { t } = useTranslation()
 
     const {
@@ -103,7 +109,7 @@ export function AuctionTableRow({ headers, auction, expanded, onSelect }: Auctio
             onClick={onSelect}
             $expanded={expanded}>
             <TableRow
-                container={TableRowHeader}
+                container={container}
                 headers={headers}
                 items={[
                     {
@@ -281,26 +287,6 @@ const TableRowContainer = styled(Flex).attrs(props => ({
         border: none;
         &:not(:first-child) {
             border-top: ${theme.border.medium};
-        }
-    `}
-`
-const TableRowHeader = styled(TableHeader)`
-    height: 55px;
-    cursor: pointer;
-
-    ${({ theme }) => theme.mediaWidth.upToSmall`
-        height: 312px;
-        padding: 24px;
-        grid-template-columns: 1fr 1fr;
-        grid-gap: 12px;
-        align-items: flex-start;
-        border-radius: 0px;
-
-        &:not(:first-child) {
-            border-top: ${theme.border.medium};
-        }
-        &:hover {
-            background-color: unset;
         }
     `}
 `

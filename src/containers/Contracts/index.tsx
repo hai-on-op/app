@@ -7,14 +7,14 @@ import { useMediaQuery, usePublicGeb } from '~/hooks'
 import styled from 'styled-components'
 import { BlurContainer, Flex, Grid, Text } from '~/styles'
 import { BrandedTitle } from '~/components/BrandedTitle'
-import { TableHeaderItem } from '~/components/TableHeaderItem'
 import { AddressLink } from '~/components/AddressLink'
+import { Table, TableContainer } from '~/components/Table'
 
 const sortableHeaders: SortableHeader[] = [
     { label: 'Contract' },
     { label: 'Address' },
     { label: 'Description' },
-]
+].map(obj => ({ ...obj, unsortable: true }))
 
 export function Contracts() {
     const geb = usePublicGeb()
@@ -41,28 +41,20 @@ export function Contracts() {
                     $fontSize={isLargerThanSmall ? '3rem': '2.4rem'}
                 />
             </Header>
-            <Table>
-                {isLargerThanSmall && (
-                    <TableHeader>
-                        {sortableHeaders.map(({ label, tooltip }) => (
-                            <TableHeaderItem
-                                key={label}
-                                sortable={false}
-                                tooltip={tooltip}>
-                                <Text $fontWeight={700}>{label}</Text>
-                            </TableHeaderItem>
-                        ))}
-                        <Text></Text>
-                    </TableHeader>
-                )}
-                {contracts.map(({ name, address, description }) => (
+            <Table
+                container={StyledTableContainer}
+                headers={sortableHeaders}
+                headerContainer={TableHeader}
+                sorting={{ key: '', dir: 'desc' }}
+                setSorting={() => {}}
+                rows={contracts.map(({ name, address, description }) => (
                     <TableRow key={name}>
                         <Text $fontWeight={isLargerThanSmall ? 400: 700}>{name}</Text>
                         <AddressLink address={address}/>
                         <Text>{description}</Text>
                     </TableRow>
                 ))}
-            </Table>
+            />
         </Container>
     )
 }
@@ -92,14 +84,7 @@ const Header = styled(Flex).attrs(props => ({
     z-index: 1;
 `
 
-const Table = styled(Flex).attrs(props => ({
-    $width: '100%',
-    $column: true,
-    $justify: 'flex-start',
-    $align: 'stretch',
-    $gap: 12,
-    ...props,
-}))`
+const StyledTableContainer = styled(TableContainer)`
     padding: 48px;
     padding-top: 24px;
 
@@ -108,7 +93,7 @@ const Table = styled(Flex).attrs(props => ({
         gap: 0px;
     `}
 `
-const TableHeader = styled(Grid)`
+const TableHeaderBase = styled(Grid)`
     grid-template-columns: 240px 120px 1fr;
     align-items: center;
     grid-gap: 12px;
@@ -119,7 +104,12 @@ const TableHeader = styled(Grid)`
         padding: 0 4px;
     }
 `
-const TableRow = styled(TableHeader)`
+const TableHeader = styled(TableHeaderBase)`
+    & ${Text} {
+        font-weight: 700;
+    }
+`
+const TableRow = styled(TableHeaderBase)`
     border-radius: 999px;
     &:nth-child(2n) {
         background-color: rgba(0,0,0,0.05);

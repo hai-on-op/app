@@ -1,12 +1,10 @@
 import type { SetState, SortableHeader, Sorting, Strategy } from '~/types'
-import { useMediaQuery } from '~/hooks'
 
 import styled from 'styled-components'
 import { Flex, Grid, Text } from '~/styles'
 import { RewardsTokenPair, TokenPair } from '~/components/TokenPair'
-import { TableHeaderItem } from '~/components/TableHeaderItem'
 import { StrategyTableButton } from './StrategyTableButton'
-import { TableRow } from '~/components/TableRow'
+import { Table } from '~/components/Table'
 
 type StrategyTableProps = {
     headers: SortableHeader[],
@@ -15,34 +13,13 @@ type StrategyTableProps = {
     setSorting: SetState<Sorting>
 }
 export function StrategyTable({ headers, rows, sorting, setSorting }: StrategyTableProps) {
-    const isLargerThanSmall = useMediaQuery('upToSmall')
-
     return (
-        <Table>
-            {isLargerThanSmall && (
-                <TableHeader>
-                    {headers.map(({ label, tooltip, unsortable }) => (
-                        <TableHeaderItem
-                            key={label}
-                            sortable={!unsortable}
-                            isSorting={sorting.key === label ? sorting.dir: false}
-                            onClick={unsortable
-                                ? undefined
-                                : () => setSorting(s => ({
-                                    key: label,
-                                    dir: s.key === label && s.dir === 'desc'
-                                        ? 'asc'
-                                        : 'desc',
-                                }))
-                            }
-                            tooltip={tooltip}>
-                            <Text $fontWeight={sorting.key === label ? 700: 400}>{label}</Text>
-                        </TableHeaderItem>
-                    ))}
-                    <Text></Text>
-                </TableHeader>
-            )}
-            {rows.map(({
+        <Table
+            headers={headers}
+            headerContainer={TableHeader}
+            sorting={sorting}
+            setSorting={setSorting}
+            rows={rows.map(({
                 pair,
                 rewards,
                 tvl,
@@ -50,9 +27,9 @@ export function StrategyTable({ headers, rows, sorting, setSorting }: StrategyTa
                 userPosition,
                 earnPlatform,
             }, i) => (
-                <TableRow
+                <Table.Row
                     key={i}
-                    container={TableRowContainer}
+                    container={TableRow}
                     headers={headers}
                     items={[
                         {
@@ -106,18 +83,10 @@ export function StrategyTable({ headers, rows, sorting, setSorting }: StrategyTa
                     ]}
                 />
             ))}
-        </Table>
+        />
     )
 }
 
-const Table = styled(Flex).attrs(props => ({
-    $width: '100%',
-    $column: true,
-    $justify: 'flex-start',
-    $align: 'stretch',
-    $gap: 12,
-    ...props,
-}))``
 const TableHeader = styled(Grid)`
     grid-template-columns: 3fr minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) 224px;
     align-items: center;
@@ -129,7 +98,7 @@ const TableHeader = styled(Grid)`
         padding: 0 4px;
     }
 `
-const TableRowContainer = styled(TableHeader)`
+const TableRow = styled(TableHeader)`
     border-radius: 999px;
     &:hover {
         background-color: rgba(0,0,0,0.1);

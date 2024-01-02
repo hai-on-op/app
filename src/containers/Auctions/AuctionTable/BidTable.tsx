@@ -4,13 +4,11 @@ import dayjs from 'dayjs'
 
 import type { IAuction, IAuctionBidder, SortableHeader } from '~/types'
 import { type ChainId, parseRemainingTime, formatNumberWithStyle } from '~/utils'
-import { useMediaQuery } from '~/hooks'
 
 import styled from 'styled-components'
 import { Flex, Grid, Text } from '~/styles'
-import { TableHeaderItem } from '~/components/TableHeaderItem'
 import { AddressLink } from '~/components/AddressLink'
-import { TableRow } from '~/components/TableRow'
+import { Table } from '~/components/Table'
 
 const tokenMap: Record<string, string> = {
     'PROTOCOL_TOKEN': 'HAI',
@@ -23,7 +21,8 @@ const sortableHeaders: SortableHeader[] = [
     { label: 'Buy Amount' },
     { label: 'Transaction Hash' },
     { label: 'Time' },
-]
+    { label: '' },
+].map(obj => ({ ...obj, unsortable: true }))
 const sortableHeadersWithSell: SortableHeader[] = [
     { label: 'Event' },
     { label: 'Bidder' },
@@ -31,31 +30,25 @@ const sortableHeadersWithSell: SortableHeader[] = [
     { label: 'Buy Amount' },
     { label: 'Transaction Hash' },
     { label: 'Time' },
-]
+    { label: '' },
+].map(obj => ({ ...obj, unsortable: true }))
 
 type BidTableProps = {
     auction: IAuction
 }
 export function BidTable({ auction }: BidTableProps) {
-    const isLargerThanSmall = useMediaQuery('upToSmall')
-
     const hasSettled = auction.isClaimed && auction.winner
 
     const withSell = auction.englishAuctionType === 'COLLATERAL'
 
     return (
-        <Table>
-            {isLargerThanSmall && (
-                <TableHeader $withSell={withSell}>
-                    {(withSell ? sortableHeadersWithSell: sortableHeaders).map(({ label }) => (
-                        <TableHeaderItem key={label}>
-                            <Text>{label}</Text>
-                        </TableHeaderItem>
-                    ))}
-                    <Text></Text>
-                </TableHeader>
-            )}
-            {auction.biddersList.map((bid, i) => (
+        <Table
+            headers={withSell ? sortableHeadersWithSell: sortableHeaders}
+            headerContainer={TableHeader}
+            headerProps={{ $withSell: withSell }}
+            sorting={{ key: '', dir: 'desc' }}
+            setSorting={() => {}}
+            rows={auction.biddersList.map((bid, i) => (
                 <BidTableRow
                     key={i}
                     bid={bid}
@@ -70,18 +63,10 @@ export function BidTable({ auction }: BidTableProps) {
                     withSell={withSell}
                 />
             ))}
-        </Table>
+        />
     )
 }
 
-const Table = styled(Flex).attrs(props => ({
-    $width: '100%',
-    $column: true,
-    $justify: 'flex-start',
-    $align: 'stretch',
-    $gap: 12,
-    ...props,
-}))``
 const TableHeader = styled(Grid)<{ $withSell?: boolean }>`
     grid-template-columns: ${({ $withSell }) => ($withSell
         ? '140px 200px 1fr 1fr 200px 120px'
@@ -96,7 +81,7 @@ const TableHeader = styled(Grid)<{ $withSell?: boolean }>`
         padding: 0 4px;
     }
 `
-const TableRowContainer = styled(TableHeader)`
+const TableRow = styled(TableHeader)`
     position: relative;
     height: 48px;
     border-radius: 999px;
@@ -144,8 +129,8 @@ function BidTableRow({ bid, eventType, bidToken, sellToken, withSell }: BidTable
     }, [bid.createdAt])
 
     return (
-        <TableRow
-            container={TableRowContainer}
+        <Table.Row
+            container={TableRow}
             headers={withSell ? sortableHeadersWithSell: sortableHeaders}
             items={[
                 {

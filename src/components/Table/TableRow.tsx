@@ -4,7 +4,7 @@ import type { SortableHeader } from '~/types'
 
 import styled, { css } from 'styled-components'
 import { Flex, type FlexProps, Text } from '~/styles'
-import { Tooltip } from './Tooltip'
+import { Tooltip } from '../Tooltip'
 
 type RowItemProps = {
     content: JSX.Element,
@@ -13,7 +13,7 @@ type RowItemProps = {
     fullWidth?: boolean,
 }
 
-type TableRowProps = Omit<HTMLProps<HTMLElement>, 'ref' | 'headers'>
+export type TableRowProps = Omit<HTMLProps<HTMLElement>, 'ref' | 'headers'>
     & Record<`$${string}`, any>
     & {
         container: ComponentType,

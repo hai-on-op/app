@@ -67,3 +67,17 @@ export const HaiButton = styled.button.attrs((props: HaiButtonProps) => ({
         cursor: not-allowed;
     }
 `
+
+export const TableButton = styled(HaiButton)<HaiButtonProps>`
+    width: 100%;
+    height: 48px;
+    justify-content: center;
+    border: ${({ $unbordered }) => $unbordered ? 'none': '2px solid rgba(0,0,0,0.1)'};
+    font-size: 0.8rem;
+
+    ${({ theme, $unbordered }) => theme.mediaWidth.upToSmall`
+        grid-column: 1 / -1;
+        background: ${theme.colors.yellowish};
+        border: ${$unbordered ? 'none': theme.border.medium};
+    `}
+`

@@ -1,9 +1,11 @@
 import type { ReactChildren } from '~/types'
 
 import styled from 'styled-components'
-import { CenteredFlex, FlexProps } from '~/styles'
+import { CenteredFlex, FlexProps, Text } from '~/styles'
+import { Loader } from './Loader'
+import { useEffect, useState } from 'react'
 
-type Props = {
+export type ContentWithStatusProps = {
     loading: boolean,
     loadingContent?: ReactChildren,
     error?: string,
@@ -20,10 +22,10 @@ export function ContentWithStatus({
     isEmpty,
     emptyContent,
     children,
-}: Props) {
+}: ContentWithStatusProps) {
     if (loading) return (
         <Message>
-            {loadingContent || 'Loading...'}
+            {loadingContent || <LoadingContent/>}
         </Message>
     )
     if (error) return (
@@ -47,3 +49,29 @@ const Message = styled(CenteredFlex).attrs((props: FlexProps) => ({
     $padding: '24px',
     ...props,
 }))``
+
+function LoadingContent() {
+    const [text, setText] = useState<HTMLElement | null>(null)
+
+    useEffect(() => {
+        if (!text) return
+
+        let dots = 3
+        const int = setInterval(() => {
+            dots = (dots + 1) % 4
+            text.textContent = `Loading${'.'.repeat(dots)}`
+        }, 500)
+
+        return () => clearInterval(int)
+    }, [text])
+
+    return (
+        <Loader color="black">
+            <Text
+                ref={setText}
+                style={{ width: '75px' }}>
+                Loading...
+            </Text>
+        </Loader>
+    )
+}
