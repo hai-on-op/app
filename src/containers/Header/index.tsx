@@ -293,15 +293,16 @@ export function Header({ tickerActive = false }: HeaderProps) {
 const Container = styled(Flex).attrs(props => ({
     $width: '100%',
     $column: true,
-    $justify: 'space-between',
+    $justify: 'stretch',
     $align: 'stretch',
+    $shrink: 0,
     ...props,
 }))<{ $tickerActive: boolean, $withBg?: boolean }>`
     position: fixed;
     top: 0px;
     left: 0px;
     right: 0px;
-    height: ${({ $tickerActive }) => $tickerActive ? 156: 96}px;
+    height: ${({ $tickerActive }) => $tickerActive ? 144: 96}px;
 
     ${({ $withBg }) => !!$withBg && css`
         &::before {
@@ -314,10 +315,10 @@ const Container = styled(Flex).attrs(props => ({
     `}
 
     ${({ theme, $tickerActive }) => theme.mediaWidth.upToSmall`
-        height: ${$tickerActive ? 140: 80}px;
+        height: ${$tickerActive ? 132: 84}px;
     `}
     ${({ theme, $tickerActive }) => theme.mediaWidth.upToExtraSmall`
-        height: ${$tickerActive ? 120: 60}px;
+        height: ${$tickerActive ? 120: 72}px;
     `}
 
     z-index: 2;
@@ -325,9 +326,10 @@ const Container = styled(Flex).attrs(props => ({
 
 const Ticker = styled(Flex)`
     width: 100%;
-    height: 60px;
+    height: 48px;
     background: ${({ theme }) => theme.colors.gradient};
     border-bottom: ${({ theme }) => theme.border.medium};
+    flex-shrink: 0;
 
     & ${MarqueeChunk} {
         & > *:nth-child(4n + 1) {
@@ -340,9 +342,9 @@ const Inner = styled(Flex).attrs(props => ({
     $justify: 'space-between',
     $align: 'center',
     $gap: 24,
+    $grow: 1,
     ...props,
 }))<{ $blur?: boolean }>`
-    height: 100%;
     padding: 0 42px;
     backdrop-filter: ${({ $blur = false }) => $blur ? 'blur(13px)': 'none'};
     border-bottom: 2px solid ${({ $blur = false }) => $blur ? 'black': 'transparent'};
