@@ -12,6 +12,7 @@ import { NavContainer } from '~/components/NavContainer'
 import { AddressLink } from '~/components/AddressLink'
 import { SortByDropdown } from '~/components/SortByDropdown'
 import { Table } from '~/components/Table'
+import { ProxyPrompt } from '~/components/ProxyPrompt'
 
 const sortableHeaders: SortableHeader[] = [
     { label: 'Collateral Asset' },
@@ -100,70 +101,74 @@ export function CollateralTable() {
                     setSorting={setSorting}
                 />
             )}>
-            <Table
-                headers={sortableHeaders}
-                headerContainer={TableHeader}
-                sorting={sorting}
-                setSorting={setSorting}
-                rows={sortedRows.map(({
-                    symbol,
-                    delayedOracle,
-                    currentPrice,
-                    nextPrice,
-                    stabilityFee,
-                }) => (
-                    <Table.Row
-                        key={symbol}
-                        container={TableRow}
-                        headers={sortableHeaders}
-                        items={[
-                            {
-                                content: (
-                                    <Flex
-                                        $align="center"
-                                        $gap={8}>
-                                        <TokenPair
-                                            tokens={[symbol as any]}
-                                            hideLabel
-                                        />
-                                        <Text $fontWeight={700}>{symbol}</Text>
-                                    </Flex>
-                                ),
-                                // fullWidth: true,
-                            },
-                            {
-                                content: geb?.tokenList?.[symbol]
-                                    ? <AddressLink address={geb.tokenList[symbol].address}/>
-                                    : <Text>--</Text>,
-                            },
-                            {
-                                content: <AddressLink address={delayedOracle}/>,
-                            },
-                            {
-                                content: (
-                                    <Text>
-                                        {formatDataNumber(currentPrice?.toString() || '0', 18, 2, true)}
-                                    </Text>
-                                ),
-                            },
-                            {
-                                content: (
-                                    <Text>
-                                        {formatDataNumber(nextPrice?.toString() || '0', 18, 2, true)}
-                                    </Text>
-                                ),
-                            },
-                            {
-                                content: (
-                                    <Text>
-                                        {transformToAnnualRate(stabilityFee?.toString() || '0', 27)}
-                                    </Text>
-                                ),
-                            },
-                        ]}
-                    />
-                ))}
-            />
+            <ProxyPrompt
+                connectWalletOnly
+                continueText="view">
+                <Table
+                    headers={sortableHeaders}
+                    headerContainer={TableHeader}
+                    sorting={sorting}
+                    setSorting={setSorting}
+                    rows={sortedRows.map(({
+                        symbol,
+                        delayedOracle,
+                        currentPrice,
+                        nextPrice,
+                        stabilityFee,
+                    }) => (
+                        <Table.Row
+                            key={symbol}
+                            container={TableRow}
+                            headers={sortableHeaders}
+                            items={[
+                                {
+                                    content: (
+                                        <Flex
+                                            $align="center"
+                                            $gap={8}>
+                                            <TokenPair
+                                                tokens={[symbol as any]}
+                                                hideLabel
+                                            />
+                                            <Text $fontWeight={700}>{symbol}</Text>
+                                        </Flex>
+                                    ),
+                                    // fullWidth: true,
+                                },
+                                {
+                                    content: geb?.tokenList?.[symbol]
+                                        ? <AddressLink address={geb.tokenList[symbol].address}/>
+                                        : <Text>--</Text>,
+                                },
+                                {
+                                    content: <AddressLink address={delayedOracle}/>,
+                                },
+                                {
+                                    content: (
+                                        <Text>
+                                            {formatDataNumber(currentPrice?.toString() || '0', 18, 2, true)}
+                                        </Text>
+                                    ),
+                                },
+                                {
+                                    content: (
+                                        <Text>
+                                            {formatDataNumber(nextPrice?.toString() || '0', 18, 2, true)}
+                                        </Text>
+                                    ),
+                                },
+                                {
+                                    content: (
+                                        <Text>
+                                            {transformToAnnualRate(stabilityFee?.toString() || '0', 27)}
+                                        </Text>
+                                    ),
+                                },
+                            ]}
+                        />
+                    ))}
+                />
+            </ProxyPrompt>
         </NavContainer>
     )
 }

@@ -21,9 +21,15 @@ enum PromptStep {
 type ProxyPromptProps = {
     continueText?: string,
     onCreateVault?: () => void,
+    connectWalletOnly?: boolean,
     children: ReactChildren,
 }
-export function ProxyPrompt({ continueText = 'continue', onCreateVault, children }: ProxyPromptProps) {
+export function ProxyPrompt({
+    continueText = 'continue',
+    onCreateVault,
+    connectWalletOnly,
+    children,
+}: ProxyPromptProps) {
     const { t } = useTranslation()
     const { chain } = useNetwork()
     const chainId = chain?.id
@@ -103,32 +109,34 @@ export function ProxyPrompt({ continueText = 'continue', onCreateVault, children
         </Container>
     )
 
-    if (connectWalletState.step === PromptStep.CREATE_PROXY) return (
-        <Container>
-            <Text>
-                To {continueText}, please create a proxy contract. A proxy contract allows for transaction bundling as well as other unique features.&nbsp;
-                <ExternalLink href={LINK_TO_DOCS}>Read more →</ExternalLink>
-            </Text>
-            <HaiButton
-                $variant="yellowish"
-                onClick={handleCreateAccount}>
-                {t('create_account')}
-            </HaiButton>
-        </Container>
-    )
+    if (!connectWalletOnly) {
+        if (connectWalletState.step === PromptStep.CREATE_PROXY) return (
+            <Container>
+                <Text>
+                    To {continueText}, please create a proxy contract. A proxy contract allows for transaction bundling as well as other unique features.&nbsp;
+                    <ExternalLink href={LINK_TO_DOCS}>Read more →</ExternalLink>
+                </Text>
+                <HaiButton
+                    $variant="yellowish"
+                    onClick={handleCreateAccount}>
+                    {t('create_account')}
+                </HaiButton>
+            </Container>
+        )
 
-    if (onCreateVault && connectWalletState.step === PromptStep.CREATE_VAULT) return (
-        <Container>
-            <Text>
-                No active vaults associated with this address were found.
-            </Text>
-            <HaiButton
-                $variant="yellowish"
-                onClick={onCreateVault}>
-                {t('create_vault')}
-            </HaiButton>
-        </Container>
-    )
+        if (onCreateVault && connectWalletState.step === PromptStep.CREATE_VAULT) return (
+            <Container>
+                <Text>
+                    No active vaults associated with this address were found.
+                </Text>
+                <HaiButton
+                    $variant="yellowish"
+                    onClick={onCreateVault}>
+                    {t('create_vault')}
+                </HaiButton>
+            </Container>
+        )
+    }
     
     return (<>{children}</>)
 }
@@ -139,9 +147,5 @@ const Container = styled(CenteredFlex).attrs(props => ({
     $gap: 12,
     ...props,
 }))`
-    padding: 12px;
-
-    & > * {
-        max-width: max(60%, 300px);
-    }
+    padding: 24px;
 `
