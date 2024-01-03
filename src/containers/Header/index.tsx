@@ -188,7 +188,9 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                 </ExternalLink>
                             </>)
                             : (
-                                <BrandedDropdown label={!isLargerThanMedium ? 'Menu': 'More'}>
+                                <BrandedDropdown
+                                    width="200px"
+                                    label={!isLargerThanMedium ? 'Menu': 'More'}>
                                     {!isLargerThanMedium && (<>
                                         <InternalLink
                                             href="/vaults"

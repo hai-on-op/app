@@ -9,10 +9,11 @@ import { Caret } from './Icons/Caret'
 
 type ButtonProps = Omit<HTMLProps<HTMLButtonElement>, 'ref' | 'as' | 'type' | 'label' | 'children'>
 type BrandedDropdownProps = ButtonProps & HaiButtonProps & {
+    width?: string,
     label: ReactChildren,
     children: ReactChildren,
 }
-export function BrandedDropdown({ label, children, ...props }: BrandedDropdownProps) {
+export function BrandedDropdown({ width, label, children, ...props }: BrandedDropdownProps) {
     const [container, setContainer] = useState<HTMLElement | null>(null)
     const [expanded, setExpanded] = useState(false)
 
@@ -28,6 +29,7 @@ export function BrandedDropdown({ label, children, ...props }: BrandedDropdownPr
                 <Caret direction="down"/>
             </IconContainer>
             <Dropdown
+                $width={width}
                 $float="left"
                 $margin="20px"
                 hidden={!expanded}>
@@ -38,6 +40,7 @@ export function BrandedDropdown({ label, children, ...props }: BrandedDropdownPr
 }
 
 const Container = styled(HaiButton)`
+    position: relative;
     height: 48px;
     z-index: 1;
 `
@@ -49,8 +52,7 @@ const IconContainer = styled(CenteredFlex)<{ $rotate?: boolean }>`
 `
 
 const Dropdown = styled(Popout)`
-    min-width: 100%;
-    width: fit-content;
+    width: ${({ $width = 'fit-content' }) => $width};
     padding: 24px;
     margin-right: -16px;
     gap: 12px;
