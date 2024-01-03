@@ -1,7 +1,7 @@
 import { ChainId } from './constants'
 import { getEtherscanLink } from './helper'
 import { returnTotalValue } from './math'
-import { getCollateralRatio, getLiquidationPrice, ratioChecker, safeIsSafe } from './vaults'
+import { getCollateralRatio, getLiquidationPrice, ratioChecker, vaultIsSafe } from './vaults'
 
 describe('utils', () => {
     describe('#getEtherscanLink', () => {
@@ -46,12 +46,12 @@ describe('utils', () => {
         })
     })
 
-    describe('#safeIsSafe', () => {
+    describe('#vaultIsSafe', () => {
         it('returns true', () => {
-            expect(safeIsSafe('2', '2', '1')).toBe(true)
+            expect(vaultIsSafe('2', '2', '1')).toBe(true)
         })
         it('returns false if not', () => {
-            expect(safeIsSafe('1', '2', '1')).toBe(false)
+            expect(vaultIsSafe('1', '2', '1')).toBe(false)
         })
     })
 
