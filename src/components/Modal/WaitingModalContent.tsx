@@ -7,7 +7,7 @@ import { useStoreActions, useStoreState } from '~/store'
 
 import styled from 'styled-components'
 import { CenteredFlex, HaiButton, Text } from '~/styles'
-import { ModalProps } from './index'
+import { type ModalProps } from './index'
 import { Loader } from '../Loader'
 import { AddressLink } from '../AddressLink'
 

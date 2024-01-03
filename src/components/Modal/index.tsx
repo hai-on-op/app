@@ -94,6 +94,7 @@ const Overlay = styled(CenteredFlex)`
     background-color: rgba(0,0,0,0.6);
     z-index: 998;
 `
+Modal.Overlay = Overlay
 
 export const ModalContainer = styled(CenteredFlex)<{ $width?: string, $maxWidth?: string }>`
     position: absolute;
@@ -113,6 +114,7 @@ export const ModalContainer = styled(CenteredFlex)<{ $width?: string, $maxWidth?
         max-height: calc(100vh - 240px);
     `}
 `
+Modal.Container = ModalContainer
 const Hideable = styled(Flex).attrs(props => ({
     $column: true,
     $justify: 'stretch',
@@ -139,11 +141,13 @@ export const ModalHeader = styled(Flex).attrs(props => ({
         padding: 12px 16px;
     `}
 `
+Modal.Header = ModalHeader
 export const CloseContainer = styled(CenteredFlex)`
     width: 36px;
     height: 36px;
     cursor: pointer;
 `
+Modal.Close = CloseContainer
 
 export const ModalBody = styled(Flex).attrs(props => ({
     $width: '100%',
@@ -161,8 +165,10 @@ export const ModalBody = styled(Flex).attrs(props => ({
         padding: 0 16px;
     `}
 `
+Modal.Body = ModalBody
 
 export const ModalFooter = styled(ModalHeader)``
+Modal.Footer = ModalFooter
 
 const clouds: FloatingElementsProps['clouds'] = [
     {

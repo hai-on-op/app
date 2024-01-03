@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 
 import { useStoreActions, useStoreState } from '~/store'
 
-import { CloseContainer, Modal, ModalHeader, type ModalProps } from '../index'
+import { Modal, type ModalProps } from '../index'
 import { BrandedTitle } from '~/components/BrandedTitle'
 import { X } from '~/components/Icons/X'
 import { ConfigureAction } from './ConfigureAction'
@@ -79,17 +79,17 @@ export function AuctionModal({ maxWidth = '600px', onClose, ...props }: ModalPro
             {...props}
             maxWidth={step === AuctionActionStep.APPROVE ? '420px': maxWidth}
             overrideContent={<>
-                <ModalHeader>
+                <Modal.Header>
                     <BrandedTitle
                         textContent={t(type).toUpperCase()}
                         $fontSize="2.5em"
                     />
                     {onClose && (
-                        <CloseContainer onClick={onClose}>
+                        <Modal.Close onClick={onClose}>
                             <X size={14}/>
-                        </CloseContainer>
+                        </Modal.Close>
                     )}
-                </ModalHeader>
+                </Modal.Header>
                 {content}
             </>}
         />

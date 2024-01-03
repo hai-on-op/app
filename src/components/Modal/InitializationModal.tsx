@@ -1,4 +1,4 @@
-import { Modal, ModalProps } from './index'
+import { Modal, type ModalProps } from './index'
 import { WaitingModalContent } from './WaitingModalContent'
 
 export function InitializationModal({ onClose, ...props }: ModalProps) {
