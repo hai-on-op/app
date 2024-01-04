@@ -61,23 +61,12 @@ export const SafeFragment = gql`
         createdAt
         collateralType {
             id
-            debtAmount
-            totalCollateral
-            accumulatedRate
-            stabilityFee
-            totalAnnualizedStabilityFee
-            debtCeiling
-            debtFloor
             safetyCRatio
             liquidationCRatio
-            liquidationPenalty
             currentPrice {
                 timestamp
                 safetyPrice
                 liquidationPrice
-                collateral {
-                    liquidationCRatio
-                }
                 value
             }
         }

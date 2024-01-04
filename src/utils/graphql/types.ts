@@ -61,6 +61,12 @@ export type QueryCollateralType = {
     modifiedAtBlock?: string // Block number at which this collateral type was last modified
     modifiedAtTransaction?: string // Hash of the transaction that last modified this collateral type
 }
+export type QuerySafeCollateralType = {
+    id: string // Collateral type name
+    safetyCRatio: string // Collateral price with safety margin. Used to limit the amount of debt that can be generated per one unit of collateral
+    liquidationCRatio: string // Collateral price with liquidation margin. Used only in LiquidationEngine when a Safe is liquidated
+    currentPrice: QueryCollateralPrice // Current market price
+}
 
 export type QueryCollateralPrice = {
     id?: string // Equal to: <tx hash>-<log index>
@@ -105,7 +111,7 @@ export type QueryMedianizerUpdate = {
 export type QuerySafe = {
     id?: string // Equal to: <SafeHandler>-<CollateralType>
     safeId: string // Safe ID if this Safe was created through the Safe Manager (GebSafeManager)
-    collateralType: QueryCollateralType // Collateral type associated with this Safe
+    collateralType: QuerySafeCollateralType // Collateral type associated with this Safe
     collateral: string // Amount of collateral locked in the Safe
     debt: string // Outstanding Safe debt
     safeHandler?: string // The address of the Safe handler (ownership at the SAFEEngine level if the Safe was created using GebSafeManager)

@@ -70,8 +70,8 @@ export function useAllVaults() {
                 : getCollateralRatio(
                     vault.collateral,
                     vault.debt,
-                    vault.collateralType.currentPrice!.liquidationPrice,
-                    vault.collateralType.currentPrice!.collateral!.liquidationCRatio
+                    vault.collateralType.currentPrice.liquidationPrice,
+                    vault.collateralType.liquidationCRatio
                 )
             const status = riskStateToStatus[
                 ratioChecker(
