@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useAccount } from 'wagmi'
 
 import type { AuctionEventType, IAuction, SortableHeader, Sorting } from '~/types'
-import { getAuctionStatus, stringsExistAndAreEqual, tokenMap } from '~/utils'
+import { arrayToSorted, getAuctionStatus, stringsExistAndAreEqual, tokenMap } from '~/utils'
 import { useGetAuctions } from './useAuctions'
 
 const headers: SortableHeader[] = [
@@ -69,7 +69,7 @@ export function useAuctionsData() {
         dir: 'desc',
     })
 
-    const auctionWithExtras = useMemo(() => {
+    const auctionsWithExtras = useMemo(() => {
         if (!address) return auctions
 
         const withBids = auctions
@@ -88,62 +88,52 @@ export function useAuctionsData() {
 
     const sortedRows = useMemo(() => {
         switch(sorting.key) {
-            case 'Auction': {
-                return auctionWithExtras.toSorted(({ auctionId: a }, { auctionId: b }) => {
-                    const aId = parseInt(a)
-                    const bId = parseInt(b)
-                    return sorting.dir === 'desc'
-                        ? bId - aId
-                        : aId - bId
+            case 'Auction':
+                return arrayToSorted(auctionsWithExtras, {
+                    getProperty: auction => auction.auctionId,
+                    dir: sorting.dir,
+                    type: 'parseInt',
                 })
-            }
-            case 'Auction Type': {
-                return auctionWithExtras.toSorted(({ englishAuctionType: a }, { englishAuctionType: b }) => {
-                    return sorting.dir === 'desc'
-                        ? (a > b ? 1: -1)
-                        : (a < b ? 1: -1)
+            case 'Auction Type':
+                return arrayToSorted(auctionsWithExtras, {
+                    getProperty: auction => auction.englishAuctionType,
+                    dir: sorting.dir,
+                    type: 'alphabetical',
                 })
-            }
-            case 'For Sale': {
-                return auctionWithExtras.toSorted(({ sellToken: a }, { sellToken: b }) => {
-                    return sorting.dir === 'desc'
-                        ? (a > b ? 1: -1)
-                        : (a < b ? 1: -1)
+            case 'For Sale':
+                return arrayToSorted(auctionsWithExtras, {
+                    getProperty: auction => auction.sellToken,
+                    dir: sorting.dir,
+                    type: 'alphabetical',
                 })
-            }
-            case 'Buy With': {
-                return auctionWithExtras.toSorted(({ buyToken: a }, { buyToken: b }) => {
-                    return sorting.dir === 'desc'
-                        ? (a > b ? 1: -1)
-                        : (a < b ? 1: -1)
+            case 'Buy With':
+                return arrayToSorted(auctionsWithExtras, {
+                    getProperty: auction => auction.buyToken,
+                    dir: sorting.dir,
+                    type: 'alphabetical',
                 })
-            }
-            case 'My Bids': {
-                return auctionWithExtras.toSorted(({ myBids: a = 0 }, { myBids: b = 0 }) => {
-                    return sorting.dir === 'desc'
-                        ? b - a
-                        : a - b
+            case 'My Bids':
+                return arrayToSorted(auctionsWithExtras, {
+                    getProperty: auction => auction.myBids || 0,
+                    dir: sorting.dir,
+                    type: 'numerical',
                 })
-            }
-            case 'Status': {
-                return auctionWithExtras.toSorted(({ status: a }, { status: b }) => {
-                    if (!b) return -1
-                    if (!a) return 1
-                    return sorting.dir === 'desc'
-                        ? (a > b ? 1: -1)
-                        : (a < b ? 1: -1)
+            case 'Status':
+                return arrayToSorted(auctionsWithExtras, {
+                    getProperty: auction => auction.status,
+                    dir: sorting.dir,
+                    type: 'alphabetical',
+                    checkValueExists: true,
                 })
-            }
             case 'Time Left':
-            default: {
-                return auctionWithExtras.toSorted(({ auctionDeadline: a }, { auctionDeadline: b }) => {
-                    return sorting.dir === 'desc'
-                        ? parseInt(b) - parseInt(a)
-                        : parseInt(a) - parseInt(b)
+            default:
+                return arrayToSorted(auctionsWithExtras, {
+                    getProperty: auction => auction.auctionDeadline,
+                    dir: sorting.dir,
+                    type: 'parseInt',
                 })
-            }
         }
-    }, [auctionWithExtras, sorting])
+    }, [auctionsWithExtras, sorting])
 
     return {
         headers,

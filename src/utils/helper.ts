@@ -1,3 +1,5 @@
+import { BigNumber } from 'ethers'
+
 import type { ITransaction } from '~/types'
 import { ChainId, ETHERSCAN_PREFIXES } from './constants'
 
@@ -69,4 +71,84 @@ export function chunkArray<T>(items: T[], gasLimit = CONSERVATIVE_BLOCK_GAS_LIMI
     if (currentChunk.length > 0) chunks.push(currentChunk)
 
     return chunks
+}
+
+type ArraySortType = 'alphabetical' | 'numerical' | 'parseFloat' | 'parseInt' | 'bigInt' | 'bigNumber'
+
+type SortFn = (a: any, b: any) => number
+const sortFnMap: Record<ArraySortType, { desc: SortFn, asc: SortFn }> = {
+    alphabetical: {
+        desc: (a: string, b: string) => (
+            a.toString() > b.toString() ? 1: -1
+        ),
+        asc: (a: string, b: string) => (
+            a.toString() < b.toString() ? 1: -1
+        ),
+    },
+    numerical: {
+        desc: (a: number, b: number) => (
+            b - a
+        ),
+        asc: (a: number, b: number) => (
+            a - b
+        ),
+    },
+    parseFloat: {
+        desc: (a: string | number, b: string | number) => (
+            parseFloat(b.toString()) - parseFloat(a.toString())
+        ),
+        asc: (a: string | number, b: string | number) => (
+            parseFloat(a.toString()) - parseFloat(b.toString())
+        ),
+    },
+    parseInt: {
+        desc: (a: string | number, b: string | number) => (
+            parseInt(b.toString()) - parseInt(a.toString())
+        ),
+        asc: (a: string | number, b: string | number) => (
+            parseInt(a.toString()) - parseInt(b.toString())
+        ),
+    },
+    bigInt: {
+        desc: (a: any, b: any) => (
+            BigInt(b.toString()) < BigInt(a.toString()) ? -1: 1
+        ),
+        asc: (a: any, b: any) => (
+            BigInt(a.toString()) < BigInt(b.toString()) ? -1: 1
+        ),
+    },
+    bigNumber: {
+        desc: (a: any, b: any) => (
+            BigNumber.from(b).lt(a) ? -1: 1
+        ),
+        asc: (a: any, b: any) => (
+            BigNumber.from(a).lt(b) ? -1: 1
+        ),
+    },
+}
+
+type ToSortedOptions<T = any> = {
+    getProperty?: (obj: T) => any,
+    type?: ArraySortType,
+    dir?: 'desc' | 'asc',
+    checkValueExists?: boolean,
+}
+export const arrayToSorted = <T = any>(arr: T[], options?: ToSortedOptions<T>) => {
+    const {
+        getProperty = (obj: T) => obj, // default to returning argument for non-object arrays
+        type = 'alphabetical',
+        dir = 'desc',
+        checkValueExists = false,
+    } = options || {}
+    
+    const sort = sortFnMap[type][dir]
+    return arr.toSorted((a, b) => {
+        const aProp = getProperty(a)
+        const bProp = getProperty(b)
+        if (checkValueExists) {
+            if (!bProp) return -1
+            if (!aProp) return 1
+        }
+        return sort(aProp, bProp)
+    })
 }

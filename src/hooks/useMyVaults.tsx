@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 
 import type { SortableHeader, Sorting } from '~/types'
+import { arrayToSorted } from '~/utils'
 import { useStoreState } from '~/store'
 
 const sortableHeaders: SortableHeader[] = [
@@ -36,55 +37,37 @@ export function useMyVaults() {
 
     const sortedRows = useMemo(() => {
         switch(sorting.key) {
-            case 'Vault': {
-                return myVaults.toSorted(({ id: a }, { id: b }) => {
-                    if (!b) return -1
-                    if (!a) return 1
-                    return sorting.dir === 'desc'
-                        ? (a < b ? 1: -1)
-                        : (a > b ? 1: -1)
+            case 'Vault':
+                return arrayToSorted(myVaults, {
+                    getProperty: row => row.id,
+                    dir: sorting.dir,
+                    type: 'parseInt',
                 })
-            }
-            case 'Risk Ratio': {
-                return myVaults.toSorted(({ collateralRatio: a }, { collateralRatio: b }) => {
-                    if (!b) return -1
-                    if (!a) return 1
-                    return sorting.dir === 'desc'
-                        ? parseFloat(b) - parseFloat(a)
-                        : parseFloat(a) - parseFloat(b)
+            case 'Risk Ratio':
+                return arrayToSorted(myVaults, {
+                    getProperty: row => row.collateralRatio || '0',
+                    dir: sorting.dir,
+                    type: 'parseFloat',
                 })
-            }
-            case 'Collateral': {
-                return myVaults.toSorted(({ collateral: a }, { collateral: b }) => {
-                    if (!b) return -1
-                    if (!a) return 1
-                    return sorting.dir === 'desc'
-                        ? parseFloat(b) - parseFloat(a)
-                        : parseFloat(a) - parseFloat(b)
+            case 'Collateral':
+                return arrayToSorted(myVaults, {
+                    getProperty: row => row.collateral || '0',
+                    dir: sorting.dir,
+                    type: 'parseFloat',
                 })
-            }
-            case 'Debt': {
-                return myVaults.toSorted(({ totalDebt: a }, { totalDebt: b }) => {
-                    if (!b) return -1
-                    if (!a) return 1
-                    return sorting.dir === 'desc'
-                        ? parseFloat(b) - parseFloat(a)
-                        : parseFloat(a) - parseFloat(b)
+            case 'Debt':
+                return arrayToSorted(myVaults, {
+                    getProperty: row => row.totalDebt || '0',
+                    dir: sorting.dir,
+                    type: 'parseFloat',
                 })
-            }
             case 'Net APY':
-            default: {
-                return myVaults.toSorted((
-                    { totalAnnualizedStabilityFee: a },
-                    { totalAnnualizedStabilityFee: b }
-                ) => {
-                    if (!b) return -1
-                    if (!a) return 1
-                    return sorting.dir === 'desc'
-                        ? (a < b ? 1: -1)
-                        : (a > b ? 1: -1)
+            default:
+                return arrayToSorted(myVaults, {
+                    getProperty: row => row.totalAnnualizedStabilityFee || '0',
+                    dir: sorting.dir,
+                    type: 'parseFloat',
                 })
-            }
         }
     }, [myVaults, sorting])
 

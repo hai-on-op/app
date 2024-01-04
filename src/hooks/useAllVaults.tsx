@@ -6,6 +6,7 @@ import {
     ALLSAFES_QUERY_NOT_ZERO,
     ALLSAFES_QUERY_WITH_ZERO,
     type QuerySafe,
+    arrayToSorted,
     getCollateralRatio,
     ratioChecker,
     riskStateToStatus,
@@ -94,39 +95,35 @@ export function useAllVaults() {
     const sortedRows = useMemo(() => {
         switch(sorting.key) {
             case 'Vault':
-                return vaultsWithCRatioAndToken.toSorted(({ safeId: a }, { safeId: b }) => {
-                    const aId = parseInt(a)
-                    const bId = parseInt(b)
-                    return sorting.dir === 'desc'
-                        ? bId - aId
-                        : aId - bId
+                return arrayToSorted(vaultsWithCRatioAndToken, {
+                    getProperty: vault => vault.safeId,
+                    dir: sorting.dir,
+                    type: 'parseInt',
                 })
             case 'Owner':
-                return vaultsWithCRatioAndToken.toSorted(({ owner: a }, { owner: b }) => {
-                    return sorting.dir === 'desc'
-                        ? (a.address > b.address ? 1: -1)
-                        : (a.address < b.address ? 1: -1)
+                return arrayToSorted(vaultsWithCRatioAndToken, {
+                    getProperty: vault => vault.owner.address,
+                    dir: sorting.dir,
+                    type: 'alphabetical',
                 })
             case 'Collateral':
-                return vaultsWithCRatioAndToken.toSorted(({ collateral: a }, { collateral: b }) => {
-                    return sorting.dir === 'desc'
-                        ? parseFloat(b) - parseFloat(a)
-                        : parseFloat(a) - parseFloat(b)
+                return arrayToSorted(vaultsWithCRatioAndToken, {
+                    getProperty: vault => vault.collateral,
+                    dir: sorting.dir,
+                    type: 'parseFloat',
                 })
             case 'Debt':
-                return vaultsWithCRatioAndToken.toSorted(({ debt: a }, { debt: b }) => {
-                    return sorting.dir === 'desc'
-                        ? parseFloat(b) - parseFloat(a)
-                        : parseFloat(a) - parseFloat(b)
+                return arrayToSorted(vaultsWithCRatioAndToken, {
+                    getProperty: vault => vault.debt,
+                    dir: sorting.dir,
+                    type: 'parseFloat',
                 })
             case 'Collateral Ratio':
             default:
-                return vaultsWithCRatioAndToken.toSorted(({ collateralRatio: a }, { collateralRatio: b }) => {
-                    const aNum = parseFloat(a.toString())
-                    const bNum = parseFloat(b.toString())
-                    return sorting.dir === 'desc'
-                        ? bNum - aNum
-                        : aNum - bNum
+                return arrayToSorted(vaultsWithCRatioAndToken, {
+                    getProperty: vault => vault.collateralRatio,
+                    dir: sorting.dir,
+                    type: 'parseFloat',
                 })
         }
     }, [vaultsWithCRatioAndToken, sorting])

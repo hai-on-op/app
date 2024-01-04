@@ -67,11 +67,31 @@ export function AvailableVaultsTable({
                                     <Flex
                                         $align="center"
                                         $gap={8}>
-                                        <Text>{collateralizationFactor}</Text>
+                                        <Text>
+                                            {collateralizationFactor
+                                                ? formatNumberWithStyle(collateralizationFactor, {
+                                                    maxDecimals: 0,
+                                                    style: 'percent',
+                                                })
+                                                : '--%'
+                                            }
+                                        </Text>
                                     </Flex>
                                 ),
                             },
-                            { content: <Text>{apy}%</Text> },
+                            {
+                                content: (
+                                    <Text>
+                                        {apy
+                                            ? formatNumberWithStyle(apy, {
+                                                maxDecimals: 0,
+                                                style: 'percent',
+                                            })
+                                            : '--%'
+                                        }
+                                    </Text>
+                                ),
+                            },
                             {
                                 content: (
                                     <Flex

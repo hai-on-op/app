@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 
 import type { SortableHeader, Sorting } from '~/types'
-import { formatDataNumber, transformToAnnualRate } from '~/utils'
+import { arrayToSorted, formatDataNumber, transformToAnnualRate } from '~/utils'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { useMediaQuery, usePublicGeb } from '~/hooks'
 
@@ -55,35 +55,31 @@ export function CollateralTable() {
 
     const sortedRows = useMemo(() => {
         switch(sorting.key) {
-            case 'Delayed Price': {
-                return rows.toSorted(({ currentPrice: a }, { currentPrice: b }) => {
-                    return sorting.dir === 'desc'
-                        ? BigInt(b.toString()) > BigInt(a.toString()) ? 1: -1
-                        : BigInt(a.toString()) > BigInt(b.toString()) ? 1: -1
+            case 'Delayed Price':
+                return arrayToSorted(rows, {
+                    getProperty: row => row.currentPrice.toString(),
+                    dir: sorting.dir,
+                    type: 'parseFloat',
                 })
-            }
-            case 'Next Price': {
-                return rows.toSorted(({ nextPrice: a }, { nextPrice: b }) => {
-                    return sorting.dir === 'desc'
-                        ? BigInt(b.toString()) > BigInt(a.toString()) ? 1: -1
-                        : BigInt(a.toString()) > BigInt(b.toString()) ? 1: -1
+            case 'Next Price':
+                return arrayToSorted(rows, {
+                    getProperty: row => row.nextPrice.toString(),
+                    dir: sorting.dir,
+                    type: 'parseFloat',
                 })
-            }
-            case 'Stability Fee': {
-                return rows.toSorted(({ stabilityFee: a }, { stabilityFee: b }) => {
-                    return sorting.dir === 'desc'
-                        ? BigInt(b.toString()) > BigInt(a.toString()) ? 1: -1
-                        : BigInt(a.toString()) > BigInt(b.toString()) ? 1: -1
+            case 'Stability Fee':
+                return arrayToSorted(rows, {
+                    getProperty: row => row.stabilityFee.toString(),
+                    dir: sorting.dir,
+                    type: 'parseFloat',
                 })
-            }
             case 'Collateral Asset':
-            default: {
-                return rows.toSorted(({ symbol: a }, { symbol: b }) => {
-                    return sorting.dir === 'desc'
-                        ? b < a ? 1: -1
-                        : b < a ? -1: 1
+            default:
+                return arrayToSorted(rows, {
+                    getProperty: row => row.symbol,
+                    dir: sorting.dir,
+                    type: 'alphabetical',
                 })
-            }
         }
     }, [rows, sorting])
 

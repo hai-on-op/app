@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 
 import type { SortableHeader, Sorting, Strategy } from '~/types'
+import { arrayToSorted } from '~/utils'
 
 const sortableHeaders: SortableHeader[] = [
     { label: 'Asset Pair' },
@@ -16,77 +17,92 @@ const dummyRows: Strategy[] = [
     {
         pair: ['WETH', 'HAI'],
         rewards: ['OP', 'KITE'],
-        tvl: '$5.6M',
-        vol24hr: '$4.6M',
+        tvl: '5600000',
+        vol24hr: '4600000',
         apy: 0.19,
-        userPosition: '$300k',
+        userPosition: '300000',
         userApy: 0.15,
         earnPlatform: 'uniswap',
     },
     {
         pair: ['WBTC', 'HAI'],
         rewards: ['OP', 'KITE'],
-        tvl: '$5.5M',
-        vol24hr: '$5.1M',
+        tvl: '5500000',
+        vol24hr: '5100000',
         apy: 0.11,
         earnPlatform: 'velodrome',
     },
     {
         pair: ['KITE', 'OP'],
         rewards: ['OP', 'KITE'],
-        tvl: '$4.6M',
-        vol24hr: '$1.2M',
+        tvl: '4600000',
+        vol24hr: '1200000',
         apy: 0.09,
-        userPosition: '$169k',
+        userPosition: '169000',
         userApy: 0.11,
         earnPlatform: 'velodrome',
     },
     {
         pair: ['WETH'],
         rewards: ['OP', 'KITE'],
-        tvl: '$4.6M',
-        vol24hr: '$1.2M',
+        tvl: '4600000',
+        vol24hr: '1200000',
         apy: 0.09,
-        userPosition: '$169k',
+        userPosition: '169000',
         userApy: 0.11,
     },
     {
         pair: ['OP'],
         rewards: ['OP', 'KITE'],
-        tvl: '$4.6M',
-        vol24hr: '$1.2M',
+        tvl: '4600000',
+        vol24hr: '1200000',
         apy: 0.09,
-        userPosition: '$169k',
+        userPosition: '169000',
         userApy: 0.11,
     },
     {
         pair: ['WBTC'],
         rewards: ['OP', 'KITE'],
-        tvl: '$4.6M',
-        vol24hr: '$1.2M',
+        tvl: '4600000',
+        vol24hr: '1200000',
         apy: 0.09,
-        userPosition: '$169k',
+        userPosition: '169000',
         userApy: 0.11,
     },
     {
         pair: ['WSTETH'],
         rewards: ['OP', 'KITE'],
-        tvl: '$4.6M',
-        vol24hr: '$1.2M',
+        tvl: '4600000',
+        vol24hr: '1200000',
         apy: 0.09,
-        userPosition: '$169k',
+        userPosition: '169000',
         userApy: 0.11,
     },
 ]
 
 export function useEarnStrategies() {
     const [filterEmpty, setFilterEmpty] = useState(false)
+
+    const [rows] = useState(() => dummyRows.map(obj => ({
+        ...obj,
+        tvl: Math.random() < 0.25
+            ? ''
+            : ((2 + 8 * Math.random()) * 1_000_000).toFixed(0),
+        vol24hr: Math.random() < 0.25
+            ? undefined
+            : ((1 + 10 * Math.random()) * 100_000).toFixed(0),
+        apy: 0.01 + 0.2 * Math.random(),
+        userPosition: Math.random() < 0.25
+            ? ''
+            : ((1 + 9 * Math.random()) * 100_000).toFixed(0),
+        userApy: 0.01 + 0.2 * Math.random(),
+    })))
     
     const filteredRows = useMemo(() => {
-        if (!filterEmpty) return dummyRows
+        if (!filterEmpty) return rows
 
-        return dummyRows.filter(({ userPosition }) => !!userPosition)
-    }, [filterEmpty])
+        return rows.filter(({ userPosition }) => !!userPosition)
+    }, [rows, filterEmpty])
 
     const [sorting, setSorting] = useState<Sorting>({
         key: 'My Position',
@@ -95,64 +111,53 @@ export function useEarnStrategies() {
 
     const sortedRows = useMemo(() => {
         switch(sorting.key) {
-            case 'Asset Pair': {
-                return filteredRows.toSorted(({ pair: a }, { pair: b }) => {
-                    return sorting.dir === 'desc'
-                        ? (a[0] > b[0] ? 1: -1)
-                        : (a[0] < b[0] ? 1: -1)
+            case 'Asset Pair':
+                return arrayToSorted(filteredRows, {
+                    getProperty: row => row.pair[0],
+                    dir: sorting.dir,
+                    type: 'alphabetical',
                 })
-            }
-            case 'Strategy': {
-                return filteredRows.toSorted(({ earnPlatform: a }, { earnPlatform: b}) => {
-                    const stratA = a ? 'farm': 'borrow'
-                    const stratB = b ? 'farm': 'borrow'
-                    return sorting.dir === 'desc'
-                        ? (stratA > stratB ? 1: -1)
-                        : (stratA < stratB ? 1: -1)
+            case 'Strategy':
+                return arrayToSorted(filteredRows, {
+                    getProperty: row => row.earnPlatform ? 'farm': 'borrow',
+                    dir: sorting.dir,
+                    type: 'alphabetical',
                 })
-            }
-            case 'TVL': {
-                return filteredRows.toSorted(({ tvl: a }, { tvl: b }) => {
-                    return sorting.dir === 'desc'
-                        ? (a < b ? 1: -1)
-                        : (a > b ? 1: -1)
+            case 'TVL':
+                return arrayToSorted(filteredRows, {
+                    getProperty: row => row.tvl,
+                    dir: sorting.dir,
+                    type: 'parseFloat',
+                    checkValueExists: true,
                 })
-            }
-            // case 'Vol. 24hr': {
-            //     return filteredRows.toSorted(({ vol24hr: a }, { vol24hr: b }) => {
-            //         if (!b) return -1
-            //         if (!a) return 1
-            //         return sorting.dir === 'desc'
-            //             ? (a < b ? 1: -1)
-            //             : (a > b ? 1: -1)
+            // case 'Vol. 24hr':
+            //     return arrayToSorted(filteredRows, {
+            //         getProperty: row => row.vol24hr,
+            //         dir: sorting.dir,
+            //         type: 'parseFloat',
+            //         checkValueExists: true,
             //     })
-            // }
-            case 'Rewards APY': {
-                return filteredRows.toSorted(({ apy: a }, { apy: b }) => {
-                    return sorting.dir === 'desc'
-                        ? b - a
-                        : a - b
+            case 'Rewards APY':
+                return arrayToSorted(filteredRows, {
+                    getProperty: row => row.apy,
+                    dir: sorting.dir,
+                    type: 'numerical',
                 })
-            }
-            // case 'My APY': {
-            //     return filteredRows.toSorted(({ userApy: a }, { userApy: b }) => {
-            //         if (!b) return -1
-            //         if (!a) return 1
-            //         return sorting.dir === 'desc'
-            //             ? b - a
-            //             : a - b
+            // case 'My APY':
+            //     return arrayToSorted(filteredRows, {
+            //         getProperty: row => row.userApy,
+            //         dir: sorting.dir,
+            //         type: 'numerical',
+            //         checkValueExists: true,
             //     })
-            // }
             case 'My Position':
-            default: {
-                return filteredRows.toSorted(({ userPosition: a }, { userPosition: b }) => {
-                    if (!b) return -1
-                    if (!a) return 1
-                    return sorting.dir === 'desc'
-                        ? (a < b ? 1: -1)
-                        : (a > b ? 1: -1)
+            default:
+                return arrayToSorted(filteredRows, {
+                    getProperty: row => row.userPosition,
+                    dir: sorting.dir,
+                    type: 'parseFloat',
+                    checkValueExists: true,
                 })
-            }
         }
     }, [filteredRows, sorting])
 

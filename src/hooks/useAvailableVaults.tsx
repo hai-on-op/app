@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { BigNumber } from 'ethers'
 
 import type { AvailableVaultPair, SortableHeader, Sorting } from '~/types'
-import { formatNumberWithStyle, getRatePercentage } from '~/utils'
+import { arrayToSorted } from '~/utils'
 import { useStoreState } from '~/store'
 
 const sortableHeaders: SortableHeader[] = [
@@ -40,16 +40,9 @@ export function useAvailableVaults() {
             } = vaultState.liquidationData?.collateralLiquidationData[symbol] || {}
             return {
                 collateralName: symbol,
-                collateralizationFactor: liquidationCRatio
-                    ? formatNumberWithStyle(liquidationCRatio, {
-                        maxDecimals: 0,
-                        style: 'percent',
-                    })
-                    : '--%',
-                apy: totalAnnualizedStabilityFee
-                    ? getRatePercentage(totalAnnualizedStabilityFee).toString()
-                    : '',
-                eligibleBalance: tokensFetchedData[symbol]?.balanceE18 || '0',
+                collateralizationFactor: liquidationCRatio || '',
+                apy: totalAnnualizedStabilityFee || '',
+                eligibleBalance: tokensFetchedData[symbol]?.balanceE18,
                 myVaults: vaultState.list.filter(({ collateralName }) => (
                     collateralName === symbol
                 )),
@@ -75,52 +68,39 @@ export function useAvailableVaults() {
 
     const sortedRows = useMemo(() => {
         switch(sorting.key) {
-            case 'Pair': {
-                return filteredAvailableVaults.toSorted(({ collateralName: a }, { collateralName: b }) => {
-                    if (!b) return -1
-                    if (!a) return 1
-                    return sorting.dir === 'desc'
-                        ? (a > b ? 1: -1)
-                        : (a < b ? 1: -1)
+            case 'Pair':
+                return arrayToSorted(filteredAvailableVaults, {
+                    getProperty: vault => vault.collateralName,
+                    dir: sorting.dir,
+                    type: 'alphabetical',
                 })
-            }
-            case 'Net APY': {
-                return filteredAvailableVaults.toSorted(({ apy: a }, { apy: b }) => {
-                    if (!b) return -1
-                    if (!a) return 1
-                    return sorting.dir === 'desc'
-                        ? parseFloat(b) - parseFloat(a)
-                        : parseFloat(a) - parseFloat(b)
+            case 'Net APY':
+                return arrayToSorted(filteredAvailableVaults, {
+                    getProperty: vault => vault.apy || '0',
+                    dir: sorting.dir,
+                    type: 'parseFloat',
                 })
-            }
-            case 'My Eligible Collateral': {
-                return filteredAvailableVaults.toSorted(({ eligibleBalance: a }, { eligibleBalance: b }) => {
-                    if (!b) return -1
-                    if (!a) return 1
-                    return sorting.dir === 'desc'
-                        ? parseFloat(b) - parseFloat(a)
-                        : parseFloat(a) - parseFloat(b)
+            case 'My Eligible Collateral':
+                return arrayToSorted(filteredAvailableVaults, {
+                    getProperty: vault => vault.eligibleBalance,
+                    dir: sorting.dir,
+                    type: 'bigInt',
+                    checkValueExists: true,
                 })
-            }
-            case 'My Vaults': {
-                return filteredAvailableVaults.toSorted(({ myVaults: a }, { myVaults: b}) => {
-                    if (!b) return -1
-                    if (!a) return 1
-                    return sorting.dir === 'desc'
-                        ? b.length - a.length
-                        : a.length - b.length
+            case 'My Vaults':
+                return arrayToSorted(filteredAvailableVaults, {
+                    getProperty: vault => vault.myVaults?.length,
+                    dir: sorting.dir,
+                    type: 'numerical',
+                    checkValueExists: true,
                 })
-            }
             case 'Coll. Factor':
-            default: {
-                return filteredAvailableVaults.toSorted(({ collateralizationFactor: a }, { collateralizationFactor: b }) => {
-                    if (!b) return -1
-                    if (!a) return 1
-                    return sorting.dir === 'desc'
-                        ? parseFloat(b) - parseFloat(a)
-                        : parseFloat(a) - parseFloat(b)
+            default:
+                return arrayToSorted(filteredAvailableVaults, {
+                    getProperty: vault => vault.collateralizationFactor || '0',
+                    dir: sorting.dir,
+                    type: 'parseFloat',
                 })
-            }
         }
     }, [filteredAvailableVaults, sorting])
 

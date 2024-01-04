@@ -1,4 +1,5 @@
 import type { SetState, SortableHeader, Sorting, Strategy } from '~/types'
+import { formatNumberWithStyle } from '~/utils'
 
 import styled from 'styled-components'
 import { Flex, Grid, Text } from '~/styles'
@@ -58,19 +59,65 @@ export function StrategyTable({ headers, rows, sorting, setSorting }: StrategyTa
                             content: <Text $fontWeight={700}>{earnPlatform ? 'FARM': 'BORROW'}</Text>,
                         },
                         {
-                            content: <Text $fontWeight={700}>{tvl}</Text>,
+                            content: (
+                                <Text $fontWeight={700}>
+                                    {tvl
+                                        ? formatNumberWithStyle(tvl, {
+                                            style: 'currency',
+                                            maxDecimals: 1,
+                                            suffixed: true,
+                                        })
+                                        : '-'
+                                    }
+                                </Text>
+                            ),
                         },
                         // {
-                        //     content: <Text $fontWeight={700}>{vol24hr || '-'}</Text>,
+                        //     content: (
+                        //         <Text $fontWeight={700}>
+                        //             {vol24hr
+                        //                 ? formatNumberWithStyle(vol24hr, {
+                        //                     style: 'currency',
+                        //                     maxDecimals: 1,
+                        //                     suffixed: true,
+                        //                 })
+                        //                 : '-'
+                        //             }
+                        //         </Text>
+                        //     ),
                         // },
                         {
-                            content: <Text $fontWeight={700}>{(apy * 100).toFixed(0)}%</Text>,
+                            content: (
+                                <Text $fontWeight={700}>
+                                    {formatNumberWithStyle(apy, {
+                                        style: 'percent',
+                                        maxDecimals: 1,
+                                    })}
+                                </Text>
+                            ),
                         },
                         {
-                            content: <Text $fontWeight={700}>{userPosition || '-'}</Text>,
+                            content: (
+                                <Text $fontWeight={700}>
+                                    {userPosition
+                                        ? formatNumberWithStyle(userPosition, {
+                                            style: 'currency',
+                                            maxDecimals: 1,
+                                            suffixed: true,
+                                        })
+                                        : '-'}
+                                </Text>
+                            ),
                         },
                         // {
-                        //     content: <Text $fontWeight={700}>{userApy ? (userApy * 100).toFixed(0) + '%': '-'}</Text>,
+                        //     content: (
+                        //         <Text $fontWeight={700}>
+                        //             {userApy
+                        //                 ? formatNumberWithStyle(userApy, { style: 'percent' })
+                        //                 : '-'
+                        //             }
+                        //         </Text>
+                        //     ),
                         // },
                         {
                             content: (
