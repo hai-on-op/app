@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { ApolloError, useQuery } from '@apollo/client'
 
 import type { SummaryItemValue } from '~/types'
-import { SYSTEMSTATE_QUERY, type QuerySystemStateData, formatNumberWithStyle } from '~/utils'
+import { SYSTEMSTATE_QUERY, type QuerySystemStateData, formatSummaryValue } from '~/utils'
 
 export type SystemData = {
     loading: boolean,
@@ -13,6 +13,9 @@ export type SystemData = {
         globalCRatio: SummaryItemValue,
         totalVaults: SummaryItemValue,
         systemSurplus: SummaryItemValue,
+        erc20Supply: SummaryItemValue,
+        redemptionPrice: SummaryItemValue,
+        redemptionRate: SummaryItemValue,
     },
 }
 
@@ -29,6 +32,8 @@ export function useSystemData(): SystemData {
                 systemSurplus,
                 totalActiveSafeCount,
                 currentRedemptionPrice,
+                currentRedemptionRate,
+                erc20CoinTotalSupply,
             }],
         } = data
         const total = collateralTypes.reduce((sum, {
@@ -47,31 +52,31 @@ export function useSystemData(): SystemData {
         const cRatio = total / (parseFloat(globalDebt) * parseFloat(currentRedemptionPrice.value || '0'))
     
         return {
-            totalCollateralLocked: {
-                raw: total.toString(),
-                formatted: formatNumberWithStyle(total.toString(), {
-                    maxDecimals: 0,
-                    style: 'currency',
-                }),
-            },
-            globalCRatio: {
-                raw: cRatio.toString(),
-                formatted: formatNumberWithStyle(cRatio.toString(), {
+            totalCollateralLocked: formatSummaryValue(total.toString(), {
+                maxDecimals: 0,
+                style: 'currency',
+            })!,
+            globalCRatio: formatSummaryValue(cRatio.toString(), {
+                maxDecimals: 1,
+                style: 'percent',
+            })!,
+            totalVaults: formatSummaryValue(totalActiveSafeCount || '0', { maxDecimals: 0 })!,
+            systemSurplus: formatSummaryValue(systemSurplus, {
+                maxDecimals: 0,
+                style: 'currency',
+            })!,
+            erc20Supply: formatSummaryValue(erc20CoinTotalSupply, { maxDecimals: 0 })!,
+            redemptionPrice: formatSummaryValue(currentRedemptionPrice.value, {
+                maxDecimals: 3,
+                style: 'currency',
+            })!,
+            redemptionRate: formatSummaryValue(
+                (Number(currentRedemptionRate.annualizedRate) - 1).toString(),
+                {
                     maxDecimals: 1,
                     style: 'percent',
-                }),
-            },
-            totalVaults: {
-                raw: totalActiveSafeCount || '0',
-                formatted: Number(totalActiveSafeCount || '0').toLocaleString(),
-            },
-            systemSurplus: {
-                raw: systemSurplus,
-                formatted: formatNumberWithStyle(systemSurplus, {
-                    maxDecimals: 0,
-                    style: 'currency',
-                }),
-            },
+                }
+            )!,
         }
     }, [data])
 

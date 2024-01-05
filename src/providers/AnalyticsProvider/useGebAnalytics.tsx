@@ -24,10 +24,10 @@ export type GebAnalyticsData = {
     marketPrice: SummaryItemValue
     redemptionPrice: SummaryItemValue
     priceDiff: number
-    annualRate: string
-    eightRate: string
-    pRate: string
-    iRate: string
+    annualRate: SummaryItemValue
+    eightRate: SummaryItemValue
+    pRate: SummaryItemValue
+    iRate: SummaryItemValue
     tokenAnalyticsData: TokenAnalyticsData[]
 }
 
@@ -89,10 +89,34 @@ export function useGebAnalytics() {
                         style: 'currency',
                     })!,
                     priceDiff,
-                    annualRate: transformToAnnualRate(result.redemptionRate, 27),
-                    eightRate: transformToEightHourlyRate(result.redemptionRate, 27),
-                    pRate: transformToAnnualRate(result.redemptionRatePTerm, 27),
-                    iRate: transformToAnnualRate(result.redemptionRateITerm, 27),
+                    annualRate: formatSummaryValue(
+                        transformToAnnualRate(result.redemptionRate, 27, true).toString(),
+                        {
+                            maxDecimals: 1,
+                            style: 'percent',
+                        }
+                    )!,
+                    eightRate: formatSummaryValue(
+                        transformToEightHourlyRate(result.redemptionRate, 27, true).toString(),
+                        {
+                            maxDecimals: 1,
+                            style: 'percent',
+                        }
+                    )!,
+                    pRate: formatSummaryValue(
+                        transformToAnnualRate(result.redemptionRatePTerm, 27, true).toString(),
+                        {
+                            maxDecimals: 1,
+                            style: 'percent',
+                        }
+                    )!,
+                    iRate: formatSummaryValue(
+                        transformToAnnualRate(result.redemptionRateITerm, 27, true).toString(),
+                        {
+                            maxDecimals: 1,
+                            style: 'percent',
+                        }
+                    )!,
                     tokenAnalyticsData: Object.entries(result.tokenAnalyticsData)
                         .map(([key, value]) => ({
                             symbol: key,
@@ -140,9 +164,21 @@ export const DEFAULT_ANALYTICS_DATA: GebAnalyticsData = {
         formatted: '$--',
     },
     priceDiff: 0,
-    annualRate: '--%',
-    eightRate: '--%',
-    pRate: '--%',
-    iRate: '--%',
+    annualRate: {
+        raw: '',
+        formatted: '--%',
+    },
+    eightRate: {
+        raw: '',
+        formatted: '--%',
+    },
+    pRate: {
+        raw: '',
+        formatted: '--%',
+    },
+    iRate: {
+        raw: '',
+        formatted: '--%',
+    },
     tokenAnalyticsData: [],
 }

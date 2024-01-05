@@ -29,18 +29,20 @@ export const transformToWadPercentage = (rate: string, denominator: string) => {
     return toPercentage(Number(result) / 10000, 2)
 }
 
-export const transformToAnnualRate = (rate: string, decimals: number) => {
+export const transformToAnnualRate = (rate: string, decimals: number, returnNumber = false) => {
     const exponent = 3600 * 24 * 365
     const base = utils.formatUnits(rate, decimals)
     const result = Number(base) ** exponent - 1
+    if (returnNumber) return result
 
     return toPercentage(result, 2)
 }
 
-export const transformToEightHourlyRate = (rate: string, decimals: number) => {
+export const transformToEightHourlyRate = (rate: string, decimals: number, returnNumber = false) => {
     const exponent = 3600 * 8
     const base = utils.formatUnits(rate, decimals)
     const result = Number(base) ** exponent - 1
+    if (returnNumber) return result
 
     return toPercentage(result, 2)
 }
