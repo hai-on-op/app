@@ -33,7 +33,6 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
                     $float="left"
                     $margin="24px">
                     <ConnectButton $width="100%"/>
-                    {/* TODO: replace links */}
                     <InternalLink
                         href="/vaults"
                         $textDecoration="none"

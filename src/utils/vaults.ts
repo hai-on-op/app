@@ -55,30 +55,45 @@ export const DEFAULT_VAULT_DATA: IVaultData = {
 export const formatUserVault = (
     vaults: Array<any>,
     liquidationData: ILiquidationData,
-    tokensData: { [key: string]: TokenData }
+    tokensData: Record<string, TokenData>
 ): Array<IVault> => {
-    const collateralBytes32: { [key: string]: string } = Object.values(tokensData)
+    const collateralBytes32: Record<string, string> = Object.values(tokensData)
         .filter((token) => token.isCollateral)
-        .reduce((accum, token) => {
-            return { ...accum, [token.bytes32String]: token.symbol }
-        }, {})
+        .reduce((accum, token) => ({
+            ...accum,
+            [token.bytes32String]: token.symbol,
+        }), {})
 
-    const { currentRedemptionPrice, currentRedemptionRate, collateralLiquidationData } = liquidationData
+    const {
+        currentRedemptionPrice,
+        currentRedemptionRate,
+        collateralLiquidationData,
+    } = liquidationData
 
     return vaults
         .filter((s) => s.collateralType in collateralBytes32)
         .map((s) => {
             const token = collateralBytes32[s.collateralType]
-            const accumulatedRate = collateralLiquidationData[token]?.accumulatedRate
-            const currentPrice = collateralLiquidationData[token]?.currentPrice
-            const liquidationCRatio = collateralLiquidationData[token]?.liquidationCRatio
-            const safetyCRatio = collateralLiquidationData[token]?.safetyCRatio
-            const liquidationPenalty = collateralLiquidationData[token]?.liquidationPenalty
-            const totalAnnualizedStabilityFee = collateralLiquidationData[token]?.totalAnnualizedStabilityFee
+            const {
+                accumulatedRate,
+                currentPrice,
+                liquidationCRatio,
+                safetyCRatio,
+                liquidationPenalty,
+                totalAnnualizedStabilityFee,
+            } = collateralLiquidationData[token] || {}
 
-            const availableDebt = returnAvaiableDebt(currentPrice?.safetyPrice, '0', s.collateral, s.debt)
+            const availableDebt = returnAvaiableDebt(
+                currentPrice?.safetyPrice,
+                '0',
+                s.collateral,
+                s.debt
+            )
 
-            const totalDebt = returnTotalValue(returnTotalDebt(s.debt, accumulatedRate) as string, '0').toString()
+            const totalDebt = returnTotalValue(
+                returnTotalDebt(s.debt, accumulatedRate) as string,
+                '0'
+            ).toString()
 
             const liquidationPrice = getLiquidationPrice(
                 s.collateral,
@@ -117,7 +132,10 @@ export const formatUserVault = (
                 currentRedemptionRate: currentRedemptionRate || '0',
             } as IVault
         })
-        .sort((a, b) => Number(b.riskState) - Number(a.riskState) || Number(b.debt) - Number(a.debt))
+        .sort((a, b) => (
+            Number(b.riskState) - Number(a.riskState)
+            || Number(b.debt) - Number(a.debt)
+        ))
 }
 
 export const getCollateralRatio = (
@@ -133,7 +151,9 @@ export const getCollateralRatio = (
     }
     const denominator = numeral(totalDebt).value()
 
-    const numerator = numeral(totalCollateral).multiply(liquidationPrice).multiply(liquidationCRatio)
+    const numerator = numeral(totalCollateral)
+        .multiply(liquidationPrice)
+        .multiply(liquidationCRatio)
 
     const value = numerator.divide(denominator).multiply(100)
 

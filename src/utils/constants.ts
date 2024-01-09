@@ -90,8 +90,8 @@ export const network_name = VITE_NETWORK_ID === '1' ? 'mainnet' : 'optimism-goer
 
 export const LINK_TO_DOCS = 'https://docs.letsgethai.com/'
 export const LINK_TO_TWITTER = 'https://twitter.com/@letsgethai'
-// TODO: replace link
-export const LINK_TO_TELEGRAM = 'https://twitter.com/@letsgethai'
+export const LINK_TO_TELEGRAM = 'https://t.me/+0iIhX0f9DDAxODE5'
+export const LINK_TO_DISCORD = 'https://discord.gg/5MWsWuyTBG'
 // Auctions
 export const NUMBER_OF_AUCTIONS_TO_SHOW = 15
 export const SURPLUS_BATCH_SIZE = 5_000_000 // blocks

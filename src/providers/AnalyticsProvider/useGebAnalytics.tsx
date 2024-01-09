@@ -46,7 +46,7 @@ export function useGebAnalytics() {
                 const result = await fetchAnalyticsData(geb)
                 const marketPrice = formatEther(result.marketPrice).toString()
                 const redemptionPrice = formatEther(result.redemptionPrice).toString()
-                // TODO: should difference be relative to market or redemption price?
+                // all HAI price calculations should use/be relative to redemption price
                 const priceDiff = 100 * Math.abs(1 - parseFloat(marketPrice) / parseFloat(redemptionPrice))
     
                 setData(d => ({

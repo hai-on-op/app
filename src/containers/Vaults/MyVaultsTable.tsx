@@ -42,7 +42,7 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                     collateralRatio,
                     riskState,
                     collateral,
-                    debt,
+                    totalDebt,
                     totalAnnualizedStabilityFee,
                 } = vault
 
@@ -104,8 +104,7 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                                     <Flex
                                         $align="center"
                                         $gap={8}>
-                                        {/* TODO: Available debt instead */}
-                                        <Text>{formatNumberWithStyle(debt)}</Text>
+                                        <Text>{formatNumberWithStyle(totalDebt)}</Text>
                                         <Text>HAI</Text>
                                     </Flex>
                                 ),

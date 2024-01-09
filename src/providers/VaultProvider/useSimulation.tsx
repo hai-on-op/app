@@ -55,18 +55,6 @@ export function useSimulation({ action, formState, collateral, debt }: Props): S
         }
     }, [action, formState])
 
-    // TODO: clarify accumulatedRate as it affects total debt calculations
-    // const simulatedDebt = useMemo(() => {
-    //     if (!vault || Number(vaultData.rightInput || '0') <= 0) return undefined
-
-    //     const currentDebt = parseFloat(vault.debt)
-    //     const inputDebt = parseFloat(vaultData.rightInput)
-    //     if (vaultInfo.action === VaultAction.WITHDRAW_REPAY) {
-    //         return Math.max(currentDebt - inputDebt, 0)
-    //     }
-    //     return currentDebt + inputDebt
-    // }, [vault, vaultInfo, vaultData])
-
     const [collateralRatio, riskStatus] = useMemo(() => {
         if (!simulation) return []
         if (!collateral.liquidationData) return []
