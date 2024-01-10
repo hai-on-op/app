@@ -1,4 +1,6 @@
+import { formatNumberWithStyle } from '~/utils'
 import { useStoreActions } from '~/store'
+import { useMyBids } from '~/hooks'
 
 import { HaiButton } from '~/styles'
 import { RewardsTokenPair } from '~/components/TokenPair'
@@ -7,15 +9,18 @@ import { Stats, type StatProps } from '~/components/Stats'
 export function AuctionStats() {
     const { popupsModel: popupsActions } = useStoreActions(actions => actions)
 
-    // TODO: dynamically calculate stats
+    const { activeBids, activeBidsValue } = useMyBids()
+    // TODO: calculate claim stats
     const dummyStats: StatProps[] = [
         {
-            header: '7',
+            header: activeBids.length,
             label: 'My Active Bids',
             tooltip: 'Hello World',
         },
         {
-            header: '$45,600',
+            header: activeBidsValue
+                ? formatNumberWithStyle(activeBidsValue, { style: 'currency' })
+                : '$--',
             label: 'My Active Bids Value',
             tooltip: 'Hello World',
         },

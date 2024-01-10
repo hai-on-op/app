@@ -162,3 +162,26 @@ export const ALL_COLLATERAL_TYPES_QUERY = gql`
     }
     ${CollateralTypeWithCollateralPriceFragment}
 `
+
+export const MY_AUCTION_BIDS_QUERY = gql`
+    query MyBids($address: Bytes!) {
+        englishAuctionBids(
+            where: { bidder: $address }
+        ) {
+            id
+            type
+            auction {
+                auctionId
+                englishAuctionType
+                winner
+                isClaimed
+                auctionDeadline
+            }
+            sellAmount
+            buyAmount
+            price
+            bidder
+            createdAt
+        }
+    }
+`
