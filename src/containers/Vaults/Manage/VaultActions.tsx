@@ -239,7 +239,10 @@ export function VaultActions() {
                         )}`
                         : ''
                     }
-                    onFocus={() => setAction(VaultAction.DEPOSIT_BORROW)}
+                    onFocus={action === VaultAction.CREATE
+                        ? undefined
+                        : () => setAction(VaultAction.DEPOSIT_BORROW)
+                    }
                     style={action !== VaultAction.WITHDRAW_REPAY
                         ? undefined
                         : { opacity: 0.4 }
@@ -301,7 +304,10 @@ export function VaultActions() {
                         )}`
                         : ''
                     }
-                    onFocus={() => setAction(VaultAction.DEPOSIT_BORROW)}
+                    onFocus={action === VaultAction.CREATE
+                        ? undefined
+                        : () => setAction(VaultAction.DEPOSIT_BORROW)
+                    }
                     style={action !== VaultAction.WITHDRAW_REPAY
                         ? undefined
                         : { opacity: 0.4 }
