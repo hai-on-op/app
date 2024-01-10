@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@apollo/client'
+import { isAddress } from 'viem'
 
 import type { SortableHeader, Sorting } from '~/types'
 import {
-    ALLSAFES_QUERY_NOT_ZERO,
-    ALLSAFES_QUERY_WITH_ZERO,
+    SAFES_BY_OWNER,
     type QuerySafe,
     arrayToSorted,
     getCollateralRatio,
@@ -13,24 +13,18 @@ import {
     tokenAssets,
 } from '~/utils'
 
-import { type FlexProps } from '~/styles'
-
-const sortableHeaders: (SortableHeader & FlexProps)[] = [
+const sortableHeaders: SortableHeader[] = [
     {
         label: 'Vault',
-        $justify: 'flex-start',
-    },
-    {
-        label: 'Owner',
-        $justify: 'flex-start',
+        // $justify: 'flex-start',
     },
     {
         label: 'Collateral',
-        $justify: 'flex-end',
+        // $justify: 'flex-end',
     },
     {
         label: 'Debt',
-        $justify: 'flex-end',
+        // $justify: 'flex-end',
     },
     { label: 'Collateral Ratio' },
     {
@@ -39,26 +33,16 @@ const sortableHeaders: (SortableHeader & FlexProps)[] = [
     },
 ]
 
-const MAX_VAULTS_TO_FETCH = 500
-
-export function useAllVaults() {
-    const [filterEmpty, setFilterEmpty] = useState(false)
+export function useVaultsByOwner(address?: string) {
     const [collateralFilter, setCollateralFilter] = useState<string>()
 
-    const [sorting, setSorting] = useState<Sorting>({
-        key: 'Collateral Ratio',
-        dir: 'asc',
-    })
+    const addressIsAddress = isAddress(address || '')
 
-    const { data, error, loading } = useQuery<{ safes: QuerySafe[] }>(
-        filterEmpty ? ALLSAFES_QUERY_NOT_ZERO: ALLSAFES_QUERY_WITH_ZERO,
+    const { data, loading, error } = useQuery<{ safes: QuerySafe[] }>(
+        SAFES_BY_OWNER,
         {
-            variables: {
-                first: MAX_VAULTS_TO_FETCH,
-                skip: 0,
-                orderBy: 'collateral',
-                orderDirection: 'desc',
-            },
+            variables: { address: address?.toLowerCase() },
+            skip: !addressIsAddress,
         }
     )
 
@@ -93,51 +77,51 @@ export function useAllVaults() {
         })
     }, [data?.safes])
 
-    const sortedRows = useMemo(() => {
+    const filteredVaults = useMemo(() => {
+        if (!collateralFilter) return vaultsWithCRatioAndToken
+
+        return vaultsWithCRatioAndToken.filter(({ collateralToken }) => (
+            collateralFilter === collateralToken
+        ))
+    }, [collateralFilter, vaultsWithCRatioAndToken])
+
+    const [sorting, setSorting] = useState<Sorting>({
+        key: 'Collateral Ratio',
+        dir: 'asc',
+    })
+
+    const filteredAndSortedRows = useMemo(() => {
         switch(sorting.key) {
             case 'Vault':
-                return arrayToSorted(vaultsWithCRatioAndToken, {
+                return arrayToSorted(filteredVaults, {
                     getProperty: vault => vault.safeId,
                     dir: sorting.dir,
                     type: 'parseInt',
                 })
-            case 'Owner':
-                return arrayToSorted(vaultsWithCRatioAndToken, {
-                    getProperty: vault => vault.owner.address,
-                    dir: sorting.dir,
-                    type: 'alphabetical',
-                })
             case 'Collateral':
-                return arrayToSorted(vaultsWithCRatioAndToken, {
+                return arrayToSorted(filteredVaults, {
                     getProperty: vault => vault.collateral,
                     dir: sorting.dir,
                     type: 'parseFloat',
                 })
             case 'Debt':
-                return arrayToSorted(vaultsWithCRatioAndToken, {
+                return arrayToSorted(filteredVaults, {
                     getProperty: vault => vault.debt,
                     dir: sorting.dir,
                     type: 'parseFloat',
                 })
             case 'Collateral Ratio':
             default:
-                return arrayToSorted(vaultsWithCRatioAndToken, {
+                return arrayToSorted(filteredVaults, {
                     getProperty: vault => vault.collateralRatio,
                     dir: sorting.dir,
                     type: 'parseFloat',
                 })
         }
-    }, [vaultsWithCRatioAndToken, sorting])
-
-    const filteredAndSortedRows = useMemo(() => {
-        if (!collateralFilter || collateralFilter === 'All') return sortedRows
-
-        return sortedRows.filter(({ collateralToken }) => (
-            collateralFilter === collateralToken
-        ))
-    }, [sortedRows, collateralFilter])
+    }, [filteredVaults, sorting])
 
     return {
+        invalidAddress: !addressIsAddress,
         error,
         loading,
         headers: sortableHeaders,
@@ -145,8 +129,6 @@ export function useAllVaults() {
         rowsUnmodified: vaultsWithCRatioAndToken,
         sorting,
         setSorting,
-        filterEmpty,
-        setFilterEmpty,
         collateralFilter,
         setCollateralFilter,
     }

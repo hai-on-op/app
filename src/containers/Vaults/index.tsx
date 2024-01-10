@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { type RouteComponentProps, useHistory } from 'react-router-dom'
+import { useHistory, useParams } from 'react-router-dom'
 
 import { VaultAction } from '~/utils'
 import { useStoreState } from '~/store'
@@ -11,16 +11,22 @@ import { HaiButton, Text } from '~/styles'
 import { Caret } from '~/components/Icons/Caret'
 import { ManageVault } from './Manage'
 import { VaultsList } from './VaultsList'
+import { VaultsByOwner } from './VaultsByOwner'
 
-export function Vaults(props: RouteComponentProps<{ address?: string }>) {
+export function Vaults() {
     const history = useHistory()
+    const { idOrOwner } = useParams() as { idOrOwner?: string }
 
     const { vaultModel: { singleVault } } = useStoreState(state => state)
 
-    const { address = '' } = props.match.params
-    const { action, setAction } = useVaultRouting(address)
+    const { action, setAction } = useVaultRouting()
 
     const [navIndex, setNavIndex] = useState(0)
+
+    if (idOrOwner) {
+        if (idOrOwner.startsWith('0x')) return <VaultsByOwner/>
+        // return <VaultById/>
+    }
 
     return (
         <VaultProvider

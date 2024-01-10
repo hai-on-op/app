@@ -88,6 +88,14 @@ export const ALLSAFES_QUERY_WITH_ZERO = gql`
     }
     ${SafeFragment}
 `
+export const SAFES_BY_OWNER = gql`
+    query SafesByOwner($address: Bytes!) {
+        safes(
+            where: { owner: $address }
+        ) { ...SafeFragment }
+    }
+    ${SafeFragment}
+`
 
 export const ALLSAFES_QUERY_NOT_ZERO = gql`
     query GetAllSafes(

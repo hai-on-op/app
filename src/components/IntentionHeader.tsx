@@ -103,10 +103,15 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
                 stats: <EarnStats/>,
             }
         }
-        if (location.pathname.startsWith('/vaults') && location.pathname !== '/vaults/explore') {
-            return {
-                type: Intention.BORROW,
-                stats: <BorrowStats/>,
+        if (location.pathname.startsWith('/vaults')) {
+            switch(location.pathname) {
+                case '/vaults':
+                case '/vaults/manage':
+                case '/vaults/open': return {
+                    type: Intention.BORROW,
+                    stats: <BorrowStats/>,
+                }
+                default: return {}
             }
         }
 
