@@ -252,6 +252,7 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
     ])
 
     const hasAllowance = useCallback(() => {
+        // TODO: not sure why, but this always returns false (allowances are always 0)
         const haiAllowanceBN = parseWadAmount(haiAllowance)
         const kiteAllowanceBN = parseWadAmount(kiteAllowance)
 

@@ -8,6 +8,7 @@ import { BrandedTitle } from '~/components/BrandedTitle'
 import { X } from '~/components/Icons/X'
 import { ConfigureAction } from './ConfigureAction'
 import { Approvals } from './Approvals'
+import { Confirm } from './Confirm'
 
 enum AuctionActionStep {
     CONFIGURE,
@@ -59,8 +60,9 @@ export function AuctionModal({ maxWidth = '600px', onClose, ...props }: ModalPro
                         nextStep={() => setStep(AuctionActionStep.CONFIRM)}
                     />
                 )
+            // TODO: confirm auction action
             case AuctionActionStep.CONFIRM:
-                return null
+                return <Confirm previousStep={() => setStep(AuctionActionStep.CONFIGURE)}/>
         }
     }, [step, selectedAuction, type])
 
