@@ -12,10 +12,11 @@ import { Caret } from '~/components/Icons/Caret'
 import { ManageVault } from './Manage'
 import { VaultsList } from './VaultsList'
 import { VaultsByOwner } from './VaultsByOwner'
+import { VaultById } from './VaultById'
 
 export function Vaults() {
     const history = useHistory()
-    const { idOrOwner } = useParams() as { idOrOwner?: string }
+    const { idOrOwner } = useParams<{ idOrOwner?: string }>()
 
     const { vaultModel: { singleVault } } = useStoreState(state => state)
 
@@ -25,7 +26,7 @@ export function Vaults() {
 
     if (idOrOwner) {
         if (idOrOwner.startsWith('0x')) return <VaultsByOwner/>
-        // return <VaultById/>
+        return <VaultById id={idOrOwner}/>
     }
 
     return (

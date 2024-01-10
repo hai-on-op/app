@@ -140,6 +140,10 @@ export const toFixedString = (value: string, type: keyof typeof floatsTypes): st
     }
 }
 
+export const formatDate = (ms: number) => {
+    return new Date(ms).toLocaleString().toString()
+}
+
 // SUMMARIES
 
 export const formatSummaryValue = (

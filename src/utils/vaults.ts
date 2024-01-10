@@ -2,10 +2,12 @@ import numeral from 'numeral'
 import { type TokenData, utils as gebUtils } from '@hai-on-op/sdk'
 import { BigNumber } from 'ethers'
 
-import type { ILiquidationData, IVault, IVaultData } from '~/types'
+import type { CollateralLiquidationData, ILiquidationData, IVault, IVaultData } from '~/types'
 import { Status } from './constants'
 import { formatNumber, toFixedString } from './formatting'
 import { returnTotalValue } from './math'
+import { type QuerySafe } from './graphql'
+import { tokenAssets } from './tokens'
 
 export enum VaultAction {
     DEPOSIT_BORROW,
@@ -289,5 +291,57 @@ export const returnState = (state: number) => {
             return 'Liquidation'
         default:
             return ''
+    }
+}
+
+export type QueriedVault = QuerySafe & {
+    totalDebt: string,
+    collateralToken: string,
+    collateralRatio: string,
+    status: Status,
+    liquidationData: CollateralLiquidationData,
+    liquidationPrice: string,
+}
+export const formatQuerySafeToVault = (
+    safe: QuerySafe,
+    collateralLiquidationData: Record<string, CollateralLiquidationData>,
+    currentRedemptionPrice: string
+): QueriedVault => {
+    const collateralToken = Object.values(tokenAssets).find(({ name, symbol }) => (
+        safe.collateralType.id === name || safe.collateralType.id === symbol
+    ))?.symbol || safe.collateralType.id.toUpperCase()
+
+    const totalDebt = returnTotalDebt(
+        safe.debt,
+        collateralLiquidationData[collateralToken].accumulatedRate
+    ) as string
+    const collateralRatio = !safe.debt || safe.debt === '0'
+        ? Infinity.toString()
+        : getCollateralRatio(
+            safe.collateral,
+            totalDebt,
+            safe.collateralType.currentPrice.liquidationPrice,
+            safe.collateralType.liquidationCRatio
+        )
+    const status = riskStateToStatus[
+        ratioChecker(
+            parseFloat(collateralRatio),
+            parseFloat(safe.collateralType.safetyCRatio)
+        )
+    ]
+    const liquidationPrice = getLiquidationPrice(
+        safe.collateral,
+        totalDebt,
+        collateralLiquidationData[collateralToken].accumulatedRate,
+        currentRedemptionPrice
+    )
+    return {
+        ...safe,
+        totalDebt,
+        collateralRatio,
+        collateralToken,
+        status,
+        liquidationData: collateralLiquidationData[collateralToken],
+        liquidationPrice,
     }
 }

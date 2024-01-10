@@ -117,7 +117,20 @@ export const ALLSAFES_QUERY_NOT_ZERO = gql`
 
 export const SAFE_QUERY = gql`
     query GetSafe($id: String) {
-        safes(where: { safeId: $id }) { ...SafeFragment }
+        safes(where: { safeId: $id }) {
+            ...SafeFragment
+            modifySAFECollateralization(
+                orderBy: createdAt,
+                orderDirection: desc
+            ) {
+                id
+                deltaDebt
+                deltaCollateral
+                createdAt
+                createdAtTransaction
+                accumulatedRate
+            }
+        }
     }
     ${SafeFragment}
 `
@@ -125,7 +138,11 @@ export const SAFE_QUERY = gql`
 export const SAFE_ACTIVITY_QUERY = gql`
     query GetSafeActivity($id: String) {
         safe(id: $id) {
-            modifySAFECollateralization(orderBy: createdAt, orderDirection: desc) {
+            modifySAFECollateralization(
+                orderBy: createdAt,
+                orderDirection: desc
+            ) {
+                id
                 deltaDebt
                 deltaCollateral
                 createdAt

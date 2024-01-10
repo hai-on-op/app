@@ -246,16 +246,16 @@ export type QuerySafeSaviour = {
 }
 
 export type QueryModifySAFECollateralization = {
-    id?: string // Equal to: <TX hash>-<Log index>
+    id: string // Equal to: <TX hash>-<Log index>
     safe?: QuerySafe // Safe modified
     safeHandler?: string // safeHandler address (ownership at the SAFEEngine level)
-    collateralType: QueryCollateralType // Collateral type of the modification
+    collateralType?: QueryCollateralType // Collateral type of the modification
     deltaCollateral: string // Change in collateral
     deltaDebt: string // Change in debt
     accumulatedRate: string // Accumulated rate at the time of the transaction
     createdAt: string // Timestamp of the modification [seconds]
     createdAtBlock?: string // Block number at which the modification happened
-    createdAtTransaction?: string // Hash of the transaction that made the modification
+    createdAtTransaction: string // Hash of the transaction that made the modification
 }
 
 export type QueryDiscountAuction = {

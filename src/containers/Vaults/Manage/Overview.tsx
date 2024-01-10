@@ -86,7 +86,6 @@ export function Overview() {
                         : ''
                     }
                     fullWidth
-                    borderedBottom
                 />
                 <OverviewStat
                     value={
@@ -108,7 +107,6 @@ export function Overview() {
                         status: Status.NEGATIVE,
                     }}
                     fullWidth
-                    borderedBottom
                 />
                 <OverviewProgressStat
                     value={
@@ -126,13 +124,11 @@ export function Overview() {
                     alert={riskStatus ? { status: riskStatus }: undefined}
                     {...progressProps}
                     fullWidth
-                    borderedBottom
                 />
                 <OverviewStat
                     value={summary.stabilityFee.formatted}
                     label="Stability Fee"
                     tooltip={t('stability_fee_tip')}
-                    borderedRight
                 />
                 <OverviewStat
                     value={
@@ -184,5 +180,9 @@ const Inner = styled(Grid).attrs(props => ({
     & > * {
         padding: 24px;
         min-height: 100px;
+    }
+    &::after {
+        border-top: none;
+        border-right: none;
     }
 `

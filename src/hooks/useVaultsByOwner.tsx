@@ -7,11 +7,9 @@ import {
     SAFES_BY_OWNER,
     type QuerySafe,
     arrayToSorted,
-    getCollateralRatio,
-    ratioChecker,
-    riskStateToStatus,
-    tokenAssets,
+    formatQuerySafeToVault,
 } from '~/utils'
+import { useStoreState } from '~/store'
 
 const sortableHeaders: SortableHeader[] = [
     {
@@ -34,6 +32,8 @@ const sortableHeaders: SortableHeader[] = [
 ]
 
 export function useVaultsByOwner(address?: string) {
+    const { vaultModel: vaultState } = useStoreState(state => state)
+
     const [collateralFilter, setCollateralFilter] = useState<string>()
 
     const addressIsAddress = isAddress(address || '')
@@ -47,35 +47,20 @@ export function useVaultsByOwner(address?: string) {
     )
 
     const vaultsWithCRatioAndToken = useMemo(() => {
-        if (!data?.safes?.length) return []
+        const {
+            collateralLiquidationData,
+            currentRedemptionPrice,
+        } = vaultState.liquidationData || {}
+        if (!data?.safes?.length || !collateralLiquidationData || !currentRedemptionPrice) return []
 
-        return data.safes.map(vault => {
-            // TODO: calculate totalDebt?
-            const collateralRatio = !vault.debt || vault.debt === '0'
-                ? Infinity.toString()
-                : getCollateralRatio(
-                    vault.collateral,
-                    vault.debt,
-                    vault.collateralType.currentPrice.liquidationPrice,
-                    vault.collateralType.liquidationCRatio
-                )
-            const status = riskStateToStatus[
-                ratioChecker(
-                    parseFloat(collateralRatio),
-                    parseFloat(vault.collateralType.safetyCRatio)
-                )
-            ]
-            const collateralToken = Object.values(tokenAssets).find(({ name, symbol }) => (
-                vault.collateralType.id === name || vault.collateralType.id === symbol
-            ))?.symbol || vault.collateralType.id
-            return {
-                ...vault,
-                collateralRatio,
-                collateralToken,
-                status,
-            }
+        return data.safes.map(safe => {
+            return formatQuerySafeToVault(
+                safe,
+                collateralLiquidationData,
+                currentRedemptionPrice
+            )
         })
-    }, [data?.safes])
+    }, [data?.safes, vaultState.liquidationData])
 
     const filteredVaults = useMemo(() => {
         if (!collateralFilter) return vaultsWithCRatioAndToken

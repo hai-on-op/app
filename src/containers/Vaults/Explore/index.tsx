@@ -16,6 +16,8 @@ import { CheckboxButton } from '~/components/CheckboxButton'
 import { LiquidateVaultModal } from '~/components/Modal/LiquidateVaultModal'
 import { SortByDropdown } from '~/components/SortByDropdown'
 import { Table, TableContainer } from '~/components/Table'
+import { InternalLink } from '~/components/InternalLink'
+import { HaiArrow } from '~/components/Icons/HaiArrow'
 
 const RECORDS_PER_PAGE = 10
 
@@ -123,7 +125,22 @@ export function VaultExplorer() {
                             headers={headers}
                             items={[
                                 {
-                                    content: <Text>#{safeId}</Text>,
+                                    // content: <Text>#{safeId}</Text>,
+                                    content: (
+                                        <InternalLink
+                                            href={`/vaults/${safeId}`}
+                                            content={(
+                                                <CenteredFlex $gap={4}>
+                                                    <Text>#{safeId}</Text>
+                                                    <HaiArrow
+                                                        direction="upRight"
+                                                        size={14}
+                                                        strokeWidth={1.5}
+                                                    />
+                                                </CenteredFlex>
+                                            )}
+                                        />
+                                    ),
                                 },
                                 {
                                     content: <AddressLink address={owner.address}/>,

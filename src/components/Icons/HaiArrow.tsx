@@ -11,7 +11,10 @@ const transforms = {
     downLeft: `rotate(45 10 10)`,
 }
 
-export function HaiArrow({ size = 20, direction = 'down', ...props }: DirectionalIconProps) {
+type HaiArrowIconProps = DirectionalIconProps & {
+    slim?: boolean
+}
+export function HaiArrow({ size = 20, direction = 'down', slim, ...props }: HaiArrowIconProps) {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -26,8 +29,9 @@ export function HaiArrow({ size = 20, direction = 'down', ...props }: Directiona
             strokeLinejoin="round"
             {...props}>
             <g transform={transforms[direction]}>
-                <path d="m 10,2.25 v 15.5"/>
-                <path d="m 3.35,10.75 6.65,7 6.65,-7"/>
+                <line x1="10" y1="2.25" x2="10" y2="17.75"/>
+                <polyline points="3,11 10,17.75 17,11" visibility={slim ? 'hidden': 'visible'}/>
+                <polyline points="5,11 10,17.75 15,11" visibility={!slim ? 'hidden': 'visible'}/>
             </g>
         </svg>
     )

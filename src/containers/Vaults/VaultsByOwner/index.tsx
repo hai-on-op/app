@@ -19,7 +19,7 @@ import { Table, TableContainer } from '~/components/Table'
 const RECORDS_PER_PAGE = 10
 
 export function VaultsByOwner() {
-    const { idOrOwner } = useParams() as { idOrOwner?: string }
+    const { idOrOwner } = useParams<{ idOrOwner?: string }>()
 
     const { connectWalletModel: { tokensData } } = useStoreState(state => state)
 

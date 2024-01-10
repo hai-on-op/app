@@ -6,7 +6,7 @@ import { CenteredFlex, type DashedContainerProps, DashedContainerStyle, Flex, Te
 import { StatusLabel } from '~/components/StatusLabel'
 import { TokenPair } from '~/components/TokenPair'
 import { Tooltip } from '~/components/Tooltip'
-import { ProgressBar, ProgressBarProps } from '~/components/ProgressBar'
+import { ProgressBar, type ProgressBarProps } from '~/components/ProgressBar'
 
 type OverviewStatProps = {
     token?: TokenKey,
@@ -20,8 +20,6 @@ type OverviewStatProps = {
     },
     simulatedValue?: string,
     fullWidth?: boolean,
-    borderedRight?: boolean,
-    borderedBottom?: boolean,
 }
 export function OverviewStat({
     token,
@@ -32,14 +30,9 @@ export function OverviewStat({
     alert,
     simulatedValue,
     fullWidth = false,
-    borderedRight = false,
-    borderedBottom = false,
 }: OverviewStatProps) {
     return (
-        <StatContainer
-            $fullWidth={fullWidth}
-            $borderedRight={borderedRight}
-            $borderedBottom={borderedBottom}>
+        <StatContainer $fullWidth={fullWidth}>
             <Flex
                 $align="center"
                 $gap={12}>
@@ -121,14 +114,9 @@ export function OverviewProgressStat({
     colorLimits,
     labels,
     fullWidth = false,
-    borderedRight = false,
-    borderedBottom = false,
 }: OverviewProgressStatProps) {
     return (
-        <StatContainer
-            $fullWidth={fullWidth}
-            $borderedRight={borderedRight}
-            $borderedBottom={borderedBottom}>
+        <StatContainer $fullWidth={fullWidth}>
             <Flex
                 $width="100%"
                 $column
@@ -189,22 +177,13 @@ const StatContainer = styled(Flex).attrs(props => ({
     $align: 'center',
     $borderOpacity: 0.2,
     ...props,
-}))<DashedContainerProps & {
-    $fullWidth?: boolean,
-    $borderedBottom?: boolean,
-    $borderedRight?: boolean
-}>`
+}))<DashedContainerProps & { $fullWidth?: boolean }>`
     ${DashedContainerStyle}
     height: 100px;
     ${({ $fullWidth }) => $fullWidth && css`grid-column: 1 / -1;`}
-    ${({ $borderedBottom, $borderedRight }) => css`
-        border-bottom: ${$borderedBottom ? '2px solid transparent': 'none'};
-        border-right: ${$borderedRight ? '2px solid transparent': 'none'};
-    `}
+
     &::after {
-        border-top: none;
+        border-bottom: none;
         border-left: none;
-        ${({ $borderedBottom }) => !$borderedBottom && css`border-bottom: none;`}
-        ${({ $borderedRight }) => !$borderedRight && css`border-right: none;`}
     }
 `
