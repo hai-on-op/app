@@ -25,7 +25,7 @@ export function Contracts() {
         return Object.entries(geb.contracts)
             .filter(([, value]) => !!value.address)
             .map(([name, value]) => ({
-                name,
+                name: name.replace('safe', 'vault').replace('Safe', 'Vault'),
                 address: value.address,
                 description: contractsDescriptions[name],
             }))
