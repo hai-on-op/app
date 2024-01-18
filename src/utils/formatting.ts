@@ -36,6 +36,7 @@ export const formatNumber = (value: string, digits = 6, round = false) => {
     return isNaN(Number(val)) ? value : val
 }
 
+const MINIMUM_DECIMAL = 0.00001
 type FormatOptions = {
     scalingFactor?: number,
     maxDecimals?: number,
@@ -48,10 +49,24 @@ export const formatNumberWithStyle = (value: number | string, options: FormatOpt
     if (suffixed) return formatNumberWithSuffix(value, options)
 
     const scaledValue = scalingFactor * parseFloat((value || '0').toString())
+    // truncate tiny amounts
+    if (!!scaledValue && Math.abs(scaledValue) < MINIMUM_DECIMAL) {
+        return `<${MINIMUM_DECIMAL.toLocaleString(undefined, {
+            style,
+            currency: style === 'currency' ? 'USD': undefined,
+            minimumSignificantDigits: 1,
+        })}`
+    }
+    // if decimal, use signifcant digits instead of fraction digits
+    const isLessThanOne = Math.abs(scaledValue) < 1
     return scaledValue.toLocaleString(undefined, {
         style,
         currency: style === 'currency' ? 'USD': undefined,
         maximumFractionDigits: maxDecimals,
+        ...(isLessThanOne && {
+            minimumSignificantDigits: 1,
+            maximumSignificantDigits: maxDecimals,
+        }),
     })
 }
 
