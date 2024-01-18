@@ -1,13 +1,21 @@
 import { useMemo } from 'react'
 import { useQuery } from '@apollo/client'
 
-import { type QuerySafe, SAFE_QUERY, formatQuerySafeToVault } from '~/utils'
+import {
+    SAFE_QUERY,
+    type QueryConfiscateSAFECollateralAndDebt,
+    type QuerySafe,
+    formatQuerySafeToVault,
+} from '~/utils'
 import { useStoreState } from '~/store'
 
 export function useVaultById(id: string) {
     const { vaultModel: vaultState } = useStoreState(state => state)
 
-    const { data, loading, error } = useQuery<{ safes: QuerySafe[]}>(
+    const { data, loading, error } = useQuery<{
+        safes: QuerySafe[],
+        confiscateSAFECollateralAndDebts: QueryConfiscateSAFECollateralAndDebt[]
+    }>(
         SAFE_QUERY,
         {
             variables: { id },
@@ -22,7 +30,8 @@ export function useVaultById(id: string) {
         return formatQuerySafeToVault(
             dataSafe,
             vaultState.liquidationData.collateralLiquidationData,
-            vaultState.liquidationData.currentRedemptionPrice
+            vaultState.liquidationData.currentRedemptionPrice,
+            data.confiscateSAFECollateralAndDebts
         )
     }, [data, vaultState])
 

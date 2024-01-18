@@ -258,6 +258,21 @@ export type QueryModifySAFECollateralization = {
     createdAtTransaction: string // Hash of the transaction that made the modification
 }
 
+export type QueryConfiscateSAFECollateralAndDebt = {
+    id: string // Equal to: <TX hash>-<Log index>
+    safe?: QuerySafe // Safe modified
+    safeHandler?: string // safeHandler address (ownership at the SAFEEngine level)
+    collateralType?: QueryCollateralType // Collateral type of the confisaction
+    deltaCollateral: string // Change in collateral
+    deltaDebt: string // Change in debt
+    debtCounterparty?: string // Who to give/take the debt to
+    collateralCounterparty?: string // Who to give/take the collateral to
+    globalUnbackedDebt?: string // Total amount of unbacked debt
+    createdAt: string // Timestamp of the confiscation [seconds]
+    createdAtBlock?: string // Block number at which the confiscation happened
+    createdAtTransaction: string // Hash of the transaction that made the confiscation
+}
+
 export type QueryDiscountAuction = {
     id?: string // Equal to: <Auction house address>-<auction ID>
     auctionId: string // Auction incremental id

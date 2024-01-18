@@ -12,6 +12,7 @@ import { HaiArrow } from '~/components/Icons/HaiArrow'
 import { Pagination } from '~/components/Pagination'
 
 enum ActivityAction {
+    CONFISCATE = 'confiscate',
     INCREASE = 'increase',
     DECREASE = 'decrease',
     // SWITCH = 'switch',
@@ -65,6 +66,7 @@ const getAction = (debt: number, collateral: number) => {
 const sortableHeaders: SortableHeader[] = [
     {
         label: 'Action',
+        tooltip: `Description of the action taken by the vault owner or protocol. Confiscations are performed by authorized accounts. Read more about confiscations in the docs.`, // TODO: better tooltip here
     },
     {
         label: 'Coll. Change',
@@ -106,11 +108,12 @@ export function ActivityTable({ vault }: ActivityTableProps) {
                     dir: 'desc',
                 }}
                 setSorting={() => {}}
-                isEmpty={!vault?.modifySAFECollateralization?.length}
+                isEmpty={!vault?.activity?.length}
                 emptyContent="No activity found for this vault"
-                rows={(vault?.modifySAFECollateralization || [])
+                rows={(vault?.activity || [])
                     .slice(offset * MAX_RECORDS_PER_PAGE, (offset + 1) * MAX_RECORDS_PER_PAGE)
                     .map(({
+                        type = 'modify',
                         id,
                         deltaCollateral,
                         deltaDebt,
@@ -119,8 +122,12 @@ export function ActivityTable({ vault }: ActivityTableProps) {
                     }) => {
                         const debt = parseFloat(deltaDebt)
                         const collateral = parseFloat(deltaCollateral)
-                        const action = getAction(debt, collateral)
-                        const label = getActionLabel(debt, collateral, vault!.collateralToken)
+                        const action = type === 'confiscate'
+                            ? ActivityAction.CONFISCATE
+                            : getAction(debt, collateral)
+                        const label = type === 'confiscate'
+                            ? 'Confiscation'
+                            : getActionLabel(debt, collateral, vault!.collateralToken)
                         return (
                             <Table.Row
                                 key={id}
@@ -134,6 +141,7 @@ export function ActivityTable({ vault }: ActivityTableProps) {
                                                 label={label}
                                             />
                                         ),
+                                        fullWidth: true,
                                     },
                                     {
                                         content: collateral !== 0
@@ -188,6 +196,7 @@ export function ActivityTable({ vault }: ActivityTableProps) {
                                     },
                                     {
                                         content: <Text>{formatDate(parseInt(createdAt) * 1000)}</Text>,
+                                        // fullWidth: true,
                                     },
                                     {
                                         content: (
@@ -218,7 +227,14 @@ const Container = styled(Flex).attrs(props => ({
     $justify: 'flex-start',
     $align: 'flex-start',
     ...props,
-}))``
+}))`
+    padding: 48px;
+    padding-top: 0px;
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        padding: 0px;
+    `}
+`
 const Header = styled(Flex).attrs(props => ({
     $width: '100%',
     $justify: 'flex-start',
@@ -228,6 +244,10 @@ const Header = styled(Flex).attrs(props => ({
 }))`
     height: 60px;
     padding: 24px 0px;
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        padding: 24px;
+    `}
 `
 
 const TableRowBase = styled(Grid)`
@@ -259,17 +279,15 @@ const TableRow = styled(TableRowBase)`
         align-items: flex-start;
         border-radius: 0px;
 
-        &:not(:first-child) {
-            border-top: ${theme.border.medium};
-        }
+        border-top: ${theme.border.medium};
         &:hover {
             background-color: unset;
         }
 
-        & > *:last-child {
-            grid-row: 1;
-            grid-column: 2;
-        }
+        // & > *:last-child {
+        //     grid-row: 1;
+        //     grid-column: 2;
+        // }
     `}
 `
 
@@ -279,6 +297,11 @@ const ActivityLabelContainer = styled(Flex).attrs(props => ({
     $gap: 8,
     ...props,
 }))`
+    &.${ActivityAction.CONFISCATE} {
+        & > *:first-child {
+            background-color: ${({ theme }) => theme.colors.reddish};
+        }
+    }
     &.${ActivityAction.INCREASE} {
         & > *:first-child {
             background-color: ${({ theme }) => theme.colors.greenish};
@@ -286,12 +309,12 @@ const ActivityLabelContainer = styled(Flex).attrs(props => ({
     }
     &.${ActivityAction.DECREASE} {
         & > *:first-child {
-            background-color: ${({ theme }) => theme.colors.reddish};
+            background-color: ${({ theme }) => theme.colors.yellowish};
         }
     }
     &.${ActivityAction.NONE} {
         & > *:first-child {
-            background-color: ${({ theme }) => theme.colors.yellowish};
+            background-color: ${({ theme }) => theme.colors.blueish};
         }
     }
 `
@@ -312,6 +335,8 @@ const AcitivityIconContainer = styled(CenteredFlex)`
 function ActivityLabel({ action, label }: { action: ActivityAction, label: string }) {
     const icon = useMemo(() => {
         switch(action) {
+            case ActivityAction.CONFISCATE:
+                return <HaiArrow direction="left"/>
             case ActivityAction.INCREASE:
                 return <HaiArrow direction="up"/>
             case ActivityAction.DECREASE:

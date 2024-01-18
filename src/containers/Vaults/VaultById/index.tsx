@@ -77,17 +77,12 @@ const Body = styled(Flex).attrs(props => ({
     $gap: 48,
     ...props,
 }))`
-    padding: 48px;
-
-    ${({ theme }) => theme.mediaWidth.upToSmall`
-        padding: 24px;
-    `}
+    padding: 0px;
 `
 
 const BodyGrid = styled(Grid)`
     width: 100%;
     grid-template-columns: 1fr;
-    grid-gap: 48px;
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
         grid-template-columns: 1fr;

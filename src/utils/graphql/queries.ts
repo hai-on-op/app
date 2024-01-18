@@ -131,6 +131,21 @@ export const SAFE_QUERY = gql`
                 accumulatedRate
             }
         }
+        confiscateSAFECollateralAndDebts(
+            where: {
+                safe_: {
+                    safeId: $id
+                }
+            },
+            orderBy: createdAt,
+            orderDirection: desc
+        ) {
+            id
+            deltaDebt
+            deltaCollateral
+            createdAt
+            createdAtTransaction
+        }
     }
     ${SafeFragment}
 `

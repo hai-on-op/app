@@ -130,7 +130,13 @@ const Container = styled(Flex).attrs(props => ({
     $justify: 'flex-start',
     $align: 'flex-start',
     ...props,
-}))``
+}))`
+    padding: 48px;
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        padding: 24px;
+    `}
+`
 const Header = styled(Flex).attrs(props => ({
     $width: '100%',
     $justify: 'flex-start',

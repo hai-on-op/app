@@ -6,7 +6,11 @@ import type { CollateralLiquidationData, ILiquidationData, IVault, IVaultData } 
 import { Status } from './constants'
 import { formatNumber, toFixedString } from './formatting'
 import { returnTotalValue } from './math'
-import { type QuerySafe } from './graphql'
+import {
+    QueryConfiscateSAFECollateralAndDebt,
+    QueryModifySAFECollateralization,
+    type QuerySafe,
+} from './graphql'
 import { tokenAssets } from './tokens'
 
 export enum VaultAction {
@@ -301,11 +305,20 @@ export type QueriedVault = QuerySafe & {
     status: Status,
     liquidationData: CollateralLiquidationData,
     liquidationPrice: string,
+    activity: (
+        {
+            type?: 'confiscate' | 'modify'
+        } & (
+            QueryConfiscateSAFECollateralAndDebt
+            | QueryModifySAFECollateralization
+        )
+    )[]
 }
 export const formatQuerySafeToVault = (
     safe: QuerySafe,
     collateralLiquidationData: Record<string, CollateralLiquidationData>,
-    currentRedemptionPrice: string
+    currentRedemptionPrice: string,
+    confiscateSAFECollateralAndDebts: QueryConfiscateSAFECollateralAndDebt[] = []
 ): QueriedVault => {
     const collateralToken = Object.values(tokenAssets).find(({ name, symbol }) => (
         safe.collateralType.id === name || safe.collateralType.id === symbol
@@ -343,5 +356,11 @@ export const formatQuerySafeToVault = (
         status,
         liquidationData: collateralLiquidationData[collateralToken],
         liquidationPrice,
+        activity: [
+            ...(safe.modifySAFECollateralization || []),
+            ...confiscateSAFECollateralAndDebts.map(obj => ({ ...obj, type: 'confiscate' })),
+        ].sort(({ createdAt: a }, { createdAt: b }) => (
+            parseInt(b) - parseInt(a)
+        )) as any,
     }
 }
