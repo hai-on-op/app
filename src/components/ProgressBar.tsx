@@ -64,9 +64,9 @@ const Inner = styled.div`
 const Bar = styled.div<{ $progress: number, $limits?: [number, number] }>`
     position: absolute;
     top: 0px;
-    left: 0px;
+    left: -20px;
     bottom: 0px;
-    width: ${({ $progress }) => (Math.min($progress, 1) * 100).toFixed(2)}%;
+    width: calc(${({ $progress }) => (Math.min($progress, 1) * 100).toFixed(2)}% + 20px);
     border-radius: 999px;
     border: ${({ theme }) => theme.border.medium};
     background: ${({ $progress, $limits = [0, 1] }) => {
