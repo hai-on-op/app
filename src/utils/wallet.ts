@@ -1,5 +1,5 @@
 import { configureChains, createConfig } from 'wagmi'
-import { optimismGoerli } from 'wagmi/chains'
+import { optimismSepolia } from 'wagmi/chains'
 import { alchemyProvider } from 'wagmi/providers/alchemy'
 import { publicProvider } from 'wagmi/providers/public'
 import { connectorsForWallets } from '@rainbow-me/rainbowkit'
@@ -15,7 +15,7 @@ const projectId = VITE_WALLETCONNECT_ID!
 
 const { chains, publicClient } = configureChains(
     // temporary
-    [optimismGoerli /* optimism */],
+    [optimismSepolia /* optimism */],
     [
         alchemyProvider({ apiKey: VITE_ALCHEMY_KEY! }),
         publicProvider(),
