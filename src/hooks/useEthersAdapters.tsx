@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { providers } from 'ethers'
 import { createPublicClient, http, type HttpTransport } from 'viem'
-import { optimism, optimismGoerli } from 'viem/chains'
+import { optimism, optimismSepolia } from 'viem/chains'
 import {
     type PublicClient,
     type WalletClient,
@@ -21,7 +21,7 @@ export const useCustomPublicClient = (): PublicClient => {
     const chainId = chain?.id || DEFAULT_NETWORK_ID
 
     const testnetClient = createPublicClient({
-        chain: optimismGoerli,
+        chain: optimismSepolia,
         transport: http(VITE_TESTNET_PUBLIC_RPC, { batch: true }),
     })
     const mainnetClient = createPublicClient({

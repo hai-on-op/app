@@ -20,6 +20,11 @@ describe('utils', () => {
         it('goerli optimism', () => {
             expect(getEtherscanLink(ChainId.OPTIMISM_GOERLI, 'abc', 'address')).toEqual('https://goerli-optimism.etherscan.io/address/abc')
         })
+        it('sepolia optimism', () => {
+            expect(getEtherscanLink(11155420, 'abc', 'address')).toEqual(
+                'https://sepolia-optimism.etherscan.io/address/abc'
+            )
+        })
     })
 
     describe('#getLiquidationPrice', () => {

@@ -13,10 +13,11 @@ export const {
 export enum ChainId {
     MAINNET = 10,
     OPTIMISM_GOERLI = 420,
+    OPTIMISM_SEPOLIA = 11155420,
 }
 
-export const NETWORK_ID = parseInt(VITE_NETWORK_ID ?? '10')
-export const DEFAULT_NETWORK_ID = 10
+export const NETWORK_ID = parseInt(VITE_NETWORK_ID ?? '11155420')
+export const DEFAULT_NETWORK_ID = 11155420
 
 export const getNetworkName = (chainId: ChainId | number) => {
     switch(chainId) {
@@ -24,6 +25,8 @@ export const getNetworkName = (chainId: ChainId | number) => {
             return 'mainnet'
         case ChainId.OPTIMISM_GOERLI:
             return 'optimism-goerli'
+        case ChainId.OPTIMISM_SEPOLIA:
+            return 'optimism-sepolia'
         default:
             return 'mainnet'
     }
@@ -38,6 +41,7 @@ export const SYSTEM_STATUS = VITE_SYSTEM_STATUS || ''
 export const ETHERSCAN_PREFIXES: { [chainId in ChainId]: string } = {
     10: 'optimistic.',
     420: 'goerli-optimism.',
+    11155420: 'sepolia-optimism.',
 }
 
 export const MEDIA_WIDTHS = {
@@ -86,7 +90,7 @@ export const floatsTypes = {
     RAD: 45,
 }
 
-export const network_name = VITE_NETWORK_ID === '1' ? 'mainnet' : 'optimism-goerli'
+export const network_name = VITE_NETWORK_ID === '1' ? 'mainnet': 'optimism-sepolia'
 
 export const LINK_TO_DOCS = 'https://docs.letsgethai.com/'
 export const LINK_TO_TWITTER = 'https://twitter.com/@letsgethai'
