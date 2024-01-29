@@ -47,15 +47,15 @@ const Container = styled(CenteredFlex)`
     position: relative;
     width: 100%;
     height: 16px;
-    border: ${({ theme }) => theme.border.medium};
     border-radius: 999px;
     background-color: transparent;
     overflow: visible;
 `
 const Inner = styled.div`
     position: relative;
-    width: calc(100% + 4px);
-    height: calc(100% + 4px);
+    width: 100%;
+    height: 100%;
+    border: ${({ theme }) => theme.border.medium};
     flex-shrink: 0;
     border-radius: 999px;
     overflow: hidden;
@@ -63,9 +63,9 @@ const Inner = styled.div`
 // green = rgb(192, 243, 187), red = rgb(255, 0, 0)
 const Bar = styled.div<{ $progress: number, $limits?: [number, number] }>`
     position: absolute;
-    top: 0px;
+    top: -2px;
     left: -20px;
-    bottom: 0px;
+    bottom: -2px;
     width: calc(${({ $progress }) => (Math.min($progress, 1) * 100).toFixed(2)}% + 20px);
     border-radius: 999px;
     border: ${({ theme }) => theme.border.medium};
