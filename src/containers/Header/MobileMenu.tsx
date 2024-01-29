@@ -9,7 +9,7 @@ import { HaiButton, Popout, Title } from '~/styles'
 import { ExternalLink } from '~/components/ExternalLink'
 import { InternalLink } from '~/components/InternalLink'
 import { Hamburger } from '~/components/Icons/Hamburger'
-// import { ConnectButton } from '~/components/ConnectButton'
+import { ConnectButton } from '~/components/ConnectButton'
 
 type MobileMenuProps = {
     active: boolean,
@@ -32,7 +32,7 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
                 <Dropdown
                     $float="left"
                     $margin="24px">
-                    {/* <ConnectButton $width="100%"/> */}
+                    <ConnectButton $width="100%"/>
                     <InternalLink
                         href="/vaults"
                         $textDecoration="none"
