@@ -10,7 +10,7 @@ import { HelmetProvider } from 'react-helmet-async'
 import '@rainbow-me/rainbowkit/styles.css'
 import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
 import { configureChains, createConfig, WagmiConfig } from 'wagmi'
-import { optimismGoerli, optimism } from 'wagmi/chains'
+import { optimismGoerli, optimismSepolia, optimism } from 'wagmi/chains'
 import { alchemyProvider } from 'wagmi/providers/alchemy'
 import { publicProvider } from 'wagmi/providers/public'
 import { injectedWallet, rainbowWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets'
@@ -22,7 +22,7 @@ const projectId = VITE_WALLETCONNECT_ID!
 
 const { chains, publicClient } = configureChains(
     // temporary
-    [optimismGoerli /* optimism */],
+    [optimismSepolia /* optimism */],
     [alchemyProvider({ apiKey: VITE_ALCHEMY_KEY! }), publicProvider()]
 )
 

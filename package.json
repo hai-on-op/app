@@ -24,7 +24,7 @@
     "dependencies": {
         "@ethersproject/experimental": "5.4.0",
         "@ethersproject/providers": "5.4.5",
-        "@hai-on-op/sdk": "1.2.2-24d701f2.0",
+        "@hai-on-op/sdk": "1.2.2-1f60d23d.0",
         "@rainbow-me/rainbowkit": "1.0.9",
         "axios": "0.27.2",
         "classnames": "2.2.6",

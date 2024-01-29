@@ -94,7 +94,7 @@ const Navbar = () => {
             </HideMobile>
             <RightSide>
                 <BtnContainer>
-                    {signer && chainId === 420 && (
+                    {signer && (chainId === 420 || chainId === 11155420) && (
                         <ClaimButton onClick={() => signer && claimAirdropButton(signer)}>
                             Claim test tokens 🪂
                         </ClaimButton>
