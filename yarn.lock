@@ -1071,10 +1071,10 @@
     forge-std "https://github.com/foundry-rs/forge-std.git#f73c73d2018eb6a111f35e4dae7b4f27401e9421"
     typechain "^8.3.2"
 
-"@hai-on-op/sdk@1.2.2-24d701f2.0":
-  version "1.2.2-24d701f2.0"
-  resolved "https://registry.npmjs.org/@hai-on-op/sdk/-/sdk-1.2.2-24d701f2.0.tgz#90f1bb1463cef5fb6cdc9081c2b39597bb43883f"
-  integrity sha512-lOLxW616GLzE7NzO4eyPXr9rA6/UihRvHm9bbA5Lic0m6VfEhcn2OPbbxWKXhi85V2Av5V5fBLDyOvfrvkqaEw==
+"@hai-on-op/sdk@1.2.2-1f60d23d.0":
+  version "1.2.2-1f60d23d.0"
+  resolved "https://registry.yarnpkg.com/@hai-on-op/sdk/-/sdk-1.2.2-1f60d23d.0.tgz#270495ff350f20aa465c4525b7474c75428b5094"
+  integrity sha512-MrpeDGwu/TVSWVK4F30nVpVUFvioXz+w16PFj+/tjOqcsbuLOWm2CkEFos1Xna/CCZneyUUzR672HHxSjuUykg==
   dependencies:
     "@hai-on-op/abis" "1.0.0"
     ethers "5.4.7"

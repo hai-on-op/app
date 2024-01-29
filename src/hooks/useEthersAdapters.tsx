@@ -2,7 +2,7 @@ import * as React from 'react'
 import { type PublicClient, usePublicClient, type WalletClient, useWalletClient, useNetwork } from 'wagmi'
 import { providers } from 'ethers'
 import { createPublicClient, http, type HttpTransport } from 'viem'
-import { optimism, optimismGoerli } from 'viem/chains'
+import { optimism, optimismGoerli, optimismSepolia } from 'viem/chains'
 import { DEFAULT_NETWORK_ID, VITE_MAINNET_PUBLIC_RPC, VITE_TESTNET_PUBLIC_RPC } from '~/utils'
 
 export const useCustomPublicClient = (): PublicClient => {
@@ -10,7 +10,7 @@ export const useCustomPublicClient = (): PublicClient => {
     const chainId = chain?.id || DEFAULT_NETWORK_ID
 
     const testnetClient = createPublicClient({
-        chain: optimismGoerli,
+        chain: optimismSepolia,
         transport: http(VITE_TESTNET_PUBLIC_RPC, { batch: true }),
     })
     const mainnetClient = createPublicClient({

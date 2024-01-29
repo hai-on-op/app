@@ -9,7 +9,7 @@ export const {
     VITE_TESTNET_PUBLIC_RPC,
 } = import.meta.env
 
-export const DEFAULT_NETWORK_ID = 10
+export const DEFAULT_NETWORK_ID = 11155420
 
 export const getNetworkName = (chainId: number) => {
     switch (chainId) {
@@ -17,6 +17,8 @@ export const getNetworkName = (chainId: number) => {
             return 'mainnet'
         case 420:
             return 'optimism-goerli'
+        case 11155420:
+            return 'optimism-sepolia'
         default:
             return 'mainnet'
     }
@@ -29,6 +31,7 @@ export const SYSTEM_STATUS = VITE_SYSTEM_STATUS || ''
 export const ETHERSCAN_PREFIXES: { [chainId in ChainId]: string } = {
     10: 'optimistic.',
     420: 'goerli-optimism.',
+    11155420: 'sepolia-optimism.',
 }
 
 const MEDIA_WIDTHS = {
