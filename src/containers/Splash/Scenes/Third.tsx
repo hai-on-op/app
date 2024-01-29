@@ -164,7 +164,9 @@ export function Third({ zIndex }: ZoomSceneProps) {
                         $HAI is more stable than other stables, automatically.&nbsp;
                         <strong>
                             Learn more about the&nbsp;
-                            <ExternalLink href={LINK_TO_DOCS}>$HAI PID controller nerd stuff →</ExternalLink>
+                            <ExternalLink href={`${LINK_TO_DOCS}detailed/modules/pid_controller.html`}>
+                                $HAI PID controller nerd stuff →
+                            </ExternalLink>
                         </strong>
                     </Text>
                 </Flex>

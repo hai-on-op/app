@@ -93,7 +93,9 @@ export function Splash() {
     }, [container, zoomContainer, settingsActions])
 
     return (
-        <Container ref={setContainer}>
+        <Container
+            id="zoom-scroll-container"
+            ref={setContainer}>
             <ZoomContainer ref={setZoomContainer}>
                 <Intro zIndex={1000}/>
                 <Second zIndex={900}/>

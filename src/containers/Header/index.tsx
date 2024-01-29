@@ -1,13 +1,19 @@
 import { useMemo, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 
-import { LINK_TO_DOCS, LINK_TO_TELEGRAM, LINK_TO_TWITTER, formatNumberWithStyle } from '~/utils'
+import {
+    LINK_TO_DISCORD,
+    LINK_TO_DOCS,
+    LINK_TO_TELEGRAM,
+    LINK_TO_TWITTER,
+    formatNumberWithStyle,
+} from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
-import { useMediaQuery } from '~/hooks'
+import { useMediaQuery, useOutsideClick } from '~/hooks'
 
 import styled, { css } from 'styled-components'
-import { CenteredFlex, Flex, HaiButton, Title } from '~/styles'
+import { CenteredFlex, Flex, HaiButton, Popout, Title } from '~/styles'
 import { Twitter } from '~/components/Icons/Twitter'
 import { Telegram } from '~/components/Icons/Telegram'
 import { Sound } from '~/components/Icons/Sound'
@@ -48,6 +54,9 @@ export function Header({ tickerActive = false }: HeaderProps) {
 
     const [dropdownActive, setDropdownActive] = useState(false)
     // const [notificationsActive, setNotificationsActive] = useState(false)
+    const [communityContainer, setCommunityContainer] = useState<HTMLElement | null>(null)
+    const [communityDropdownActive, setCommunityDropdownActive] = useState(false)
+    useOutsideClick(communityContainer, () => setCommunityDropdownActive(false))
 
     const [wrapEthActive, setWrapEthActive] = useState(false)
 
@@ -103,41 +112,79 @@ export function Header({ tickerActive = false }: HeaderProps) {
                             ? 36
                             : 24
                 }>
-                    {isLargerThanExtraSmall
-                        ? (
-                            <Logo
-                                src={haiLogo}
-                                alt="HAI"
-                                width={701}
-                                height={264}
-                            />
-                        )
-                        : (
-                            <HaiFace
-                                filled
-                                size={56}
-                            />
-                        )
-                    }
+                    <InternalLink href="/">
+                        {isLargerThanExtraSmall
+                            ? (
+                                <Logo
+                                    src={haiLogo}
+                                    alt="HAI"
+                                    width={701}
+                                    height={264}
+                                />
+                            )
+                            : (
+                                <HaiFace
+                                    filled
+                                    size={56}
+                                />
+                            )
+                        }
+                    </InternalLink>
                     {isLargerThanSmall && (
                         isSplash
                             ? (<>
                                 {/* TODO: replace links */}
-                                <ExternalLink
+                                {/* <ExternalLink
                                     href={LINK_TO_DOCS}
                                     $textDecoration="none">
                                     <HeaderLink>Learn</HeaderLink>
-                                </ExternalLink>
+                                </ExternalLink> */}
+                                <HeaderLink
+                                    style={{ cursor: 'pointer' }}
+                                    onClick={() => {
+                                        const zoomEl = document.getElementById('zoom-scroll-container')
+                                        if (!zoomEl) return
+                                        zoomEl.scrollTop = 3 * window.innerHeight
+                                    }}>
+                                    Learn
+                                </HeaderLink>
                                 <ExternalLink
                                     href={LINK_TO_DOCS}
                                     $textDecoration="none">
                                     <HeaderLink>Docs</HeaderLink>
                                 </ExternalLink>
-                                <ExternalLink
-                                    href={LINK_TO_DOCS}
-                                    $textDecoration="none">
+                                <CommunityDropdownContainer
+                                    ref={setCommunityContainer}
+                                    onClick={() => setCommunityDropdownActive(a => !a)}>
                                     <HeaderLink>Community</HeaderLink>
-                                </ExternalLink>
+                                    <CommunityDropdown
+                                        $anchor="top"
+                                        $float="left"
+                                        $width="200px"
+                                        hidden={!communityDropdownActive}>
+                                        <ExternalLink
+                                            href={LINK_TO_TWITTER}
+                                            $textDecoration="none">
+                                            <DropdownOption>
+                                                TWITTER
+                                            </DropdownOption>
+                                        </ExternalLink>
+                                        <ExternalLink
+                                            href={LINK_TO_TELEGRAM}
+                                            $textDecoration="none">
+                                            <DropdownOption>
+                                                TELEGRAM
+                                            </DropdownOption>
+                                        </ExternalLink>
+                                        <ExternalLink
+                                            href={LINK_TO_DISCORD}
+                                            $textDecoration="none">
+                                            <DropdownOption>
+                                                DISCORD
+                                            </DropdownOption>
+                                        </ExternalLink>
+                                    </CommunityDropdown>
+                                </CommunityDropdownContainer>
                             </>)
                             : isLargerThanMedium && (<>
                                 <InternalLink
@@ -363,6 +410,24 @@ const Logo = styled.img`
     `}
 `
 
+const CommunityDropdownContainer = styled(CenteredFlex)`
+    position: relative;
+    & > *:first-child {
+        cursor: pointer;
+    }
+`
+const CommunityDropdown = styled(Popout)`
+    padding: 24px;
+    gap: 12px;
+    margin-top: 20px;
+    z-index: 2;
+
+    font-size: 1.2em;
+    line-height: 30px;
+    letter-spacing: 0.2rem;
+    text-transform: uppercase;
+    text-align: left;
+`
 const HeaderLink = styled(Title).attrs(props => ({
     $fontSize: '1.6em',
     $letterSpacing: '0.2rem',

@@ -1,11 +1,12 @@
-import { LINK_TO_DOCS, LINK_TO_TELEGRAM, LINK_TO_TWITTER } from '~/utils'
+import { LINK_TO_DISCORD, LINK_TO_DOCS, LINK_TO_TELEGRAM, LINK_TO_TWITTER } from '~/utils'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, Grid, Text } from '~/styles'
 import { Elf } from '~/components/BrandElements/Elf'
 import { Twitter } from '~/components/Icons/Twitter'
 import { Telegram } from '~/components/Icons/Telegram'
-import { InternalLink } from '~/components/InternalLink'
+import { Discord } from '~/components/Icons/Discord'
+// import { InternalLink } from '~/components/InternalLink'
 import { ExternalLink } from '~/components/ExternalLink'
 
 import haiLogo from '~/assets/logo.png'
@@ -32,9 +33,9 @@ export function Footer() {
                 </Description>
                 <LinksContainer>
                     <Grid
-                        $columns="1fr 1fr min-content"
+                        $columns="1fr min-content"
                         $gap={12}>
-                        <Flex
+                        {/* <Flex
                             $column
                             $gap={12}>
                             <Text $fontWeight={700}>About</Text>
@@ -43,13 +44,12 @@ export function Footer() {
                                 $textDecoration="none">
                                 Privacy
                             </InternalLink>
-                            {/* TODO: replace link */}
                             <InternalLink
-                                href="/privacy"
+                                href="/terms"
                                 $textDecoration="none">
                                 Terms
                             </InternalLink>
-                        </Flex>
+                        </Flex> */}
                         <Flex
                             $column
                             $gap={12}>
@@ -71,6 +71,11 @@ export function Footer() {
                                 $textDecoration="none">
                                 <Telegram size={32}/>
                             </ExternalLink>
+                            <ExternalLink
+                                href={LINK_TO_DISCORD}
+                                $textDecoration="none">
+                                <Discord size={32}/>
+                            </ExternalLink>
                         </IconContainer>
                     </Grid>
                 </LinksContainer>
@@ -82,7 +87,7 @@ export function Footer() {
                     />
                 </ElfContainer>
             </Inner>
-            <Bottom>© 2023 HAI</Bottom>
+            <Bottom>© 2024 HAI</Bottom>
         </Container>
     )
 }
@@ -170,6 +175,10 @@ const LinksContainer = styled(Flex).attrs(props => ({
     ${({ theme }) => theme.mediaWidth.upToSmall`
         max-width: 100%;
         gap: 24px;
+        & > ${Grid} {
+            width: fit-content;
+            grid-gap: 48px;
+        }
     `}
 `
 const IconContainer = styled(Flex).attrs(props => ({
