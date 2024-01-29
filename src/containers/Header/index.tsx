@@ -308,13 +308,14 @@ export function Header({ tickerActive = false }: HeaderProps) {
                     </MusicButton>
                     {isSplash
                         ? (
-                            <InternalLink
-                                href="/vaults"
-                                $textDecoration="none">
-                                <HaiButton $variant="yellowish">
-                                    Enter App
-                                </HaiButton>
-                            </InternalLink>
+                            // <InternalLink
+                            //     href="/vaults"
+                            //     $textDecoration="none">
+                            //     <HaiButton $variant="yellowish">
+                            //         Enter App
+                            //     </HaiButton>
+                            // </InternalLink>
+                            null
                         )
                         : (<>
                             {isLargerThanSmall && <ConnectButton showBalance/>}
