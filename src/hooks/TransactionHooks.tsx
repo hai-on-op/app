@@ -1,36 +1,48 @@
 import { useCallback, useMemo } from 'react'
-import { TransactionResponse, TransactionRequest } from '@ethersproject/providers'
+import { type TransactionResponse, type TransactionRequest } from '@ethersproject/providers'
 import { JsonRpcSigner } from '@ethersproject/providers/lib/json-rpc-provider'
 import { utils as gebUtils } from '@hai-on-op/sdk'
 import { BigNumber } from 'ethers'
 import { useAccount, useNetwork } from 'wagmi'
 
-import { newTransactionsFirst } from '../utils/helper'
-import { ITransaction } from '../utils/interfaces'
-import store from '~/store'
+import type { ITransaction } from '~/types'
+import { ActionState, newTransactionsFirst } from '~/utils'
+import { store, useStoreDispatch, useStoreState } from '~/store'
 
-// adding transaction to store
-export function useTransactionAdder(): (
+type TransactionAdder = (
     response: TransactionResponse,
     summary?: string,
-    approval?: { tokenAddress: string; spender: string }
-) => void {
-    const { chain } = useNetwork()
-    const chainId = chain?.id
-    const { address: account } = useAccount()
-    return useCallback(
-        (response: TransactionResponse, summary?: string, approval?: { tokenAddress: string; spender: string }) => {
-            if (!account) return
-            if (!chainId) return
+    approval?: {
+        tokenAddress: string
+        spender: string
+    }
+) => void
 
-            const { hash } = response
-            if (!hash) {
+// adding transaction to store
+export function useTransactionAdder(): TransactionAdder {
+    const { chain } = useNetwork()
+    const { address: account } = useAccount()
+    const { transactionsModel: transactionsDispatch } = useStoreDispatch()
+
+    return useCallback(
+        (
+            response: TransactionResponse,
+            summary?: string,
+            approval?: {
+                tokenAddress: string
+                spender: string
+            }
+        ) => {
+            if (!account) return
+            if (!chain?.id) return
+
+            if (!response.hash) {
                 throw Error('No transaction hash found.')
             }
 
             const tx: ITransaction = {
-                chainId,
-                hash,
+                chainId: chain.id,
+                hash: response.hash,
                 from: account,
                 summary,
                 addedTime: new Date().getTime(),
@@ -38,15 +50,15 @@ export function useTransactionAdder(): (
                 approval,
             }
 
-            store.dispatch.transactionsModel.addTransaction(tx)
+            transactionsDispatch.addTransaction(tx)
         },
-        [chainId, account]
+        [chain?.id, account, transactionsDispatch]
     )
 }
 
 // add 20%
 export function calculateGasMargin(value: BigNumber): BigNumber {
-    return value.mul(BigNumber.from(10000 + 2000)).div(BigNumber.from(10000))
+    return value.mul(BigNumber.from(10_000 + 2_000)).div(BigNumber.from(10_000))
 }
 
 export function isTransactionRecent(tx: ITransaction): boolean {
@@ -54,7 +66,7 @@ export function isTransactionRecent(tx: ITransaction): boolean {
 }
 
 export function useIsTransactionPending(transactionHash?: string): boolean {
-    const transactions = store.getState().transactionsModel.transactions
+    const { transactions } = useStoreState(({ transactionsModel }) => transactionsModel)
 
     if (!transactionHash || !transactions[transactionHash]) return false
 
@@ -89,7 +101,7 @@ export async function handlePreTxGasEstimate(
         store.dispatch.popupsModel.setIsWaitingModalOpen(true)
         store.dispatch.popupsModel.setWaitingPayload({
             title: 'Transaction Failed.',
-            status: 'error',
+            status: ActionState.ERROR,
         })
         console.error(errorMessage)
         throw errorMessage
@@ -109,30 +121,32 @@ export async function handlePreTxGasEstimate(
 }
 
 export function handleTransactionError(e: any) {
+    const { popupsModel: popupsDispatch } = store.dispatch
+
     if (typeof e === 'string' && (e.toLowerCase().includes('join') || e.toLowerCase().includes('exit'))) {
-        store.dispatch.popupsModel.setWaitingPayload({
+        popupsDispatch.setWaitingPayload({
             title: 'Cannot join/exit at this time.',
-            status: 'error',
+            status: ActionState.ERROR,
         })
         return
     }
     if (e?.code === 4001) {
-        store.dispatch.popupsModel.setWaitingPayload({
+        popupsDispatch.setWaitingPayload({
             title: 'Transaction Rejected.',
-            status: 'error',
+            status: ActionState.ERROR,
         })
         return
     }
-    store.dispatch.popupsModel.setWaitingPayload({
+    popupsDispatch.setWaitingPayload({
         title: 'Transaction Failed.',
-        status: 'error',
+        status: ActionState.ERROR,
     })
     console.error(`Transaction failed`, e)
     console.log('Required String', gebUtils.getRequireString(e))
 }
 
 export function useHasPendingTransactions() {
-    const allTransactions = store.getState().transactionsModel.transactions
+    const { transactions: allTransactions } = useStoreState(({ transactionsModel }) => transactionsModel)
 
     const sortedRecentTransactions = useMemo(() => {
         const txs = Object.values(allTransactions)
@@ -140,7 +154,8 @@ export function useHasPendingTransactions() {
     }, [allTransactions])
 
     return useMemo(() => {
-        const pending = sortedRecentTransactions.filter((tx) => !tx.receipt).map((tx) => tx.hash)
+        const pending = sortedRecentTransactions.filter((tx) => !tx.receipt)
+        // .map((tx) => tx.hash)
         return !!pending.length
     }, [sortedRecentTransactions])
 }

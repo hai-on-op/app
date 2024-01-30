@@ -1,74 +1,43 @@
-import React from 'react'
 import styled from 'styled-components'
+import { CenteredFlex } from '~/styles'
+import { Check } from './Icons/Check'
 
-interface Props {
+type CheckboxProps = {
     checked: boolean
-    onChange: (state: boolean) => void
+    onChange?: (value: boolean) => void
+    size?: number
 }
-
-const CheckBox = ({ checked, onChange }: Props) => {
-    const getChecked = (e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.checked)
-
+export function CheckBox({ checked, onChange, size = 20 }: CheckboxProps) {
     return (
-        <CheckboxContainer>
-            <HiddenCheckbox checked={checked} onChange={getChecked} />
-            <StyledCheckbox className={checked ? 'checked' : ''}>
-                <div>
-                    <Icon viewBox="0 0 24 24">
-                        <polyline points="20 6 9 17 4 12" />
-                    </Icon>
-                </div>
-            </StyledCheckbox>
-        </CheckboxContainer>
+        <Container $active={checked} $size={size}>
+            <Check />
+            <HiddenInput type="checkbox" checked={checked} onChange={(e) => onChange?.(e.target.checked)} />
+        </Container>
     )
 }
 
-export default CheckBox
+const Container = styled(CenteredFlex)<{ $active?: boolean; $size: number }>`
+    position: relative;
+    width: ${({ $size }) => $size}px;
+    height: ${({ $size }) => $size}px;
+    border-radius: 50%;
+    border: ${({ theme }) => theme.border.thin};
+    background-color: ${({ $active }) => ($active ? 'black' : 'transparent')};
 
-const CheckboxContainer = styled.label`
-    display: inline-block;
-    vertical-align: middle;
+    & > svg {
+        width: 70%;
+        height: auto;
+        stroke: ${({ $active }) => ($active ? 'white' : 'transparent')};
+        stroke-width: 3px;
+    }
+
     cursor: pointer;
 `
 
-const Icon = styled.svg`
-    fill: none;
-    stroke: ${(props) => props.theme.colors.blueish};
-    stroke-width: 2px;
-    visibility: hidden;
-    display: block;
-`
-
-const HiddenCheckbox = styled.input.attrs({ type: 'checkbox' })`
-    border: 0;
-    clip: rect(0 0 0 0);
-    clip-path: inset(50%);
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    padding: 0;
+const HiddenInput = styled.input`
     position: absolute;
-    white-space: nowrap;
-    width: 1px;
-`
-
-const StyledCheckbox = styled.div`
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border-radius: 2.5px;
-    transition: all 150ms;
-    padding: 1px;
-    div {
-        border-radius: 2.5px;
-        border: 1px solid ${(props) => props.theme.colors.blueish};
-    }
-    &.checked {
-        div {
-            border: 1px solid ${(props) => props.theme.colors.blueish};
-        }
-        svg {
-            visibility: visible;
-        }
-    }
+    inset: 0px;
+    opacity: 0;
+    z-index: 1;
+    cursor: pointer;
 `

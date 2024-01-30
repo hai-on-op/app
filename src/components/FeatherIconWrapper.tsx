@@ -6,9 +6,7 @@ export type IconProps = {
     name: IconName
 } & icons.IconProps
 
-const FeatherIconWrapper = ({ name, ...rest }: IconProps) => {
+export function FeatherIconWrapper({ name, ...rest }: IconProps) {
     const IconComponent = icons[name]
     return <IconComponent {...rest} />
 }
-
-export default FeatherIconWrapper

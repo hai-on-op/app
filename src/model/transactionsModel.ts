@@ -1,16 +1,22 @@
-import { action, Action } from 'easy-peasy'
-import { DEFAULT_NETWORK_ID, ITransaction } from '~/utils'
+import { type Action, action } from 'easy-peasy'
+
+import type { ITransaction } from '~/types'
+import { DEFAULT_NETWORK_ID } from '~/utils'
 
 export interface TransactionsModel {
     transactions: { [hash: string]: ITransaction }
+    setTransactions: Action<TransactionsModel, { [hash: string]: ITransaction }>
     addTransaction: Action<TransactionsModel, ITransaction>
     checkTransaction: Action<TransactionsModel, { tx: ITransaction; blockNumber: number }>
     finalizeTransaction: Action<TransactionsModel, ITransaction>
     clearTransactions: Action<TransactionsModel>
-    setTransactions: Action<TransactionsModel, { [hash: string]: ITransaction }>
 }
-const transactionsModel: TransactionsModel = {
+
+export const transactionsModel: TransactionsModel = {
     transactions: {},
+    setTransactions: action((state, payload) => {
+        state.transactions = payload
+    }),
     addTransaction: action((state, payload) => {
         state.transactions[payload.hash] = payload
         localStorage.setItem(
@@ -41,12 +47,7 @@ const transactionsModel: TransactionsModel = {
             JSON.stringify(state.transactions)
         )
     }),
-    clearTransactions: action((state, payload) => {
+    clearTransactions: action((state) => {
         state.transactions = {}
     }),
-    setTransactions: action((state, payload) => {
-        state.transactions = payload
-    }),
 }
-
-export default transactionsModel

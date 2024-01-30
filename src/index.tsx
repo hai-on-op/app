@@ -1,61 +1,35 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { HashRouter } from 'react-router-dom'
-import { StoreProvider } from 'easy-peasy'
-import './index.css'
-import App from './App'
-import store from './store'
+import { BrowserRouter } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
-
-import '@rainbow-me/rainbowkit/styles.css'
+import { StoreProvider } from 'easy-peasy'
+import { WagmiConfig } from 'wagmi'
 import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
-import { configureChains, createConfig, WagmiConfig } from 'wagmi'
-import { optimismGoerli, optimism } from 'wagmi/chains'
-import { alchemyProvider } from 'wagmi/providers/alchemy'
-import { publicProvider } from 'wagmi/providers/public'
-import { injectedWallet, rainbowWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets'
-import { connectorsForWallets } from '@rainbow-me/rainbowkit'
-import { VITE_ALCHEMY_KEY, VITE_WALLETCONNECT_ID } from './utils'
-import { haiTheme } from './utils/rainbowTheme'
+import '@rainbow-me/rainbowkit/styles.css'
 
-const projectId = VITE_WALLETCONNECT_ID!
+import { chains, wagmiConfig } from './utils/wallet'
+import { store } from '~/store'
+import { HaiThemeProvider } from '~/providers/HaiThemeProvider'
 
-const { chains, publicClient } = configureChains(
-    // temporary
-    [optimismGoerli /* optimism */],
-    [alchemyProvider({ apiKey: VITE_ALCHEMY_KEY! }), publicProvider()]
-)
-
-const connectors = connectorsForWallets([
-    {
-        groupName: 'Recommended',
-        wallets: [
-            injectedWallet({ chains }),
-            rainbowWallet({ projectId, chains }),
-            walletConnectWallet({ projectId, chains }),
-        ],
-    },
-])
-
-const wagmiConfig = createConfig({
-    autoConnect: true,
-    connectors,
-    publicClient,
-})
+import { haiTheme } from '~/styles/themes'
+import App from '~/App'
+import { CustomAvatar } from '~/components/CustomAvatar'
 
 ReactDOM.render(
     <React.StrictMode>
-        <WagmiConfig config={wagmiConfig}>
-            <RainbowKitProvider theme={haiTheme} chains={chains}>
-                <HelmetProvider>
-                    <HashRouter>
-                        <StoreProvider store={store}>
-                            <App />
-                        </StoreProvider>
-                    </HashRouter>
-                </HelmetProvider>
-            </RainbowKitProvider>
-        </WagmiConfig>
+        <HaiThemeProvider>
+            <WagmiConfig config={wagmiConfig}>
+                <RainbowKitProvider avatar={CustomAvatar} theme={haiTheme} chains={chains}>
+                    <HelmetProvider>
+                        <BrowserRouter>
+                            <StoreProvider store={store}>
+                                <App />
+                            </StoreProvider>
+                        </BrowserRouter>
+                    </HelmetProvider>
+                </RainbowKitProvider>
+            </WagmiConfig>
+        </HaiThemeProvider>
     </React.StrictMode>,
     document.getElementById('root')
 )

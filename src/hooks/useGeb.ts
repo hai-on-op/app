@@ -2,10 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Geb } from '@hai-on-op/sdk'
 import { useAccount } from 'wagmi'
 
+import { EMPTY_ADDRESS, getNetworkName, formatNumber } from '~/utils'
+import { useStoreActions, useStoreState } from '~/store'
 import { useEthersSigner, usePublicProvider } from './useEthersAdapters'
-import store, { useStoreActions, useStoreState } from '~/store'
-import { EMPTY_ADDRESS, getNetworkName } from '~/utils/constants'
-import { formatNumber } from '~/utils/helper'
 
 type TokenType = 'ETH' | 'HAI' | 'WETH'
 
@@ -36,8 +35,8 @@ export function usePublicGeb(): Geb {
     return publicGeb
 }
 
-// check if is owner of the safe
-export function useIsOwner(safeId: string): boolean {
+// check if is owner of the vault
+export function useIsOwner(vaultId: string): boolean {
     const [state, setState] = useState(true)
     const geb = useGeb()
     const { address: account } = useAccount()
@@ -52,12 +51,15 @@ export function useIsOwner(safeId: string): boolean {
     }, [])
 
     useEffect(() => {
-        if (!geb || !account || !safeId) return undefined
+        if (!geb || !account || !vaultId) return undefined
         setState(true)
-        Promise.all([geb.contracts.proxyFactory.proxies(account as string), geb.contracts.safeManager.safeData(safeId)])
+        Promise.all([
+            geb.contracts.proxyFactory.proxies(account as string),
+            geb.contracts.safeManager.safeData(vaultId),
+        ])
             .then(getIsOwnerCallback)
-            .catch((error) => console.error(`Failed to get proxyAddress and SafeOwner`, error))
-    }, [account, geb, getIsOwnerCallback, safeId])
+            .catch((error) => console.error(`Failed to get proxyAddress and VaultOwner`, error))
+    }, [account, geb, getIsOwnerCallback, vaultId])
 
     return state
 }
@@ -90,8 +92,9 @@ export function useProxyAddress() {
 
 // returns amount of currency in USD
 export function useTokenBalanceInUSD(token: TokenType, balance: string) {
-    const ethPrice = store.getState().connectWalletModel.fiatPrice
-    const haiPrice = store.getState().safeModel.liquidationData?.currentRedemptionPrice
+    const { connectWalletModel, vaultModel } = useStoreState((state) => state)
+    const ethPrice = connectWalletModel.fiatPrice
+    const haiPrice = vaultModel.liquidationData?.currentRedemptionPrice
 
     return useMemo(() => {
         const price = token === 'ETH' || token === 'WETH' ? ethPrice : haiPrice

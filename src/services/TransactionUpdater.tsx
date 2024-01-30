@@ -1,14 +1,18 @@
-import React, { useEffect, useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { toast } from 'react-toastify'
-import ToastPayload from '../components/ToastPayload'
-import store, { useStoreState } from '../store'
-import { useEthersProvider } from '~/hooks'
 import { useNetwork } from 'wagmi'
 
-export function shouldCheck(
-    lastBlockNumber: number,
-    tx: { addedTime: number; receipt?: {}; lastCheckedBlockNumber?: number }
-): boolean {
+import { store, useStoreState } from '~/store'
+import { useEthersProvider } from '~/hooks'
+
+import { ToastPayload } from '~/components/ToastPayload'
+
+type CheckTransaction = {
+    addedTime: number
+    receipt?: any
+    lastCheckedBlockNumber?: number
+}
+export function shouldCheck(lastBlockNumber: number, tx: CheckTransaction): boolean {
     if (tx.receipt) return false
     if (!tx.lastCheckedBlockNumber) return true
     const blocksSinceCheck = lastBlockNumber - tx.lastCheckedBlockNumber
@@ -26,7 +30,7 @@ export function shouldCheck(
     }
 }
 
-export default function TransactionUpdater(): null {
+export function TransactionUpdater(): null {
     const toastId = 'transactionId'
     const { chain } = useNetwork()
     const chainId = chain?.id

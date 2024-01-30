@@ -1,8 +1,9 @@
-import * as React from 'react'
-import { type PublicClient, usePublicClient, type WalletClient, useWalletClient, useNetwork } from 'wagmi'
+import { useMemo } from 'react'
 import { providers } from 'ethers'
 import { createPublicClient, http, type HttpTransport } from 'viem'
-import { optimism, optimismGoerli } from 'viem/chains'
+import { optimism, optimismSepolia } from 'viem/chains'
+import { type PublicClient, type WalletClient, useNetwork, usePublicClient, useWalletClient } from 'wagmi'
+
 import { DEFAULT_NETWORK_ID, VITE_MAINNET_PUBLIC_RPC, VITE_TESTNET_PUBLIC_RPC } from '~/utils'
 
 export const useCustomPublicClient = (): PublicClient => {
@@ -10,7 +11,7 @@ export const useCustomPublicClient = (): PublicClient => {
     const chainId = chain?.id || DEFAULT_NETWORK_ID
 
     const testnetClient = createPublicClient({
-        chain: optimismGoerli,
+        chain: optimismSepolia,
         transport: http(VITE_TESTNET_PUBLIC_RPC, { batch: true }),
     })
     const mainnetClient = createPublicClient({
@@ -41,12 +42,12 @@ export function publicClientToProvider(publicClient: PublicClient) {
 /** Hook to convert a viem Public Client to an ethers.js Provider. */
 export function useEthersProvider({ chainId }: { chainId?: number } = {}) {
     const publicClient = usePublicClient({ chainId })
-    return React.useMemo(() => publicClientToProvider(publicClient), [publicClient])
+    return useMemo(() => publicClientToProvider(publicClient), [publicClient])
 }
 
 export function usePublicProvider() {
     const client = useCustomPublicClient()
-    return React.useMemo(
+    return useMemo(
         () =>
             new providers.JsonRpcProvider(client.transport.url, {
                 chainId: client.chain.id,
@@ -71,5 +72,5 @@ export function walletClientToSigner(walletClient: WalletClient) {
 /** Hook to convert a viem Wallet Client to an ethers.js Signer. */
 export function useEthersSigner({ chainId }: { chainId?: number } = {}) {
     const { data: walletClient } = useWalletClient({ chainId })
-    return React.useMemo(() => (walletClient ? walletClientToSigner(walletClient) : undefined), [walletClient])
+    return useMemo(() => (walletClient ? walletClientToSigner(walletClient) : undefined), [walletClient])
 }

@@ -1,4 +1,4 @@
-import '../../setupTests'
+import '~/setupTests'
 import { BigNumber, FixedNumber } from 'ethers'
 
 // Add custom match type

@@ -1,34 +1,41 @@
-import { action, Action, thunk, Thunk } from 'easy-peasy'
+import { type Action, type Thunk, action, thunk } from 'easy-peasy'
 
 import {
+    type AuctionData,
+    type CollateralAuctionsData,
     Geb,
-    ICollateralAuction,
-    AuctionData,
+    type ICollateralAuction,
     fetchAuctionData,
-    CollateralAuctionsData,
     fetchCollateralAuctionData,
 } from '@hai-on-op/sdk'
 
 import {
+    COLLATERAL_BATCH_SIZE,
+    DEBT_BATCH_SIZE,
+    SURPLUS_BATCH_SIZE,
+    type IAuctionBuy,
+    type IClaimInternalBalance,
+    formatSurplusAndDebtAuctions,
+    formatCollateralAuctions,
+    getCollateralAuctions,
+    getDebtAuctions,
+    getSurplusAuctions,
     handleAuctionBid,
     handleAuctionBuy,
     handleAuctionClaim,
     handleClaimInternalBalance,
-    IAuctionBuy,
-    IClaimInternalBalance,
-    getCollateralAuctions,
-    getDebtAuctions,
-    getSurplusAuctions,
-    formatSurplusAndDebtAuctions,
-    formatCollateralAuctions,
-    SURPLUS_BATCH_SIZE,
-    DEBT_BATCH_SIZE,
-    COLLATERAL_BATCH_SIZE,
 } from '~/utils'
-import { IAuctionBid, IAuction, AuctionEventType, LoadingAuctionsData } from '~/types'
-import { StoreModel } from '~/model'
+import { ActionState } from '~/utils/constants'
+import type { IAuctionBid, IAuction, AuctionEventType, LoadingAuctionsData } from '~/types'
+import { type StoreModel } from './index'
 
 export interface AuctionModel {
+    surplusAuctions: IAuction[] | undefined
+    setSurplusAuctions: Action<AuctionModel, IAuction[] | undefined>
+    debtAuctions: IAuction[] | undefined
+    setDebtAuctions: Action<AuctionModel, IAuction[] | undefined>
+    collateralAuctions: { [key: string]: ICollateralAuction[] }
+    setCollateralAuctions: Action<AuctionModel, { collateral: string; auctions: ICollateralAuction[] }>
     fetchAuctions: Thunk<
         AuctionModel,
         {
@@ -42,14 +49,23 @@ export interface AuctionModel {
         }
     >
 
-    amount: string
-    setAmount: Action<AuctionModel, string>
+    auctionsData: AuctionData | null
+    setAuctionsData: Action<AuctionModel, AuctionData>
+    fetchAuctionsData: Thunk<AuctionModel, { geb: Geb; proxyAddress: string }, StoreModel>
+    loadingAuctionsData: LoadingAuctionsData
+    setLoadingAuctionsData: Action<AuctionModel, LoadingAuctionsData>
 
-    collateralAmount: string
-    setCollateralAmount: Action<AuctionModel, string>
-
-    operation: number
-    setOperation: Action<AuctionModel, number>
+    collateralData: CollateralAuctionsData[] | null
+    setCollateralData: Action<AuctionModel, CollateralAuctionsData[]>
+    fetchCollateralData: Thunk<
+        AuctionModel,
+        {
+            geb: Geb
+            collateral: string
+            auctionIds: string[]
+        },
+        CollateralAuctionsData[]
+    >
 
     // protInternalBalance = user's KITE balance in the protocol
     protInternalBalance: string
@@ -73,9 +89,17 @@ export interface AuctionModel {
 
     selectedAuction: IAuction | null
     setSelectedAuction: Action<AuctionModel, IAuction | null>
-
     selectedCollateralAuction: ICollateralAuction | null
     setSelectedCollateralAuction: Action<AuctionModel, ICollateralAuction | null>
+
+    amount: string
+    setAmount: Action<AuctionModel, string>
+
+    collateralAmount: string
+    setCollateralAmount: Action<AuctionModel, string>
+
+    // operation: number
+    // setOperation: Action<AuctionModel, number>
 
     auctionBid: Thunk<AuctionModel, IAuctionBid, any, StoreModel>
     auctionClaimInternalBalance: Thunk<AuctionModel, IClaimInternalBalance, any, StoreModel>
@@ -85,40 +109,21 @@ export interface AuctionModel {
 
     isSubmitting: boolean
     setIsSubmitting: Action<AuctionModel, boolean>
-
-    auctionsData: AuctionData | null
-    setAuctionsData: Action<AuctionModel, AuctionData>
-    fetchAuctionsData: Thunk<AuctionModel, { geb: Geb; proxyAddress: string }, StoreModel>
-
-    surplusAuctions: IAuction[] | undefined
-    setSurplusAuctions: Action<AuctionModel, IAuction[] | undefined>
-
-    debtAuctions: IAuction[] | undefined
-    setDebtAuctions: Action<AuctionModel, IAuction[] | undefined>
-
-    collateralAuctions: { [key: string]: ICollateralAuction[] }
-    setCollateralAuctions: Action<AuctionModel, { collateral: string; auctions: ICollateralAuction[] }>
-
-    collateralData: CollateralAuctionsData[] | null
-    setCollateralData: Action<AuctionModel, CollateralAuctionsData[]>
-    fetchCollateralData: Thunk<
-        AuctionModel,
-        {
-            geb: Geb
-            collateral: string
-            auctionIds: string[]
-        },
-        CollateralAuctionsData[]
-    >
-
-    loadingAuctionsData: LoadingAuctionsData
-    setLoadingAuctionsData: Action<AuctionModel, LoadingAuctionsData>
 }
 
-const auctionModel: AuctionModel = {
+export const auctionModel: AuctionModel = {
     surplusAuctions: undefined,
+    setSurplusAuctions: action((state, payload) => {
+        state.surplusAuctions = payload
+    }),
     debtAuctions: undefined,
+    setDebtAuctions: action((state, payload) => {
+        state.debtAuctions = payload
+    }),
     collateralAuctions: {},
+    setCollateralAuctions: action((state, { collateral, auctions }) => {
+        state.collateralAuctions = { ...state.collateralAuctions, [collateral]: auctions }
+    }),
     fetchAuctions: thunk(
         async (
             actions,
@@ -173,7 +178,7 @@ const auctionModel: AuctionModel = {
                 const { auctions, endBlock } = await getCollateralAuctions(
                     geb,
                     tokenSymbol || 'WETH',
-                    latestBlock - 1000000,
+                    latestBlock - COLLATERAL_BATCH_SIZE,
                     latestBlock
                 )
 
@@ -202,29 +207,31 @@ const auctionModel: AuctionModel = {
             }
         }
     ),
-    setSurplusAuctions: action((state, payload) => {
-        state.surplusAuctions = payload
+
+    auctionsData: null,
+    setAuctionsData: action((state, payload) => {
+        state.auctionsData = payload
     }),
-    setDebtAuctions: action((state, payload) => {
-        state.debtAuctions = payload
+    fetchAuctionsData: thunk(async (actions, { geb, proxyAddress }) => {
+        const fetched = await fetchAuctionData(geb, proxyAddress)
+        if (fetched) {
+            actions.setAuctionsData(fetched)
+        }
     }),
-    setCollateralAuctions: action((state, { collateral, auctions }) => {
-        state.collateralAuctions = { ...state.collateralAuctions, [collateral]: auctions }
+    loadingAuctionsData: {
+        loading: false,
+    },
+    setLoadingAuctionsData: action((state, payload) => {
+        state.loadingAuctionsData = { ...state.loadingAuctionsData, ...payload }
     }),
 
-    amount: '',
-    setAmount: action((state, payload) => {
-        state.amount = payload
+    collateralData: null,
+    setCollateralData: action((state, payload) => {
+        state.collateralData = payload
     }),
-
-    operation: 0,
-    setOperation: action((state, payload) => {
-        state.operation = payload
-    }),
-
-    collateralAmount: '',
-    setCollateralAmount: action((state, payload) => {
-        state.collateralAmount = payload
+    fetchCollateralData: thunk(async (state, { geb, collateral, auctionIds }) => {
+        const fetched = await fetchCollateralAuctionData(geb, collateral, auctionIds)
+        state.setCollateralData(fetched)
     }),
 
     protInternalBalance: '',
@@ -255,6 +262,21 @@ const auctionModel: AuctionModel = {
         state.selectedCollateralAuction = payload
     }),
 
+    amount: '',
+    setAmount: action((state, payload) => {
+        state.amount = payload
+    }),
+
+    // operation: 0,
+    // setOperation: action((state, payload) => {
+    //     state.operation = payload
+    // }),
+
+    collateralAmount: '',
+    setCollateralAmount: action((state, payload) => {
+        state.collateralAmount = payload
+    }),
+
     auctionBid: thunk(async (actions, payload, { getStoreActions }) => {
         const storeActions = getStoreActions()
         const txResponse = await handleAuctionBid(payload)
@@ -273,7 +295,7 @@ const auctionModel: AuctionModel = {
             storeActions.popupsModel.setWaitingPayload({
                 title: 'Transaction Submitted',
                 hash: txResponse.hash,
-                status: 'success',
+                status: ActionState.SUCCESS,
             })
             await txResponse.wait()
             actions.setIsSubmitting(false)
@@ -298,7 +320,7 @@ const auctionModel: AuctionModel = {
             storeActions.popupsModel.setWaitingPayload({
                 title: 'Transaction Submitted',
                 hash: txResponse.hash,
-                status: 'success',
+                status: ActionState.SUCCESS,
             })
             await txResponse.wait()
             actions.setIsSubmitting(false)
@@ -323,7 +345,7 @@ const auctionModel: AuctionModel = {
             storeActions.popupsModel.setWaitingPayload({
                 title: 'Transaction Submitted',
                 hash: txResponse.hash,
-                status: 'success',
+                status: ActionState.SUCCESS,
             })
             await txResponse.wait()
             actions.setIsSubmitting(false)
@@ -348,7 +370,7 @@ const auctionModel: AuctionModel = {
             storeActions.popupsModel.setWaitingPayload({
                 title: 'Transaction Submitted',
                 hash: txResponse.hash,
-                status: 'success',
+                status: ActionState.SUCCESS,
             })
             await txResponse.wait()
             actions.setIsSubmitting(false)
@@ -359,32 +381,4 @@ const auctionModel: AuctionModel = {
     setIsSubmitting: action((state, payload) => {
         state.isSubmitting = payload
     }),
-    setAuctionsData: action((state, payload) => {
-        state.auctionsData = payload
-    }),
-    fetchAuctionsData: thunk(async (actions, { geb, proxyAddress }) => {
-        const fetched = await fetchAuctionData(geb, proxyAddress)
-        if (fetched) {
-            actions.setAuctionsData(fetched)
-        }
-    }),
-    auctionsData: null,
-
-    collateralData: null,
-    setCollateralData: action((state, payload) => {
-        state.collateralData = payload
-    }),
-    fetchCollateralData: thunk(async (state, { geb, collateral, auctionIds }) => {
-        const fetched = await fetchCollateralAuctionData(geb, collateral, auctionIds)
-        state.setCollateralData(fetched)
-    }),
-
-    loadingAuctionsData: {
-        loading: false,
-    },
-    setLoadingAuctionsData: action((state, payload) => {
-        state.loadingAuctionsData = { ...state.loadingAuctionsData, ...payload }
-    }),
 }
-
-export default auctionModel
