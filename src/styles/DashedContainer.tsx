@@ -11,7 +11,7 @@ export const DashedContainerStyle = css<DashedContainerProps>`
         content: '';
         position: absolute;
         inset: 0px;
-        border: 2px dashed rgba(0,0,0,0.1);
+        border: 2px dashed rgba(0, 0, 0, 0.1);
 
         ${({ theme }) => theme.border.dashedImage}
 

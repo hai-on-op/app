@@ -18,39 +18,33 @@ export function Vaults() {
     const history = useHistory()
     const { idOrOwner } = useParams<{ idOrOwner?: string }>()
 
-    const { vaultModel: { singleVault } } = useStoreState(state => state)
+    const {
+        vaultModel: { singleVault },
+    } = useStoreState((state) => state)
 
     const { action, setAction } = useVaultRouting()
 
     const [navIndex, setNavIndex] = useState(0)
 
     if (idOrOwner) {
-        if (idOrOwner.startsWith('0x')) return <VaultsByOwner/>
-        return <VaultById id={idOrOwner}/>
+        if (idOrOwner.startsWith('0x')) return <VaultsByOwner />
+        return <VaultById id={idOrOwner} />
     }
 
     return (
-        <VaultProvider
-            action={action}
-            setAction={setAction}>
-            {action === VaultAction.CREATE || singleVault
-                ? (
-                    <ManageVault headerContent={(
+        <VaultProvider action={action} setAction={setAction}>
+            {action === VaultAction.CREATE || singleVault ? (
+                <ManageVault
+                    headerContent={
                         <BackButton onClick={() => history.push(`/vaults`)}>
-                            <Caret direction="left"/>
-                            <Text>
-                                Back to {navIndex === 0 ? 'Available': 'My'} Vaults
-                            </Text>
+                            <Caret direction="left" />
+                            <Text>Back to {navIndex === 0 ? 'Available' : 'My'} Vaults</Text>
                         </BackButton>
-                    )}/>
-                )
-                : (
-                    <VaultsList
-                        navIndex={navIndex}
-                        setNavIndex={setNavIndex}
-                    />
-                )
-            }
+                    }
+                />
+            ) : (
+                <VaultsList navIndex={navIndex} setNavIndex={setNavIndex} />
+            )}
         </VaultProvider>
     )
 }

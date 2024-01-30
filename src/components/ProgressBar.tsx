@@ -4,38 +4,25 @@ import styled from 'styled-components'
 import { CenteredFlex, Flex, Text } from '~/styles'
 
 export type ProgressBarProps = {
-    progress: number,
-    simulatedProgress?: number,
-    colorLimits?: [number, number],
+    progress: number
+    simulatedProgress?: number
+    colorLimits?: [number, number]
     labels?: {
-        progress: number,
-        label: string,
-    }[],
+        progress: number
+        label: string
+    }[]
 }
-export function ProgressBar({
-    progress,
-    simulatedProgress,
-    colorLimits,
-    labels,
-}: ProgressBarProps) {
+export function ProgressBar({ progress, simulatedProgress, colorLimits, labels }: ProgressBarProps) {
     return (
         <Container>
             <Inner>
-                <Bar
-                    $progress={progress}
-                    $limits={colorLimits}
-                />
+                <Bar $progress={progress} $limits={colorLimits} />
                 {simulatedProgress !== undefined && (
-                    <Bar
-                        $progress={simulatedProgress}
-                        style={{ zIndex: simulatedProgress > progress ? -1: 1 }}
-                    />
+                    <Bar $progress={simulatedProgress} style={{ zIndex: simulatedProgress > progress ? -1 : 1 }} />
                 )}
             </Inner>
             {labels?.map(({ progress: p, label }, i) => (
-                <Indicator
-                    key={i}
-                    $left={`${(p * 100).toFixed(2)}%`}>
+                <Indicator key={i} $left={`${(p * 100).toFixed(2)}%`}>
                     <Text $fontSize="8px">{label}</Text>
                 </Indicator>
             ))}
@@ -61,7 +48,7 @@ const Inner = styled.div`
     overflow: hidden;
 `
 // green = rgb(192, 243, 187), red = rgb(255, 0, 0)
-const Bar = styled.div<{ $progress: number, $limits?: [number, number] }>`
+const Bar = styled.div<{ $progress: number; $limits?: [number, number] }>`
     position: absolute;
     top: -2px;
     left: -20px;
@@ -80,7 +67,7 @@ const Bar = styled.div<{ $progress: number, $limits?: [number, number] }>`
         background: ${({ theme }) => theme.colors.gradient};
     }
 `
-const Indicator = styled(Flex).attrs(props => ({
+const Indicator = styled(Flex).attrs((props) => ({
     $column: true,
     $justify: 'flex-end',
     $align: 'center',

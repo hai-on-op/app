@@ -7,9 +7,11 @@ import { formatNumberWithStyle, getAuctionStatus, parseRemainingTime, tokenMap }
 import { useStoreState } from '~/store'
 
 export function useAuction(auction: IAuction, timeEl?: HTMLElement | null) {
-    const { vaultModel: { liquidationData } } = useStoreState(state => state)
+    const {
+        vaultModel: { liquidationData },
+    } = useStoreState((state) => state)
 
-    const [refresher, forceTimeRefresh] = useReducer(x => x + 1, 0)
+    const [refresher, forceTimeRefresh] = useReducer((x) => x + 1, 0)
 
     useEffect(() => {
         if (!timeEl) return
@@ -68,16 +70,12 @@ export function useAuction(auction: IAuction, timeEl?: HTMLElement | null) {
 
     const status = useMemo(() => getAuctionStatus(auction), [auction, refresher])
 
-    const sellToken = useMemo(() => (
-        tokenMap[auction.sellToken] || auction.sellToken
-    ), [auction.sellToken])
+    const sellToken = useMemo(() => tokenMap[auction.sellToken] || auction.sellToken, [auction.sellToken])
 
-    const buyToken = useMemo(() => (
-        tokenMap[auction.buyToken] || auction.buyToken
-    ), [auction.buyToken])
+    const buyToken = useMemo(() => tokenMap[auction.buyToken] || auction.buyToken, [auction.buyToken])
 
     const sellUsdPrice = useMemo(() => {
-        switch(sellToken) {
+        switch (sellToken) {
             case 'HAI':
                 return liquidationData?.currentRedemptionPrice || '0'
             case 'KITE':
@@ -100,19 +98,12 @@ export function useAuction(auction: IAuction, timeEl?: HTMLElement | null) {
     const [initialToRaise, remainingToRaise] = useMemo(() => {
         if (auction.englishAuctionType !== 'COLLATERAL') return []
 
-        const initial = formatEther(
-            BigNumber
-                .from(auction.buyInitialAmount.split('.')[0])
-                .div(1e9)
-        )
+        const initial = formatEther(BigNumber.from(auction.buyInitialAmount.split('.')[0]).div(1e9))
         let rem = parseFloat(initial)
         auction.biddersList.forEach(({ buyAmount = '0' }) => {
             rem = Math.max(0, rem - parseFloat(buyAmount))
         })
-        return [
-            formatNumberWithStyle(initial, { maxDecimals: 3 }),
-            formatNumberWithStyle(rem, { maxDecimals: 3 }),
-        ]
+        return [formatNumberWithStyle(initial, { maxDecimals: 3 }), formatNumberWithStyle(rem, { maxDecimals: 3 })]
     }, [auction])
 
     return {

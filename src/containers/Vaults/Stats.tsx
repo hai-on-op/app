@@ -9,18 +9,14 @@ import { Stats, type StatProps } from '~/components/Stats'
 
 export function BorrowStats() {
     const {
-        vaultModel: {
-            list,
-            liquidationData,
-        },
-    } = useStoreState(state => state)
-    const { popupsModel: popupsActions } = useStoreActions(actions => actions)
+        vaultModel: { list, liquidationData },
+    } = useStoreState((state) => state)
+    const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
 
     const stats: StatProps[] = useMemo(() => {
         const totalCollateralInUSD = list.reduce((total, { collateralName, collateral }) => {
-            const collateralPriceInUSD = liquidationData
-                ?.collateralLiquidationData[collateralName]
-                ?.currentPrice.value || '0'
+            const collateralPriceInUSD =
+                liquidationData?.collateralLiquidationData[collateralName]?.currentPrice.value || '0'
             return total + parseFloat(collateral) * parseFloat(collateralPriceInUSD)
         }, 0)
 
@@ -33,9 +29,9 @@ export function BorrowStats() {
             {
                 header: totalCollateralInUSD
                     ? formatNumberWithStyle(totalCollateralInUSD.toString(), {
-                        style: 'currency',
-                        maxDecimals: 0,
-                    })
+                          style: 'currency',
+                          maxDecimals: 0,
+                      })
                     : '--',
                 label: 'My Locked Collateral',
                 tooltip: 'Hello world',
@@ -43,9 +39,9 @@ export function BorrowStats() {
             {
                 header: totalDebtInUSD
                     ? formatNumberWithStyle(totalDebtInUSD.toString(), {
-                        style: 'currency',
-                        maxDecimals: 0,
-                    })
+                          style: 'currency',
+                          maxDecimals: 0,
+                      })
                     : '--',
                 label: 'My Total Debt',
                 tooltip: 'Hello World',
@@ -62,18 +58,11 @@ export function BorrowStats() {
             },
             {
                 header: '$7,000',
-                headerStatus: (
-                    <RewardsTokenPair
-                        tokens={['OP', 'KITE']}
-                        hideLabel
-                    />
-                ),
+                headerStatus: <RewardsTokenPair tokens={['OP', 'KITE']} hideLabel />,
                 label: 'My Vault Rewards',
                 tooltip: 'Hello World',
                 button: (
-                    <HaiButton
-                        $variant="yellowish"
-                        onClick={() => popupsActions.setIsClaimPopupOpen(true)}>
+                    <HaiButton $variant="yellowish" onClick={() => popupsActions.setIsClaimPopupOpen(true)}>
                         Claim
                     </HaiButton>
                 ),
@@ -83,10 +72,5 @@ export function BorrowStats() {
 
     if (!list.length) return null
 
-    return (
-        <Stats
-            stats={stats}
-            columns="repeat(4, 1fr) 1.6fr"
-        />
-    )
+    return <Stats stats={stats} columns="repeat(4, 1fr) 1.6fr" />
 }

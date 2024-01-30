@@ -13,7 +13,7 @@ import { VaultActions } from './VaultActions'
 import { ManageDropdown } from './ManageDropdown'
 
 type ManageVaultProps = {
-    headerContent?: ReactChildren,
+    headerContent?: ReactChildren
 }
 export function ManageVault({ headerContent }: ManageVaultProps) {
     const { updateForm, collateral } = useVault()
@@ -25,19 +25,18 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
         <Container>
             <Header>
                 <CenteredFlex $gap={12}>
-                    <ManageDropdown/>
-                    <RewardsTokenPair tokens={['OP']}/>
+                    <ManageDropdown />
+                    <RewardsTokenPair tokens={['OP']} />
                 </CenteredFlex>
                 <Text>
                     Market Price: ({collateral.name})&nbsp;
                     <strong>
                         {collateral.priceInUSD
                             ? formatNumberWithStyle(collateral.priceInUSD.toString(), {
-                                maxDecimals: 2,
-                                style: 'currency',
-                            })
-                            : '--'
-                        }
+                                  maxDecimals: 2,
+                                  style: 'currency',
+                              })
+                            : '--'}
                     </strong>
                 </Text>
                 {headerContent}
@@ -45,8 +44,8 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
             <Body>
                 <ProxyPrompt>
                     <BodyGrid>
-                        <Overview/>
-                        <VaultActions/>
+                        <Overview />
+                        <VaultActions />
                     </BodyGrid>
                 </ProxyPrompt>
             </Body>
@@ -59,7 +58,7 @@ const Container = styled(BlurContainer)`
     margin-bottom: 48px;
 `
 
-const Header = styled(Flex).attrs(props => ({
+const Header = styled(Flex).attrs((props) => ({
     $width: '100%',
     $justify: 'space-between',
     $align: 'center',
@@ -84,7 +83,7 @@ const Header = styled(Flex).attrs(props => ({
     z-index: 1;
 `
 
-const Body = styled(Flex).attrs(props => ({
+const Body = styled(Flex).attrs((props) => ({
     $width: '100%',
     $justify: 'space-between',
     $align: 'flex-start',

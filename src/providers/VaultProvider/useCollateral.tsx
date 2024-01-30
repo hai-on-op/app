@@ -8,21 +8,14 @@ import { useBalance } from '~/hooks'
 export function useCollateral(action: VaultAction): Collateral {
     const {
         vaultModel: {
-            vaultData: {
-                collateral,
-                leftInput,
-            },
+            vaultData: { collateral, leftInput },
             singleVault,
             liquidationData,
         },
-        connectWalletModel: {
-            tokensData,
-        },
-    } = useStoreState(state => state)
+        connectWalletModel: { tokensData },
+    } = useStoreState((state) => state)
 
-    const name = useMemo(() => (
-        singleVault?.collateralName || collateral
-    ), [singleVault, collateral])
+    const name = useMemo(() => singleVault?.collateralName || collateral, [singleVault, collateral])
 
     const total = useMemo(() => {
         if (!singleVault) return leftInput
@@ -39,8 +32,8 @@ export function useCollateral(action: VaultAction): Collateral {
 
     const available = useMemo(() => {
         if (
-            (action !== VaultAction.DEPOSIT_BORROW && action !== VaultAction.CREATE)
-            || (singleVault && !singleVault.collateralName)
+            (action !== VaultAction.DEPOSIT_BORROW && action !== VaultAction.CREATE) ||
+            (singleVault && !singleVault.collateralName)
         ) {
             return singleVault?.collateral || '0'
         }

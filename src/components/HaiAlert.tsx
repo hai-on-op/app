@@ -9,24 +9,26 @@ import { Elf } from './BrandElements/Elf'
 export function HaiAlert() {
     const isLargerThanSmall = useMediaQuery('upToSmall')
 
-    const { data: { marketPrice, redemptionPrice, priceDiff } } = useAnalytics()
+    const {
+        data: { marketPrice, redemptionPrice, priceDiff },
+    } = useAnalytics()
 
     return (
         <Container>
             <CenteredFlex $gap={24}>
                 <HaiIconContainer>
-                    <HaiFace filled/>
+                    <HaiFace filled />
                 </HaiIconContainer>
                 <Text>
                     <strong>$HAI ALERT</strong>
                     {` • `}
-                    {isLargerThanSmall ? `MARKET PRICE `: `MP `}
+                    {isLargerThanSmall ? `MARKET PRICE ` : `MP `}
                     <strong>{marketPrice.formatted}</strong>
                     {` • `}
-                    {isLargerThanSmall ? `REDEMPTION PRICE `: `RP `}
+                    {isLargerThanSmall ? `REDEMPTION PRICE ` : `RP `}
                     <strong>{redemptionPrice.formatted}</strong>
                     {` • `}
-                    {isLargerThanSmall ? `PRICE DIFFERENCE `: `DIFF. `}
+                    {isLargerThanSmall ? `PRICE DIFFERENCE ` : `DIFF. `}
                     <strong>{parseFloat(priceDiff.toFixed(2))}%</strong>
                 </Text>
             </CenteredFlex>
@@ -72,7 +74,7 @@ const popup = keyframes`
     0% { bottom: -80px; }
     100% { bottom: 0px; }
 `
-const Container = styled(Flex).attrs(props => ({
+const Container = styled(Flex).attrs((props) => ({
     $width: '100%',
     $justify: 'space-between',
     $align: 'center',
@@ -91,7 +93,7 @@ const Container = styled(Flex).attrs(props => ({
 
     z-index: 10;
 `
-const HaiIconContainer = styled(CenteredFlex).attrs(props => ({
+const HaiIconContainer = styled(CenteredFlex).attrs((props) => ({
     $shrink: 0,
     ...props,
 }))`

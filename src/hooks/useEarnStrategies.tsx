@@ -83,21 +83,17 @@ const dummyRows: Strategy[] = [
 export function useEarnStrategies() {
     const [filterEmpty, setFilterEmpty] = useState(false)
 
-    const [rows] = useState(() => dummyRows.map(obj => ({
-        ...obj,
-        tvl: Math.random() < 0.25
-            ? ''
-            : ((2 + 8 * Math.random()) * 1_000_000).toFixed(0),
-        vol24hr: Math.random() < 0.25
-            ? undefined
-            : ((1 + 10 * Math.random()) * 100_000).toFixed(0),
-        apy: 0.01 + 0.2 * Math.random(),
-        userPosition: Math.random() < 0.25
-            ? ''
-            : ((1 + 9 * Math.random()) * 100_000).toFixed(0),
-        userApy: 0.01 + 0.2 * Math.random(),
-    })))
-    
+    const [rows] = useState(() =>
+        dummyRows.map((obj) => ({
+            ...obj,
+            tvl: Math.random() < 0.25 ? '' : ((2 + 8 * Math.random()) * 1_000_000).toFixed(0),
+            vol24hr: Math.random() < 0.25 ? undefined : ((1 + 10 * Math.random()) * 100_000).toFixed(0),
+            apy: 0.01 + 0.2 * Math.random(),
+            userPosition: Math.random() < 0.25 ? '' : ((1 + 9 * Math.random()) * 100_000).toFixed(0),
+            userApy: 0.01 + 0.2 * Math.random(),
+        }))
+    )
+
     const filteredRows = useMemo(() => {
         if (!filterEmpty) return rows
 
@@ -110,22 +106,22 @@ export function useEarnStrategies() {
     })
 
     const sortedRows = useMemo(() => {
-        switch(sorting.key) {
+        switch (sorting.key) {
             case 'Asset Pair':
                 return arrayToSorted(filteredRows, {
-                    getProperty: row => row.pair[0],
+                    getProperty: (row) => row.pair[0],
                     dir: sorting.dir,
                     type: 'alphabetical',
                 })
             case 'Strategy':
                 return arrayToSorted(filteredRows, {
-                    getProperty: row => row.earnPlatform ? 'farm': 'borrow',
+                    getProperty: (row) => (row.earnPlatform ? 'farm' : 'borrow'),
                     dir: sorting.dir,
                     type: 'alphabetical',
                 })
             case 'TVL':
                 return arrayToSorted(filteredRows, {
-                    getProperty: row => row.tvl,
+                    getProperty: (row) => row.tvl,
                     dir: sorting.dir,
                     type: 'parseFloat',
                     checkValueExists: true,
@@ -139,7 +135,7 @@ export function useEarnStrategies() {
             //     })
             case 'Rewards APY':
                 return arrayToSorted(filteredRows, {
-                    getProperty: row => row.apy,
+                    getProperty: (row) => row.apy,
                     dir: sorting.dir,
                     type: 'numerical',
                 })
@@ -153,7 +149,7 @@ export function useEarnStrategies() {
             case 'My Position':
             default:
                 return arrayToSorted(filteredRows, {
-                    getProperty: row => row.userPosition,
+                    getProperty: (row) => row.userPosition,
                     dir: sorting.dir,
                     type: 'parseFloat',
                     checkValueExists: true,

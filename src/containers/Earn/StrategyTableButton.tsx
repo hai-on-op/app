@@ -11,11 +11,14 @@ import { ExternalLink } from '~/components/ExternalLink'
 import uniswapLogo from '~/assets/uniswap-icon.svg'
 import velodromeLogo from '~/assets/velodrome-img.svg'
 
-const platformMap: Record<string, {
-    logo?: string,
-    size?: number,
-    link: string
-}> = {
+const platformMap: Record<
+    string,
+    {
+        logo?: string
+        size?: number
+        link: string
+    }
+> = {
     uniswap: {
         logo: uniswapLogo,
         size: 28,
@@ -36,71 +39,40 @@ type Props = Pick<Strategy, 'earnPlatform'>
 export function StrategyTableButton({ earnPlatform }: Props) {
     const { logo, size, link } = platformMap[earnPlatform || 'hai']
 
-    if (!earnPlatform) return (
-        <InternalLink
-            href={link}
-            $textDecoration="none"
-            content={(
-                <Button
-                    earnPlatform={earnPlatform}
-                    logo={logo}
-                    size={size}
-                />
-            )}
-        />
-    )
+    if (!earnPlatform)
+        return (
+            <InternalLink
+                href={link}
+                $textDecoration="none"
+                content={<Button earnPlatform={earnPlatform} logo={logo} size={size} />}
+            />
+        )
 
     return (
-        <ExternalLink
-            href={link}
-            $textDecoration="none">
-            <Button
-                earnPlatform={earnPlatform}
-                logo={logo}
-                size={size}
-            />
+        <ExternalLink href={link} $textDecoration="none">
+            <Button earnPlatform={earnPlatform} logo={logo} size={size} />
         </ExternalLink>
     )
 }
 
 type ButtonProps = Props & {
-    size?: number,
-    logo?: string,
+    size?: number
+    logo?: string
 }
 function Button({ earnPlatform, size, logo }: ButtonProps) {
     return (
         <EarnButton>
             <CenteredFlex $gap={4}>
                 <Text>Earn</Text>
-                <HaiArrow
-                    size={15}
-                    direction="upRight"
-                />
+                <HaiArrow size={15} direction="upRight" />
             </CenteredFlex>
-            <Flex
-                $justify="flex-start"
-                $align="center"
-                $gap={earnPlatform === 'uniswap' ? 4: 12}>
-                {logo
-                    ? (
-                        <img
-                            src={logo}
-                            alt=""
-                            width={size}
-                            height={size}
-                        />
-                    )
-                    : (
-                        <HaiFace
-                            size={28}
-                            filled
-                            style={{ marginLeft: '-4px' }}
-                        />
-                    )
-                }
-                <Text $fontSize="0.9em">
-                    {(earnPlatform || 'HAI').toUpperCase()}
-                </Text>
+            <Flex $justify="flex-start" $align="center" $gap={earnPlatform === 'uniswap' ? 4 : 12}>
+                {logo ? (
+                    <img src={logo} alt="" width={size} height={size} />
+                ) : (
+                    <HaiFace size={28} filled style={{ marginLeft: '-4px' }} />
+                )}
+                <Text $fontSize="0.9em">{(earnPlatform || 'HAI').toUpperCase()}</Text>
             </Flex>
         </EarnButton>
     )
@@ -108,7 +80,7 @@ function Button({ earnPlatform, size, logo }: ButtonProps) {
 
 const EarnButton = styled(HaiButton)`
     height: 48px;
-    border: 2px solid rgba(0,0,0,0.1);
+    border: 2px solid rgba(0, 0, 0, 0.1);
     padding-left: 16px;
     padding-right: 6px;
     font-size: 0.8rem;

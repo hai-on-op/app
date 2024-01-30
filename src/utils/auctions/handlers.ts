@@ -14,13 +14,7 @@ export type IAuctionBuy = {
     auctionId: string
     title: string
 }
-export const handleAuctionBuy = async ({
-    signer,
-    haiAmount,
-    auctionId,
-    collateral,
-    collateralAmount,
-}: IAuctionBuy) => {
+export const handleAuctionBuy = async ({ signer, haiAmount, auctionId, collateral, collateralAmount }: IAuctionBuy) => {
     if (!signer || !auctionId || !haiAmount || !collateral || !collateralAmount) {
         return false
     }
@@ -95,12 +89,7 @@ export type IClaimInternalBalance = IAuctionBid & {
     token: 'COIN' | 'PROTOCOL_TOKEN'
 }
 
-export const handleClaimInternalBalance = async ({
-    signer,
-    type,
-    bid: amount,
-    token,
-}: IClaimInternalBalance) => {
+export const handleClaimInternalBalance = async ({ signer, type, bid: amount, token }: IClaimInternalBalance) => {
     if (!signer) {
         return false
     }

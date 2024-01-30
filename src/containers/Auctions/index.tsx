@@ -6,16 +6,13 @@ import { AuctionsList } from './AuctionsList'
 
 export function Auctions() {
     const geb = usePublicGeb()
-    
+
     const {
         auctionModel: { auctionsData },
-        connectWalletModel: {
-            proxyAddress,
-            tokensData,
-        },
-    } = useStoreState(state => state)
-    const { auctionModel: auctionsActions } = useStoreActions(actions => actions)
-    
+        connectWalletModel: { proxyAddress, tokensData },
+    } = useStoreState((state) => state)
+    const { auctionModel: auctionsActions } = useStoreActions((actions) => actions)
+
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState('')
 
@@ -26,19 +23,19 @@ export function Auctions() {
         const symbols = Object.values(tokensData || {})
             .filter(({ isCollateral }) => isCollateral)
             .map(({ symbol }) => symbol)
-        
+
         async function fetchAuctions() {
             setIsLoading(true)
             setError('')
             try {
                 await Promise.all([
-                    ...symbols.map(symbol => (
+                    ...symbols.map((symbol) =>
                         auctionsActions.fetchAuctions({
                             geb,
                             type: 'COLLATERAL',
                             tokenSymbol: symbol,
                         })
-                    )),
+                    ),
                     auctionsActions.fetchAuctions({
                         geb,
                         type: 'DEBT',
@@ -48,7 +45,7 @@ export function Auctions() {
                         type: 'SURPLUS',
                     }),
                 ])
-            } catch(error: any) {
+            } catch (error: any) {
                 console.error(error)
                 setError(error?.message || 'An error occurred')
                 // if (error instanceof SyntaxError && error.message.includes('failed')) {
@@ -67,10 +64,5 @@ export function Auctions() {
         auctionsActions.fetchAuctionsData({ geb, proxyAddress })
     }, [auctionsActions, geb, proxyAddress, auctionsData])
 
-    return (
-        <AuctionsList
-            isLoading={isLoading}
-            error={error}
-        />
-    )
+    return <AuctionsList isLoading={isLoading} error={error} />
 }

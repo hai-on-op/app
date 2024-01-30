@@ -30,24 +30,24 @@ const getLiquidationDataRpc = async (
         },
         currentRedemptionRate: {
             // Calculate 8h exponentiation of the redemption rate
-            annualizedRate: Math.pow(
-                Number(parseRay(liquidationData.redemptionRate)),
-                3600 * 24 * 365
-            ).toString(),
+            annualizedRate: Math.pow(Number(parseRay(liquidationData.redemptionRate)), 3600 * 24 * 365).toString(),
         },
         globalDebt: parseRad(liquidationData.globalDebt),
         globalDebtCeiling: parseRad(liquidationData.globalDebtCeiling),
         perSafeDebtCeiling: parseWad(liquidationData.safeDebtCeiling),
     }
 
-    const parsedLiquidationData = liquidationData.tokensLiquidationData.map((tokenLiquidationData) => (
+    const parsedLiquidationData = liquidationData.tokensLiquidationData.map((tokenLiquidationData) =>
         parseTokenLiquidationData(liquidationData.redemptionPrice, tokenLiquidationData)
-    ))
+    )
 
-    const collateralLiquidationData = Object.keys(tokensData).reduce((accumulator, key, index) => ({
-        ...accumulator,
-        [key]: parsedLiquidationData[index],
-    }), {})
+    const collateralLiquidationData = Object.keys(tokensData).reduce(
+        (accumulator, key, index) => ({
+            ...accumulator,
+            [key]: parsedLiquidationData[index],
+        }),
+        {}
+    )
 
     return {
         systemState,
@@ -55,10 +55,7 @@ const getLiquidationDataRpc = async (
     }
 }
 
-function parseTokenLiquidationData(
-    redemptionPrice: BigNumber,
-    tokenLiquidationData: TokenLiquidationData
-) {
+function parseTokenLiquidationData(redemptionPrice: BigNumber, tokenLiquidationData: TokenLiquidationData) {
     return {
         accumulatedRate: parseRay(tokenLiquidationData.accumulatedRate),
         currentPrice: {
@@ -99,9 +96,7 @@ const getUserVaultsRpc = async (config: UserListConfig): Promise<IUserVaultList>
 
     return {
         vaults,
-        erc20Balances: [
-            { balance: parseWad(userCoinBalance) },
-        ],
+        erc20Balances: [{ balance: parseWad(userCoinBalance) }],
         ...(await getLiquidationDataRpc(config.geb, config.tokensData)),
     }
 }

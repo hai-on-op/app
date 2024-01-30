@@ -17,15 +17,12 @@ export const useLoadMoreAuctions = ({ auctions }: Props) => {
     const {
         auctionModel: { loadingAuctionsData },
         connectWalletModel: { proxyAddress },
-    } = useStoreState(state => state)
-    const { auctionModel: auctionsActions } = useStoreActions(actions => actions)
-    
+    } = useStoreState((state) => state)
+    const { auctionModel: auctionsActions } = useStoreActions((actions) => actions)
+
     const [numberOfAuctions, setNumberOfAuctions] = useState(NUMBER_OF_AUCTIONS_TO_SHOW)
-    
-    const {
-        englishAuctionType: type,
-        tokenSymbol,
-    } = (auctions as any)?.[0] || {}
+
+    const { englishAuctionType: type, tokenSymbol } = (auctions as any)?.[0] || {}
 
     const hasAllAuctions = auctions?.filter((auction) => auction.auctionId === '1')[0]
     const hasMoreAuctions = auctions && auctions.length <= numberOfAuctions
@@ -86,9 +83,10 @@ export const useLoadMoreAuctions = ({ auctions }: Props) => {
         <BtnContainer>
             {(!dimmedWithArrow || !hasAllAuctions) && (
                 <ShowMoreButton
-                    $variant={dimmedWithArrow ? 'unblurred': undefined}
+                    $variant={dimmedWithArrow ? 'unblurred' : undefined}
                     disabled={!dimmedWithArrow}
-                    onClick={handleShowMoreAuctions}>
+                    onClick={handleShowMoreAuctions}
+                >
                     {showMoreText}
                 </ShowMoreButton>
             )}

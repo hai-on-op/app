@@ -5,14 +5,14 @@ import { HaiButton, Text } from '~/styles'
 import { CheckBox } from './CheckBox'
 
 type CheckboxButtonProps = {
-    checked: boolean,
-    toggle: () => void,
+    checked: boolean
+    toggle: () => void
     children: ReactChildren
 }
 export function CheckboxButton({ checked, toggle, children }: CheckboxButtonProps) {
     return (
         <Button onClick={toggle}>
-            <CheckBox checked={checked}/>
+            <CheckBox checked={checked} />
             <Text>{children}</Text>
         </Button>
     )

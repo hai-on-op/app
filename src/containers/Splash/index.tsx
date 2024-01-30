@@ -12,7 +12,7 @@ import { Fourth } from './Scenes/Fourth'
 import { Footer } from './Footer'
 
 export function Splash() {
-    const { settingsModel: settingsActions } = useStoreActions(actions => actions)
+    const { settingsModel: settingsActions } = useStoreActions((actions) => actions)
 
     const [container, setContainer] = useState<HTMLElement | null>(null)
     const [zoomContainer, setZoomContainer] = useState<HTMLElement | null>(null)
@@ -27,7 +27,7 @@ export function Splash() {
                 zoomContainer.style.pointerEvents = 'none'
                 return
             }
-            
+
             // container.style.pointerEvents = e.deltaY > 0 ? 'none': 'all'
             // allow scroll down to footer
             if (e.deltaY >= 0) return
@@ -56,9 +56,9 @@ export function Splash() {
         const scenes = Array.from(zoomContainer.querySelectorAll(ZoomScene)) as HTMLElement[]
         const onScroll = () => {
             zoomContainer.style.pointerEvents = 'none'
-            const progress = 300 * container.scrollTop / window.innerHeight
+            const progress = (300 * container.scrollTop) / window.innerHeight
             if (progress > 900) {
-                const offset = 50 * (progress - 900) / 300
+                const offset = (50 * (progress - 900)) / 300
                 zoomContainer.style.top = `${-offset}vh`
                 zoomContainer.style.bottom = `${offset}vh`
                 zoomContainer.style.pointerEvents = 'all'
@@ -74,9 +74,9 @@ export function Splash() {
                 scene.style.transform = `translateZ(${z}px)`
                 if (z < 190 && z > -240) scene.style.display = 'flex'
                 else scene.style.display = 'none'
-                const opacity = z < 0 ? Math.max(0, 1 - (-z / 240)).toString(): '1'
-                Array.from(scene.children).forEach(child => {
-                    (child as HTMLElement).style.opacity = opacity
+                const opacity = z < 0 ? Math.max(0, 1 - -z / 240).toString() : '1'
+                Array.from(scene.children).forEach((child) => {
+                    ;(child as HTMLElement).style.opacity = opacity
                 })
             })
             zoomContainer.style.pointerEvents = 'all'
@@ -93,21 +93,19 @@ export function Splash() {
     }, [container, zoomContainer, settingsActions])
 
     return (
-        <Container
-            id="zoom-scroll-container"
-            ref={setContainer}>
+        <Container id="zoom-scroll-container" ref={setContainer}>
             <ZoomContainer ref={setZoomContainer}>
-                <Intro zIndex={1000}/>
-                <Second zIndex={900}/>
-                <Third zIndex={800}/>
-                <Fourth zIndex={700}/>
+                <Intro zIndex={1000} />
+                <Second zIndex={900} />
+                <Third zIndex={800} />
+                <Fourth zIndex={700} />
             </ZoomContainer>
             {/* scroll targets for scroll snapping */}
-            <ScrollTarget/>
-            <ScrollTarget/>
-            <ScrollTarget/>
-            <ScrollTarget/>
-            <Footer/>
+            <ScrollTarget />
+            <ScrollTarget />
+            <ScrollTarget />
+            <ScrollTarget />
+            <Footer />
         </Container>
     )
 }

@@ -1,27 +1,19 @@
 import { useMemo } from 'react'
 import { useQuery } from '@apollo/client'
 
-import {
-    SAFE_QUERY,
-    type QueryConfiscateSAFECollateralAndDebt,
-    type QuerySafe,
-    formatQuerySafeToVault,
-} from '~/utils'
+import { SAFE_QUERY, type QueryConfiscateSAFECollateralAndDebt, type QuerySafe, formatQuerySafeToVault } from '~/utils'
 import { useStoreState } from '~/store'
 
 export function useVaultById(id: string) {
-    const { vaultModel: vaultState } = useStoreState(state => state)
+    const { vaultModel: vaultState } = useStoreState((state) => state)
 
     const { data, loading, error } = useQuery<{
-        safes: QuerySafe[],
+        safes: QuerySafe[]
         confiscateSAFECollateralAndDebts: QueryConfiscateSAFECollateralAndDebt[]
-    }>(
-        SAFE_QUERY,
-        {
-            variables: { id },
-            skip: !id,
-        }
-    )
+    }>(SAFE_QUERY, {
+        variables: { id },
+        skip: !id,
+    })
 
     const vault = useMemo(() => {
         if (!data?.safes[0] || !vaultState.liquidationData) return undefined

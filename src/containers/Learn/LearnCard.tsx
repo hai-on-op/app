@@ -7,49 +7,43 @@ import { BrandedTitle } from '~/components/BrandedTitle'
 import { HaiArrow } from '~/components/Icons/HaiArrow'
 
 type LearnCardProps = {
-    title: string,
-    description?: string,
-    link: string,
-    titleColorOffset?: number,
+    title: string
+    description?: string
+    link: string
+    titleColorOffset?: number
 }
 export function LearnCard({ title, description, link, titleColorOffset }: LearnCardProps) {
     const isLargerThanExtraSmall = useMediaQuery('upToExtraSmall')
 
     return (
         <Container>
-            <Flex
-                $column
-                $gap={24}>
+            <Flex $column $gap={24}>
                 <BrandedTitle
                     textContent={title}
-                    $fontSize={isLargerThanExtraSmall ? '2.2rem': '1.9rem'}
+                    $fontSize={isLargerThanExtraSmall ? '2.2rem' : '1.9rem'}
                     $letterSpacing="0.2rem"
                     $lineHeight="1.4"
                     colorOffset={titleColorOffset}
                 />
                 {!!description && <Text>{description}</Text>}
             </Flex>
-            <ExternalLink
-                href={link}
-                $textDecoration="none">
+            <ExternalLink href={link} $textDecoration="none">
                 <CenteredFlex $gap={12}>
                     <Text
-                        $fontSize={isLargerThanExtraSmall ? '1.2rem': '1rem'}
+                        $fontSize={isLargerThanExtraSmall ? '1.2rem' : '1rem'}
                         $fontWeight={700}
-                        $letterSpacing="0.35rem">
+                        $letterSpacing="0.35rem"
+                    >
                         LEARN MORE
                     </Text>
-                    <HaiArrow
-                        direction="right"
-                        strokeWidth={2.5}
-                    />
+                    <HaiArrow direction="right" strokeWidth={2.5} />
                 </CenteredFlex>
             </ExternalLink>
         </Container>
     )
 }
 
-const Container = styled(Flex).attrs(props => ({
+const Container = styled(Flex).attrs((props) => ({
     $column: true,
     $justify: 'space-between',
     $align: 'flex-start',

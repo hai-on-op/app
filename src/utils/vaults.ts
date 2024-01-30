@@ -6,18 +6,14 @@ import type { CollateralLiquidationData, ILiquidationData, IVault, IVaultData } 
 import { Status } from './constants'
 import { formatNumber, toFixedString } from './formatting'
 import { returnTotalValue } from './math'
-import {
-    QueryConfiscateSAFECollateralAndDebt,
-    QueryModifySAFECollateralization,
-    type QuerySafe,
-} from './graphql'
+import { QueryConfiscateSAFECollateralAndDebt, QueryModifySAFECollateralization, type QuerySafe } from './graphql'
 import { tokenAssets } from './tokens'
 
 export enum VaultAction {
     DEPOSIT_BORROW,
     WITHDRAW_REPAY,
     CREATE,
-    INFO
+    INFO,
 }
 
 export enum VaultInfoError {
@@ -33,7 +29,7 @@ export enum VaultInfoError {
     GLOBAL_DEBT_CEILING,
     HAI_DEBT_CEILING,
     INDIVIDUAL_DEBT_CEILING,
-    MINIMUM_MINT
+    MINIMUM_MINT,
 }
 export const vaultInfoErrors: Record<number, string> = {
     [VaultInfoError.NO_WALLET]: `Connect a valid wallet to continue`,
@@ -65,16 +61,15 @@ export const formatUserVault = (
 ): Array<IVault> => {
     const collateralBytes32: Record<string, string> = Object.values(tokensData)
         .filter((token) => token.isCollateral)
-        .reduce((accum, token) => ({
-            ...accum,
-            [token.bytes32String]: token.symbol,
-        }), {})
+        .reduce(
+            (accum, token) => ({
+                ...accum,
+                [token.bytes32String]: token.symbol,
+            }),
+            {}
+        )
 
-    const {
-        currentRedemptionPrice,
-        currentRedemptionRate,
-        collateralLiquidationData,
-    } = liquidationData
+    const { currentRedemptionPrice, currentRedemptionRate, collateralLiquidationData } = liquidationData
 
     return vaults
         .filter((s) => s.collateralType in collateralBytes32)
@@ -89,17 +84,9 @@ export const formatUserVault = (
                 totalAnnualizedStabilityFee,
             } = collateralLiquidationData[token] || {}
 
-            const availableDebt = returnAvaiableDebt(
-                currentPrice?.safetyPrice,
-                '0',
-                s.collateral,
-                s.debt
-            )
+            const availableDebt = returnAvaiableDebt(currentPrice?.safetyPrice, '0', s.collateral, s.debt)
 
-            const totalDebt = returnTotalValue(
-                returnTotalDebt(s.debt, accumulatedRate) as string,
-                '0'
-            ).toString()
+            const totalDebt = returnTotalValue(returnTotalDebt(s.debt, accumulatedRate) as string, '0').toString()
 
             const liquidationPrice = getLiquidationPrice(
                 s.collateral,
@@ -138,10 +125,7 @@ export const formatUserVault = (
                 currentRedemptionRate: currentRedemptionRate || '0',
             } as IVault
         })
-        .sort((a, b) => (
-            Number(b.riskState) - Number(a.riskState)
-            || Number(b.debt) - Number(a.debt)
-        ))
+        .sort((a, b) => Number(b.riskState) - Number(a.riskState) || Number(b.debt) - Number(a.debt))
 }
 
 export const getCollateralRatio = (
@@ -157,9 +141,7 @@ export const getCollateralRatio = (
     }
     const denominator = numeral(totalDebt).value()
 
-    const numerator = numeral(totalCollateral)
-        .multiply(liquidationPrice)
-        .multiply(liquidationCRatio)
+    const numerator = numeral(totalCollateral).multiply(liquidationPrice).multiply(liquidationCRatio)
 
     const value = numerator.divide(denominator).multiply(100)
 
@@ -199,7 +181,7 @@ export enum RiskState {
     LOW,
     MEDIUM,
     HIGH,
-    LIQUIDATION
+    LIQUIDATION,
 }
 export const ratioChecker = (currentLiquitdationRatio: number, minLiquidationRatio: number) => {
     const minLiquidationRatioPercent = minLiquidationRatio * 100
@@ -299,20 +281,15 @@ export const returnState = (state: number) => {
 }
 
 export type QueriedVault = QuerySafe & {
-    totalDebt: string,
-    collateralToken: string,
-    collateralRatio: string,
-    status: Status,
-    liquidationData: CollateralLiquidationData,
-    liquidationPrice: string,
-    activity: (
-        {
-            type?: 'confiscate' | 'modify'
-        } & (
-            QueryConfiscateSAFECollateralAndDebt
-            | QueryModifySAFECollateralization
-        )
-    )[]
+    totalDebt: string
+    collateralToken: string
+    collateralRatio: string
+    status: Status
+    liquidationData: CollateralLiquidationData
+    liquidationPrice: string
+    activity: ({
+        type?: 'confiscate' | 'modify'
+    } & (QueryConfiscateSAFECollateralAndDebt | QueryModifySAFECollateralization))[]
 }
 export const formatQuerySafeToVault = (
     safe: QuerySafe,
@@ -320,28 +297,23 @@ export const formatQuerySafeToVault = (
     currentRedemptionPrice: string,
     confiscateSAFECollateralAndDebts: QueryConfiscateSAFECollateralAndDebt[] = []
 ): QueriedVault => {
-    const collateralToken = Object.values(tokenAssets).find(({ name, symbol }) => (
-        safe.collateralType.id === name || safe.collateralType.id === symbol
-    ))?.symbol || safe.collateralType.id.toUpperCase()
+    const collateralToken =
+        Object.values(tokenAssets).find(
+            ({ name, symbol }) => safe.collateralType.id === name || safe.collateralType.id === symbol
+        )?.symbol || safe.collateralType.id.toUpperCase()
 
-    const totalDebt = returnTotalDebt(
-        safe.debt,
-        collateralLiquidationData[collateralToken].accumulatedRate
-    ) as string
-    const collateralRatio = !safe.debt || safe.debt === '0'
-        ? Infinity.toString()
-        : getCollateralRatio(
-            safe.collateral,
-            totalDebt,
-            safe.collateralType.currentPrice.liquidationPrice,
-            safe.collateralType.liquidationCRatio
-        )
-    const status = riskStateToStatus[
-        ratioChecker(
-            parseFloat(collateralRatio),
-            parseFloat(safe.collateralType.safetyCRatio)
-        )
-    ]
+    const totalDebt = returnTotalDebt(safe.debt, collateralLiquidationData[collateralToken].accumulatedRate) as string
+    const collateralRatio =
+        !safe.debt || safe.debt === '0'
+            ? Infinity.toString()
+            : getCollateralRatio(
+                  safe.collateral,
+                  totalDebt,
+                  safe.collateralType.currentPrice.liquidationPrice,
+                  safe.collateralType.liquidationCRatio
+              )
+    const status =
+        riskStateToStatus[ratioChecker(parseFloat(collateralRatio), parseFloat(safe.collateralType.safetyCRatio))]
     const liquidationPrice = getLiquidationPrice(
         safe.collateral,
         totalDebt,
@@ -358,9 +330,7 @@ export const formatQuerySafeToVault = (
         liquidationPrice,
         activity: [
             ...(safe.modifySAFECollateralization || []),
-            ...confiscateSAFECollateralAndDebts.map(obj => ({ ...obj, type: 'confiscate' })),
-        ].sort(({ createdAt: a }, { createdAt: b }) => (
-            parseInt(b) - parseInt(a)
-        )) as any,
+            ...confiscateSAFECollateralAndDebts.map((obj) => ({ ...obj, type: 'confiscate' })),
+        ].sort(({ createdAt: a }, { createdAt: b }) => parseInt(b) - parseInt(a)) as any,
     }
 }

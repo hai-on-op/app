@@ -20,7 +20,7 @@ export const NETWORK_ID = parseInt(VITE_NETWORK_ID ?? '11155420')
 export const DEFAULT_NETWORK_ID = 11155420
 
 export const getNetworkName = (chainId: ChainId | number) => {
-    switch(chainId) {
+    switch (chainId) {
         case ChainId.MAINNET:
             return 'mainnet'
         case ChainId.OPTIMISM_GOERLI:
@@ -54,7 +54,7 @@ export const MEDIA_WIDTHS = {
 export const mediaWidthTemplates: {
     [width in keyof typeof MEDIA_WIDTHS]: typeof css
 } = Object.keys(MEDIA_WIDTHS).reduce((accumulator, size) => {
-    (accumulator as any)[size] = (a: any, b: any, c: any) => css`
+    ;(accumulator as any)[size] = (a: any, b: any, c: any) => css`
         @media (max-width: ${(MEDIA_WIDTHS as any)[size]}px) {
             ${css(a, b, c)}
         }
@@ -74,14 +74,14 @@ export enum Status {
     NEUTRAL = 'NEUTRAL',
     OKAY = 'OKAY',
     UNKNOWN = 'UNKNOWN',
-    CUSTOM = 'CUSTOM'
+    CUSTOM = 'CUSTOM',
 }
 
 export enum ActionState {
     NONE = '',
     LOADING = 'loading',
     SUCCESS = 'success',
-    ERROR = 'error'
+    ERROR = 'error',
 }
 
 export const floatsTypes = {
@@ -90,7 +90,7 @@ export const floatsTypes = {
     RAD: 45,
 }
 
-export const network_name = VITE_NETWORK_ID === '1' ? 'mainnet': 'optimism-sepolia'
+export const network_name = VITE_NETWORK_ID === '1' ? 'mainnet' : 'optimism-sepolia'
 
 export const LINK_TO_DOCS = 'https://docs.letsgethai.com/'
 export const LINK_TO_TWITTER = 'https://twitter.com/@letsgethai'

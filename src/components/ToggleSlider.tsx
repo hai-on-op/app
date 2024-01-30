@@ -4,8 +4,8 @@ import styled from 'styled-components'
 import { CenteredFlex, Grid } from '~/styles'
 
 type ToggleSliderProps = {
-    selectedIndex: number,
-    setSelectedIndex: (index: number) => void,
+    selectedIndex: number
+    setSelectedIndex: (index: number) => void
     children: ReactNode[]
 }
 
@@ -14,12 +14,10 @@ export function ToggleSlider({ selectedIndex, setSelectedIndex, children }: Togg
         <Container $columns={`repeat(${children.length}, 1fr)`}>
             <Indicator
                 $width={`${(100 / children.length).toFixed(2)}%`}
-                $left={`${(100 * selectedIndex / children.length).toFixed(2)}%`}
+                $left={`${((100 * selectedIndex) / children.length).toFixed(2)}%`}
             />
             {children.map((child, i) => (
-                <Wrapper
-                    key={i}
-                    onClick={() => setSelectedIndex(i)}>
+                <Wrapper key={i} onClick={() => setSelectedIndex(i)}>
                     {child}
                 </Wrapper>
             ))}
@@ -43,7 +41,7 @@ const Wrapper = styled(CenteredFlex)`
     z-index: 1;
 `
 
-const Indicator = styled.div<{ $width: string, $left: string }>`
+const Indicator = styled.div<{ $width: string; $left: string }>`
     position: absolute;
     z-index: 0;
     top: 0px;

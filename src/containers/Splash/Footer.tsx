@@ -16,25 +16,17 @@ export function Footer() {
         <Container as="footer">
             <Inner>
                 <Description>
-                    <Logo
-                        src={haiLogo}
-                        width={701}
-                        height={264}
-                        alt="HAI"
-                    />
-                    <Text
-                        $fontSize="0.8em"
-                        $fontWeight={700}>
-                        HAI is a multi-collateral, over-collateralized CDP-minted stablecoin, using a PID controller to induce stability.
+                    <Logo src={haiLogo} width={701} height={264} alt="HAI" />
+                    <Text $fontSize="0.8em" $fontWeight={700}>
+                        HAI is a multi-collateral, over-collateralized CDP-minted stablecoin, using a PID controller to
+                        induce stability.
                     </Text>
                     <Text $fontSize="0.8em">
                         {`HAI adopts a mechanism familiar to stablecoin protocols; it is minted from over-collateralized debt positions (CDPs). In essence, every HAI token in circulation corresponds to a greater amount of collateral locked by individual protocol users, also known as minters. These minters can generate or annihilate HAI, depending on their collateral's value. This approach aligns with systems employed by other cryptocurrencies like DAI, RAI, and many others.`}
                     </Text>
                 </Description>
                 <LinksContainer>
-                    <Grid
-                        $columns="1fr min-content"
-                        $gap={12}>
+                    <Grid $columns="1fr min-content" $gap={12}>
                         {/* <Flex
                             $column
                             $gap={12}>
@@ -50,41 +42,27 @@ export function Footer() {
                                 Terms
                             </InternalLink>
                         </Flex> */}
-                        <Flex
-                            $column
-                            $gap={12}>
+                        <Flex $column $gap={12}>
                             <Text $fontWeight={700}>Resources</Text>
-                            <ExternalLink
-                                href={LINK_TO_DOCS}
-                                $textDecoration="none">
+                            <ExternalLink href={LINK_TO_DOCS} $textDecoration="none">
                                 Docs
                             </ExternalLink>
                         </Flex>
                         <IconContainer>
-                            <ExternalLink
-                                href={LINK_TO_TWITTER}
-                                $textDecoration="none">
-                                <Twitter size={28}/>
+                            <ExternalLink href={LINK_TO_TWITTER} $textDecoration="none">
+                                <Twitter size={28} />
                             </ExternalLink>
-                            <ExternalLink
-                                href={LINK_TO_TELEGRAM}
-                                $textDecoration="none">
-                                <Telegram size={32}/>
+                            <ExternalLink href={LINK_TO_TELEGRAM} $textDecoration="none">
+                                <Telegram size={32} />
                             </ExternalLink>
-                            <ExternalLink
-                                href={LINK_TO_DISCORD}
-                                $textDecoration="none">
-                                <Discord size={32}/>
+                            <ExternalLink href={LINK_TO_DISCORD} $textDecoration="none">
+                                <Discord size={32} />
                             </ExternalLink>
                         </IconContainer>
                     </Grid>
                 </LinksContainer>
                 <ElfContainer $shrink={0}>
-                    <Elf
-                        variant={5}
-                        width="100%"
-                        animated
-                    />
+                    <Elf variant={5} width="100%" animated />
                 </ElfContainer>
             </Inner>
             <Bottom>© 2024 HAI</Bottom>
@@ -92,7 +70,7 @@ export function Footer() {
     )
 }
 
-const Container = styled(Flex).attrs(props => ({
+const Container = styled(Flex).attrs((props) => ({
     $width: '100%',
     $column: true,
     $justify: 'stretch',
@@ -109,7 +87,7 @@ const Container = styled(Flex).attrs(props => ({
     z-index: 3;
 `
 
-const Inner = styled(Flex).attrs(props => ({
+const Inner = styled(Flex).attrs((props) => ({
     $width: '100%',
     $justify: 'space-between',
     $align: 'flex-start',
@@ -128,7 +106,7 @@ const Inner = styled(Flex).attrs(props => ({
         gap: 24px;
     `}
 `
-const Description = styled(Grid).attrs(props => ({
+const Description = styled(Grid).attrs((props) => ({
     $columns: '1fr',
     $align: 'flex-start',
     $gap: 24,
@@ -162,7 +140,7 @@ const Logo = styled.img`
     `}
 `
 
-const LinksContainer = styled(Flex).attrs(props => ({
+const LinksContainer = styled(Flex).attrs((props) => ({
     $width: '100%',
     $column: true,
     $justify: 'space-between',
@@ -171,7 +149,7 @@ const LinksContainer = styled(Flex).attrs(props => ({
     ...props,
 }))`
     max-width: min(calc(100vw - 48px), 400px);
-    
+
     ${({ theme }) => theme.mediaWidth.upToSmall`
         max-width: 100%;
         gap: 24px;
@@ -181,7 +159,7 @@ const LinksContainer = styled(Flex).attrs(props => ({
         }
     `}
 `
-const IconContainer = styled(Flex).attrs(props => ({
+const IconContainer = styled(Flex).attrs((props) => ({
     $justify: 'center',
     $align: 'flex-start',
     $gap: 24,
@@ -216,7 +194,7 @@ const ElfContainer = styled(CenteredFlex)`
     `}
 `
 
-const Bottom = styled(Flex).attrs(props => ({
+const Bottom = styled(Flex).attrs((props) => ({
     $width: '100%',
     $justify: 'flex-start',
     $align: 'center',

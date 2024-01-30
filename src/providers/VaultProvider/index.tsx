@@ -1,13 +1,4 @@
-import {
-    type Dispatch,
-    createContext,
-    useCallback,
-    useContext,
-    useEffect,
-    useMemo,
-    useReducer,
-    useRef,
-} from 'react'
+import { type Dispatch, createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef } from 'react'
 import { useHistory } from 'react-router-dom'
 
 import type { Collateral, Debt, FormState, IVault, ReactChildren, SetState } from '~/types'
@@ -31,34 +22,36 @@ import { type Simulation, useSimulation } from './useSimulation'
 import { type Summary, useSummary, DEFAULT_SUMMARY } from './useSummary'
 import { useVaultError } from './useVaultError'
 
-type SetActiveVaultProps = {
-    create: true,
-    collateralName: string,
-    vault?: undefined
-} | {
-    create?: false,
-    collateralName?: undefined,
-    vault: IVault
-}
+type SetActiveVaultProps =
+    | {
+          create: true
+          collateralName: string
+          vault?: undefined
+      }
+    | {
+          create?: false
+          collateralName?: undefined
+          vault: IVault
+      }
 
 type VaultContext = {
-    vault?: IVault,
-    setActiveVault: (props: SetActiveVaultProps) => void,
-    action: VaultAction,
-    setAction: SetState<VaultAction>,
-    formState: FormState,
-    updateForm: Dispatch<Partial<FormState> | 'clear'>,
-    collateral: Collateral,
-    debt: Debt,
-    simulation?: Simulation,
-    safetyRatio?: number,
-    collateralRatio: string,
-    liquidationPrice: string,
-    riskStatus: Status,
-    isSafe: boolean,
-    liquidationPenaltyPercentage: number,
-    summary: Summary,
-    error?: VaultInfoError,
+    vault?: IVault
+    setActiveVault: (props: SetActiveVaultProps) => void
+    action: VaultAction
+    setAction: SetState<VaultAction>
+    formState: FormState
+    updateForm: Dispatch<Partial<FormState> | 'clear'>
+    collateral: Collateral
+    debt: Debt
+    simulation?: Simulation
+    safetyRatio?: number
+    collateralRatio: string
+    liquidationPrice: string
+    riskStatus: Status
+    isSafe: boolean
+    liquidationPenaltyPercentage: number
+    summary: Summary
+    error?: VaultInfoError
     errorMessage?: string
 }
 
@@ -101,44 +94,37 @@ const VaultContext = createContext<VaultContext>(defaultState)
 export const useVault = () => useContext(VaultContext)
 
 type Props = {
-    action: VaultContext['action'],
-    setAction: VaultContext['setAction'],
+    action: VaultContext['action']
+    setAction: VaultContext['setAction']
     children: ReactChildren
 }
 export function VaultProvider({ action, setAction, children }: Props) {
     const history = useHistory()
 
-    const {
-        liquidationData,
-        vaultData,
-        singleVault,
-    } = useStoreState(({ vaultModel }) => vaultModel)
-    const { vaultModel: vaultActions } = useStoreActions(actions => actions)
+    const { liquidationData, vaultData, singleVault } = useStoreState(({ vaultModel }) => vaultModel)
+    const { vaultModel: vaultActions } = useStoreActions((actions) => actions)
 
     const dataRef = useRef(vaultData)
     dataRef.current = vaultData
 
-    const setActiveVault: VaultContext['setActiveVault'] = useCallback(({
-        create,
-        collateralName,
-        vault,
-    }: SetActiveVaultProps) => {
-        // vaultActions.setVaultData({
-        //     ...DEFAULT_VAULT_DATA,
-        //     collateral: collateralName || vault?.collateralName || 'WETH',
-        // })
-        // vaultActions.setSingleVault(create ? undefined: vault)
-        // setAction(create ? VaultAction.CREATE: VaultAction.DEPOSIT_BORROW)
-        history.push(create
-            ? `/vaults/open?collateral=${collateralName || 'WETH'}`
-            : `/vaults/manage${vault?.id ? `?id=${vault.id}`: ''}`
-        )
-    }, [history.push])
+    const setActiveVault: VaultContext['setActiveVault'] = useCallback(
+        ({ create, collateralName, vault }: SetActiveVaultProps) => {
+            // vaultActions.setVaultData({
+            //     ...DEFAULT_VAULT_DATA,
+            //     collateral: collateralName || vault?.collateralName || 'WETH',
+            // })
+            // vaultActions.setSingleVault(create ? undefined: vault)
+            // setAction(create ? VaultAction.CREATE: VaultAction.DEPOSIT_BORROW)
+            history.push(
+                create
+                    ? `/vaults/open?collateral=${collateralName || 'WETH'}`
+                    : `/vaults/manage${vault?.id ? `?id=${vault.id}` : ''}`
+            )
+        },
+        [history.push]
+    )
 
-    const [formState, updateForm] = useReducer((
-        previous: FormState,
-        update: Partial<FormState> | 'clear'
-    ) => {
+    const [formState, updateForm] = useReducer((previous: FormState, update: Partial<FormState> | 'clear') => {
         if (update === 'clear') return {}
 
         return {
@@ -155,8 +141,7 @@ export function VaultProvider({ action, setAction, children }: Props) {
         if (action === VaultAction.DEPOSIT_BORROW || action === VaultAction.CREATE) {
             inputs.leftInput = formState.deposit?.toString() || ''
             inputs.rightInput = formState.borrow?.toString() || ''
-        }
-        else if (action === VaultAction.WITHDRAW_REPAY) {
+        } else if (action === VaultAction.WITHDRAW_REPAY) {
             inputs.leftInput = formState.withdraw?.toString() || ''
             inputs.rightInput = formState.repay?.toString() || ''
         }
@@ -178,14 +163,11 @@ export function VaultProvider({ action, setAction, children }: Props) {
     const debt = useDebt(action, collateral.liquidationData)
 
     const liquidationPrice = useMemo(() => {
-        if (
-            !liquidationData?.currentRedemptionPrice
-            || !collateral.liquidationData?.liquidationCRatio
-        ) return ''
+        if (!liquidationData?.currentRedemptionPrice || !collateral.liquidationData?.liquidationCRatio) return ''
 
         return getLiquidationPrice(
             collateral.total || '0',
-            debt.total || '0', 
+            debt.total || '0',
             collateral.liquidationData.liquidationCRatio,
             liquidationData.currentRedemptionPrice
         ).toString()
@@ -207,16 +189,12 @@ export function VaultProvider({ action, setAction, children }: Props) {
 
     const { safetyRatio, riskStatus } = useMemo(() => {
         const { safetyCRatio } = collateral.liquidationData || {}
-        const cr = parseFloat(
-            (singleVault?.collateralRatio || collateralRatio).toString()
-        )
+        const cr = parseFloat((singleVault?.collateralRatio || collateralRatio).toString())
         const state = ratioChecker(cr, Number(safetyCRatio))
         const status = riskStateToStatus[state] || Status.UNKNOWN
-        
+
         return {
-            safetyRatio: safetyCRatio
-                ? 100 * parseFloat(safetyCRatio.toString())
-                : undefined,
+            safetyRatio: safetyCRatio ? 100 * parseFloat(safetyCRatio.toString()) : undefined,
             riskStatus: status,
         }
     }, [collateral.liquidationData, singleVault, collateralRatio])
@@ -270,28 +248,28 @@ export function VaultProvider({ action, setAction, children }: Props) {
     }, [collateral.total, debt.total, collateralRatio, liquidationPrice])
 
     return (
-        <VaultContext.Provider value={{
-            vault: singleVault,
-            setActiveVault,
-            action,
-            setAction,
-            formState,
-            updateForm,
-            collateral,
-            debt,
-            simulation,
-            safetyRatio,
-            collateralRatio,
-            liquidationPrice,
-            riskStatus,
-            isSafe,
-            liquidationPenaltyPercentage,
-            summary,
-            error,
-            errorMessage: error
-                ? errorMessage || vaultInfoErrors[error] || undefined
-                : undefined,
-        }}>
+        <VaultContext.Provider
+            value={{
+                vault: singleVault,
+                setActiveVault,
+                action,
+                setAction,
+                formState,
+                updateForm,
+                collateral,
+                debt,
+                simulation,
+                safetyRatio,
+                collateralRatio,
+                liquidationPrice,
+                riskStatus,
+                isSafe,
+                liquidationPenaltyPercentage,
+                summary,
+                error,
+                errorMessage: error ? errorMessage || vaultInfoErrors[error] || undefined : undefined,
+            }}
+        >
             {children}
         </VaultContext.Provider>
     )

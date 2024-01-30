@@ -26,9 +26,7 @@ export interface SettingsModel {
 }
 
 export const settingsModel: SettingsModel = {
-    isLightTheme: isLight
-        ? JSON.parse(isLight)
-        : true,
+    isLightTheme: isLight ? JSON.parse(isLight) : true,
     setIsLightTheme: action((state, payload) => {
         state.isLightTheme = payload
         localStorage.setItem('isLight', JSON.stringify(payload))

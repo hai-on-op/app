@@ -19,10 +19,7 @@ ReactDOM.render(
     <React.StrictMode>
         <HaiThemeProvider>
             <WagmiConfig config={wagmiConfig}>
-                <RainbowKitProvider
-                    avatar={CustomAvatar}
-                    theme={haiTheme}
-                    chains={chains}>
+                <RainbowKitProvider avatar={CustomAvatar} theme={haiTheme} chains={chains}>
                     <HelmetProvider>
                         <BrowserRouter>
                             <StoreProvider store={store}>

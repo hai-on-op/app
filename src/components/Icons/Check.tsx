@@ -13,8 +13,9 @@ export function Check({ size = 20, ...props }: IconProps) {
             strokeWidth="1"
             strokeLinecap="round"
             strokeLinejoin="round"
-            {...props}>
-            <path d="m 4,10 4,4 8,-8"/>
+            {...props}
+        >
+            <path d="m 4,10 4,4 8,-8" />
         </svg>
     )
 }

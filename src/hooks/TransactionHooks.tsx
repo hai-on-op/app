@@ -13,9 +13,9 @@ type TransactionAdder = (
     response: TransactionResponse,
     summary?: string,
     approval?: {
-        tokenAddress: string,
-        spender: string,
-    },
+        tokenAddress: string
+        spender: string
+    }
 ) => void
 
 // adding transaction to store
@@ -24,44 +24,45 @@ export function useTransactionAdder(): TransactionAdder {
     const { address: account } = useAccount()
     const { transactionsModel: transactionsDispatch } = useStoreDispatch()
 
-    return useCallback((
-        response: TransactionResponse,
-        summary?: string,
-        approval?: {
-            tokenAddress: string,
-            spender: string,
-        }
-    ) => {
-        if (!account) return
-        if (!chain?.id) return
+    return useCallback(
+        (
+            response: TransactionResponse,
+            summary?: string,
+            approval?: {
+                tokenAddress: string
+                spender: string
+            }
+        ) => {
+            if (!account) return
+            if (!chain?.id) return
 
-        if (!response.hash) {
-            throw Error('No transaction hash found.')
-        }
+            if (!response.hash) {
+                throw Error('No transaction hash found.')
+            }
 
-        const tx: ITransaction = {
-            chainId: chain.id,
-            hash: response.hash,
-            from: account,
-            summary,
-            addedTime: new Date().getTime(),
-            originalTx: response,
-            approval,
-        }
+            const tx: ITransaction = {
+                chainId: chain.id,
+                hash: response.hash,
+                from: account,
+                summary,
+                addedTime: new Date().getTime(),
+                originalTx: response,
+                approval,
+            }
 
-        transactionsDispatch.addTransaction(tx)
-    }, [chain?.id, account, transactionsDispatch])
+            transactionsDispatch.addTransaction(tx)
+        },
+        [chain?.id, account, transactionsDispatch]
+    )
 }
 
 // add 20%
 export function calculateGasMargin(value: BigNumber): BigNumber {
-    return value
-        .mul(BigNumber.from(10_000 + 2_000))
-        .div(BigNumber.from(10_000))
+    return value.mul(BigNumber.from(10_000 + 2_000)).div(BigNumber.from(10_000))
 }
 
 export function isTransactionRecent(tx: ITransaction): boolean {
-    return (new Date().getTime() - tx.addedTime) < 86_400_000
+    return new Date().getTime() - tx.addedTime < 86_400_000
 }
 
 export function useIsTransactionPending(transactionHash?: string): boolean {
@@ -149,15 +150,12 @@ export function useHasPendingTransactions() {
 
     const sortedRecentTransactions = useMemo(() => {
         const txs = Object.values(allTransactions)
-        return txs
-            .filter(isTransactionRecent)
-            .sort(newTransactionsFirst)
+        return txs.filter(isTransactionRecent).sort(newTransactionsFirst)
     }, [allTransactions])
 
     return useMemo(() => {
-        const pending = sortedRecentTransactions
-            .filter((tx) => !tx.receipt)
-            // .map((tx) => tx.hash)
+        const pending = sortedRecentTransactions.filter((tx) => !tx.receipt)
+        // .map((tx) => tx.hash)
         return !!pending.length
     }, [sortedRecentTransactions])
 }

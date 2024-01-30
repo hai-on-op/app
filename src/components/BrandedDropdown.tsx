@@ -8,11 +8,12 @@ import { CenteredFlex, Flex, HaiButton, type HaiButtonProps, Popout } from '~/st
 import { Caret } from './Icons/Caret'
 
 type ButtonProps = Omit<HTMLProps<HTMLButtonElement>, 'ref' | 'as' | 'type' | 'label' | 'children'>
-type BrandedDropdownProps = ButtonProps & HaiButtonProps & {
-    width?: string,
-    label: ReactChildren,
-    children: ReactChildren,
-}
+type BrandedDropdownProps = ButtonProps &
+    HaiButtonProps & {
+        width?: string
+        label: ReactChildren
+        children: ReactChildren
+    }
 export function BrandedDropdown({ width, label, children, ...props }: BrandedDropdownProps) {
     const [container, setContainer] = useState<HTMLElement | null>(null)
     const [expanded, setExpanded] = useState(false)
@@ -20,19 +21,12 @@ export function BrandedDropdown({ width, label, children, ...props }: BrandedDro
     useOutsideClick(container, () => setExpanded(false))
 
     return (
-        <Container
-            ref={setContainer}
-            {...props}
-            onClick={() => setExpanded(e => !e)}>
+        <Container ref={setContainer} {...props} onClick={() => setExpanded((e) => !e)}>
             {label}
             <IconContainer $rotate={expanded}>
-                <Caret direction="down"/>
+                <Caret direction="down" />
             </IconContainer>
-            <Dropdown
-                $width={width}
-                $float="left"
-                $margin="20px"
-                hidden={!expanded}>
+            <Dropdown $width={width} $float="left" $margin="20px" hidden={!expanded}>
                 {children}
             </Dropdown>
         </Container>
@@ -47,7 +41,7 @@ const Container = styled(HaiButton)`
 
 const IconContainer = styled(CenteredFlex)<{ $rotate?: boolean }>`
     transition: all 0.5s ease;
-    transform: ${({ $rotate }) => $rotate ? 'rotate(-180deg)': 'rotate(0deg)'};
+    transform: ${({ $rotate }) => ($rotate ? 'rotate(-180deg)' : 'rotate(0deg)')};
     margin-left: 12px;
 `
 
@@ -59,7 +53,7 @@ const Dropdown = styled(Popout)`
     z-index: 2;
 `
 
-export const DropdownOption = styled(Flex).attrs(props => ({
+export const DropdownOption = styled(Flex).attrs((props) => ({
     $width: '100%',
     $align: 'center',
     $gap: 12,
@@ -68,11 +62,15 @@ export const DropdownOption = styled(Flex).attrs(props => ({
     min-width: 160px;
     padding: 8px 16px;
     border-radius: 999px;
-    border: 2px solid rgba(0,0,0,0.1);
+    border: 2px solid rgba(0, 0, 0, 0.1);
     cursor: pointer;
 
-    ${({ $active }) => !!$active && css`background-color: rgba(0,0,0,0.1);`}
+    ${({ $active }) =>
+        !!$active &&
+        css`
+            background-color: rgba(0, 0, 0, 0.1);
+        `}
     &:hover {
-        background-color: rgba(0,0,0,0.1);
+        background-color: rgba(0, 0, 0, 0.1);
     }
 `

@@ -10,19 +10,21 @@ export const BlurContainer = styled.div<BlurContainerProps>`
     flex-direction: column;
     border: ${({ theme }) => theme.border.medium};
     border-radius: 24px;
-    background-color: rgba(255,255,255,0.15);
+    background-color: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(13px);
 
-    ${({ $bg, theme }) => !!$bg && css`
-        &::before {
-            content: '';
-            position: absolute;
-            inset: 0px;
-            border-radius: inherit;
-            background: ${(theme.colors as any)[$bg] || $bg};
-            z-index: -1;
-        }
-    `}
+    ${({ $bg, theme }) =>
+        !!$bg &&
+        css`
+            &::before {
+                content: '';
+                position: absolute;
+                inset: 0px;
+                border-radius: inherit;
+                background: ${(theme.colors as any)[$bg] || $bg};
+                z-index: -1;
+            }
+        `}
 
     & > * {
         padding: 48px;

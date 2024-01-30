@@ -8,18 +8,18 @@ import { ExternalLink } from './ExternalLink'
 import { CaretWithOutline } from './Icons/CaretWithOutline'
 
 type BrandedSelectOption = {
-    label: string,
-    value: string,
-    icon?: JSX.Element | string | (JSX.Element | string)[],
-    description?: string,
+    label: string
+    value: string
+    icon?: JSX.Element | string | (JSX.Element | string)[]
+    description?: string
     href?: string
 }
 
 type BrandedSelectProps = TextProps & {
-    width?: string,
-    options: BrandedSelectOption[],
-    value: string,
-    onChange: (value: string) => void,
+    width?: string
+    options: BrandedSelectOption[]
+    value: string
+    onChange: (value: string) => void
 }
 export function BrandedSelect({ width, options, value, onChange, ...props }: BrandedSelectProps) {
     const [container, setContainer] = useState<HTMLElement | null>(null)
@@ -35,11 +35,9 @@ export function BrandedSelect({ width, options, value, onChange, ...props }: Bra
             $gap={8}
             // onPointerOver={() => setActive(true)}
             // onPointerLeave={() => setActive(false)}
-            onClick={() => setPersistent(p => !p)}>
-            <HiddenText
-                $fontSize="3.2em"
-                $lineHeight="1"
-                {...props}>
+            onClick={() => setPersistent((p) => !p)}
+        >
+            <HiddenText $fontSize="3.2em" $lineHeight="1" {...props}>
                 {options.find(({ value: v }) => v === value)?.label.toUpperCase()}
             </HiddenText>
             <Select
@@ -49,61 +47,45 @@ export function BrandedSelect({ width, options, value, onChange, ...props }: Bra
                 $fontSize="3.2em"
                 $lineHeight="1"
                 onChange={(e: ChangeEvent<HTMLSelectElement>) => onChange(e.currentTarget.value)}
-                {...props}>
+                {...props}
+            >
                 {options.map(({ label, value: v }) => (
-                    <option
-                        key={v}
-                        value={v}>
+                    <option key={v} value={v}>
                         {label.toUpperCase()}
                     </option>
                 ))}
             </Select>
             <IconContainer $active={persistent}>
-                <CaretWithOutline/>
+                <CaretWithOutline />
             </IconContainer>
-            <Dropdown
-                $float="left"
-                $margin="30px"
-                hidden={!persistent}>
-                {options.map(({ label, value: v, icon, description, href }) => !href
-                    ? (
+            <Dropdown $float="left" $margin="30px" hidden={!persistent}>
+                {options.map(({ label, value: v, icon, description, href }) =>
+                    !href ? (
                         <DropdownOption
                             key={v}
                             $active={v === value}
                             onClick={() => {
                                 // e.stopPropagation()
                                 onChange(v)
-                            }}>
-                            {icon && (
-                                <DropdownIcon icon={icon}/>
-                            )}
-                            <Flex
-                                $column
-                                $justify="flex-start"
-                                $align="flex-start">
+                            }}
+                        >
+                            {icon && <DropdownIcon icon={icon} />}
+                            <Flex $column $justify="flex-start" $align="flex-start">
                                 <Text $fontWeight={700}>{label}</Text>
                                 <Text>{description}</Text>
                             </Flex>
                         </DropdownOption>
-                    )
-                    : (
-                        <ExternalLink
-                            key={v}
-                            href={href}
-                            $textDecoration="none">
+                    ) : (
+                        <ExternalLink key={v} href={href} $textDecoration="none">
                             <DropdownOption
                                 $active={v === value}
                                 onClick={() => {
                                     // e.stopPropagation()
                                     onChange(v)
-                                }}>
-                                {icon && (
-                                    <DropdownIcon icon={icon}/>
-                                )}
-                                <Flex
-                                    $column
-                                    $justify="flex-start"
-                                    $align="flex-start">
+                                }}
+                            >
+                                {icon && <DropdownIcon icon={icon} />}
+                                <Flex $column $justify="flex-start" $align="flex-start">
                                     <Text $fontWeight={700}>{label}</Text>
                                     <Text>{description}</Text>
                                 </Flex>
@@ -120,7 +102,7 @@ const Container = styled(CenteredFlex)`
     position: relative;
     min-height: 80px;
     padding: 0 12px;
-    border-bottom: 2px solid rgba(0,0,0,0.1);
+    border-bottom: 2px solid rgba(0, 0, 0, 0.1);
     cursor: pointer;
 `
 const HiddenText = styled(Title)`
@@ -143,7 +125,7 @@ const Select = styled(Title)`
 const IconContainer = styled(CenteredFlex)<{ $active?: boolean }>`
     margin-top: 8px;
     transition: all 0.5s ease;
-    transform: rotate(${({ $active }) => $active ? -180: 0}deg);
+    transform: rotate(${({ $active }) => ($active ? -180 : 0)}deg);
     & > svg {
         pointer-events: none;
         width: 32px;
@@ -162,7 +144,7 @@ const Dropdown = styled(Popout)`
     gap: 12px;
     cursor: default;
 `
-const DropdownOption = styled(Flex).attrs(props => ({
+const DropdownOption = styled(Flex).attrs((props) => ({
     $width: '100%',
     $justify: 'flex-start',
     $align: 'center',
@@ -171,14 +153,14 @@ const DropdownOption = styled(Flex).attrs(props => ({
 }))<{ $active?: boolean }>`
     padding: 12px;
     border-radius: 12px;
-    border: 1px solid rgba(0,0,0,0.1);
+    border: 1px solid rgba(0, 0, 0, 0.1);
     font-size: 0.8em;
     cursor: pointer;
 
-    background-color: ${({ $active = false }) => $active ? 'rgba(0,0,0,0.05)': 'transparent'};
+    background-color: ${({ $active = false }) => ($active ? 'rgba(0,0,0,0.05)' : 'transparent')};
 
     &:hover {
-        background-color: rgba(0,0,0,0.05);
+        background-color: rgba(0, 0, 0, 0.05);
     }
 `
 const DropdownIconContainer = styled(CenteredFlex)`
@@ -197,7 +179,7 @@ const DropdownIconContainer = styled(CenteredFlex)`
 `
 
 function DropdownIcon({ icon }: { icon: BrandedSelectOption['icon'] }) {
-    const [currentIcon, setCurrentIcon] = useState(Array.isArray(icon) ? icon[0]: icon)
+    const [currentIcon, setCurrentIcon] = useState(Array.isArray(icon) ? icon[0] : icon)
 
     useEffect(() => {
         if (!Array.isArray(icon)) return
@@ -213,9 +195,7 @@ function DropdownIcon({ icon }: { icon: BrandedSelectOption['icon'] }) {
 
     return (
         <DropdownIconContainer>
-            {typeof currentIcon === 'string'
-                ? <img src={currentIcon} alt=""/>
-                : currentIcon}
+            {typeof currentIcon === 'string' ? <img src={currentIcon} alt="" /> : currentIcon}
         </DropdownIconContainer>
     )
 }

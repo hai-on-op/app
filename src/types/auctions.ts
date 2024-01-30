@@ -36,8 +36,8 @@ export type IAuction = {
     sellInitialAmount: string
     sellToken: string
     winner: string
-    tokenSymbol?: string,
-    myBids?: number,
+    tokenSymbol?: string
+    myBids?: number
     status?: Status
 }
 

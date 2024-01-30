@@ -24,19 +24,14 @@ export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
     const {
         connectWalletModel: { tokensData },
         vaultModel: { vaultData, singleVault },
-    } = useStoreState(state => state)
+    } = useStoreState((state) => state)
     const {
         connectWalletModel: connectWalletActions,
         popupsModel: popupsActions,
         vaultModel: vaultActions,
-    } = useStoreActions(actions => actions)
+    } = useStoreActions((actions) => actions)
 
-    const {
-        action,
-        updateForm,
-        collateral,
-        summary,
-    } = useVault()
+    const { action, updateForm, collateral, summary } = useVault()
 
     const reset = useCallback(() => {
         updateForm('clear')
@@ -57,13 +52,13 @@ export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
         popupsActions.setIsWaitingModalOpen(true)
         popupsActions.setWaitingPayload({
             title: 'Waiting For Confirmation',
-            text: action === VaultAction.CREATE ? 'Open Vault': 'Modify Vault',
+            text: action === VaultAction.CREATE ? 'Open Vault' : 'Modify Vault',
             hint: 'Confirm this transaction in your wallet',
             status: ActionState.LOADING,
         })
         try {
             connectWalletActions.setIsStepLoading(true)
-            switch(action) {
+            switch (action) {
                 case VaultAction.CREATE: {
                     await vaultActions.depositAndBorrow({
                         vaultData,
@@ -90,19 +85,29 @@ export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
                     })
                     break
                 }
-                default: throw new Error(`Invalid operation (${action})`)
+                default:
+                    throw new Error(`Invalid operation (${action})`)
             }
             vaultActions.setTransactionState(ActionState.SUCCESS)
             popupsActions.setIsWaitingModalOpen(false)
             onClose?.()
             reset()
-        } catch(e: any) {
+        } catch (e: any) {
             vaultActions.setTransactionState(ActionState.ERROR)
             handleTransactionError(e)
         }
     }, [
-        onClose, account, signer, history,
-        action, vaultData, singleVault, connectWalletActions, popupsActions, vaultActions, reset,
+        onClose,
+        account,
+        signer,
+        history,
+        action,
+        vaultData,
+        singleVault,
+        connectWalletActions,
+        popupsActions,
+        vaultActions,
+        reset,
     ])
 
     return (
@@ -110,16 +115,14 @@ export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
             heading="REVIEW TRANSACTION"
             onClose={onClose}
             {...props}
-            footerContent={(
+            footerContent={
                 <Footer>
-                    <HaiButton
-                        $variant="yellowish"
-                        disabled={!account || !signer}
-                        onClick={handleConfirm}>
+                    <HaiButton $variant="yellowish" disabled={!account || !signer} onClick={handleConfirm}>
                         Confirm Transaction
                     </HaiButton>
                 </Footer>
-            )}>
+            }
+        >
             <Description>{t('confirm_details_text')}</Description>
             <TransactionSummary
                 items={[
@@ -161,7 +164,7 @@ export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
 
 const Description = styled(Text)``
 
-const Footer = styled(Flex).attrs(props => ({
+const Footer = styled(Flex).attrs((props) => ({
     $width: '100%',
     $justify: 'flex-end',
     $align: 'center',

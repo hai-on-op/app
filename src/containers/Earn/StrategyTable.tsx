@@ -8,9 +8,9 @@ import { StrategyTableButton } from './StrategyTableButton'
 import { Table } from '~/components/Table'
 
 type StrategyTableProps = {
-    headers: SortableHeader[],
+    headers: SortableHeader[]
     rows: Strategy[]
-    sorting: Sorting,
+    sorting: Sorting
     setSorting: SetState<Sorting>
 }
 export function StrategyTable({ headers, rows, sorting, setSorting }: StrategyTableProps) {
@@ -20,14 +20,7 @@ export function StrategyTable({ headers, rows, sorting, setSorting }: StrategyTa
             headerContainer={TableHeader}
             sorting={sorting}
             setSorting={setSorting}
-            rows={rows.map(({
-                pair,
-                rewards,
-                tvl,
-                apy,
-                userPosition,
-                earnPlatform,
-            }, i) => (
+            rows={rows.map(({ pair, rewards, tvl, apy, userPosition, earnPlatform }, i) => (
                 <Table.Row
                     key={i}
                     container={TableRow}
@@ -35,40 +28,30 @@ export function StrategyTable({ headers, rows, sorting, setSorting }: StrategyTa
                     items={[
                         {
                             content: (
-                                <Grid
-                                    $columns="1fr min-content 12px"
-                                    $align="center"
-                                    $gap={12}>
-                                    <Flex
-                                        $justify="flex-start"
-                                        $align="center"
-                                        $gap={8}>
-                                        <TokenPair
-                                            tokens={pair}
-                                            hideLabel
-                                        />
+                                <Grid $columns="1fr min-content 12px" $align="center" $gap={12}>
+                                    <Flex $justify="flex-start" $align="center" $gap={8}>
+                                        <TokenPair tokens={pair} hideLabel />
                                         <Text $fontWeight={700}>{pair.join('/')}</Text>
                                     </Flex>
-                                    <RewardsTokenPair tokens={rewards}/>
+                                    <RewardsTokenPair tokens={rewards} />
                                 </Grid>
                             ),
                             props: { $fontSize: 'inherit' },
                             fullWidth: true,
                         },
                         {
-                            content: <Text $fontWeight={700}>{earnPlatform ? 'FARM': 'BORROW'}</Text>,
+                            content: <Text $fontWeight={700}>{earnPlatform ? 'FARM' : 'BORROW'}</Text>,
                         },
                         {
                             content: (
                                 <Text $fontWeight={700}>
                                     {tvl
                                         ? formatNumberWithStyle(tvl, {
-                                            style: 'currency',
-                                            maxDecimals: 1,
-                                            suffixed: true,
-                                        })
-                                        : '-'
-                                    }
+                                              style: 'currency',
+                                              maxDecimals: 1,
+                                              suffixed: true,
+                                          })
+                                        : '-'}
                                 </Text>
                             ),
                         },
@@ -101,10 +84,10 @@ export function StrategyTable({ headers, rows, sorting, setSorting }: StrategyTa
                                 <Text $fontWeight={700}>
                                     {userPosition
                                         ? formatNumberWithStyle(userPosition, {
-                                            style: 'currency',
-                                            maxDecimals: 1,
-                                            suffixed: true,
-                                        })
+                                              style: 'currency',
+                                              maxDecimals: 1,
+                                              suffixed: true,
+                                          })
                                         : '-'}
                                 </Text>
                             ),
@@ -122,7 +105,7 @@ export function StrategyTable({ headers, rows, sorting, setSorting }: StrategyTa
                         {
                             content: (
                                 <ButtonContainer>
-                                    <StrategyTableButton earnPlatform={earnPlatform}/>
+                                    <StrategyTableButton earnPlatform={earnPlatform} />
                                 </ButtonContainer>
                             ),
                             unwrapped: true,
@@ -148,7 +131,7 @@ const TableHeader = styled(Grid)`
 const TableRow = styled(TableHeader)`
     border-radius: 999px;
     &:hover {
-        background-color: rgba(0,0,0,0.1);
+        background-color: rgba(0, 0, 0, 0.1);
     }
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
@@ -166,7 +149,7 @@ const TableRow = styled(TableHeader)`
     `}
 `
 
-const ButtonContainer = styled(Flex).attrs(props => ({
+const ButtonContainer = styled(Flex).attrs((props) => ({
     $justify: 'flex-end',
     $align: 'center',
     ...props,

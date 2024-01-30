@@ -111,7 +111,12 @@ export const handleRepayAndWithdraw = async (signer: JsonRpcSigner, vaultData: I
     } else if (!collateralToFree.isZero() && haiToRepay.isZero()) {
         txData = await proxy.freeTokenCollateral(vaultData.collateral, vaultId, collateralToFree)
     } else {
-        txData = await proxy.repayDebtAndFreeTokenCollateral(vaultData.collateral, vaultId, collateralToFree, haiToRepay)
+        txData = await proxy.repayDebtAndFreeTokenCollateral(
+            vaultData.collateral,
+            vaultId,
+            collateralToFree,
+            haiToRepay
+        )
     }
 
     if (!txData) throw new Error('No transaction request!')
@@ -119,9 +124,8 @@ export const handleRepayAndWithdraw = async (signer: JsonRpcSigner, vaultData: I
     if (vaultData.isGnosisSafe && !collateralToFree.isZero()) {
         txData.gasLimit = BigNumber.from('865000')
     }
-    const tx = vaultData.isGnosisSafe && !collateralToFree.isZero()
-        ? txData
-        : await handlePreTxGasEstimate(signer, txData)
+    const tx =
+        vaultData.isGnosisSafe && !collateralToFree.isZero() ? txData : await handlePreTxGasEstimate(signer, txData)
 
     const txResponse = await signer.sendTransaction(tx)
     return txResponse

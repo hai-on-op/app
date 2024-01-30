@@ -12,12 +12,12 @@ import { FloatingElements, type FloatingElementsProps } from '../BrandElements/F
 import { WaitingModalContent } from './WaitingModalContent'
 
 export type ModalProps = {
-    heading?: ReactChildren,
-    children?: ReactChildren,
-    footerContent?: ReactChildren,
-    overrideContent?: ReactChildren,
-    onClose?: () => void,
-    maxWidth?: string,
+    heading?: ReactChildren
+    children?: ReactChildren
+    footerContent?: ReactChildren
+    overrideContent?: ReactChildren
+    onClose?: () => void
+    maxWidth?: string
     ignoreWaiting?: boolean
 }
 export function Modal({
@@ -36,7 +36,9 @@ export function Modal({
     useLayoutEffect(() => {
         if (!container) return
 
-        setTimeout(() => { container.style.transform = `translateZ(0px)` }, 0)
+        setTimeout(() => {
+            container.style.transform = `translateZ(0px)`
+        }, 0)
 
         return () => Object.assign(container.style, { transform: null })
     }, [container])
@@ -45,36 +47,33 @@ export function Modal({
         <Overlay onClick={onClose}>
             <ModalContainer
                 ref={setContainer}
-                $width={!ignoreWaiting && isWaitingModalOpen ? '350px': '100%'}
+                $width={!ignoreWaiting && isWaitingModalOpen ? '350px' : '100%'}
                 $maxWidth={maxWidth}
-                onClick={(e: any) => e.stopPropagation()}>
+                onClick={(e: any) => e.stopPropagation()}
+            >
                 <Hideable hidden={!ignoreWaiting && isWaitingModalOpen}>
-                    {overrideContent || (<>
-                        <ModalHeader>
-                            {typeof heading === 'string'
-                                ? (
-                                    <BrandedTitle
-                                        textContent={heading.toUpperCase()}
-                                        $fontSize="2.5em"
-                                    />
-                                )
-                                : heading
-                            }
-                            {onClose && (
-                                <CloseContainer onClick={onClose}>
-                                    <X size={14}/>
-                                </CloseContainer>
-                            )}
-                        </ModalHeader>
-                        <ModalBody>
-                            {children}
-                        </ModalBody>
-                        <ModalFooter>{footerContent}</ModalFooter>
-                    </>)}
+                    {overrideContent || (
+                        <>
+                            <ModalHeader>
+                                {typeof heading === 'string' ? (
+                                    <BrandedTitle textContent={heading.toUpperCase()} $fontSize="2.5em" />
+                                ) : (
+                                    heading
+                                )}
+                                {onClose && (
+                                    <CloseContainer onClick={onClose}>
+                                        <X size={14} />
+                                    </CloseContainer>
+                                )}
+                            </ModalHeader>
+                            <ModalBody>{children}</ModalBody>
+                            <ModalFooter>{footerContent}</ModalFooter>
+                        </>
+                    )}
                 </Hideable>
                 {/* handle transaction and other loading/success/error states without overwriting content */}
-                {!ignoreWaiting && isWaitingModalOpen && <WaitingModalContent onClose={onClose}/>}
-                <FloatingElements clouds={clouds}/>
+                {!ignoreWaiting && isWaitingModalOpen && <WaitingModalContent onClose={onClose} />}
+                <FloatingElements clouds={clouds} />
             </ModalContainer>
         </Overlay>,
         document.body
@@ -91,12 +90,12 @@ const Overlay = styled(CenteredFlex)`
     perspective-origin: 50% 50%;
     perspective: 190px;
 
-    background-color: rgba(0,0,0,0.6);
+    background-color: rgba(0, 0, 0, 0.6);
     z-index: 998;
 `
 Modal.Overlay = Overlay
 
-export const ModalContainer = styled(CenteredFlex)<{ $width?: string, $maxWidth?: string }>`
+export const ModalContainer = styled(CenteredFlex)<{ $width?: string; $maxWidth?: string }>`
     position: absolute;
     width: ${({ $width = '100%' }) => $width};
     max-width: min(${({ $maxWidth = '720px' }) => $maxWidth}, calc(100vw - 48px));
@@ -108,14 +107,17 @@ export const ModalContainer = styled(CenteredFlex)<{ $width?: string, $maxWidth?
     transform-style: preserve-3d;
     transform: translateZ(-1000px);
 
-    transition: width 0.5s ease-out, height 0.5s ease-out, transform 1s cubic-bezier(0.33, 1, 0.68, 1);
+    transition:
+        width 0.5s ease-out,
+        height 0.5s ease-out,
+        transform 1s cubic-bezier(0.33, 1, 0.68, 1);
 
     ${({ theme }) => theme.mediaWidth.upToExtraSmall`
         max-height: calc(100vh - 240px);
     `}
 `
 Modal.Container = ModalContainer
-const Hideable = styled(Flex).attrs(props => ({
+const Hideable = styled(Flex).attrs((props) => ({
     $column: true,
     $justify: 'stretch',
     $align: 'stretch',
@@ -123,10 +125,10 @@ const Hideable = styled(Flex).attrs(props => ({
 }))`
     width: 100%;
     height: 100%;
-    display: ${({ hidden }) => hidden ? 'none': 'flex'};
+    display: ${({ hidden }) => (hidden ? 'none' : 'flex')};
 `
 
-export const ModalHeader = styled(Flex).attrs(props => ({
+export const ModalHeader = styled(Flex).attrs((props) => ({
     $width: '100%',
     $justify: 'space-between',
     $align: 'center',
@@ -149,7 +151,7 @@ export const CloseContainer = styled(CenteredFlex)`
 `
 Modal.Close = CloseContainer
 
-export const ModalBody = styled(Flex).attrs(props => ({
+export const ModalBody = styled(Flex).attrs((props) => ({
     $width: '100%',
     $column: true,
     $justify: 'stretch',

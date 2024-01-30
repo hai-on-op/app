@@ -18,20 +18,18 @@ export function VaultById({ id = '' }: VaultByIdProps) {
     return (
         <Container>
             <Header>
-                <BrandedTitle
-                    textContent={`VAULT #${id}`}
-                    $fontSize={isLargerThanSmall ? '3rem': '2.4rem'}
-                />
+                <BrandedTitle textContent={`VAULT #${id}`} $fontSize={isLargerThanSmall ? '3rem' : '2.4rem'} />
             </Header>
             <Body>
                 <ContentWithStatus
                     loading={loading}
                     error={error?.message}
                     isEmpty={!loading && !vault}
-                    emptyContent={`Vault with id '${id}' not found`}>
+                    emptyContent={`Vault with id '${id}' not found`}
+                >
                     <BodyGrid>
-                        <Overview vault={vault}/>
-                        <ActivityTable vault={vault}/>
+                        <Overview vault={vault} />
+                        <ActivityTable vault={vault} />
                     </BodyGrid>
                 </ContentWithStatus>
             </Body>
@@ -45,7 +43,7 @@ const Container = styled(BlurContainer)`
     margin-bottom: 48px;
 `
 
-const Header = styled(Flex).attrs(props => ({
+const Header = styled(Flex).attrs((props) => ({
     $width: '100%',
     $justify: 'space-between',
     $align: 'center',
@@ -70,7 +68,7 @@ const Header = styled(Flex).attrs(props => ({
     z-index: 1;
 `
 
-const Body = styled(Flex).attrs(props => ({
+const Body = styled(Flex).attrs((props) => ({
     $width: '100%',
     $justify: 'space-between',
     $align: 'flex-start',

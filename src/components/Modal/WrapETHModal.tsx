@@ -13,7 +13,7 @@ import { TransactionSummary } from '../TransactionSummary'
 
 enum Action {
     WRAP,
-    UNWRAP
+    UNWRAP,
 }
 
 export function WrapETHModal(props: ModalProps) {
@@ -29,7 +29,7 @@ export function WrapETHModal(props: ModalProps) {
         connectWalletModel: connectWalletActions,
         popupsModel: popupsActions,
         vaultModel: vaultActions,
-    } = useStoreActions(actions => actions)
+    } = useStoreActions((actions) => actions)
 
     const wethBalance = useBalance('WETH')
 
@@ -60,7 +60,7 @@ export function WrapETHModal(props: ModalProps) {
     }, [chain?.id, ethBalance])
 
     const details = useMemo(() => {
-        switch(action) {
+        switch (action) {
             case Action.UNWRAP:
                 return {
                     action: 'Unwrap',
@@ -95,7 +95,7 @@ export function WrapETHModal(props: ModalProps) {
                 status: ActionState.LOADING,
             })
 
-            switch(action) {
+            switch (action) {
                 case Action.UNWRAP: {
                     await vaultActions.unwrapEther({
                         signer,
@@ -113,7 +113,7 @@ export function WrapETHModal(props: ModalProps) {
                     break
                 }
             }
-        } catch(error: any) {
+        } catch (error: any) {
             handleTransactionError(error)
         } finally {
             refreshBalance()
@@ -124,22 +124,21 @@ export function WrapETHModal(props: ModalProps) {
         <Modal
             {...props}
             heading={`${details.action} ${details.symbol}`.toUpperCase()}
-            footerContent={(
+            footerContent={
                 <Footer>
-                    <SwitchText onClick={() => setAction(a => a === Action.WRAP
-                        ? Action.UNWRAP
-                        : Action.WRAP
-                    )}>
-                        Need to {action === Action.WRAP ? 'unwrap': 'wrap'} instead?
+                    <SwitchText onClick={() => setAction((a) => (a === Action.WRAP ? Action.UNWRAP : Action.WRAP))}>
+                        Need to {action === Action.WRAP ? 'unwrap' : 'wrap'} instead?
                     </SwitchText>
                     <HaiButton
                         $variant="yellowish"
                         disabled={!signer || !isNonZero || insufficientFunds}
-                        onClick={onWrap}>
+                        onClick={onWrap}
+                    >
                         {details.action}
                     </HaiButton>
                 </Footer>
-            )}>
+            }
+        >
             <NumberInput
                 label={`${details.symbol} to ${details.action}`}
                 value={amount}
@@ -149,42 +148,44 @@ export function WrapETHModal(props: ModalProps) {
                 subLabel={`Max ${details.balanceMinusCushion?.formatted || '0'} ${details.symbol}`}
                 onMax={() => setAmount(details.balanceMinusCushion?.raw || '0')}
             />
-            <TransactionSummary items={[
-                {
-                    label: 'ETH',
-                    value: {
-                        current: isNonZero ? balance?.formatted || '0': undefined,
-                        after: formatNumberWithStyle(
-                            action === Action.WRAP
-                                ? (parseFloat(balance?.raw || '0') - parseFloat(amount || '0'))
-                                : (parseFloat(balance?.raw || '0') + parseFloat(amount || '0')),
-                            { maxDecimals: 4 }
-                        ),
+            <TransactionSummary
+                items={[
+                    {
                         label: 'ETH',
-                        tooltip: isNonZero ?
-                            `This estimate does not include any fees associated with the ${details.action.toLowerCase()} transaction`
-                            : undefined,
+                        value: {
+                            current: isNonZero ? balance?.formatted || '0' : undefined,
+                            after: formatNumberWithStyle(
+                                action === Action.WRAP
+                                    ? parseFloat(balance?.raw || '0') - parseFloat(amount || '0')
+                                    : parseFloat(balance?.raw || '0') + parseFloat(amount || '0'),
+                                { maxDecimals: 4 }
+                            ),
+                            label: 'ETH',
+                            tooltip: isNonZero
+                                ? `This estimate does not include any fees associated with the ${details.action.toLowerCase()} transaction`
+                                : undefined,
+                        },
                     },
-                },
-                {
-                    label: 'WETH',
-                    value: {
-                        current: isNonZero ? wethBalance?.formatted || '0': undefined,
-                        after: formatNumberWithStyle(
-                            action === Action.WRAP
-                                ? (parseFloat(wethBalance?.raw || '0') + parseFloat(amount || '0'))
-                                : (parseFloat(wethBalance?.raw || '0') - parseFloat(amount || '0')),
-                            { maxDecimals: 4 }
-                        ),
+                    {
                         label: 'WETH',
+                        value: {
+                            current: isNonZero ? wethBalance?.formatted || '0' : undefined,
+                            after: formatNumberWithStyle(
+                                action === Action.WRAP
+                                    ? parseFloat(wethBalance?.raw || '0') + parseFloat(amount || '0')
+                                    : parseFloat(wethBalance?.raw || '0') - parseFloat(amount || '0'),
+                                { maxDecimals: 4 }
+                            ),
+                            label: 'WETH',
+                        },
                     },
-                },
-            ]}/>
+                ]}
+            />
         </Modal>
     )
 }
 
-const SwitchText = styled(Text).attrs(props => ({
+const SwitchText = styled(Text).attrs((props) => ({
     $textAlign: 'left',
     $color: 'rgba(0,0,0,0.5)',
     $fontSize: '0.8em',
@@ -195,7 +196,7 @@ const SwitchText = styled(Text).attrs(props => ({
     cursor: pointer;
 `
 
-const Footer = styled(Flex).attrs(props => ({
+const Footer = styled(Flex).attrs((props) => ({
     $width: '100%',
     $justify: 'space-between',
     $align: 'center',

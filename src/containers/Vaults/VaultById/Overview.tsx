@@ -14,8 +14,8 @@ type OverviewProps = {
 export function Overview({ vault }: OverviewProps) {
     const { t } = useTranslation()
 
-    const { vaultModel: vaultState } = useStoreState(state => state)
-    
+    const { vaultModel: vaultState } = useStoreState((state) => state)
+
     const haiPrice = parseFloat(vaultState.liquidationData?.currentRedemptionPrice || '1')
     const collateralPrice = parseFloat(vault?.collateralType.currentPrice.value || '0')
 
@@ -23,12 +23,11 @@ export function Overview({ vault }: OverviewProps) {
         if (!vault) return { progress: 0 }
 
         const { safetyCRatio } = vault.liquidationData
-        const safetyRatio = safetyCRatio
-            ? 100 * parseFloat(safetyCRatio.toString())
-            : undefined
-        if (!vault.collateralRatio || !safetyRatio) return {
-            progress: 0,
-        }
+        const safetyRatio = safetyCRatio ? 100 * parseFloat(safetyCRatio.toString()) : undefined
+        if (!vault.collateralRatio || !safetyRatio)
+            return {
+                progress: 0,
+            }
 
         const MAX_FACTOR = 2.5
 
@@ -39,7 +38,7 @@ export function Overview({ vault }: OverviewProps) {
             { progress: 1.5 / MAX_FACTOR, label: `${Math.floor(1.5 * min)}%` },
             { progress: 2.2 / MAX_FACTOR, label: `${Math.floor(2.2 * min)}%` },
         ]
-        
+
         return {
             progress: Math.min(parseFloat(vault.collateralRatio), max) / max,
             labels,
@@ -54,68 +53,57 @@ export function Overview({ vault }: OverviewProps) {
             </Header>
             <Inner $borderOpacity={0.2}>
                 <OverviewStat
-                    value={vault
-                        ? formatNumberWithStyle(vault.collateral)
-                        : '--'
-                    }
+                    value={vault ? formatNumberWithStyle(vault.collateral) : '--'}
                     token={(vault?.collateralToken || '???') as any}
                     label="Collateral Asset"
-                    convertedValue={vault && collateralPrice
-                        ? formatNumberWithStyle(
-                            parseFloat(vault.collateral) * collateralPrice,
-                            { style: 'currency' }
-                        )
-                        : '$--'
+                    convertedValue={
+                        vault && collateralPrice
+                            ? formatNumberWithStyle(parseFloat(vault.collateral) * collateralPrice, {
+                                  style: 'currency',
+                              })
+                            : '$--'
                     }
                 />
                 <OverviewStat
-                    value={vault
-                        ? formatNumberWithStyle(vault.debt)
-                        : '--'
-                    }
+                    value={vault ? formatNumberWithStyle(vault.debt) : '--'}
                     token="HAI"
                     label="Debt Asset"
-                    convertedValue={vault
-                        ? formatNumberWithStyle(
-                            parseFloat(vault.debt) * haiPrice,
-                            { style: 'currency' }
-                        )
-                        : '$--'
+                    convertedValue={
+                        vault ? formatNumberWithStyle(parseFloat(vault.debt) * haiPrice, { style: 'currency' }) : '$--'
                     }
                 />
                 <OverviewProgressStat
-                    value={vault
-                        ? formatNumberWithStyle(vault.collateralRatio, {
-                            scalingFactor: 0.01,
-                            style: 'percent',
-                        })
-                        : '--%'
+                    value={
+                        vault
+                            ? formatNumberWithStyle(vault.collateralRatio, {
+                                  scalingFactor: 0.01,
+                                  style: 'percent',
+                              })
+                            : '--%'
                     }
                     label="Ratio:"
-                    alert={vault?.status ? { status: vault.status }: undefined}
+                    alert={vault?.status ? { status: vault.status } : undefined}
                     {...progressProps}
                     fullWidth
                 />
                 <OverviewStat
-                    value={vault
-                        ? formatNumberWithStyle(
-                            (getRatePercentage(
-                                vault.liquidationData.totalAnnualizedStabilityFee || '0',
-                                4,
-                                true
-                            )).toString(),
-                            { style: 'percent' }
-                        )
-                        : '--%'
+                    value={
+                        vault
+                            ? formatNumberWithStyle(
+                                  getRatePercentage(
+                                      vault.liquidationData.totalAnnualizedStabilityFee || '0',
+                                      4,
+                                      true
+                                  ).toString(),
+                                  { style: 'percent' }
+                              )
+                            : '--%'
                     }
                     label="Stability Fee"
                     tooltip={t('stability_fee_tip')}
                 />
                 <OverviewStat
-                    value={vault
-                        ? formatNumberWithStyle(vault.liquidationPrice, { style: 'currency' })
-                        : '$--'
-                    }
+                    value={vault ? formatNumberWithStyle(vault.liquidationPrice, { style: 'currency' }) : '$--'}
                     label="Liq. Price"
                     tooltip={t('liquidation_price_tip')}
                 />
@@ -124,7 +112,7 @@ export function Overview({ vault }: OverviewProps) {
     )
 }
 
-const Container = styled(Flex).attrs(props => ({
+const Container = styled(Flex).attrs((props) => ({
     $width: '100%',
     $column: true,
     $justify: 'flex-start',
@@ -137,7 +125,7 @@ const Container = styled(Flex).attrs(props => ({
         padding: 24px;
     `}
 `
-const Header = styled(Flex).attrs(props => ({
+const Header = styled(Flex).attrs((props) => ({
     $width: '100%',
     $justify: 'flex-start',
     $align: 'center',
@@ -148,7 +136,7 @@ const Header = styled(Flex).attrs(props => ({
     padding: 24px 0px;
 `
 
-const Inner = styled(Grid).attrs(props => ({
+const Inner = styled(Grid).attrs((props) => ({
     $width: '100%',
     $columns: '1fr 1fr',
     $align: 'center',

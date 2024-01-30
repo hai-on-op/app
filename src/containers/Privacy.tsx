@@ -9,15 +9,10 @@ export function Privacy() {
     return (
         <Container>
             <Header>
-                <BrandedTitle
-                    textContent="PRIVACY POLICY"
-                    $fontSize={isLargerThanSmall ? '3rem': '2.4rem'}
-                />
+                <BrandedTitle textContent="PRIVACY POLICY" $fontSize={isLargerThanSmall ? '3rem' : '2.4rem'} />
             </Header>
             <Content>
-                <Text>
-                    This is a placeholder : )
-                </Text>
+                <Text>This is a placeholder : )</Text>
                 <Text>
                     Your privacy is important to us. Please hold the line for the next available representative.
                 </Text>
@@ -34,7 +29,7 @@ const Container = styled(BlurContainer)`
     }
 `
 
-const Header = styled(Flex).attrs(props => ({
+const Header = styled(Flex).attrs((props) => ({
     $justify: 'space-between',
     $align: 'center',
     $gap: 24,
@@ -51,7 +46,7 @@ const Header = styled(Flex).attrs(props => ({
     z-index: 1;
 `
 
-const Content = styled(Flex).attrs(props => ({
+const Content = styled(Flex).attrs((props) => ({
     $width: '100%',
     $column: true,
     $justify: 'flex-start',
@@ -60,7 +55,7 @@ const Content = styled(Flex).attrs(props => ({
     ...props,
 }))`
     padding: 48px;
-    
+
     ${({ theme }) => theme.mediaWidth.upToSmall`
         padding: 24px;
     `}

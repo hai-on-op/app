@@ -3,15 +3,16 @@ import { useCallback, useEffect, useState } from 'react'
 import { useStoreActions } from '~/store'
 
 export function usePlaylist(songs: string[], volume = 1) {
-    const { settingsModel: settingsModelActions } = useStoreActions(actions => actions)
+    const { settingsModel: settingsModelActions } = useStoreActions((actions) => actions)
 
-    const [ audio ] = useState<HTMLAudioElement>(() => new Audio())
-    const [ index, setIndex ] = useState(0)
-    const [ isPlaying, setIsPlaying ] = useState(false)
-    const [ isLoading, setIsLoading ] = useState(false)
+    const [audio] = useState<HTMLAudioElement>(() => new Audio())
+    const [index, setIndex] = useState(0)
+    const [isPlaying, setIsPlaying] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
 
     const play = useCallback(() => {
-        audio?.play()
+        audio
+            ?.play()
             .then(() => {
                 setIsPlaying(true)
             })
@@ -28,12 +29,12 @@ export function usePlaylist(songs: string[], volume = 1) {
     }, [audio])
 
     const next = useCallback(() => {
-        setIndex(i => ((i + 1) % songs.length))
+        setIndex((i) => (i + 1) % songs.length)
         setIsLoading(true)
     }, [songs])
 
     const previous = useCallback(() => {
-        setIndex(i => i === 0 ? songs.length - 1 : i - 1)
+        setIndex((i) => (i === 0 ? songs.length - 1 : i - 1))
         setIsLoading(true)
     }, [songs])
 

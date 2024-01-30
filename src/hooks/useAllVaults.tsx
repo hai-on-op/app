@@ -40,7 +40,7 @@ const sortableHeaders: (SortableHeader & FlexProps)[] = [
 const MAX_VAULTS_TO_FETCH = 500
 
 export function useAllVaults() {
-    const { vaultModel: vaultState } = useStoreState(state => state)
+    const { vaultModel: vaultState } = useStoreState((state) => state)
 
     const [filterEmpty, setFilterEmpty] = useState(false)
     const [collateralFilter, setCollateralFilter] = useState<string>()
@@ -51,7 +51,7 @@ export function useAllVaults() {
     })
 
     const { data, error, loading } = useQuery<{ safes: QuerySafe[] }>(
-        filterEmpty ? ALLSAFES_QUERY_NOT_ZERO: ALLSAFES_QUERY_WITH_ZERO,
+        filterEmpty ? ALLSAFES_QUERY_NOT_ZERO : ALLSAFES_QUERY_WITH_ZERO,
         {
             variables: {
                 first: MAX_VAULTS_TO_FETCH,
@@ -63,51 +63,44 @@ export function useAllVaults() {
     )
 
     const vaultsWithCRatioAndToken = useMemo(() => {
-        const {
-            collateralLiquidationData,
-            currentRedemptionPrice,
-        } = vaultState.liquidationData || {}
+        const { collateralLiquidationData, currentRedemptionPrice } = vaultState.liquidationData || {}
         if (!data?.safes?.length || !collateralLiquidationData || !currentRedemptionPrice) return []
 
-        return data.safes.map(safe => {
-            return formatQuerySafeToVault(
-                safe,
-                collateralLiquidationData,
-                currentRedemptionPrice
-            )
+        return data.safes.map((safe) => {
+            return formatQuerySafeToVault(safe, collateralLiquidationData, currentRedemptionPrice)
         })
     }, [data?.safes, vaultState.liquidationData])
 
     const sortedRows = useMemo(() => {
-        switch(sorting.key) {
+        switch (sorting.key) {
             case 'Vault':
                 return arrayToSorted(vaultsWithCRatioAndToken, {
-                    getProperty: vault => vault.safeId,
+                    getProperty: (vault) => vault.safeId,
                     dir: sorting.dir,
                     type: 'parseInt',
                 })
             case 'Owner':
                 return arrayToSorted(vaultsWithCRatioAndToken, {
-                    getProperty: vault => vault.owner.address,
+                    getProperty: (vault) => vault.owner.address,
                     dir: sorting.dir,
                     type: 'alphabetical',
                 })
             case 'Collateral':
                 return arrayToSorted(vaultsWithCRatioAndToken, {
-                    getProperty: vault => vault.collateral,
+                    getProperty: (vault) => vault.collateral,
                     dir: sorting.dir,
                     type: 'parseFloat',
                 })
             case 'Debt':
                 return arrayToSorted(vaultsWithCRatioAndToken, {
-                    getProperty: vault => vault.debt,
+                    getProperty: (vault) => vault.debt,
                     dir: sorting.dir,
                     type: 'parseFloat',
                 })
             case 'Collateral Ratio':
             default:
                 return arrayToSorted(vaultsWithCRatioAndToken, {
-                    getProperty: vault => vault.collateralRatio,
+                    getProperty: (vault) => vault.collateralRatio,
                     dir: sorting.dir,
                     type: 'parseFloat',
                 })
@@ -117,9 +110,7 @@ export function useAllVaults() {
     const filteredAndSortedRows = useMemo(() => {
         if (!collateralFilter || collateralFilter === 'All') return sortedRows
 
-        return sortedRows.filter(({ collateralToken }) => (
-            collateralFilter === collateralToken
-        ))
+        return sortedRows.filter(({ collateralToken }) => collateralFilter === collateralToken)
     }, [sortedRows, collateralFilter])
 
     return {

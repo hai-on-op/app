@@ -4,7 +4,7 @@ import { useMediaQuery } from '~/hooks'
 
 import styled from 'styled-components'
 import { Flex, Grid, HaiButton, Text } from '~/styles'
-import {  ZoomScene, type ZoomSceneProps } from './ZoomScene'
+import { ZoomScene, type ZoomSceneProps } from './ZoomScene'
 import { BrandedTitle } from '~/components/BrandedTitle'
 import { ProgressBar } from '~/components/ProgressBar'
 import { FloatingElements, type FloatingElementsProps } from '~/components/BrandElements/FloatingElements'
@@ -81,89 +81,54 @@ export function Second({ zIndex }: ZoomSceneProps) {
     return (
         <ZoomScene $zIndex={zIndex}>
             <Container>
-                <Flex
-                    $column
-                    $gap={isLargerThanExtraSmall ? 24: 12}>
+                <Flex $column $gap={isLargerThanExtraSmall ? 24 : 12}>
                     <BrandedTitle
                         textContent="ELEVATE ASSETS, NOT ANXIETY."
-                        $fontSize={isLargerThanSmall
-                            ? '3.6rem'
-                            : isLargerThanExtraSmall
-                                ? '3rem'
-                                : '2rem'
-                        }
-                        $letterSpacing={isLargerThanSmall
-                            ? '0.7rem'
-                            : isLargerThanExtraSmall
-                                ? '0.6rem'
-                                : '0.5rem'
-                        }
-                        $lineHeight={isLargerThanSmall
-                            ? '1.4'
-                            : '1.2'
-                        }
+                        $fontSize={isLargerThanSmall ? '3.6rem' : isLargerThanExtraSmall ? '3rem' : '2rem'}
+                        $letterSpacing={isLargerThanSmall ? '0.7rem' : isLargerThanExtraSmall ? '0.6rem' : '0.5rem'}
+                        $lineHeight={isLargerThanSmall ? '1.4' : '1.2'}
                     />
                     <Subtitle>
-                        <Text
-                            as="span"
-                            $fontWeight={700}>
+                        <Text as="span" $fontWeight={700}>
                             {`$HAI stablecoin reserves are fully on-chain, `}
                         </Text>
-                        <span>
-                            {`no bank buzzkills here. `}
-                        </span>
-                        <Text
-                            as="span"
-                            $fontWeight={700}>
+                        <span>{`no bank buzzkills here. `}</span>
+                        <Text as="span" $fontWeight={700}>
                             {`Collateral choices are voted in by $KITE holders`}
                         </Text>
                     </Subtitle>
                 </Flex>
                 <PairContainer>
-                    <TokenPair tokens={['WETH', 'HAI']}/>
-                    <Grid
-                        $width="100%"
-                        $columns="110px 1fr"
-                        $align="center"
-                        $gap={12}>
+                    <TokenPair tokens={['WETH', 'HAI']} />
+                    <Grid $width="100%" $columns="110px 1fr" $align="center" $gap={12}>
                         <Text>
-                            Ratio&nbsp;<strong>{Math.round((progress * 10_000)) / 100}%</strong>
+                            Ratio&nbsp;<strong>{Math.round(progress * 10_000) / 100}%</strong>
                         </Text>
                         <ProgressBar
                             progress={progress / 4}
                             colorLimits={[0.25, 0.75]}
-                            labels={[{
-                                progress: 0.24,
-                                label: '100%',
-                            }]}
+                            labels={[
+                                {
+                                    progress: 0.24,
+                                    label: '100%',
+                                },
+                            ]}
                         />
                     </Grid>
-                    <Flex
-                        $width="100%"
-                        $justify="flex-start"
-                        $align="center"
-                        $gap={12}>
-                        <HaiButton
-                            $variant="yellowish"
-                            $grow={0}>
+                    <Flex $width="100%" $justify="flex-start" $align="center" $gap={12}>
+                        <HaiButton $variant="yellowish" $grow={0}>
                             DEPOSIT
                         </HaiButton>
-                        <HaiButton $grow={0}>
-                            GET HAI
-                        </HaiButton>
+                        <HaiButton $grow={0}>GET HAI</HaiButton>
                     </Flex>
                 </PairContainer>
             </Container>
-            <FloatingElements
-                elves={elves}
-                clouds={clouds}
-                coins={coins}
-            />
+            <FloatingElements elves={elves} clouds={clouds} coins={coins} />
         </ZoomScene>
     )
 }
 
-const Container = styled(Grid).attrs(props => ({
+const Container = styled(Grid).attrs((props) => ({
     $columns: '1fr min-content',
     $justify: 'center',
     $align: 'center',
@@ -175,7 +140,7 @@ const Container = styled(Grid).attrs(props => ({
     border-radius: 24px;
     /* background-color: #f1f1fb77; */
     /* backdrop-filter: blur(13px); */
-    background-color: rgba(255,255,255,0.5);
+    background-color: rgba(255, 255, 255, 0.5);
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
         grid-template-columns: 1fr;
@@ -188,13 +153,13 @@ const Container = styled(Grid).attrs(props => ({
         padding-top: 24px;
     `}
 `
-const Subtitle = styled(Text).attrs(props => ({
+const Subtitle = styled(Text).attrs((props) => ({
     $lineHeight: '1.6',
     ...props,
 }))`
     max-width: max(300px, 75%);
 `
-const PairContainer = styled(Flex).attrs(props => ({
+const PairContainer = styled(Flex).attrs((props) => ({
     $column: true,
     $justify: 'space-between',
     $align: 'flex-start',

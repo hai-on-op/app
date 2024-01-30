@@ -5,8 +5,8 @@ import { RewardsTokenPair } from '~/components/TokenPair'
 import { Stats, type StatProps } from '~/components/Stats'
 
 export function EarnStats() {
-    const { popupsModel: popupsActions } = useStoreActions(actions => actions)
-    
+    const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
+
     // TODO: dynamically calculate stats
     const dummyStats: StatProps[] = [
         {
@@ -21,25 +21,16 @@ export function EarnStats() {
         },
         {
             header: '$7,000',
-            headerStatus: (
-                <RewardsTokenPair
-                    tokens={['OP', 'KITE']}
-                    hideLabel
-                />
-            ),
+            headerStatus: <RewardsTokenPair tokens={['OP', 'KITE']} hideLabel />,
             label: 'My Farm Rewards',
             tooltip: 'Hello World',
             button: (
-                <HaiButton
-                    $variant="yellowish"
-                    onClick={() => popupsActions.setIsClaimPopupOpen(true)}>
+                <HaiButton $variant="yellowish" onClick={() => popupsActions.setIsClaimPopupOpen(true)}>
                     Claim
                 </HaiButton>
             ),
         },
     ]
 
-    return (
-        <Stats stats={dummyStats}/>
-    )
+    return <Stats stats={dummyStats} />
 }

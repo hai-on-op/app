@@ -27,11 +27,12 @@ export function HaiArrow({ size = 20, direction = 'down', slim, ...props }: HaiA
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            {...props}>
+            {...props}
+        >
             <g transform={transforms[direction]}>
-                <line x1="10" y1="2.25" x2="10" y2="17.75"/>
-                <polyline points="3,11 10,17.75 17,11" visibility={slim ? 'hidden': 'visible'}/>
-                <polyline points="5,11 10,17.75 15,11" visibility={!slim ? 'hidden': 'visible'}/>
+                <line x1="10" y1="2.25" x2="10" y2="17.75" />
+                <polyline points="3,11 10,17.75 17,11" visibility={slim ? 'hidden' : 'visible'} />
+                <polyline points="5,11 10,17.75 15,11" visibility={!slim ? 'hidden' : 'visible'} />
             </g>
         </svg>
     )

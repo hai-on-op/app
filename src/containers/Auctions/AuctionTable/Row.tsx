@@ -16,29 +16,20 @@ import { ProxyPrompt } from '~/components/ProxyPrompt'
 import { TableRow } from '~/components/Table/TableRow'
 
 type AuctionTableRowProps = {
-    headers: SortableHeader[],
-    auction: (IAuction & { myBids?: number }),
-    container: ComponentType,
-    expanded: boolean,
+    headers: SortableHeader[]
+    auction: IAuction & { myBids?: number }
+    container: ComponentType
+    expanded: boolean
     onSelect?: () => void
 }
-export function AuctionTableRow({
-    headers,
-    auction,
-    container,
-    expanded,
-    onSelect,
-}: AuctionTableRowProps) {
+export function AuctionTableRow({ headers, auction, container, expanded, onSelect }: AuctionTableRowProps) {
     const { t } = useTranslation()
 
     const {
         connectWalletModel: { proxyAddress },
         auctionModel: auctionState,
-    } = useStoreState(state => state)
-    const {
-        auctionModel: auctionActions,
-        popupsModel: popupsActions,
-    } = useStoreActions(actions => actions)
+    } = useStoreState((state) => state)
+    const { auctionModel: auctionActions, popupsModel: popupsActions } = useStoreActions((actions) => actions)
 
     const isLargerThanSmall = useMediaQuery('upToSmall')
 
@@ -55,22 +46,19 @@ export function AuctionTableRow({
         remainingToRaise,
     } = useAuction(auction, timeEl)
 
-    const {
-        auctionId,
-        englishAuctionType,
-        buyInitialAmount,
-        auctionDeadline,
-        biddersList,
-    } = auction
+    const { auctionId, englishAuctionType, buyInitialAmount, auctionDeadline, biddersList } = auction
 
-    const onButtonClick = useCallback((type: string) => {
-        popupsActions.setAuctionOperationPayload({
-            isOpen: true,
-            type,
-            auctionType: auction.englishAuctionType,
-        })
-        auctionActions.setSelectedAuction(auction)
-    }, [auction, auctionActions, popupsActions])
+    const onButtonClick = useCallback(
+        (type: string) => {
+            popupsActions.setAuctionOperationPayload({
+                isOpen: true,
+                type,
+                auctionType: auction.englishAuctionType,
+            })
+            auctionActions.setSelectedAuction(auction)
+        },
+        [auction, auctionActions, popupsActions]
+    )
 
     const button = useMemo(() => {
         const isWinner = stringsExistAndAreEqual(proxyAddress, auction.winner)
@@ -79,24 +67,23 @@ export function AuctionTableRow({
                 <HaiButton
                     $variant="yellowish"
                     disabled={auctionState.isSubmitting}
-                    onClick={() => onButtonClick('settle')}>
+                    onClick={() => onButtonClick('settle')}
+                >
                     {t('Settle')}
                 </HaiButton>
             )
         }
         if (
-            status === Status.LIVE
-            || !auction.biddersList.length
-            || (isWinner && !auction.isClaimed && auction.englishAuctionType !== 'COLLATERAL')
+            status === Status.LIVE ||
+            !auction.biddersList.length ||
+            (isWinner && !auction.isClaimed && auction.englishAuctionType !== 'COLLATERAL')
         ) {
             return (
                 <HaiButton
                     $variant="yellowish"
-                    disabled={!proxyAddress
-                        || auctionState.isSubmitting
-                        || (status === Status.LIVE && isWinner)
-                    }
-                    onClick={() => onButtonClick('hai_bid')}>
+                    disabled={!proxyAddress || auctionState.isSubmitting || (status === Status.LIVE && isWinner)}
+                    onClick={() => onButtonClick('hai_bid')}
+                >
                     Place Bid
                 </HaiButton>
             )
@@ -105,9 +92,7 @@ export function AuctionTableRow({
     }, [status, proxyAddress, auctionState.isSubmitting, auction, onButtonClick, t])
 
     return (
-        <TableRowContainer
-            onClick={onSelect}
-            $expanded={expanded}>
+        <TableRowContainer onClick={onSelect} $expanded={expanded}>
             <TableRow
                 container={container}
                 headers={headers}
@@ -120,40 +105,27 @@ export function AuctionTableRow({
                     },
                     {
                         content: (
-                            <Flex
-                                $justify="flex-start"
-                                $align="center"
-                                $gap={8}>
-                                <TokenPair
-                                    tokens={[sellToken as any]}
-                                    hideLabel
-                                />
-                                <Flex
-                                    $column
-                                    $align="flex-start">
+                            <Flex $justify="flex-start" $align="center" $gap={8}>
+                                <TokenPair tokens={[sellToken as any]} hideLabel />
+                                <Flex $column $align="flex-start">
                                     <Text>
                                         {auction.englishAuctionType === 'COLLATERAL'
                                             ? remainingToSell || '--'
-                                            : formatNumberWithStyle(
-                                                auction.sellInitialAmount,
-                                                { maxDecimals: 3 }
-                                            )
-                                        } {sellToken}
+                                            : formatNumberWithStyle(auction.sellInitialAmount, { maxDecimals: 3 })}{' '}
+                                        {sellToken}
                                     </Text>
                                     <Text $fontSize="0.6rem">
                                         {auction.englishAuctionType === 'COLLATERAL'
-                                            ? `Start: ${formatNumberWithStyle(
-                                                auction.sellInitialAmount,
-                                                { maxDecimals: 3 }
-                                            )}`
+                                            ? `Start: ${formatNumberWithStyle(auction.sellInitialAmount, {
+                                                  maxDecimals: 3,
+                                              })}`
                                             : formatNumberWithStyle(
-                                                parseFloat(auction.sellInitialAmount) * parseFloat(sellUsdPrice),
-                                                {
-                                                    maxDecimals: 2,
-                                                    style: 'currency',
-                                                }
-                                            )
-                                        }
+                                                  parseFloat(auction.sellInitialAmount) * parseFloat(sellUsdPrice),
+                                                  {
+                                                      maxDecimals: 2,
+                                                      style: 'currency',
+                                                  }
+                                              )}
                                     </Text>
                                 </Flex>
                             </Flex>
@@ -162,31 +134,20 @@ export function AuctionTableRow({
                     },
                     {
                         content: (
-                            <Flex
-                                $justify="flex-start"
-                                $align="center"
-                                $gap={8}>
-                                <TokenPair
-                                    tokens={[buyToken as any]}
-                                    hideLabel
-                                />
-                                <Flex
-                                    $column
-                                    $align="flex-start">
+                            <Flex $justify="flex-start" $align="center" $gap={8}>
+                                <TokenPair tokens={[buyToken as any]} hideLabel />
+                                <Flex $column $align="flex-start">
                                     <Text>
-                                        {auction.englishAuctionType === 'COLLATERAL'
-                                            ? remainingToRaise || '--'
-                                            : ''
-                                        } {buyToken}
+                                        {auction.englishAuctionType === 'COLLATERAL' ? remainingToRaise || '--' : ''}{' '}
+                                        {buyToken}
                                     </Text>
                                     <Text $fontSize="0.6rem">
                                         {auction.englishAuctionType === 'COLLATERAL'
                                             ? `Start: ${initialToRaise || '--'}`
                                             : `Bid: ${formatNumberWithStyle(
-                                                biddersList[0].buyAmount || buyInitialAmount,
-                                                { maxDecimals: 3 }
-                                            )}`
-                                        }
+                                                  biddersList[0].buyAmount || buyInitialAmount,
+                                                  { maxDecimals: 3 }
+                                              )}`}
                                     </Text>
                                 </Flex>
                             </Flex>
@@ -195,18 +156,13 @@ export function AuctionTableRow({
                     },
                     {
                         content: (
-                            <Flex
-                                $column
-                                $align="flex-start">
+                            <Flex $column $align="flex-start">
                                 <Text $fontWeight={700}>
                                     {auctionDeadline
-                                        ? (new Date(parseInt(auctionDeadline) * 1000)).toLocaleDateString()
-                                        : '--'
-                                    }
+                                        ? new Date(parseInt(auctionDeadline) * 1000).toLocaleDateString()
+                                        : '--'}
                                 </Text>
-                                <Text
-                                    ref={setTimeEl}
-                                    $fontSize="0.6rem">
+                                <Text ref={setTimeEl} $fontSize="0.6rem">
                                     --
                                 </Text>
                             </Flex>
@@ -218,56 +174,40 @@ export function AuctionTableRow({
                     {
                         content: (
                             <Flex>
-                                <StatusLabel
-                                    status={status}
-                                    size={0.8}
-                                />
+                                <StatusLabel status={status} size={0.8} />
                             </Flex>
                         ),
                     },
                     {
-                        content: isLargerThanSmall
-                            ? (
-                                <DropdownIcon $expanded={expanded}>
-                                    <Caret direction="down"/>
-                                </DropdownIcon>
-                            )
-                            : (
-                                <Flex
-                                    $column
-                                    $justify="flex-end"
-                                    $align="stretch"
-                                    style={{ height: '100%' }}>
-                                    <Flex
-                                        $width="100%"
-                                        $justify="flex-end"
-                                        $align="center"
-                                        $gap={12}>
-                                        <Text $textDecoration="underline">
-                                            {expanded ? 'Hide': 'View'} Bids
-                                        </Text>
-                                        <DropdownIcon $expanded={expanded}>
-                                            <Caret direction="down"/>
-                                        </DropdownIcon>
-                                    </Flex>
+                        content: isLargerThanSmall ? (
+                            <DropdownIcon $expanded={expanded}>
+                                <Caret direction="down" />
+                            </DropdownIcon>
+                        ) : (
+                            <Flex $column $justify="flex-end" $align="stretch" style={{ height: '100%' }}>
+                                <Flex $width="100%" $justify="flex-end" $align="center" $gap={12}>
+                                    <Text $textDecoration="underline">{expanded ? 'Hide' : 'View'} Bids</Text>
+                                    <DropdownIcon $expanded={expanded}>
+                                        <Caret direction="down" />
+                                    </DropdownIcon>
                                 </Flex>
-                            ),
+                            </Flex>
+                        ),
                         unwrapped: true,
                     },
-                ]}/>
+                ]}
+            />
             <TableRowBody>
-                <BidTable auction={auction}/>
+                <BidTable auction={auction} />
             </TableRowBody>
             <TableRowFooter>
-                <ProxyPrompt continueText="interact with this auction">
-                    {button}
-                </ProxyPrompt>
+                <ProxyPrompt continueText="interact with this auction">{button}</ProxyPrompt>
             </TableRowFooter>
         </TableRowContainer>
     )
 }
 
-const TableRowContainer = styled(Flex).attrs(props => ({
+const TableRowContainer = styled(Flex).attrs((props) => ({
     $width: '100%',
     $column: true,
     $justify: 'stretch',
@@ -276,13 +216,13 @@ const TableRowContainer = styled(Flex).attrs(props => ({
 }))<{ $expanded?: boolean }>`
     font-size: 1.1rem;
     transition: height 0.5s ease;
-    height: ${({ $expanded }) => $expanded ? 360: 56}px;
+    height: ${({ $expanded }) => ($expanded ? 360 : 56)}px;
     border-radius: 18px;
-    border: 2px solid rgba(0,0,0,0.1);
+    border: 2px solid rgba(0, 0, 0, 0.1);
     overflow: hidden;
 
     ${({ theme, $expanded }) => theme.mediaWidth.upToSmall`
-        height: ${$expanded ? 652: 312}px;
+        height: ${$expanded ? 652 : 312}px;
         border-radius: 0px;
         border: none;
         &:not(:first-child) {
@@ -290,7 +230,7 @@ const TableRowContainer = styled(Flex).attrs(props => ({
         }
     `}
 `
-const TableRowBody = styled(Flex).attrs(props => ({
+const TableRowBody = styled(Flex).attrs((props) => ({
     $width: '100%',
     $column: true,
     $justify: 'flex-start',
@@ -302,10 +242,10 @@ const TableRowBody = styled(Flex).attrs(props => ({
     max-height: calc(100% - 131px);
     padding: 8px 24px;
     overflow: auto;
-    border-top: 2px solid rgba(0,0,0,0.1);
-    border-bottom: 2px solid rgba(0,0,0,0.1);
+    border-top: 2px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 2px solid rgba(0, 0, 0, 0.1);
 `
-const TableRowFooter = styled(Flex).attrs(props => ({
+const TableRowFooter = styled(Flex).attrs((props) => ({
     $width: '100%',
     $justify: 'flex-end',
     $align: 'center',
@@ -321,5 +261,5 @@ const DropdownIcon = styled(CenteredFlex)<{ $expanded?: boolean }>`
     height: 20px;
     padding: 0px;
     transition: all 0.5s ease;
-    transform: ${({ $expanded }) => $expanded ? 'rotate(-180deg)': 'rotate(0deg)'};
+    transform: ${({ $expanded }) => ($expanded ? 'rotate(-180deg)' : 'rotate(0deg)')};
 `

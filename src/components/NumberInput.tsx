@@ -5,14 +5,14 @@ import { Flex, Text } from '~/styles'
 
 type InputProps = Omit<HTMLProps<HTMLInputElement>, 'as' | 'ref' | 'label' | 'onChange'>
 type NumberInputProps = InputProps & {
-    label: JSX.Element | string,
-    subLabel: string,
-    unitLabel?: string,
-    conversion?: string,
-    onChange: (value: string) => void,
-    onMax?: () => void,
-    disabled?: boolean,
-    hidden?: boolean,
+    label: JSX.Element | string
+    subLabel: string
+    unitLabel?: string
+    conversion?: string
+    onChange: (value: string) => void
+    onMax?: () => void
+    disabled?: boolean
+    hidden?: boolean
 }
 export function NumberInput({
     label,
@@ -30,23 +30,12 @@ export function NumberInput({
     const input = useRef<HTMLInputElement | null>(null)
 
     return (
-        <Container
-            $gap={12}
-            hidden={hidden}
-            style={style}>
-            <Flex
-                $width="100%"
-                $justify="space-between"
-                $align="center">
-                <Text
-                    $fontSize="0.65em"
-                    $fontWeight={700}>
+        <Container $gap={12} hidden={hidden} style={style}>
+            <Flex $width="100%" $justify="space-between" $align="center">
+                <Text $fontSize="0.65em" $fontWeight={700}>
                     {label}
                 </Text>
-                <Text
-                    $fontSize="0.65em"
-                    onClick={onMax}
-                    style={onMax ? { cursor: 'pointer' }: undefined}>
+                <Text $fontSize="0.65em" onClick={onMax} style={onMax ? { cursor: 'pointer' } : undefined}>
                     {subLabel}
                 </Text>
             </Flex>
@@ -67,15 +56,19 @@ export function NumberInput({
     )
 }
 
-const Container = styled(Flex).attrs(props => ({
+const Container = styled(Flex).attrs((props) => ({
     $width: '100%',
     $column: true,
     ...props,
 }))<{ hidden: boolean }>`
-    ${({ hidden }) => hidden && css`display: none;`}
+    ${({ hidden }) =>
+        hidden &&
+        css`
+            display: none;
+        `}
 `
 
-const InputContainer = styled(Flex).attrs(props => ({
+const InputContainer = styled(Flex).attrs((props) => ({
     $width: '100%',
     $justify: 'flex-start',
     $align: 'center',
@@ -94,7 +87,7 @@ const Input = styled.input`
     border: none;
     background: transparent;
 `
-const InputLabel = styled(Text).attrs(props => ({
+const InputLabel = styled(Text).attrs((props) => ({
     $fontSize: '0.8em',
     $fontWeight: 700,
     ...props,
@@ -104,7 +97,7 @@ const InputLabel = styled(Text).attrs(props => ({
     z-index: 1;
 `
 
-const ConversionText = styled(Text).attrs(props => ({
+const ConversionText = styled(Text).attrs((props) => ({
     $fontSize: '0.67rem',
     $color: 'rgba(0,0,0,0.5)',
     $textAlign: 'left',

@@ -13,12 +13,10 @@ export function VaultActionError() {
         if (action === VaultAction.CREATE) {
             // ignore error on initial form state
             if (!formState.deposit || !formState.borrow) return null
-        }
-        else if (action === VaultAction.DEPOSIT_BORROW) {
+        } else if (action === VaultAction.DEPOSIT_BORROW) {
             // ignore single-sided empty error
             if (!formState.deposit || !formState.borrow) return null
-        }
-        else if (action === VaultAction.WITHDRAW_REPAY) {
+        } else if (action === VaultAction.WITHDRAW_REPAY) {
             // ignore single-sided empty error
             if (!formState.withdraw || !formState.repay) return null
         }
@@ -26,9 +24,7 @@ export function VaultActionError() {
 
     return (
         <Container>
-            <Text
-                $fontSize="0.8em"
-                $color="red">
+            <Text $fontSize="0.8em" $color="red">
                 Error: {errorMessage}
             </Text>
         </Container>

@@ -23,9 +23,7 @@ export const formatNumber = (value: string, digits = 6, round = false) => {
     }
 
     const nOfWholeDigits = value.split('.')[0].length
-    const nOfDigits = nOfWholeDigits > digits - 1
-        ? '00'
-        : Array.from(Array(digits - nOfWholeDigits), () => 0).join('')
+    const nOfDigits = nOfWholeDigits > digits - 1 ? '00' : Array.from(Array(digits - nOfWholeDigits), () => 0).join('')
     let val
     if (round) {
         val = numeral(n).format(`0.${nOfDigits}`)
@@ -38,14 +36,14 @@ export const formatNumber = (value: string, digits = 6, round = false) => {
 
 const MINIMUM_DECIMAL = 0.00001
 type FormatOptions = {
-    scalingFactor?: number,
-    maxDecimals?: number,
-    style?: 'currency' | 'percent',
-    suffixed?: boolean,
+    scalingFactor?: number
+    maxDecimals?: number
+    style?: 'currency' | 'percent'
+    suffixed?: boolean
 }
 export const formatNumberWithStyle = (value: number | string, options: FormatOptions = {}) => {
     const { scalingFactor = 1, maxDecimals = 2, style, suffixed = false } = options
-    
+
     if (suffixed) return formatNumberWithSuffix(value, options)
 
     const scaledValue = scalingFactor * parseFloat((value || '0').toString())
@@ -53,7 +51,7 @@ export const formatNumberWithStyle = (value: number | string, options: FormatOpt
     if (!!scaledValue && Math.abs(scaledValue) < MINIMUM_DECIMAL) {
         return `<${MINIMUM_DECIMAL.toLocaleString(undefined, {
             style,
-            currency: style === 'currency' ? 'USD': undefined,
+            currency: style === 'currency' ? 'USD' : undefined,
             minimumSignificantDigits: 1,
         })}`
     }
@@ -61,7 +59,7 @@ export const formatNumberWithStyle = (value: number | string, options: FormatOpt
     const isLessThanOne = Math.abs(scaledValue) < 1
     return scaledValue.toLocaleString(undefined, {
         style,
-        currency: style === 'currency' ? 'USD': undefined,
+        currency: style === 'currency' ? 'USD' : undefined,
         maximumFractionDigits: maxDecimals,
         ...(isLessThanOne && {
             minimumSignificantDigits: 1,
@@ -72,11 +70,11 @@ export const formatNumberWithStyle = (value: number | string, options: FormatOpt
 
 export const formatNumberWithSuffix = (value: number | string, options: FormatOptions = {}) => {
     const { scalingFactor = 1, maxDecimals = 3, style } = options
-    
+
     const numValue = numeral(value).multiply(scalingFactor)
     const format = maxDecimals > 0 ? `0,0.[${'0'.repeat(maxDecimals)}]a` : '0,0a'
     const formatted = numValue.format(format).toUpperCase()
-    switch(style) {
+    switch (style) {
         case 'currency':
             return `$${formatted}`
         case 'percent':
@@ -106,12 +104,12 @@ export function formatDataNumber(
 
     if (decimals !== 0) res = Number.parseFloat(formatUnits(input, decimals))
 
-    if (res < 0.01) return `${currency ? '$': ''}${formatNumber(res.toString(), formatDecimal)}`
+    if (res < 0.01) return `${currency ? '$' : ''}${formatNumber(res.toString(), formatDecimal)}`
 
     return new Intl.NumberFormat('en-US', {
         maximumFractionDigits: formatDecimal,
-        notation: compact ? 'compact': 'standard',
-        style: currency ? 'currency': 'decimal',
+        notation: compact ? 'compact' : 'standard',
+        style: currency ? 'currency' : 'decimal',
         currency: 'USD',
     }).format(res)
 }
@@ -122,9 +120,7 @@ export const toPercentage = (value: number, decimals: number) => {
 
 export const getRatePercentage = (value: string, digits = 4, returnRate = false) => {
     const rate = Number(value)
-    const ratePercentage = rate < 1
-        ? numeral(1).subtract(rate).value() * -1
-        : numeral(rate).subtract(1).value()
+    const ratePercentage = rate < 1 ? numeral(1).subtract(rate).value() * -1 : numeral(rate).subtract(1).value()
 
     if (returnRate) return ratePercentage
 
@@ -161,10 +157,7 @@ export const formatDate = (ms: number) => {
 
 // SUMMARIES
 
-export const formatSummaryValue = (
-    value: string | undefined,
-    options: FormatOptions = { maxDecimals: 3 }
-) => {
+export const formatSummaryValue = (value: string | undefined, options: FormatOptions = { maxDecimals: 3 }) => {
     if (!value) return undefined
 
     return {
@@ -173,10 +166,7 @@ export const formatSummaryValue = (
     }
 }
 
-export const formatSummaryCurrency = (
-    value: string | undefined,
-    conversionFactor?: string
-) => {
+export const formatSummaryCurrency = (value: string | undefined, conversionFactor?: string) => {
     if (!value) return undefined
 
     const usdRaw = (parseFloat(value) * parseFloat(conversionFactor || '0')).toString()
@@ -189,21 +179,19 @@ export const formatSummaryCurrency = (
     return summary
 }
 
-export const formatSummaryPercentage = (
-    value: string | undefined,
-    scalingFactor?: number
-) => {
+export const formatSummaryPercentage = (value: string | undefined, scalingFactor?: number) => {
     if (typeof value === 'undefined') return undefined
 
     return {
         raw: value,
-        formatted: value && !isNaN(Number(value))
-            ? formatNumberWithStyle(value, {
-                scalingFactor,
-                style: 'percent',
-                maxDecimals: 4,
-            })
-            : '--%',
+        formatted:
+            value && !isNaN(Number(value))
+                ? formatNumberWithStyle(value, {
+                      scalingFactor,
+                      style: 'percent',
+                      maxDecimals: 4,
+                  })
+                : '--%',
     }
 }
 

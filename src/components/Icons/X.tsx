@@ -10,9 +10,10 @@ export function X({ size, ...props }: IconProps) {
             stroke="black"
             strokeWidth={2.5}
             strokeLinecap="round"
-            {...props}>
-            <path d="M 1,1 19,19"/>
-            <path d="M 19,1 1,19"/>
+            {...props}
+        >
+            <path d="M 1,1 19,19" />
+            <path d="M 19,1 1,19" />
         </svg>
     )
 }

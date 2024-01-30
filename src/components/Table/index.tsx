@@ -9,17 +9,16 @@ import { TableHeaderItem } from './TableHeaderItem'
 import { TableRow } from './TableRow'
 import { ContentWithStatus, ContentWithStatusProps } from '../ContentWithStatus'
 
-type TableProps = FlexProps
-    & Partial<Omit<ContentWithStatusProps, 'children'>>
-    & {
-        container?: ComponentType,
-        headers: SortableHeader[],
-        headerContainer: ComponentType,
-        headerProps?: Record<string, string | number | boolean | undefined>,
-        sorting: Sorting,
-        setSorting: SetState<Sorting>,
-        rows: ReactChildren[],
-        footer?: ReactChildren,
+type TableProps = FlexProps &
+    Partial<Omit<ContentWithStatusProps, 'children'>> & {
+        container?: ComponentType
+        headers: SortableHeader[]
+        headerContainer: ComponentType
+        headerProps?: Record<string, string | number | boolean | undefined>
+        sorting: Sorting
+        setSorting: SetState<Sorting>
+        rows: ReactChildren[]
+        footer?: ReactChildren
     }
 export function Table({
     container: Container = TableContainer,
@@ -48,18 +47,19 @@ export function Table({
                         <TableHeaderItem
                             key={label}
                             sortable={!unsortable}
-                            isSorting={sorting.key === label ? sorting.dir: false}
-                            onClick={unsortable
-                                ? undefined
-                                : () => setSorting(s => ({
-                                    key: label,
-                                    dir: s.key === label && s.dir === 'desc'
-                                        ? 'asc'
-                                        : 'desc',
-                                }))
+                            isSorting={sorting.key === label ? sorting.dir : false}
+                            onClick={
+                                unsortable
+                                    ? undefined
+                                    : () =>
+                                          setSorting((s) => ({
+                                              key: label,
+                                              dir: s.key === label && s.dir === 'desc' ? 'asc' : 'desc',
+                                          }))
                             }
-                            tooltip={tooltip}>
-                            <Text $fontWeight={sorting.key === label ? 700: 400}>{label}</Text>
+                            tooltip={tooltip}
+                        >
+                            <Text $fontWeight={sorting.key === label ? 700 : 400}>{label}</Text>
                         </TableHeaderItem>
                     ))}
                 </Header>
@@ -70,7 +70,8 @@ export function Table({
                 error={error}
                 errorContent={errorContent}
                 isEmpty={isEmpty}
-                emptyContent={emptyContent}>
+                emptyContent={emptyContent}
+            >
                 {rows}
             </ContentWithStatus>
             {footer}

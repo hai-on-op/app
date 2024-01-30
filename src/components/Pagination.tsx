@@ -7,7 +7,7 @@ import { Caret } from './Icons/Caret'
 interface Props {
     totalItems: number
     perPage: number
-    handlePagingMargin: (offset: number) => void,
+    handlePagingMargin: (offset: number) => void
 }
 
 export function Pagination({ totalItems, handlePagingMargin, perPage = 5 }: Props) {
@@ -18,12 +18,12 @@ export function Pagination({ totalItems, handlePagingMargin, perPage = 5 }: Prop
     }, [totalItems, perPage])
 
     if (totalItems <= perPage) return null
-    
+
     return (
         <PaginationContainer>
             <ReactPaginate
-                previousLabel={<Caret direction="left"/>}
-                nextLabel={<Caret direction="right"/>}
+                previousLabel={<Caret direction="left" />}
+                nextLabel={<Caret direction="right" />}
                 pageCount={total}
                 marginPagesDisplayed={2}
                 pageRangeDisplayed={4}
@@ -66,9 +66,11 @@ const PaginationContainer = styled.div`
                 height: 40px;
                 border-radius: 50%;
                 border: ${({ theme }) => theme.border.medium};
-                border-color: rgba(0,0,0,0.1);
+                border-color: rgba(0, 0, 0, 0.1);
             }
-            &.active, &:active, &:hover {
+            &.active,
+            &:active,
+            &:hover {
                 &:not(.disabled) {
                     a {
                         border-color: black;
@@ -76,7 +78,8 @@ const PaginationContainer = styled.div`
                 }
             }
 
-            &:first-child.disabled, &:last-child.disabled {
+            &:first-child.disabled,
+            &:last-child.disabled {
                 & svg {
                     opacity: 0.1;
                 }

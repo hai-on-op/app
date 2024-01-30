@@ -38,16 +38,13 @@ import { IntentionHeader } from '~/components/IntentionHeader'
 import { HaiAlert } from '~/components/HaiAlert'
 import { StartAuction } from './Auctions/StartAuction'
 
-const playlist = [
-    '/audio/get-hai-together.wav',
-    '/audio/hai-as-fuck.wav',
-]
+const playlist = ['/audio/get-hai-together.wav', '/audio/hai-as-fuck.wav']
 
 const toastId = 'networdToastHash'
 const successAccountConnection = 'successAccountConnection'
 
 type Props = {
-    children: ReactChildren,
+    children: ReactChildren
 }
 export function Shared({ children }: Props) {
     const { t } = useTranslation()
@@ -71,19 +68,15 @@ export function Shared({ children }: Props) {
         settingsModel: settingsState,
         connectWalletModel: connectWalletState,
         auctionModel: { auctionsData },
-    } = useStoreState(state => state)
+    } = useStoreState((state) => state)
 
     const {
         connectWalletModel: connectWalletActions,
         popupsModel: popupsActions,
         transactionsModel: transactionsActions,
         vaultModel: vaultActions,
-        auctionModel: {
-            setCoinBalances,
-            setProtInternalBalance,
-            setInternalBalance,
-        },
-    } = useStoreActions(actions => actions)
+        auctionModel: { setCoinBalances, setProtInternalBalance, setInternalBalance },
+    } = useStoreActions((actions) => actions)
 
     const resetModals = useCallback(() => {
         popupsActions.setIsClaimPopupOpen(false)
@@ -92,13 +85,13 @@ export function Shared({ children }: Props) {
 
     useEffect(() => {
         if (!account || !geb || !connectWalletState?.forceUpdateTokens) return
-        
+
         connectWalletActions.fetchTokenData({ geb, user: account })
     }, [account, geb, connectWalletState?.forceUpdateTokens, connectWalletActions])
 
     useEffect(() => {
         if (!connectWalletState || !signer) return
-        
+
         signer.getBalance().then((balance) => {
             connectWalletActions.updateEthBalance({
                 chainId: chain?.id || NETWORK_ID,
@@ -121,7 +114,7 @@ export function Shared({ children }: Props) {
 
     useEffect(() => {
         if (!account || !coinTokenContract || !protTokenContract || !connectWalletState.proxyAddress) return
-        
+
         protTokenContract.allowance(account, connectWalletState.proxyAddress).then((allowance) => {
             const formattedAllowance = utils.formatEther(allowance)
             connectWalletActions.setProtAllowance(formattedAllowance)
@@ -135,7 +128,7 @@ export function Shared({ children }: Props) {
 
     useEffect(() => {
         if (!auctionsData) return
-        
+
         const protInternalBalance = auctionsData.protocolTokenProxyBalance
         setProtInternalBalance(utils.formatEther(protInternalBalance))
 
@@ -193,7 +186,7 @@ export function Shared({ children }: Props) {
                     chainId,
                 })
             }
-        } catch(error: any) {
+        } catch (error: any) {
             console.error(error)
             connectWalletActions.setStep(1)
             setInitializing(false)
@@ -201,10 +194,7 @@ export function Shared({ children }: Props) {
 
         await timeout(500)
         setInitializing(false)
-    }, [
-        account, chain?.id, signer, geb,
-        connectWalletActions, popupsActions, vaultActions, transactionsActions,
-    ])
+    }, [account, chain?.id, signer, geb, connectWalletActions, popupsActions, vaultActions, transactionsActions])
 
     const accountChange = useCallback(() => {
         resetModals()
@@ -244,17 +234,10 @@ export function Shared({ children }: Props) {
             toast.update(toastId, { autoClose: 1 })
             connectWalletActions.setIsWrongNetwork(false)
             if (account) {
-                toast(
-                    <ToastPayload
-                        icon="Check"
-                        iconColor="green"
-                        text={t('wallet_connected')}
-                    />,
-                    {
-                        type: 'success',
-                        toastId: successAccountConnection,
-                    }
-                )
+                toast(<ToastPayload icon="Check" iconColor="green" text={t('wallet_connected')} />, {
+                    type: 'success',
+                    toastId: successAccountConnection,
+                })
                 connectWalletActions.setStep(1)
                 accountChecker()
             }
@@ -272,7 +255,9 @@ export function Shared({ children }: Props) {
         else pause()
     }, [settingsState.isPlayingMusic, play, pause])
 
-    const { data: { priceDiff } } = useAnalytics()
+    const {
+        data: { priceDiff },
+    } = useAnalytics()
     const haiAlertActive = useMemo(() => {
         // TODO: determine diff threshold
         return priceDiff > 0
@@ -283,18 +268,10 @@ export function Shared({ children }: Props) {
             <TransactionUpdater />
 
             <Background>
-                <video
-                    src="/assets/tie-dye-reduced.mov"
-                    width={1920}
-                    height={1072}
-                    muted
-                    autoPlay
-                    playsInline
-                    loop
-                />
+                <video src="/assets/tie-dye-reduced.mov" width={1920} height={1072} muted autoPlay playsInline loop />
             </Background>
-            {!isSplash && <ParallaxBackground/>}
-            <Header tickerActive={!isSplash}/>
+            {!isSplash && <ParallaxBackground />}
+            <Header tickerActive={!isSplash} />
             <ClaimModal />
             {!isSplash && initializing && <InitializationModal />}
 
@@ -306,26 +283,19 @@ export function Shared({ children }: Props) {
                     />
                 </AlertContainer>
             )} */}
-            {account && blockedAddresses.includes(account.toLowerCase())
-                ? <BlockedAddress />
-                : (
-                    <Content
-                        $padTop={!isSplash}
-                        $padBottom={!isSplash
-                            ? haiAlertActive ? '240px': '168px'
-                            : undefined
-                        }
-                        $maxWidth={!isSplash ? 'min(1200px, calc(100vw - 48px))': undefined}>
-                        <IntentionHeader>
-                            {location.pathname === '/auctions' && (
-                                <StartAuction/>
-                            )}
-                        </IntentionHeader>
-                        {children}
-                    </Content>
-                )
-            }
-            {!isSplash && haiAlertActive && <HaiAlert/>}
+            {account && blockedAddresses.includes(account.toLowerCase()) ? (
+                <BlockedAddress />
+            ) : (
+                <Content
+                    $padTop={!isSplash}
+                    $padBottom={!isSplash ? (haiAlertActive ? '240px' : '168px') : undefined}
+                    $maxWidth={!isSplash ? 'min(1200px, calc(100vw - 48px))' : undefined}
+                >
+                    <IntentionHeader>{location.pathname === '/auctions' && <StartAuction />}</IntentionHeader>
+                    {children}
+                </Content>
+            )}
+            {!isSplash && haiAlertActive && <HaiAlert />}
             <ImagePreloader />
         </Container>
     )
@@ -355,20 +325,20 @@ const Background = styled(CenteredFlex)`
     z-index: 0;
 `
 
-const Content = styled(Flex).attrs(props => ({
+const Content = styled(Flex).attrs((props) => ({
     $column: true,
     $justify: 'flex-start',
     $align: 'center',
     $gap: 48,
     ...props,
 }))<{
-    $padTop?: boolean,
-    $padBottom?: string,
-    $maxWidth?: string,
+    $padTop?: boolean
+    $padBottom?: string
+    $maxWidth?: string
 }>`
     padding: 0 48px;
     padding-bottom: ${({ $padBottom = '0px' }) => $padBottom};
-    margin-top: ${({ $padTop = false }) => $padTop ? '240px': '0px'};
+    margin-top: ${({ $padTop = false }) => ($padTop ? '240px' : '0px')};
 
     & > * {
         max-width: ${({ $maxWidth = 'auto' }) => $maxWidth};
@@ -377,6 +347,6 @@ const Content = styled(Flex).attrs(props => ({
     ${({ theme, $padTop = false, $padBottom = '0px' }) => theme.mediaWidth.upToSmall`
         padding: 0 24px;
         padding-bottom: ${$padBottom};
-        margin-top: ${$padTop ? '152px': '0px'};
+        margin-top: ${$padTop ? '152px' : '0px'};
     `}
 `

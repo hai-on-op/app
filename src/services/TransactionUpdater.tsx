@@ -8,14 +8,11 @@ import { useEthersProvider } from '~/hooks'
 import { ToastPayload } from '~/components/ToastPayload'
 
 type CheckTransaction = {
-    addedTime: number,
-    receipt?: any,
+    addedTime: number
+    receipt?: any
     lastCheckedBlockNumber?: number
 }
-export function shouldCheck(
-    lastBlockNumber: number,
-    tx: CheckTransaction
-): boolean {
+export function shouldCheck(lastBlockNumber: number, tx: CheckTransaction): boolean {
     if (tx.receipt) return false
     if (!tx.lastCheckedBlockNumber) return true
     const blocksSinceCheck = lastBlockNumber - tx.lastCheckedBlockNumber

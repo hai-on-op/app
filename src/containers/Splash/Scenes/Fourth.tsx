@@ -78,36 +78,30 @@ export function Fourth({ zIndex }: ZoomSceneProps) {
     const [index, setIndex] = useState(0)
 
     return (
-        <ZoomScene
-            $zIndex={zIndex}
-            style={{ marginTop: '100px' }}>
-            <Container $offset={isLargerThanWidth
-                ? 'calc(0px)'
-                : `max(calc(${-100 * index}vw + ${36 * index}px), ${-424 * index}px)`
-            }>
+        <ZoomScene $zIndex={zIndex} style={{ marginTop: '100px' }}>
+            <Container
+                $offset={
+                    isLargerThanWidth
+                        ? 'calc(0px)'
+                        : `max(calc(${-100 * index}vw + ${36 * index}px), ${-424 * index}px)`
+                }
+            >
                 {cardTitles.map(({ title, link }, i) => (
-                    <LearnCard
-                        key={i}
-                        title={title}
-                        link={link}
-                    />
+                    <LearnCard key={i} title={title} link={link} />
                 ))}
-                <ArrowButton onClick={() => setIndex(i => (i <= 0 ? cardTitles.length - 1: i - 1))}>
-                    <Caret direction="left"/>
+                <ArrowButton onClick={() => setIndex((i) => (i <= 0 ? cardTitles.length - 1 : i - 1))}>
+                    <Caret direction="left" />
                 </ArrowButton>
-                <ArrowButton onClick={() => setIndex(i => i >= cardTitles.length - 1 ? 0: i + 1)}>
-                    <Caret direction="right"/>
+                <ArrowButton onClick={() => setIndex((i) => (i >= cardTitles.length - 1 ? 0 : i + 1))}>
+                    <Caret direction="right" />
                 </ArrowButton>
             </Container>
-            <FloatingElements
-                elves={elves}
-                clouds={clouds}
-            />
+            <FloatingElements elves={elves} clouds={clouds} />
         </ZoomScene>
     )
 }
 
-const Container = styled(Flex).attrs(props => ({
+const Container = styled(Flex).attrs((props) => ({
     $justify: 'flex-start',
     $align: 'center',
     ...props,
@@ -130,7 +124,7 @@ const Container = styled(Flex).attrs(props => ({
     `}
 `
 
-const ArrowButton = styled(HaiButton).attrs(props => ({
+const ArrowButton = styled(HaiButton).attrs((props) => ({
     $variant: 'yellowish',
     ...props,
 }))`

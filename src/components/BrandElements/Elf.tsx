@@ -42,9 +42,9 @@ const elves = [
 ]
 
 type ElfProps = {
-    variant: number,
-    width?: string,
-    style?: object,
+    variant: number
+    width?: string
+    style?: object
     animated?: boolean
 }
 
@@ -66,10 +66,14 @@ const hueAnim = keyframes`
     100% { filter: hue-rotate(360deg); }
 `
 
-export const ElfImage = styled.img<{ $width?: string, $animated?: boolean, $animDuration: number }>`
+export const ElfImage = styled.img<{ $width?: string; $animated?: boolean; $animDuration: number }>`
     position: absolute;
     width: ${({ $width = 'auto' }) => $width};
     height: auto;
     pointer-events: none;
-    ${({ $animated, $animDuration }) => $animated && css`animation: ${hueAnim} ${$animDuration.toFixed(2)}s linear infinite;`}
+    ${({ $animated, $animDuration }) =>
+        $animated &&
+        css`
+            animation: ${hueAnim} ${$animDuration.toFixed(2)}s linear infinite;
+        `}
 `
