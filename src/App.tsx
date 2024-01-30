@@ -5,7 +5,7 @@ import { I18nextProvider } from 'react-i18next'
 import { ApolloProvider } from '@apollo/client'
 
 import type { Theme } from '~/types'
-import { client } from '~/utils'
+import { ChainId, NETWORK_ID, client } from '~/utils'
 import { AnalyticsProvider } from '~/providers/AnalyticsProvider'
 
 import { GlobalStyle } from '~/styles'
@@ -20,6 +20,7 @@ import { Vaults } from '~/containers/Vaults'
 import { Contracts } from '~/containers/Contracts'
 import { Learn } from './containers/Learn'
 import { VaultExplorer } from './containers/Vaults/Explore'
+import { TestClaim } from './containers/TestClaim'
 
 declare module 'styled-components' {
     export interface DefaultTheme extends Theme {}
@@ -37,6 +38,9 @@ const App = () => {
                                 <Route />
                                 <>
                                     <Switch>
+                                        {NETWORK_ID === ChainId.OPTIMISM_SEPOLIA && (
+                                            <Route exact strict component={TestClaim} path={'/test/claim'} />
+                                        )}
                                         <Route exact strict component={Splash} path={'/'} />
                                         <Route exact strict component={Privacy} path={'/privacy'} />
                                         <Route exact strict component={Auctions} path={'/auctions'} />

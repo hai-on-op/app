@@ -63,7 +63,7 @@ export const formatNumberWithStyle = (value: number | string, options: FormatOpt
         maximumFractionDigits: maxDecimals,
         ...(isLessThanOne && {
             minimumSignificantDigits: 1,
-            maximumSignificantDigits: maxDecimals,
+            maximumSignificantDigits: maxDecimals || 1,
         }),
     })
 }
@@ -187,10 +187,10 @@ export const formatSummaryPercentage = (value: string | undefined, scalingFactor
         formatted:
             value && !isNaN(Number(value))
                 ? formatNumberWithStyle(value, {
-                      scalingFactor,
-                      style: 'percent',
-                      maxDecimals: 4,
-                  })
+                    scalingFactor,
+                    style: 'percent',
+                    maxDecimals: 4,
+                })
                 : '--%',
     }
 }
