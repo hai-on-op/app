@@ -6,7 +6,7 @@ describe('popups model', () => {
     beforeEach(() => {
         store = createStore(auctionModel)
     })
-    
+
     describe('isSubmitting', () => {
         it('activates isSubmitting', () => {
             expect(store.getState().isSubmitting).toBe(false)

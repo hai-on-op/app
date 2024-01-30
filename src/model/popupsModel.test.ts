@@ -6,7 +6,7 @@ describe('popups model', () => {
     beforeEach(() => {
         store = createStore(popupsModel)
     })
-    
+
     describe('waitingModal', () => {
         it('opens the waiting modal', () => {
             expect(store.getState().isWaitingModalOpen).toBe(false)
