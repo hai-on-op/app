@@ -120,7 +120,7 @@ export function Intro({ zIndex }: ZoomSceneProps) {
                     $letterSpacing={isLargerThanSmall ? '1.2rem' : isLargerThanExtraSmall ? '0.8rem' : '0.5rem'}
                 />
                 <Text $lineHeight="1.6">
-                    The <strong>multi-collateral stablecoin</strong> for smooth financial highs
+                    The <strong>multi-collateral stablecoin</strong> for smooth financial highs.
                 </Text>
                 <HaiButton $variant="yellowish">
                     <Swirl />

@@ -114,6 +114,7 @@ export type QuerySafe = {
     collateralType: QuerySafeCollateralType // Collateral type associated with this Safe
     collateral: string // Amount of collateral locked in the Safe
     debt: string // Outstanding Safe debt
+    cRatio: string // Current CRatio for this Safe
     safeHandler?: string // The address of the Safe handler (ownership at the SAFEEngine level if the Safe was created using GebSafeManager)
     owner: QueryUser // Address of the Safe owner (top level ownership)
     proxy?: QueryUserProxy // Optional proxy address (if the owner used a proxy to create the Safe)
