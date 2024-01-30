@@ -1,31 +1,41 @@
+import { zeroAddress } from 'viem'
 import { css } from 'styled-components'
-import { ChainId } from './interfaces'
 
 export const {
     VITE_SYSTEM_STATUS,
+    VITE_NETWORK_ID,
     VITE_WALLETCONNECT_ID,
     VITE_ALCHEMY_KEY,
     VITE_MAINNET_PUBLIC_RPC,
     VITE_TESTNET_PUBLIC_RPC,
 } = import.meta.env
 
+export enum ChainId {
+    MAINNET = 10,
+    OPTIMISM_GOERLI = 420,
+    OPTIMISM_SEPOLIA = 11155420,
+}
+
+export const NETWORK_ID = parseInt(VITE_NETWORK_ID ?? '11155420')
 export const DEFAULT_NETWORK_ID = 11155420
 
-export const getNetworkName = (chainId: number) => {
+export const getNetworkName = (chainId: ChainId | number) => {
     switch (chainId) {
-        case 10:
+        case ChainId.MAINNET:
             return 'mainnet'
-        case 420:
+        case ChainId.OPTIMISM_GOERLI:
             return 'optimism-goerli'
-        case 11155420:
+        case ChainId.OPTIMISM_SEPOLIA:
             return 'optimism-sepolia'
         default:
             return 'mainnet'
     }
 }
 
+export const NETWORK_NAME = getNetworkName(NETWORK_ID)
+
 export const COIN_TICKER = 'HAI'
-export const EMPTY_ADDRESS = '0x0000000000000000000000000000000000000000'
+export const EMPTY_ADDRESS = zeroAddress
 export const SYSTEM_STATUS = VITE_SYSTEM_STATUS || ''
 
 export const ETHERSCAN_PREFIXES: { [chainId in ChainId]: string } = {
@@ -34,7 +44,7 @@ export const ETHERSCAN_PREFIXES: { [chainId in ChainId]: string } = {
     11155420: 'sepolia-optimism.',
 }
 
-const MEDIA_WIDTHS = {
+export const MEDIA_WIDTHS = {
     upToExtraSmall: 576,
     upToSmall: 768,
     upToMedium: 992,
@@ -52,14 +62,26 @@ export const mediaWidthTemplates: {
     return accumulator
 }, {}) as any
 
-export const DEFAULT_SAFE_STATE = {
-    totalCollateral: '',
-    totalDebt: '',
-    leftInput: '',
-    rightInput: '',
-    collateralRatio: 0,
-    liquidationPrice: 0,
-    collateral: '',
+export enum Status {
+    SAFE = 'SAFE',
+    DANGER = 'DANGER',
+    LIVE = 'LIVE',
+    COMPLETED = 'COMPLETED',
+    RESTARTING = 'RESTARTING',
+    SETTLING = 'SETTLING',
+    POSITIVE = 'POSITIVE',
+    NEGATIVE = 'NEGATIVE',
+    NEUTRAL = 'NEUTRAL',
+    OKAY = 'OKAY',
+    UNKNOWN = 'UNKNOWN',
+    CUSTOM = 'CUSTOM',
+}
+
+export enum ActionState {
+    NONE = '',
+    LOADING = 'loading',
+    SUCCESS = 'success',
+    ERROR = 'error',
 }
 
 export const floatsTypes = {
@@ -68,6 +90,12 @@ export const floatsTypes = {
     RAD: 45,
 }
 
+export const network_name = VITE_NETWORK_ID === '1' ? 'mainnet' : 'optimism-sepolia'
+
+export const LINK_TO_DOCS = 'https://docs.letsgethai.com/'
+export const LINK_TO_TWITTER = 'https://twitter.com/@letsgethai'
+export const LINK_TO_TELEGRAM = 'https://t.me/+0iIhX0f9DDAxODE5'
+export const LINK_TO_DISCORD = 'https://discord.gg/5MWsWuyTBG'
 // Auctions
 export const NUMBER_OF_AUCTIONS_TO_SHOW = 15
 export const SURPLUS_BATCH_SIZE = 5_000_000 // blocks

@@ -1,9 +1,8 @@
 import { useTranslation } from 'react-i18next'
-import styled from 'styled-components'
 
-import FeatherIconWrapper, { IconName } from './FeatherIconWrapper'
-import { ExternalLinkArrow } from '~/GlobalStyle'
-import { getEtherscanLink } from '~/utils'
+import styled from 'styled-components'
+import { FeatherIconWrapper, type IconName } from './FeatherIconWrapper'
+import { AddressLink } from './AddressLink'
 
 interface Props {
     icon: IconName
@@ -12,33 +11,27 @@ interface Props {
     text: string
     textColor?: string
     payload?: {
-        type: 'address' | 'transaction' | 'token' | 'block'
+        type: 'address' | 'transaction'
         value: string
         chainId: number
     }
 }
-const ToastPayload = ({ icon, iconColor, text, textColor, iconSize, payload }: Props) => {
+export function ToastPayload({ icon, iconColor, text, textColor, iconSize, payload }: Props) {
     const { t } = useTranslation()
     return (
         <Container>
             <FeatherIconWrapper name={icon} color={iconColor} size={iconSize || 20} />
             <div>
                 <Text color={textColor}>{text}</Text>
-                {payload ? (
-                    <a
-                        href={getEtherscanLink(payload.chainId, payload.value, payload.type)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
+                {!!payload && (
+                    <AddressLink chainId={payload.chainId} address={payload.value} type={payload.type}>
                         {t('view_etherscan')}
-                    </a>
-                ) : null}
+                    </AddressLink>
+                )}
             </div>
         </Container>
     )
 }
-
-export default ToastPayload
 
 const Container = styled.div`
     display: flex;
@@ -46,13 +39,9 @@ const Container = styled.div`
     svg {
         margin-right: 15px;
     }
-    a {
-        ${ExternalLinkArrow}
-        font-size: ${(props) => props.theme.font.extraSmall};
-    }
 `
 
 const Text = styled.div<{ color?: string }>`
-    font-size: ${(props) => props.theme.font.small};
-    color: ${(props) => (props.color ? props.color : props.theme.colors.neutral)};
+    font-size: ${({ theme }) => theme.font.small};
+    color: ${({ theme, color }) => color || theme.colors.neutral};
 `

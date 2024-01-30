@@ -1,29 +1,139 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useStoreActions, useStoreState } from '~/store'
 import { BigNumber } from 'ethers'
-import { utils, AuctionData, radToFixed, wadToFixed } from '@hai-on-op/sdk'
+import { formatEther } from 'ethers/lib/utils'
+import {
+    utils as gebUtils,
+    type AuctionData,
+    radToFixed,
+    wadToFixed,
+    type ICollateralAuction as SDKCollateralAuction,
+} from '@hai-on-op/sdk'
 import { useAccount } from 'wagmi'
-import _ from '~/utils/lodash'
 
-import { AuctionEventType } from '~/types'
+import type { AuctionEventType, IAuction, ICollateralAuction } from '~/types'
+import { ActionState, floatsTypes } from '~/utils'
 import { useGeb } from './useGeb'
 
 export function useGetAuctions(type: AuctionEventType, tokenSymbol?: string) {
     const { auctionModel } = useStoreState((state) => state)
-    const auctionsList = (function () {
+
+    const auctions = useMemo(() => {
         switch (type) {
             case 'SURPLUS':
-                return auctionModel.surplusAuctions
+                return auctionModel.surplusAuctions || []
             case 'DEBT':
-                return auctionModel.debtAuctions
+                return auctionModel.debtAuctions || []
             case 'COLLATERAL':
-                return auctionModel.collateralAuctions[tokenSymbol || 'WETH']
+                return tokenSymbol
+                    ? (auctionModel.collateralAuctions[tokenSymbol] || []).map((auction) =>
+                          convertCollateralAuction(auction, tokenSymbol)
+                      )
+                    : Object.entries(auctionModel.collateralAuctions).reduce(
+                          (arr, [tokenSymbol, innerArr]) => [
+                              ...innerArr.map((auction) => convertCollateralAuction(auction, tokenSymbol)),
+                              ...arr,
+                          ],
+                          [] as IAuction[]
+                      )
             default:
-                return undefined
+                return []
+        }
+    }, [type, tokenSymbol, auctionModel.collateralAuctions, auctionModel.debtAuctions, auctionModel.surplusAuctions])
+
+    return auctions
+}
+
+export function convertCollateralAuction(auction: SDKCollateralAuction, tokenSymbol: string): IAuction {
+    return {
+        ...auction,
+        auctionDeadline: '',
+        biddersList: auction.biddersList.map((bid) => ({
+            ...bid,
+            buyAmount: formatEther(bid.buyAmount || '0'),
+            sellAmount: formatEther(bid.bid || '0'),
+        })),
+        buyAmount: '0',
+        buyInitialAmount: formatEther(auction.amountToRaise || '0'),
+        buyToken: 'HAI',
+        englishAuctionBids: [],
+        englishAuctionConfiguration: {
+            bidDuration: '',
+            bidIncrease: '',
+            totalAuctionLength: '',
+            DEBT_amountSoldIncrease: '',
+        },
+        englishAuctionType: 'COLLATERAL',
+        sellAmount: '0',
+        sellInitialAmount: formatEther(auction.amountToSell || '0'),
+        sellToken: tokenSymbol,
+        startedBy: auction.auctioneer,
+        winner: '',
+    }
+}
+
+export function useCollateralAuctions(tokenSymbol: string): ICollateralAuction[] | null {
+    const { auctionModel } = useStoreState((state) => state)
+
+    const auctionsList = auctionModel.collateralAuctions[tokenSymbol]
+
+    const auctions = (function () {
+        if (auctionsList) {
+            if (auctionsList.length === 0) {
+                return []
+            }
+
+            const filteredAuctions = auctionsList.map((auc: SDKCollateralAuction) => {
+                const { createdAt, createdAtTransaction, amountToSell, amountToRaise, biddersList } = auc
+                const { startedBy = '' } = auc as any
+
+                // Amount to sell = collateral
+                // Amout to raise = hai
+                const collateralBought = biddersList.reduce((acc, bid) => acc.add(bid.bid), BigNumber.from('0'))
+                const remainingCollateral = BigNumber.from(amountToSell).sub(collateralBought).toString()
+
+                const raised = biddersList.reduce((acc, bid) => acc.add(bid.buyAmount), BigNumber.from('0'))
+                const amountToRaiseE18 = gebUtils.decimalShift(
+                    BigNumber.from(amountToRaise),
+                    floatsTypes.WAD - floatsTypes.RAD
+                )
+                const remainingToRaiseE18Raw = amountToRaiseE18.sub(raised).toString()
+
+                const remainingToRaiseE18 = remainingToRaiseE18Raw > '0' ? remainingToRaiseE18Raw : '0'
+
+                const kickBidder = {
+                    bidder: startedBy,
+                    buyAmount: '0',
+                    createdAt,
+                    bid: '0',
+                    createdAtTransaction,
+                }
+
+                const initialBids = [...[kickBidder], ...biddersList]
+
+                return {
+                    ...auc,
+                    biddersList: initialBids.reverse(),
+                    startedBy,
+                    remainingToRaiseE18,
+                    remainingCollateral,
+                    tokenSymbol,
+                }
+            })
+
+            const onGoingAuctions = filteredAuctions.filter(
+                (auction) => !BigNumber.from(auction.remainingCollateral).isZero()
+            )
+
+            const auctionsData = Array.from(new Set([...onGoingAuctions, ...filteredAuctions]))
+
+            return auctionsData
+        } else {
+            return null
         }
     })()
 
-    return auctionsList
+    return auctions
 }
 
 // start surplus auction
@@ -120,7 +230,7 @@ export function useStartAuction() {
             popupsActions.setWaitingPayload({
                 title: 'Transaction Submitted',
                 hash: txResponse.hash,
-                status: 'success',
+                status: ActionState.SUCCESS,
             })
             await txResponse.wait()
         }
@@ -147,7 +257,7 @@ export function useStartAuction() {
             popupsActions.setWaitingPayload({
                 title: 'Transaction Submitted',
                 hash: txResponse.hash,
-                status: 'success',
+                status: ActionState.SUCCESS,
             })
             await txResponse.wait()
         }

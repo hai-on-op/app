@@ -1,20 +1,21 @@
-import styled from 'styled-components'
-import { ExternalLinkArrow } from '~/GlobalStyle'
-import { getEtherscanLink, returnWalletAddress } from '~/utils'
+import { useNetwork } from 'wagmi'
 
-export const Link = styled.a`
-    ${ExternalLinkArrow}
-`
+import { NETWORK_ID, getEtherscanLink, returnWalletAddress } from '~/utils'
 
-interface AddressLinkProps {
-    chainId: number
+import { ExternalLink, ExternalLinkProps } from './ExternalLink'
+
+type AddressLinkProps = Partial<ExternalLinkProps> & {
+    chainId?: number
     address: string
+    type?: 'address' | 'transaction'
 }
 
-export const AddressLink = ({ chainId, address }: AddressLinkProps) => {
+export const AddressLink = ({ chainId, address, type = 'address', children, ...props }: AddressLinkProps) => {
+    const { chain } = useNetwork()
+
     return (
-        <Link href={getEtherscanLink(chainId, address, 'address')} target="_blank">
-            {returnWalletAddress(address)}
-        </Link>
+        <ExternalLink {...props} href={getEtherscanLink(chainId || chain?.id || NETWORK_ID, address, type)}>
+            {children || returnWalletAddress(address)}
+        </ExternalLink>
     )
 }

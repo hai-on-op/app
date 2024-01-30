@@ -1,5 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
+
 import error from './assets/error.svg'
 
 interface State {
@@ -11,8 +12,11 @@ interface Props {
     children?: any
 }
 
-class ErrorBoundary extends React.Component<Props, State> {
-    state: State = { error: null, errorInfo: null }
+export class ErrorBoundary extends React.Component<Props, State> {
+    state: State = {
+        error: null,
+        errorInfo: null,
+    }
 
     componentDidCatch(error: any, errorInfo: any) {
         this.setState({
@@ -41,8 +45,6 @@ class ErrorBoundary extends React.Component<Props, State> {
         return children
     }
 }
-
-export default ErrorBoundary
 
 const Container = styled.div`
     width: 100%;

@@ -1,12 +1,12 @@
 import { useCallback, useMemo, useState } from 'react'
-import styled from 'styled-components'
-import customLodash from '~/utils/lodash'
 
-import Button from '~/components/Button'
-import { useStoreActions, useStoreState } from '~/store'
-import { IAuction, ICollateralAuction } from '~/types'
-import { usePublicGeb } from './useGeb'
+import type { IAuction, ICollateralAuction } from '~/types'
 import { NUMBER_OF_AUCTIONS_TO_SHOW } from '~/utils'
+import { useStoreActions, useStoreState } from '~/store'
+
+import styled from 'styled-components'
+import { HaiButton } from '~/styles'
+import { usePublicGeb } from './useGeb'
 
 interface Props {
     auctions?: IAuction[] | ICollateralAuction[] | undefined
@@ -14,13 +14,15 @@ interface Props {
 
 export const useLoadMoreAuctions = ({ auctions }: Props) => {
     const geb = usePublicGeb()
-    const { auctionModel: auctionsActions } = useStoreActions((state) => state)
-    const { auctionModel: auctionsState, connectWalletModel: connectWalletState } = useStoreState((state) => state)
+    const {
+        auctionModel: { loadingAuctionsData },
+        connectWalletModel: { proxyAddress },
+    } = useStoreState((state) => state)
+    const { auctionModel: auctionsActions } = useStoreActions((actions) => actions)
+
     const [numberOfAuctions, setNumberOfAuctions] = useState(NUMBER_OF_AUCTIONS_TO_SHOW)
-    const { proxyAddress } = connectWalletState
-    const { loadingAuctionsData } = auctionsState
-    const type = customLodash.get(auctions?.[0], 'englishAuctionType', undefined)
-    const tokenSymbol = customLodash.get(auctions?.[0], 'tokenSymbol', undefined)
+
+    const { englishAuctionType: type, tokenSymbol } = (auctions as any)?.[0] || {}
 
     const hasAllAuctions = auctions?.filter((auction) => auction.auctionId === '1')[0]
     const hasMoreAuctions = auctions && auctions.length <= numberOfAuctions
@@ -81,12 +83,12 @@ export const useLoadMoreAuctions = ({ auctions }: Props) => {
         <BtnContainer>
             {(!dimmedWithArrow || !hasAllAuctions) && (
                 <ShowMoreButton
-                    dimmedWithArrow={!!dimmedWithArrow}
-                    dimmed={!dimmedWithArrow}
+                    $variant={dimmedWithArrow ? 'unblurred' : undefined}
                     disabled={!dimmedWithArrow}
-                    text={showMoreText}
                     onClick={handleShowMoreAuctions}
-                />
+                >
+                    {showMoreText}
+                </ShowMoreButton>
             )}
         </BtnContainer>
     )
@@ -99,10 +101,10 @@ export const BtnContainer = styled.div`
     padding-top: 15px;
     margin-bottom: -5px;
     margin-top: 10px;
-    border-top: 1px solid ${(props) => props.theme.colors.border};
+    border-top: 1px solid ${({ theme }) => theme.colors.border};
 `
 
-export const ShowMoreButton = styled(Button)`
+export const ShowMoreButton = styled(HaiButton)`
     display: flex;
     align-items: center;
     justify-content: center;

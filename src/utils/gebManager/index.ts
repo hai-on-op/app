@@ -1,11 +1,18 @@
 import { BigNumber } from 'ethers'
-import { Geb, utils, TokenLiquidationData, fetchLiquidationData, TokenData, fetchUserSafes } from '@hai-on-op/sdk'
-import { ILiquidationResponse, IUserSafeList } from '../interfaces'
+import {
+    Geb,
+    type TokenData,
+    type TokenLiquidationData,
+    fetchLiquidationData,
+    fetchUserSafes,
+    utils,
+} from '@hai-on-op/sdk'
+import type { ILiquidationResponse, IUserVaultList } from '~/types'
 
-interface UserListConfig {
+type UserListConfig = {
     geb: Geb
     address: string
-    tokensData: { [key: string]: TokenData }
+    tokensData: Record<string, TokenData>
     proxy_not?: null
     safeId_not?: null
 }
@@ -13,7 +20,7 @@ interface UserListConfig {
 // returns LiquidationData
 const getLiquidationDataRpc = async (
     geb: Geb,
-    tokensData: { [key: string]: TokenData }
+    tokensData: Record<string, TokenData>
 ): Promise<ILiquidationResponse> => {
     const liquidationData = await fetchLiquidationData(geb, tokensData)
 
@@ -34,9 +41,13 @@ const getLiquidationDataRpc = async (
         parseTokenLiquidationData(liquidationData.redemptionPrice, tokenLiquidationData)
     )
 
-    const collateralLiquidationData = Object.keys(tokensData).reduce((accumulator, key, index) => {
-        return { ...accumulator, [key]: parsedLiquidationData[index] }
-    }, {})
+    const collateralLiquidationData = Object.keys(tokensData).reduce(
+        (accumulator, key, index) => ({
+            ...accumulator,
+            [key]: parsedLiquidationData[index],
+        }),
+        {}
+    )
 
     return {
         systemState,
@@ -70,32 +81,28 @@ function parseTokenLiquidationData(redemptionPrice: BigNumber, tokenLiquidationD
     }
 }
 
-// Returns list of user safes
-const getUserSafesRpc = async (config: UserListConfig): Promise<IUserSafeList> => {
-    const [userCoinBalance, safesData] = await fetchUserSafes(config.geb, config.address)
+// Returns list of user vaults
+const getUserVaultsRpc = async (config: UserListConfig): Promise<IUserVaultList> => {
+    const [userCoinBalance, vaultsData] = await fetchUserSafes(config.geb, config.address)
 
-    const safes = safesData.map((safe) => ({
-        collateral: parseWad(safe.lockedCollateral),
-        debt: parseWad(safe.generatedDebt),
+    const vaults = vaultsData.map((vault) => ({
+        collateral: parseWad(vault.lockedCollateral),
+        debt: parseWad(vault.generatedDebt),
         createdAt: null,
-        safeHandler: safe.addy,
-        safeId: safe.id.toString(),
-        collateralType: safe.collateralType,
+        vaultHandler: vault.addy,
+        vaultId: vault.id.toString(),
+        collateralType: vault.collateralType,
     }))
 
     return {
-        safes,
-        erc20Balances: [
-            {
-                balance: parseWad(userCoinBalance),
-            },
-        ],
+        vaults,
+        erc20Balances: [{ balance: parseWad(userCoinBalance) }],
         ...(await getLiquidationDataRpc(config.geb, config.tokensData)),
     }
 }
 
-const gebManager = {
-    getUserSafesRpc,
+export const gebManager = {
+    getUserVaultsRpc,
     getLiquidationDataRpc,
 }
 
@@ -103,5 +110,3 @@ const gebManager = {
 export const parseWad = (val: BigNumber) => utils.wadToFixed(val).toString()
 export const parseRay = (val: BigNumber) => utils.rayToFixed(val).toString()
 export const parseRad = (val: BigNumber) => utils.radToFixed(val).toString()
-
-export default gebManager
