@@ -1,7 +1,15 @@
 import { useMemo, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 
-import { LINK_TO_DISCORD, LINK_TO_DOCS, LINK_TO_TELEGRAM, LINK_TO_TWITTER, formatNumberWithStyle } from '~/utils'
+import {
+    ChainId,
+    LINK_TO_DISCORD,
+    LINK_TO_DOCS,
+    LINK_TO_TELEGRAM,
+    LINK_TO_TWITTER,
+    NETWORK_ID,
+    formatNumberWithStyle,
+} from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { useMediaQuery, useOutsideClick } from '~/hooks'
@@ -244,6 +252,13 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                             Vault Explorer
                                         </DropdownOption>
                                     </InternalLink>
+                                    {NETWORK_ID === ChainId.OPTIMISM_SEPOLIA && (
+                                        <InternalLink href="/test/claim" $textDecoration="none">
+                                            <DropdownOption $active={location.pathname === '/test/claim'}>
+                                                Claim Test Tokens
+                                            </DropdownOption>
+                                        </InternalLink>
+                                    )}
                                     <DropdownOption
                                         onClick={() => {
                                             setDropdownActive(false)
