@@ -52,10 +52,13 @@ export function useAllVaults() {
     })
 
     const orderBy: OrderBy = useMemo(() => {
-        switch(sorting.key) {
-            case 'Collateral': return 'collateral'
-            case 'Debt': return 'debt'
-            default: return 'cRatio'
+        switch (sorting.key) {
+            case 'Collateral':
+                return 'collateral'
+            case 'Debt':
+                return 'debt'
+            default:
+                return 'cRatio'
         }
     }, [sorting.key])
 
@@ -109,7 +112,8 @@ export function useAllVaults() {
             case 'Collateral Ratio':
             default:
                 return arrayToSorted(vaultsWithCRatioAndToken, {
-                    getProperty: (vault) => vault.cRatio && vault.cRatio !== '0' ? vault.cRatio : vault.collateralRatio,
+                    getProperty: (vault) =>
+                        vault.cRatio && vault.cRatio !== '0' ? vault.cRatio : vault.collateralRatio,
                     dir: sorting.dir,
                     type: 'parseFloat',
                 })
