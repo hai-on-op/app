@@ -94,6 +94,23 @@ export function Header({ tickerActive = false }: HeaderProps) {
         return arr.flat()
     }, [liquidationData, marketPrice, redemptionPrice])
 
+    const logoEl = useMemo(() => (isLargerThanExtraSmall
+        ? (
+            <Logo
+                src={haiLogo}
+                alt="HAI"
+                width={701}
+                height={264}
+            />
+        )
+        : (
+            <HaiFace
+                filled
+                size={56}
+            />
+        )
+    ), [isLargerThanExtraSmall])
+
     return (<>
         {wrapEthActive && <WrapETHModal onClose={() => setWrapEthActive(false)}/>}
         <Container
@@ -105,31 +122,21 @@ export function Header({ tickerActive = false }: HeaderProps) {
                 </Ticker>
             )}
             <Inner $blur={!isSplash || headerBgActive}>
-                <CenteredFlex $gap={
-                    isLargerThanLarge
-                        ? 48
-                        : isLargerThanSmall
-                            ? 36
-                            : 24
-                }>
-                    <InternalLink href="/">
-                        {isLargerThanExtraSmall
-                            ? (
-                                <Logo
-                                    src={haiLogo}
-                                    alt="HAI"
-                                    width={701}
-                                    height={264}
-                                />
-                            )
-                            : (
-                                <HaiFace
-                                    filled
-                                    size={56}
-                                />
-                            )
-                        }
-                    </InternalLink>
+                <LeftSide>
+                    {isSplash
+                        ? (
+                            <CenteredFlex
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => {
+                                    const zoomEl = document.getElementById('zoom-scroll-container')
+                                    if (!zoomEl) return
+                                    zoomEl.scrollTop = 0
+                                }}>
+                                {logoEl}
+                            </CenteredFlex>
+                        )
+                        : <InternalLink href="/">{logoEl}</InternalLink>
+                    }
                     {isLargerThanSmall && (
                         isSplash
                             ? (<>
@@ -218,7 +225,7 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                 )}
                             </>)
                     )}
-                </CenteredFlex>
+                </LeftSide>
                 <RightSide>
                     {isLargerThanSmall && (
                         isSplash
@@ -399,6 +406,17 @@ const Inner = styled(Flex).attrs(props => ({
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
         padding: 0 24px;
+    `}
+`
+
+const LeftSide = styled(CenteredFlex)`
+    gap: 48px;
+
+    ${({ theme }) => theme.mediaWidth.upToLarge`
+        gap: 36px;
+    `}
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        gap: 24px;
     `}
 `
 
