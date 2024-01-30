@@ -6,7 +6,7 @@
     }],
     "rewrites": [{
         "source": "/(.*)",
-        "destination": "/index.html"
+        "destination": "/"
     }],
     "outputDirectory": "build"
 }
