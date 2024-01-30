@@ -63,7 +63,7 @@ export const formatNumberWithStyle = (value: number | string, options: FormatOpt
         maximumFractionDigits: maxDecimals,
         ...(isLessThanOne && {
             minimumSignificantDigits: 1,
-            maximumSignificantDigits: maxDecimals,
+            maximumSignificantDigits: maxDecimals || 1,
         }),
     })
 }

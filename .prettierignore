@@ -2,3 +2,6 @@ node_modules
 lib
 *.md
 build
+
+src/utils/graphql/fragments.ts
+src/utils/graphql/queries.ts

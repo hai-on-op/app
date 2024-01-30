@@ -190,6 +190,11 @@ export function Shared({ children }: Props) {
             console.error(error)
             connectWalletActions.setStep(1)
             setInitializing(false)
+        } finally {
+            popupsActions.setWaitingPayload({
+                title: '',
+                status: ActionState.NONE,
+            })
         }
 
         await timeout(500)

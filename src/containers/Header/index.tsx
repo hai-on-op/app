@@ -257,13 +257,17 @@ export function Header({ tickerActive = false }: HeaderProps) {
                         <MusicButton onClick={() => setIsPlayingMusic(!isPlayingMusic)}>
                             <Sound muted={!isPlayingMusic} size={21} />
                         </MusicButton>
-                        {isSplash ? null : (
+                        {isSplash ? (
+                            <InternalLink href="/vaults" $textDecoration="none">
+                                <HaiButton $variant="yellowish">Enter App</HaiButton>
+                            </InternalLink>
+                        ) : (
                             <>
                                 {isLargerThanSmall && <ConnectButton showBalance />}
                                 {/* <Notifications
-                                active={notificationsActive}
-                                setActive={setNotificationsActive}
-                            /> */}
+                                        active={notificationsActive}
+                                        setActive={setNotificationsActive}
+                                    /> */}
                             </>
                         )}
                         {!isLargerThanSmall && (

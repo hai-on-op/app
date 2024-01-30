@@ -59,6 +59,7 @@ export const SafeFragment = gql`
         safeId
         collateral
         debt
+        cRatio
         owner {
             address
         }
