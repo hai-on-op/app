@@ -7,7 +7,7 @@ import { WagmiConfig } from 'wagmi'
 import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
 import '@rainbow-me/rainbowkit/styles.css'
 
-import { chains, wagmiConfig } from './utils'
+import { chains, wagmiConfig } from './utils/wallet'
 import { store } from '~/store'
 import { HaiThemeProvider } from '~/providers/HaiThemeProvider'
 
@@ -19,10 +19,7 @@ ReactDOM.render(
     <React.StrictMode>
         <HaiThemeProvider>
             <WagmiConfig config={wagmiConfig}>
-                <RainbowKitProvider
-                    avatar={CustomAvatar}
-                    theme={haiTheme}
-                    chains={chains}>
+                <RainbowKitProvider avatar={CustomAvatar} theme={haiTheme} chains={chains}>
                     <HelmetProvider>
                         <BrowserRouter>
                             <StoreProvider store={store}>

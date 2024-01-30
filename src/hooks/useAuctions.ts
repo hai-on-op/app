@@ -17,22 +17,25 @@ import { useGeb } from './useGeb'
 
 export function useGetAuctions(type: AuctionEventType, tokenSymbol?: string) {
     const { auctionModel } = useStoreState((state) => state)
-    
+
     const auctions = useMemo(() => {
-        switch(type) {
+        switch (type) {
             case 'SURPLUS':
                 return auctionModel.surplusAuctions || []
             case 'DEBT':
                 return auctionModel.debtAuctions || []
             case 'COLLATERAL':
                 return tokenSymbol
-                    ? (auctionModel.collateralAuctions[tokenSymbol] || [])
-                        .map(auction => convertCollateralAuction(auction, tokenSymbol))
-                    : Object.entries(auctionModel.collateralAuctions)
-                        .reduce((arr, [tokenSymbol, innerArr]) => ([
-                            ...innerArr.map(auction => convertCollateralAuction(auction, tokenSymbol)),
-                            ...arr,
-                        ]), [] as IAuction[])
+                    ? (auctionModel.collateralAuctions[tokenSymbol] || []).map((auction) =>
+                          convertCollateralAuction(auction, tokenSymbol)
+                      )
+                    : Object.entries(auctionModel.collateralAuctions).reduce(
+                          (arr, [tokenSymbol, innerArr]) => [
+                              ...innerArr.map((auction) => convertCollateralAuction(auction, tokenSymbol)),
+                              ...arr,
+                          ],
+                          [] as IAuction[]
+                      )
             default:
                 return []
         }
@@ -41,14 +44,11 @@ export function useGetAuctions(type: AuctionEventType, tokenSymbol?: string) {
     return auctions
 }
 
-export function convertCollateralAuction(
-    auction: SDKCollateralAuction,
-    tokenSymbol: string
-): IAuction {
+export function convertCollateralAuction(auction: SDKCollateralAuction, tokenSymbol: string): IAuction {
     return {
         ...auction,
         auctionDeadline: '',
-        biddersList: auction.biddersList.map(bid => ({
+        biddersList: auction.biddersList.map((bid) => ({
             ...bid,
             buyAmount: formatEther(bid.buyAmount || '0'),
             sellAmount: formatEther(bid.bid || '0'),
@@ -84,13 +84,7 @@ export function useCollateralAuctions(tokenSymbol: string): ICollateralAuction[]
             }
 
             const filteredAuctions = auctionsList.map((auc: SDKCollateralAuction) => {
-                const {
-                    createdAt,
-                    createdAtTransaction,
-                    amountToSell,
-                    amountToRaise,
-                    biddersList,
-                } = auc
+                const { createdAt, createdAtTransaction, amountToSell, amountToRaise, biddersList } = auc
                 const { startedBy = '' } = auc as any
 
                 // Amount to sell = collateral

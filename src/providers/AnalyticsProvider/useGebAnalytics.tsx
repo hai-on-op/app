@@ -35,12 +35,12 @@ export function useGebAnalytics() {
     const geb = usePublicGeb()
     const { chain } = useNetwork()
 
-    const [refresher, forceRefresh] = useReducer(x => x + 1, 0)
+    const [refresher, forceRefresh] = useReducer((x) => x + 1, 0)
     const [data, setData] = useState(DEFAULT_ANALYTICS_DATA)
 
     useEffect(() => {
         if (!geb || !chain) return
-        
+
         const getData = async () => {
             try {
                 const result = await fetchAnalyticsData(geb)
@@ -48,38 +48,23 @@ export function useGebAnalytics() {
                 const redemptionPrice = formatEther(result.redemptionPrice).toString()
                 // all HAI price calculations should use/be relative to redemption price
                 const priceDiff = 100 * Math.abs(1 - parseFloat(marketPrice) / parseFloat(redemptionPrice))
-    
-                setData(d => ({
+
+                setData((d) => ({
                     ...d,
-                    erc20Supply: formatSummaryValue(
-                        formatEther(result.erc20Supply).toString(),
-                        { maxDecimals: 0 }
-                    )!,
-                    globalDebt: formatSummaryValue(
-                        formatEther(result.globalDebt).toString(),
-                        {
-                            maxDecimals: 0,
-                            style: 'currency',
-                        }
-                    )!,
-                    globalDebtCeiling: formatSummaryValue(
-                        formatEther(result.globalDebtCeiling).toString(),
-                        {
-                            maxDecimals: 0,
-                            style: 'currency',
-                        }
-                    )!,
-                    globalDebtUtilization: transformToWadPercentage(
-                        result.globalDebt,
-                        result.globalDebtCeiling
-                    ),
-                    surplusInTreasury: formatSummaryValue(
-                        formatEther(result.surplusInTreasury).toString(),
-                        {
-                            maxDecimals: 0,
-                            style: 'currency',
-                        }
-                    )!,
+                    erc20Supply: formatSummaryValue(formatEther(result.erc20Supply).toString(), { maxDecimals: 0 })!,
+                    globalDebt: formatSummaryValue(formatEther(result.globalDebt).toString(), {
+                        maxDecimals: 0,
+                        style: 'currency',
+                    })!,
+                    globalDebtCeiling: formatSummaryValue(formatEther(result.globalDebtCeiling).toString(), {
+                        maxDecimals: 0,
+                        style: 'currency',
+                    })!,
+                    globalDebtUtilization: transformToWadPercentage(result.globalDebt, result.globalDebtCeiling),
+                    surplusInTreasury: formatSummaryValue(formatEther(result.surplusInTreasury).toString(), {
+                        maxDecimals: 0,
+                        style: 'currency',
+                    })!,
                     marketPrice: formatSummaryValue(marketPrice, {
                         maxDecimals: 3,
                         style: 'currency',
@@ -89,13 +74,10 @@ export function useGebAnalytics() {
                         style: 'currency',
                     })!,
                     priceDiff,
-                    annualRate: formatSummaryValue(
-                        transformToAnnualRate(result.redemptionRate, 27, true).toString(),
-                        {
-                            maxDecimals: 1,
-                            style: 'percent',
-                        }
-                    )!,
+                    annualRate: formatSummaryValue(transformToAnnualRate(result.redemptionRate, 27, true).toString(), {
+                        maxDecimals: 1,
+                        style: 'percent',
+                    })!,
                     eightRate: formatSummaryValue(
                         transformToEightHourlyRate(result.redemptionRate, 27, true).toString(),
                         {
@@ -103,27 +85,20 @@ export function useGebAnalytics() {
                             style: 'percent',
                         }
                     )!,
-                    pRate: formatSummaryValue(
-                        transformToAnnualRate(result.redemptionRatePTerm, 27, true).toString(),
-                        {
-                            maxDecimals: 1,
-                            style: 'percent',
-                        }
-                    )!,
-                    iRate: formatSummaryValue(
-                        transformToAnnualRate(result.redemptionRateITerm, 27, true).toString(),
-                        {
-                            maxDecimals: 1,
-                            style: 'percent',
-                        }
-                    )!,
-                    tokenAnalyticsData: Object.entries(result.tokenAnalyticsData)
-                        .map(([key, value]) => ({
-                            symbol: key,
-                            ...value,
-                        })),
+                    pRate: formatSummaryValue(transformToAnnualRate(result.redemptionRatePTerm, 27, true).toString(), {
+                        maxDecimals: 1,
+                        style: 'percent',
+                    })!,
+                    iRate: formatSummaryValue(transformToAnnualRate(result.redemptionRateITerm, 27, true).toString(), {
+                        maxDecimals: 1,
+                        style: 'percent',
+                    })!,
+                    tokenAnalyticsData: Object.entries(result.tokenAnalyticsData).map(([key, value]) => ({
+                        symbol: key,
+                        ...value,
+                    })),
                 }))
-            } catch(e: any) {
+            } catch (e: any) {
                 console.error(e)
             }
         }

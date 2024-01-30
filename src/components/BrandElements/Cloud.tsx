@@ -17,19 +17,13 @@ const clouds = [
 ]
 
 type CloudProps = {
-    variant: number,
-    width?: string,
+    variant: number
+    width?: string
     style?: object
 }
 
 export function Cloud({ variant, width, ...props }: CloudProps) {
-    return (
-        <CloudImage
-            {...clouds[variant % clouds.length]}
-            {...props}
-            $width={width}
-        />
-    )
+    return <CloudImage {...clouds[variant % clouds.length]} {...props} $width={width} />
 }
 
 export const CloudImage = styled.img<{ $width?: string }>`

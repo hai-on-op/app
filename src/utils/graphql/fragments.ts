@@ -35,7 +35,9 @@ export const CollateralTypeFragment = gql`
 export const CollateralPriceWithCollateralTypeFragment = gql`
     fragment CollateralPriceWithCollateralTypeFragment on CollateralPrice {
         ...CollateralPriceFragment
-        collateral { ...CollateralTypeFragment }
+        collateral {
+            ...CollateralTypeFragment
+        }
     }
     ${CollateralPriceFragment}
     ${CollateralTypeFragment}
@@ -44,7 +46,9 @@ export const CollateralPriceWithCollateralTypeFragment = gql`
 export const CollateralTypeWithCollateralPriceFragment = gql`
     fragment CollateralTypeWithCollateralPriceFragment on CollateralType {
         ...CollateralTypeFragment
-        currentPrice { ...CollateralPriceFragment }
+        currentPrice {
+            ...CollateralPriceFragment
+        }
     }
     ${CollateralTypeFragment}
     ${CollateralPriceFragment}
@@ -97,8 +101,12 @@ export const RedemptionPriceFragment = gql`
 export const HourlyStatFragment = gql`
     fragment HourlyStatFragment on HourlyStat {
         timestamp
-        redemptionRate { ...RedemptionRateFragment }
-        redemptionPrice { ...RedemptionPriceFragment }
+        redemptionRate {
+            ...RedemptionRateFragment
+        }
+        redemptionPrice {
+            ...RedemptionPriceFragment
+        }
         marketPriceUsd
         marketPriceEth
         globalDebt
@@ -111,8 +119,12 @@ export const HourlyStatFragment = gql`
 export const DailyStatFragment = gql`
     fragment DailyStatFragment on DailyStat {
         timestamp
-        redemptionRate { ...RedemptionRateFragment }
-        redemptionPrice { ...RedemptionPriceFragment }
+        redemptionRate {
+            ...RedemptionRateFragment
+        }
+        redemptionPrice {
+            ...RedemptionPriceFragment
+        }
         marketPriceUsd
         marketPriceEth
         globalDebt
@@ -137,8 +149,12 @@ export const SystemStateFragment = gql`
         globalStabilityFee
         savingsRate
         collateralAuctionCount
-        currentRedemptionRate { ...RedemptionRateFragment }
-        currentRedemptionPrice { ...RedemptionPriceFragment }
+        currentRedemptionRate {
+            ...RedemptionRateFragment
+        }
+        currentRedemptionPrice {
+            ...RedemptionPriceFragment
+        }
         erc20CoinTotalSupply
         systemSurplus
         debtAvailableToSettle

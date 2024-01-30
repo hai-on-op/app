@@ -13,18 +13,8 @@ const transforms = {
 
 export function Caret({ size = 14, direction = 'right', ...props }: DirectionalIconProps) {
     return (
-        <svg
-            viewBox="0 0 20 20"
-            width={size}
-            height={size}
-            fill="none"
-            stroke="black"
-            strokeWidth="2.5"
-            {...props}>
-            <polyline
-                points="7,2 15,10 7,18"
-                transform={transforms[direction]}
-            />
+        <svg viewBox="0 0 20 20" width={size} height={size} fill="none" stroke="black" strokeWidth="2.5" {...props}>
+            <polyline points="7,2 15,10 7,18" transform={transforms[direction]} />
         </svg>
     )
 }

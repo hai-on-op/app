@@ -5,19 +5,12 @@ import { CenteredFlex } from '~/styles'
 import { HaiFace } from './Icons/HaiFace'
 
 export const CustomAvatar: AvatarComponent = ({ address, ensImage, size }) => {
-    if (ensImage) return (
-        <img
-            src={ensImage}
-            alt={address}
-            width={size}
-            height={size}
-            style={{ borderRadius: '999px' }}
-        />
-    )
-    
+    if (ensImage)
+        return <img src={ensImage} alt={address} width={size} height={size} style={{ borderRadius: '999px' }} />
+
     return (
         <Container $size={size}>
-            <HaiFace filled/>
+            <HaiFace filled />
         </Container>
     )
 }

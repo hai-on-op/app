@@ -83,7 +83,7 @@ export type IVotingTx = {
 }
 
 export type FormattedBalance = {
-    e18: string,
-    raw: string,
+    e18: string
+    raw: string
     formatted: string
 }

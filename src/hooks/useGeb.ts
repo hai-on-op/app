@@ -53,7 +53,10 @@ export function useIsOwner(vaultId: string): boolean {
     useEffect(() => {
         if (!geb || !account || !vaultId) return undefined
         setState(true)
-        Promise.all([geb.contracts.proxyFactory.proxies(account as string), geb.contracts.safeManager.safeData(vaultId)])
+        Promise.all([
+            geb.contracts.proxyFactory.proxies(account as string),
+            geb.contracts.safeManager.safeData(vaultId),
+        ])
             .then(getIsOwnerCallback)
             .catch((error) => console.error(`Failed to get proxyAddress and VaultOwner`, error))
     }, [account, geb, getIsOwnerCallback, vaultId])
@@ -89,7 +92,7 @@ export function useProxyAddress() {
 
 // returns amount of currency in USD
 export function useTokenBalanceInUSD(token: TokenType, balance: string) {
-    const { connectWalletModel, vaultModel } = useStoreState(state => state)
+    const { connectWalletModel, vaultModel } = useStoreState((state) => state)
     const ethPrice = connectWalletModel.fiatPrice
     const haiPrice = vaultModel.liquidationData?.currentRedemptionPrice
 

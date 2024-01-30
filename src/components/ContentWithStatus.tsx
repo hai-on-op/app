@@ -6,13 +6,13 @@ import { Loader } from './Loader'
 import { useEffect, useState } from 'react'
 
 export type ContentWithStatusProps = {
-    loading: boolean,
-    loadingContent?: ReactChildren,
-    error?: string,
-    errorContent?: ReactChildren,
-    isEmpty?: boolean,
-    emptyContent?: ReactChildren,
-    children: ReactChildren,
+    loading: boolean
+    loadingContent?: ReactChildren
+    error?: string
+    errorContent?: ReactChildren
+    isEmpty?: boolean
+    emptyContent?: ReactChildren
+    children: ReactChildren
 }
 export function ContentWithStatus({
     loading,
@@ -23,23 +23,11 @@ export function ContentWithStatus({
     emptyContent,
     children,
 }: ContentWithStatusProps) {
-    if (loading) return (
-        <Message>
-            {loadingContent || <LoadingContent/>}
-        </Message>
-    )
-    if (error) return (
-        <Message>
-            {errorContent || 'An error occurred'}
-        </Message>
-    )
-    if (isEmpty) return (
-        <Message>
-            {emptyContent || 'No items matched your search'}
-        </Message>
-    )
+    if (loading) return <Message>{loadingContent || <LoadingContent />}</Message>
+    if (error) return <Message>{errorContent || 'An error occurred'}</Message>
+    if (isEmpty) return <Message>{emptyContent || 'No items matched your search'}</Message>
 
-    return (<>{children}</>)
+    return <>{children}</>
 }
 
 const Message = styled(CenteredFlex).attrs((props: FlexProps) => ({
@@ -67,9 +55,7 @@ function LoadingContent() {
 
     return (
         <Loader color="black">
-            <Text
-                ref={setText}
-                style={{ width: '75px' }}>
+            <Text ref={setText} style={{ width: '75px' }}>
                 Loading...
             </Text>
         </Loader>

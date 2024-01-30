@@ -1,42 +1,23 @@
-import type {
-    Collateral,
-    Debt,
-    IVault,
-    SummaryCurrency,
-    SummaryItem,
-    SummaryItemValue,
-} from '~/types'
-import {
-    getRatePercentage,
-    formatSummaryCurrency,
-    formatSummaryPercentage,
-    formatSummaryValue,
-} from '~/utils'
+import type { Collateral, Debt, IVault, SummaryCurrency, SummaryItem, SummaryItemValue } from '~/types'
+import { getRatePercentage, formatSummaryCurrency, formatSummaryPercentage, formatSummaryValue } from '~/utils'
 
 export type Summary = {
-    collateral: SummaryItem<SummaryCurrency>,
-    debt: SummaryItem<SummaryCurrency>,
-    collateralRatio: SummaryItem,
-    stabilityFee: SummaryItemValue,
-    liquidationPrice: SummaryItem,
+    collateral: SummaryItem<SummaryCurrency>
+    debt: SummaryItem<SummaryCurrency>
+    collateralRatio: SummaryItem
+    stabilityFee: SummaryItemValue
+    liquidationPrice: SummaryItem
 }
 
 type Props = {
-    vault?: IVault,
-    collateral: Collateral,
-    debt: Debt,
-    simulatedCR?: string,
-    liquidationPrice: string,
+    vault?: IVault
+    collateral: Collateral
+    debt: Debt
+    simulatedCR?: string
+    liquidationPrice: string
 }
-export function useSummary({
-    vault,
-    collateral,
-    debt,
-    simulatedCR,
-    liquidationPrice,
-}: Props): Summary {
-    const stabilityFee = vault?.totalAnnualizedStabilityFee
-        || collateral.liquidationData?.totalAnnualizedStabilityFee
+export function useSummary({ vault, collateral, debt, simulatedCR, liquidationPrice }: Props): Summary {
+    const stabilityFee = vault?.totalAnnualizedStabilityFee || collateral.liquidationData?.totalAnnualizedStabilityFee
     return {
         collateral: {
             current: formatSummaryCurrency(vault?.collateral, collateral.priceInUSD),
@@ -51,13 +32,11 @@ export function useSummary({
             after: formatSummaryPercentage(simulatedCR || '0', 0.01)!,
         },
         stabilityFee: stabilityFee
-            ? formatSummaryPercentage(
-                (getRatePercentage(stabilityFee, 4, true)).toString()
-            )!
+            ? formatSummaryPercentage(getRatePercentage(stabilityFee, 4, true).toString())!
             : {
-                raw: '',
-                formatted: '--%',
-            },
+                  raw: '',
+                  formatted: '--%',
+              },
         liquidationPrice: {
             current: formatSummaryValue(vault?.liquidationPrice, {
                 maxDecimals: 3,

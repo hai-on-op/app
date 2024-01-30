@@ -1,10 +1,4 @@
-import {
-    type CSSProperties,
-    type Dispatch,
-    type ReactNode,
-    type SetStateAction,
-    type SVGProps,
-} from 'react'
+import { type CSSProperties, type Dispatch, type ReactNode, type SetStateAction, type SVGProps } from 'react'
 
 import { ActionState } from '~/utils'
 
@@ -17,41 +11,34 @@ export type IconProps = Omit<SVGProps<SVGElement>, 'ref'> & {
 }
 
 export type DirectionalIconProps = IconProps & {
-    direction?: 'up'
-        | 'down'
-        | 'left'
-        | 'right'
-        | 'upRight'
-        | 'upLeft'
-        | 'downRight'
-        | 'downLeft'
+    direction?: 'up' | 'down' | 'left' | 'right' | 'upRight' | 'upLeft' | 'downRight' | 'downLeft'
 }
 
 export type SplashImage = {
     index: number
-    width: string,
-    style?: CSSProperties,
-    rotation?: number,
-    flip?: boolean,
+    width: string
+    style?: CSSProperties
+    rotation?: number
+    flip?: boolean
     zIndex?: number
 }
 
 // TABLES
 
 export type SortableHeader = {
-    label: string,
-    tooltip?: string,
+    label: string
+    tooltip?: string
     unsortable?: boolean
 }
 
 export type Sorting = {
-    key: string,
+    key: string
     dir: 'asc' | 'desc'
 }
 
 export type TableHeaderProps = {
-    headers: SortableHeader[],
-    sorting: Sorting,
+    headers: SortableHeader[]
+    sorting: Sorting
     onSort: (label: string) => void
 }
 

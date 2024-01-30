@@ -38,25 +38,14 @@ const dummyPieDataBase = [
 // TODO: check to make sure data usage and calculations are correct, fill out tooltips
 export function Numbers() {
     const {
-        data: {
-            erc20Supply,
-            marketPrice,
-            redemptionPrice,
-            annualRate,
-            pRate,
-            iRate,
-            surplusInTreasury,
-            globalDebt,
-        },
+        data: { erc20Supply, marketPrice, redemptionPrice, annualRate, pRate, iRate, surplusInTreasury, globalDebt },
         graphSummary,
         haiPriceHistory,
         redemptionRateHistory,
     } = useAnalytics()
 
     const haiPriceData = useMemo(() => {
-        const data = haiPriceHistory.data?.dailyStats
-            || haiPriceHistory.data?.hourlyStats
-            || []
+        const data = haiPriceHistory.data?.dailyStats || haiPriceHistory.data?.hourlyStats || []
         return [
             {
                 id: 'Market Price',
@@ -78,17 +67,17 @@ export function Numbers() {
     }, [haiPriceHistory])
 
     const redemptionRateData = useMemo(() => {
-        const data = haiPriceHistory.data?.dailyStats
-            || haiPriceHistory.data?.hourlyStats
-            || []
-        return [{
-            id: 'Redemption Rate',
-            color: 'hsl(115, 70%, 84%)',
-            data: data.map(({ timestamp, redemptionRate }) => ({
-                x: new Date(Number(timestamp) * 1000),
-                y: getRatePercentage(redemptionRate.annualizedRate, 4),
-            })),
-        }]
+        const data = haiPriceHistory.data?.dailyStats || haiPriceHistory.data?.hourlyStats || []
+        return [
+            {
+                id: 'Redemption Rate',
+                color: 'hsl(115, 70%, 84%)',
+                data: data.map(({ timestamp, redemptionRate }) => ({
+                    x: new Date(Number(timestamp) * 1000),
+                    y: getRatePercentage(redemptionRate.annualizedRate, 4),
+                })),
+            },
+        ]
     }, [redemptionRateHistory])
 
     // TODO: remove and use actual data
@@ -102,34 +91,39 @@ export function Numbers() {
     return (
         <Container>
             <Section>
-                <BrandedTitle
-                    textContent="HAI LEVEL NUMBERS"
-                    $fontSize="3rem"
-                />
+                <BrandedTitle textContent="HAI LEVEL NUMBERS" $fontSize="3rem" />
                 <Text>Explore global HAI protocol analytics.</Text>
                 <Stats>
-                    <Stat stat={{
-                        header: graphSummary?.totalCollateralLocked.formatted || '--',
-                        label: 'Total Collateral Locked',
-                        tooltip: `Dollar value of all collateral currently locked in active vaults`,
-                    }}/>
-                    <Stat stat={{
-                        header: erc20Supply.raw
-                            ? erc20Supply.formatted
-                            : graphSummary?.erc20Supply.formatted || '--',
-                        label: 'Outstanding $HAI',
-                        tooltip: 'Total $HAI minted in the system',
-                    }}/>
-                    <Stat stat={{
-                        header: graphSummary?.globalCRatio.formatted || '--%',
-                        label: 'Global CRatio',
-                        tooltip: `Ratio of the dollar value  of all collateral locked in vaults relative to the dollar value of all outstanding debt`,
-                    }}/>
-                    <Stat stat={{
-                        header: graphSummary?.totalVaults.formatted,
-                        label: 'Total Active Vaults',
-                        tooltip: 'The total number of active vaults in the system',
-                    }}/>
+                    <Stat
+                        stat={{
+                            header: graphSummary?.totalCollateralLocked.formatted || '--',
+                            label: 'Total Collateral Locked',
+                            tooltip: `Dollar value of all collateral currently locked in active vaults`,
+                        }}
+                    />
+                    <Stat
+                        stat={{
+                            header: erc20Supply.raw
+                                ? erc20Supply.formatted
+                                : graphSummary?.erc20Supply.formatted || '--',
+                            label: 'Outstanding $HAI',
+                            tooltip: 'Total $HAI minted in the system',
+                        }}
+                    />
+                    <Stat
+                        stat={{
+                            header: graphSummary?.globalCRatio.formatted || '--%',
+                            label: 'Global CRatio',
+                            tooltip: `Ratio of the dollar value  of all collateral locked in vaults relative to the dollar value of all outstanding debt`,
+                        }}
+                    />
+                    <Stat
+                        stat={{
+                            header: graphSummary?.totalVaults.formatted,
+                            label: 'Total Active Vaults',
+                            tooltip: 'The total number of active vaults in the system',
+                        }}
+                    />
                 </Stats>
             </Section>
             <Section>
@@ -139,13 +133,15 @@ export function Numbers() {
                         $column={!isLargerThanSmall}
                         $width="100%"
                         $justify="space-between"
-                        $align={!isLargerThanSmall ? 'flex-start': 'center'}
-                        $gap={24}>
+                        $align={!isLargerThanSmall ? 'flex-start' : 'center'}
+                        $gap={24}
+                    >
                         <Flex
                             $column={!isLargerThanSmall}
                             $justify="flex-start"
-                            $align={!isLargerThanSmall ? 'flex-start': 'center'}
-                            $gap={24}>
+                            $align={!isLargerThanSmall ? 'flex-start' : 'center'}
+                            $gap={24}
+                        >
                             <PriceDisplay
                                 token="HAI"
                                 price={marketPrice.formatted}
@@ -154,9 +150,10 @@ export function Numbers() {
                             />
                             <PriceDisplay
                                 token="HAI"
-                                price={redemptionPrice.raw
-                                    ? redemptionPrice.formatted
-                                    : graphSummary?.redemptionPrice.formatted || '$--'
+                                price={
+                                    redemptionPrice.raw
+                                        ? redemptionPrice.formatted
+                                        : graphSummary?.redemptionPrice.formatted || '$--'
                                 }
                                 label="$HAI Redemption Price"
                                 tooltip={`HAI's "moving peg". It's the price at which HAI is minted or repaid inside the protocol. The HAI market price is expected to fluctuate around the redemption price.`}
@@ -164,7 +161,8 @@ export function Numbers() {
                         </Flex>
                         <ToggleSlider
                             selectedIndex={haiPriceHistory.timeframe}
-                            setSelectedIndex={haiPriceHistory.setTimeframe}>
+                            setSelectedIndex={haiPriceHistory.setTimeframe}
+                        >
                             <TimeframeLabel>24HR</TimeframeLabel>
                             <TimeframeLabel>1WK</TimeframeLabel>
                             <TimeframeLabel>1M</TimeframeLabel>
@@ -181,10 +179,10 @@ export function Numbers() {
                                 // max: 1.1
                             }}
                             axisRight={{
-                                format: value => `$${parseFloat(parseFloat(value).toFixed(3))}`,
+                                format: (value) => `$${parseFloat(parseFloat(value).toFixed(3))}`,
                             }}
                         />
-                        <Legend data={haiPriceData}/>
+                        <Legend data={haiPriceData} />
                     </ChartContainer>
                 </SectionContent>
             </Section>
@@ -195,14 +193,16 @@ export function Numbers() {
                         $column={!isLargerThanSmall}
                         $width="100%"
                         $justify="space-between"
-                        $align={!isLargerThanSmall ? 'flex-start': 'center'}
-                        $gap={24}>
+                        $align={!isLargerThanSmall ? 'flex-start' : 'center'}
+                        $gap={24}
+                    >
                         <Flex
                             $column={!isLargerThanSmall}
                             $width="100%"
                             $justify="flex-start"
-                            $align={!isLargerThanSmall ? 'flex-start': 'center'}
-                            $gap={!isLargerThanSmall ? 12: 36}>
+                            $align={!isLargerThanSmall ? 'flex-start' : 'center'}
+                            $gap={!isLargerThanSmall ? 12 : 36}
+                        >
                             <Stat
                                 stat={{
                                     header: annualRate.raw
@@ -213,7 +213,7 @@ export function Numbers() {
                                 }}
                                 unbordered
                             />
-                            <CenteredFlex $gap={!isLargerThanSmall ? 12: 36}>
+                            <CenteredFlex $gap={!isLargerThanSmall ? 12 : 36}>
                                 <Stat
                                     stat={{
                                         header: pRate.formatted || '--%',
@@ -234,7 +234,8 @@ export function Numbers() {
                         </Flex>
                         <ToggleSlider
                             selectedIndex={redemptionRateHistory.timeframe}
-                            setSelectedIndex={redemptionRateHistory.setTimeframe}>
+                            setSelectedIndex={redemptionRateHistory.setTimeframe}
+                        >
                             <TimeframeLabel>24HR</TimeframeLabel>
                             <TimeframeLabel>1WK</TimeframeLabel>
                             <TimeframeLabel>1M</TimeframeLabel>
@@ -251,10 +252,10 @@ export function Numbers() {
                                 // max: 10
                             }}
                             axisRight={{
-                                format: value => parseFloat(parseFloat(value.toString()).toFixed(2)) + '%',
+                                format: (value) => parseFloat(parseFloat(value.toString()).toFixed(2)) + '%',
                             }}
                         />
-                        <Legend data={redemptionRateData}/>
+                        <Legend data={redemptionRateData} />
                     </ChartContainer>
                 </SectionContent>
             </Section>
@@ -265,8 +266,9 @@ export function Numbers() {
                         $column={!isLargerThanSmall}
                         $width="100%"
                         $justify="flex-start"
-                        $align={!isLargerThanSmall ? 'flex-start': 'center'}
-                        $gap={!isLargerThanSmall ? 12: 36}>
+                        $align={!isLargerThanSmall ? 'flex-start' : 'center'}
+                        $gap={!isLargerThanSmall ? 12 : 36}
+                    >
                         <Stat
                             stat={{
                                 header: `$${dummyPieData[0].value.toLocaleString('en-US', {
@@ -299,43 +301,48 @@ export function Numbers() {
                     <PieContainer>
                         <PieChart
                             data={dummyPieData}
-                            valueFormat={value => '$' + value.toLocaleString('en-US', {
-                                maximumFractionDigits: 2,
-                            })}
+                            valueFormat={(value) =>
+                                '$' +
+                                value.toLocaleString('en-US', {
+                                    maximumFractionDigits: 2,
+                                })
+                            }
                         />
-                        <Legend
-                            $column
-                            data={dummyPieData}
-                            style={{ top: 'calc(50% - 96px)' }}
-                        />
+                        <Legend $column data={dummyPieData} style={{ top: 'calc(50% - 96px)' }} />
                     </PieContainer>
                 </SectionContent>
             </Section>
             <Section>
                 <SectionHeader>PROTOCOL BALANCE</SectionHeader>
                 <Stats>
-                    <Stat stat={{
-                        header: graphSummary?.systemSurplus.formatted || '$--',
-                        label: 'System Surplus Buffer',
-                        tooltip: 'Hello world',
-                    }}/>
-                    <Stat stat={{
-                        header: surplusInTreasury.formatted,
-                        label: 'Keeper Treasury',
-                        tooltip: `Total HAI accrued by the system's stability fees. It's stored in the Stability Fee Treasury accountance`,
-                    }}/>
-                    <Stat stat={{
-                        header: globalDebt.formatted,
-                        label: 'Debt to Settle',
-                        tooltip: 'Total HAI minted in the system',
-                    }}/>
+                    <Stat
+                        stat={{
+                            header: graphSummary?.systemSurplus.formatted || '$--',
+                            label: 'System Surplus Buffer',
+                            tooltip: 'Hello world',
+                        }}
+                    />
+                    <Stat
+                        stat={{
+                            header: surplusInTreasury.formatted,
+                            label: 'Keeper Treasury',
+                            tooltip: `Total HAI accrued by the system's stability fees. It's stored in the Stability Fee Treasury accountance`,
+                        }}
+                    />
+                    <Stat
+                        stat={{
+                            header: globalDebt.formatted,
+                            label: 'Debt to Settle',
+                            tooltip: 'Total HAI minted in the system',
+                        }}
+                    />
                 </Stats>
             </Section>
         </Container>
     )
 }
 
-const Container = styled(BlurContainer).attrs(props => ({
+const Container = styled(BlurContainer).attrs((props) => ({
     $width: '100%',
     $gap: 24,
     ...props,
@@ -350,7 +357,7 @@ const Container = styled(BlurContainer).attrs(props => ({
     `}
 `
 
-const Section = styled.section.attrs(props => ({
+const Section = styled.section.attrs((props) => ({
     $width: '100%',
     $column: true,
     $justify: 'flex-start',
@@ -361,13 +368,13 @@ const Section = styled.section.attrs(props => ({
     ${FlexStyle}
 `
 
-const SectionHeader = styled(Text).attrs(props => ({
+const SectionHeader = styled(Text).attrs((props) => ({
     $fontSize: '1.4rem',
     $fontWeight: 700,
     ...props,
 }))``
 
-const SectionContent = styled(Flex).attrs(props => ({
+const SectionContent = styled(Flex).attrs((props) => ({
     $width: '100%',
     $column: true,
     $justify: 'flex-start',
@@ -411,7 +418,7 @@ const PieContainer = styled(CenteredFlex)`
     flex-grow: 1;
     flex-shrink: 1;
     overflow: visible;
-    
+
     &::before {
         content: '';
         position: absolute;

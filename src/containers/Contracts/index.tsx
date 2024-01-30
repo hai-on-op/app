@@ -10,18 +10,16 @@ import { BrandedTitle } from '~/components/BrandedTitle'
 import { AddressLink } from '~/components/AddressLink'
 import { Table, TableContainer } from '~/components/Table'
 
-const sortableHeaders: SortableHeader[] = [
-    { label: 'Contract' },
-    { label: 'Address' },
-    { label: 'Description' },
-].map(obj => ({ ...obj, unsortable: true }))
+const sortableHeaders: SortableHeader[] = [{ label: 'Contract' }, { label: 'Address' }, { label: 'Description' }].map(
+    (obj) => ({ ...obj, unsortable: true })
+)
 
 export function Contracts() {
     const geb = usePublicGeb()
 
     const contracts = useMemo(() => {
         if (!geb) return []
-        
+
         return Object.entries(geb.contracts)
             .filter(([, value]) => !!value.address)
             .map(([name, value]) => ({
@@ -36,10 +34,7 @@ export function Contracts() {
     return (
         <Container>
             <Header>
-                <BrandedTitle
-                    textContent="CONTRACTS"
-                    $fontSize={isLargerThanSmall ? '3rem': '2.4rem'}
-                />
+                <BrandedTitle textContent="CONTRACTS" $fontSize={isLargerThanSmall ? '3rem' : '2.4rem'} />
             </Header>
             <Table
                 container={StyledTableContainer}
@@ -49,8 +44,8 @@ export function Contracts() {
                 setSorting={() => {}}
                 rows={contracts.map(({ name, address, description }) => (
                     <TableRow key={name}>
-                        <Text $fontWeight={isLargerThanSmall ? 400: 700}>{name}</Text>
-                        <AddressLink address={address}/>
+                        <Text $fontWeight={isLargerThanSmall ? 400 : 700}>{name}</Text>
+                        <AddressLink address={address} />
                         <Text>{description}</Text>
                     </TableRow>
                 ))}
@@ -67,7 +62,7 @@ const Container = styled(BlurContainer)`
     }
 `
 
-const Header = styled(Flex).attrs(props => ({
+const Header = styled(Flex).attrs((props) => ({
     $justify: 'space-between',
     $align: 'center',
     $gap: 24,
@@ -112,9 +107,9 @@ const TableHeader = styled(TableHeaderBase)`
 const TableRow = styled(TableHeaderBase)`
     border-radius: 999px;
     &:nth-child(2n) {
-        background-color: rgba(0,0,0,0.05);
+        background-color: rgba(0, 0, 0, 0.05);
     }
-    
+
     ${({ theme }) => theme.mediaWidth.upToSmall`
         padding: 24px;
         grid-template-columns: 1fr;

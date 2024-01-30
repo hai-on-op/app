@@ -6,12 +6,7 @@ export function InitializationModal({ onClose, ...props }: ModalProps) {
         <Modal
             {...props}
             maxWidth="350px"
-            overrideContent={(
-                <WaitingModalContent
-                    onClose={onClose}
-                    hideButton
-                />
-            )}
+            overrideContent={<WaitingModalContent onClose={onClose} hideButton />}
             ignoreWaiting
         />
     )

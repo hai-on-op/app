@@ -1,12 +1,7 @@
 import { useMemo } from 'react'
 
 import type { CollateralLiquidationData, Debt } from '~/types'
-import {
-    VaultAction,
-    returnAvaiableDebt,
-    returnTotalDebt,
-    returnTotalValue,
-} from '~/utils'
+import { VaultAction, returnAvaiableDebt, returnTotalDebt, returnTotalValue } from '~/utils'
 import { useStoreState } from '~/store'
 import { useBalance } from '~/hooks'
 
@@ -17,10 +12,8 @@ export function useDebt(action: VaultAction, collateralLiquidationData?: Collate
             vaultData: { leftInput, rightInput },
             singleVault,
         },
-        connectWalletModel: {
-            tokensData,
-        },
-    } = useStoreState(state => state)
+        connectWalletModel: { tokensData },
+    } = useStoreState((state) => state)
 
     const { accumulatedRate = '0' } = collateralLiquidationData || {}
 
@@ -35,21 +28,14 @@ export function useDebt(action: VaultAction, collateralLiquidationData?: Collate
                 true
             ).toString()
         }
-        return returnTotalValue(
-            returnTotalDebt(singleVault.debt, accumulatedRate) as string,
-            rightInput
-        ).toString()
+        return returnTotalValue(returnTotalDebt(singleVault.debt, accumulatedRate) as string, rightInput).toString()
     }, [singleVault, rightInput, action, accumulatedRate])
 
     const available = useMemo(() => {
         if (!collateralLiquidationData?.currentPrice.safetyPrice) return '0.00'
 
         if (action === VaultAction.CREATE) {
-            return returnAvaiableDebt(
-                collateralLiquidationData.currentPrice.safetyPrice,
-                accumulatedRate,
-                leftInput
-            )
+            return returnAvaiableDebt(collateralLiquidationData.currentPrice.safetyPrice, accumulatedRate, leftInput)
         }
         if (singleVault) {
             if (action === VaultAction.DEPOSIT_BORROW) {
@@ -69,9 +55,7 @@ export function useDebt(action: VaultAction, collateralLiquidationData?: Collate
 
     return {
         data: tokensData?.HAI,
-        total: (Number(total || '0') <= 0.00001)
-            ? '0'
-            : total,
+        total: Number(total || '0') <= 0.00001 ? '0' : total,
         available,
         balance: useBalance('HAI'),
         priceInUSD: liquidationData?.currentRedemptionPrice || '1',

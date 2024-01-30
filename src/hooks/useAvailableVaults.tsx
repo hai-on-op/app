@@ -19,33 +19,28 @@ const sortableHeaders: SortableHeader[] = [
 
 export function useAvailableVaults() {
     const {
-        connectWalletModel: {
-            tokensData,
-            tokensFetchedData,
-        },
+        connectWalletModel: { tokensData, tokensFetchedData },
         vaultModel: vaultState,
-    } = useStoreState(state => state)
+    } = useStoreState((state) => state)
 
-    const symbols = useMemo(() => (
-        Object.values(tokensData || {})
-            .filter(({ isCollateral }) => isCollateral)
-            .map(({ symbol }) => symbol)
-    ), [tokensData])
+    const symbols = useMemo(
+        () =>
+            Object.values(tokensData || {})
+                .filter(({ isCollateral }) => isCollateral)
+                .map(({ symbol }) => symbol),
+        [tokensData]
+    )
 
     const availableVaults: AvailableVaultPair[] = useMemo(() => {
-        return symbols.map(symbol => {
-            const {
-                liquidationCRatio,
-                totalAnnualizedStabilityFee,
-            } = vaultState.liquidationData?.collateralLiquidationData[symbol] || {}
+        return symbols.map((symbol) => {
+            const { liquidationCRatio, totalAnnualizedStabilityFee } =
+                vaultState.liquidationData?.collateralLiquidationData[symbol] || {}
             return {
                 collateralName: symbol,
                 collateralizationFactor: liquidationCRatio || '',
                 apy: totalAnnualizedStabilityFee || '',
                 eligibleBalance: tokensFetchedData[symbol]?.balanceE18,
-                myVaults: vaultState.list.filter(({ collateralName }) => (
-                    collateralName === symbol
-                )),
+                myVaults: vaultState.list.filter(({ collateralName }) => collateralName === symbol),
             }
         })
     }, [symbols, tokensFetchedData, vaultState.list, vaultState.liquidationData])
@@ -67,29 +62,29 @@ export function useAvailableVaults() {
     })
 
     const sortedRows = useMemo(() => {
-        switch(sorting.key) {
+        switch (sorting.key) {
             case 'Pair':
                 return arrayToSorted(filteredAvailableVaults, {
-                    getProperty: vault => vault.collateralName,
+                    getProperty: (vault) => vault.collateralName,
                     dir: sorting.dir,
                     type: 'alphabetical',
                 })
             case 'Net APY':
                 return arrayToSorted(filteredAvailableVaults, {
-                    getProperty: vault => vault.apy || '0',
+                    getProperty: (vault) => vault.apy || '0',
                     dir: sorting.dir,
                     type: 'parseFloat',
                 })
             case 'My Eligible Collateral':
                 return arrayToSorted(filteredAvailableVaults, {
-                    getProperty: vault => vault.eligibleBalance,
+                    getProperty: (vault) => vault.eligibleBalance,
                     dir: sorting.dir,
                     type: 'bigInt',
                     checkValueExists: true,
                 })
             case 'My Vaults':
                 return arrayToSorted(filteredAvailableVaults, {
-                    getProperty: vault => vault.myVaults?.length,
+                    getProperty: (vault) => vault.myVaults?.length,
                     dir: sorting.dir,
                     type: 'numerical',
                     checkValueExists: true,
@@ -97,7 +92,7 @@ export function useAvailableVaults() {
             case 'Coll. Factor':
             default:
                 return arrayToSorted(filteredAvailableVaults, {
-                    getProperty: vault => vault.collateralizationFactor || '0',
+                    getProperty: (vault) => vault.collateralizationFactor || '0',
                     dir: sorting.dir,
                     type: 'parseFloat',
                 })

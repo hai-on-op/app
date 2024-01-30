@@ -12,47 +12,25 @@ import { Hamburger } from '~/components/Icons/Hamburger'
 import { ConnectButton } from '~/components/ConnectButton'
 
 type MobileMenuProps = {
-    active: boolean,
-    setActive: SetState<boolean>,
+    active: boolean
+    setActive: SetState<boolean>
     showWrapEth: () => void
 }
 export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) {
     const [button, setButton] = useState<HTMLElement | null>(null)
-    
+
     useOutsideClick(button, () => setActive(false))
 
     return (
-        <DropdownButton
-            as="div"
-            $variant="yellowish"
-            ref={setButton}
-            onClick={() => setActive(a => !a)}>
-            <Hamburger size={20}/>
+        <DropdownButton as="div" $variant="yellowish" ref={setButton} onClick={() => setActive((a) => !a)}>
+            <Hamburger size={20} />
             {active && (
-                <Dropdown
-                    $float="left"
-                    $margin="24px">
+                <Dropdown $float="left" $margin="24px">
                     <ConnectButton $width="100%"/>
-                    <InternalLink
-                        href="/vaults"
-                        $textDecoration="none"
-                        content={<HeaderLink>Get HAI</HeaderLink>}
-                    />
-                    <InternalLink
-                        href="/earn"
-                        $textDecoration="none"
-                        content={<HeaderLink>Earn</HeaderLink>}
-                    />
-                    <InternalLink
-                        href="/learn"
-                        $textDecoration="none"
-                        content={<HeaderLink>Learn</HeaderLink>}
-                    />
-                    <InternalLink
-                        href="/auctions"
-                        $textDecoration="none"
-                        content={<HeaderLink>Auctions</HeaderLink>}
-                    />
+                    <InternalLink href="/vaults" $textDecoration="none" content={<HeaderLink>Get HAI</HeaderLink>} />
+                    <InternalLink href="/earn" $textDecoration="none" content={<HeaderLink>Earn</HeaderLink>} />
+                    <InternalLink href="/learn" $textDecoration="none" content={<HeaderLink>Learn</HeaderLink>} />
+                    <InternalLink href="/auctions" $textDecoration="none" content={<HeaderLink>Auctions</HeaderLink>} />
                     <InternalLink
                         href="/analytics"
                         $textDecoration="none"
@@ -69,19 +47,13 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
                         content={<HeaderLink>Contracts</HeaderLink>}
                     />
                     <HeaderLink onClick={showWrapEth}>Wrap ETH</HeaderLink>
-                    <ExternalLink
-                        href={LINK_TO_DOCS}
-                        $textDecoration="none">
+                    <ExternalLink href={LINK_TO_DOCS} $textDecoration="none">
                         <HeaderLink>Docs</HeaderLink>
                     </ExternalLink>
-                    <ExternalLink
-                        href={LINK_TO_TWITTER}
-                        $textDecoration="none">
+                    <ExternalLink href={LINK_TO_TWITTER} $textDecoration="none">
                         <HeaderLink>Twitter</HeaderLink>
                     </ExternalLink>
-                    <ExternalLink
-                        href={LINK_TO_TELEGRAM}
-                        $textDecoration="none">
+                    <ExternalLink href={LINK_TO_TELEGRAM} $textDecoration="none">
                         <HeaderLink>Telegram</HeaderLink>
                     </ExternalLink>
                 </Dropdown>
@@ -104,7 +76,7 @@ const Dropdown = styled(Popout)`
     margin-right: -19px;
     gap: 4px;
     cursor: default;
-    
+
     & > * {
         width: 100%;
         height: 36px;
@@ -112,10 +84,10 @@ const Dropdown = styled(Popout)`
             line-height: 36px;
         }
         border-radius: 12px;
-        border: 1px solid rgba(0,0,0,0.1);
+        border: 1px solid rgba(0, 0, 0, 0.1);
     }
 `
-const HeaderLink = styled(Title).attrs(props => ({
+const HeaderLink = styled(Title).attrs((props) => ({
     $fontSize: '1.6em',
     $lineHeight: '1',
     $letterSpacing: '0.2rem',
@@ -130,5 +102,5 @@ const HeaderLink = styled(Title).attrs(props => ({
     padding: 0 12px;
     text-shadow: none;
     -webkit-text-stroke: 0px;
-    font-weight: ${({ $active = false }) => $active ? 700: 400};
+    font-weight: ${({ $active = false }) => ($active ? 700 : 400)};
 `

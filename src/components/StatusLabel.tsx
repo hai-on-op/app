@@ -5,13 +5,13 @@ import styled, { css } from 'styled-components'
 import { Flex, type FlexProps } from '~/styles'
 
 type StatusLabelProps = FlexProps & {
-    status: Status,
-    size?: number,
-    color?: string,
-    background?: string,
-    bordered?: boolean,
-    textOnly?: boolean,
-    children?: ReactChildren,
+    status: Status
+    size?: number
+    color?: string
+    background?: string
+    bordered?: boolean
+    textOnly?: boolean
+    children?: ReactChildren
 }
 export function StatusLabel({
     status,
@@ -34,25 +34,34 @@ export function StatusLabel({
             $justify="space-between"
             $align="center"
             $gap={8}
-            {...props}>
+            {...props}
+        >
             {children || status}
         </Container>
     )
 }
 
 const Container = styled(Flex)<{
-    $status: Status,
-    $size: number,
-    $color?: string,
-    $bg?: string,
-    $bordered: boolean,
-    $textOnly: boolean,
+    $status: Status
+    $size: number
+    $color?: string
+    $bg?: string
+    $bordered: boolean
+    $textOnly: boolean
 }>`
-    ${({ $textOnly }) => !$textOnly && css`padding: 8px 12px;`}
+    ${({ $textOnly }) =>
+        !$textOnly &&
+        css`
+            padding: 8px 12px;
+        `}
     font-size: ${({ $size }) => $size * 0.8}rem;
     font-weight: 700;
     border-radius: 999px;
-    ${({ theme, $bordered }) => $bordered && css`border: ${theme.border.thin};`}
+    ${({ theme, $bordered }) =>
+        $bordered &&
+        css`
+            border: ${theme.border.thin};
+        `}
 
     &::before {
         content: '';
@@ -65,53 +74,63 @@ const Container = styled(Flex)<{
 
     background: ${({ $bg = 'white', theme }) => (theme.colors as any)[$bg] || $bg};
     ${({ $status, $color, theme }) => {
-        switch($status) {
+        switch ($status) {
             case Status.SAFE:
-            case Status.POSITIVE: return css`
-                color: ${$color || theme.colors.successColor};
-            `
+            case Status.POSITIVE:
+                return css`
+                    color: ${$color || theme.colors.successColor};
+                `
             case Status.DANGER:
-            case Status.NEGATIVE: return css`
-                color: ${$color || theme.colors.dangerColor};
-            `
+            case Status.NEGATIVE:
+                return css`
+                    color: ${$color || theme.colors.dangerColor};
+                `
             case Status.OKAY:
-            case Status.NEUTRAL: return css`
-                color: ${$color || theme.colors.warningColor};
-            `
-            case Status.UNKNOWN: return css`
-                color: ${$color || 'black'};
-            `
-            case Status.LIVE: return css`
-                color: ${$color || theme.colors.successColor};
-                &::before {
-                    background: ${$color || theme.colors.successColor};
-                    display: block;
-                }
-            `
-            case Status.RESTARTING: return css`
-                color: ${$color || theme.colors.warningColor};
-                &::before {
-                    background: ${$color || theme.colors.warningColor};
-                    display: block;
-                }
-            `
+            case Status.NEUTRAL:
+                return css`
+                    color: ${$color || theme.colors.warningColor};
+                `
+            case Status.UNKNOWN:
+                return css`
+                    color: ${$color || 'black'};
+                `
+            case Status.LIVE:
+                return css`
+                    color: ${$color || theme.colors.successColor};
+                    &::before {
+                        background: ${$color || theme.colors.successColor};
+                        display: block;
+                    }
+                `
+            case Status.RESTARTING:
+                return css`
+                    color: ${$color || theme.colors.warningColor};
+                    &::before {
+                        background: ${$color || theme.colors.warningColor};
+                        display: block;
+                    }
+                `
             case Status.COMPLETED:
-            case Status.SETTLING: return css`
-                color: ${$color || theme.colors.blueish};
-                &::before {
-                    background: ${$color || theme.colors.blueish};
-                    display: block;
-                }
-            `
-            default: return css`
-                color: ${$color || 'inherit'};
-            `
+            case Status.SETTLING:
+                return css`
+                    color: ${$color || theme.colors.blueish};
+                    &::before {
+                        background: ${$color || theme.colors.blueish};
+                        display: block;
+                    }
+                `
+            default:
+                return css`
+                    color: ${$color || 'inherit'};
+                `
         }
     }};
 
-    ${({ $textOnly }) => $textOnly && css`
-        &::before {
-            display: none !important;
-        }
-    `}
+    ${({ $textOnly }) =>
+        $textOnly &&
+        css`
+            &::before {
+                display: none !important;
+            }
+        `}
 `

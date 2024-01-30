@@ -6,7 +6,7 @@ import { ExternalLink, ExternalLinkProps } from './ExternalLink'
 
 type AddressLinkProps = Partial<ExternalLinkProps> & {
     chainId?: number
-    address: string,
+    address: string
     type?: 'address' | 'transaction'
 }
 
@@ -14,9 +14,7 @@ export const AddressLink = ({ chainId, address, type = 'address', children, ...p
     const { chain } = useNetwork()
 
     return (
-        <ExternalLink
-            {...props}
-            href={getEtherscanLink(chainId || chain?.id || NETWORK_ID, address, type)}>
+        <ExternalLink {...props} href={getEtherscanLink(chainId || chain?.id || NETWORK_ID, address, type)}>
             {children || returnWalletAddress(address)}
         </ExternalLink>
     )

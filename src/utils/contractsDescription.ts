@@ -25,7 +25,8 @@ export const contractsDescriptions: { [k: string]: string } = {
     rateSetter: 'The RateSetter contract is responsible for the triggering the update of the PI Controller.',
     piCalculator: 'The PiController contract calculates the redemption rate given error history parameters.',
     weth: 'The Weth contract.',
-    protocolToken: 'The ProtocolToken contract is the ERC20Votes token (KITE) that is used for Surplus and Debt auctions.',
+    protocolToken:
+        'The ProtocolToken contract is the ERC20Votes token (KITE) that is used for Surplus and Debt auctions.',
     postSettlementSurplusAuctionHouse:
         'The PostSettlementSurplusAuctionHouse contract is responsible for auctioning all remaining surplus after Global Settlement is triggered.',
     postSettlementSurplusAuctioneer:

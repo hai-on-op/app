@@ -147,35 +147,35 @@ export type IManageVault = {
 // NEW VAULT STUFF
 
 export type AvailableVaultPair = {
-    collateralName: string,
-    collateralizationFactor: string,
-    apy: string,
-    eligibleBalance?: string,
+    collateralName: string
+    collateralizationFactor: string
+    apy: string
+    eligibleBalance?: string
     myVaults?: IVault[]
 }
 
 export type FormState = {
-    deposit?: string,
-    borrow?: string,
-    withdraw?: string,
+    deposit?: string
+    borrow?: string
+    withdraw?: string
     repay?: string
 }
 
 export type Collateral = {
-    name: string,
-    data?: TokenData,
-    total: string,
-    available: string,
-    balance: FormattedBalance,
-    priceInUSD?: string,
+    name: string
+    data?: TokenData
+    total: string
+    available: string
+    balance: FormattedBalance
+    priceInUSD?: string
     liquidationData?: CollateralLiquidationData
 }
 
 export type Debt = {
-    total: string,
-    data?: TokenData,
-    available: string,
-    balance: FormattedBalance,
+    total: string
+    data?: TokenData
+    available: string
+    balance: FormattedBalance
     priceInUSD: string
 }
 
@@ -183,15 +183,15 @@ export type Debt = {
 
 /* eslint-disable-next-line */
 export type SummaryItemValue<T = {}> = T & {
-    raw: string,
+    raw: string
     formatted: string
 }
 /* eslint-disable-next-line */
 export type SummaryItem<T = {}> = {
-    current?: SummaryItemValue<T>,
+    current?: SummaryItemValue<T>
     after: SummaryItemValue<T>
 }
 export type SummaryCurrency = {
-    usdRaw: string,
+    usdRaw: string
     usdFormatted: string
 }

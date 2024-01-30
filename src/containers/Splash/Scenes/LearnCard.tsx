@@ -7,47 +7,41 @@ import { BrandedTitle } from '~/components/BrandedTitle'
 import { HaiArrow } from '~/components/Icons/HaiArrow'
 
 type LearnCardProps = {
-    title: string,
-    link: string,
-    titleColorOffset?: number,
+    title: string
+    link: string
+    titleColorOffset?: number
 }
 export function LearnCard({ title, link, titleColorOffset }: LearnCardProps) {
     const isLargerThanExtraSmall = useMediaQuery('upToExtraSmall')
 
     return (
         <Container>
-            <Flex
-                $column
-                $gap={24}>
+            <Flex $column $gap={24}>
                 <BrandedTitle
                     textContent={title}
-                    $fontSize={isLargerThanExtraSmall ? '2.2rem': '1.9rem'}
+                    $fontSize={isLargerThanExtraSmall ? '2.2rem' : '1.9rem'}
                     $letterSpacing="0.4rem"
                     $lineHeight="1.4"
                     colorOffset={titleColorOffset}
                 />
             </Flex>
-            <ExternalLink
-                href={link}
-                $textDecoration="none">
+            <ExternalLink href={link} $textDecoration="none">
                 <CenteredFlex $gap={12}>
                     <Text
-                        $fontSize={isLargerThanExtraSmall ? '1.2rem': '1rem'}
+                        $fontSize={isLargerThanExtraSmall ? '1.2rem' : '1rem'}
                         $fontWeight={700}
-                        $letterSpacing="0.35rem">
+                        $letterSpacing="0.35rem"
+                    >
                         LEARN MORE
                     </Text>
-                    <HaiArrow
-                        direction="right"
-                        strokeWidth={2.5}
-                    />
+                    <HaiArrow direction="right" strokeWidth={2.5} />
                 </CenteredFlex>
             </ExternalLink>
         </Container>
     )
 }
 
-const Container = styled(Flex).attrs(props => ({
+const Container = styled(Flex).attrs((props) => ({
     $column: true,
     $justify: 'space-between',
     $align: 'flex-start',
@@ -61,7 +55,7 @@ const Container = styled(Flex).attrs(props => ({
     border-radius: 24px;
     /* background-color: #f1f1fb77; */
     /* backdrop-filter: blur(13px); */
-    background-color: rgba(255,255,255,0.5);
+    background-color: rgba(255, 255, 255, 0.5);
     padding: 48px 36px;
     transition: all 0.5s ease;
 

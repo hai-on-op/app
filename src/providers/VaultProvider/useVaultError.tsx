@@ -3,29 +3,18 @@ import { BigNumber } from 'ethers'
 import { useAccount } from 'wagmi'
 
 import type { Collateral, Debt } from '~/types'
-import {
-    VaultAction,
-    VaultInfoError,
-    formatNumber,
-    toFixedString,
-} from '~/utils'
+import { VaultAction, VaultInfoError, formatNumber, toFixedString } from '~/utils'
 import { useStoreState } from '~/store'
 import { useProxyAddress } from '~/hooks'
 
 type Props = {
-    action: VaultAction,
-    collateral: Collateral,
-    debt: Debt,
-    collateralRatio: string,
-    isSafe: boolean,
+    action: VaultAction
+    collateral: Collateral
+    debt: Debt
+    collateralRatio: string
+    isSafe: boolean
 }
-export function useVaultError({
-    action,
-    collateral,
-    debt,
-    collateralRatio,
-    isSafe,
-}: Props) {
+export function useVaultError({ action, collateral, debt, collateralRatio, isSafe }: Props) {
     const { address: account } = useAccount()
     const proxyAddress = useProxyAddress()
     const { liquidationData, vaultData } = useStoreState(({ vaultModel }) => vaultModel)
@@ -41,15 +30,9 @@ export function useVaultError({
     const leftInputBN = BigNumber.from(toFixedString(vaultData.leftInput || '0', 'WAD'))
     const rightInputBN = BigNumber.from(toFixedString(vaultData.rightInput || '0', 'WAD'))
 
-    const {
-        globalDebtCeiling,
-        perVaultDebtCeiling,
-    } = liquidationData || {}
-    const {
-        debtFloor,
-        safetyCRatio,
-    } = collateral.liquidationData || {}
-    
+    const { globalDebtCeiling, perVaultDebtCeiling } = liquidationData || {}
+    const { debtFloor, safetyCRatio } = collateral.liquidationData || {}
+
     const debtFloorBN = BigNumber.from(toFixedString(debtFloor || '0', 'WAD'))
     const totalDebtBN = BigNumber.from(toFixedString(debt.total, 'WAD'))
 
@@ -63,8 +46,7 @@ export function useVaultError({
         if (rightInputBN.gt(availableHaiBN)) {
             return { error: VaultInfoError.INSUFFICIENT_HAI }
         }
-    }
-    else if (action === VaultAction.WITHDRAW_REPAY) {
+    } else if (action === VaultAction.WITHDRAW_REPAY) {
         if (leftInputBN.isZero() && rightInputBN.isZero()) {
             return { error: VaultInfoError.ZERO_AMOUNT }
         }
@@ -88,7 +70,9 @@ export function useVaultError({
     if (!isSafe && Number(collateralRatio) >= 0) {
         return {
             error: VaultInfoError.COLLATERAL_RATIO,
-            errorMessage: `Too much debt, which would bring vault below ${Number(safetyCRatio) * 100}% collateralization ratio`,
+            errorMessage: `Too much debt, which would bring vault below ${
+                Number(safetyCRatio) * 100
+            }% collateralization ratio`,
         }
     }
     if (numeral(debt).value() > numeral(globalDebtCeiling).value()) {
@@ -110,8 +94,7 @@ export function useVaultError({
         if (!rightInputBN.isZero() && rightInputBN.lt(1)) {
             return { error: VaultInfoError.MINIMUM_MINT }
         }
-    }
-    else if (perVaultDebtCeiling) {
+    } else if (perVaultDebtCeiling) {
         const perVaultDebtCeilingBN = BigNumber.from(toFixedString(perVaultDebtCeiling, 'WAD'))
         if (totalDebtBN.gte(perVaultDebtCeilingBN)) {
             return {

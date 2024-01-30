@@ -8,13 +8,13 @@ import { ExternalLink } from '~/components/ExternalLink'
 import { FloatingElements, type FloatingElementsProps } from '~/components/BrandElements/FloatingElements'
 
 export type StrategyAdProps = {
-    heading: string,
-    status?: string,
-    description: string,
-    cta?: string,
-    ctaLink: string,
-    tokenImages: TokenKey[],
-    bgVariant?: number,
+    heading: string
+    status?: string
+    description: string
+    cta?: string
+    ctaLink: string
+    tokenImages: TokenKey[]
+    bgVariant?: number
 }
 export function StrategyAd({
     heading,
@@ -25,9 +25,7 @@ export function StrategyAd({
     tokenImages,
     bgVariant = 0,
 }: StrategyAdProps) {
-    const { clouds = [], coins = [] } = backgroundElementTransforms[
-        bgVariant % backgroundElementTransforms.length
-    ]
+    const { clouds = [], coins = [] } = backgroundElementTransforms[bgVariant % backgroundElementTransforms.length]
 
     return (
         <Container>
@@ -40,54 +38,33 @@ export function StrategyAd({
                     }))}
                 />
             </FloatingContainer>
-            <Flex
-                $column
-                $justify="center"
-                $align="flex-start"
-                $gap={12}>
+            <Flex $column $justify="center" $align="flex-start" $gap={12}>
                 <Header>
                     <Text $fontWeight={700}>{heading}</Text>
                     <Text>{status}</Text>
                 </Header>
                 <Text $fontSize="0.8rem">{description}</Text>
             </Flex>
-            {ctaLink.startsWith('/')
-                ? (
-                    <InternalLink
-                        href={ctaLink}
-                        $textDecoration="none">
-                        <HaiButton
-                            $variant="yellowish"
-                            $gap={8}>
-                            <Text>{cta}</Text>
-                            <HaiArrow
-                                size={15}
-                                direction="upRight"
-                            />
-                        </HaiButton>
-                    </InternalLink>
-                )
-                : (
-                    <ExternalLink
-                        href={ctaLink}
-                        $textDecoration="none">
-                        <HaiButton
-                            $variant="yellowish"
-                            $gap={8}>
-                            <Text>{cta}</Text>
-                            <HaiArrow
-                                size={15}
-                                direction="upRight"
-                            />
-                        </HaiButton>
-                    </ExternalLink>
-                )
-            }
+            {ctaLink.startsWith('/') ? (
+                <InternalLink href={ctaLink} $textDecoration="none">
+                    <HaiButton $variant="yellowish" $gap={8}>
+                        <Text>{cta}</Text>
+                        <HaiArrow size={15} direction="upRight" />
+                    </HaiButton>
+                </InternalLink>
+            ) : (
+                <ExternalLink href={ctaLink} $textDecoration="none">
+                    <HaiButton $variant="yellowish" $gap={8}>
+                        <Text>{cta}</Text>
+                        <HaiArrow size={15} direction="upRight" />
+                    </HaiButton>
+                </ExternalLink>
+            )}
         </Container>
     )
 }
 
-const Container = styled(Flex).attrs(props => ({
+const Container = styled(Flex).attrs((props) => ({
     $width: '100%',
     $justify: 'space-between',
     $align: 'center',
@@ -116,7 +93,7 @@ const FloatingContainer = styled.div`
     z-index: -1;
 `
 
-const Header = styled(Flex).attrs(props => ({
+const Header = styled(Flex).attrs((props) => ({
     $justify: 'flex-start',
     $align: 'center',
     $gap: 12,

@@ -17,7 +17,7 @@ export interface ConnectWalletModel {
 
     isWrongNetwork: boolean
     setIsWrongNetwork: Action<ConnectWalletModel, boolean>
-    
+
     proxyAddress: string
     setProxyAddress: Action<ConnectWalletModel, string>
 

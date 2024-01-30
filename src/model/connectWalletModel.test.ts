@@ -18,9 +18,9 @@ describe('connect wallet model', () => {
         it('sets ethBalance', () => {
             store.getActions().updateEthBalance({ chainId: 10, balance: 123 })
             expect(store.getState().ethBalance).toEqual({
-                1: 0,
+                1: '0',
                 10: 123,
-                420: 0,
+                420: '0',
             })
         })
     })
@@ -30,18 +30,18 @@ describe('connect wallet model', () => {
             store.getActions().updateEthBalance({ chainId: 1, balance: 123 })
             expect(store.getState().ethBalance).toEqual({
                 1: 123,
-                10: 0,
-                420: 0,
+                10: '0',
+                420: '0',
             })
         })
 
         it('sets haiBalance for rinkeby', () => {
             store.getActions().updateEthBalance({ chainId: 4, balance: 123 })
             expect(store.getState().ethBalance).toEqual({
-                1: 0,
-                10: 0,
+                1: '0',
+                10: '0',
                 4: 123,
-                420: 0,
+                420: '0',
             })
         })
     })

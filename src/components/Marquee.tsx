@@ -6,12 +6,12 @@ import styled, { css, keyframes } from 'styled-components'
 import { CenteredFlex, Flex, type FlexProps, Text, type TextProps } from '~/styles'
 
 type BannerHeaderProps = FlexProps & {
-    text: string | string[],
-    textOptions?: TextProps,
-    staticWidth?: number,
-    reverse?: boolean,
-    speed?: number,
-    spacing?: number,
+    text: string | string[]
+    textOptions?: TextProps
+    staticWidth?: number
+    reverse?: boolean
+    speed?: number
+    spacing?: number
     children?: ReactChildren
 }
 
@@ -24,7 +24,7 @@ export function Marquee({
     spacing = 12,
     children,
 }: BannerHeaderProps) {
-    const textArray = Array.isArray(text) ? text: [text]
+    const textArray = Array.isArray(text) ? text : [text]
 
     const [chunk, setChunk] = useState<HTMLDivElement | null>(null)
 
@@ -59,25 +59,17 @@ export function Marquee({
 
     return (
         <Container>
-            <Banner
-                $scrollDistance={chunkWidth}
-                $reverse={reverse}
-                $speed={speed}>
-                <Flex
-                    $width="100%"
-                    $gap={spacing}>
+            <Banner $scrollDistance={chunkWidth} $reverse={reverse} $speed={speed}>
+                <Flex $width="100%" $gap={spacing}>
                     {Array.from({ length: repeat }, (_, i) => (
                         <MarqueeChunk
                             key={i}
-                            ref={i === 0 ? setChunk: undefined}
-                            $width={staticWidth ? `${staticWidth}px`: undefined}
-                            $gap={spacing}>
+                            ref={i === 0 ? setChunk : undefined}
+                            $width={staticWidth ? `${staticWidth}px` : undefined}
+                            $gap={spacing}
+                        >
                             {textArray.map((t, j) => (
-                                <Text
-                                    key={j}
-                                    $whiteSpace="nowrap"
-                                    $textTransform="uppercase"
-                                    {...textOptions}>
+                                <Text key={j} $whiteSpace="nowrap" $textTransform="uppercase" {...textOptions}>
                                     {t}
                                 </Text>
                             ))}
@@ -103,9 +95,9 @@ const Container = styled(CenteredFlex)`
 `
 
 const Banner = styled(Flex)<{
-    $scrollDistance?: number,
-    $speed: number,
-    $reverse?: boolean,
+    $scrollDistance?: number
+    $speed: number
+    $reverse?: boolean
 }>`
     position: absolute;
     left: 0px;
@@ -114,17 +106,18 @@ const Banner = styled(Flex)<{
     ${({ $scrollDistance, $reverse, $speed }) => {
         if (!$scrollDistance) return ''
 
-        const d = $reverse ? -$scrollDistance: $scrollDistance
+        const d = $reverse ? -$scrollDistance : $scrollDistance
         return css`
             & > div {
-                animation: ${createScrollAnimation(d)} ${Math.max($scrollDistance / (50 * $speed), 0.5)}s linear infinite;
+                animation: ${createScrollAnimation(d)} ${Math.max($scrollDistance / (50 * $speed), 0.5)}s linear
+                    infinite;
                 overflow: visible;
             }
         `
     }}
 `
 
-export const MarqueeChunk = styled(Flex).attrs(props => ({
+export const MarqueeChunk = styled(Flex).attrs((props) => ({
     $justify: 'space-between',
     $align: 'center',
     $shrink: 0,

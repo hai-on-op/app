@@ -46,7 +46,9 @@ const sortableHeaders: SortableHeader[] = [
 
 export function CollateralTable() {
     const geb = usePublicGeb()
-    const { data: { tokenAnalyticsData: rows } } = useAnalytics()
+    const {
+        data: { tokenAnalyticsData: rows },
+    } = useAnalytics()
 
     const [sorting, setSorting] = useState<Sorting>({
         key: 'Collateral Asset',
@@ -54,29 +56,29 @@ export function CollateralTable() {
     })
 
     const sortedRows = useMemo(() => {
-        switch(sorting.key) {
+        switch (sorting.key) {
             case 'Delayed Price':
                 return arrayToSorted(rows, {
-                    getProperty: row => row.currentPrice.toString(),
+                    getProperty: (row) => row.currentPrice.toString(),
                     dir: sorting.dir,
                     type: 'parseFloat',
                 })
             case 'Next Price':
                 return arrayToSorted(rows, {
-                    getProperty: row => row.nextPrice.toString(),
+                    getProperty: (row) => row.nextPrice.toString(),
                     dir: sorting.dir,
                     type: 'parseFloat',
                 })
             case 'Stability Fee':
                 return arrayToSorted(rows, {
-                    getProperty: row => row.stabilityFee.toString(),
+                    getProperty: (row) => row.stabilityFee.toString(),
                     dir: sorting.dir,
                     type: 'parseFloat',
                 })
             case 'Collateral Asset':
             default:
                 return arrayToSorted(rows, {
-                    getProperty: row => row.symbol,
+                    getProperty: (row) => row.symbol,
                     dir: sorting.dir,
                     type: 'alphabetical',
                 })
@@ -84,34 +86,25 @@ export function CollateralTable() {
     }, [rows, sorting])
 
     const isLargerThanSmall = useMediaQuery('upToSmall')
-    
+
     return (
         <NavContainer
             navItems={[`Collaterals (${rows.length})`]}
             selected={0}
             onSelect={() => 0}
-            headerContent={!isLargerThanSmall && (
-                <SortByDropdown
-                    headers={sortableHeaders}
-                    sorting={sorting}
-                    setSorting={setSorting}
-                />
-            )}>
-            <ProxyPrompt
-                connectWalletOnly
-                continueText="view">
+            headerContent={
+                !isLargerThanSmall && (
+                    <SortByDropdown headers={sortableHeaders} sorting={sorting} setSorting={setSorting} />
+                )
+            }
+        >
+            <ProxyPrompt connectWalletOnly continueText="view">
                 <Table
                     headers={sortableHeaders}
                     headerContainer={TableHeader}
                     sorting={sorting}
                     setSorting={setSorting}
-                    rows={sortedRows.map(({
-                        symbol,
-                        delayedOracle,
-                        currentPrice,
-                        nextPrice,
-                        stabilityFee,
-                    }) => (
+                    rows={sortedRows.map(({ symbol, delayedOracle, currentPrice, nextPrice, stabilityFee }) => (
                         <Table.Row
                             key={symbol}
                             container={TableRow}
@@ -119,46 +112,33 @@ export function CollateralTable() {
                             items={[
                                 {
                                     content: (
-                                        <Flex
-                                            $align="center"
-                                            $gap={8}>
-                                            <TokenPair
-                                                tokens={[symbol as any]}
-                                                hideLabel
-                                            />
+                                        <Flex $align="center" $gap={8}>
+                                            <TokenPair tokens={[symbol as any]} hideLabel />
                                             <Text $fontWeight={700}>{symbol}</Text>
                                         </Flex>
                                     ),
                                     // fullWidth: true,
                                 },
                                 {
-                                    content: geb?.tokenList?.[symbol]
-                                        ? <AddressLink address={geb.tokenList[symbol].address}/>
-                                        : <Text>--</Text>,
-                                },
-                                {
-                                    content: <AddressLink address={delayedOracle}/>,
-                                },
-                                {
-                                    content: (
-                                        <Text>
-                                            {formatDataNumber(currentPrice?.toString() || '0', 18, 2, true)}
-                                        </Text>
+                                    content: geb?.tokenList?.[symbol] ? (
+                                        <AddressLink address={geb.tokenList[symbol].address} />
+                                    ) : (
+                                        <Text>--</Text>
                                     ),
                                 },
                                 {
-                                    content: (
-                                        <Text>
-                                            {formatDataNumber(nextPrice?.toString() || '0', 18, 2, true)}
-                                        </Text>
-                                    ),
+                                    content: <AddressLink address={delayedOracle} />,
                                 },
                                 {
                                     content: (
-                                        <Text>
-                                            {transformToAnnualRate(stabilityFee?.toString() || '0', 27)}
-                                        </Text>
+                                        <Text>{formatDataNumber(currentPrice?.toString() || '0', 18, 2, true)}</Text>
                                     ),
+                                },
+                                {
+                                    content: <Text>{formatDataNumber(nextPrice?.toString() || '0', 18, 2, true)}</Text>,
+                                },
+                                {
+                                    content: <Text>{transformToAnnualRate(stabilityFee?.toString() || '0', 27)}</Text>,
                                 },
                             ]}
                         />
@@ -183,7 +163,7 @@ const TableHeader = styled(Grid)`
 const TableRow = styled(TableHeader)`
     border-radius: 999px;
     &:hover {
-        background-color: rgba(0,0,0,0.1);
+        background-color: rgba(0, 0, 0, 0.1);
     }
 
     ${({ theme }) => theme.mediaWidth.upToSmall`

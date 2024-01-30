@@ -9,15 +9,15 @@ import { StatusLabel } from '~/components/StatusLabel'
 import { Table } from '~/components/Table'
 
 type MyVaultsTableProps = {
-    headers: SortableHeader[],
-    rows: IVault[],
-    sorting: Sorting,
-    setSorting: SetState<Sorting>,
+    headers: SortableHeader[]
+    rows: IVault[]
+    sorting: Sorting
+    setSorting: SetState<Sorting>
     onCreate: () => void
 }
 export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: MyVaultsTableProps) {
     const { setActiveVault } = useVault()
-    
+
     return (
         <Table
             headers={headers}
@@ -25,16 +25,14 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
             sorting={sorting}
             setSorting={setSorting}
             isEmpty={!rows.length}
-            emptyContent={(<>
-                <Text>
-                    No vaults were found or matched your search. Would you like to open a new one?
-                </Text>
-                <HaiButton
-                    $variant="yellowish"
-                    onClick={onCreate}>
-                    Open New Vault
-                </HaiButton>
-            </>)}
+            emptyContent={
+                <>
+                    <Text>No vaults were found or matched your search. Would you like to open a new one?</Text>
+                    <HaiButton $variant="yellowish" onClick={onCreate}>
+                        Open New Vault
+                    </HaiButton>
+                </>
+            }
             rows={rows.map((vault) => {
                 const {
                     id,
@@ -47,23 +45,19 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                 } = vault
 
                 return (
-                    <Table.Row key={id}
+                    <Table.Row
+                        key={id}
                         container={TableRow}
                         headers={headers}
                         items={[
                             {
                                 content: (
-                                    <Grid
-                                        $columns="2fr min-content 1fr"
-                                        $align="center"
-                                        $gap={12}>
-                                        <CenteredFlex
-                                            $width="fit-content"
-                                            $gap={4}>
-                                            <TokenPair tokens={[collateralName as any, 'HAI']}/>
+                                    <Grid $columns="2fr min-content 1fr" $align="center" $gap={12}>
+                                        <CenteredFlex $width="fit-content" $gap={4}>
+                                            <TokenPair tokens={[collateralName as any, 'HAI']} />
                                             <Text>#{id}</Text>
                                         </CenteredFlex>
-                                        <RewardsTokenPair tokens={['OP']}/>
+                                        <RewardsTokenPair tokens={['OP']} />
                                     </Grid>
                                 ),
                                 props: { $fontSize: 'inherit' },
@@ -71,9 +65,7 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                             },
                             {
                                 content: (
-                                    <Flex
-                                        $align="center"
-                                        $gap={12}>
+                                    <Flex $align="center" $gap={12}>
                                         <Text>
                                             {formatNumberWithStyle(collateralRatio, {
                                                 scalingFactor: 0.01,
@@ -89,21 +81,15 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                             },
                             {
                                 content: (
-                                    <Flex
-                                        $align="center"
-                                        $gap={8}>
-                                        <Text>
-                                            {formatNumberWithStyle(collateral, { maxDecimals: 4 })}
-                                        </Text>
+                                    <Flex $align="center" $gap={8}>
+                                        <Text>{formatNumberWithStyle(collateral, { maxDecimals: 4 })}</Text>
                                         <Text>{collateralName.toUpperCase()}</Text>
                                     </Flex>
                                 ),
                             },
                             {
                                 content: (
-                                    <Flex
-                                        $align="center"
-                                        $gap={8}>
+                                    <Flex $align="center" $gap={8}>
                                         <Text>{formatNumberWithStyle(totalDebt)}</Text>
                                         <Text>HAI</Text>
                                     </Flex>
@@ -112,22 +98,15 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                             {
                                 content: (
                                     <Text>
-                                        {formatNumberWithStyle(
-                                            getRatePercentage(totalAnnualizedStabilityFee, 4),
-                                            {
-                                                scalingFactor: 0.01,
-                                                style: 'percent',
-                                            }
-                                        )}
+                                        {formatNumberWithStyle(getRatePercentage(totalAnnualizedStabilityFee, 4), {
+                                            scalingFactor: 0.01,
+                                            style: 'percent',
+                                        })}
                                     </Text>
                                 ),
                             },
                             {
-                                content: (
-                                    <TableButton onClick={() => setActiveVault({ vault })}>
-                                        Manage
-                                    </TableButton>
-                                ),
+                                content: <TableButton onClick={() => setActiveVault({ vault })}>Manage</TableButton>,
                                 unwrapped: true,
                             },
                         ]}
@@ -159,7 +138,7 @@ const TableRow = styled(TableHeader)`
         padding: 0px;
     }
     &:hover {
-        background-color: rgba(0,0,0,0.1);
+        background-color: rgba(0, 0, 0, 0.1);
     }
 
     ${({ theme }) => theme.mediaWidth.upToSmall`

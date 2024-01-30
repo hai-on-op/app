@@ -1,8 +1,4 @@
-import {
-    type FlattenSimpleInterpolation,
-    type DefaultTheme,
-    type ThemedCssFunction,
-} from 'styled-components'
+import { type FlattenSimpleInterpolation, type DefaultTheme, type ThemedCssFunction } from 'styled-components'
 
 export type IColors = {
     primary: string

@@ -24,7 +24,7 @@ export type RetryOptions = {
 }
 
 export type RetryResult<T> = {
-    promise: Promise<T>,
+    promise: Promise<T>
     cancel: () => void
 }
 
@@ -42,7 +42,7 @@ export function retry<T>(fn: () => Promise<T>, options: RetryOptions): RetryResu
     let retries = 0
     let completed = false
     let rejectCancelled: (error: Error) => void
-    const tryFn: (() => Promise<T>) = async () => {
+    const tryFn: () => Promise<T> = async () => {
         rejectCancelled = (error: Error) => {
             throw error
         }
@@ -53,7 +53,7 @@ export function retry<T>(fn: () => Promise<T>, options: RetryOptions): RetryResu
                 result = temp
             }
             return result
-        } catch(error: any) {
+        } catch (error: any) {
             if (completed) return result
             retries++
             if (retries >= n) {

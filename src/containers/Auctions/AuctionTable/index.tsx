@@ -15,26 +15,18 @@ import { Table } from '~/components/Table'
 const ITEMS_PER_PAGE = 5
 
 type AuctionTableProps = {
-    headers: SortableHeader[],
-    rows: IAuction[],
-    sorting: Sorting,
-    setSorting: SetState<Sorting>,
-    isLoading: boolean,
-    error?: string,
+    headers: SortableHeader[]
+    rows: IAuction[]
+    sorting: Sorting
+    setSorting: SetState<Sorting>
+    isLoading: boolean
+    error?: string
 }
-export function AuctionTable({
-    headers,
-    rows,
-    sorting,
-    setSorting,
-    isLoading,
-    error,
-}: AuctionTableProps) {
-    const { auctionModel: { selectedAuction } } = useStoreState(state => state)
+export function AuctionTable({ headers, rows, sorting, setSorting, isLoading, error }: AuctionTableProps) {
     const {
-        auctionModel: auctionActions,
-        popupsModel: popupsActions,
-    } = useStoreActions(actions => actions)
+        auctionModel: { selectedAuction },
+    } = useStoreState((state) => state)
+    const { auctionModel: auctionActions, popupsModel: popupsActions } = useStoreActions((actions) => actions)
 
     const geb = useGeb()
 
@@ -45,38 +37,37 @@ export function AuctionTable({
         auctionActions.fetchCollateralData({
             geb,
             collateral: tokenMap[sellToken] || sellToken,
-            auctionIds: rows
-                .filter(({ sellToken: token }) => token === sellToken)
-                .map(({ auctionId }) => auctionId),
+            auctionIds: rows.filter(({ sellToken: token }) => token === sellToken).map(({ auctionId }) => auctionId),
         })
     }, [selectedAuction, rows])
 
     const [expandedId, setExpandedId] = useState<string>()
 
     const [paging, setPaging] = useState<number>(0)
-    
-    return (<>
-        {!!selectedAuction && (
-            <AuctionModal onClose={() => {
-                auctionActions.setSelectedAuction(null)
-                popupsActions.setAuctionOperationPayload({
-                    isOpen: false,
-                    type: '',
-                    auctionType: '',
-                })
-            }}/>
-        )}
-        <Table
-            headers={headers}
-            headerContainer={TableHeader}
-            sorting={sorting}
-            setSorting={setSorting}
-            loading={isLoading}
-            error={error}
-            isEmpty={!rows.length}
-            rows={rows
-                .slice(paging * ITEMS_PER_PAGE, (paging + 1) * ITEMS_PER_PAGE)
-                .map(auction => {
+
+    return (
+        <>
+            {!!selectedAuction && (
+                <AuctionModal
+                    onClose={() => {
+                        auctionActions.setSelectedAuction(null)
+                        popupsActions.setAuctionOperationPayload({
+                            isOpen: false,
+                            type: '',
+                            auctionType: '',
+                        })
+                    }}
+                />
+            )}
+            <Table
+                headers={headers}
+                headerContainer={TableHeader}
+                sorting={sorting}
+                setSorting={setSorting}
+                loading={isLoading}
+                error={error}
+                isEmpty={!rows.length}
+                rows={rows.slice(paging * ITEMS_PER_PAGE, (paging + 1) * ITEMS_PER_PAGE).map((auction) => {
                     const key = `${auction.englishAuctionType}-${auction.sellToken}-${auction.auctionId}`
                     return (
                         <AuctionTableRow
@@ -86,26 +77,19 @@ export function AuctionTable({
                             container={TableRow}
                             expanded={expandedId === key}
                             onSelect={() => {
-                                setExpandedId(currentId => currentId === key
-                                    ? undefined
-                                    : key
-                                )
+                                setExpandedId((currentId) => (currentId === key ? undefined : key))
                             }}
                         />
                     )
-                })
-            }
-            footer={(
-                <Footer $bordered={rows.length > ITEMS_PER_PAGE}>
-                    <Pagination
-                        totalItems={rows.length}
-                        perPage={ITEMS_PER_PAGE}
-                        handlePagingMargin={setPaging}
-                    />
-                </Footer>
-            )}
-        />
-    </>)
+                })}
+                footer={
+                    <Footer $bordered={rows.length > ITEMS_PER_PAGE}>
+                        <Pagination totalItems={rows.length} perPage={ITEMS_PER_PAGE} handlePagingMargin={setPaging} />
+                    </Footer>
+                }
+            />
+        </>
+    )
 }
 
 const TableHeader = styled(Grid)`
@@ -141,13 +125,13 @@ const TableRow = styled(TableHeader)`
     `}
 `
 
-const Footer = styled(Flex).attrs(props => ({
+const Footer = styled(Flex).attrs((props) => ({
     $justify: 'flex-end',
     $align: 'center',
     ...props,
 }))<{ $bordered: boolean }>`
     ${({ theme, $bordered }) => theme.mediaWidth.upToSmall`
-        border-top: ${$bordered ? theme.border.medium: 'none'};
+        border-top: ${$bordered ? theme.border.medium : 'none'};
         padding: 0 24px;
     `}
 `

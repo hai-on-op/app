@@ -3,5 +3,6 @@
         "src": "/[^.]+",
         "dest": "/",
         "status": 200
-    }]
+    }],
+    "outputDirectory": "build"
 }

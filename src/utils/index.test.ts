@@ -6,19 +6,29 @@ import { getCollateralRatio, getLiquidationPrice, ratioChecker, vaultIsSafe } fr
 describe('utils', () => {
     describe('#getEtherscanLink', () => {
         it('correct for tx', () => {
-            expect(getEtherscanLink(ChainId.MAINNET, 'abc', 'transaction')).toEqual('https://optimistic.etherscan.io/tx/abc')
+            expect(getEtherscanLink(ChainId.MAINNET, 'abc', 'transaction')).toEqual(
+                'https://optimistic.etherscan.io/tx/abc'
+            )
         })
         it('correct for token', () => {
-            expect(getEtherscanLink(ChainId.MAINNET, 'abc', 'token')).toEqual('https://optimistic.etherscan.io/token/abc')
+            expect(getEtherscanLink(ChainId.MAINNET, 'abc', 'token')).toEqual(
+                'https://optimistic.etherscan.io/token/abc'
+            )
         })
         it('correct for address', () => {
-            expect(getEtherscanLink(ChainId.MAINNET, 'abc', 'address')).toEqual('https://optimistic.etherscan.io/address/abc')
+            expect(getEtherscanLink(ChainId.MAINNET, 'abc', 'address')).toEqual(
+                'https://optimistic.etherscan.io/address/abc'
+            )
         })
         it('unrecognized chain id defaults to mainnet', () => {
-            expect(getEtherscanLink(2 as ChainId, 'abc', 'address')).toEqual('https://optimistic.etherscan.io/address/abc')
+            expect(getEtherscanLink(2 as ChainId, 'abc', 'address')).toEqual(
+                'https://optimistic.etherscan.io/address/abc'
+            )
         })
         it('goerli optimism', () => {
-            expect(getEtherscanLink(ChainId.OPTIMISM_GOERLI, 'abc', 'address')).toEqual('https://goerli-optimism.etherscan.io/address/abc')
+            expect(getEtherscanLink(ChainId.OPTIMISM_GOERLI, 'abc', 'address')).toEqual(
+                'https://goerli-optimism.etherscan.io/address/abc'
+            )
         })
         it('sepolia optimism', () => {
             expect(getEtherscanLink(11155420, 'abc', 'address')).toEqual(
@@ -35,7 +45,7 @@ describe('utils', () => {
             expect(getLiquidationPrice('', '2', '1', '2')).toEqual('0')
         })
         it('succeeds in returning desired value', () => {
-            expect(getLiquidationPrice('2', '2', '1', '2')).toEqual(2)
+            expect(getLiquidationPrice('2', '2', '1', '2')).toEqual('2')
         })
     })
 
@@ -47,7 +57,7 @@ describe('utils', () => {
             expect(getCollateralRatio('', '2', '1', '1')).toEqual('0')
         })
         it('succeeds in returning desired value', () => {
-            expect(getCollateralRatio('2', '2', '1', '1')).toEqual(100)
+            expect(getCollateralRatio('2', '2', '1', '1')).toEqual('100')
         })
     })
 

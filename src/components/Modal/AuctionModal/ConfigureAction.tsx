@@ -16,9 +16,7 @@ import { NumberInput } from '~/components/NumberInput'
 import { TransactionSummary } from '~/components/TransactionSummary'
 
 function parseWadAmount(amount?: string) {
-    return amount
-        ? BigNumber.from(toFixedString(amount, 'WAD'))
-        : BigNumber.from(0)
+    return amount ? BigNumber.from(toFixedString(amount, 'WAD')) : BigNumber.from(0)
 }
 
 const DEFAULT_BID_CHANGES = {
@@ -27,8 +25,8 @@ const DEFAULT_BID_CHANGES = {
 }
 
 type ConfigureActionProps = {
-    auction: IAuction,
-    action: string,
+    auction: IAuction
+    action: string
     nextStep: (skip?: boolean) => void
 }
 export function ConfigureAction({ auction, action, nextStep }: ConfigureActionProps) {
@@ -38,22 +36,16 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
         auctionModel: {
             amount,
             auctionsData,
-            coinBalances: {
-                hai: haiBalance = '0',
-                kite: kiteBalance = '0',
-            },
+            coinBalances: { hai: haiBalance = '0', kite: kiteBalance = '0' },
             collateralAmount,
             collateralData,
             internalBalance,
             protInternalBalance,
         },
-        connectWalletModel: {
-            coinAllowance: haiAllowance = '0',
-            protAllowance: kiteAllowance = '0',
-        },
-    } = useStoreState(state => state)
-    const { auctionModel: auctionActions } = useStoreActions(actions => actions)
-    
+        connectWalletModel: { coinAllowance: haiAllowance = '0', protAllowance: kiteAllowance = '0' },
+    } = useStoreState((state) => state)
+    const { auctionModel: auctionActions } = useStoreActions((actions) => actions)
+
     const { buyToken, sellToken, remainingToSell } = useAuction(auction)
 
     const [error, setError] = useState('')
@@ -62,14 +54,11 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
 
     const [bidIncrease, bidDecrease] = useMemo(() => {
         return !auctionsData
-            ? [
-                DEFAULT_BID_CHANGES.increase,
-                DEFAULT_BID_CHANGES.decrease,
-            ]
+            ? [DEFAULT_BID_CHANGES.increase, DEFAULT_BID_CHANGES.decrease]
             : [
-                formatEther(auctionsData.surplusAuctionHouseParams.bidIncrease),
-                formatEther(auctionsData.debtAuctionHouseParams.bidDecrease),
-            ]
+                  formatEther(auctionsData.surplusAuctionHouseParams.bidIncrease),
+                  formatEther(auctionsData.debtAuctionHouseParams.bidDecrease),
+              ]
     }, [auctionsData])
 
     const collateralPrice = useMemo(() => {
@@ -80,77 +69,71 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
             }
         }
 
-        const [ data = undefined ] = collateralData.filter(item => (
-            item._auctionId.toString() === auction.auctionId
-        ))
-        const price = !data?._adjustedBid.gt(0) || !data?._boughtCollateral.gt(0)
-            ? constants.WeiPerEther
-            : data._boughtCollateral.mul(constants.WeiPerEther).div(data._adjustedBid)
+        const [data = undefined] = collateralData.filter((item) => item._auctionId.toString() === auction.auctionId)
+        const price =
+            !data?._adjustedBid.gt(0) || !data?._boughtCollateral.gt(0)
+                ? constants.WeiPerEther
+                : data._boughtCollateral.mul(constants.WeiPerEther).div(data._adjustedBid)
         return {
             raw: price,
             formatted: formatUnits(price, 18),
         }
     }, [auction, collateralData])
 
-    const handleAmountChange = useCallback((val: string) => {
-        setError('')
-        // setValue(val)
-        auctionActions.setAmount(val)
-        const valBN = parseEther(val || '0')
-        const colValueBN = valBN.mul(collateralPrice.raw).div(constants.WeiPerEther)
-        const colValueBNDecimalsRemoved = gebUtils.decimalShift(
-            gebUtils.decimalShift(colValueBN, -8),
-            8
-        )
-        
-        const formatted = formatEther(colValueBNDecimalsRemoved.toString())
-        // setCollateralValue(formatted)
-        auctionActions.setCollateralAmount(formatted)
-    }, [collateralPrice.raw, auctionActions])
+    const handleAmountChange = useCallback(
+        (val: string) => {
+            setError('')
+            // setValue(val)
+            auctionActions.setAmount(val)
+            const valBN = parseEther(val || '0')
+            const colValueBN = valBN.mul(collateralPrice.raw).div(constants.WeiPerEther)
+            const colValueBNDecimalsRemoved = gebUtils.decimalShift(gebUtils.decimalShift(colValueBN, -8), 8)
 
-    const handleCollateralAmountChange = useCallback((amount: string) => {
-        setError('')
-        // setCollateralValue(amount)
-        auctionActions.setCollateralAmount(amount)
+            const formatted = formatEther(colValueBNDecimalsRemoved.toString())
+            // setCollateralValue(formatted)
+            auctionActions.setCollateralAmount(formatted)
+        },
+        [collateralPrice.raw, auctionActions]
+    )
 
-        const value = (Number(amount) / Number(collateralPrice.formatted)).toString() || ''
-        const sanitizedValue = sanitizeDecimals(value, 18)
-        // setValue(sanitizedValue)
-        auctionActions.setAmount(sanitizedValue)
-    }, [collateralPrice.formatted, auctionActions])
+    const handleCollateralAmountChange = useCallback(
+        (amount: string) => {
+            setError('')
+            // setCollateralValue(amount)
+            auctionActions.setCollateralAmount(amount)
+
+            const value = (Number(amount) / Number(collateralPrice.formatted)).toString() || ''
+            const sanitizedValue = sanitizeDecimals(value, 18)
+            // setValue(sanitizedValue)
+            auctionActions.setAmount(sanitizedValue)
+        },
+        [collateralPrice.formatted, auctionActions]
+    )
 
     const maxBid = useMemo(() => {
         const buyAmountBN = parseWadAmount(auction.buyAmount)
         const bidIncreaseBN = parseWadAmount(bidIncrease)
 
         if (auction.englishAuctionType !== 'DEBT') {
-            const amountToBuy = auction.biddersList.length && buyAmountBN.isZero()
-                ? BigNumber.from(toFixedString(auction.biddersList[0].buyAmount, 'WAD'))
-                : buyAmountBN
-            return gebUtils.wadToFixed(
-                amountToBuy.mul(bidIncreaseBN).div(gebUtils.WAD)
-            ).toString()
+            const amountToBuy =
+                auction.biddersList.length && buyAmountBN.isZero()
+                    ? BigNumber.from(toFixedString(auction.biddersList[0].buyAmount, 'WAD'))
+                    : buyAmountBN
+            return gebUtils.wadToFixed(amountToBuy.mul(bidIncreaseBN).div(gebUtils.WAD)).toString()
         }
 
         const sellAmountBN = parseWadAmount(auction.sellAmount)
         if (auction.englishAuctionBids.length || auction.status === Status.LIVE) {
             // We need to bid N% less than the current best bid
             return gebUtils
-                .wadToFixed(
-                    sellAmountBN.mul(100)
-                        .div(parseEther(bidDecrease))
-                        .mul(gebUtils.WAD)
-                        .div(100)
-                )
+                .wadToFixed(sellAmountBN.mul(100).div(parseEther(bidDecrease)).mul(gebUtils.WAD).div(100))
                 .toString()
         }
         // TODO: check those calcs
         // Auction restart (no bids and passed the dealine)
         // When doing restart we're allowed to accept more FLX, DEBT_amountSoldIncrease=1.2
         const numerator = sellAmountBN.mul(parseWadAmount(bidDecrease))
-        return gebUtils.wadToFixed(
-            numerator.div(bidIncreaseBN).mul(gebUtils.WAD)
-        ).toString()
+        return gebUtils.wadToFixed(numerator.div(bidIncreaseBN).mul(gebUtils.WAD)).toString()
     }, [auction, bidIncrease, bidDecrease])
 
     const maxAmount = useMemo(() => {
@@ -159,15 +142,11 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
         const haiToBidPlusOne = BigNumber.from((auction as any).remainingToRaiseE18 || '0').add(1)
         const haiToBid = formatUnits(haiToBidPlusOne.toString(), 18)
 
-        return Number(haiBalance) < Number(haiToBid)
-            ? haiBalance
-            : haiToBid.toString()
+        return Number(haiBalance) < Number(haiToBid) ? haiBalance : haiToBid.toString()
     }, [auction, maxBid, haiBalance])
 
     const maxCollateral = useMemo(() => {
-        const convertedAmountBN = parseEther(maxAmount)
-            .mul(collateralPrice.raw)
-            .div(constants.WeiPerEther)
+        const convertedAmountBN = parseEther(maxAmount).mul(collateralPrice.raw).div(constants.WeiPerEther)
         const convertedAmount = formatEther(convertedAmountBN)
         const max = Math.min(parseFloat(convertedAmount), parseFloat(remainingToSell || '0')).toString()
         return {
@@ -181,12 +160,14 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
         const valueBN = parseWadAmount(amount)
         const haiBalanceBN = parseWadAmount(haiBalance)
         const kiteBalanceBN = parseWadAmount(kiteBalance)
-        const internalBalanceBN = Number(internalBalance || '0') > 0.00001
-            ? BigNumber.from(toFixedString(internalBalance, 'WAD'))
-            : BigNumber.from(0)
-        const kiteInternalBalanceBN = Number(protInternalBalance || '0') > 0.00001
-            ? BigNumber.from(toFixedString(protInternalBalance, 'WAD'))
-            : BigNumber.from(0)
+        const internalBalanceBN =
+            Number(internalBalance || '0') > 0.00001
+                ? BigNumber.from(toFixedString(internalBalance, 'WAD'))
+                : BigNumber.from(0)
+        const kiteInternalBalanceBN =
+            Number(protInternalBalance || '0') > 0.00001
+                ? BigNumber.from(toFixedString(protInternalBalance, 'WAD'))
+                : BigNumber.from(0)
         const totalHaiBalance = haiBalanceBN.add(internalBalanceBN)
         const totalKiteBalance = kiteBalanceBN.add(kiteInternalBalanceBN)
 
@@ -201,14 +182,16 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
             return false
         }
 
-        switch(auction.englishAuctionType) {
+        switch (auction.englishAuctionType) {
             case 'SURPLUS': {
                 if (buyAmountBN.gt(totalKiteBalance) || valueBN.gt(kiteBalanceBN)) {
                     setError(`Insufficient KITE balance.`)
                     return false
                 }
                 if (auction.biddersList.length && valueBN.lt(maxBidAmountBN)) {
-                    setError(`You need to bid ${((Number(bidIncrease) - 1) * 100).toFixed(0)}% more KITE vs the highest bid`)
+                    setError(
+                        `You need to bid ${((Number(bidIncrease) - 1) * 100).toFixed(0)}% more KITE vs the highest bid`
+                    )
                     return false
                 }
                 break
@@ -223,7 +206,9 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
                     return false
                 }
                 if (auction.biddersList.length && valueBN.gt(maxBidAmountBN)) {
-                    setError(`You need to bid ${((Number(bidDecrease) - 1) * 100).toFixed(0)}% less KITE vs the lowest bid`)
+                    setError(
+                        `You need to bid ${((Number(bidDecrease) - 1) * 100).toFixed(0)}% less KITE vs the lowest bid`
+                    )
                     return false
                 }
                 break
@@ -244,11 +229,19 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
                 break
             }
         }
-        
+
         return true
     }, [
-        auction, maxBid, amount, collateralAmount, bidIncrease, bidDecrease,
-        haiBalance, kiteBalance, internalBalance, protInternalBalance,
+        auction,
+        maxBid,
+        amount,
+        collateralAmount,
+        bidIncrease,
+        bidDecrease,
+        haiBalance,
+        kiteBalance,
+        internalBalance,
+        protInternalBalance,
     ])
 
     const hasAllowance = useCallback(() => {
@@ -256,7 +249,7 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
         const haiAllowanceBN = parseWadAmount(haiAllowance)
         const kiteAllowanceBN = parseWadAmount(kiteAllowance)
 
-        switch(auction.englishAuctionType) {
+        switch (auction.englishAuctionType) {
             case 'COLLATERAL': {
                 return haiAllowanceBN.gte(parseWadAmount(amount))
             }
@@ -285,17 +278,17 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
     const claimValues = useMemo(() => {
         return Number(protInternalBalance) > Number(internalBalance)
             ? {
-                amount: Number(protInternalBalance),
-                symbol: 'KITE',
-            }
+                  amount: Number(protInternalBalance),
+                  symbol: 'KITE',
+              }
             : {
-                amount: Number(internalBalance),
-                symbol: 'HAI',
-            }
+                  amount: Number(internalBalance),
+                  symbol: 'HAI',
+              }
     }, [internalBalance, protInternalBalance])
 
     const upperInput = useMemo(() => {
-        switch(auction.englishAuctionType) {
+        switch (auction.englishAuctionType) {
             case 'DEBT': {
                 return {
                     value: auction.buyInitialAmount,
@@ -319,7 +312,7 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
     }, [auction, buyToken, sellToken, collateralAmount, maxCollateral.formatted])
 
     const lowerInput = useMemo(() => {
-        switch(auction.englishAuctionType) {
+        switch (auction.englishAuctionType) {
             case 'DEBT':
                 return {
                     value: amount,
@@ -341,83 +334,76 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
         }
     }, [auction, buyToken, sellToken, amount, maxAmount])
 
-    return (<>
-        <ModalBody>
-            {(!action.includes('settle') && !action.includes('claim'))
-                ? (<>
-                    <NumberInput
-                        disabled={auction.englishAuctionType !== 'COLLATERAL'}
-                        label={upperInput.label}
-                        subLabel={upperInput.subLabel || ''}
-                        placeholder="0.00"
-                        value={upperInput.value}
-                        onChange={handleCollateralAmountChange}
-                        onMax={() => {
-                            if (collateralPrice.raw.isZero()) return
-                            handleCollateralAmountChange(maxCollateral.raw)
-                        }}
-                    />
-                    <NumberInput
-                        label={lowerInput.label}
-                        subLabel={lowerInput.subLabel}
-                        placeholder="0.00"
-                        value={lowerInput.value}
-                        onChange={handleAmountChange}
-                        onMax={() => handleAmountChange(maxAmount)}
-                    />
-                </>)
-                : (
+    return (
+        <>
+            <ModalBody>
+                {!action.includes('settle') && !action.includes('claim') ? (
+                    <>
+                        <NumberInput
+                            disabled={auction.englishAuctionType !== 'COLLATERAL'}
+                            label={upperInput.label}
+                            subLabel={upperInput.subLabel || ''}
+                            placeholder="0.00"
+                            value={upperInput.value}
+                            onChange={handleCollateralAmountChange}
+                            onMax={() => {
+                                if (collateralPrice.raw.isZero()) return
+                                handleCollateralAmountChange(maxCollateral.raw)
+                            }}
+                        />
+                        <NumberInput
+                            label={lowerInput.label}
+                            subLabel={lowerInput.subLabel}
+                            placeholder="0.00"
+                            value={lowerInput.value}
+                            onChange={handleAmountChange}
+                            onMax={() => handleAmountChange(maxAmount)}
+                        />
+                    </>
+                ) : (
                     <NumberInput
                         disabled
-                        label={`Claimable ${action.includes('claim') ? claimValues.symbol: sellToken}`}
+                        label={`Claimable ${action.includes('claim') ? claimValues.symbol : sellToken}`}
                         subLabel=""
                         placeholder="0.00"
-                        value={action.includes('claim')
-                            ? claimValues.amount.toLocaleString()
-                            : auction.sellAmount
-                        }
+                        value={action.includes('claim') ? claimValues.amount.toLocaleString() : auction.sellAmount}
                         onChange={() => undefined}
                     />
-                )
-            }
-            {error && <Error>{error}</Error>}
-            <TransactionSummary
-                heading="Summary"
-                items={[
-                    {
-                        label: 'Auction #',
-                        value: {
-                            after: auction.auctionId,
+                )}
+                {error && <Error>{error}</Error>}
+                <TransactionSummary
+                    heading="Summary"
+                    items={[
+                        {
+                            label: 'Auction #',
+                            value: {
+                                after: auction.auctionId,
+                            },
                         },
-                    },
-                    {
-                        label: upperInput.label,
-                        value: {
-                            after: upperInput.value || '0',
+                        {
+                            label: upperInput.label,
+                            value: {
+                                after: upperInput.value || '0',
+                            },
                         },
-                    },
-                    {
-                        label: lowerInput.label,
-                        value: {
-                            after: lowerInput.value || '0',
+                        {
+                            label: lowerInput.label,
+                            value: {
+                                after: lowerInput.value || '0',
+                            },
                         },
-                    },
-                ]}
-            />
-        </ModalBody>
-        <ModalFooter>
-            <Flex
-                $width="100%"
-                $justify="flex-end"
-                $align="center">
-                <HaiButton
-                    $variant="yellowish"
-                    onClick={handleSubmit}>
-                    {t('review_transaction')}
-                </HaiButton>
-            </Flex>
-        </ModalFooter>
-    </>)
+                    ]}
+                />
+            </ModalBody>
+            <ModalFooter>
+                <Flex $width="100%" $justify="flex-end" $align="center">
+                    <HaiButton $variant="yellowish" onClick={handleSubmit}>
+                        {t('review_transaction')}
+                    </HaiButton>
+                </Flex>
+            </ModalFooter>
+        </>
+    )
 }
 
 const Error = styled(Text)`

@@ -42,7 +42,7 @@ export function Learn() {
     )
 }
 
-const Container = styled(Grid).attrs(props => ({
+const Container = styled(Grid).attrs((props) => ({
     $width: '100%',
     $columns: 'repeat(auto-fit, minmax(336px, 1fr))',
     $gap: 48,

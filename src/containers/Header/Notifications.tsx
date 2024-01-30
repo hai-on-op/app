@@ -29,7 +29,7 @@ const dummyNotifications = [
 ]
 
 type NotificationsProps = {
-    active: boolean,
+    active: boolean
     setActive: SetState<boolean>
 }
 export function Notifications({ active, setActive }: NotificationsProps) {
@@ -38,39 +38,23 @@ export function Notifications({ active, setActive }: NotificationsProps) {
     useOutsideClick(button, () => setActive(false))
 
     return (
-        <NotificationButton
-            as="div"
-            ref={setButton}
-            onClick={() => setActive(a => !a)}
-            $variant="yellowish"
-            $notify>
-            <NotificationIcon size={18}/>
+        <NotificationButton as="div" ref={setButton} onClick={() => setActive((a) => !a)} $variant="yellowish" $notify>
+            <NotificationIcon size={18} />
             {active && (
-                <NotificationsDropdown
-                    $float="left"
-                    $margin="20px"
-                    onClick={(e: any) => e.stopPropagation()}>
-                    <Flex
-                        $width="100%"
-                        $justify="space-between"
-                        $align="center">
+                <NotificationsDropdown $float="left" $margin="20px" onClick={(e: any) => e.stopPropagation()}>
+                    <Flex $width="100%" $justify="space-between" $align="center">
                         <Text>Notifications</Text>
                         <SettingsButton>
-                            <Gear size={22}/>
+                            <Gear size={22} />
                         </SettingsButton>
                     </Flex>
                     <Inner>
                         {dummyNotifications.map((notification, i) => (
-                            <Notification
-                                key={i}
-                                {...notification}
-                            />
+                            <Notification key={i} {...notification} />
                         ))}
                     </Inner>
                     <CenteredFlex $width="100%">
-                        <Text
-                            $fontWeight={700}
-                            $textDecoration="underline">
+                        <Text $fontWeight={700} $textDecoration="underline">
                             View All Notifications
                         </Text>
                     </CenteredFlex>
@@ -83,29 +67,23 @@ export function Notifications({ active, setActive }: NotificationsProps) {
 function Notification({ message, timestamp, unread }: any) {
     const [timeLabel, date] = useMemo(() => {
         const date = dayjs.unix(Number(timestamp)).format('MMM D, h:mm A')
-        
+
         const { days, hours, minutes } = parseRemainingTime(Date.now() - 1000 * parseInt(timestamp))
-        if (days > 0) return [`${days} ${days > 1 ? 'days': 'day'} ago`, date]
-        if (hours > 0) return [`${hours} ${hours > 1 ? 'hours': 'hour'} ago`, date]
-        if (minutes > 0) return [`${minutes} ${minutes > 1 ? 'minutes': 'minute'} ago`, date]
+        if (days > 0) return [`${days} ${days > 1 ? 'days' : 'day'} ago`, date]
+        if (hours > 0) return [`${hours} ${hours > 1 ? 'hours' : 'hour'} ago`, date]
+        if (minutes > 0) return [`${minutes} ${minutes > 1 ? 'minutes' : 'minute'} ago`, date]
         return ['Seconds ago', date]
     }, [timestamp])
 
     return (
         <NotificationContainer>
-            <Flex
-                $column
-                $align="flex-start"
-                $gap={4}>
+            <Flex $column $align="flex-start" $gap={4}>
                 <Text>{message}</Text>
-                <Text
-                    title={date}
-                    $fontSize="0.8em"
-                    $fontWeight={400}>
+                <Text title={date} $fontSize="0.8em" $fontWeight={400}>
                     {timeLabel}
                 </Text>
             </Flex>
-            {unread && <Unread/>}
+            {unread && <Unread />}
         </NotificationContainer>
     )
 }
@@ -117,19 +95,21 @@ const NotificationButton = styled(HaiButton)<{ $notify?: boolean }>`
     padding: 0px;
     justify-content: center;
 
-    ${({ $notify = false }) => $notify && css`
-        &::after {
-            content: '';
-            position: absolute;
-            top: -10px;
-            right: -10px;
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            background-color: ${({ theme }) => theme.colors.reddish};
-            border: ${({ theme }) => theme.border.medium};
-        }
-    `}
+    ${({ $notify = false }) =>
+        $notify &&
+        css`
+            &::after {
+                content: '';
+                position: absolute;
+                top: -10px;
+                right: -10px;
+                width: 22px;
+                height: 22px;
+                border-radius: 50%;
+                background-color: ${({ theme }) => theme.colors.reddish};
+                border: ${({ theme }) => theme.border.medium};
+            }
+        `}
 `
 const NotificationsDropdown = styled(Popout)`
     width: min(400px, calc(100vw - 48px));
@@ -138,7 +118,7 @@ const NotificationsDropdown = styled(Popout)`
     gap: 24px;
     cursor: default;
 `
-const Inner = styled(Flex).attrs(props => ({
+const Inner = styled(Flex).attrs((props) => ({
     $width: '100%',
     $column: true,
     $justify: 'flex-start',
@@ -147,7 +127,7 @@ const Inner = styled(Flex).attrs(props => ({
     ...props,
 }))``
 
-const NotificationContainer = styled(Grid).attrs(props => ({
+const NotificationContainer = styled(Grid).attrs((props) => ({
     $width: '100%',
     $columns: '1fr 32px',
     $align: 'center',
@@ -156,7 +136,7 @@ const NotificationContainer = styled(Grid).attrs(props => ({
 }))`
     padding: 12px 16px;
     border-radius: 12px;
-    border: 2px solid rgba(0,0,0,0.1);
+    border: 2px solid rgba(0, 0, 0, 0.1);
 `
 const Unread = styled.div`
     width: 32px;

@@ -1,7 +1,7 @@
 {
-    "ignorePatterns": [
-        "*.test.ts"
-    ],
+	"ignorePatterns": [
+		"*.test.ts"
+	],
 	"env": {
 		"browser": true,
 		"es2021": true
@@ -28,8 +28,8 @@
 	],
 	"rules": {
 		"indent": [
-			"error",
-            4,
+			"warn",
+			4,
 			{
 				"SwitchCase": 1
 			}
@@ -49,28 +49,25 @@
 			"error",
 			"never"
 		],
-        "eol-last": [
-            "error",
-            "always"
-        ],
-        "comma-dangle": [
-            "error",
-            {
-                "arrays": "always-multiline",
-                "objects": "always-multiline",
-                "imports": "always-multiline",
-                "exports": "always-multiline",
-                "functions": "never"
-            }
-        ],
-		"multiline-ternary": [
+		"eol-last": [
 			"error",
-			"always-multiline"
+			"always"
+		],
+		"comma-dangle": [
+			"error",
+			{
+				"arrays": "always-multiline",
+				"objects": "always-multiline",
+				"imports": "always-multiline",
+				"exports": "always-multiline",
+				"functions": "never"
+			}
 		],
 		"@typescript-eslint/no-explicit-any": "off",
+		"no-extra-semi": "off",
 		"react/react-in-jsx-scope": "off",
-        "react/display-name": "off",
-        "react/prop-types": "off",
+		"react/display-name": "off",
+		"react/prop-types": "off",
 		"react/jsx-filename-extension": [
 			1,
 			{

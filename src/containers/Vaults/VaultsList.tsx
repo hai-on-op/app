@@ -36,7 +36,7 @@ const strategies: StrategyAdProps[] = [
 ]
 
 type VaultsListProps = {
-    navIndex: number,
+    navIndex: number
     setNavIndex: SetState<number>
 }
 export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
@@ -45,17 +45,17 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
     const isLargerThanSmall = useMediaQuery('upToSmall')
 
     const {
-        connectWalletModel: {
-            tokensData,
-        },
+        connectWalletModel: { tokensData },
         vaultModel: vaultState,
-    } = useStoreState(state => state)
+    } = useStoreState((state) => state)
 
-    const symbols = useMemo(() => (
-        Object.values(tokensData || {})
-            .filter(({ isCollateral }) => isCollateral)
-            .map(({ symbol }) => symbol)
-    ), [tokensData])
+    const symbols = useMemo(
+        () =>
+            Object.values(tokensData || {})
+                .filter(({ isCollateral }) => isCollateral)
+                .map(({ symbol }) => symbol),
+        [tokensData]
+    )
 
     const {
         headers: availableHeaders,
@@ -65,7 +65,7 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
         eligibleOnly,
         setEligibleOnly,
     } = useAvailableVaults()
-    
+
     const {
         headers: myVaultsHeaders,
         rows: myVaults,
@@ -77,20 +77,15 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
 
     return (
         <NavContainer
-            navItems={isLargerThanSmall
-                ? [
-                    `Available Vaults (${availableVaults.length})`,
-                    `My Vaults (${vaultState.list.length})`,
-                ]
-                : [
-                    'Available Vaults',
-                    'My Vaults',
-                ]
+            navItems={
+                isLargerThanSmall
+                    ? [`Available Vaults (${availableVaults.length})`, `My Vaults (${vaultState.list.length})`]
+                    : ['Available Vaults', 'My Vaults']
             }
             selected={navIndex}
             onSelect={(i: number) => setNavIndex(i)}
-            headerContent={navIndex === 0
-                ? (
+            headerContent={
+                navIndex === 0 ? (
                     <HeaderContent>
                         {!isLargerThanSmall && (
                             <SortByDropdown
@@ -99,31 +94,28 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
                                 setSorting={setAvailableSorting}
                             />
                         )}
-                        <CheckboxButton
-                            checked={eligibleOnly}
-                            toggle={() => setEligibleOnly(e => !e)}>
+                        <CheckboxButton checked={eligibleOnly} toggle={() => setEligibleOnly((e) => !e)}>
                             Eligible Vaults Only
                         </CheckboxButton>
                     </HeaderContent>
-                )
-                : (
+                ) : (
                     <HeaderContent>
-                        <BrandedDropdown label={(
-                            <Text
-                                $fontWeight={400}
-                                $textAlign="left"
-                                style={{ width: '160px' }}>
-                                Collateral Assets: <strong>{assetsFilter || 'All'}</strong>
-                            </Text>
-                        )}>
-                            {['All', ...symbols].map(label => (
+                        <BrandedDropdown
+                            label={
+                                <Text $fontWeight={400} $textAlign="left" style={{ width: '160px' }}>
+                                    Collateral Assets: <strong>{assetsFilter || 'All'}</strong>
+                                </Text>
+                            }
+                        >
+                            {['All', ...symbols].map((label) => (
                                 <DropdownOption
                                     key={label}
                                     $active={assetsFilter === label}
                                     onClick={() => {
                                         // e.stopPropagation()
-                                        setAssetsFilter(label === 'All' ? undefined: label)
-                                    }}>
+                                        setAssetsFilter(label === 'All' ? undefined : label)
+                                    }}
+                                >
                                     {label}
                                 </DropdownOption>
                             ))}
@@ -137,12 +129,11 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
                         )}
                     </HeaderContent>
                 )
-            }>
-            {navIndex === 0
-                ? (<>
-                    <ProxyPrompt
-                        connectWalletOnly
-                        continueText="view available vaults">
+            }
+        >
+            {navIndex === 0 ? (
+                <>
+                    <ProxyPrompt connectWalletOnly continueText="view available vaults">
                         <AvailableVaultsTable
                             headers={availableHeaders}
                             rows={availableVaults}
@@ -151,41 +142,42 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
                         />
                     </ProxyPrompt>
                     {strategies.map((strat, i) => (
-                        <StrategyAd
-                            key={i}
-                            bgVariant={i}
-                            {...strat}
-                        />
+                        <StrategyAd key={i} bgVariant={i} {...strat} />
                     ))}
-                </>)
-                : (
-                    <ProxyPrompt onCreateVault={!vaultState.list.length
-                        ? () => setActiveVault({
-                            create: true,
-                            collateralName: 'WETH',
-                        })
-                        : undefined
-                    }>
-                        <MyVaultsTable
-                            headers={myVaultsHeaders}
-                            rows={myVaults}
-                            sorting={myVaultsSorting}
-                            setSorting={setMyVaultsSorting}
-                            onCreate={() => setActiveVault({
+                </>
+            ) : (
+                <ProxyPrompt
+                    onCreateVault={
+                        !vaultState.list.length
+                            ? () =>
+                                  setActiveVault({
+                                      create: true,
+                                      collateralName: 'WETH',
+                                  })
+                            : undefined
+                    }
+                >
+                    <MyVaultsTable
+                        headers={myVaultsHeaders}
+                        rows={myVaults}
+                        sorting={myVaultsSorting}
+                        setSorting={setMyVaultsSorting}
+                        onCreate={() =>
+                            setActiveVault({
                                 create: true,
                                 collateralName: assetsFilter || 'WETH',
-                            })}
-                        />
-                    </ProxyPrompt>
-                )
-            }
+                            })
+                        }
+                    />
+                </ProxyPrompt>
+            )}
         </NavContainer>
     )
 }
 
 const HeaderContent = styled(CenteredFlex)`
     gap: 24px;
-    
+
     ${({ theme }) => theme.mediaWidth.upToSmall`
         flex-direction: column;
         gap: 12px;

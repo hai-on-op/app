@@ -4,17 +4,17 @@ import { Label } from './Label'
 import { ChartTooltip } from '../ChartTooltip'
 
 export type PieChartDatum = {
-    id: string,
-    label?: string,
-    value: number,
-    color: string,
+    id: string
+    label?: string
+    value: number
+    color: string
 }
 type PieChartProps = Omit<PieSvgProps<PieChartDatum>, 'width' | 'height'>
 export function PieChart({ data, valueFormat, ...props }: PieChartProps) {
     return (
         <ResponsivePie
             data={data}
-            colors={data.map(d => d.color)}
+            colors={data.map((d) => d.color)}
             borderColor="black"
             borderWidth={2}
             margin={{
@@ -24,18 +24,16 @@ export function PieChart({ data, valueFormat, ...props }: PieChartProps) {
                 bottom: 12,
             }}
             innerRadius={0.5}
-            arcLabelsComponent={labelProps => (
-                <Label
-                    {...labelProps}
-                    total={data.reduce((total, { value }) => total + value, 0)}
-                />
+            arcLabelsComponent={(labelProps) => (
+                <Label {...labelProps} total={data.reduce((total, { value }) => total + value, 0)} />
             )}
             enableArcLinkLabels={false}
             tooltip={({ datum }) => (
                 <ChartTooltip
-                    heading={valueFormat && (typeof valueFormat !== 'string')
-                        ? valueFormat(datum.value)
-                        : datum.value.toString()
+                    heading={
+                        valueFormat && typeof valueFormat !== 'string'
+                            ? valueFormat(datum.value)
+                            : datum.value.toString()
                     }
                     subHeading={datum.id.toString()}
                     color={datum.color}

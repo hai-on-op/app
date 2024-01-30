@@ -6,7 +6,7 @@ import { Timeframe } from '~/utils'
 import { PointWithPopout } from './PointWithPopout'
 import { BorderedLine } from './BorderedLine'
 
-const formatMap: Record<Timeframe, { format: string, tickValues: number }> = {
+const formatMap: Record<Timeframe, { format: string; tickValues: number }> = {
     [Timeframe.ONE_DAY]: {
         format: `M/D HH:mm`,
         tickValues: 4,
@@ -34,7 +34,7 @@ export function LineChart({ data, timeframe, axisBottom, xScale, axisRight, ySca
     return (
         <ResponsiveLine
             data={data}
-            colors={d => d.color}
+            colors={(d) => d.color}
             xScale={{
                 type: 'time',
                 ...xScale,
@@ -43,7 +43,7 @@ export function LineChart({ data, timeframe, axisBottom, xScale, axisRight, ySca
             axisBottom={{
                 tickSize: 0,
                 tickValues,
-                format: value => {
+                format: (value) => {
                     const time = new Date(value).getTime() / 1000
                     return dayjs.unix(time).format(format)
                 },
@@ -88,7 +88,7 @@ export function LineChart({ data, timeframe, axisBottom, xScale, axisRight, ySca
                 // 'crosshair',
                 // 'points',
                 ({ points }) => {
-                    return points.map(point => (
+                    return points.map((point) => (
                         <PointWithPopout
                             key={point.id}
                             {...point}

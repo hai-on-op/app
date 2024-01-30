@@ -10,10 +10,11 @@ export function Hamburger({ size = 10, ...props }: IconProps) {
             stroke="black"
             strokeWidth="1.5"
             strokeLinecap="round"
-            {...props}>
-            <line x1="1" y1="1" x2="9" y2="1"/>
-            <line x1="1" y1="4" x2="9" y2="4"/>
-            <line x1="1" y1="7" x2="9" y2="7"/>
+            {...props}
+        >
+            <line x1="1" y1="1" x2="9" y2="1" />
+            <line x1="1" y1="4" x2="9" y2="4" />
+            <line x1="1" y1="7" x2="9" y2="7" />
         </svg>
     )
 }

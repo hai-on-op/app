@@ -17,24 +17,18 @@ type WaitingModalContentProps = Pick<ModalProps, 'onClose'> & {
 export function WaitingModalContent({ onClose, hideButton = false }: WaitingModalContentProps) {
     const { t } = useTranslation()
     const {
-        waitingPayload: {
-            title: waitingTitle,
-            text,
-            hint,
-            status,
-            hash,
-        },
+        waitingPayload: { title: waitingTitle, text, hint, status, hash },
     } = useStoreState(({ popupsModel }) => popupsModel)
     const { setIsWaitingModalOpen } = useStoreActions(({ popupsModel }) => popupsModel)
 
     const waitingStatusIcon = useMemo(() => {
-        switch(status) {
+        switch (status) {
             case ActionState.SUCCESS:
-                return <CheckCircle width="60px"/>
+                return <CheckCircle width="60px" />
             case ActionState.ERROR:
-                return <AlertTriangle width="60px"/>
+                return <AlertTriangle width="60px" />
             default:
-                return <Loader size={60}/>
+                return <Loader size={60} />
         }
     }, [status])
 
@@ -43,18 +37,14 @@ export function WaitingModalContent({ onClose, hideButton = false }: WaitingModa
             {waitingStatusIcon}
             <Text $fontWeight={700}>{waitingTitle || t('initializing')}</Text>
             {status === ActionState.SUCCESS && !!hash && (
-                <AddressLink
-                    address={hash}
-                    type="transaction">
+                <AddressLink address={hash} type="transaction">
                     {t('view_etherscan')}
                 </AddressLink>
             )}
             {!!text && <Text>{text}</Text>}
             {!!hint && <Text $fontSize="0.8em">{hint}</Text>}
             {!hideButton && status !== ActionState.LOADING && (
-                <CenteredFlex
-                    $width="100%"
-                    style={{ marginTop: '12px' }}>
+                <CenteredFlex $width="100%" style={{ marginTop: '12px' }}>
                     <HaiButton
                         $variant="yellowish"
                         onClick={() => {
@@ -62,8 +52,9 @@ export function WaitingModalContent({ onClose, hideButton = false }: WaitingModa
                             if (status === ActionState.SUCCESS) {
                                 onClose?.()
                             }
-                        }}>
-                        {status === ActionState.SUCCESS ? 'Close': 'Dismiss'}
+                        }}
+                    >
+                        {status === ActionState.SUCCESS ? 'Close' : 'Dismiss'}
                     </HaiButton>
                 </CenteredFlex>
             )}
@@ -71,7 +62,7 @@ export function WaitingModalContent({ onClose, hideButton = false }: WaitingModa
     )
 }
 
-const WaitingContainer = styled(CenteredFlex).attrs(props => ({
+const WaitingContainer = styled(CenteredFlex).attrs((props) => ({
     $width: '100%',
     $column: true,
     $gap: 12,

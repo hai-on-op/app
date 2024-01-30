@@ -18,21 +18,15 @@ export function useVaultRouting(address?: string) {
     const params = useSearchParams()
 
     const {
-        connectWalletModel: {
-            tokensData,
-            isWrongNetwork,
-        },
-        vaultModel: {
-            singleVault,
-            list,
-        },
-    } = useStoreState(state => state)
-    const { vaultModel: vaultActions } = useStoreActions(actions => actions)
+        connectWalletModel: { tokensData, isWrongNetwork },
+        vaultModel: { singleVault, list },
+    } = useStoreState((state) => state)
+    const { vaultModel: vaultActions } = useStoreActions((actions) => actions)
 
     const [action, setAction] = useState<VaultAction>(VaultAction.INFO)
 
     useEffect(() => {
-        switch(location.pathname) {
+        switch (location.pathname) {
             case '/vaults': {
                 setAction(VaultAction.INFO)
                 vaultActions.setSingleVault(undefined)
@@ -41,10 +35,8 @@ export function useVaultRouting(address?: string) {
             }
             case '/vaults/manage': {
                 const searchId = params.get('id')
-                const vault = searchId
-                    ? list.find(({ id }) => searchId === id) || list[0]
-                    : list[0]
-                setAction(vault ? VaultAction.DEPOSIT_BORROW: VaultAction.INFO)
+                const vault = searchId ? list.find(({ id }) => searchId === id) || list[0] : list[0]
+                setAction(vault ? VaultAction.DEPOSIT_BORROW : VaultAction.INFO)
                 vaultActions.setSingleVault(vault)
                 vaultActions.setVaultData({
                     ...DEFAULT_VAULT_DATA,
@@ -61,9 +53,7 @@ export function useVaultRouting(address?: string) {
                 vaultActions.setSingleVault(undefined)
                 vaultActions.setVaultData({
                     ...DEFAULT_VAULT_DATA,
-                    collateral: symbols.includes(collateral)
-                        ? collateral
-                        : 'WETH',
+                    collateral: symbols.includes(collateral) ? collateral : 'WETH',
                 })
                 break
             }
@@ -71,12 +61,8 @@ export function useVaultRouting(address?: string) {
     }, [location.pathname, params, singleVault, list, tokensData, vaultActions])
 
     useEffect(() => {
-        if (
-            (!account && !address)
-            || (address && !isAddress(address.toLowerCase()))
-            || !signer
-            || isWrongNetwork
-        ) return
+        if ((!account && !address) || (address && !isAddress(address.toLowerCase())) || !signer || isWrongNetwork)
+            return
 
         async function fetchVaults() {
             await vaultActions.fetchUserVaults({
@@ -87,14 +73,10 @@ export function useVaultRouting(address?: string) {
             })
         }
         fetchVaults()
-        
+
         const interval = setInterval(() => {
-            if (
-                (!account && !address)
-                || (address && !isAddress(address.toLowerCase()))
-                || !signer
-                || isWrongNetwork
-            ) fetchVaults()
+            if ((!account && !address) || (address && !isAddress(address.toLowerCase())) || !signer || isWrongNetwork)
+                fetchVaults()
         }, 3000)
 
         return () => clearInterval(interval)

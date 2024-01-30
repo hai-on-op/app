@@ -7,11 +7,11 @@ import { DEFAULT_ANALYTICS_DATA, GebAnalyticsData, useGebAnalytics } from './use
 import { SystemData, useSystemData } from './useSystemData'
 
 type AnalyticsContext = {
-    forceRefresh: () => void,
-    data: GebAnalyticsData,
-    graphData?: SystemData['data'],
-    graphSummary?: SystemData['summary'],
-    haiPriceHistory: HistoricalStatsReturn,
+    forceRefresh: () => void
+    data: GebAnalyticsData
+    graphData?: SystemData['data']
+    graphSummary?: SystemData['summary']
+    haiPriceHistory: HistoricalStatsReturn
     redemptionRateHistory: HistoricalStatsReturn
 }
 
@@ -51,14 +51,16 @@ export function AnalyticsProvider({ children }: Props) {
     const redemptionRateHistory = useHistoricalStats()
 
     return (
-        <AnalyticsContext.Provider value={{
-            forceRefresh,
-            data,
-            graphData,
-            graphSummary,
-            haiPriceHistory,
-            redemptionRateHistory,
-        }}>
+        <AnalyticsContext.Provider
+            value={{
+                forceRefresh,
+                data,
+                graphData,
+                graphSummary,
+                haiPriceHistory,
+                redemptionRateHistory,
+            }}
+        >
             {children}
         </AnalyticsContext.Provider>
     )

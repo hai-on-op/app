@@ -5,16 +5,13 @@ import styled, { css } from 'styled-components'
 import { CenteredFlex, Flex, Text } from '~/styles'
 
 type TokenPairProps = {
-    tokens: [TokenKey] | [TokenKey, TokenKey],
-    size?: number,
-    hideLabel?: boolean,
+    tokens: [TokenKey] | [TokenKey, TokenKey]
+    size?: number
+    hideLabel?: boolean
 }
 export function TokenPair({ tokens, size = 64, hideLabel = false }: TokenPairProps) {
     return (
-        <Flex
-            $align="center"
-            $gap={12}
-            $grow={0}>
+        <Flex $align="center" $gap={12} $grow={0}>
             <IconContainer $size={size}>
                 {tokens.map((token, i) => (
                     <img
@@ -27,12 +24,16 @@ export function TokenPair({ tokens, size = 64, hideLabel = false }: TokenPairPro
                     />
                 ))}
             </IconContainer>
-            {!hideLabel && <Text $fontWeight={700}>{tokens[0]}/{tokens[1]}</Text>}
+            {!hideLabel && (
+                <Text $fontWeight={700}>
+                    {tokens[0]}/{tokens[1]}
+                </Text>
+            )}
         </Flex>
     )
 }
 
-const IconContainer = styled(CenteredFlex)<{ $size?: number, $isKite?: boolean }>`
+const IconContainer = styled(CenteredFlex)<{ $size?: number; $isKite?: boolean }>`
     width: fit-content;
 
     & > * {
@@ -43,7 +44,7 @@ const IconContainer = styled(CenteredFlex)<{ $size?: number, $isKite?: boolean }
         background-color: ${({ theme }) => theme.colors.greenish};
 
         &.token-KITE {
-            background-color: #EECABC;
+            background-color: #eecabc;
         }
 
         &:nth-child(2) {
@@ -59,15 +60,8 @@ const IconContainer = styled(CenteredFlex)<{ $size?: number, $isKite?: boolean }
 type RewardsPairProps = TokenPairProps
 export function RewardsTokenPair({ tokens, hideLabel = false }: RewardsPairProps) {
     return (
-        <RewardsContainer
-            $pad={!hideLabel}
-            $gap={8}
-            $grow={0}>
-            <TokenPair
-                tokens={tokens}
-                size={36}
-                hideLabel
-            />
+        <RewardsContainer $pad={!hideLabel} $gap={8} $grow={0}>
+            <TokenPair tokens={tokens} size={36} hideLabel />
             {!hideLabel && <Text $fontWeight={700}>REWARDS</Text>}
         </RewardsContainer>
     )
@@ -76,7 +70,11 @@ export function RewardsTokenPair({ tokens, hideLabel = false }: RewardsPairProps
 const RewardsContainer = styled(CenteredFlex)<{ $pad?: boolean }>`
     height: 36px;
     padding: 6px 10px;
-    ${({ $pad = false }) => $pad && css`padding-right: 12px;`}
+    ${({ $pad = false }) =>
+        $pad &&
+        css`
+            padding-right: 12px;
+        `}
     border-radius: 999px;
     background-color: white;
 `

@@ -13,21 +13,16 @@ import { HaiArrow } from '~/components/Icons/HaiArrow'
 import { Table, TableContainer } from '~/components/Table'
 
 type AvailableVaultsTableProps = {
-    rows: AvailableVaultPair[],
-    headers: SortableHeader[],
-    sorting: Sorting,
+    rows: AvailableVaultPair[]
+    headers: SortableHeader[]
+    sorting: Sorting
     setSorting: SetState<Sorting>
 }
-export function AvailableVaultsTable({
-    rows,
-    headers,
-    sorting,
-    setSorting,
-}: AvailableVaultsTableProps) {
+export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: AvailableVaultsTableProps) {
     const { setActiveVault } = useVault()
 
     const isLargerThanSmall = useMediaQuery('upToSmall')
-    
+
     return (
         <Table
             container={StyledTableContainer}
@@ -36,121 +31,82 @@ export function AvailableVaultsTable({
             sorting={sorting}
             setSorting={setSorting}
             isEmpty={!rows.length}
-            rows={rows.map(({
-                collateralName,
-                collateralizationFactor,
-                apy,
-                eligibleBalance,
-                myVaults: existingVaults,
-            }) => {
-                return (
-                    <Table.Row
-                        key={collateralName}
-                        container={TableRow}
-                        headers={headers}
-                        items={[
-                            {
-                                content: (
-                                    <Grid
-                                        $columns="2fr min-content 1fr"
-                                        $align="center"
-                                        $gap={12}>
-                                        <TokenPair tokens={[collateralName.toUpperCase() as any, 'HAI']}/>
-                                        <RewardsTokenPair tokens={['OP']}/>
-                                    </Grid>
-                                ),
-                                props: { $fontSize: 'inherit' },
-                                fullWidth: true,
-                            },
-                            {
-                                content: (
-                                    <Flex
-                                        $align="center"
-                                        $gap={8}>
+            rows={rows.map(
+                ({ collateralName, collateralizationFactor, apy, eligibleBalance, myVaults: existingVaults }) => {
+                    return (
+                        <Table.Row
+                            key={collateralName}
+                            container={TableRow}
+                            headers={headers}
+                            items={[
+                                {
+                                    content: (
+                                        <Grid $columns="2fr min-content 1fr" $align="center" $gap={12}>
+                                            <TokenPair tokens={[collateralName.toUpperCase() as any, 'HAI']} />
+                                            <RewardsTokenPair tokens={['OP']} />
+                                        </Grid>
+                                    ),
+                                    props: { $fontSize: 'inherit' },
+                                    fullWidth: true,
+                                },
+                                {
+                                    content: (
+                                        <Flex $align="center" $gap={8}>
+                                            <Text>
+                                                {collateralizationFactor
+                                                    ? formatNumberWithStyle(collateralizationFactor, {
+                                                          maxDecimals: 0,
+                                                          style: 'percent',
+                                                      })
+                                                    : '--%'}
+                                            </Text>
+                                        </Flex>
+                                    ),
+                                },
+                                {
+                                    content: (
                                         <Text>
-                                            {collateralizationFactor
-                                                ? formatNumberWithStyle(collateralizationFactor, {
-                                                    maxDecimals: 0,
-                                                    style: 'percent',
-                                                })
-                                                : '--%'
-                                            }
+                                            {apy
+                                                ? formatNumberWithStyle(apy, {
+                                                      maxDecimals: 0,
+                                                      style: 'percent',
+                                                  })
+                                                : '--%'}
                                         </Text>
-                                    </Flex>
-                                ),
-                            },
-                            {
-                                content: (
-                                    <Text>
-                                        {apy
-                                            ? formatNumberWithStyle(apy, {
-                                                maxDecimals: 0,
-                                                style: 'percent',
-                                            })
-                                            : '--%'
-                                        }
-                                    </Text>
-                                ),
-                            },
-                            {
-                                content: (
-                                    <Flex
-                                        $align="center"
-                                        $gap={4}>
-                                        <Text>
-                                            {eligibleBalance && eligibleBalance !== '0'
-                                                ? formatNumberWithStyle(
-                                                    formatEther(eligibleBalance),
-                                                    { maxDecimals: 4 }
-                                                )
-                                                : '-'
-                                            }
-                                        </Text>
-                                        {!!eligibleBalance && eligibleBalance !== '0' && (
-                                            <Text>{collateralName}</Text>
-                                        )}
-                                    </Flex>
-                                ),
-                                fullWidth: true,
-                            },
-                            {
-                                content: (
-                                    <Flex>
-                                        {!existingVaults?.length
-                                            ? <Text>-</Text>
-                                            : isLargerThanSmall
-                                                ? (
-                                                    <CenteredFlex $gap={4}>
-                                                        <Text>{existingVaults.length}</Text>
-                                                        <Tooltip $gap={12}>
-                                                            {existingVaults.map((vault) => (
-                                                                <VaultLink
-                                                                    key={vault.id}
-                                                                    onClick={() => setActiveVault({ vault })}>
-                                                                    <Text
-                                                                        $whiteSpace="nowrap"
-                                                                        $fontWeight={700}>
-                                                                        Vault #{vault.id}
-                                                                    </Text>
-                                                                    <HaiArrow
-                                                                        size={14}
-                                                                        strokeWidth={2}
-                                                                        direction="upRight"
-                                                                    />
-                                                                </VaultLink>
-                                                            ))}
-                                                        </Tooltip>
-                                                    </CenteredFlex>
-                                                )
-                                                : (
-                                                    <ScrollableContainer>
-                                                        {existingVaults.map(vault => (
-                                                            <HaiButton
+                                    ),
+                                },
+                                {
+                                    content: (
+                                        <Flex $align="center" $gap={4}>
+                                            <Text>
+                                                {eligibleBalance && eligibleBalance !== '0'
+                                                    ? formatNumberWithStyle(formatEther(eligibleBalance), {
+                                                          maxDecimals: 4,
+                                                      })
+                                                    : '-'}
+                                            </Text>
+                                            {!!eligibleBalance && eligibleBalance !== '0' && (
+                                                <Text>{collateralName}</Text>
+                                            )}
+                                        </Flex>
+                                    ),
+                                    fullWidth: true,
+                                },
+                                {
+                                    content: (
+                                        <Flex>
+                                            {!existingVaults?.length ? (
+                                                <Text>-</Text>
+                                            ) : isLargerThanSmall ? (
+                                                <CenteredFlex $gap={4}>
+                                                    <Text>{existingVaults.length}</Text>
+                                                    <Tooltip $gap={12}>
+                                                        {existingVaults.map((vault) => (
+                                                            <VaultLink
                                                                 key={vault.id}
-                                                                onClick={() => setActiveVault({ vault })}>
-                                                                <Text
-                                                                    $whiteSpace="nowrap"
-                                                                    $fontWeight={700}>
+                                                                onClick={() => setActiveVault({ vault })}
+                                                            >
+                                                                <Text $whiteSpace="nowrap" $fontWeight={700}>
                                                                     Vault #{vault.id}
                                                                 </Text>
                                                                 <HaiArrow
@@ -158,30 +114,49 @@ export function AvailableVaultsTable({
                                                                     strokeWidth={2}
                                                                     direction="upRight"
                                                                 />
-                                                            </HaiButton>
+                                                            </VaultLink>
                                                         ))}
-                                                    </ScrollableContainer>
-                                                )
-                                        }
-                                    </Flex>
-                                ),
-                                fullWidth: true,
-                            },
-                            {
-                                content: (
-                                    <TableButton onClick={() => setActiveVault({
-                                        create: true,
-                                        collateralName,
-                                    })}>
-                                        Open New
-                                    </TableButton>
-                                ),
-                                unwrapped: true,
-                            },
-                        ]}
-                    />
-                )
-            })}
+                                                    </Tooltip>
+                                                </CenteredFlex>
+                                            ) : (
+                                                <ScrollableContainer>
+                                                    {existingVaults.map((vault) => (
+                                                        <HaiButton
+                                                            key={vault.id}
+                                                            onClick={() => setActiveVault({ vault })}
+                                                        >
+                                                            <Text $whiteSpace="nowrap" $fontWeight={700}>
+                                                                Vault #{vault.id}
+                                                            </Text>
+                                                            <HaiArrow size={14} strokeWidth={2} direction="upRight" />
+                                                        </HaiButton>
+                                                    ))}
+                                                </ScrollableContainer>
+                                            )}
+                                        </Flex>
+                                    ),
+                                    fullWidth: true,
+                                },
+                                {
+                                    content: (
+                                        <TableButton
+                                            onClick={() =>
+                                                setActiveVault({
+                                                    create: true,
+                                                    collateralName,
+                                                })
+                                            }
+                                        >
+                                            Open New
+                                        </TableButton>
+                                    ),
+                                    unwrapped: true,
+                                },
+                            ]}
+                        />
+                    )
+                }
+            )}
         />
     )
 }
@@ -212,7 +187,7 @@ const TableRow = styled(TableHeader)`
         padding: 0px;
     }
     &:hover {
-        background-color: rgba(0,0,0,0.1);
+        background-color: rgba(0, 0, 0, 0.1);
     }
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
@@ -230,7 +205,7 @@ const TableRow = styled(TableHeader)`
     `}
 `
 
-const VaultLink = styled(Flex).attrs(props => ({
+const VaultLink = styled(Flex).attrs((props) => ({
     $width: '100%',
     $justify: 'space-between',
     $align: 'center',
@@ -238,16 +213,16 @@ const VaultLink = styled(Flex).attrs(props => ({
     ...props,
 }))`
     padding: 8px 16px;
-    border: 1px solid rgba(0,0,0,0.1);
+    border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 999px;
     cursor: pointer;
 
     &:hover {
-        background-color: rgba(0,0,0,0.1);
+        background-color: rgba(0, 0, 0, 0.1);
     }
 `
 
-const ScrollableContainer = styled(Flex).attrs(props => ({
+const ScrollableContainer = styled(Flex).attrs((props) => ({
     $width: '100%',
     $justify: 'flex-start',
     $align: 'center',

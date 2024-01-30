@@ -81,10 +81,7 @@ export function Third({ zIndex }: ZoomSceneProps) {
             ctx.moveTo(...start)
             ctx.beginPath()
             for (let i = 1; i < w - 4; i += 1) {
-                ctx.lineTo(
-                    CANVAS_PADDING + i,
-                    canvas.height / 2 - (h / 2) * Math.sin(2 * Math.PI * (progress + i / w))
-                )
+                ctx.lineTo(CANVAS_PADDING + i, canvas.height / 2 - (h / 2) * Math.sin(2 * Math.PI * (progress + i / w)))
             }
             const end: [number, number] = [
                 CANVAS_PADDING + w,
@@ -101,8 +98,8 @@ export function Third({ zIndex }: ZoomSceneProps) {
                 end[1] - ARROW_SIZE * Math.sin(endTangentAngle - Math.PI / 6)
             )
             ctx.lineTo(
-                CANVAS_PADDING + w - ARROW_SIZE / 2 * Math.cos(endTangentAngle),
-                end[1] - ARROW_SIZE / 2 * Math.sin(endTangentAngle)
+                CANVAS_PADDING + w - (ARROW_SIZE / 2) * Math.cos(endTangentAngle),
+                end[1] - (ARROW_SIZE / 2) * Math.sin(endTangentAngle)
             )
             ctx.lineTo(
                 end[0] - ARROW_SIZE * Math.cos(endTangentAngle + Math.PI / 6),
@@ -115,17 +112,8 @@ export function Third({ zIndex }: ZoomSceneProps) {
             if (priceText.current && changeText.current) {
                 const p = Math.sin(2 * Math.PI * progress)
                 priceText.current.textContent = `$${(1 + 0.03 * p).toFixed(2)}`
-                changeText.current.textContent = `${Math.round(3 * p)}%${p > 0
-                    ? '↑'
-                    : p < 0
-                        ? '↓'
-                        : '-'
-                }`
-                changeText.current.style.color = p > 0
-                    ? '#00AC11'
-                    : p < 0
-                        ? '#ff0000'
-                        : 'inherit'
+                changeText.current.textContent = `${Math.round(3 * p)}%${p > 0 ? '↑' : p < 0 ? '↓' : '-'}`
+                changeText.current.style.color = p > 0 ? '#00AC11' : p < 0 ? '#ff0000' : 'inherit'
             }
 
             frame = requestAnimationFrame(onLoop)
@@ -138,27 +126,12 @@ export function Third({ zIndex }: ZoomSceneProps) {
     return (
         <ZoomScene $zIndex={zIndex}>
             <Container>
-                <Flex
-                    $column
-                    $gap={isLargerThanExtraSmall ? 24: 12}>
+                <Flex $column $gap={isLargerThanExtraSmall ? 24 : 12}>
                     <BrandedTitle
                         textContent="AVOID TURBULENCE WITH MELLOW MONEY TECHNOLOGY™"
-                        $fontSize={isLargerThanSmall
-                            ? '2.9rem'
-                            : isLargerThanExtraSmall
-                                ? '2.6rem'
-                                : '2rem'
-                        }
-                        $letterSpacing={isLargerThanSmall
-                            ? '0.5rem'
-                            : isLargerThanExtraSmall
-                                ? '0.5rem'
-                                : '0.4rem'
-                        }
-                        $lineHeight={isLargerThanSmall
-                            ? '1.4'
-                            : '1.2'
-                        }
+                        $fontSize={isLargerThanSmall ? '2.9rem' : isLargerThanExtraSmall ? '2.6rem' : '2rem'}
+                        $letterSpacing={isLargerThanSmall ? '0.5rem' : isLargerThanExtraSmall ? '0.5rem' : '0.4rem'}
+                        $lineHeight={isLargerThanSmall ? '1.4' : '1.2'}
                     />
                     <Text $lineHeight="1.6">
                         $HAI is more stable than other stables, automatically.&nbsp;
@@ -171,23 +144,15 @@ export function Third({ zIndex }: ZoomSceneProps) {
                     </Text>
                 </Flex>
                 <SmoothContainer>
-                    <Flex
-                        $justify="flex-start"
-                        $align="center"
-                        $gap={12}>
+                    <Flex $justify="flex-start" $align="center" $gap={12}>
                         <IconContainer>
-                            <HaiFace filled/>
+                            <HaiFace filled />
                         </IconContainer>
                         <Text>HAI</Text>
-                        <Text
-                            ref={priceText}
-                            $fontWeight={700}
-                            style={{ width: '48px' }}>
+                        <Text ref={priceText} $fontWeight={700} style={{ width: '48px' }}>
                             $1.00
                         </Text>
-                        <Text ref={changeText}>
-                            0.0%-
-                        </Text>
+                        <Text ref={changeText}>0.0%-</Text>
                     </Flex>
                     <CenteredFlex $width="100%">
                         <SmoothCanvas
@@ -198,7 +163,7 @@ export function Third({ zIndex }: ZoomSceneProps) {
                     </CenteredFlex>
                 </SmoothContainer>
             </Container>
-            <FloatingElements clouds={clouds}/>
+            <FloatingElements clouds={clouds} />
             <FlyingElfContainer>
                 <HaiCoin
                     variant="KITE"
@@ -211,8 +176,8 @@ export function Third({ zIndex }: ZoomSceneProps) {
                         zIndex: 0,
                     }}
                 />
-                <Wire/>
-                <Wire/>
+                <Wire />
+                <Wire />
                 <Elf
                     variant={4}
                     width="50%"
@@ -227,7 +192,7 @@ export function Third({ zIndex }: ZoomSceneProps) {
     )
 }
 
-const Container = styled(Grid).attrs(props => ({
+const Container = styled(Grid).attrs((props) => ({
     $columns: '1fr min-content',
     $justify: 'center',
     $align: 'center',
@@ -237,7 +202,7 @@ const Container = styled(Grid).attrs(props => ({
     padding: 72px 48px;
     border: ${({ theme }) => theme.border.medium};
     border-radius: 24px;
-    background-color: rgba(255,255,255,0.5);
+    background-color: rgba(255, 255, 255, 0.5);
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
         width: calc(100vw - 48px);
@@ -252,7 +217,7 @@ const Container = styled(Grid).attrs(props => ({
     `}
 `
 
-const SmoothContainer = styled(Flex).attrs(props => ({
+const SmoothContainer = styled(Flex).attrs((props) => ({
     $column: true,
     $justify: 'space-between',
     $align: 'flex-start',
@@ -318,7 +283,7 @@ const FlyingElfContainer = styled(CenteredFlex)`
 const Wire = styled.div`
     position: absolute;
     width: 1px;
-    background-color: rgba(0,0,0,0.1);
+    background-color: rgba(0, 0, 0, 0.1);
     height: 82%;
     transform: rotate(-1deg);
     left: 40.5%;

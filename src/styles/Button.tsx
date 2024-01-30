@@ -18,10 +18,8 @@ export const ButtonStyle = css<ButtonProps>`
     font-weight: 600;
     padding: 8px 30px;
     color: ${({ theme }) => theme.colors.neutral};
-    background: ${({ theme, disabled, color = 'blueish' }) => (disabled
-        ? theme.colors.dimmedBackground
-        : theme.colors[color]
-    )};
+    background: ${({ theme, disabled, color = 'blueish' }) =>
+        disabled ? theme.colors.dimmedBackground : theme.colors[color]};
     border-radius: ${({ theme }) => theme.global.borderRadius};
     transition: all 0.3s ease;
     display: flex;
@@ -31,8 +29,8 @@ export const ButtonStyle = css<ButtonProps>`
 `
 
 export type HaiButtonProps = FlexProps & {
-    disabled?: boolean,
-    $variant?: 'default' | 'unblurred' | 'blueish' | 'greenish' | 'pinkish' | 'yellowish' | 'orangeish',
+    disabled?: boolean
+    $variant?: 'default' | 'unblurred' | 'blueish' | 'greenish' | 'pinkish' | 'yellowish' | 'orangeish'
     $unbordered?: boolean
 }
 export const HaiButton = styled.button.attrs((props: HaiButtonProps) => ({
@@ -43,7 +41,7 @@ export const HaiButton = styled.button.attrs((props: HaiButtonProps) => ({
 }))<HaiButtonProps>`
     ${FlexStyle}
     outline: none;
-    border: ${({ theme, $unbordered }) => $unbordered ? 'none': theme.border.medium};
+    border: ${({ theme, $unbordered }) => ($unbordered ? 'none' : theme.border.medium)};
     box-shadow: none;
     line-height: 24px;
     font-size: ${({ theme }) => theme.font.small};
@@ -51,13 +49,15 @@ export const HaiButton = styled.button.attrs((props: HaiButtonProps) => ({
     white-space: nowrap;
     padding: 8px 20px;
     color: black;
-    ${({ theme, $variant = 'default' }) => ($variant === 'default'
-        ? css`
-            backdrop-filter: blur(13px);
-            background: transparent;
-        `
-        : css`background: ${(theme.colors as any)[$variant] || 'transparent'};`
-    )}
+    ${({ theme, $variant = 'default' }) =>
+        $variant === 'default'
+            ? css`
+                  backdrop-filter: blur(13px);
+                  background: transparent;
+              `
+            : css`
+                  background: ${(theme.colors as any)[$variant] || 'transparent'};
+              `}
     border-radius: 999px;
     transition: all 0.3s ease;
     cursor: pointer;
@@ -72,12 +72,12 @@ export const TableButton = styled(HaiButton)<HaiButtonProps>`
     width: 100%;
     height: 48px;
     justify-content: center;
-    border: ${({ $unbordered }) => $unbordered ? 'none': '2px solid rgba(0,0,0,0.1)'};
+    border: ${({ $unbordered }) => ($unbordered ? 'none' : '2px solid rgba(0,0,0,0.1)')};
     font-size: 0.8rem;
 
     ${({ theme, $unbordered }) => theme.mediaWidth.upToSmall`
         grid-column: 1 / -1;
         background: ${theme.colors.yellowish};
-        border: ${$unbordered ? 'none': theme.border.medium};
+        border: ${$unbordered ? 'none' : theme.border.medium};
     `}
 `

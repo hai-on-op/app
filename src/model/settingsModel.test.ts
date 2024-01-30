@@ -7,6 +7,15 @@ describe('settings model', () => {
         store = createStore(settingsModel)
     })
 
+    describe('setsIsMusicPlaying', () => {
+        it('plays music', () => {
+            store.getActions().setIsPlayingMusic(false)
+            expect(store.getState().isPlayingMusic).toBe(false)
+            store.getActions().setIsPlayingMusic(true)
+            expect(store.getState().isPlayingMusic).toBe(true)
+        })
+    })
+
     // describe('setsBodyOverflow', () => {
     //     it('sets body overflow', () => {
     //         expect(store.getState().bodyOverflow).toBe(false)

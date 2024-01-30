@@ -7,7 +7,7 @@ import { RewardsTokenPair } from '~/components/TokenPair'
 import { Stats, type StatProps } from '~/components/Stats'
 
 export function AuctionStats() {
-    const { popupsModel: popupsActions } = useStoreActions(actions => actions)
+    const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
 
     const { activeBids, activeBidsValue } = useMyBids()
     // TODO: calculate claim stats
@@ -18,36 +18,22 @@ export function AuctionStats() {
             tooltip: 'Hello World',
         },
         {
-            header: activeBidsValue
-                ? formatNumberWithStyle(activeBidsValue, { style: 'currency' })
-                : '$--',
+            header: activeBidsValue ? formatNumberWithStyle(activeBidsValue, { style: 'currency' }) : '$--',
             label: 'My Active Bids Value',
             tooltip: 'Hello World',
         },
         {
             header: '$7,000',
-            headerStatus: (
-                <RewardsTokenPair
-                    tokens={['OP', 'KITE']}
-                    hideLabel
-                />
-            ),
+            headerStatus: <RewardsTokenPair tokens={['OP', 'KITE']} hideLabel />,
             label: 'My Claimable Assets',
             tooltip: 'Hello World',
             button: (
-                <HaiButton
-                    $variant="yellowish"
-                    onClick={() => popupsActions.setIsClaimPopupOpen(true)}>
+                <HaiButton $variant="yellowish" onClick={() => popupsActions.setIsClaimPopupOpen(true)}>
                     Claim
                 </HaiButton>
             ),
         },
     ]
 
-    return (
-        <Stats
-            stats={dummyStats}
-            columns="repeat(3, 1fr)"
-        />
-    )
+    return <Stats stats={dummyStats} columns="repeat(3, 1fr)" />
 }

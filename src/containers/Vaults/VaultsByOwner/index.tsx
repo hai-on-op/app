@@ -21,12 +21,14 @@ const RECORDS_PER_PAGE = 10
 export function VaultsByOwner() {
     const { idOrOwner } = useParams<{ idOrOwner?: string }>()
 
-    const { connectWalletModel: { tokensData } } = useStoreState(state => state)
+    const {
+        connectWalletModel: { tokensData },
+    } = useStoreState((state) => state)
 
     const symbols = Object.values(tokensData || {})
         .filter(({ isCollateral }) => isCollateral)
         .map(({ symbol }) => symbol)
-    
+
     const isLargerThanSmall = useMediaQuery('upToSmall')
 
     const {
@@ -44,135 +46,96 @@ export function VaultsByOwner() {
     const [offset, setOffset] = useState(0)
 
     const [liquidateVault, setLiquidateVault] = useState<{
-        id: string,
-        collateralRatio: string,
-        status: Status,
+        id: string
+        collateralRatio: string
+        status: Status
     }>()
 
-    return (<>
-        {!!liquidateVault && (
-            <LiquidateVaultModal
-                onClose={() => setLiquidateVault(undefined)}
-                {...liquidateVault}
-            />
-        )}
-        <Container>
-            <Header>
-                <BrandedTitle
-                    textContent={`${!invalidAddress
-                        ? returnWalletAddress(idOrOwner as string)
-                        : 'UNKNOWN'
-                    }'S VAULTS`}
-                    $fontSize={isLargerThanSmall ? '3rem': '2.4rem'}
-                />
-                <CenteredFlex
-                    $column={!isLargerThanSmall}
-                    $gap={24}>
-                    <BrandedDropdown label={(
-                        <Text
-                            $fontWeight={400}
-                            $textAlign="left">
-                            Collateral: <strong>{collateralFilter || 'All'}</strong>
-                        </Text>
-                    )}>
-                        {['All', ...symbols].map(label => (
-                            <DropdownOption
-                                key={label}
-                                onClick={() => {
-                                    // e.stopPropagation()
-                                    setCollateralFilter(label === 'All' ? undefined: label)
-                                }}>
-                                {label}
-                            </DropdownOption>
-                        ))}
-                    </BrandedDropdown>
-                    {!isLargerThanSmall && (
-                        <SortByDropdown
-                            headers={headers}
-                            sorting={sorting}
-                            setSorting={setSorting}
-                        />
-                    )}
-                </CenteredFlex>
-            </Header>
-            <Table
-                container={StyledTableContainer}
-                headers={headers}
-                headerContainer={TableHeader}
-                sorting={sorting}
-                setSorting={setSorting}
-                loading={loading}
-                error={error?.message || (invalidAddress ? 'Invalid address': undefined)}
-                errorContent={error?.message
-                    ? undefined
-                    : invalidAddress
-                        ? 'Invalid address'
-                        : undefined
-                }
-                isEmpty={!rows.length}
-                rows={rows
-                    .slice(RECORDS_PER_PAGE * offset, RECORDS_PER_PAGE * (offset + 1))
-                    .map(({
-                        safeId,
-                        collateral,
-                        debt,
-                        collateralRatio,
-                        collateralToken,
-                        status,
-                    }) => (
-                        <Table.Row
-                            key={safeId}
-                            container={TableRow}
-                            headers={headers}
-                            items={[
-                                {
-                                    content: <Text>#{safeId}</Text>,
-                                },
-                                {
-                                    content: isLargerThanSmall
-                                        ? (
-                                            <Grid
-                                                $columns="1fr 24px 48px"
-                                                $align="center"
-                                                $gap={8}>
+    return (
+        <>
+            {!!liquidateVault && (
+                <LiquidateVaultModal onClose={() => setLiquidateVault(undefined)} {...liquidateVault} />
+            )}
+            <Container>
+                <Header>
+                    <BrandedTitle
+                        textContent={`${
+                            !invalidAddress ? returnWalletAddress(idOrOwner as string) : 'UNKNOWN'
+                        }'S VAULTS`}
+                        $fontSize={isLargerThanSmall ? '3rem' : '2.4rem'}
+                    />
+                    <CenteredFlex $column={!isLargerThanSmall} $gap={24}>
+                        <BrandedDropdown
+                            label={
+                                <Text $fontWeight={400} $textAlign="left">
+                                    Collateral: <strong>{collateralFilter || 'All'}</strong>
+                                </Text>
+                            }
+                        >
+                            {['All', ...symbols].map((label) => (
+                                <DropdownOption
+                                    key={label}
+                                    onClick={() => {
+                                        // e.stopPropagation()
+                                        setCollateralFilter(label === 'All' ? undefined : label)
+                                    }}
+                                >
+                                    {label}
+                                </DropdownOption>
+                            ))}
+                        </BrandedDropdown>
+                        {!isLargerThanSmall && (
+                            <SortByDropdown headers={headers} sorting={sorting} setSorting={setSorting} />
+                        )}
+                    </CenteredFlex>
+                </Header>
+                <Table
+                    container={StyledTableContainer}
+                    headers={headers}
+                    headerContainer={TableHeader}
+                    sorting={sorting}
+                    setSorting={setSorting}
+                    loading={loading}
+                    error={error?.message || (invalidAddress ? 'Invalid address' : undefined)}
+                    errorContent={error?.message ? undefined : invalidAddress ? 'Invalid address' : undefined}
+                    isEmpty={!rows.length}
+                    rows={rows
+                        .slice(RECORDS_PER_PAGE * offset, RECORDS_PER_PAGE * (offset + 1))
+                        .map(({ safeId, collateral, debt, collateralRatio, collateralToken, status }) => (
+                            <Table.Row
+                                key={safeId}
+                                container={TableRow}
+                                headers={headers}
+                                items={[
+                                    {
+                                        content: <Text>#{safeId}</Text>,
+                                    },
+                                    {
+                                        content: isLargerThanSmall ? (
+                                            <Grid $columns="1fr 24px 48px" $align="center" $gap={8}>
                                                 <Text $textAlign="right">
                                                     {formatNumberWithStyle(collateral, {
                                                         maxDecimals: 4,
                                                     })}
                                                 </Text>
-                                                <TokenPair
-                                                    tokens={[collateralToken as any]}
-                                                    hideLabel
-                                                    size={48}
-                                                />
+                                                <TokenPair tokens={[collateralToken as any]} hideLabel size={48} />
                                                 <Text>{collateralToken}</Text>
                                             </Grid>
-                                        )
-                                        : (
-                                            <Flex
-                                                $justify="flex-start"
-                                                $align="center"
-                                                $gap={8}>
+                                        ) : (
+                                            <Flex $justify="flex-start" $align="center" $gap={8}>
                                                 <Text $textAlign="right">
                                                     {formatNumberWithStyle(collateral, {
                                                         maxDecimals: 4,
                                                     })}
                                                 </Text>
-                                                <TokenPair
-                                                    tokens={[collateralToken as any]}
-                                                    hideLabel
-                                                    size={48}
-                                                />
+                                                <TokenPair tokens={[collateralToken as any]} hideLabel size={48} />
                                                 <Text>{collateralToken}</Text>
                                             </Flex>
                                         ),
-                                },
-                                {
-                                    content: isLargerThanSmall
-                                        ? (
-                                            <Grid
-                                                $columns="1fr 24px"
-                                                $gap={8}>
+                                    },
+                                    {
+                                        content: isLargerThanSmall ? (
+                                            <Grid $columns="1fr 24px" $gap={8}>
                                                 <Text $textAlign="right">
                                                     {formatNumberWithStyle(debt, {
                                                         maxDecimals: 4,
@@ -180,12 +143,8 @@ export function VaultsByOwner() {
                                                 </Text>
                                                 <Text>HAI</Text>
                                             </Grid>
-                                        )
-                                        : (
-                                            <Flex
-                                                $justify="flex-start"
-                                                $align="center"
-                                                $gap={8}>
+                                        ) : (
+                                            <Flex $justify="flex-start" $align="center" $gap={8}>
                                                 <Text $textAlign="right">
                                                     {formatNumberWithStyle(debt, {
                                                         maxDecimals: 4,
@@ -194,54 +153,52 @@ export function VaultsByOwner() {
                                                 <Text>HAI</Text>
                                             </Flex>
                                         ),
-                                },
-                                {
-                                    content: (
-                                        <Flex
-                                            $justify="center"
-                                            $align="center"
-                                            $gap={12}>
-                                            <Text>
-                                                {collateralRatio === Infinity.toString()
-                                                    ? '--'
-                                                    : formatNumberWithStyle(collateralRatio, {
-                                                        style: 'percent',
-                                                        scalingFactor: 0.01,
+                                    },
+                                    {
+                                        content: (
+                                            <Flex $justify="center" $align="center" $gap={12}>
+                                                <Text>
+                                                    {collateralRatio === Infinity.toString()
+                                                        ? '--'
+                                                        : formatNumberWithStyle(collateralRatio, {
+                                                              style: 'percent',
+                                                              scalingFactor: 0.01,
+                                                          })}
+                                                </Text>
+                                                <StatusLabel status={status} size={0.8} />
+                                            </Flex>
+                                        ),
+                                    },
+                                    {
+                                        content: (
+                                            <TableButton
+                                                onClick={() =>
+                                                    setLiquidateVault({
+                                                        id: safeId,
+                                                        collateralRatio,
+                                                        status,
                                                     })
                                                 }
-                                            </Text>
-                                            <StatusLabel
-                                                status={status}
-                                                size={0.8}
-                                            />
-                                        </Flex>
-                                    ),
-                                },
-                                {
-                                    content: (
-                                        <TableButton onClick={() => setLiquidateVault({
-                                            id: safeId,
-                                            collateralRatio,
-                                            status,
-                                        })}>
-                                            Liquidate
-                                        </TableButton>
-                                    ),
-                                    unwrapped: true,
-                                },
-                            ]}
+                                            >
+                                                Liquidate
+                                            </TableButton>
+                                        ),
+                                        unwrapped: true,
+                                    },
+                                ]}
+                            />
+                        ))}
+                    footer={
+                        <Pagination
+                            totalItems={rows.length}
+                            perPage={RECORDS_PER_PAGE}
+                            handlePagingMargin={setOffset}
                         />
-                    ))}
-                footer={(
-                    <Pagination
-                        totalItems={rows.length}
-                        perPage={RECORDS_PER_PAGE}
-                        handlePagingMargin={setOffset}
-                    />
-                )}
-            />
-        </Container>
-    </>)
+                    }
+                />
+            </Container>
+        </>
+    )
 }
 
 const Container = styled(BlurContainer)`
@@ -252,7 +209,7 @@ const Container = styled(BlurContainer)`
     }
 `
 
-const Header = styled(Flex).attrs(props => ({
+const Header = styled(Flex).attrs((props) => ({
     $width: '100%',
     $justify: 'space-between',
     $align: 'center',
@@ -326,7 +283,7 @@ const TableRow = styled(TableHeaderBase)`
     padding: 0px;
     padding-left: 16px;
     &:hover {
-        background-color: rgba(0,0,0,0.1);
+        background-color: rgba(0, 0, 0, 0.1);
     }
 
     ${({ theme }) => theme.mediaWidth.upToSmall`

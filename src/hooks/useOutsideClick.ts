@@ -14,5 +14,5 @@ export function useOutsideClick(ref: HTMLElement | null | undefined, onOutsideCl
         return () => {
             window.removeEventListener('click', onClick)
         }
-    }, [ ref, onOutsideClick ])
+    }, [ref, onOutsideClick])
 }

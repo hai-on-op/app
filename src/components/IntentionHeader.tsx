@@ -23,11 +23,14 @@ enum Intention {
     EARN = 'earn',
 }
 
-const copy: Record<Intention, {
-    subtitle: string,
-    cta: string,
-    ctaLink: string,
-}> = {
+const copy: Record<
+    Intention,
+    {
+        subtitle: string
+        cta: string
+        ctaLink: string
+    }
+> = {
     [Intention.AUCTION]: {
         subtitle: 'Buy your favorite crypto assets from liquidated loan auctions at a discount. ',
         cta: 'Read more about auctions →',
@@ -49,7 +52,7 @@ const typeOptions = [
     {
         label: 'Get $HAI',
         value: Intention.BORROW,
-        icon: <HaiFace filled/>,
+        icon: <HaiFace filled />,
         description: 'Mint & borrow $HAI stablecoin against your preferred collateral',
     },
     {
@@ -62,27 +65,19 @@ const typeOptions = [
     {
         label: 'Earn Rewards',
         value: Intention.EARN,
-        icon: [
-            TOKEN_LOGOS.OP,
-            TOKEN_LOGOS.WETH,
-            TOKEN_LOGOS.WSTETH,
-        ],
+        icon: [TOKEN_LOGOS.OP, TOKEN_LOGOS.WETH, TOKEN_LOGOS.WSTETH],
         description: 'Earn long term yields by staking a growing list of crypto assets',
     },
     {
         label: 'Buy Liquidated Assets',
         value: Intention.AUCTION,
-        icon: [
-            TOKEN_LOGOS.OP,
-            TOKEN_LOGOS.WETH,
-            TOKEN_LOGOS.WSTETH,
-        ],
+        icon: [TOKEN_LOGOS.OP, TOKEN_LOGOS.WETH, TOKEN_LOGOS.WSTETH],
         description: 'Buy your favorite assets from liquidated loans at a discount',
     },
 ]
 
 type IntentionHeaderProps = {
-    children?: ReactChildren,
+    children?: ReactChildren
 }
 export function IntentionHeader({ children }: IntentionHeaderProps) {
     const location = useLocation()
@@ -94,24 +89,26 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
         if (location.pathname.startsWith('/auctions')) {
             return {
                 type: Intention.AUCTION,
-                stats: <AuctionStats/>,
+                stats: <AuctionStats />,
             }
         }
         if (location.pathname.startsWith('/earn')) {
             return {
                 type: Intention.EARN,
-                stats: <EarnStats/>,
+                stats: <EarnStats />,
             }
         }
         if (location.pathname.startsWith('/vaults')) {
-            switch(location.pathname) {
+            switch (location.pathname) {
                 case '/vaults':
                 case '/vaults/manage':
-                case '/vaults/open': return {
-                    type: Intention.BORROW,
-                    stats: <BorrowStats/>,
-                }
-                default: return {}
+                case '/vaults/open':
+                    return {
+                        type: Intention.BORROW,
+                        stats: <BorrowStats />,
+                    }
+                default:
+                    return {}
             }
         }
 
@@ -125,27 +122,18 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
     return (
         <Container>
             <Inner>
-                <Flex
-                    $justify="flex-start"
-                    $align="center"
-                    $gap={12}
-                    $flexWrap>
-                    <BrandedTitle
-                        textContent="I WANT TO"
-                        $fontSize={isLargerThanExtraSmall ? '3.2em': '2.5em'}
-                    />
+                <Flex $justify="flex-start" $align="center" $gap={12} $flexWrap>
+                    <BrandedTitle textContent="I WANT TO" $fontSize={isLargerThanExtraSmall ? '3.2em' : '2.5em'} />
                     <BrandedSelect
                         value={type}
                         onChange={(value: string) => !!value && history.push(`/${value}`)}
                         options={typeOptions}
-                        $fontSize={isLargerThanExtraSmall ? '3.2em': '2.5em'}
+                        $fontSize={isLargerThanExtraSmall ? '3.2em' : '2.5em'}
                     />
                 </Flex>
                 <Text>
                     {subtitle}
-                    <ExternalLink
-                        href={ctaLink}
-                        $fontWeight={700}>
+                    <ExternalLink href={ctaLink} $fontWeight={700}>
                         {cta}
                     </ExternalLink>
                 </Text>
@@ -156,7 +144,7 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
     )
 }
 
-const Container = styled(BlurContainer).attrs(props => ({
+const Container = styled(BlurContainer).attrs((props) => ({
     $width: '100%',
     ...props,
 }))`
@@ -165,7 +153,7 @@ const Container = styled(BlurContainer).attrs(props => ({
     z-index: 1;
 `
 
-const Inner = styled(Flex).attrs(props => ({
+const Inner = styled(Flex).attrs((props) => ({
     $width: '100%',
     $column: true,
     $justify: 'flex-start',

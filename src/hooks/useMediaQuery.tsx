@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { MEDIA_WIDTHS } from '~/utils'
 
 export function useMediaQuery(query: keyof typeof MEDIA_WIDTHS | string) {
-    const [ matches, setMatches ] = useState(false)
+    const [matches, setMatches] = useState(false)
     const matchesRef = useRef(matches)
     matchesRef.current = matches
 
@@ -23,7 +23,7 @@ export function useMediaQuery(query: keyof typeof MEDIA_WIDTHS | string) {
         media.addEventListener('change', onChange)
 
         return () => media.removeEventListener('change', onChange)
-    }, [ query ])
+    }, [query])
 
     return matches
 }

@@ -33,19 +33,16 @@ export function PairsBanner() {
     return (
         <Container>
             <Inner>
-                {Array.from({ length: repeat }, () => ([...pairs])).flat().map(([ticker, logo], i) => (
-                    <Pair key={i}>
-                        <IconContainer>
-                            <img
-                                src={logo}
-                                alt="HAI"
-                                width={48}
-                                height={48}
-                            />
-                        </IconContainer>
-                        <Text $fontWeight={900}>{ticker}</Text>
-                    </Pair>
-                ))}
+                {Array.from({ length: repeat }, () => [...pairs])
+                    .flat()
+                    .map(([ticker, logo], i) => (
+                        <Pair key={i}>
+                            <IconContainer>
+                                <img src={logo} alt="HAI" width={48} height={48} />
+                            </IconContainer>
+                            <Text $fontWeight={900}>{ticker}</Text>
+                        </Pair>
+                    ))}
             </Inner>
         </Container>
     )
@@ -56,7 +53,7 @@ const rightToLeft = keyframes`
     100% { left: ${-(PAIR_WIDTH + 24) * pairs.length}px; }
 `
 
-const Container = styled(Flex).attrs(props => ({
+const Container = styled(Flex).attrs((props) => ({
     $justify: 'flex-start',
     $align: 'center',
     ...props,
@@ -73,7 +70,7 @@ const Container = styled(Flex).attrs(props => ({
         bottom: 12px;
     `}
 `
-const Inner = styled(Flex).attrs(props => ({
+const Inner = styled(Flex).attrs((props) => ({
     $justify: 'flex-start',
     $align: 'center',
     $gap: 24,
@@ -84,7 +81,7 @@ const Inner = styled(Flex).attrs(props => ({
     animation: ${rightToLeft} 40s linear infinite;
     width: ${(PAIR_WIDTH + 24) * pairs.length}px;
 `
-const Pair = styled(Flex).attrs(props => ({
+const Pair = styled(Flex).attrs((props) => ({
     $justify: 'flex-start',
     $align: 'center',
     $gap: 12,
@@ -97,7 +94,7 @@ const Pair = styled(Flex).attrs(props => ({
     border: ${({ theme }) => theme.border.medium};
     border-radius: 16px;
     /* backdrop-filter: blur(13px); */
-    background-color: rgba(255,255,255,0.5);
+    background-color: rgba(255, 255, 255, 0.5);
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
         padding: 12px;

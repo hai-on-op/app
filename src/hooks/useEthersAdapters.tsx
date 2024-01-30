@@ -2,19 +2,9 @@ import { useMemo } from 'react'
 import { providers } from 'ethers'
 import { createPublicClient, http, type HttpTransport } from 'viem'
 import { optimism, optimismSepolia } from 'viem/chains'
-import {
-    type PublicClient,
-    type WalletClient,
-    useNetwork,
-    usePublicClient,
-    useWalletClient,
-} from 'wagmi'
+import { type PublicClient, type WalletClient, useNetwork, usePublicClient, useWalletClient } from 'wagmi'
 
-import {
-    DEFAULT_NETWORK_ID,
-    VITE_MAINNET_PUBLIC_RPC,
-    VITE_TESTNET_PUBLIC_RPC,
-} from '~/utils'
+import { DEFAULT_NETWORK_ID, VITE_MAINNET_PUBLIC_RPC, VITE_TESTNET_PUBLIC_RPC } from '~/utils'
 
 export const useCustomPublicClient = (): PublicClient => {
     const { chain } = useNetwork()
@@ -57,12 +47,14 @@ export function useEthersProvider({ chainId }: { chainId?: number } = {}) {
 
 export function usePublicProvider() {
     const client = useCustomPublicClient()
-    return useMemo(() => (
-        new providers.JsonRpcProvider(client.transport.url, {
-            chainId: client.chain.id,
-            name: client.chain.name,
-        })
-    ), [])
+    return useMemo(
+        () =>
+            new providers.JsonRpcProvider(client.transport.url, {
+                chainId: client.chain.id,
+                name: client.chain.name,
+            }),
+        []
+    )
 }
 
 export function walletClientToSigner(walletClient: WalletClient) {

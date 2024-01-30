@@ -35,10 +35,11 @@ export function ParallaxBackground() {
         if (!container) return
 
         // parse top definition for reference in loop
-        const tops = els.clouds?.map(({ style }) => {
-            const top = style?.top?.toString().replace('px', '') || '0'
-            return parseInt(top)
-        }) || []
+        const tops =
+            els.clouds?.map(({ style }) => {
+                const top = style?.top?.toString().replace('px', '') || '0'
+                return parseInt(top)
+            }) || []
 
         const clouds = Array.from(container.querySelectorAll(CloudImage)) as HTMLElement[]
         const onScroll = () => {
@@ -55,14 +56,14 @@ export function ParallaxBackground() {
 
     return (
         <Container ref={setContainer}>
-            <FloatingElements {...els}/>
+            <FloatingElements {...els} />
         </Container>
     )
 }
 
 const Container = styled.div`
-	position: fixed;
-	inset: 0px;
+    position: fixed;
+    inset: 0px;
     pointer-events: none;
     z-index: 0;
 `

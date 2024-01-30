@@ -15,12 +15,13 @@ export const ONE_HOUR_MS = 60 * ONE_MINUTE_MS
 export const ONE_DAY_MS = 24 * ONE_HOUR_MS
 
 export function parseRemainingTime(ms: number) {
-    if (ms <= 0) return {
-        days: 0,
-        hours: 0,
-        minutes: 0,
-        seconds: 0,
-    }
+    if (ms <= 0)
+        return {
+            days: 0,
+            hours: 0,
+            minutes: 0,
+            seconds: 0,
+        }
     const days = Math.floor(ms / ONE_DAY_MS)
     const hours = Math.floor((ms % ONE_DAY_MS) / ONE_HOUR_MS)
     const minutes = Math.floor((ms % ONE_HOUR_MS) / ONE_MINUTE_MS)
@@ -38,5 +39,5 @@ export enum Timeframe {
     ONE_DAY,
     ONE_WEEK,
     ONE_MONTH,
-    ONE_YEAR
+    ONE_YEAR,
 }

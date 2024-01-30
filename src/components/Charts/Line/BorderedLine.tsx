@@ -3,10 +3,13 @@ import { type CustomLayer } from '@nivo/line'
 
 export const BorderedLine: CustomLayer = ({ series, lineGenerator, xScale, yScale }) => {
     return series.map(({ id, data, color }) => {
-        const line = lineGenerator(data.map(d => ({
-            x: (xScale as any)(d.data.x),
-            y: (yScale as any)(d.data.y),
-        }))) ?? undefined
+        const line =
+            lineGenerator(
+                data.map((d) => ({
+                    x: (xScale as any)(d.data.x),
+                    y: (yScale as any)(d.data.y),
+                }))
+            ) ?? undefined
 
         return (
             <Fragment key={id}>

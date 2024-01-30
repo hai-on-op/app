@@ -15,24 +15,21 @@ import { TransactionSummary } from '../TransactionSummary'
 import { StatusLabel } from '../StatusLabel'
 
 type Props = ModalProps & {
-    id: string,
-    collateralRatio: string,
-    status: Status,
+    id: string
+    collateralRatio: string
+    status: Status
 }
 export function LiquidateVaultModal({ id, collateralRatio, status, ...props }: Props) {
     const { t } = useTranslation()
     const geb = useGeb()
 
-    const {
-        popupsModel: popupsActions,
-        transactionsModel: transactionsActions,
-    } = useStoreActions(actions => actions)
+    const { popupsModel: popupsActions, transactionsModel: transactionsActions } = useStoreActions((actions) => actions)
 
     const [accepted, setAccepted] = useState(false)
 
     const startVaultLiquidation = async () => {
         if (!geb || !accepted) return
-        
+
         popupsActions.setIsWaitingModalOpen(true)
         popupsActions.setWaitingPayload({
             text: `Starting liquidation for vault #${id}...`,
@@ -62,7 +59,7 @@ export function LiquidateVaultModal({ id, collateralRatio, status, ...props }: P
             await txResponse.wait()
             popupsActions.setIsWaitingModalOpen(false)
             props.onClose?.()
-        } catch(error: any) {
+        } catch (error: any) {
             handleTransactionError(error)
         }
     }
@@ -72,26 +69,18 @@ export function LiquidateVaultModal({ id, collateralRatio, status, ...props }: P
             heading="LIQUIDATE VAULT"
             maxWidth="560px"
             {...props}
-            footerContent={(
-                <Flex
-                    $width="100%"
-                    $justify="flex-end"
-                    $align="center">
-                    <HaiButton
-                        $variant="yellowish"
-                        disabled={!accepted}
-                        onClick={startVaultLiquidation}>
-                        {t('liquidate_button')}{id}
+            footerContent={
+                <Flex $width="100%" $justify="flex-end" $align="center">
+                    <HaiButton $variant="yellowish" disabled={!accepted} onClick={startVaultLiquidation}>
+                        {t('liquidate_button')}
+                        {id}
                     </HaiButton>
                 </Flex>
-            )}>
-            <AlertContainer
-                $column
-                $gap={32}>
-                <AlertTriangle size="90px"/>
-                <Flex
-                    $column
-                    $gap={12}>
+            }
+        >
+            <AlertContainer $column $gap={32}>
+                <AlertTriangle size="90px" />
+                <Flex $column $gap={12}>
                     <Text>{t('liquidate_vault_warning')}</Text>
                     <TransactionSummary
                         heading="Vault Details"
@@ -103,40 +92,27 @@ export function LiquidateVaultModal({ id, collateralRatio, status, ...props }: P
                             {
                                 label: 'Collateral Ratio',
                                 value: {
-                                    after: collateralRatio === Infinity.toString()
-                                        ? '--'
-                                        : formatNumberWithStyle(collateralRatio, {
-                                            style: 'percent',
-                                            scalingFactor: 0.01,
-                                        }),
+                                    after:
+                                        collateralRatio === Infinity.toString()
+                                            ? '--'
+                                            : formatNumberWithStyle(collateralRatio, {
+                                                  style: 'percent',
+                                                  scalingFactor: 0.01,
+                                              }),
                                 },
                             },
                             {
                                 label: 'Status',
                                 value: {
                                     after: '',
-                                    label: (
-                                        <StatusLabel
-                                            status={status}
-                                            size={0.8}
-                                            textOnly
-                                        />
-                                    ),
+                                    label: <StatusLabel status={status} size={0.8} textOnly />,
                                 },
                             },
                         ]}
                     />
-                    <Flex
-                        $justify="flex-start"
-                        $align="center"
-                        $gap={8}>
-                        <CheckBox
-                            checked={accepted}
-                            onChange={setAccepted}
-                        />
-                        <Text
-                            $fontSize="13px"
-                            onClick={() => setAccepted(!accepted)}>
+                    <Flex $justify="flex-start" $align="center" $gap={8}>
+                        <CheckBox checked={accepted} onChange={setAccepted} />
+                        <Text $fontSize="13px" onClick={() => setAccepted(!accepted)}>
                             {t('liquidate_confirmation')}
                         </Text>
                     </Flex>

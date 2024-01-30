@@ -13,20 +13,18 @@ export function ConnectButton({ showBalance = false, ...props }: ConnectButtonPr
     return (
         <RKConnectButton.Custom>
             {({ account, chain, openConnectModal, openAccountModal, openChainModal }) => {
-                if (!account) return (
-                    <Button
-                        {...props}
-                        onClick={openConnectModal}>
-                        Connect
-                    </Button>
-                )
-                if (chain?.id !== NETWORK_ID) return (
-                    <Button
-                        {...props}
-                        onClick={openChainModal}>
-                        Switch Network
-                    </Button>
-                )
+                if (!account)
+                    return (
+                        <Button {...props} onClick={openConnectModal}>
+                            Connect
+                        </Button>
+                    )
+                if (chain?.id !== NETWORK_ID)
+                    return (
+                        <Button {...props} onClick={openChainModal}>
+                            Switch Network
+                        </Button>
+                    )
 
                 const decimalIndex = account.balanceFormatted?.indexOf('.') ?? -1
                 return (
@@ -34,19 +32,14 @@ export function ConnectButton({ showBalance = false, ...props }: ConnectButtonPr
                         {showBalance && (
                             <BalanceContainer>
                                 {decimalIndex > -1
-                                    ? account.balanceFormatted?.slice(
-                                        0,
-                                        decimalIndex + 5
-                                    )
-                                    : account.balanceFormatted
-                                } ETH
+                                    ? account.balanceFormatted?.slice(0, decimalIndex + 5)
+                                    : account.balanceFormatted}{' '}
+                                ETH
                             </BalanceContainer>
                         )}
-                        <Button
-                            $width={!showBalance ? 'calc(100% + 4px)': undefined}
-                            onClick={openAccountModal}>
+                        <Button $width={!showBalance ? 'calc(100% + 4px)' : undefined} onClick={openAccountModal}>
                             <Text>{account.displayName}</Text>
-                            <Caret direction="down"/>
+                            <Caret direction="down" />
                         </Button>
                     </Container>
                 )
@@ -63,7 +56,7 @@ const Container = styled(CenteredFlex)`
     backdrop-filter: blur(13px);
 `
 
-const BalanceContainer = styled(Text).attrs(props => ({
+const BalanceContainer = styled(Text).attrs((props) => ({
     $textAlign: 'center',
     $fontWeight: 700,
     $fontSize: '0.8rem',
@@ -71,7 +64,7 @@ const BalanceContainer = styled(Text).attrs(props => ({
 }))`
     padding: 0 24px;
 `
-const Button = styled(HaiButton).attrs(props => ({
+const Button = styled(HaiButton).attrs((props) => ({
     $variant: 'yellowish',
     ...props,
 }))`

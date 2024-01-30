@@ -31,15 +31,15 @@ export const TOKEN_LOGOS = {
 }
 
 export const tokenMap: Record<string, string> = {
-    'PROTOCOL_TOKEN': 'HAI',
-    'COIN': 'KITE',
-    'PROTOCOL_TOKEN_LP': 'KITE/ETH LP',
+    PROTOCOL_TOKEN: 'HAI',
+    COIN: 'KITE',
+    PROTOCOL_TOKEN_LP: 'KITE/ETH LP',
 }
 
 export type Token = {
-    symbol: string,
-    name: string,
-    icon: string,
+    symbol: string
+    name: string
+    icon: string
 }
 export const tokenAssets: Record<string, Token> = {
     HAI: {

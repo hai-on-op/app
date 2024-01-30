@@ -18,10 +18,10 @@ import { Caret } from '~/components/Icons/Caret'
 export type ApproveMethod = 'systemCoin' | 'protocolToken'
 
 type ApprovalsProps = {
-    previousStep: () => void,
-    nextStep: () => void,
-    auction: IAuction,
-    method: ApproveMethod,
+    previousStep: () => void
+    nextStep: () => void
+    auction: IAuction
+    method: ApproveMethod
 }
 
 export function Approvals({ previousStep, nextStep, auction, method }: ApprovalsProps) {
@@ -31,12 +31,12 @@ export function Approvals({ previousStep, nextStep, auction, method }: Approvals
     const {
         auctionModel: { amount },
         connectWalletModel: { proxyAddress },
-    } = useStoreState(state => state)
+    } = useStoreState((state) => state)
 
     const addTransaction = useTransactionAdder()
     const tokenContract = useTokenContract(geb?.contracts[method]?.address)
 
-    const token = method === 'systemCoin' ? 'HAI': 'KITE'
+    const token = method === 'systemCoin' ? 'HAI' : 'KITE'
     const [status, setStatus] = useState({
         title: `${token} Allowance`,
         text: `Allow your account to manage your ${token}`,
@@ -75,9 +75,7 @@ export function Approvals({ previousStep, nextStep, auction, method }: Approvals
                 state: ActionState.LOADING,
             })
 
-            const approveAmount = auction.englishAuctionType === 'DEBT'
-                ? auction.biddersList[0].buyAmount
-                : amount
+            const approveAmount = auction.englishAuctionType === 'DEBT' ? auction.biddersList[0].buyAmount : amount
 
             const amountBN = parseEther(approveAmount)
             const txResponse = await tokenContract.approve(proxyAddress, amountBN)
@@ -104,9 +102,7 @@ export function Approvals({ previousStep, nextStep, auction, method }: Approvals
                 return
             }
             setStatus({
-                title: e.message.includes('proxy')
-                    ? 'No Proxy Contract'
-                    : 'Transaction Failed.',
+                title: e.message.includes('proxy') ? 'No Proxy Contract' : 'Transaction Failed.',
                 text: '',
                 state: ActionState.ERROR,
             })
@@ -116,60 +112,45 @@ export function Approvals({ previousStep, nextStep, auction, method }: Approvals
     }
 
     const statusIcon = useMemo(() => {
-        switch(status.state) {
+        switch (status.state) {
             case ActionState.SUCCESS:
-                return (
-                    <CheckCircle
-                        width="40px"
-                        className={status.state}
-                    />
-                )
+                return <CheckCircle width="40px" className={status.state} />
             case ActionState.ERROR:
-                return (
-                    <AlertTriangle
-                        width="40px"
-                        className={status.state}
-                    />
-                )
+                return <AlertTriangle width="40px" className={status.state} />
             case ActionState.LOADING:
-                return <Loader size={40}/>
+                return <Loader size={40} />
             default:
                 return <ArrowUpCircle width={'40px'} className={'stateless'} />
         }
     }, [status.state])
 
-    return (<>
-        <ModalBody>
-            <ImageContainer>
-                {statusIcon}
-            </ImageContainer>
-            <Text $fontWeight={700}>{status.title}</Text>
-            <Text>{status.text}</Text>
-        </ModalBody>
-        <ModalFooter $gap={24}>
-            <HaiButton
-                $width="100%"
-                disabled={status.state === ActionState.LOADING}
-                onClick={previousStep}>
-                <Caret
-                    direction="left"
-                    strokeWidth={3}
-                />
-                <CenteredFlex $width="100%">Go Back</CenteredFlex>
-            </HaiButton>
-            <HaiButton
-                $width="100%"
-                $justify="center"
-                $variant="yellowish"
-                disabled={status.state === ActionState.LOADING}
-                onClick={unlock}>
-                {status.state === ActionState.ERROR ? 'Try again': 'Unlock'}
-            </HaiButton>
-        </ModalFooter>
-    </>)
+    return (
+        <>
+            <ModalBody>
+                <ImageContainer>{statusIcon}</ImageContainer>
+                <Text $fontWeight={700}>{status.title}</Text>
+                <Text>{status.text}</Text>
+            </ModalBody>
+            <ModalFooter $gap={24}>
+                <HaiButton $width="100%" disabled={status.state === ActionState.LOADING} onClick={previousStep}>
+                    <Caret direction="left" strokeWidth={3} />
+                    <CenteredFlex $width="100%">Go Back</CenteredFlex>
+                </HaiButton>
+                <HaiButton
+                    $width="100%"
+                    $justify="center"
+                    $variant="yellowish"
+                    disabled={status.state === ActionState.LOADING}
+                    onClick={unlock}
+                >
+                    {status.state === ActionState.ERROR ? 'Try again' : 'Unlock'}
+                </HaiButton>
+            </ModalFooter>
+        </>
+    )
 }
 
-const ImageContainer = styled(CenteredFlex).attrs(props => ({
+const ImageContainer = styled(CenteredFlex).attrs((props) => ({
     $width: '100%',
     ...props,
 }))`

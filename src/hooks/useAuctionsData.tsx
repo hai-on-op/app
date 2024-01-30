@@ -27,7 +27,7 @@ export function useAuctionsData() {
 
     const auctions = useMemo(() => {
         let temp: IAuction[] = []
-        switch(typeFilter) {
+        switch (typeFilter) {
             case 'COLLATERAL': {
                 temp = [...collateralAuctions]
                 break
@@ -43,11 +43,7 @@ export function useAuctionsData() {
                 // break
             }
             default: {
-                temp = [
-                    ...collateralAuctions,
-                    ...debtAuctions,
-                    ...surplusAuctions,
-                ]
+                temp = [...collateralAuctions, ...debtAuctions, ...surplusAuctions]
                 break
             }
         }
@@ -59,10 +55,7 @@ export function useAuctionsData() {
             })
         }
         return temp
-    }, [
-        collateralAuctions, debtAuctions, surplusAuctions,
-        typeFilter, typeFilter, saleAssetsFilter,
-    ])
+    }, [collateralAuctions, debtAuctions, surplusAuctions, typeFilter, typeFilter, saleAssetsFilter])
 
     const [sorting, setSorting] = useState<Sorting>({
         key: 'Time Left',
@@ -72,55 +65,52 @@ export function useAuctionsData() {
     const auctionsWithExtras = useMemo(() => {
         if (!address) return auctions
 
-        const withBids = auctions
-            .map(auction => ({
-                ...auction,
-                myBids: auction.biddersList.reduce((total, { bidder }) => {
-                    if (stringsExistAndAreEqual(bidder, address)) return total + 1
-                    return total
-                }, 0),
-                status: getAuctionStatus(auction),
-            }))
-        return filterMyBids
-            ? withBids.filter(({ myBids }) => !!myBids)
-            : withBids
+        const withBids = auctions.map((auction) => ({
+            ...auction,
+            myBids: auction.biddersList.reduce((total, { bidder }) => {
+                if (stringsExistAndAreEqual(bidder, address)) return total + 1
+                return total
+            }, 0),
+            status: getAuctionStatus(auction),
+        }))
+        return filterMyBids ? withBids.filter(({ myBids }) => !!myBids) : withBids
     }, [auctions, address, filterMyBids])
 
     const sortedRows = useMemo(() => {
-        switch(sorting.key) {
+        switch (sorting.key) {
             case 'Auction':
                 return arrayToSorted(auctionsWithExtras, {
-                    getProperty: auction => auction.auctionId,
+                    getProperty: (auction) => auction.auctionId,
                     dir: sorting.dir,
                     type: 'parseInt',
                 })
             case 'Auction Type':
                 return arrayToSorted(auctionsWithExtras, {
-                    getProperty: auction => auction.englishAuctionType,
+                    getProperty: (auction) => auction.englishAuctionType,
                     dir: sorting.dir,
                     type: 'alphabetical',
                 })
             case 'For Sale':
                 return arrayToSorted(auctionsWithExtras, {
-                    getProperty: auction => auction.sellToken,
+                    getProperty: (auction) => auction.sellToken,
                     dir: sorting.dir,
                     type: 'alphabetical',
                 })
             case 'Buy With':
                 return arrayToSorted(auctionsWithExtras, {
-                    getProperty: auction => auction.buyToken,
+                    getProperty: (auction) => auction.buyToken,
                     dir: sorting.dir,
                     type: 'alphabetical',
                 })
             case 'My Bids':
                 return arrayToSorted(auctionsWithExtras, {
-                    getProperty: auction => auction.myBids || 0,
+                    getProperty: (auction) => auction.myBids || 0,
                     dir: sorting.dir,
                     type: 'numerical',
                 })
             case 'Status':
                 return arrayToSorted(auctionsWithExtras, {
-                    getProperty: auction => auction.status,
+                    getProperty: (auction) => auction.status,
                     dir: sorting.dir,
                     type: 'alphabetical',
                     checkValueExists: true,
@@ -128,7 +118,7 @@ export function useAuctionsData() {
             case 'Time Left':
             default:
                 return arrayToSorted(auctionsWithExtras, {
-                    getProperty: auction => auction.auctionDeadline,
+                    getProperty: (auction) => auction.auctionDeadline,
                     dir: sorting.dir,
                     type: 'parseInt',
                 })

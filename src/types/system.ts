@@ -15,12 +15,12 @@ export type SystemSate = {
 export type TokenKey = keyof typeof TOKEN_LOGOS
 
 export type Strategy = {
-    pair: [TokenKey] | [TokenKey, TokenKey],
-    rewards: [TokenKey] | [TokenKey, TokenKey],
-    tvl: string,
-    vol24hr?: string,
-    apy: number,
-    userPosition?: string,
-    userApy?: number,
-    earnPlatform?: 'uniswap' | 'velodrome',
+    pair: [TokenKey] | [TokenKey, TokenKey]
+    rewards: [TokenKey] | [TokenKey, TokenKey]
+    tvl: string
+    vol24hr?: string
+    apy: number
+    userPosition?: string
+    userApy?: number
+    earnPlatform?: 'uniswap' | 'velodrome'
 }

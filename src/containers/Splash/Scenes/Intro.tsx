@@ -112,30 +112,18 @@ export function Intro({ zIndex }: ZoomSceneProps) {
     const isLargerThanSmall = useMediaQuery('upToSmall')
 
     return (
-        <ZoomScene
-            $zIndex={zIndex}
-            style={{ width: '100%', height: '100%' }}>
+        <ZoomScene $zIndex={zIndex} style={{ width: '100%', height: '100%' }}>
             <Container>
                 <BrandedTitle
                     textContent="GET $HAI ON YOUR OWN SUPPLY."
-                    $fontSize={isLargerThanSmall
-                        ? '6rem'
-                        : isLargerThanExtraSmall
-                            ? '3.6rem'
-                            : '3rem'
-                    }
-                    $letterSpacing={isLargerThanSmall
-                        ? '1.2rem'
-                        : isLargerThanExtraSmall
-                            ? '0.8rem'
-                            : '0.5rem'
-                    }
+                    $fontSize={isLargerThanSmall ? '6rem' : isLargerThanExtraSmall ? '3.6rem' : '3rem'}
+                    $letterSpacing={isLargerThanSmall ? '1.2rem' : isLargerThanExtraSmall ? '0.8rem' : '0.5rem'}
                 />
                 <Text $lineHeight="1.6">
                     The <strong>multi-collateral stablecoin</strong> for smooth financial highs
                 </Text>
                 <HaiButton $variant="yellowish">
-                    <Swirl/>
+                    <Swirl />
                     SCROLL TO EXPLORE
                 </HaiButton>
                 {/*
@@ -144,18 +132,14 @@ export function Intro({ zIndex }: ZoomSceneProps) {
                 the lower scenes will remove the transform-style: preserve-3d,
                 flattening the scene (removing the parallax effect on scroll)
                 */}
-                <FloatingElements
-                    elves={elves}
-                    clouds={clouds}
-                    coins={coins}
-                />
+                <FloatingElements elves={elves} clouds={clouds} coins={coins} />
             </Container>
-            <PairsBanner/>
+            <PairsBanner />
         </ZoomScene>
     )
 }
 
-const Container = styled(Flex).attrs(props => ({
+const Container = styled(Flex).attrs((props) => ({
     $column: true,
     $justify: 'center',
     $align: 'flex-start',
@@ -167,7 +151,7 @@ const Container = styled(Flex).attrs(props => ({
     /* again, this only works in this scene becuase
     the opacity of this container will not change */
     transform-style: preserve-3d;
-    
+
     ${({ theme }) => theme.mediaWidth.upToSmall`
         gap: 24px;
     `}

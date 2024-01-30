@@ -20,18 +20,11 @@ export function ToastPayload({ icon, iconColor, text, textColor, iconSize, paylo
     const { t } = useTranslation()
     return (
         <Container>
-            <FeatherIconWrapper
-                name={icon}
-                color={iconColor}
-                size={iconSize || 20}
-            />
+            <FeatherIconWrapper name={icon} color={iconColor} size={iconSize || 20} />
             <div>
                 <Text color={textColor}>{text}</Text>
                 {!!payload && (
-                    <AddressLink
-                        chainId={payload.chainId}
-                        address={payload.value}
-                        type={payload.type}>
+                    <AddressLink chainId={payload.chainId} address={payload.value} type={payload.type}>
                         {t('view_etherscan')}
                     </AddressLink>
                 )}
@@ -50,5 +43,5 @@ const Container = styled.div`
 
 const Text = styled.div<{ color?: string }>`
     font-size: ${({ theme }) => theme.font.small};
-    color: ${({ theme, color }) => (color || theme.colors.neutral)};
+    color: ${({ theme, color }) => color || theme.colors.neutral};
 `
