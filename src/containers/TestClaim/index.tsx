@@ -52,7 +52,7 @@ export function TestClaim() {
     }
 
     return (
-        <CenteredFlex style={{ zIndex: 1 }}>
+        <CenteredFlex $width="max(300px, 65%)" style={{ zIndex: 1 }}>
             <ProxyPrompt continueText="claim test collateral">
                 <HaiButton
                     $variant="yellowish"
