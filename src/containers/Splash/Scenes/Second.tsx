@@ -94,7 +94,7 @@ export function Second({ zIndex }: ZoomSceneProps) {
                         </Text>
                         <span>{`no bank buzzkills here. `}</span>
                         <Text as="span" $fontWeight={700}>
-                            {`Collateral choices are voted in by $KITE holders`}
+                            {`Collateral choices are voted in by $KITE holders.`}
                         </Text>
                     </Subtitle>
                 </Flex>
