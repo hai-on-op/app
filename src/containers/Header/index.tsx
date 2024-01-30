@@ -253,34 +253,23 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                         Wrap ETH
                                     </DropdownOption>
                                 </BrandedDropdown>
-                            ))
-                        }
+                            ))}
                         <MusicButton onClick={() => setIsPlayingMusic(!isPlayingMusic)}>
-                            <Sound
-                                muted={!isPlayingMusic}
-                                size={21}
-                            />
+                            <Sound muted={!isPlayingMusic} size={21} />
                         </MusicButton>
-                        {isSplash
-                            ? (
-                                <InternalLink
-                                    href="/vaults"
-                                    $textDecoration="none">
-                                    <HaiButton $variant="yellowish">
-                                        Enter App
-                                    </HaiButton>
-                                </InternalLink>
-                            )
-                            : (
-                                <>
-                                    {isLargerThanSmall && <ConnectButton showBalance/>}
-                                    {/* <Notifications
+                        {isSplash ? (
+                            <InternalLink href="/vaults" $textDecoration="none">
+                                <HaiButton $variant="yellowish">Enter App</HaiButton>
+                            </InternalLink>
+                        ) : (
+                            <>
+                                {isLargerThanSmall && <ConnectButton showBalance />}
+                                {/* <Notifications
                                         active={notificationsActive}
                                         setActive={setNotificationsActive}
                                     /> */}
-                                </>
-                            )
-                        }
+                            </>
+                        )}
                         {!isLargerThanSmall && (
                             <MobileMenu
                                 active={dropdownActive}

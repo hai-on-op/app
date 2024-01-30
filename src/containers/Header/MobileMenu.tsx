@@ -26,7 +26,7 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
             <Hamburger size={20} />
             {active && (
                 <Dropdown $float="left" $margin="24px">
-                    <ConnectButton $width="100%"/>
+                    <ConnectButton $width="100%" />
                     <InternalLink href="/vaults" $textDecoration="none" content={<HeaderLink>Get HAI</HeaderLink>} />
                     <InternalLink href="/earn" $textDecoration="none" content={<HeaderLink>Earn</HeaderLink>} />
                     <InternalLink href="/learn" $textDecoration="none" content={<HeaderLink>Learn</HeaderLink>} />
