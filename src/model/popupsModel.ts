@@ -7,7 +7,7 @@ import type {
     IWaitingPayload,
     // LoadingPayload,
 } from '~/types'
-import { ActionState } from '~/utils'
+import { ActionState } from '~/utils/constants'
 
 export interface PopupsModel {
     // alertPayload: IAlert

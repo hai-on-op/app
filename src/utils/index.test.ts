@@ -45,7 +45,7 @@ describe('utils', () => {
             expect(getLiquidationPrice('', '2', '1', '2')).toEqual('0')
         })
         it('succeeds in returning desired value', () => {
-            expect(getLiquidationPrice('2', '2', '1', '2')).toEqual(2)
+            expect(getLiquidationPrice('2', '2', '1', '2')).toEqual('2')
         })
     })
 
@@ -57,7 +57,7 @@ describe('utils', () => {
             expect(getCollateralRatio('', '2', '1', '1')).toEqual('0')
         })
         it('succeeds in returning desired value', () => {
-            expect(getCollateralRatio('2', '2', '1', '1')).toEqual(100)
+            expect(getCollateralRatio('2', '2', '1', '1')).toEqual('100')
         })
     })
 

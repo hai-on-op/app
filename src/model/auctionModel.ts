@@ -13,7 +13,6 @@ import {
     COLLATERAL_BATCH_SIZE,
     DEBT_BATCH_SIZE,
     SURPLUS_BATCH_SIZE,
-    ActionState,
     type IAuctionBuy,
     type IClaimInternalBalance,
     formatSurplusAndDebtAuctions,
@@ -26,6 +25,7 @@ import {
     handleAuctionClaim,
     handleClaimInternalBalance,
 } from '~/utils'
+import { ActionState } from '~/utils/constants'
 import type { IAuctionBid, IAuction, AuctionEventType, LoadingAuctionsData } from '~/types'
 import { type StoreModel } from './index'
 

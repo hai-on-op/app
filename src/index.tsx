@@ -7,7 +7,7 @@ import { WagmiConfig } from 'wagmi'
 import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
 import '@rainbow-me/rainbowkit/styles.css'
 
-import { chains, wagmiConfig } from './utils'
+import { chains, wagmiConfig } from './utils/wallet'
 import { store } from '~/store'
 import { HaiThemeProvider } from '~/providers/HaiThemeProvider'
 

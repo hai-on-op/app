@@ -4,7 +4,8 @@ import { type StoreModel } from './index'
 import { handleDepositAndBorrow, handleRepayAndWithdraw } from '~/services/blockchain'
 import { fetchUserVaults } from '~/services/vaults'
 import type { IFetchVaultsPayload, ILiquidationData, IVault, IVaultData, IVaultPayload } from '~/types'
-import { ActionState, WrapEtherProps, handleUnwrapEther, handleWrapEther, timeout } from '~/utils'
+import { WrapEtherProps, handleUnwrapEther, handleWrapEther, timeout } from '~/utils'
+import { ActionState } from '~/utils/constants'
 
 export interface VaultModel {
     list: Array<IVault>
