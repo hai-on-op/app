@@ -46,18 +46,19 @@ export function TestClaim() {
             txResponse.wait().then(() => {
                 connectWalletActions.setForceUpdateTokens(true)
             })
-        } catch(err: any) {
+        } catch (err: any) {
             handleTransactionError(err)
         }
     }
 
     return (
         <CenteredFlex style={{ zIndex: 1 }}>
-            <ProxyPrompt continueText='claim test collateral'>
+            <ProxyPrompt continueText="claim test collateral">
                 <HaiButton
                     $variant="yellowish"
                     disabled={!signer || popupsState.waitingPayload.status === ActionState.LOADING}
-                    onClick={handleClaimAirdrop}>
+                    onClick={handleClaimAirdrop}
+                >
                     {!signer ? 'Connect Valid Wallet' : 'Claim Test Collateral'}
                 </HaiButton>
             </ProxyPrompt>
