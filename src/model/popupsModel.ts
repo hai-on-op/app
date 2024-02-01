@@ -16,6 +16,8 @@ export interface PopupsModel {
     // isLoadingModalOpen: LoadingPayload
     // setIsLoadingModalOpen: Action<PopupsModel, LoadingPayload>
 
+    isInitializing: boolean
+    setIsInitializing: Action<PopupsModel, boolean>
     isWaitingModalOpen: boolean
     setIsWaitingModalOpen: Action<PopupsModel, boolean>
     waitingPayload: IWaitingPayload
@@ -84,6 +86,10 @@ export const popupsModel: PopupsModel = {
     //     state.isLoadingModalOpen = isOpen
     // }),
 
+    isInitializing: true,
+    setIsInitializing: action((state, payload) => {
+        state.isInitializing = payload
+    }),
     isWaitingModalOpen: false,
     setIsWaitingModalOpen: action((state, isOpen) => {
         state.isWaitingModalOpen = isOpen

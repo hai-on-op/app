@@ -2,7 +2,7 @@ import { useEffect, useMemo } from 'react'
 import { toast } from 'react-toastify'
 import { useNetwork } from 'wagmi'
 
-import { store, useStoreState } from '~/store'
+import { useStoreActions, useStoreState } from '~/store'
 import { useEthersProvider } from '~/hooks'
 
 import { ToastPayload } from '~/components/ToastPayload'
@@ -36,6 +36,7 @@ export function TransactionUpdater(): null {
     const chainId = chain?.id
     const provider = useEthersProvider()
     const { transactionsModel: state, connectWalletModel: connectedWalletState } = useStoreState((state) => state)
+    const { transactionsModel: transactionsActions } = useStoreActions((actions) => actions)
 
     const lastBlockNumber = chainId ? connectedWalletState.blockNumber[chainId] : null
 
@@ -51,7 +52,7 @@ export function TransactionUpdater(): null {
                     .getTransactionReceipt(hash)
                     .then((receipt) => {
                         if (receipt) {
-                            store.dispatch.transactionsModel.finalizeTransaction({
+                            transactionsActions.finalizeTransaction({
                                 ...transactions[hash],
                                 receipt: {
                                     blockHash: receipt.blockHash,
@@ -83,7 +84,7 @@ export function TransactionUpdater(): null {
                                 { toastId }
                             )
                         } else {
-                            store.dispatch.transactionsModel.checkTransaction({
+                            transactionsActions.checkTransaction({
                                 tx: transactions[hash],
                                 blockNumber: lastBlockNumber,
                             })

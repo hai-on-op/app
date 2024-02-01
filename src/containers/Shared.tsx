@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useMemo, useState } from 'react'
+import { useEffect, useCallback, useMemo } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
@@ -32,7 +32,7 @@ import { BlockedAddress } from '~/components/BlockedAddress'
 import { ToastPayload } from '~/components/ToastPayload'
 import { ParallaxBackground } from '~/components/ParallaxBackground'
 import { Header } from './Header'
-import { InitializationModal } from '~/components/Modal/InitializationModal'
+import { WaitingModal } from '~/components/Modal/WaitingModal'
 import { ClaimModal } from '~/components/Modal/ClaimModal'
 import { IntentionHeader } from '~/components/IntentionHeader'
 import { HaiAlert } from '~/components/HaiAlert'
@@ -147,16 +147,17 @@ export function Shared({ children }: Props) {
         connectWalletActions.fetchFiatPrice()
     }, [connectWalletActions])
 
-    const [initializing, setInitializing] = useState(false)
-
     const accountChecker = useCallback(async () => {
-        if (!account || !chain?.id || !signer || !geb) return setInitializing(false)
+        if (!account || !chain?.id || !signer || !geb) {
+            popupsActions.setIsInitializing(false)
+            return
+        }
 
         popupsActions.setWaitingPayload({
             title: '',
             status: ActionState.LOADING,
         })
-        setInitializing(true)
+        popupsActions.setIsInitializing(true)
         try {
             connectWalletActions.setProxyAddress('')
             const userProxy = await geb.getProxyAction(account)
@@ -189,7 +190,7 @@ export function Shared({ children }: Props) {
         } catch (error: any) {
             console.error(error)
             connectWalletActions.setStep(1)
-            setInitializing(false)
+            popupsActions.setIsInitializing(false)
         } finally {
             popupsActions.setWaitingPayload({
                 title: '',
@@ -198,7 +199,7 @@ export function Shared({ children }: Props) {
         }
 
         await timeout(500)
-        setInitializing(false)
+        popupsActions.setIsInitializing(false)
     }, [account, chain?.id, signer, geb, connectWalletActions, popupsActions, vaultActions, transactionsActions])
 
     const accountChange = useCallback(() => {
@@ -278,7 +279,7 @@ export function Shared({ children }: Props) {
             {!isSplash && <ParallaxBackground />}
             <Header tickerActive={!isSplash} />
             <ClaimModal />
-            {!isSplash && initializing && <InitializationModal />}
+            {!isSplash && <WaitingModal />}
 
             {/* {SYSTEM_STATUS && SYSTEM_STATUS.toLowerCase() === 'shutdown' && (
                 <AlertContainer>
