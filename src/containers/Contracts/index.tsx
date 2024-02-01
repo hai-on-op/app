@@ -9,6 +9,7 @@ import { BlurContainer, Flex, Grid, Text } from '~/styles'
 import { BrandedTitle } from '~/components/BrandedTitle'
 import { AddressLink } from '~/components/AddressLink'
 import { Table, TableContainer } from '~/components/Table'
+import { Copyable } from '~/components/Copyable'
 
 const sortableHeaders: SortableHeader[] = [{ label: 'Contract' }, { label: 'Address' }, { label: 'Description' }].map(
     (obj) => ({ ...obj, unsortable: true })
@@ -45,7 +46,9 @@ export function Contracts() {
                 rows={contracts.map(({ name, address, description }) => (
                     <TableRow key={name}>
                         <Text $fontWeight={isLargerThanSmall ? 400 : 700}>{name}</Text>
-                        <AddressLink address={address} />
+                        <Copyable text={address} limitClickToIcon>
+                            <AddressLink address={address} />
+                        </Copyable>
                         <Text>{description}</Text>
                     </TableRow>
                 ))}
@@ -89,7 +92,7 @@ const StyledTableContainer = styled(TableContainer)`
     `}
 `
 const TableHeaderBase = styled(Grid)`
-    grid-template-columns: 240px 120px 1fr;
+    grid-template-columns: 240px 128px 1fr;
     align-items: center;
     grid-gap: 12px;
     padding: 8px 16px;
