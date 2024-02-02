@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import { formatNumberWithStyle } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 
-import { HaiButton } from '~/styles'
+import { Flex, HaiButton, Text } from '~/styles'
 import { RewardsTokenPair } from '~/components/TokenPair'
 import { Stats, type StatProps } from '~/components/Stats'
 
@@ -20,9 +20,10 @@ export function BorrowStats() {
             return total + parseFloat(collateral) * parseFloat(collateralPriceInUSD)
         }, 0)
 
-        const totalDebtInUSD = list.reduce((total, { debt }) => {
-            return total + parseFloat(debt) * parseFloat(liquidationData?.currentRedemptionPrice || '1')
+        const totalHai = list.reduce((total, { debt }) => {
+            return total + parseFloat(debt)
         }, 0)
+        const totalDebtInUSD = totalHai * parseFloat(liquidationData?.currentRedemptionPrice || '1')
 
         // TODO: dynamically calculate apy, hook up rewards
         return [
@@ -31,18 +32,35 @@ export function BorrowStats() {
                     ? formatNumberWithStyle(totalCollateralInUSD.toString(), {
                           style: 'currency',
                           maxDecimals: 0,
+                          suffixed: true,
                       })
                     : '--',
                 label: 'My Locked Collateral',
                 tooltip: 'Hello world',
             },
             {
-                header: totalDebtInUSD
-                    ? formatNumberWithStyle(totalDebtInUSD.toString(), {
-                          style: 'currency',
-                          maxDecimals: 0,
-                      })
-                    : '--',
+                header: (
+                    <Flex $justify="flex-start" $align="center" $gap={8}>
+                        <Text>
+                            {totalDebtInUSD
+                                ? formatNumberWithStyle(totalDebtInUSD.toString(), {
+                                      style: 'currency',
+                                      maxDecimals: 0,
+                                      suffixed: true,
+                                  })
+                                : '--'}
+                        </Text>
+                        <Text $fontSize="0.5em" $fontWeight={400} $color="rgba(0,0,0,0.6)">
+                            {totalHai
+                                ? formatNumberWithStyle(totalHai.toString(), {
+                                      maxDecimals: 2,
+                                      suffixed: true,
+                                  })
+                                : '--'}{' '}
+                            HAI
+                        </Text>
+                    </Flex>
+                ),
                 label: 'My Total Debt',
                 tooltip: 'Hello World',
             },
