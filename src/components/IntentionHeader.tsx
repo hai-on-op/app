@@ -34,7 +34,7 @@ const copy: Record<
     [Intention.AUCTION]: {
         subtitle: 'Buy your favorite crypto assets from liquidated loan auctions at a discount. ',
         cta: 'Read more about auctions →',
-        ctaLink: LINK_TO_DOCS,
+        ctaLink: `${LINK_TO_DOCS}detailed/auctions/index.html`,
     },
     [Intention.BORROW]: {
         subtitle: 'Mint & borrow HAI against your preferred collateral. ',
