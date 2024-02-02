@@ -54,7 +54,7 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                                 content: (
                                     <Grid $columns="2fr min-content 1fr" $align="center" $gap={12}>
                                         <CenteredFlex $width="fit-content" $gap={4}>
-                                            <TokenPair tokens={[collateralName as any, 'HAI']} />
+                                            <TokenPair tokens={[collateralName as any]} />
                                             <Text>#{id}</Text>
                                         </CenteredFlex>
                                         <RewardsTokenPair tokens={['OP']} />
@@ -118,7 +118,7 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
 }
 
 const TableHeader = styled(Grid)`
-    grid-template-columns: 3fr minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) 120px;
+    grid-template-columns: 2.25fr minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) 120px;
     align-items: center;
     padding: 4px;
     padding-left: 8px;

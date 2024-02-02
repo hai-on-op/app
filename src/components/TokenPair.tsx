@@ -25,9 +25,7 @@ export function TokenPair({ tokens, size = 64, hideLabel = false }: TokenPairPro
                 ))}
             </IconContainer>
             {!hideLabel && (
-                <Text $fontWeight={700}>
-                    {tokens[0]}/{tokens[1]}
-                </Text>
+                <Text $fontWeight={700}>{tokens.length === 1 ? tokens[0] : `${tokens[0]}/${tokens[1]}`}</Text>
             )}
         </Flex>
     )
