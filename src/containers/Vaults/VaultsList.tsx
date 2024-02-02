@@ -73,6 +73,8 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
         setSorting: setMyVaultsSorting,
         assetsFilter,
         setAssetsFilter,
+        showClosedVaults,
+        setShowClosedVaults,
     } = useMyVaults()
 
     return (
@@ -120,6 +122,9 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
                                 </DropdownOption>
                             ))}
                         </BrandedDropdown>
+                        <CheckboxButton checked={showClosedVaults} toggle={() => setShowClosedVaults((e) => !e)}>
+                            Show Closed Vaults
+                        </CheckboxButton>
                         {!isLargerThanSmall && (
                             <SortByDropdown
                                 headers={myVaultsHeaders}

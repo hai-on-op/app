@@ -21,14 +21,19 @@ export function useMyVaults() {
         vaultModel: { list },
     } = useStoreState((state) => state)
 
+    const [showClosedVaults, setShowClosedVaults] = useState(false)
+
     const [assetsFilter, setAssetsFilter] = useState<string>()
 
     const myVaults = useMemo(() => {
-        const temp = list
-        if (!assetsFilter) return temp
-
-        return temp.filter(({ collateralName }) => collateralName.toUpperCase() === assetsFilter)
-    }, [list, assetsFilter])
+        let temp = [...list]
+        if (!showClosedVaults)
+            temp = temp.filter(
+                ({ collateral, debt }) => parseFloat(collateral || '0') > 0 && parseFloat(debt || '0') > 0
+            )
+        if (assetsFilter) temp = temp.filter(({ collateralName }) => collateralName.toUpperCase() === assetsFilter)
+        return temp
+    }, [list, assetsFilter, showClosedVaults])
 
     const [sorting, setSorting] = useState<Sorting>({
         key: 'Risk Ratio',
@@ -79,5 +84,7 @@ export function useMyVaults() {
         setSorting,
         assetsFilter,
         setAssetsFilter,
+        showClosedVaults,
+        setShowClosedVaults,
     }
 }
