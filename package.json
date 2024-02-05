@@ -30,6 +30,7 @@
         "@nivo/line": "0.84.0",
         "@nivo/pie": "0.84.0",
         "@rainbow-me/rainbowkit": "1.0.9",
+        "@vercel/analytics": "^1.1.2",
         "axios": "0.27.2",
         "dayjs": "1.9.4",
         "easy-peasy": "3.3.1",
