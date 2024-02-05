@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom'
 import { BrowserRouter } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
 import { StoreProvider } from 'easy-peasy'
+import { Analytics } from '@vercel/analytics/react'
 import { WagmiConfig } from 'wagmi'
 import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
 import '@rainbow-me/rainbowkit/styles.css'
@@ -17,6 +18,7 @@ import { CustomAvatar } from '~/components/CustomAvatar'
 
 ReactDOM.render(
     <React.StrictMode>
+        <Analytics/>
         <HaiThemeProvider>
             <WagmiConfig config={wagmiConfig}>
                 <RainbowKitProvider avatar={CustomAvatar} theme={haiTheme} chains={chains}>
