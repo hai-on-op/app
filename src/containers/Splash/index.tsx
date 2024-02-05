@@ -34,7 +34,7 @@ export function Splash() {
 
             zoomContainer.style.pointerEvents = 'none'
         }
-        zoomContainer.addEventListener('wheel', onTopLevelScroll, false)
+        zoomContainer.addEventListener('wheel', onTopLevelScroll, { passive: false })
 
         // mobile hack
         const touch = { x: 0, y: 0 }
@@ -49,8 +49,8 @@ export function Splash() {
             touch.x = e.touches[0].clientX
             touch.y = e.touches[0].clientY
         }
-        zoomContainer.addEventListener('touchstart', onTouchStart)
-        zoomContainer.addEventListener('touchmove', onTouchMove)
+        zoomContainer.addEventListener('touchstart', onTouchStart, { passive: true })
+        zoomContainer.addEventListener('touchmove', onTouchMove, { passive: true })
 
         // update 3d scenes
         const scenes = Array.from(zoomContainer.querySelectorAll(ZoomScene)) as HTMLElement[]
@@ -82,7 +82,7 @@ export function Splash() {
             zoomContainer.style.pointerEvents = 'all'
         }
         onScroll()
-        container.addEventListener('scroll', onScroll)
+        container.addEventListener('scroll', onScroll, { passive: true })
 
         return () => {
             zoomContainer.removeEventListener('wheel', onTopLevelScroll)
