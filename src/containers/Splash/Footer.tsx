@@ -49,13 +49,13 @@ export function Footer() {
                             </ExternalLink>
                         </Flex>
                         <IconContainer>
-                            <ExternalLink href={LINK_TO_TWITTER} $textDecoration="none">
+                            <ExternalLink href={LINK_TO_TWITTER} $textDecoration="none" aria-label="Twitter">
                                 <Twitter size={28} />
                             </ExternalLink>
-                            <ExternalLink href={LINK_TO_TELEGRAM} $textDecoration="none">
+                            <ExternalLink href={LINK_TO_TELEGRAM} $textDecoration="none" aria-label="Telegram">
                                 <Telegram size={32} />
                             </ExternalLink>
-                            <ExternalLink href={LINK_TO_DISCORD} $textDecoration="none">
+                            <ExternalLink href={LINK_TO_DISCORD} $textDecoration="none" aria-label="Discord">
                                 <Discord size={32} />
                             </ExternalLink>
                         </IconContainer>

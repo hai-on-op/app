@@ -269,7 +269,7 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                     </DropdownOption>
                                 </BrandedDropdown>
                             ))}
-                        <MusicButton onClick={() => setIsPlayingMusic(!isPlayingMusic)}>
+                        <MusicButton aria-label="Toggle Sound" onClick={() => setIsPlayingMusic(!isPlayingMusic)}>
                             <Sound muted={!isPlayingMusic} size={21} />
                         </MusicButton>
                         {isSplash ? (

@@ -273,7 +273,7 @@ export function Shared({ children }: Props) {
         <Container>
             <TransactionUpdater />
 
-            <Background>
+            <Background aria-hidden="true">
                 <video src="/assets/tie-dye-reduced.mov" width={1920} height={1072} muted autoPlay playsInline loop />
             </Background>
             {!isSplash && <ParallaxBackground />}
