@@ -18,7 +18,7 @@ import { CustomAvatar } from '~/components/CustomAvatar'
 
 ReactDOM.render(
     <React.StrictMode>
-        <Analytics/>
+        <Analytics />
         <HaiThemeProvider>
             <WagmiConfig config={wagmiConfig}>
                 <RainbowKitProvider avatar={CustomAvatar} theme={haiTheme} chains={chains}>
