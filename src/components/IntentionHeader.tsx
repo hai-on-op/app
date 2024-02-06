@@ -129,6 +129,7 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
                         onChange={(value: string) => !!value && history.push(`/${value}`)}
                         options={typeOptions}
                         $fontSize={isLargerThanExtraSmall ? '3.2em' : '2.5em'}
+                        aria-label="Action"
                     />
                 </Flex>
                 <Text>

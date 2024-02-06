@@ -1,18 +1,15 @@
-import type { ReactChildren } from '~/types'
-
 import styled from 'styled-components'
 import { HaiButton, Text } from '~/styles'
-import { CheckBox } from './CheckBox'
+import { CheckBox, type CheckboxProps } from './CheckBox'
 
-type CheckboxButtonProps = {
-    checked: boolean
+type CheckboxButtonProps = CheckboxProps & {
     toggle: () => void
-    children: ReactChildren
+    children: string
 }
-export function CheckboxButton({ checked, toggle, children }: CheckboxButtonProps) {
+export function CheckboxButton({ checked, toggle, children, ...props }: CheckboxButtonProps) {
     return (
         <Button onClick={toggle}>
-            <CheckBox checked={checked} />
+            <CheckBox aria-label={children} {...props} checked={checked} />
             <Text>{children}</Text>
         </Button>
     )
