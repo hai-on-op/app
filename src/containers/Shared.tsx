@@ -274,7 +274,17 @@ export function Shared({ children }: Props) {
             <TransactionUpdater />
 
             <Background aria-hidden="true">
-                <video src="/assets/tie-dye-reduced.mov" width={1920} height={1072} muted autoPlay playsInline loop />
+                {isSplash && (
+                    <video
+                        src="/assets/tie-dye-reduced.mov"
+                        width={1920}
+                        height={1072}
+                        muted
+                        autoPlay
+                        playsInline
+                        loop
+                    />
+                )}
             </Background>
             {!isSplash && <ParallaxBackground />}
             <Header tickerActive={!isSplash} />
@@ -319,6 +329,10 @@ const Background = styled(CenteredFlex)`
     right: 0px;
     bottom: 0px;
     background-color: white;
+    background-image: url('/assets/tie-dye.jpg');
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
     pointer-events: none;
 
     & video {
