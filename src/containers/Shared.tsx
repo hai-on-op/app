@@ -61,8 +61,9 @@ export function Shared({ children }: Props) {
     const location = useLocation()
     const isSplash = location.pathname === '/'
 
-    const coinTokenContract = useTokenContract(getTokenList(networkName).HAI.address)
-    const protTokenContract = useTokenContract(getTokenList(networkName).KITE.address)
+    const tokenList = getTokenList(networkName)
+    const coinTokenContract = useTokenContract(tokenList.HAI?.address)
+    const protTokenContract = useTokenContract(tokenList.KITE?.address)
 
     const {
         settingsModel: settingsState,
