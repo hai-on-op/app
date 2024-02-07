@@ -38,11 +38,12 @@ const MINIMUM_DECIMAL = 0.00001
 type FormatOptions = {
     scalingFactor?: number
     maxDecimals?: number
+    maxSigFigs?: number
     style?: 'currency' | 'percent'
     suffixed?: boolean
 }
 export const formatNumberWithStyle = (value: number | string, options: FormatOptions = {}) => {
-    const { scalingFactor = 1, maxDecimals = 2, style, suffixed = false } = options
+    const { scalingFactor = 1, maxDecimals = 2, maxSigFigs = 2, style, suffixed = false } = options
 
     if (suffixed) return formatNumberWithSuffix(value, options)
 
@@ -63,7 +64,7 @@ export const formatNumberWithStyle = (value: number | string, options: FormatOpt
         maximumFractionDigits: maxDecimals,
         ...(isLessThanOne && {
             minimumSignificantDigits: 1,
-            maximumSignificantDigits: maxDecimals || 1,
+            maximumSignificantDigits: maxSigFigs || maxDecimals || 1,
         }),
     })
 }

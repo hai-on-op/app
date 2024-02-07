@@ -88,3 +88,26 @@ export const tokenAssets: Record<string, Token> = {
         icon: wstethImg,
     },
 }
+
+type TokenDetails = {
+    type: 'ERC20' | 'ERC721'
+    options: {
+        address: string
+        symbol: string
+        decimals: number
+        image?: string
+    }
+}
+export const addTokensToMetamask = (tokens: TokenDetails | TokenDetails[]) => {
+    tokens = Array.isArray(tokens) ? tokens : [tokens]
+    const provider = window.ethereum as any
+    if (!provider?.request) throw new Error(`No injected provider found`)
+    return Promise.all(
+        tokens.map((params) =>
+            provider.request({
+                method: 'wallet_watchAsset',
+                params,
+            })
+        )
+    ).then((successes: boolean[]) => successes.every((isSuccess) => isSuccess))
+}

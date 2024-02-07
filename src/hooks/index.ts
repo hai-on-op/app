@@ -1,4 +1,5 @@
 export * from './TransactionHooks'
+export * from './useAddTokens'
 export * from './useAllVaults'
 export * from './useAuction'
 export * from './useAuctions'
