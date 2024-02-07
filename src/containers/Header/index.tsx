@@ -20,6 +20,7 @@ import { Twitter } from '~/components/Icons/Twitter'
 import { Telegram } from '~/components/Icons/Telegram'
 import { Sound } from '~/components/Icons/Sound'
 import { HaiFace } from '~/components/Icons/HaiFace'
+import { Send } from 'react-feather'
 import { Marquee, MarqueeChunk } from '~/components/Marquee'
 import { InternalLink } from '~/components/InternalLink'
 import { ExternalLink } from '~/components/ExternalLink'
@@ -274,7 +275,10 @@ export function Header({ tickerActive = false }: HeaderProps) {
                         </MusicButton>
                         {isSplash ? (
                             <InternalLink href="/vaults" $textDecoration="none">
-                                <HaiButton $variant="yellowish">Enter App</HaiButton>
+                                <HaiButton $variant="yellowish">
+                                    <Send size={18} strokeWidth={2.5} />
+                                    Enter App
+                                </HaiButton>
                             </InternalLink>
                         ) : (
                             <>

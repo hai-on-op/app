@@ -5,8 +5,10 @@ import { Flex, HaiButton, Text } from '~/styles'
 import { ZoomScene, type ZoomSceneProps } from './ZoomScene'
 import { BrandedTitle } from '~/components/BrandedTitle'
 import { Swirl } from '~/components/Icons/Swirl'
+import { Send } from 'react-feather'
 import { PairsBanner } from '../PairsBanner'
 import { FloatingElements, type FloatingElementsProps } from '~/components/BrandElements/FloatingElements'
+import { InternalLink } from '~/components/InternalLink'
 
 const elves: FloatingElementsProps['elves'] = [
     {
@@ -122,10 +124,29 @@ export function Intro({ zIndex }: ZoomSceneProps) {
                 <Text $lineHeight="1.6">
                     The <strong>multi-collateral stablecoin</strong> for smooth financial highs.
                 </Text>
-                <HaiButton $variant="yellowish">
-                    <Swirl />
-                    SCROLL TO EXPLORE
-                </HaiButton>
+                <ButtonContainer>
+                    <HaiButton
+                        $variant="yellowish"
+                        onClick={() => {
+                            const zoomEl = document.getElementById('zoom-scroll-container')
+                            if (!zoomEl) return
+                            zoomEl.scrollTop = window.innerHeight
+                        }}
+                    >
+                        <Swirl />
+                        Scroll to Explore
+                    </HaiButton>
+                    <InternalLink
+                        href="/vaults"
+                        $textDecoration="none"
+                        content={
+                            <HaiButton $variant="yellowish">
+                                <Send size={18} strokeWidth={2.5} />
+                                Enter App
+                            </HaiButton>
+                        }
+                    />
+                </ButtonContainer>
                 {/*
                 Note: FloatingElements MUST be a direct child of ZoomScene
                 EXCEPT in this top-level scene as the opacity calculations of
@@ -154,5 +175,27 @@ const Container = styled(Flex).attrs((props) => ({
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
         gap: 24px;
+    `}
+`
+
+const ButtonContainer = styled(Flex)`
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 24px;
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: flex-start;
+        gap: 12px;
+
+        & > * {
+            width: 100%;
+        }
+        & button {
+            width: 100%;
+            justify-content: flex-start;
+        }
     `}
 `
