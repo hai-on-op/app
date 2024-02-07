@@ -64,7 +64,7 @@ export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
                         vaultData,
                         signer,
                     })
-                    history.push('/vaults')
+                    history.push('/vaults/manage')
                     break
                 }
                 case VaultAction.DEPOSIT_BORROW: {
