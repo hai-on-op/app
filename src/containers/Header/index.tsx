@@ -10,6 +10,7 @@ import styled, { css } from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Popout, Title } from '~/styles'
 import { Twitter } from '~/components/Icons/Twitter'
 import { Telegram } from '~/components/Icons/Telegram'
+import { Discord } from '~/components/Icons/Discord'
 import { Sound } from '~/components/Icons/Sound'
 import { HaiFace } from '~/components/Icons/HaiFace'
 import { Send } from 'react-feather'
@@ -17,13 +18,12 @@ import { Marquee, MarqueeChunk } from '~/components/Marquee'
 import { InternalLink } from '~/components/InternalLink'
 import { ExternalLink } from '~/components/ExternalLink'
 import { ConnectButton } from '~/components/ConnectButton'
-import { DropdownOption } from '~/components/BrandedDropdown'
+import { BrandedDropdown, DropdownOption } from '~/components/BrandedDropdown'
 import { WrapETHModal } from '~/components/Modal/WrapETHModal'
 // import { Notifications } from './Notifications'
 import { MobileMenu } from './MobileMenu'
 
 import haiLogo from '~/assets/logo.png'
-import { Discord } from '~/components/Icons/Discord'
 
 type HeaderProps = {
     tickerActive?: boolean
@@ -143,18 +143,27 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                         <CommunityDropdown
                                             $anchor="top"
                                             $float="left"
-                                            $width="200px"
+                                            $width="auto"
                                             hidden={!communityDropdownActive}
                                         >
-                                            <ExternalLink href={LINK_TO_TWITTER} $textDecoration="none">
-                                                <DropdownOption>TWITTER</DropdownOption>
-                                            </ExternalLink>
-                                            <ExternalLink href={LINK_TO_TELEGRAM} $textDecoration="none">
-                                                <DropdownOption>TELEGRAM</DropdownOption>
-                                            </ExternalLink>
-                                            <ExternalLink href={LINK_TO_DISCORD} $textDecoration="none">
-                                                <DropdownOption>DISCORD</DropdownOption>
-                                            </ExternalLink>
+                                            <BrandedDropdown.Item
+                                                href={LINK_TO_TWITTER}
+                                                icon={<Twitter size={16} stroke="black" strokeWidth={2} />}
+                                            >
+                                                Twitter
+                                            </BrandedDropdown.Item>
+                                            <BrandedDropdown.Item
+                                                href={LINK_TO_TELEGRAM}
+                                                icon={<Telegram size={17} stroke="black" strokeWidth={2} />}
+                                            >
+                                                Telegram
+                                            </BrandedDropdown.Item>
+                                            <BrandedDropdown.Item
+                                                href={LINK_TO_DISCORD}
+                                                icon={<Discord size={19} stroke="black" strokeWidth={2} />}
+                                            >
+                                                Discord
+                                            </BrandedDropdown.Item>
                                         </CommunityDropdown>
                                     </CommunityDropdownContainer>
                                 </>
@@ -193,27 +202,58 @@ export function Header({ tickerActive = false }: HeaderProps) {
                             ))}
                     </LeftSide>
                     <RightSide>
-                        {isLargerThanSmall &&
-                            (isSplash ? (
-                                <>
-                                    <ExternalLink href={LINK_TO_TWITTER} $textDecoration="none">
-                                        <Twitter size={28} />
-                                    </ExternalLink>
-                                    <ExternalLink href={LINK_TO_TELEGRAM} $textDecoration="none">
-                                        <Telegram size={32} />
-                                    </ExternalLink>
-                                    <ExternalLink href={LINK_TO_DISCORD} $textDecoration="none">
-                                        <Discord size={32} />
-                                    </ExternalLink>
-                                </>
-                            ) : (
-                                <MobileMenu
-                                    active={dropdownActive}
-                                    setActive={setDropdownActive}
-                                    showWrapEth={() => setWrapEthActive(true)}
-                                />
-                            ))}
-                        <MusicButton aria-label="Toggle Sound" onClick={() => setIsPlayingMusic(!isPlayingMusic)}>
+                        {isLargerThanSmall && !isSplash && (
+                            <BrandedDropdown width="200px" label={!isLargerThanMedium ? 'Menu' : 'More'}>
+                                {!isLargerThanMedium && (
+                                    <>
+                                        <InternalLink href="/vaults" $textDecoration="none">
+                                            <DropdownOption $active={location.pathname.startsWith('/vaults')}>
+                                                Get HAI
+                                            </DropdownOption>
+                                        </InternalLink>
+                                        <InternalLink href="/earn" $textDecoration="none">
+                                            <DropdownOption $active={location.pathname === '/earn'}>
+                                                Earn
+                                            </DropdownOption>
+                                        </InternalLink>
+                                    </>
+                                )}
+                                {!isLargerThanLarge && (
+                                    <InternalLink href="/learn" $textDecoration="none">
+                                        <DropdownOption $active={location.pathname === '/learn'}>Learn</DropdownOption>
+                                    </InternalLink>
+                                )}
+                                <InternalLink href="/auctions" $textDecoration="none">
+                                    <DropdownOption $active={location.pathname === '/auctions'}>
+                                        Auctions
+                                    </DropdownOption>
+                                </InternalLink>
+                                <InternalLink href="/analytics" $textDecoration="none">
+                                    <DropdownOption $active={location.pathname === '/analytics'}>
+                                        Analytics
+                                    </DropdownOption>
+                                </InternalLink>
+                                <InternalLink href="/contracts" $textDecoration="none">
+                                    <DropdownOption $active={location.pathname === '/contracts'}>
+                                        Contracts
+                                    </DropdownOption>
+                                </InternalLink>
+                                <InternalLink href="/vaults/explore" $textDecoration="none">
+                                    <DropdownOption $active={location.pathname === '/vaults/explore'}>
+                                        Vault Explorer
+                                    </DropdownOption>
+                                </InternalLink>
+                                <DropdownOption
+                                    onClick={() => {
+                                        setDropdownActive(false)
+                                        setWrapEthActive(true)
+                                    }}
+                                >
+                                    Wrap ETH
+                                </DropdownOption>
+                            </BrandedDropdown>
+                        )}
+                        <MusicButton onClick={() => setIsPlayingMusic(!isPlayingMusic)}>
                             <Sound muted={!isPlayingMusic} size={21} />
                         </MusicButton>
                         {isSplash ? (
@@ -253,7 +293,7 @@ const Container = styled(Flex).attrs((props) => ({
     $align: 'stretch',
     $shrink: 0,
     ...props,
-}))<{ $tickerActive: boolean; $withBg?: boolean }>`
+})) <{ $tickerActive: boolean; $withBg?: boolean }>`
     position: fixed;
     top: 0px;
     left: 0px;
@@ -302,7 +342,7 @@ const Inner = styled(Flex).attrs((props) => ({
     $gap: 24,
     $grow: 1,
     ...props,
-}))<{ $blur?: boolean }>`
+})) <{ $blur?: boolean }>`
     padding: 0 42px;
     backdrop-filter: ${({ $blur = false }) => ($blur ? 'blur(13px)' : 'none')};
     border-bottom: 2px solid ${({ $blur = false }) => ($blur ? 'black' : 'transparent')};
@@ -343,12 +383,17 @@ const CommunityDropdown = styled(Popout)`
     gap: 12px;
     margin-top: 20px;
     z-index: 2;
+    font-size: unset;
+    font-weight: 700;
 
-    font-size: 1.2em;
-    line-height: 30px;
-    letter-spacing: 0.2rem;
-    text-transform: uppercase;
     text-align: left;
+
+    & > * {
+        width: 100%;
+    }
+    & svg {
+        flex-shrink: 0;
+    }
 `
 const HeaderLink = styled(Title).attrs((props) => ({
     $fontSize: '1.6em',
@@ -356,7 +401,7 @@ const HeaderLink = styled(Title).attrs((props) => ({
     $textTransform: 'uppercase',
     $whiteSpace: 'nowrap',
     ...props,
-}))<{ $active?: boolean }>`
+})) <{ $active?: boolean }>`
     text-shadow: none;
     -webkit-text-stroke: 0px;
     font-weight: ${({ $active = false }) => ($active ? 700 : 400)};
