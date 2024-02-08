@@ -272,7 +272,7 @@ export function Shared({ children }: Props) {
                 <video src="/assets/tie-dye-reduced.mov" width={1920} height={1072} muted autoPlay playsInline loop />
             </Background>
             {!isSplash && <ParallaxBackground />}
-            <Header tickerActive={!isSplash} />
+            <Header tickerActive={true} />
             <ClaimModal />
             {!isSplash && initializing && <InitializationModal />}
 

@@ -60,10 +60,7 @@ export function MobileMenu({ active, setActive }: MobileMenuProps) {
                     >
                         Learn
                     </BrandedDropdown.Item>
-                    <BrandedDropdown.Item
-                        href={LINK_TO_DOCS}
-                        icon={<FileText size={18} />}
-                    >
+                    <BrandedDropdown.Item href={LINK_TO_DOCS} icon={<FileText size={18} />}>
                         Docs
                     </BrandedDropdown.Item>
                     <BrandedDropdown.Item
