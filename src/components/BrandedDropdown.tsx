@@ -101,7 +101,7 @@ function DropdownItem({ icon, children, href, type, onClick }: DropdownItemProps
             {icon}
             <Flex $width="100%" $justify="space-between" $align="center" $gap={8}>
                 {children}
-                <ArrowUpRight size={18} />
+                {(type === 'external' || (!!href && !href.startsWith('/'))) && <ArrowUpRight size={18} />}
             </Flex>
         </DropdownOption>
     )
