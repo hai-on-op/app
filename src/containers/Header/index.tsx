@@ -1,15 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 
-import {
-    ChainId,
-    LINK_TO_DISCORD,
-    LINK_TO_DOCS,
-    LINK_TO_TELEGRAM,
-    LINK_TO_TWITTER,
-    NETWORK_ID,
-    formatNumberWithStyle,
-} from '~/utils'
+import { LINK_TO_DISCORD, LINK_TO_DOCS, LINK_TO_TELEGRAM, LINK_TO_TWITTER, formatNumberWithStyle } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { useMediaQuery, useOutsideClick } from '~/hooks'
@@ -25,12 +17,13 @@ import { Marquee, MarqueeChunk } from '~/components/Marquee'
 import { InternalLink } from '~/components/InternalLink'
 import { ExternalLink } from '~/components/ExternalLink'
 import { ConnectButton } from '~/components/ConnectButton'
-import { BrandedDropdown, DropdownOption } from '~/components/BrandedDropdown'
+import { DropdownOption } from '~/components/BrandedDropdown'
 import { WrapETHModal } from '~/components/Modal/WrapETHModal'
 // import { Notifications } from './Notifications'
 import { MobileMenu } from './MobileMenu'
 
 import haiLogo from '~/assets/logo.png'
+import { Discord } from '~/components/Icons/Discord'
 
 type HeaderProps = {
     tickerActive?: boolean
@@ -209,66 +202,16 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                     <ExternalLink href={LINK_TO_TELEGRAM} $textDecoration="none">
                                         <Telegram size={32} />
                                     </ExternalLink>
+                                    <ExternalLink href={LINK_TO_DISCORD} $textDecoration="none">
+                                        <Discord size={32} />
+                                    </ExternalLink>
                                 </>
                             ) : (
-                                <BrandedDropdown width="200px" label={!isLargerThanMedium ? 'Menu' : 'More'}>
-                                    {!isLargerThanMedium && (
-                                        <>
-                                            <InternalLink href="/vaults" $textDecoration="none">
-                                                <DropdownOption $active={location.pathname.startsWith('/vaults')}>
-                                                    Get HAI
-                                                </DropdownOption>
-                                            </InternalLink>
-                                            <InternalLink href="/earn" $textDecoration="none">
-                                                <DropdownOption $active={location.pathname === '/earn'}>
-                                                    Earn
-                                                </DropdownOption>
-                                            </InternalLink>
-                                        </>
-                                    )}
-                                    {!isLargerThanLarge && (
-                                        <InternalLink href="/learn" $textDecoration="none">
-                                            <DropdownOption $active={location.pathname === '/learn'}>
-                                                Learn
-                                            </DropdownOption>
-                                        </InternalLink>
-                                    )}
-                                    <InternalLink href="/auctions" $textDecoration="none">
-                                        <DropdownOption $active={location.pathname === '/auctions'}>
-                                            Auctions
-                                        </DropdownOption>
-                                    </InternalLink>
-                                    <InternalLink href="/analytics" $textDecoration="none">
-                                        <DropdownOption $active={location.pathname === '/analytics'}>
-                                            Analytics
-                                        </DropdownOption>
-                                    </InternalLink>
-                                    <InternalLink href="/contracts" $textDecoration="none">
-                                        <DropdownOption $active={location.pathname === '/contracts'}>
-                                            Contracts
-                                        </DropdownOption>
-                                    </InternalLink>
-                                    <InternalLink href="/vaults/explore" $textDecoration="none">
-                                        <DropdownOption $active={location.pathname === '/vaults/explore'}>
-                                            Vault Explorer
-                                        </DropdownOption>
-                                    </InternalLink>
-                                    {NETWORK_ID === ChainId.OPTIMISM_SEPOLIA && (
-                                        <InternalLink href="/test/claim" $textDecoration="none">
-                                            <DropdownOption $active={location.pathname === '/test/claim'}>
-                                                Claim Test Tokens
-                                            </DropdownOption>
-                                        </InternalLink>
-                                    )}
-                                    <DropdownOption
-                                        onClick={() => {
-                                            setDropdownActive(false)
-                                            setWrapEthActive(true)
-                                        }}
-                                    >
-                                        Wrap ETH
-                                    </DropdownOption>
-                                </BrandedDropdown>
+                                <MobileMenu
+                                    active={dropdownActive}
+                                    setActive={setDropdownActive}
+                                    showWrapEth={() => setWrapEthActive(true)}
+                                />
                             ))}
                         <MusicButton aria-label="Toggle Sound" onClick={() => setIsPlayingMusic(!isPlayingMusic)}>
                             <Sound muted={!isPlayingMusic} size={21} />
@@ -282,7 +225,7 @@ export function Header({ tickerActive = false }: HeaderProps) {
                             </InternalLink>
                         ) : (
                             <>
-                                {isLargerThanSmall && <ConnectButton showBalance />}
+                                {isLargerThanSmall && <ConnectButton showBalance="horizontal" />}
                                 {/* <Notifications
                                         active={notificationsActive}
                                         setActive={setNotificationsActive}
@@ -421,6 +364,11 @@ const HeaderLink = styled(Title).attrs((props) => ({
 
 const RightSide = styled(CenteredFlex)`
     gap: 36px;
+
+    & a {
+        text-decoration: none;
+        width: 100%;
+    }
 
     ${({ theme }) => theme.mediaWidth.upToMedium`
         gap: 24px;

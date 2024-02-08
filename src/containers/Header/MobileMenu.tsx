@@ -1,15 +1,33 @@
 import { useState } from 'react'
 
 import type { SetState } from '~/types'
-import { LINK_TO_DOCS, LINK_TO_TELEGRAM, LINK_TO_TWITTER } from '~/utils'
-import { useOutsideClick } from '~/hooks'
+import { ChainId, LINK_TO_DISCORD, LINK_TO_DOCS, LINK_TO_TELEGRAM, LINK_TO_TWITTER, NETWORK_ID } from '~/utils'
+import { useMediaQuery, useOutsideClick } from '~/hooks'
 
 import styled from 'styled-components'
-import { HaiButton, Popout, Title } from '~/styles'
+import { CenteredFlex, Flex, HaiButton, Popout } from '~/styles'
 import { ExternalLink } from '~/components/ExternalLink'
 import { InternalLink } from '~/components/InternalLink'
 import { Hamburger } from '~/components/Icons/Hamburger'
 import { ConnectButton } from '~/components/ConnectButton'
+import { DropdownOption } from '~/components/BrandedDropdown'
+import {
+    ArrowUpRight,
+    BarChart,
+    Database,
+    Download,
+    File,
+    FileText,
+    Grid,
+    Repeat,
+    Search,
+    ShoppingBag,
+    TrendingUp,
+} from 'react-feather'
+import { Twitter } from '~/components/Icons/Twitter'
+import { Telegram } from '~/components/Icons/Telegram'
+import { Discord } from '~/components/Icons/Discord'
+import { Caret } from '~/components/Icons/Caret'
 
 type MobileMenuProps = {
     active: boolean
@@ -17,45 +35,148 @@ type MobileMenuProps = {
     showWrapEth: () => void
 }
 export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) {
+    const isLargerThanSmall = useMediaQuery('upToSmall')
+    const isLargerThanMedium = useMediaQuery('upToMedium')
+    const isLargerThanLarge = useMediaQuery('upToLarge')
+
     const [button, setButton] = useState<HTMLElement | null>(null)
 
     useOutsideClick(button, () => setActive(false))
 
     return (
-        <DropdownButton as="div" $variant="yellowish" ref={setButton} onClick={() => setActive((a) => !a)}>
-            <Hamburger size={20} />
+        <DropdownButton
+            as="div"
+            $variant={isLargerThanSmall ? undefined : 'yellowish'}
+            ref={setButton}
+            onClick={() => setActive((a) => !a)}
+        >
+            {!isLargerThanSmall ? (
+                <Hamburger size={20} />
+            ) : (
+                <CenteredFlex $gap={12}>
+                    {!isLargerThanMedium ? 'Menu' : 'More'}
+                    <IconContainer $rotate={active}>
+                        <Caret direction="down" />
+                    </IconContainer>
+                </CenteredFlex>
+            )}
             {active && (
-                <Dropdown $float="left" $margin="24px">
-                    <ConnectButton $width="100%" />
-                    <InternalLink href="/vaults" $textDecoration="none" content={<HeaderLink>Get HAI</HeaderLink>} />
-                    <InternalLink href="/earn" $textDecoration="none" content={<HeaderLink>Earn</HeaderLink>} />
-                    <InternalLink href="/learn" $textDecoration="none" content={<HeaderLink>Learn</HeaderLink>} />
-                    <InternalLink href="/auctions" $textDecoration="none" content={<HeaderLink>Auctions</HeaderLink>} />
-                    <InternalLink
-                        href="/analytics"
-                        $textDecoration="none"
-                        content={<HeaderLink>Analytics</HeaderLink>}
-                    />
-                    <InternalLink
-                        href="/vaults/explore"
-                        $textDecoration="none"
-                        content={<HeaderLink>Explore Vaults</HeaderLink>}
-                    />
-                    <InternalLink
-                        href="/contracts"
-                        $textDecoration="none"
-                        content={<HeaderLink>Contracts</HeaderLink>}
-                    />
-                    <HeaderLink onClick={showWrapEth}>Wrap ETH</HeaderLink>
-                    <ExternalLink href={LINK_TO_DOCS} $textDecoration="none">
-                        <HeaderLink>Docs</HeaderLink>
-                    </ExternalLink>
-                    <ExternalLink href={LINK_TO_TWITTER} $textDecoration="none">
-                        <HeaderLink>Twitter</HeaderLink>
-                    </ExternalLink>
-                    <ExternalLink href={LINK_TO_TELEGRAM} $textDecoration="none">
-                        <HeaderLink>Telegram</HeaderLink>
-                    </ExternalLink>
+                <Dropdown $float="left" $margin="20px">
+                    <Inner>
+                        {!isLargerThanSmall && <ConnectButton $width="100%" showBalance="vertical" />}
+                        {!isLargerThanMedium && (
+                            <>
+                                <InternalLink
+                                    href="/vaults"
+                                    content={
+                                        <DropdownOption $active={location.pathname.startsWith('/vaults')}>
+                                            <Database size={18} />
+                                            Get HAI
+                                        </DropdownOption>
+                                    }
+                                />
+                                <InternalLink
+                                    href="/earn"
+                                    content={
+                                        <DropdownOption $active={location.pathname === '/earn'}>
+                                            <TrendingUp size={18} />
+                                            Earn
+                                        </DropdownOption>
+                                    }
+                                />
+                            </>
+                        )}
+                        {!isLargerThanLarge && (
+                            <InternalLink
+                                href="/learn"
+                                content={
+                                    <DropdownOption $active={location.pathname === '/learn'}>
+                                        <Grid size={18} />
+                                        Learn
+                                    </DropdownOption>
+                                }
+                            />
+                        )}
+                        <InternalLink
+                            href="/auctions"
+                            content={
+                                <DropdownOption $active={location.pathname === '/auctions'}>
+                                    <ShoppingBag size={18} />
+                                    Auctions
+                                </DropdownOption>
+                            }
+                        />
+                        <InternalLink
+                            href="/analytics"
+                            content={
+                                <DropdownOption $active={location.pathname === '/analytics'}>
+                                    <BarChart size={18} />
+                                    Analytics
+                                </DropdownOption>
+                            }
+                        />
+                        <InternalLink
+                            href="/contracts"
+                            content={
+                                <DropdownOption $active={location.pathname === '/contracts'}>
+                                    <File size={18} />
+                                    Contracts
+                                </DropdownOption>
+                            }
+                        />
+                        <InternalLink
+                            href="/vaults/explore"
+                            content={
+                                <DropdownOption $active={location.pathname === '/vaults/explore'}>
+                                    <Search size={18} />
+                                    Vault Explorer
+                                </DropdownOption>
+                            }
+                        />
+                        {NETWORK_ID === ChainId.OPTIMISM_SEPOLIA && (
+                            <InternalLink
+                                href="/test/claim"
+                                content={
+                                    <DropdownOption $active={location.pathname === '/test/claim'}>
+                                        <Download size={18} />
+                                        Claim Test Tokens
+                                    </DropdownOption>
+                                }
+                            />
+                        )}
+                        <DropdownOption onClick={showWrapEth}>
+                            <Repeat size={18} />
+                            Wrap ETH
+                        </DropdownOption>
+                        <ExternalLink href={LINK_TO_DOCS}>
+                            <DropdownOption>
+                                <FileText size={18} />
+                                Docs
+                                <ArrowUpRight size={18} />
+                            </DropdownOption>
+                        </ExternalLink>
+                        <ExternalLink href={LINK_TO_TWITTER}>
+                            <DropdownOption>
+                                <Twitter size={16} stroke="black" strokeWidth={2} />
+                                Twitter
+                                <ArrowUpRight size={18} />
+                            </DropdownOption>
+                        </ExternalLink>
+                        <ExternalLink href={LINK_TO_TELEGRAM}>
+                            <DropdownOption>
+                                <Telegram size={18} stroke="black" strokeWidth={2} />
+                                Telegram
+                                <ArrowUpRight size={18} />
+                            </DropdownOption>
+                        </ExternalLink>
+                        <ExternalLink href={LINK_TO_DISCORD}>
+                            <DropdownOption>
+                                <Discord size={18} stroke="black" strokeWidth={2} />
+                                Discord
+                                <ArrowUpRight size={18} />
+                            </DropdownOption>
+                        </ExternalLink>
+                    </Inner>
                 </Dropdown>
             )}
         </DropdownButton>
@@ -64,43 +185,53 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
 
 const DropdownButton = styled(HaiButton)`
     position: relative;
-    width: 48px;
-    min-width: unset;
     height: 48px;
-    padding: 0px;
-    justify-content: center;
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        width: 48px;
+        min-width: unset;
+        padding: 0px;
+        justify-content: center;
+    `}
+`
+const IconContainer = styled(CenteredFlex)<{ $rotate?: boolean }>`
+    transition: all 0.5s ease;
+    transform: ${({ $rotate }) => ($rotate ? 'rotate(-180deg)' : 'rotate(0deg)')};
 `
 const Dropdown = styled(Popout)`
-    width: 280px;
-    padding: 12px;
-    margin-right: -19px;
+    width: fit-content;
+    justify-content: flex-start;
+    margin-right: -16px;
     gap: 4px;
     cursor: default;
 
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        margin-right: -19px;
+    `}
+    ${({ theme }) => theme.mediaWidth.upToMedium`
+        padding: 32px 0;
+    `}
+`
+const Inner = styled(Flex).attrs((props) => ({
+    $column: true,
+    $justify: 'flex-start',
+    $align: 'flex-start',
+    $gap: 12,
+    ...props,
+}))`
+    width: fit-content;
+    padding: 12px;
+    max-height: calc(100vh - 300px);
+    overflow: hidden auto;
+
     & > * {
         width: 100%;
-        height: 36px;
-        & * {
-            line-height: 36px;
-        }
-        border-radius: 12px;
-        border: 1px solid rgba(0, 0, 0, 0.1);
+        text-decoration: none;
     }
-`
-const HeaderLink = styled(Title).attrs((props) => ({
-    $fontSize: '1.6em',
-    $lineHeight: '1',
-    $letterSpacing: '0.2rem',
-    $textTransform: 'uppercase',
-    $textAlign: 'left',
-    ...props,
-}))<{ $active?: boolean }>`
-    width: 100%;
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    padding: 0 12px;
-    text-shadow: none;
-    -webkit-text-stroke: 0px;
-    font-weight: ${({ $active = false }) => ($active ? 700 : 400)};
+
+    ${({ theme }) => theme.mediaWidth.upToMedium`
+        gap: 6px;
+        border-top: 1px solid rgba(0,0,0,0.2);
+        border-bottom: 1px solid rgba(0,0,0,0.2);
+    `}
 `
