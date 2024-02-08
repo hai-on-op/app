@@ -117,9 +117,9 @@ export function Second({ zIndex }: ZoomSceneProps) {
                     </Grid>
                     <Flex $width="100%" $justify="flex-start" $align="center" $gap={12}>
                         <HaiButton $variant="yellowish" $grow={0}>
-                            DEPOSIT
+                            Deposit
                         </HaiButton>
-                        <HaiButton $grow={0}>GET HAI</HaiButton>
+                        <HaiButton $grow={0}>Get HAI</HaiButton>
                     </Flex>
                 </PairContainer>
             </Container>

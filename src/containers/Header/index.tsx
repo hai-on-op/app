@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 
-import { LINK_TO_DISCORD, LINK_TO_DOCS, LINK_TO_TELEGRAM, LINK_TO_TWITTER, formatNumberWithStyle } from '~/utils'
+import { LINK_TO_DISCORD, LINK_TO_DOCS, LINK_TO_TELEGRAM, LINK_TO_TWITTER } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
-import { useAnalytics } from '~/providers/AnalyticsProvider'
+// import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { useMediaQuery, useOutsideClick } from '~/hooks'
 
 import styled, { css } from 'styled-components'
@@ -13,7 +13,7 @@ import { Telegram } from '~/components/Icons/Telegram'
 import { Discord } from '~/components/Icons/Discord'
 import { Sound } from '~/components/Icons/Sound'
 import { HaiFace } from '~/components/Icons/HaiFace'
-import { Marquee, MarqueeChunk } from '~/components/Marquee'
+import { MarqueeChunk } from '~/components/Marquee'
 import { InternalLink } from '~/components/InternalLink'
 import { ExternalLink } from '~/components/ExternalLink'
 import { ConnectButton } from '~/components/ConnectButton'
@@ -23,6 +23,7 @@ import { WrapETHModal } from '~/components/Modal/WrapETHModal'
 import { MobileMenu } from './MobileMenu'
 
 import haiLogo from '~/assets/logo.png'
+import { Announcement } from './Announcement'
 
 type HeaderProps = {
     tickerActive?: boolean
@@ -37,14 +38,14 @@ export function Header({ tickerActive = false }: HeaderProps) {
     const isLargerThanLarge = useMediaQuery('upToLarge')
 
     const {
-        vaultModel: { liquidationData },
+        // vaultModel: { liquidationData },
         settingsModel: { headerBgActive, isPlayingMusic },
     } = useStoreState((state) => state)
     const { setIsPlayingMusic } = useStoreActions((actions) => actions.settingsModel)
 
-    const {
-        data: { marketPrice, redemptionPrice },
-    } = useAnalytics()
+    // const {
+    //     data: { marketPrice, redemptionPrice },
+    // } = useAnalytics()
 
     const [dropdownActive, setDropdownActive] = useState(false)
     // const [notificationsActive, setNotificationsActive] = useState(false)
@@ -54,28 +55,28 @@ export function Header({ tickerActive = false }: HeaderProps) {
 
     const [wrapEthActive, setWrapEthActive] = useState(false)
 
-    const tickerText = useMemo(() => {
-        // TODO: figure out %change (or drop it)
-        const arr = [
-            ['HAI (MP)', marketPrice.formatted, '↑34%', '\u2022'],
-            ['HAI (RP)', redemptionPrice.formatted, '↑34%', '\u2022'],
-        ]
-        if (liquidationData) {
-            Object.entries(liquidationData.collateralLiquidationData).forEach(([token, data]) => {
-                if (!data?.currentPrice.value) return
-                arr.push([
-                    token,
-                    formatNumberWithStyle(data.currentPrice.value, {
-                        style: 'currency',
-                        maxDecimals: 3,
-                    }),
-                    '↑34%',
-                    '\u2022',
-                ])
-            })
-        }
-        return arr.flat()
-    }, [liquidationData, marketPrice, redemptionPrice])
+    // const tickerText = useMemo(() => {
+    //     // TODO: figure out %change (or drop it)
+    //     const arr = [
+    //         ['HAI (MP)', marketPrice.formatted, '↑34%', '\u2022'],
+    //         ['HAI (RP)', redemptionPrice.formatted, '↑34%', '\u2022'],
+    //     ]
+    //     if (liquidationData) {
+    //         Object.entries(liquidationData.collateralLiquidationData).forEach(([token, data]) => {
+    //             if (!data?.currentPrice.value) return
+    //             arr.push([
+    //                 token,
+    //                 formatNumberWithStyle(data.currentPrice.value, {
+    //                     style: 'currency',
+    //                     maxDecimals: 3,
+    //                 }),
+    //                 '↑34%',
+    //                 '\u2022',
+    //             ])
+    //         })
+    //     }
+    //     return arr.flat()
+    // }, [liquidationData, marketPrice, redemptionPrice])
 
     const logoEl = useMemo(
         () =>
@@ -93,7 +94,8 @@ export function Header({ tickerActive = false }: HeaderProps) {
             <Container $tickerActive={tickerActive} $withBg={!isSplash || headerBgActive}>
                 {tickerActive && (
                     <Ticker>
-                        <Marquee text={tickerText} />
+                        {/* <Marquee text={tickerText} /> */}
+                        <Announcement />
                     </Ticker>
                 )}
                 <Inner $blur={!isSplash || headerBgActive}>

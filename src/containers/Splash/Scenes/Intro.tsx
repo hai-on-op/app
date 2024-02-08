@@ -124,7 +124,7 @@ export function Intro({ zIndex }: ZoomSceneProps) {
                 </Text>
                 <HaiButton $variant="yellowish">
                     <Swirl />
-                    SCROLL TO EXPLORE
+                    Scroll To Explore
                 </HaiButton>
                 {/*
                 Note: FloatingElements MUST be a direct child of ZoomScene
