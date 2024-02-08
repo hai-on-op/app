@@ -83,6 +83,7 @@ export const DropdownOption = styled(Flex).attrs((props) => ({
 type DropdownItemProps = {
     icon: ReactChildren
     children: ReactChildren
+    active?: boolean
 } & (
     | {
           href: string
@@ -95,13 +96,13 @@ type DropdownItemProps = {
           onClick: () => void
       }
 )
-function DropdownItem({ icon, children, href, type, onClick }: DropdownItemProps) {
+function DropdownItem({ icon, children, active = false, href, type, onClick }: DropdownItemProps) {
     const item = (
-        <DropdownOption onClick={onClick}>
+        <DropdownOption $active={active} onClick={onClick}>
             {icon}
             <Flex $width="100%" $justify="space-between" $align="center" $gap={8}>
                 {children}
-                <ArrowUpRight size={18} />
+                {(type === 'external' || (!!href && !href.startsWith('/'))) && <ArrowUpRight size={18} />}
             </Flex>
         </DropdownOption>
     )

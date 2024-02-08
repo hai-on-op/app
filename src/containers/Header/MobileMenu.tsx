@@ -6,13 +6,10 @@ import { useMediaQuery, useOutsideClick } from '~/hooks'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Popout } from '~/styles'
-import { ExternalLink } from '~/components/ExternalLink'
-import { InternalLink } from '~/components/InternalLink'
 import { Hamburger } from '~/components/Icons/Hamburger'
 import { ConnectButton } from '~/components/ConnectButton'
-import { DropdownOption } from '~/components/BrandedDropdown'
+import { BrandedDropdown } from '~/components/BrandedDropdown'
 import {
-    ArrowUpRight,
     BarChart,
     Database,
     Download,
@@ -66,116 +63,92 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
                         {!isLargerThanSmall && <ConnectButton $width="100%" showBalance="vertical" />}
                         {!isLargerThanMedium && (
                             <>
-                                <InternalLink
+                                <BrandedDropdown.Item
                                     href="/vaults"
-                                    content={
-                                        <DropdownOption $active={location.pathname.startsWith('/vaults')}>
-                                            <Database size={18} />
-                                            Get HAI
-                                        </DropdownOption>
-                                    }
-                                />
-                                <InternalLink
+                                    icon={<Database size={18} />}
+                                    active={location.pathname.startsWith('/vaults')}
+                                >
+                                    Get HAI
+                                </BrandedDropdown.Item>
+                                <BrandedDropdown.Item
                                     href="/earn"
-                                    content={
-                                        <DropdownOption $active={location.pathname === '/earn'}>
-                                            <TrendingUp size={18} />
-                                            Earn
-                                        </DropdownOption>
-                                    }
-                                />
+                                    icon={<TrendingUp size={18} />}
+                                    active={location.pathname === '/earn'}
+                                >
+                                    Earn
+                                </BrandedDropdown.Item>
                             </>
                         )}
                         {!isLargerThanLarge && (
-                            <InternalLink
+                            <BrandedDropdown.Item
                                 href="/learn"
-                                content={
-                                    <DropdownOption $active={location.pathname === '/learn'}>
-                                        <Grid size={18} />
-                                        Learn
-                                    </DropdownOption>
-                                }
-                            />
+                                icon={<Grid size={18} />}
+                                active={location.pathname === '/learn'}
+                            >
+                                Learn
+                            </BrandedDropdown.Item>
                         )}
-                        <InternalLink
+                        <BrandedDropdown.Item
                             href="/auctions"
-                            content={
-                                <DropdownOption $active={location.pathname === '/auctions'}>
-                                    <ShoppingBag size={18} />
-                                    Auctions
-                                </DropdownOption>
-                            }
-                        />
-                        <InternalLink
+                            icon={<ShoppingBag size={18} />}
+                            active={location.pathname === '/auctions'}
+                        >
+                            Auctions
+                        </BrandedDropdown.Item>
+                        <BrandedDropdown.Item
                             href="/analytics"
-                            content={
-                                <DropdownOption $active={location.pathname === '/analytics'}>
-                                    <BarChart size={18} />
-                                    Analytics
-                                </DropdownOption>
-                            }
-                        />
-                        <InternalLink
+                            icon={<BarChart size={18} />}
+                            active={location.pathname === '/analytics'}
+                        >
+                            Analytics
+                        </BrandedDropdown.Item>
+                        <BrandedDropdown.Item
                             href="/contracts"
-                            content={
-                                <DropdownOption $active={location.pathname === '/contracts'}>
-                                    <File size={18} />
-                                    Contracts
-                                </DropdownOption>
-                            }
-                        />
-                        <InternalLink
+                            icon={<File size={18} />}
+                            active={location.pathname === '/contracts'}
+                        >
+                            Contracts
+                        </BrandedDropdown.Item>
+                        <BrandedDropdown.Item
                             href="/vaults/explore"
-                            content={
-                                <DropdownOption $active={location.pathname === '/vaults/explore'}>
-                                    <Search size={18} />
-                                    Vault Explorer
-                                </DropdownOption>
-                            }
-                        />
+                            icon={<Search size={18} />}
+                            active={location.pathname === '/vaults/explore'}
+                        >
+                            Vault Explorer
+                        </BrandedDropdown.Item>
                         {NETWORK_ID === ChainId.OPTIMISM_SEPOLIA && (
-                            <InternalLink
+                            <BrandedDropdown.Item
                                 href="/test/claim"
-                                content={
-                                    <DropdownOption $active={location.pathname === '/test/claim'}>
-                                        <Download size={18} />
-                                        Claim Test Tokens
-                                    </DropdownOption>
-                                }
-                            />
+                                icon={<Download size={18} />}
+                                active={location.pathname === '/test/claim'}
+                            >
+                                Claim Test Tokens
+                            </BrandedDropdown.Item>
                         )}
-                        <DropdownOption onClick={showWrapEth}>
-                            <Repeat size={18} />
+                        <BrandedDropdown.Item onClick={showWrapEth} icon={<Repeat size={18} />}>
                             Wrap ETH
-                        </DropdownOption>
-                        <ExternalLink href={LINK_TO_DOCS}>
-                            <DropdownOption>
-                                <FileText size={18} />
-                                Docs
-                                <ArrowUpRight size={18} />
-                            </DropdownOption>
-                        </ExternalLink>
-                        <ExternalLink href={LINK_TO_TWITTER}>
-                            <DropdownOption>
-                                <Twitter size={16} stroke="black" strokeWidth={2} />
-                                Twitter
-                                <ArrowUpRight size={18} />
-                            </DropdownOption>
-                        </ExternalLink>
-                        <ExternalLink href={LINK_TO_TELEGRAM}>
-                            <DropdownOption>
-                                <Telegram size={18} stroke="black" strokeWidth={2} />
-                                Telegram
-                                <ArrowUpRight size={18} />
-                            </DropdownOption>
-                        </ExternalLink>
-                        <ExternalLink href={LINK_TO_DISCORD}>
-                            <DropdownOption>
-                                <Discord size={18} stroke="black" strokeWidth={2} />
-                                Discord
-                                <ArrowUpRight size={18} />
-                            </DropdownOption>
-                        </ExternalLink>
+                        </BrandedDropdown.Item>
+                        <BrandedDropdown.Item href={LINK_TO_DOCS} icon={<FileText size={18} />}>
+                            Docs
+                        </BrandedDropdown.Item>
+                        <BrandedDropdown.Item
+                            href={LINK_TO_TWITTER}
+                            icon={<Twitter size={16} stroke="black" strokeWidth={2} />}
+                        >
+                            Twitter
+                        </BrandedDropdown.Item>
+                        <BrandedDropdown.Item
+                            href={LINK_TO_TELEGRAM}
+                            icon={<Telegram size={17} stroke="black" strokeWidth={2} />}
+                        >
+                            Telegram
+                        </BrandedDropdown.Item>
+                        <BrandedDropdown.Item
+                            href={LINK_TO_DISCORD}
+                            icon={<Discord size={19} stroke="black" strokeWidth={2} />}
+                        >
+                            Discord
+                        </BrandedDropdown.Item>
                     </Inner>
                 </Dropdown>
             )}
@@ -186,6 +159,7 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
 const DropdownButton = styled(HaiButton)`
     position: relative;
     height: 48px;
+    flex-shrink: 0;
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
         width: 48px;

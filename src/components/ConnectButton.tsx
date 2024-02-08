@@ -136,7 +136,7 @@ const BalanceContainer = styled(CenteredFlex).attrs((props) => ({
         `}
 `
 
-const Container = styled(CenteredFlex) <{ $vertical?: boolean }>`
+const Container = styled(CenteredFlex)<{ $vertical?: boolean }>`
     width: ${({ $width = 'fit-content' }) => $width};
     height: 48px;
     border-radius: 999px;
