@@ -6,6 +6,9 @@ import { useOutsideClick } from '~/hooks'
 import styled, { css } from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, type HaiButtonProps, Popout } from '~/styles'
 import { Caret } from './Icons/Caret'
+import { ArrowUpRight } from 'react-feather'
+import { InternalLink } from './InternalLink'
+import { ExternalLink } from './ExternalLink'
 
 type ButtonProps = Omit<HTMLProps<HTMLButtonElement>, 'ref' | 'as' | 'type' | 'label' | 'children'>
 type BrandedDropdownProps = ButtonProps &
@@ -32,6 +35,8 @@ export function BrandedDropdown({ width, label, children, ...props }: BrandedDro
         </Container>
     )
 }
+
+BrandedDropdown.Item = DropdownItem
 
 const Container = styled(HaiButton)`
     position: relative;
@@ -74,3 +79,41 @@ export const DropdownOption = styled(Flex).attrs((props) => ({
         background-color: rgba(0, 0, 0, 0.1);
     }
 `
+
+type DropdownItemProps = {
+    icon: ReactChildren
+    children: ReactChildren
+} & (
+    | {
+          href: string
+          type?: 'internal' | 'external'
+          onClick?: undefined
+      }
+    | {
+          href?: undefined
+          type?: undefined
+          onClick: () => void
+      }
+)
+function DropdownItem({ icon, children, href, type, onClick }: DropdownItemProps) {
+    const item = (
+        <DropdownOption onClick={onClick}>
+            {icon}
+            <Flex $width="100%" $justify="space-between" $align="center" $gap={8}>
+                {children}
+                <ArrowUpRight size={18} />
+            </Flex>
+        </DropdownOption>
+    )
+
+    if (onClick) return item
+
+    if (type === 'internal' || href.startsWith('/'))
+        return <InternalLink href={href} $width="100%" $textDecoration="none" content={item} />
+
+    return (
+        <ExternalLink href={href} $textDecoration="none">
+            {item}
+        </ExternalLink>
+    )
+}
