@@ -219,6 +219,7 @@ export function Shared({ children }: Props) {
         accountChange()
         const id: ChainId = chainId
         if (chain?.id !== id) {
+            popupsActions.setIsInitializing(false)
             const chainName = ETHERSCAN_PREFIXES[id]
             connectWalletActions.setIsWrongNetwork(true)
             toast(
@@ -247,9 +248,11 @@ export function Shared({ children }: Props) {
                 })
                 connectWalletActions.setStep(1)
                 accountChecker()
+            } else {
+                popupsActions.setIsInitializing(false)
             }
         }
-    }, [accountChange, accountChecker, account, chainId, chain?.id, geb, connectWalletActions])
+    }, [accountChange, accountChecker, account, chainId, chain?.id, geb, connectWalletActions, popupsActions])
 
     useEffect(() => {
         networkChecker()
