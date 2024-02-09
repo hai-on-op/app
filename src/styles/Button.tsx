@@ -65,6 +65,11 @@ export const HaiButton = styled.button.attrs((props: HaiButtonProps) => ({
     &:disabled {
         opacity: 0.7;
         cursor: not-allowed;
+        ${({ $variant = 'default' }) =>
+            $variant !== 'default' &&
+            css`
+                background: #c5c0cb77;
+            `};
     }
 `
 
