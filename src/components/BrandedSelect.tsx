@@ -188,7 +188,7 @@ function DropdownIcon({ icon }: { icon: BrandedSelectOption['icon'] }) {
         const int = setInterval(() => {
             index++
             setCurrentIcon(icon[index % icon.length])
-        }, 3000)
+        }, 1000)
 
         return () => clearInterval(int)
     }, [icon])
