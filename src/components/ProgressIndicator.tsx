@@ -40,17 +40,20 @@ export function ProgressIndicator({ progress, simulatedProgress, colorLimits, la
     )
 }
 
+const CONTAINER_SIZE = 52
+const BAR_SIZE = 12
+
 const Container = styled(CenteredFlex)`
     position: relative;
     width: 100%;
-    height: 52px;
+    height: ${CONTAINER_SIZE}px;
     background-color: transparent;
     overflow: visible;
 `
 const Inner = styled.div<{ $limits: [string, string, string] }>`
     position: relative;
     width: 100%;
-    height: 12px;
+    height: ${BAR_SIZE}px;
     border: ${({ theme }) => theme.border.medium};
     background: ${({ theme, $limits }) => `linear-gradient(
         90deg,
@@ -66,7 +69,7 @@ const Inner = styled.div<{ $limits: [string, string, string] }>`
 `
 const Indicator = styled(Flex).attrs((props) => ({
     $column: true,
-    $justify: 'flex-start',
+    $justify: 'flex-end',
     $align: 'center',
     $fontSize: '11px',
     $fontWeight: 700,
@@ -74,16 +77,17 @@ const Indicator = styled(Flex).attrs((props) => ({
 }))<{ $left: string }>`
     position: absolute;
     top: 0px;
-    left: clamp(6px, ${({ $left }) => $left}, calc(100% - 6px));
-    bottom: 20px;
+    left: clamp(${BAR_SIZE / 2}px, ${({ $left }) => $left}, calc(100% - ${BAR_SIZE / 2}px));
+    bottom: ${(CONTAINER_SIZE - BAR_SIZE) / 2}px;
+    padding-bottom: ${BAR_SIZE + 6}px;
     transform: translateX(-50%);
     transition: all 0.5s ease;
 
     &::before {
         content: '';
         width: 1px;
+        height: ${BAR_SIZE + 4}px;
         position: absolute;
-        top: 18px;
         bottom: 0px;
         background-color: black;
     }
@@ -92,7 +96,7 @@ const Indicator = styled(Flex).attrs((props) => ({
         width: 8px;
         height: 6px;
         position: absolute;
-        top: 14px;
+        bottom: ${BAR_SIZE}px;
         background: conic-gradient(at 50% 100%, black 8.33%, transparent 8.33%, transparent 91.67%, black 91.67%);
     }
 
@@ -109,23 +113,23 @@ const Indicator = styled(Flex).attrs((props) => ({
 `
 const Label = styled(Flex).attrs((props) => ({
     $column: true,
-    $justify: 'flex-end',
+    $justify: 'flex-start',
     $align: 'center',
     $fontSize: '8px',
     ...props,
 }))<{ $left: string }>`
     position: absolute;
-    top: 20px;
-    bottom: -8px;
+    top: ${(CONTAINER_SIZE - BAR_SIZE) / 2}px;
     left: ${({ $left }) => $left};
     transform: translateX(-50%);
+    padding-top: ${BAR_SIZE + 6}px;
 
     &::after {
         content: '';
         width: 1px;
         position: absolute;
         top: 0px;
-        bottom: 24px;
+        height: ${BAR_SIZE + 4}px;
         background-color: black;
     }
 
