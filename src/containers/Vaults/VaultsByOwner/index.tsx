@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 
 import { Status, formatNumberWithStyle, returnWalletAddress } from '~/utils'
-import { useStoreState } from '~/store'
 import { useMediaQuery, useVaultsByOwner } from '~/hooks'
 
 import styled from 'styled-components'
@@ -10,24 +9,16 @@ import { BlurContainer, CenteredFlex, Flex, Grid, TableButton, Text } from '~/st
 import { BrandedTitle } from '~/components/BrandedTitle'
 import { Pagination } from '~/components/Pagination'
 import { StatusLabel } from '~/components/StatusLabel'
-import { BrandedDropdown, DropdownOption } from '~/components/BrandedDropdown'
 import { TokenPair } from '~/components/TokenPair'
 import { LiquidateVaultModal } from '~/components/Modal/LiquidateVaultModal'
 import { SortByDropdown } from '~/components/SortByDropdown'
 import { Table, TableContainer } from '~/components/Table'
+import { CollateralDropdown } from '~/components/CollateralDropdown'
 
 const RECORDS_PER_PAGE = 10
 
 export function VaultsByOwner() {
     const { idOrOwner } = useParams<{ idOrOwner?: string }>()
-
-    const {
-        connectWalletModel: { tokensData },
-    } = useStoreState((state) => state)
-
-    const symbols = Object.values(tokensData || {})
-        .filter(({ isCollateral }) => isCollateral)
-        .map(({ symbol }) => symbol)
 
     const isLargerThanSmall = useMediaQuery('upToSmall')
 
@@ -65,25 +56,11 @@ export function VaultsByOwner() {
                         $fontSize={isLargerThanSmall ? '3rem' : '2.4rem'}
                     />
                     <CenteredFlex $column={!isLargerThanSmall} $gap={24}>
-                        <BrandedDropdown
-                            label={
-                                <Text $fontWeight={400} $textAlign="left">
-                                    Collateral: <strong>{collateralFilter || 'All'}</strong>
-                                </Text>
-                            }
-                        >
-                            {['All', ...symbols].map((label) => (
-                                <DropdownOption
-                                    key={label}
-                                    onClick={() => {
-                                        // e.stopPropagation()
-                                        setCollateralFilter(label === 'All' ? undefined : label)
-                                    }}
-                                >
-                                    {label}
-                                </DropdownOption>
-                            ))}
-                        </BrandedDropdown>
+                        <CollateralDropdown
+                            label="Collateral"
+                            selectedAsset={collateralFilter}
+                            onSelect={setCollateralFilter}
+                        />
                         {!isLargerThanSmall && (
                             <SortByDropdown headers={headers} sorting={sorting} setSorting={setSorting} />
                         )}

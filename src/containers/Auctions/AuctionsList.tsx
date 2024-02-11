@@ -1,30 +1,42 @@
-import type { AuctionEventType } from '~/types'
-import { useStoreState } from '~/store'
+import type { AuctionEventType, TokenKey } from '~/types'
 import { useAuctionsData, useMediaQuery } from '~/hooks'
 
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 import { CenteredFlex, Text } from '~/styles'
 import { NavContainer } from '~/components/NavContainer'
 import { CheckboxButton } from '~/components/CheckboxButton'
 import { BrandedDropdown, DropdownOption } from '~/components/BrandedDropdown'
 import { AuctionTable } from './AuctionTable'
 import { SortByDropdown } from '~/components/SortByDropdown'
+import { CollateralDropdown } from '~/components/CollateralDropdown'
+import { capitalizeName } from '~/utils'
+import { CyclingTokenIcons, TokenPair } from '~/components/TokenPair'
 
-const auctionFilters: (AuctionEventType | 'All')[] = ['All', 'COLLATERAL', 'DEBT', 'SURPLUS']
+type AuctionTypeFilter = {
+    type: AuctionEventType | 'All'
+    icon?: TokenKey | 'All'
+}
+const auctionFilters: AuctionTypeFilter[] = [
+    { type: 'All' },
+    {
+        type: 'COLLATERAL',
+        icon: 'All',
+    },
+    {
+        type: 'DEBT',
+        icon: 'HAI',
+    },
+    {
+        type: 'SURPLUS',
+        icon: 'KITE',
+    },
+]
 
 type AuctionsListProps = {
     isLoading: boolean
     error?: string
 }
 export function AuctionsList({ isLoading, error }: AuctionsListProps) {
-    const {
-        connectWalletModel: { tokensData },
-    } = useStoreState((state) => state)
-
-    const symbols = Object.values(tokensData || {})
-        .filter(({ isCollateral }) => isCollateral)
-        .map(({ symbol }) => symbol)
-
     const {
         headers,
         rows,
@@ -60,38 +72,30 @@ export function AuctionsList({ isLoading, error }: AuctionsListProps) {
                             </Text>
                         }
                     >
-                        {auctionFilters.map((label) => (
-                            <DropdownOption
-                                key={label}
+                        {auctionFilters.map(({ type, icon }) => (
+                            <Option
+                                key={type}
+                                $pad={!!icon}
                                 onClick={() => {
                                     // e.stopPropagation()
-                                    setTypeFilter(label === 'All' ? undefined : label)
+                                    setTypeFilter(type === 'All' ? undefined : type)
                                 }}
                             >
-                                {label}
-                            </DropdownOption>
+                                {!icon ? null : icon === 'All' ? (
+                                    <CyclingTokenIcons />
+                                ) : (
+                                    <TokenPair tokens={[icon as TokenKey]} hideLabel />
+                                )}
+                                {capitalizeName(type.toLowerCase())}
+                            </Option>
                         ))}
                     </BrandedDropdown>
                     {(!typeFilter || typeFilter === 'COLLATERAL') && (
-                        <BrandedDropdown
-                            label={
-                                <Text $fontWeight={400} $textAlign="left">
-                                    For Sale Asset: <strong>{saleAssetsFilter || 'All'}</strong>
-                                </Text>
-                            }
-                        >
-                            {['All', ...symbols].map((label) => (
-                                <DropdownOption
-                                    key={label}
-                                    onClick={() => {
-                                        // e.stopPropagation()
-                                        setSaleAssetsFilter(label === 'All' ? undefined : label)
-                                    }}
-                                >
-                                    {label}
-                                </DropdownOption>
-                            ))}
-                        </BrandedDropdown>
+                        <CollateralDropdown
+                            label="For Sale Asset"
+                            selectedAsset={saleAssetsFilter}
+                            onSelect={setSaleAssetsFilter}
+                        />
                     )}
                 </HeaderContainer>
             }
@@ -133,4 +137,12 @@ const HeaderContainer = styled(CenteredFlex)`
             }
         }
     `}
+`
+
+const Option = styled(DropdownOption)<{ $pad?: boolean }>`
+    ${({ $pad }) =>
+        !!$pad &&
+        css`
+            padding-left: 8px;
+        `}
 `

@@ -10,7 +10,6 @@ import { BrandedTitle } from '~/components/BrandedTitle'
 import { AddressLink } from '~/components/AddressLink'
 import { Pagination } from '~/components/Pagination'
 import { StatusLabel } from '~/components/StatusLabel'
-import { BrandedDropdown, DropdownOption } from '~/components/BrandedDropdown'
 import { TokenPair } from '~/components/TokenPair'
 import { CheckboxButton } from '~/components/CheckboxButton'
 import { LiquidateVaultModal } from '~/components/Modal/LiquidateVaultModal'
@@ -18,18 +17,14 @@ import { SortByDropdown } from '~/components/SortByDropdown'
 import { Table, TableContainer } from '~/components/Table'
 import { InternalLink } from '~/components/InternalLink'
 import { HaiArrow } from '~/components/Icons/HaiArrow'
+import { CollateralDropdown } from '~/components/CollateralDropdown'
 
 const RECORDS_PER_PAGE = 10
 
 export function VaultExplorer() {
     const {
-        connectWalletModel: { tokensData },
         vaultModel: { liquidationData },
     } = useStoreState((state) => state)
-
-    const symbols = Object.values(tokensData || {})
-        .filter(({ isCollateral }) => isCollateral)
-        .map(({ symbol }) => symbol)
 
     const isLargerThanSmall = useMediaQuery('upToSmall')
 
@@ -66,25 +61,11 @@ export function VaultExplorer() {
                         <CheckboxButton checked={filterEmpty} toggle={() => setFilterEmpty((e) => !e)}>
                             Hide Empty Vaults
                         </CheckboxButton>
-                        <BrandedDropdown
-                            label={
-                                <Text $fontWeight={400} $textAlign="left">
-                                    Collateral: <strong>{collateralFilter || 'All'}</strong>
-                                </Text>
-                            }
-                        >
-                            {['All', ...symbols].map((label) => (
-                                <DropdownOption
-                                    key={label}
-                                    onClick={() => {
-                                        // e.stopPropagation()
-                                        setCollateralFilter(label === 'All' ? undefined : label)
-                                    }}
-                                >
-                                    {label}
-                                </DropdownOption>
-                            ))}
-                        </BrandedDropdown>
+                        <CollateralDropdown
+                            label="Collateral"
+                            selectedAsset={collateralFilter}
+                            onSelect={setCollateralFilter}
+                        />
                         {!isLargerThanSmall && (
                             <SortByDropdown headers={headers} sorting={sorting} setSorting={setSorting} />
                         )}

@@ -46,8 +46,10 @@ export function ManageDropdown() {
                                 collateral: symbol,
                             })
                         }}
+                        style={{ paddingLeft: '8px' }}
                     >
-                        {symbol}
+                        <TokenPair tokens={[symbol as any]} hideLabel />
+                        <Text>{symbol}</Text>
                     </DropdownOption>
                 )),
             }

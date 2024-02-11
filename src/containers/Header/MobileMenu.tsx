@@ -1,7 +1,15 @@
 import { useState } from 'react'
 
 import type { SetState } from '~/types'
-import { ChainId, LINK_TO_DISCORD, LINK_TO_DOCS, LINK_TO_GOVERNANCE, LINK_TO_TELEGRAM, LINK_TO_TWITTER, NETWORK_ID } from '~/utils'
+import {
+    ChainId,
+    LINK_TO_DISCORD,
+    LINK_TO_DOCS,
+    LINK_TO_GOVERNANCE,
+    LINK_TO_TELEGRAM,
+    LINK_TO_TWITTER,
+    NETWORK_ID,
+} from '~/utils'
 import { useMediaQuery, useOutsideClick } from '~/hooks'
 
 import styled from 'styled-components'
@@ -199,8 +207,8 @@ const Inner = styled(Flex).attrs((props) => ({
     padding: 12px;
     max-height: calc(100vh - 300px);
     overflow: hidden auto;
-    border-top: 1px solid rgba(0,0,0,0.2);
-    border-bottom: 1px solid rgba(0,0,0,0.2);
+    border-top: 1px solid rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
 
     & > * {
         width: 100%;

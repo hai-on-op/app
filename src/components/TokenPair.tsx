@@ -1,5 +1,8 @@
+import { useEffect, useState } from 'react'
+
 import type { TokenKey } from '~/types'
 import { TOKEN_LOGOS } from '~/utils'
+import { useStoreState } from '~/store'
 
 import styled, { css } from 'styled-components'
 import { CenteredFlex, Flex, Text } from '~/styles'
@@ -75,4 +78,48 @@ const RewardsContainer = styled(CenteredFlex)<{ $pad?: boolean }>`
         `}
     border-radius: 999px;
     background-color: white;
+`
+
+export function CyclingTokenIcons({ size = 32 }: { size?: number }) {
+    const {
+        connectWalletModel: { tokensData },
+    } = useStoreState((state) => state)
+
+    const [currentIcon, setCurrentIcon] = useState<string>()
+
+    useEffect(() => {
+        const tokens = Object.values(tokensData)
+            .filter(({ isCollateral }) => isCollateral)
+            .map((data) => data.symbol)
+        if (!tokens.length) return
+
+        let index = 0
+        const int = setInterval(() => {
+            index = (index + 1) % tokens.length
+            setCurrentIcon(tokens[index])
+        }, 1000)
+
+        return () => clearInterval(int)
+    }, [tokensData])
+
+    return (
+        <CyclingContainer $size={size}>
+            <img src={TOKEN_LOGOS[(currentIcon || 'HAI') as TokenKey]} alt="" />
+        </CyclingContainer>
+    )
+}
+
+const CyclingContainer = styled(CenteredFlex)<{ $size: number }>`
+    width: ${({ $size }) => $size}px;
+    height: ${({ $size }) => $size}px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    border: ${({ theme }) => theme.border.medium};
+    background-color: ${({ theme }) => theme.colors.greenish};
+    overflow: hidden;
+
+    & > img {
+        width: ${({ $size }) => $size}px;
+        height: ${({ $size }) => $size}px;
+    }
 `

@@ -1,20 +1,18 @@
-import { useMemo } from 'react'
-
 import type { SetState } from '~/types'
 import { useStoreState } from '~/store'
 import { useVault } from '~/providers/VaultProvider'
 import { useAvailableVaults, useMediaQuery, useMyVaults } from '~/hooks'
 
-import { CenteredFlex, Text } from '~/styles'
+import styled from 'styled-components'
+import { CenteredFlex } from '~/styles'
 import { NavContainer } from '~/components/NavContainer'
 import { CheckboxButton } from '~/components/CheckboxButton'
-import { BrandedDropdown, DropdownOption } from '~/components/BrandedDropdown'
 import { ProxyPrompt } from '~/components/ProxyPrompt'
 import { StrategyAd, type StrategyAdProps } from '~/components/StrategyAd'
 import { AvailableVaultsTable } from './AvailableVaultsTable'
 import { MyVaultsTable } from './MyVaultsTable'
 import { SortByDropdown } from '~/components/SortByDropdown'
-import styled from 'styled-components'
+import { CollateralDropdown } from '~/components/CollateralDropdown'
 
 const strategies: StrategyAdProps[] = [
     {
@@ -44,18 +42,7 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
 
     const isLargerThanSmall = useMediaQuery('upToSmall')
 
-    const {
-        connectWalletModel: { tokensData },
-        vaultModel: vaultState,
-    } = useStoreState((state) => state)
-
-    const symbols = useMemo(
-        () =>
-            Object.values(tokensData || {})
-                .filter(({ isCollateral }) => isCollateral)
-                .map(({ symbol }) => symbol),
-        [tokensData]
-    )
+    const { vaultModel: vaultState } = useStoreState((state) => state)
 
     const {
         headers: availableHeaders,
@@ -102,26 +89,11 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
                     </HeaderContent>
                 ) : (
                     <HeaderContent>
-                        <BrandedDropdown
-                            label={
-                                <Text $fontWeight={400} $textAlign="left" style={{ width: '160px' }}>
-                                    Collateral Assets: <strong>{assetsFilter || 'All'}</strong>
-                                </Text>
-                            }
-                        >
-                            {['All', ...symbols].map((label) => (
-                                <DropdownOption
-                                    key={label}
-                                    $active={assetsFilter === label}
-                                    onClick={() => {
-                                        // e.stopPropagation()
-                                        setAssetsFilter(label === 'All' ? undefined : label)
-                                    }}
-                                >
-                                    {label}
-                                </DropdownOption>
-                            ))}
-                        </BrandedDropdown>
+                        <CollateralDropdown
+                            label="Collateral Asset"
+                            selectedAsset={assetsFilter}
+                            onSelect={setAssetsFilter}
+                        />
                         <CheckboxButton checked={showClosedVaults} toggle={() => setShowClosedVaults((e) => !e)}>
                             Show Closed Vaults
                         </CheckboxButton>
