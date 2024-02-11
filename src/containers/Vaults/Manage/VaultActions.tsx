@@ -340,11 +340,15 @@ const Container = styled(Flex).attrs((props) => ({
 }))`
     max-width: 100%;
     /* width: 360px; */
-    height: 564px;
+    height: 604px;
     margin-bottom: -140px;
     background-color: ${({ theme }) => theme.colors.background};
     border-radius: 24px;
     border: ${({ theme }) => theme.border.medium};
+
+    ${({ theme }) => theme.mediaWidth.upToMedium`
+        margin-bottom: -119px;
+    `}
 `
 const Header = styled(Flex).attrs((props) => ({
     $width: '100%',

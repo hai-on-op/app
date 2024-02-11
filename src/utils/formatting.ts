@@ -190,7 +190,7 @@ export const formatSummaryPercentage = (value: string | undefined, scalingFactor
                 ? formatNumberWithStyle(value, {
                       scalingFactor,
                       style: 'percent',
-                      maxDecimals: 4,
+                      maxDecimals: 1,
                   })
                 : '--%',
     }

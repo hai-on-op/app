@@ -261,7 +261,7 @@ export const returnTotalDebtPlusInterest = (
 export const riskStateToStatus: Record<RiskState | number, Status> = {
     [RiskState.LOW]: Status.SAFE,
     [RiskState.MEDIUM]: Status.OKAY,
-    [RiskState.HIGH]: Status.DANGER,
+    [RiskState.HIGH]: Status.UNSAFE,
     [RiskState.LIQUIDATION]: Status.DANGER,
     [RiskState.UNKNOWN]: Status.UNKNOWN,
 }

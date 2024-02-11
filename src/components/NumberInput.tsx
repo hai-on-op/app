@@ -30,7 +30,7 @@ export function NumberInput({
     const input = useRef<HTMLInputElement | null>(null)
 
     return (
-        <Container $gap={12} hidden={hidden} style={style}>
+        <Container $gap={12} hidden={hidden} style={style} onClick={() => input.current?.focus()}>
             <Flex $width="100%" $justify="space-between" $align="center">
                 <Text $fontSize="0.65em" $fontWeight={700}>
                     {label}
@@ -39,7 +39,7 @@ export function NumberInput({
                     {subLabel}
                 </Text>
             </Flex>
-            <InputContainer onClick={() => input.current?.click()}>
+            <InputContainer>
                 <Input
                     ref={input}
                     value={value || ''}
@@ -80,7 +80,7 @@ const InputContainer = styled(Flex).attrs((props) => ({
 `
 const Input = styled.input`
     width: 100%;
-    height: 56px;
+    height: 48px;
     padding-left: 24px;
     padding-right: 12px;
     outline: none;

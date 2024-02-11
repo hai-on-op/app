@@ -81,6 +81,11 @@ const Container = styled(Flex)<{
                     color: ${$color || theme.colors.successColor};
                 `
             case Status.DANGER:
+                return css`
+                    color: white;
+                    background: ${$color || theme.colors.dangerColor};
+                `
+            case Status.UNSAFE:
             case Status.NEGATIVE:
                 return css`
                     color: ${$color || theme.colors.dangerColor};

@@ -5,8 +5,9 @@ import { type QueriedVault, formatNumberWithStyle, getRatePercentage } from '~/u
 import { useStoreState } from '~/store'
 
 import styled from 'styled-components'
-import { type DashedContainerProps, DashedContainerStyle, Flex, Grid, Text } from '~/styles'
+import { type DashedContainerProps, DashedContainerStyle, Flex, Grid, Text, CenteredFlex } from '~/styles'
 import { OverviewProgressStat, OverviewStat } from '../Manage/OverviewStat'
+import { AlertTriangle, ArrowLeft, ArrowRight } from 'react-feather'
 
 type OverviewProps = {
     vault?: QueriedVault
@@ -20,13 +21,24 @@ export function Overview({ vault }: OverviewProps) {
     const collateralPrice = parseFloat(vault?.collateralType.currentPrice.value || '0')
 
     const progressProps = useMemo(() => {
-        if (!vault) return { progress: 0 }
+        if (!vault)
+            return {
+                progress: {
+                    progress: 0,
+                    label: '0%',
+                },
+                colorLimits: [0, 0.5, 1] as [number, number, number],
+            }
 
         const { safetyCRatio } = vault.liquidationData
         const safetyRatio = safetyCRatio ? 100 * parseFloat(safetyCRatio.toString()) : undefined
         if (!vault.collateralRatio || !safetyRatio)
             return {
-                progress: 0,
+                progress: {
+                    progress: 0,
+                    label: '0%',
+                },
+                colorLimits: [0, 0.5, 1] as [number, number, number],
             }
 
         const MAX_FACTOR = 2.5
@@ -34,15 +46,58 @@ export function Overview({ vault }: OverviewProps) {
         const min = safetyRatio
         const max = min * MAX_FACTOR
         const labels = [
-            { progress: 1 / MAX_FACTOR, label: `${Math.floor(min)}%` },
-            { progress: 1.5 / MAX_FACTOR, label: `${Math.floor(1.5 * min)}%` },
-            { progress: 2.2 / MAX_FACTOR, label: `${Math.floor(2.2 * min)}%` },
+            {
+                progress: 1 / MAX_FACTOR,
+                label: (
+                    <CenteredFlex $column $fontWeight={700}>
+                        <CenteredFlex $gap={4}>
+                            <AlertTriangle size={10} strokeWidth={2.5} />
+                            <Text>{`${Math.floor(min)}%`}</Text>
+                        </CenteredFlex>
+                        <CenteredFlex $gap={2}>
+                            <ArrowLeft size={8} />
+                            <Text>LIQUIDATION</Text>
+                        </CenteredFlex>
+                    </CenteredFlex>
+                ),
+            },
+            {
+                progress: 1.5 / MAX_FACTOR,
+                label: (
+                    <CenteredFlex $column>
+                        <Text>{`${Math.floor(1.5 * min)}%`}</Text>
+                        <CenteredFlex $gap={2}>
+                            <Text>OKAY</Text>
+                            <ArrowRight size={8} />
+                        </CenteredFlex>
+                    </CenteredFlex>
+                ),
+            },
+            {
+                progress: 2.2 / MAX_FACTOR,
+                label: (
+                    <CenteredFlex $column>
+                        <Text>{`${Math.floor(2.2 * min)}%`}</Text>
+                        <CenteredFlex $gap={2}>
+                            <Text>SAFE</Text>
+                            <ArrowRight size={8} />
+                        </CenteredFlex>
+                    </CenteredFlex>
+                ),
+            },
         ]
 
         return {
-            progress: Math.min(parseFloat(vault.collateralRatio), max) / max,
+            progress: {
+                progress: Math.min(parseFloat(vault.collateralRatio), max) / max,
+                label: formatNumberWithStyle(vault.collateralRatio, {
+                    maxDecimals: 1,
+                    scalingFactor: 0.01,
+                    style: 'percent',
+                }),
+            },
             labels,
-            colorLimits: [100 / max, 2 / MAX_FACTOR] as [number, number],
+            colorLimits: labels.map(({ progress }) => progress) as [number, number, number],
         }
     }, [vault])
 

@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { Status } from '~/utils'
+import { Status, formatNumberWithStyle } from '~/utils'
 import { useVault } from '~/providers/VaultProvider'
 
 import styled from 'styled-components'
@@ -9,6 +9,7 @@ import { type DashedContainerProps, DashedContainerStyle, Flex, Grid, Text, Cent
 import { Swirl } from '~/components/Icons/Swirl'
 import { StatusLabel } from '~/components/StatusLabel'
 import { OverviewProgressStat, OverviewStat } from './OverviewStat'
+import { AlertTriangle, ArrowLeft, ArrowRight } from 'react-feather'
 
 export function Overview() {
     const { t } = useTranslation()
@@ -18,7 +19,11 @@ export function Overview() {
     const progressProps = useMemo(() => {
         if (!collateralRatio || !safetyRatio)
             return {
-                progress: 0,
+                progress: {
+                    progress: 0,
+                    label: '0%',
+                },
+                colorLimits: [0, 0.5, 1] as [number, number, number],
             }
 
         const MAX_FACTOR = 2.5
@@ -26,18 +31,68 @@ export function Overview() {
         const min = safetyRatio
         const max = min * MAX_FACTOR
         const labels = [
-            { progress: 1 / MAX_FACTOR, label: `${Math.floor(min)}%` },
-            { progress: 1.5 / MAX_FACTOR, label: `${Math.floor(1.5 * min)}%` },
-            { progress: 2.2 / MAX_FACTOR, label: `${Math.floor(2.2 * min)}%` },
+            {
+                progress: 1 / MAX_FACTOR,
+                label: (
+                    <CenteredFlex $column $fontWeight={700}>
+                        <CenteredFlex $gap={4}>
+                            <AlertTriangle size={10} strokeWidth={2.5} />
+                            <Text>{`${Math.floor(min)}%`}</Text>
+                        </CenteredFlex>
+                        <CenteredFlex $gap={2}>
+                            <ArrowLeft size={8} />
+                            <Text>LIQUIDATION</Text>
+                        </CenteredFlex>
+                    </CenteredFlex>
+                ),
+            },
+            {
+                progress: 1.5 / MAX_FACTOR,
+                label: (
+                    <CenteredFlex $column>
+                        <Text>{`${Math.floor(1.5 * min)}%`}</Text>
+                        <CenteredFlex $gap={2}>
+                            <Text>OKAY</Text>
+                            <ArrowRight size={8} />
+                        </CenteredFlex>
+                    </CenteredFlex>
+                ),
+            },
+            {
+                progress: 2.2 / MAX_FACTOR,
+                label: (
+                    <CenteredFlex $column>
+                        <Text>{`${Math.floor(2.2 * min)}%`}</Text>
+                        <CenteredFlex $gap={2}>
+                            <Text>SAFE</Text>
+                            <ArrowRight size={8} />
+                        </CenteredFlex>
+                    </CenteredFlex>
+                ),
+            },
         ]
 
         return {
-            progress: Math.min(parseFloat(collateralRatio), max) / max,
+            progress: {
+                progress: Math.min(parseFloat(collateralRatio), max) / max,
+                label: formatNumberWithStyle(collateralRatio, {
+                    maxDecimals: 1,
+                    scalingFactor: 0.01,
+                    style: 'percent',
+                }),
+            },
             simulatedProgress: simulation?.collateralRatio
-                ? Math.min(parseFloat(simulation.collateralRatio), max) / max
+                ? {
+                      progress: Math.min(parseFloat(simulation.collateralRatio), max) / max,
+                      label: formatNumberWithStyle(simulation.collateralRatio, {
+                          maxDecimals: 1,
+                          scalingFactor: 0.01,
+                          style: 'percent',
+                      }),
+                  }
                 : undefined,
             labels,
-            colorLimits: [100 / max, 2 / MAX_FACTOR] as [number, number],
+            colorLimits: labels.map(({ progress }) => progress) as [number, number, number],
         }
     }, [collateralRatio, safetyRatio, simulation?.collateralRatio])
 
@@ -46,7 +101,7 @@ export function Overview() {
             <Header>
                 <Text $fontWeight={700}>Vault Overview {vault ? `#${vault.id}` : ''}</Text>
                 {!!simulation && !!vault && (
-                    <StatusLabel status={Status.CUSTOM} background="gradient">
+                    <StatusLabel status={Status.CUSTOM} background="gradientCooler">
                         <CenteredFlex $gap={8}>
                             <Swirl size={14} />
                             <Text $fontSize="0.67rem" $fontWeight={700}>

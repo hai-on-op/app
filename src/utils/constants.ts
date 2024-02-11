@@ -64,6 +64,7 @@ export const mediaWidthTemplates: {
 
 export enum Status {
     SAFE = 'SAFE',
+    UNSAFE = 'UNSAFE',
     DANGER = 'DANGER',
     LIVE = 'LIVE',
     COMPLETED = 'COMPLETED',

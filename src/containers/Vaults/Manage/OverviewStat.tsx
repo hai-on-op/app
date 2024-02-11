@@ -6,7 +6,7 @@ import { CenteredFlex, type DashedContainerProps, DashedContainerStyle, Flex, Te
 import { StatusLabel } from '~/components/StatusLabel'
 import { TokenPair } from '~/components/TokenPair'
 import { Tooltip } from '~/components/Tooltip'
-import { ProgressBar, type ProgressBarProps } from '~/components/ProgressBar'
+import { ProgressIndicator, ProgressIndicatorProps } from '~/components/ProgressIndicator'
 
 type OverviewStatProps = {
     token?: TokenKey
@@ -52,7 +52,7 @@ export function OverviewStat({
             </Flex>
             <CenteredFlex $gap={12}>
                 {!!simulatedValue && (
-                    <StatusLabel status={Status.CUSTOM} background="gradient" size={0.8}>
+                    <StatusLabel status={Status.CUSTOM} background="gradientCooler" size={0.8}>
                         <Text $fontSize="0.67rem" $fontWeight={700}>
                             {simulatedValue || '--'} {token}
                         </Text>
@@ -71,22 +71,19 @@ export function OverviewStat({
     )
 }
 
-type OverviewProgressStatProps = OverviewStatProps & ProgressBarProps
+type OverviewProgressStatProps = OverviewStatProps & ProgressIndicatorProps
 export function OverviewProgressStat({
     value,
     label,
     tooltip,
     alert,
     simulatedValue,
-    progress,
-    simulatedProgress,
-    colorLimits,
-    labels,
     fullWidth = false,
+    ...props
 }: OverviewProgressStatProps) {
     return (
         <StatContainer $fullWidth={fullWidth}>
-            <Flex $width="100%" $column $gap={12}>
+            <Flex $width="100%" $column $gap={4}>
                 <Flex $width="100%" $justify="space-between" $align="center">
                     <CenteredFlex $gap={4}>
                         <Text>{label}</Text>
@@ -97,7 +94,7 @@ export function OverviewProgressStat({
                     </CenteredFlex>
                     <CenteredFlex $gap={8}>
                         {simulatedValue && (
-                            <StatusLabel status={Status.CUSTOM} background="gradient" size={0.8}>
+                            <StatusLabel status={Status.CUSTOM} background="gradientCooler" size={0.8}>
                                 <Text $fontSize="0.67rem" $fontWeight={700}>
                                     {simulatedValue}
                                 </Text>
@@ -113,12 +110,7 @@ export function OverviewProgressStat({
                         )}
                     </CenteredFlex>
                 </Flex>
-                <ProgressBar
-                    progress={progress}
-                    simulatedProgress={simulatedProgress}
-                    colorLimits={colorLimits}
-                    labels={labels}
-                />
+                <ProgressIndicator {...props} />
             </Flex>
         </StatContainer>
     )
@@ -131,7 +123,7 @@ const StatContainer = styled(Flex).attrs((props) => ({
     ...props,
 }))<DashedContainerProps & { $fullWidth?: boolean }>`
     ${DashedContainerStyle}
-    height: 100px;
+    height: 112px;
     ${({ $fullWidth }) =>
         $fullWidth &&
         css`

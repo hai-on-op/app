@@ -1,3 +1,4 @@
+import type { ReactChildren } from '~/types'
 import { clamp } from '~/utils'
 
 import styled from 'styled-components'
@@ -9,7 +10,7 @@ export type ProgressBarProps = {
     colorLimits?: [number, number]
     labels?: {
         progress: number
-        label: string
+        label: ReactChildren
     }[]
 }
 export function ProgressBar({ progress, simulatedProgress, colorLimits, labels }: ProgressBarProps) {
