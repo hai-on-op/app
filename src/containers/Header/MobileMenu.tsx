@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import type { SetState } from '~/types'
-import { ChainId, LINK_TO_DISCORD, LINK_TO_DOCS, LINK_TO_TELEGRAM, LINK_TO_TWITTER, NETWORK_ID } from '~/utils'
+import { ChainId, LINK_TO_DISCORD, LINK_TO_DOCS, LINK_TO_GOVERNANCE, LINK_TO_TELEGRAM, LINK_TO_TWITTER, NETWORK_ID } from '~/utils'
 import { useMediaQuery, useOutsideClick } from '~/hooks'
 
 import styled from 'styled-components'
@@ -11,6 +11,7 @@ import { ConnectButton } from '~/components/ConnectButton'
 import { BrandedDropdown } from '~/components/BrandedDropdown'
 import {
     BarChart,
+    Clipboard,
     Database,
     Download,
     File,
@@ -131,6 +132,9 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
                         <BrandedDropdown.Item href={LINK_TO_DOCS} icon={<FileText size={18} />}>
                             Docs
                         </BrandedDropdown.Item>
+                        <BrandedDropdown.Item href={LINK_TO_GOVERNANCE} icon={<Clipboard size={18} />}>
+                            Governance
+                        </BrandedDropdown.Item>
                         <BrandedDropdown.Item
                             href={LINK_TO_TWITTER}
                             icon={<Twitter size={16} stroke="black" strokeWidth={2} />}
@@ -182,9 +186,7 @@ const Dropdown = styled(Popout)`
     ${({ theme }) => theme.mediaWidth.upToSmall`
         margin-right: -19px;
     `}
-    ${({ theme }) => theme.mediaWidth.upToMedium`
-        padding: 32px 0;
-    `}
+    padding: 32px 0;
 `
 const Inner = styled(Flex).attrs((props) => ({
     $column: true,
@@ -197,6 +199,8 @@ const Inner = styled(Flex).attrs((props) => ({
     padding: 12px;
     max-height: calc(100vh - 300px);
     overflow: hidden auto;
+    border-top: 1px solid rgba(0,0,0,0.2);
+    border-bottom: 1px solid rgba(0,0,0,0.2);
 
     & > * {
         width: 100%;
@@ -205,7 +209,5 @@ const Inner = styled(Flex).attrs((props) => ({
 
     ${({ theme }) => theme.mediaWidth.upToMedium`
         gap: 6px;
-        border-top: 1px solid rgba(0,0,0,0.2);
-        border-bottom: 1px solid rgba(0,0,0,0.2);
     `}
 `
