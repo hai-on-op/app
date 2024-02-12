@@ -108,5 +108,9 @@ function DropdownItem({ icon, children, active = false, href, type, onClick }: D
 
     if (onClick) return item
 
-    return <Link href={href} $width="100%" $textDecoration="none">{item}</Link>
+    return (
+        <Link href={href} $width="100%" $textDecoration="none">
+            {item}
+        </Link>
+    )
 }

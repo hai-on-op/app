@@ -173,9 +173,7 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                         </Link>
                                         {isLargerThanLarge && (
                                             <Link href="/learn" $textDecoration="none">
-                                                <HeaderLink $active={location.pathname === '/learn'}>
-                                                    LEARN
-                                                </HeaderLink>
+                                                <HeaderLink $active={location.pathname === '/learn'}>LEARN</HeaderLink>
                                             </Link>
                                         )}
                                     </>

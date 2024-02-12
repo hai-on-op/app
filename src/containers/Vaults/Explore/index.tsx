@@ -295,5 +295,8 @@ const TableRow = styled(TableHeaderBase)`
         &:hover {
             background-color: unset;
         }
+        & > * > * {
+            justify-content: flex-start;
+        }
     `}
 `

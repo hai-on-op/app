@@ -1,11 +1,13 @@
 import { useMediaQuery, useVaultById } from '~/hooks'
 
 import styled from 'styled-components'
-import { BlurContainer, Flex, Grid } from '~/styles'
+import { BlurContainer, Flex, Grid, Text } from '~/styles'
 import { ContentWithStatus } from '~/components/ContentWithStatus'
 import { BrandedTitle } from '~/components/BrandedTitle'
 import { Overview } from './Overview'
 import { ActivityTable } from './ActivityTable'
+import { AddressLink } from '~/components/AddressLink'
+import { ArrowUpRight } from 'react-feather'
 
 type VaultByIdProps = {
     id?: string
@@ -19,6 +21,13 @@ export function VaultById({ id = '' }: VaultByIdProps) {
         <Container>
             <Header>
                 <BrandedTitle textContent={`VAULT #${id}`} $fontSize={isLargerThanSmall ? '3rem' : '2.4rem'} />
+                {!!vault && (
+                    <Flex $justify="flex-start" $align="center" $gap={4}>
+                        <Text>Owner:</Text>
+                        <AddressLink address={vault.owner.address} $fontWeight={700} isOwner />
+                        <ArrowUpRight size={18} />
+                    </Flex>
+                )}
             </Header>
             <Body>
                 <ContentWithStatus
@@ -55,14 +64,9 @@ const Header = styled(Flex).attrs((props) => ({
     border-bottom: ${({ theme }) => theme.border.medium};
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
-        flex-direction: column-reverse;
+        flex-direction: column;
+        align-items: flex-start;
         padding: 24px;
-
-        & > * {
-            &:first-child {
-                flex-direction: column;
-            }
-        }
     `}
 
     z-index: 1;

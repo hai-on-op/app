@@ -134,7 +134,9 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
                 </Flex>
                 <Text>
                     {subtitle}
-                    <Link href={ctaLink} $fontWeight={700}>{cta}</Link>
+                    <Link href={ctaLink} $fontWeight={700}>
+                        {cta}
+                    </Link>
                 </Text>
                 {stats}
                 {children}

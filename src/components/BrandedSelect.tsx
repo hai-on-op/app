@@ -28,12 +28,7 @@ export function BrandedSelect({ width, options, value, onChange, ...props }: Bra
     useOutsideClick(container, () => setPersistent(false))
 
     return (
-        <Container
-            ref={setContainer}
-            $width={width}
-            $gap={8}
-            onClick={() => setPersistent((p) => !p)}
-        >
+        <Container ref={setContainer} $width={width} $gap={8} onClick={() => setPersistent((p) => !p)}>
             <HiddenText $fontSize="3.2em" $lineHeight="1" {...props}>
                 {options.find(({ value: v }) => v === value)?.label.toUpperCase()}
             </HiddenText>
