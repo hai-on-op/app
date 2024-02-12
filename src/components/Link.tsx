@@ -47,12 +47,14 @@ export function Link({ type, href, children, ...props }: LinkProps) {
 
 const InternalLink = styled(RRLink)<FlexProps>`
     ${FlexStyle}
+    display: inline-flex;
     color: inherit;
     cursor: pointer;
 `
 
 const ExternalLink = styled.a<FlexProps>`
     ${FlexStyle}
+    display: inline-flex;
     color: inherit;
     cursor: pointer;
 `
