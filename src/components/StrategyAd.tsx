@@ -3,9 +3,8 @@ import type { TokenKey } from '~/types'
 import styled from 'styled-components'
 import { DashedContainerStyle, Flex, HaiButton, Text } from '~/styles'
 import { HaiArrow } from '~/components/Icons/HaiArrow'
-import { InternalLink } from '~/components/InternalLink'
-import { ExternalLink } from '~/components/ExternalLink'
 import { FloatingElements, type FloatingElementsProps } from '~/components/BrandElements/FloatingElements'
+import { Link } from './Link'
 
 export type StrategyAdProps = {
     heading: string
@@ -45,21 +44,12 @@ export function StrategyAd({
                 </Header>
                 <Text $fontSize="0.8rem">{description}</Text>
             </Flex>
-            {ctaLink.startsWith('/') ? (
-                <InternalLink href={ctaLink} $textDecoration="none">
-                    <HaiButton $variant="yellowish" $gap={8}>
-                        <Text>{cta}</Text>
-                        <HaiArrow size={15} direction="upRight" />
-                    </HaiButton>
-                </InternalLink>
-            ) : (
-                <ExternalLink href={ctaLink} $textDecoration="none">
-                    <HaiButton $variant="yellowish" $gap={8}>
-                        <Text>{cta}</Text>
-                        <HaiArrow size={15} direction="upRight" />
-                    </HaiButton>
-                </ExternalLink>
-            )}
+            <Link href={ctaLink} $textDecoration="none">
+                <HaiButton $variant="yellowish" $gap={8}>
+                    <Text>{cta}</Text>
+                    <HaiArrow size={15} direction="upRight" />
+                </HaiButton>
+            </Link>
         </Container>
     )
 }

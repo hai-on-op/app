@@ -5,8 +5,7 @@ import styled from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
 import { HaiArrow } from '~/components/Icons/HaiArrow'
 import { HaiFace } from '~/components/Icons/HaiFace'
-import { InternalLink } from '~/components/InternalLink'
-import { ExternalLink } from '~/components/ExternalLink'
+import { Link } from '~/components/Link'
 
 import uniswapLogo from '~/assets/uniswap-icon.svg'
 import velodromeLogo from '~/assets/velodrome-img.svg'
@@ -39,19 +38,10 @@ type Props = Pick<Strategy, 'earnPlatform'>
 export function StrategyTableButton({ earnPlatform }: Props) {
     const { logo, size, link } = platformMap[earnPlatform || 'hai']
 
-    if (!earnPlatform)
-        return (
-            <InternalLink
-                href={link}
-                $textDecoration="none"
-                content={<Button earnPlatform={earnPlatform} logo={logo} size={size} />}
-            />
-        )
-
     return (
-        <ExternalLink href={link} $textDecoration="none">
+        <Link href={link} $textDecoration="none">
             <Button earnPlatform={earnPlatform} logo={logo} size={size} />
-        </ExternalLink>
+        </Link>
     )
 }
 

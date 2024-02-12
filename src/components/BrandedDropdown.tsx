@@ -7,8 +7,7 @@ import styled, { css } from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, type HaiButtonProps, Popout } from '~/styles'
 import { Caret } from './Icons/Caret'
 import { ArrowUpRight } from 'react-feather'
-import { InternalLink } from './InternalLink'
-import { ExternalLink } from './ExternalLink'
+import { Link } from './Link'
 
 type ButtonProps = Omit<HTMLProps<HTMLButtonElement>, 'ref' | 'as' | 'type' | 'label' | 'children'>
 type BrandedDropdownProps = ButtonProps &
@@ -109,12 +108,5 @@ function DropdownItem({ icon, children, active = false, href, type, onClick }: D
 
     if (onClick) return item
 
-    if (type === 'internal' || href.startsWith('/'))
-        return <InternalLink href={href} $width="100%" $textDecoration="none" content={item} />
-
-    return (
-        <ExternalLink href={href} $textDecoration="none">
-            {item}
-        </ExternalLink>
-    )
+    return <Link href={href} $width="100%" $textDecoration="none">{item}</Link>
 }

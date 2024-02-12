@@ -9,8 +9,8 @@ import styled from 'styled-components'
 import { BlurContainer, Flex, Text } from '~/styles'
 import { HaiFace } from './Icons/HaiFace'
 import { BrandedTitle } from './BrandedTitle'
-import { ExternalLink } from './ExternalLink'
 import { BrandedSelect } from './BrandedSelect'
+import { Link } from './Link'
 import { BorrowStats } from '~/containers/Vaults/Stats'
 import { EarnStats } from '~/containers/Earn/Stats'
 import { AuctionStats } from '~/containers/Auctions/Stats'
@@ -134,9 +134,7 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
                 </Flex>
                 <Text>
                     {subtitle}
-                    <ExternalLink href={ctaLink} $fontWeight={700}>
-                        {cta}
-                    </ExternalLink>
+                    <Link href={ctaLink} $fontWeight={700}>{cta}</Link>
                 </Text>
                 {stats}
                 {children}

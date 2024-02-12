@@ -2,9 +2,9 @@ import { useMediaQuery } from '~/hooks'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, Text } from '~/styles'
-import { ExternalLink } from '~/components/ExternalLink'
 import { BrandedTitle } from '~/components/BrandedTitle'
 import { HaiArrow } from '~/components/Icons/HaiArrow'
+import { Link } from '~/components/Link'
 
 type LearnCardProps = {
     title: string
@@ -25,7 +25,7 @@ export function LearnCard({ title, link, titleColorOffset }: LearnCardProps) {
                     colorOffset={titleColorOffset}
                 />
             </Flex>
-            <ExternalLink href={link} $textDecoration="none">
+            <Link href={link} $textDecoration="none">
                 <CenteredFlex $gap={12}>
                     <Text
                         $fontSize={isLargerThanExtraSmall ? '1.2rem' : '1rem'}
@@ -36,7 +36,7 @@ export function LearnCard({ title, link, titleColorOffset }: LearnCardProps) {
                     </Text>
                     <HaiArrow direction="right" strokeWidth={2.5} />
                 </CenteredFlex>
-            </ExternalLink>
+            </Link>
         </Container>
     )
 }

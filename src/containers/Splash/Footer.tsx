@@ -6,8 +6,7 @@ import { Elf } from '~/components/BrandElements/Elf'
 import { Twitter } from '~/components/Icons/Twitter'
 import { Telegram } from '~/components/Icons/Telegram'
 import { Discord } from '~/components/Icons/Discord'
-// import { InternalLink } from '~/components/InternalLink'
-import { ExternalLink } from '~/components/ExternalLink'
+import { Link } from '~/components/Link'
 
 import haiLogo from '~/assets/logo.png'
 
@@ -31,33 +30,33 @@ export function Footer() {
                             $column
                             $gap={12}>
                             <Text $fontWeight={700}>About</Text>
-                            <InternalLink
+                            <Link
                                 href="/privacy"
                                 $textDecoration="none">
                                 Privacy
-                            </InternalLink>
-                            <InternalLink
+                            </Link>
+                            <Link
                                 href="/terms"
                                 $textDecoration="none">
                                 Terms
-                            </InternalLink>
+                            </Link>
                         </Flex> */}
                         <Flex $column $gap={12}>
                             <Text $fontWeight={700}>Resources</Text>
-                            <ExternalLink href={LINK_TO_DOCS} $textDecoration="none">
+                            <Link href={LINK_TO_DOCS} $textDecoration="none">
                                 Docs
-                            </ExternalLink>
+                            </Link>
                         </Flex>
                         <IconContainer>
-                            <ExternalLink href={LINK_TO_TWITTER} $textDecoration="none" aria-label="Twitter">
+                            <Link href={LINK_TO_TWITTER} $textDecoration="none" aria-label="Twitter">
                                 <Twitter size={28} />
-                            </ExternalLink>
-                            <ExternalLink href={LINK_TO_TELEGRAM} $textDecoration="none" aria-label="Telegram">
+                            </Link>
+                            <Link href={LINK_TO_TELEGRAM} $textDecoration="none" aria-label="Telegram">
                                 <Telegram size={32} />
-                            </ExternalLink>
-                            <ExternalLink href={LINK_TO_DISCORD} $textDecoration="none" aria-label="Discord">
+                            </Link>
+                            <Link href={LINK_TO_DISCORD} $textDecoration="none" aria-label="Discord">
                                 <Discord size={32} />
-                            </ExternalLink>
+                            </Link>
                         </IconContainer>
                     </Grid>
                 </LinksContainer>

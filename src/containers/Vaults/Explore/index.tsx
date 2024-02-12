@@ -15,9 +15,9 @@ import { CheckboxButton } from '~/components/CheckboxButton'
 import { LiquidateVaultModal } from '~/components/Modal/LiquidateVaultModal'
 import { SortByDropdown } from '~/components/SortByDropdown'
 import { Table, TableContainer } from '~/components/Table'
-import { InternalLink } from '~/components/InternalLink'
 import { HaiArrow } from '~/components/Icons/HaiArrow'
 import { CollateralDropdown } from '~/components/CollateralDropdown'
+import { Link } from '~/components/Link'
 
 const RECORDS_PER_PAGE = 10
 
@@ -94,19 +94,16 @@ export function VaultExplorer() {
                                         {
                                             // content: <Text>#{safeId}</Text>,
                                             content: (
-                                                <InternalLink
-                                                    href={`/vaults/${safeId}`}
-                                                    content={
-                                                        <CenteredFlex $gap={4}>
-                                                            <Text>#{safeId}</Text>
-                                                            <HaiArrow direction="upRight" size={14} strokeWidth={1.5} />
-                                                        </CenteredFlex>
-                                                    }
-                                                />
+                                                <Link href={`/vaults/${safeId}`}>
+                                                    <CenteredFlex $gap={4}>
+                                                        <Text>#{safeId}</Text>
+                                                        <HaiArrow direction="upRight" size={14} strokeWidth={1.5} />
+                                                    </CenteredFlex>
+                                                </Link>
                                             ),
                                         },
                                         {
-                                            content: <AddressLink address={owner.address} />,
+                                            content: <AddressLink address={owner.address} isOwner />,
                                         },
                                         {
                                             content: isLargerThanSmall ? (

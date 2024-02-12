@@ -12,7 +12,7 @@ import { HaiCoin } from '~/components/BrandElements/HaiCoin'
 import { Elf } from '~/components/BrandElements/Elf'
 import { BrandedTitle } from '~/components/BrandedTitle'
 import { HaiFace } from '~/components/Icons/HaiFace'
-import { ExternalLink } from '~/components/ExternalLink'
+import { Link } from '~/components/Link'
 
 const clouds: SplashImage[] = [
     {
@@ -137,9 +137,9 @@ export function Third({ zIndex }: ZoomSceneProps) {
                         $HAI is more stable than other stables, automatically.&nbsp;
                         <strong>
                             Learn more about the&nbsp;
-                            <ExternalLink href={`${LINK_TO_DOCS}detailed/modules/pid_controller.html`}>
+                            <Link href={`${LINK_TO_DOCS}detailed/modules/pid_controller.html`}>
                                 $HAI PID controller nerd stuff →
-                            </ExternalLink>
+                            </Link>
                         </strong>
                     </Text>
                 </Flex>

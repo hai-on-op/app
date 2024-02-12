@@ -15,8 +15,7 @@ import { Sound } from '~/components/Icons/Sound'
 import { HaiFace } from '~/components/Icons/HaiFace'
 import { Send } from 'react-feather'
 import { Marquee, MarqueeChunk } from '~/components/Marquee'
-import { InternalLink } from '~/components/InternalLink'
-import { ExternalLink } from '~/components/ExternalLink'
+import { Link } from '~/components/Link'
 import { ConnectButton } from '~/components/ConnectButton'
 import { BrandedDropdown } from '~/components/BrandedDropdown'
 import { WrapETHModal } from '~/components/Modal/WrapETHModal'
@@ -111,7 +110,7 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                 {logoEl}
                             </CenteredFlex>
                         ) : (
-                            <InternalLink href="/">{logoEl}</InternalLink>
+                            <Link href="/">{logoEl}</Link>
                         )}
                         {isLargerThanSmall &&
                             (isSplash ? (
@@ -126,9 +125,9 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                     >
                                         Learn
                                     </HeaderLink>
-                                    <ExternalLink href={LINK_TO_DOCS} $textDecoration="none">
+                                    <Link href={LINK_TO_DOCS} $textDecoration="none">
                                         <HeaderLink>Docs</HeaderLink>
-                                    </ExternalLink>
+                                    </Link>
                                     <CommunityDropdownContainer
                                         ref={setCommunityContainer}
                                         onClick={() => setCommunityDropdownActive((a) => !a)}
@@ -164,32 +163,20 @@ export function Header({ tickerActive = false }: HeaderProps) {
                             ) : (
                                 isLargerThanMedium && (
                                     <>
-                                        <InternalLink
-                                            href="/vaults"
-                                            $textDecoration="none"
-                                            content={
-                                                <HeaderLink $active={location.pathname.startsWith('/vaults')}>
-                                                    GET HAI
-                                                </HeaderLink>
-                                            }
-                                        />
-                                        <InternalLink
-                                            href="/earn"
-                                            $textDecoration="none"
-                                            content={
-                                                <HeaderLink $active={location.pathname === '/earn'}>EARN</HeaderLink>
-                                            }
-                                        />
+                                        <Link href="/vaults" $textDecoration="none">
+                                            <HeaderLink $active={location.pathname.startsWith('/vaults')}>
+                                                GET HAI
+                                            </HeaderLink>
+                                        </Link>
+                                        <Link href="/earn" $textDecoration="none">
+                                            <HeaderLink $active={location.pathname === '/earn'}>EARN</HeaderLink>
+                                        </Link>
                                         {isLargerThanLarge && (
-                                            <InternalLink
-                                                href="/learn"
-                                                $textDecoration="none"
-                                                content={
-                                                    <HeaderLink $active={location.pathname === '/learn'}>
-                                                        LEARN
-                                                    </HeaderLink>
-                                                }
-                                            />
+                                            <Link href="/learn" $textDecoration="none">
+                                                <HeaderLink $active={location.pathname === '/learn'}>
+                                                    LEARN
+                                                </HeaderLink>
+                                            </Link>
                                         )}
                                     </>
                                 )
@@ -207,12 +194,12 @@ export function Header({ tickerActive = false }: HeaderProps) {
                             <Sound muted={!isPlayingMusic} size={21} />
                         </MusicButton>
                         {isSplash ? (
-                            <InternalLink href="/vaults" $textDecoration="none">
+                            <Link href="/vaults" $textDecoration="none">
                                 <HaiButton $variant="yellowish">
                                     <Send size={18} strokeWidth={2.5} />
                                     Enter App
                                 </HaiButton>
-                            </InternalLink>
+                            </Link>
                         ) : (
                             <>
                                 {isLargerThanSmall && <ConnectButton showBalance="horizontal" />}

@@ -4,8 +4,8 @@ import { useOutsideClick } from '~/hooks'
 
 import styled from 'styled-components'
 import { CenteredFlex, Popout, type TextProps, Title, Flex, Text } from '~/styles'
-import { ExternalLink } from './ExternalLink'
 import { CaretWithOutline } from './Icons/CaretWithOutline'
+import { Link } from './Link'
 
 type BrandedSelectOption = {
     label: string
@@ -24,7 +24,6 @@ type BrandedSelectProps = TextProps & {
 export function BrandedSelect({ width, options, value, onChange, ...props }: BrandedSelectProps) {
     const [container, setContainer] = useState<HTMLElement | null>(null)
     const [persistent, setPersistent] = useState(false)
-    // const [active, setActive] = useState(false)
 
     useOutsideClick(container, () => setPersistent(false))
 
@@ -33,8 +32,6 @@ export function BrandedSelect({ width, options, value, onChange, ...props }: Bra
             ref={setContainer}
             $width={width}
             $gap={8}
-            // onPointerOver={() => setActive(true)}
-            // onPointerLeave={() => setActive(false)}
             onClick={() => setPersistent((p) => !p)}
         >
             <HiddenText $fontSize="3.2em" $lineHeight="1" {...props}>
@@ -76,7 +73,7 @@ export function BrandedSelect({ width, options, value, onChange, ...props }: Bra
                             </Flex>
                         </DropdownOption>
                     ) : (
-                        <ExternalLink key={v} href={href} $textDecoration="none">
+                        <Link key={v} href={href} $textDecoration="none">
                             <DropdownOption
                                 $active={v === value}
                                 onClick={() => {
@@ -90,7 +87,7 @@ export function BrandedSelect({ width, options, value, onChange, ...props }: Bra
                                     <Text>{description}</Text>
                                 </Flex>
                             </DropdownOption>
-                        </ExternalLink>
+                        </Link>
                     )
                 )}
             </Dropdown>

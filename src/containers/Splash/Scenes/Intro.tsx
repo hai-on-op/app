@@ -8,7 +8,7 @@ import { Swirl } from '~/components/Icons/Swirl'
 import { Send } from 'react-feather'
 import { PairsBanner } from '../PairsBanner'
 import { FloatingElements, type FloatingElementsProps } from '~/components/BrandElements/FloatingElements'
-import { InternalLink } from '~/components/InternalLink'
+import { Link } from '~/components/Link'
 
 const elves: FloatingElementsProps['elves'] = [
     {
@@ -136,16 +136,12 @@ export function Intro({ zIndex }: ZoomSceneProps) {
                         <Swirl />
                         Scroll to Explore
                     </HaiButton>
-                    <InternalLink
-                        href="/vaults"
-                        $textDecoration="none"
-                        content={
-                            <HaiButton $variant="yellowish">
-                                <Send size={18} strokeWidth={2.5} />
-                                Enter App
-                            </HaiButton>
-                        }
-                    />
+                    <Link href="/vaults" $textDecoration="none">
+                        <HaiButton $variant="yellowish">
+                            <Send size={18} strokeWidth={2.5} />
+                            Enter App
+                        </HaiButton>
+                    </Link>
                 </ButtonContainer>
                 {/*
                 Note: FloatingElements MUST be a direct child of ZoomScene

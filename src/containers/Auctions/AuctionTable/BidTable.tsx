@@ -137,7 +137,7 @@ function BidTableRow({ bid, eventType, bidToken, sellToken, withSell }: BidTable
                             {eventType === 'Start' ? (
                                 <Text>--</Text>
                             ) : (
-                                <AddressLink chainId={chain?.id as ChainId} address={bid.bidder} />
+                                <AddressLink chainId={chain?.id as ChainId} address={bid.bidder} isOwner />
                             )}
                         </Flex>
                     ),
