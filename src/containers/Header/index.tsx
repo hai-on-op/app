@@ -263,7 +263,7 @@ const Ticker = styled(Flex)`
     flex-shrink: 0;
 
     & ${MarqueeChunk} {
-        & > *:nth-child(4n + 1) {
+        & > *:nth-child(3n + 1) {
             font-weight: 700;
         }
     }
