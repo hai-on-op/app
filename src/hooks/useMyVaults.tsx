@@ -6,7 +6,7 @@ import { useStoreState } from '~/store'
 
 const sortableHeaders: SortableHeader[] = [
     { label: 'Vault' },
-    { label: 'Risk Ratio' },
+    { label: 'Collateral Ratio' },
     { label: 'Collateral' },
     { label: 'Debt' },
     { label: 'Net APY' },

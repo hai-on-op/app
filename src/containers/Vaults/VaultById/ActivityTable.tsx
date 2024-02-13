@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 
 import type { SortableHeader } from '~/types'
-import { formatDate, formatNumberWithStyle, type QueriedVault } from '~/utils'
+import { formatDate, formatNumberWithStyle, LINK_TO_DOCS, type QueriedVault } from '~/utils'
 import { useStoreState } from '~/store'
 
 import styled from 'styled-components'
@@ -10,6 +10,7 @@ import { AddressLink } from '~/components/AddressLink'
 import { Table } from '~/components/Table'
 import { HaiArrow } from '~/components/Icons/HaiArrow'
 import { Pagination } from '~/components/Pagination'
+import { Link } from '~/components/Link'
 
 enum ActivityAction {
     CONFISCATE = 'confiscate',
@@ -66,7 +67,12 @@ const getAction = (debt: number, collateral: number) => {
 const sortableHeaders: SortableHeader[] = [
     {
         label: 'Action',
-        tooltip: `Description of the action taken by the vault owner or protocol. Confiscations are performed by authorized accounts. Read more about confiscations in the docs.`, // TODO: better tooltip here
+        tooltip: (
+            <Text>
+                {`Description of the action taken by the vault owner or protocol. Confiscations are performed by authorized accounts. Read more about confiscations in the `}
+                <Link href={LINK_TO_DOCS}>docs.</Link>
+            </Text>
+        ),
     },
     {
         label: 'Coll. Change',

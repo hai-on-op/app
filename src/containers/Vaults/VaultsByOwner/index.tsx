@@ -268,6 +268,9 @@ const StyledTableContainer = styled(TableContainer)`
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
         padding: 0px;
+        & > *:not(:last-child) {
+            border-bottom: ${theme.border.medium};
+        }
     `}
 `
 const TableHeaderBase = styled(Grid)`
@@ -302,9 +305,6 @@ const TableRow = styled(TableHeaderBase)`
         grid-template-columns: 1fr 1fr;
         grid-gap: 12px;
         border-radius: 0px;
-        &:not(:last-child) {
-            border-bottom: ${theme.border.medium};
-        }
         &:hover {
             background-color: unset;
         }

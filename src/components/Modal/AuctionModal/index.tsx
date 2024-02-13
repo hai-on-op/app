@@ -52,7 +52,6 @@ export function AuctionModal({ maxWidth = '600px', onClose, ...props }: ModalPro
                         nextStep={() => setStep(AuctionActionStep.CONFIRM)}
                     />
                 )
-            // TODO: confirm auction action
             case AuctionActionStep.CONFIRM:
                 return <Confirm previousStep={() => setStep(AuctionActionStep.CONFIGURE)} />
         }
