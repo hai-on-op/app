@@ -1,4 +1,4 @@
-import { LINK_TO_DISCORD, LINK_TO_DOCS, LINK_TO_TELEGRAM, LINK_TO_TWITTER } from '~/utils'
+import { LINK_TO_DISCORD, LINK_TO_DOCS, LINK_TO_PRIVACY_POLICY, LINK_TO_TELEGRAM, LINK_TO_TWITTER } from '~/utils'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, Grid, Text } from '~/styles'
@@ -25,22 +25,18 @@ export function Footer() {
                     </Text>
                 </Description>
                 <LinksContainer>
-                    <Grid $columns="1fr min-content" $gap={12}>
-                        {/* <Flex
-                            $column
-                            $gap={12}>
+                    <Grid $columns="1fr 1fr min-content" $gap={12}>
+                        <Flex $column $gap={12}>
                             <Text $fontWeight={700}>About</Text>
-                            <Link
-                                href="/privacy"
-                                $textDecoration="none">
+                            <Link href={LINK_TO_PRIVACY_POLICY} $textDecoration="none">
                                 Privacy
                             </Link>
-                            <Link
+                            {/* <Link
                                 href="/terms"
                                 $textDecoration="none">
                                 Terms
-                            </Link>
-                        </Flex> */}
+                            </Link> */}
+                        </Flex>
                         <Flex $column $gap={12}>
                             <Text $fontWeight={700}>Resources</Text>
                             <Link href={LINK_TO_DOCS} $textDecoration="none">
@@ -170,6 +166,15 @@ const IconContainer = styled(Flex).attrs((props) => ({
         fill: black;
         stroke: none;
     }
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        flex-direction: column;
+        align-items: center;
+        & svg {
+            width: 24px;
+            height: auto;
+        }
+    `}
 `
 
 const ElfContainer = styled(CenteredFlex)`

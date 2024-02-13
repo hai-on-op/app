@@ -6,6 +6,7 @@ import {
     LINK_TO_DISCORD,
     LINK_TO_DOCS,
     LINK_TO_GOVERNANCE,
+    LINK_TO_PRIVACY_POLICY,
     LINK_TO_TELEGRAM,
     LINK_TO_TWITTER,
     NETWORK_ID,
@@ -22,6 +23,7 @@ import {
     Clipboard,
     Database,
     Download,
+    EyeOff,
     File,
     FileText,
     Grid,
@@ -142,6 +144,9 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
                         </BrandedDropdown.Item>
                         <BrandedDropdown.Item href={LINK_TO_GOVERNANCE} icon={<Clipboard size={18} />}>
                             Governance
+                        </BrandedDropdown.Item>
+                        <BrandedDropdown.Item href={LINK_TO_PRIVACY_POLICY} icon={<EyeOff size={18} />}>
+                            Privacy Policy
                         </BrandedDropdown.Item>
                         <BrandedDropdown.Item
                             href={LINK_TO_TWITTER}

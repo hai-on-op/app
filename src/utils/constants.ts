@@ -95,6 +95,8 @@ export const network_name = VITE_NETWORK_ID === '1' ? 'mainnet' : 'optimism-sepo
 
 export const LINK_TO_DOCS = 'https://docs.letsgethai.com/'
 export const LINK_TO_GOVERNANCE = 'https://gov.letsgethai.com/'
+export const LINK_TO_PRIVACY_POLICY =
+    'https://docs.google.com/document/d/16MWB3hWZaRmmdQDJjCUe2CHyzgpYDzMpGiYJQdKLzZA/edit?usp=sharing'
 export const LINK_TO_TWITTER = 'https://twitter.com/@letsgethai'
 export const LINK_TO_TELEGRAM = 'https://t.me/+0iIhX0f9DDAxODE5'
 export const LINK_TO_DISCORD = 'https://discord.gg/5MWsWuyTBG'

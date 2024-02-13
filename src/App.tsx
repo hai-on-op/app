@@ -12,7 +12,6 @@ import { GlobalStyle } from '~/styles'
 import { ErrorBoundary } from '~/ErrorBoundary'
 import { Shared } from '~/containers/Shared'
 import { Splash } from '~/containers/Splash'
-import { Privacy } from '~/containers/Privacy'
 import { Auctions } from '~/containers/Auctions'
 import { Analytics } from '~/containers/Analytics'
 import { Earn } from '~/containers/Earn'
@@ -42,7 +41,6 @@ const App = () => {
                                             <Route exact strict component={TestClaim} path={'/test/claim'} />
                                         )}
                                         <Route exact strict component={Splash} path={'/'} />
-                                        <Route exact strict component={Privacy} path={'/privacy'} />
                                         <Route exact strict component={Auctions} path={'/auctions'} />
                                         <Route exact strict component={Analytics} path={'/analytics'} />
                                         <Route exact strict component={Contracts} path={'/contracts'} />
