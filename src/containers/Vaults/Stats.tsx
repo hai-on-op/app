@@ -36,7 +36,8 @@ export function BorrowStats() {
                       })
                     : '--',
                 label: 'My Locked Collateral',
-                tooltip: 'Hello world',
+                tooltip:
+                    'Summation of the total amount of a given collateral locked in your vaults multiplied by the protocol oracle price of that collateral.',
             },
             {
                 header: (
@@ -62,23 +63,23 @@ export function BorrowStats() {
                     </Flex>
                 ),
                 label: 'My Total Debt',
-                tooltip: 'Hello World',
+                tooltip: 'The total amount of minted debt tokens multiplied by the protocol redemption price of debt.',
             },
             {
                 header: '7.8%',
                 label: 'My Net Stability Fee',
-                tooltip: 'Hello World',
+                tooltip: 'My Total Debt multiplied by the stability fee rate of Vault.',
             },
             {
                 header: '7.8%',
                 label: 'My Net Rewards APY',
-                tooltip: 'Hello World',
+                tooltip: 'Rewards derived from all campaign activities. See [Here] for more information.',
             },
             {
                 header: '$7,000',
                 headerStatus: <RewardsTokenPair tokens={['OP', 'KITE']} hideLabel />,
                 label: 'My Vault Rewards',
-                tooltip: 'Hello World',
+                tooltip: 'Rewards currently voted upon and distributed by DAO approximately once per month.',
                 button: (
                     <HaiButton $variant="yellowish" onClick={() => popupsActions.setIsClaimPopupOpen(true)}>
                         Claim

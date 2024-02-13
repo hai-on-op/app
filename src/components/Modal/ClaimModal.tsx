@@ -5,13 +5,13 @@ import styled from 'styled-components'
 import { Flex, HaiButton, Text } from '~/styles'
 import { Modal, type ModalProps } from './index'
 import { TokenPair } from '../TokenPair'
+import { useMemo } from 'react'
 
 type DummyClaimableAsset = {
     asset: string
     amount: string
 }
 
-// TOOD: get real claim data
 const dummyData: DummyClaimableAsset[] = [
     {
         asset: 'WETH',
@@ -24,10 +24,34 @@ const dummyData: DummyClaimableAsset[] = [
 ]
 
 export function ClaimModal(props: ModalProps) {
-    // TODO: calculate total $ value
+    // TODO: extract claim asset identification and calculations to hook or provider
 
-    const { isClaimPopupOpen } = useStoreState(({ popupsModel }) => popupsModel)
+    const {
+        vaultModel: { liquidationData },
+        popupsModel: { isClaimPopupOpen },
+    } = useStoreState((state) => state)
     const { setIsClaimPopupOpen } = useStoreActions(({ popupsModel }) => popupsModel)
+
+    const { prices, total } = useMemo(() => {
+        if (!liquidationData)
+            return {
+                prices: {},
+                total: 0,
+            }
+        return dummyData.reduce(
+            (acc, { asset, amount }) => {
+                const price = parseFloat(
+                    asset === 'HAI'
+                        ? liquidationData.currentRedemptionPrice || '1'
+                        : liquidationData.collateralLiquidationData[asset]?.currentPrice.value || '0'
+                )
+                acc.prices[asset] = price
+                acc.total += parseFloat(amount) * price
+                return acc
+            },
+            { prices: {} as Record<string, number>, total: 0 }
+        )
+    }, [liquidationData])
 
     if (!isClaimPopupOpen) return null
 
@@ -41,7 +65,8 @@ export function ClaimModal(props: ModalProps) {
                 <Flex $width="100%" $justify="space-between" $align="center">
                     <Text>
                         <strong>Total Estimated Value:</strong>
-                        &nbsp;$27,765
+                        &nbsp;
+                        {formatNumberWithStyle(total, { style: 'currency' })}
                     </Text>
                     <HaiButton $variant="yellowish" disabled={true} onClick={() => {}}>
                         Claim All
@@ -52,7 +77,7 @@ export function ClaimModal(props: ModalProps) {
             <Text>Claim your rewards earned from borrowing $HAI, or assets purchased through auctions.</Text>
             <Flex $width="100%" $column $justify="flex-start" $align="stretch" $gap={12}>
                 {dummyData.map((asset, i) => (
-                    <ClaimableAsset key={i} asset={asset} />
+                    <ClaimableAsset key={i} asset={asset} price={prices[asset.asset]} />
                 ))}
             </Flex>
         </Modal>
@@ -71,7 +96,11 @@ const ClaimableAssetContainer = styled(Flex).attrs((props) => ({
     border: 2px solid rgba(0, 0, 0, 0.1);
 `
 
-function ClaimableAsset({ asset }: { asset: DummyClaimableAsset }) {
+type ClaimableAssetProps = {
+    asset: DummyClaimableAsset
+    price?: number
+}
+function ClaimableAsset({ asset, price = 0 }: ClaimableAssetProps) {
     return (
         <ClaimableAssetContainer>
             <TokenPair tokens={[asset.asset as any]} hideLabel />
@@ -79,8 +108,9 @@ function ClaimableAsset({ asset }: { asset: DummyClaimableAsset }) {
                 <Text $fontSize="1em" $fontWeight={700}>
                     {formatNumberWithStyle(asset.amount, { maxDecimals: 4 })} {asset.asset}
                 </Text>
-                {/* TODO: calculate individual $ amount */}
-                <Text $fontSize="0.7em">{formatNumberWithStyle(asset.amount, { style: 'currency' })}</Text>
+                <Text $fontSize="0.7em">
+                    {formatNumberWithStyle(parseFloat(asset.amount) * price, { style: 'currency' })}
+                </Text>
             </Flex>
         </ClaimableAssetContainer>
     )

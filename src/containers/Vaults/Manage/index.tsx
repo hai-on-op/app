@@ -11,11 +11,16 @@ import { ProxyPrompt } from '~/components/ProxyPrompt'
 import { Overview } from './Overview'
 import { VaultActions } from './VaultActions'
 import { ManageDropdown } from './ManageDropdown'
+import { useStoreState } from '~/store'
 
 type ManageVaultProps = {
     headerContent?: ReactChildren
 }
 export function ManageVault({ headerContent }: ManageVaultProps) {
+    const {
+        vaultModel: { liquidationData },
+    } = useStoreState((state) => state)
+
     const { updateForm, collateral } = useVault()
 
     // clear form inputs when unmounting
@@ -26,19 +31,32 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
             <Header>
                 <CenteredFlex $gap={12}>
                     <ManageDropdown />
-                    <RewardsTokenPair tokens={['OP']} />
+                    <RewardsTokenPair tokens={['OP', 'KITE']} />
                 </CenteredFlex>
-                <Text>
-                    Market Price: ({collateral.name})&nbsp;
-                    <strong>
-                        {collateral.priceInUSD
-                            ? formatNumberWithStyle(collateral.priceInUSD.toString(), {
-                                  maxDecimals: 2,
-                                  style: 'currency',
-                              })
-                            : '--'}
-                    </strong>
-                </Text>
+                <Flex $column $justify="center" $align="flex-start" $gap={4}>
+                    <Text>
+                        {collateral.name} Market Price:&nbsp;
+                        <strong>
+                            {collateral.priceInUSD
+                                ? formatNumberWithStyle(collateral.priceInUSD.toString(), {
+                                      maxDecimals: 2,
+                                      style: 'currency',
+                                  })
+                                : '--'}
+                        </strong>
+                    </Text>
+                    <Text>
+                        HAI Redemption Price:&nbsp;
+                        <strong>
+                            {liquidationData?.currentRedemptionPrice
+                                ? formatNumberWithStyle(liquidationData.currentRedemptionPrice, {
+                                      maxDecimals: 2,
+                                      style: 'currency',
+                                  })
+                                : '--'}
+                        </strong>
+                    </Text>
+                </Flex>
                 {headerContent}
             </Header>
             <Body>

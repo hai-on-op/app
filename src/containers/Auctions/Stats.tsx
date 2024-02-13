@@ -15,18 +15,18 @@ export function AuctionStats() {
         {
             header: activeBids.length,
             label: 'My Active Bids',
-            tooltip: 'Hello World',
+            tooltip: 'Number of your active bids placed in auctions',
         },
         {
             header: activeBidsValue ? formatNumberWithStyle(activeBidsValue, { style: 'currency' }) : '$--',
             label: 'My Active Bids Value',
-            tooltip: 'Hello World',
+            tooltip: 'Total dollar value of all your active bids placed in auctions',
         },
         {
             header: '$7,000',
             headerStatus: <RewardsTokenPair tokens={['OP', 'KITE']} hideLabel />,
             label: 'My Claimable Assets',
-            tooltip: 'Hello World',
+            tooltip: 'Claim assets purchased in auctions and/or rewards from earn strategies',
             button: (
                 <HaiButton $variant="yellowish" onClick={() => popupsActions.setIsClaimPopupOpen(true)}>
                     Claim

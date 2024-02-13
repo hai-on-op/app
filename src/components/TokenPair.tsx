@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 
-import type { TokenKey } from '~/types'
+import type { ReactChildren, TokenKey } from '~/types'
 import { TOKEN_LOGOS } from '~/utils'
 import { useStoreState } from '~/store'
 
 import styled, { css } from 'styled-components'
 import { CenteredFlex, Flex, Text } from '~/styles'
+import { Tooltip } from './Tooltip'
 
 type TokenPairProps = {
     tokens: [TokenKey] | [TokenKey, TokenKey]
@@ -58,12 +59,15 @@ const IconContainer = styled(CenteredFlex)<{ $size?: number; $isKite?: boolean }
     }
 `
 
-type RewardsPairProps = TokenPairProps
-export function RewardsTokenPair({ tokens, hideLabel = false }: RewardsPairProps) {
+type RewardsPairProps = TokenPairProps & {
+    tooltip?: ReactChildren
+}
+export function RewardsTokenPair({ tokens, hideLabel = false, tooltip }: RewardsPairProps) {
     return (
         <RewardsContainer $pad={!hideLabel} $gap={8} $grow={0}>
             <TokenPair tokens={tokens} size={36} hideLabel />
             {!hideLabel && <Text $fontWeight={700}>REWARDS</Text>}
+            {!!tooltip && <Tooltip>{tooltip}</Tooltip>}
         </RewardsContainer>
     )
 }
@@ -88,7 +92,7 @@ export function CyclingTokenIcons({ size = 32 }: { size?: number }) {
     const [currentIcon, setCurrentIcon] = useState<string>()
 
     useEffect(() => {
-        const tokens = Object.values(tokensData)
+        const tokens = Object.values(tokensData || {})
             .filter(({ isCollateral }) => isCollateral)
             .map((data) => data.symbol)
         if (!tokens.length) return

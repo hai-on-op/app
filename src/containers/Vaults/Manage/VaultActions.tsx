@@ -260,6 +260,7 @@ export function VaultActions() {
                             action === VaultAction.CREATE ? undefined : () => setAction(VaultAction.WITHDRAW_REPAY)
                         }
                         style={action === VaultAction.WITHDRAW_REPAY ? undefined : { opacity: 0.4 }}
+                        hidden={action === VaultAction.CREATE}
                     />
                     <NumberInput
                         label={
@@ -313,6 +314,7 @@ export function VaultActions() {
                             action === VaultAction.CREATE ? undefined : () => setAction(VaultAction.WITHDRAW_REPAY)
                         }
                         style={action === VaultAction.WITHDRAW_REPAY ? undefined : { opacity: 0.4 }}
+                        hidden={action === VaultAction.CREATE}
                     />
                     {collateral.name === 'WETH' && isDepositBorrowOrCreate && (
                         <>

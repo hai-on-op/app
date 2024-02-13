@@ -10,7 +10,7 @@ export type StatProps = {
     header: ReactChildren
     headerStatus?: ReactChildren
     label: string
-    tooltip?: string
+    tooltip?: ReactChildren
     button?: ReactChildren
 }
 

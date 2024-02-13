@@ -24,16 +24,18 @@ export function ProgressIndicator({ progress, simulatedProgress, colorLimits, la
                 $left={progressToPercentage(progress.progress)}
                 style={simulatedProgress ? { opacity: 0.6 } : undefined}
             >
-                <Text>{progress.label}</Text>
+                <Text $whiteSpace="nowrap">{progress.label}</Text>
             </Indicator>
             {simulatedProgress !== undefined && (
                 <Indicator $left={progressToPercentage(simulatedProgress.progress)}>
-                    <Text>{simulatedProgress.label}</Text>
+                    <Text $whiteSpace="nowrap">{simulatedProgress.label}</Text>
                 </Indicator>
             )}
             {labels?.map(({ progress: p, label }, i) => (
                 <Label key={i} $left={progressToPercentage(p)}>
-                    <Text $fontSize="8px">{label}</Text>
+                    <Text $whiteSpace="nowrap" $fontSize="8px">
+                        {label}
+                    </Text>
                 </Label>
             ))}
         </Container>

@@ -39,7 +39,7 @@ export function StrategyTableButton({ earnPlatform }: Props) {
     const { logo, size, link } = platformMap[earnPlatform || 'hai']
 
     return (
-        <Link href={link} $textDecoration="none">
+        <Link href={link} $width="100%" $textDecoration="none">
             <Button earnPlatform={earnPlatform} logo={logo} size={size} />
         </Link>
     )
@@ -51,7 +51,7 @@ type ButtonProps = Props & {
 }
 function Button({ earnPlatform, size, logo }: ButtonProps) {
     return (
-        <EarnButton>
+        <EarnButton $width="100%" $justify="space-between" $align="center">
             <CenteredFlex $gap={4}>
                 <Text>Earn</Text>
                 <HaiArrow size={15} direction="upRight" />

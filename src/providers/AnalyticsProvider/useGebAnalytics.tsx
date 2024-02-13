@@ -54,7 +54,7 @@ export function useGebAnalytics() {
                     erc20Supply: formatSummaryValue(formatEther(result.erc20Supply).toString(), { maxDecimals: 0 })!,
                     globalDebt: formatSummaryValue(formatEther(result.globalDebt).toString(), {
                         maxDecimals: 0,
-                        style: 'currency',
+                        // style: 'currency',
                     })!,
                     globalDebtCeiling: formatSummaryValue(formatEther(result.globalDebtCeiling).toString(), {
                         maxDecimals: 0,
@@ -63,14 +63,16 @@ export function useGebAnalytics() {
                     globalDebtUtilization: transformToWadPercentage(result.globalDebt, result.globalDebtCeiling),
                     surplusInTreasury: formatSummaryValue(formatEther(result.surplusInTreasury).toString(), {
                         maxDecimals: 0,
-                        style: 'currency',
+                        // style: 'currency',
                     })!,
                     marketPrice: formatSummaryValue(marketPrice, {
                         maxDecimals: 3,
+                        maxSigFigs: 3,
                         style: 'currency',
                     })!,
                     redemptionPrice: formatSummaryValue(redemptionPrice, {
                         maxDecimals: 3,
+                        maxSigFigs: 3,
                         style: 'currency',
                     })!,
                     priceDiff,

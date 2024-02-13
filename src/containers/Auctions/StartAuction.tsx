@@ -19,13 +19,11 @@ export function StartAuction() {
         systemSurplus,
         surplusAmountToSell,
         surplusCooldownDone,
-        deltaToStartSurplusAuction,
         allowStartSurplusAuction,
         startDebtAcution,
         systemDebt,
         debtAmountToSell,
         protocolTokensOffered,
-        deltaToStartDebtAuction,
         allowStartDebtAuction,
     } = useStartAuction()
 
@@ -81,7 +79,7 @@ export function StartAuction() {
                     $fontSize="2.4rem"
                 /> */}
                     <Text $fontSize="1.4rem" $fontWeight={700}>
-                        Surplus Details
+                        Surplus Auction Details
                     </Text>
                     <HaiButton
                         disabled={!address || isLoading || !allowStartSurplusAuction}
@@ -112,13 +110,13 @@ export function StartAuction() {
                             label: 'Cooldown Status',
                             tooltip: 'Hello World',
                         },
-                        {
-                            header: formatNumberWithStyle(deltaToStartSurplusAuction) + ' HAI',
-                            label: 'Fee to Start Surplus Auction',
-                            tooltip: 'Hello World',
-                        },
+                        // {
+                        //     header: formatNumberWithStyle(deltaToStartSurplusAuction) + ' HAI',
+                        //     label: 'Fee to Start Surplus Auction',
+                        //     tooltip: 'Hello World',
+                        // },
                     ]}
-                    columns="repeat(4, 1fr)"
+                    columns="repeat(3, 1fr)"
                 />
             </Flex>
             <Flex $width="100%" $column $justify="flex-start" $align="flex-start" $gap={16}>
@@ -128,7 +126,7 @@ export function StartAuction() {
                     $fontSize="2.4rem"
                 /> */}
                     <Text $fontSize="1.4rem" $fontWeight={700}>
-                        Debt Details
+                        Debt Auction Details
                     </Text>
                     <HaiButton
                         disabled={!address || isLoading || !allowStartDebtAuction}
@@ -156,13 +154,13 @@ export function StartAuction() {
                             label: 'Protocol Tokens to be Offered',
                             tooltip: 'Hello World',
                         },
-                        {
-                            header: formatNumberWithStyle(deltaToStartDebtAuction) + ' HAI',
-                            label: 'Fee to Start Debt Auction',
-                            tooltip: 'Hello World',
-                        },
+                        // {
+                        //     header: formatNumberWithStyle(deltaToStartDebtAuction) + ' HAI',
+                        //     label: 'Fee to Start Debt Auction',
+                        //     tooltip: 'Hello World',
+                        // },
                     ]}
-                    columns="repeat(4, 1fr)"
+                    columns="repeat(3, 1fr)"
                 />
             </Flex>
         </>

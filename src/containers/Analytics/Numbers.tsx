@@ -291,7 +291,7 @@ export function Numbers() {
                         />
                         <Stat
                             stat={{
-                                header: '$XX,XXX',
+                                header: 'Coming Soon',
                                 label: 'Depth to Equilibrium',
                                 tooltip: 'Hello world',
                             }}
@@ -317,21 +317,21 @@ export function Numbers() {
                 <Stats>
                     <Stat
                         stat={{
-                            header: graphSummary?.systemSurplus.formatted || '$--',
+                            header: `${graphSummary?.systemSurplus.formatted || '--'} HAI`,
                             label: 'System Surplus Buffer',
                             tooltip: 'Hello world',
                         }}
                     />
                     <Stat
                         stat={{
-                            header: surplusInTreasury.formatted,
+                            header: `${surplusInTreasury.formatted} HAI`,
                             label: 'Keeper Treasury',
                             tooltip: `Total HAI accrued by the system's stability fees. It's stored in the Stability Fee Treasury accountance`,
                         }}
                     />
                     <Stat
                         stat={{
-                            header: globalDebt.formatted,
+                            header: `${globalDebt.formatted} HAI`,
                             label: 'Debt to Settle',
                             tooltip: 'Total HAI minted in the system',
                         }}

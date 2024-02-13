@@ -60,7 +60,7 @@ export function useSystemData(): SystemData {
             totalVaults: formatSummaryValue(totalActiveSafeCount || '0', { maxDecimals: 0 })!,
             systemSurplus: formatSummaryValue(systemSurplus, {
                 maxDecimals: 0,
-                style: 'currency',
+                // style: 'currency',
             })!,
             erc20Supply: formatSummaryValue(erc20CoinTotalSupply, { maxDecimals: 0 })!,
             redemptionPrice: formatSummaryValue(currentRedemptionPrice.value, {

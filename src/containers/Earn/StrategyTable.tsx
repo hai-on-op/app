@@ -6,6 +6,8 @@ import { Flex, Grid, Text } from '~/styles'
 import { RewardsTokenPair, TokenPair } from '~/components/TokenPair'
 import { StrategyTableButton } from './StrategyTableButton'
 import { Table } from '~/components/Table'
+import { Link } from '~/components/Link'
+import { ArrowUpRight } from 'react-feather'
 
 type StrategyTableProps = {
     headers: SortableHeader[]
@@ -33,7 +35,38 @@ export function StrategyTable({ headers, rows, sorting, setSorting }: StrategyTa
                                         <TokenPair tokens={pair} hideLabel />
                                         <Text $fontWeight={700}>{pair.join('/')}</Text>
                                     </Flex>
-                                    <RewardsTokenPair tokens={rewards} />
+                                    <RewardsTokenPair
+                                        tokens={rewards}
+                                        tooltip={
+                                            <Flex
+                                                $width="140px"
+                                                $column
+                                                $justify="flex-end"
+                                                $align="flex-start"
+                                                $gap={4}
+                                            >
+                                                <Text $fontWeight={700} $whiteSpace="nowrap">
+                                                    Daily Emissions
+                                                </Text>
+                                                <Flex $width="100%" $justify="space-between" $align="center" $gap={12}>
+                                                    <Text>OP:</Text>
+                                                    <Text>TODO</Text>
+                                                </Flex>
+                                                <Flex $width="100%" $justify="space-between" $align="center" $gap={12}>
+                                                    <Text>KITE:</Text>
+                                                    <Text>TODO</Text>
+                                                </Flex>
+                                                {earnPlatform === 'velodrome' && (
+                                                    <Text $fontSize="0.8em">
+                                                        APY is claimed on&nbsp;
+                                                        <Link href="https://velodrome.finance">
+                                                            Velodrome <ArrowUpRight size={8} />
+                                                        </Link>
+                                                    </Text>
+                                                )}
+                                            </Flex>
+                                        }
+                                    />
                                 </Grid>
                             ),
                             props: { $fontSize: 'inherit' },
@@ -72,17 +105,21 @@ export function StrategyTable({ headers, rows, sorting, setSorting }: StrategyTa
                         {
                             content: (
                                 <Text $fontWeight={700}>
-                                    {formatNumberWithStyle(apy, {
-                                        style: 'percent',
-                                        maxDecimals: 1,
-                                    })}
+                                    {apy
+                                        ? formatNumberWithStyle(apy, {
+                                              style: 'percent',
+                                              scalingFactor: 100,
+                                              maxDecimals: 1,
+                                              suffixed: true,
+                                          })
+                                        : '-'}
                                 </Text>
                             ),
                         },
                         {
                             content: (
                                 <Text $fontWeight={700}>
-                                    {userPosition
+                                    {userPosition && userPosition !== '0'
                                         ? formatNumberWithStyle(userPosition, {
                                               style: 'currency',
                                               maxDecimals: 1,
@@ -104,9 +141,9 @@ export function StrategyTable({ headers, rows, sorting, setSorting }: StrategyTa
                         // },
                         {
                             content: (
-                                <ButtonContainer>
-                                    <StrategyTableButton earnPlatform={earnPlatform} />
-                                </ButtonContainer>
+                                // <ButtonContainer>
+                                <StrategyTableButton earnPlatform={earnPlatform} />
+                                // </ButtonContainer>
                             ),
                             unwrapped: true,
                         },
@@ -118,7 +155,7 @@ export function StrategyTable({ headers, rows, sorting, setSorting }: StrategyTa
 }
 
 const TableHeader = styled(Grid)`
-    grid-template-columns: 3fr minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) 224px;
+    grid-template-columns: 340px minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) 224px;
     align-items: center;
     padding: 0px;
     padding-left: 6px;
@@ -146,16 +183,5 @@ const TableRow = styled(TableHeader)`
         &:hover {
             background-color: unset;
         }
-    `}
-`
-
-const ButtonContainer = styled(Flex).attrs((props) => ({
-    $justify: 'flex-end',
-    $align: 'center',
-    ...props,
-}))`
-    ${({ theme }) => theme.mediaWidth.upToSmall`
-        justify-content: flex-start;
-        grid-column: 1 / -1;
     `}
 `

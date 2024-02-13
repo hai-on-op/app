@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { Status, formatNumberWithStyle } from '~/utils'
+import { Status, VaultAction, formatNumberWithStyle } from '~/utils'
 import { useVault } from '~/providers/VaultProvider'
 
 import styled from 'styled-components'
@@ -14,7 +14,7 @@ import { AlertTriangle, ArrowLeft, ArrowRight } from 'react-feather'
 export function Overview() {
     const { t } = useTranslation()
 
-    const { vault, collateral, riskStatus, safetyRatio, collateralRatio, simulation, summary } = useVault()
+    const { action, vault, collateral, riskStatus, safetyRatio, collateralRatio, simulation, summary } = useVault()
 
     const progressProps = useMemo(() => {
         if (!collateralRatio || !safetyRatio)
@@ -72,29 +72,39 @@ export function Overview() {
             },
         ]
 
+        const crIsInfinite = collateralRatio === Infinity.toString() || collateralRatio === '∞'
+        const simulatedCrIsInfinite =
+            simulation?.collateralRatio === Infinity.toString() || simulation?.collateralRatio === '∞'
         return {
             progress: {
-                progress: Math.min(parseFloat(collateralRatio), max) / max,
-                label: formatNumberWithStyle(collateralRatio, {
-                    maxDecimals: 1,
-                    scalingFactor: 0.01,
-                    style: 'percent',
-                }),
-            },
-            simulatedProgress: simulation?.collateralRatio
-                ? {
-                      progress: Math.min(parseFloat(simulation.collateralRatio), max) / max,
-                      label: formatNumberWithStyle(simulation.collateralRatio, {
+                progress: crIsInfinite ? 1 : Math.min(parseFloat(collateralRatio), max) / max,
+                label: crIsInfinite
+                    ? 'No Debt'
+                    : formatNumberWithStyle(collateralRatio, {
                           maxDecimals: 1,
                           scalingFactor: 0.01,
                           style: 'percent',
                       }),
-                  }
-                : undefined,
+            },
+            simulatedProgress:
+                action !== VaultAction.CREATE && simulation?.collateralRatio
+                    ? {
+                          progress: simulatedCrIsInfinite
+                              ? 1
+                              : Math.min(parseFloat(simulation.collateralRatio), max) / max,
+                          label: simulatedCrIsInfinite
+                              ? 'No Debt'
+                              : formatNumberWithStyle(simulation.collateralRatio, {
+                                    maxDecimals: 1,
+                                    scalingFactor: 0.01,
+                                    style: 'percent',
+                                }),
+                      }
+                    : undefined,
             labels,
             colorLimits: labels.map(({ progress }) => progress) as [number, number, number],
         }
-    }, [collateralRatio, safetyRatio, simulation?.collateralRatio])
+    }, [action, collateralRatio, safetyRatio, simulation?.collateralRatio])
 
     return (
         <Container>
