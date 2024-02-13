@@ -1,3 +1,5 @@
+import { useAccount } from 'wagmi'
+
 import { formatNumberWithStyle } from '~/utils'
 import { useStoreActions } from '~/store'
 import { useMyBids } from '~/hooks'
@@ -7,6 +9,8 @@ import { RewardsTokenPair } from '~/components/TokenPair'
 import { Stats, type StatProps } from '~/components/Stats'
 
 export function AuctionStats() {
+    const { address } = useAccount()
+
     const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
 
     const { activeBids, activeBidsValue } = useMyBids()
@@ -34,6 +38,8 @@ export function AuctionStats() {
             ),
         },
     ]
+
+    if (!address) return null
 
     return <Stats stats={dummyStats} columns="repeat(3, 1fr)" />
 }

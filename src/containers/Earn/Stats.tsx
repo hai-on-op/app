@@ -1,3 +1,5 @@
+import { useAccount } from 'wagmi'
+
 import { useStoreActions } from '~/store'
 
 import { HaiButton } from '~/styles'
@@ -5,6 +7,8 @@ import { RewardsTokenPair } from '~/components/TokenPair'
 import { Stats, type StatProps } from '~/components/Stats'
 
 export function EarnStats() {
+    const { address } = useAccount()
+
     const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
 
     // TODO: dynamically calculate stats
@@ -31,6 +35,8 @@ export function EarnStats() {
             ),
         },
     ]
+
+    if (!address) return null
 
     return <Stats stats={dummyStats} />
 }
