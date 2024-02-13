@@ -17,6 +17,7 @@ import { Table, TableContainer } from '~/components/Table'
 import { CollateralDropdown } from '~/components/CollateralDropdown'
 import { Link } from '~/components/Link'
 import { AddressLink } from '~/components/AddressLink'
+import { HaiArrow } from '~/components/Icons/HaiArrow'
 
 const RECORDS_PER_PAGE = 10
 
@@ -94,108 +95,106 @@ export function VaultsByOwner() {
                             const { liquidationCRatio } =
                                 liquidationData?.collateralLiquidationData[collateralToken] || {}
                             return (
-                                <Link key={safeId} href={`/vaults/${safeId}`} $width="100%" $textDecoration="none">
-                                    <Table.Row
-                                        key={safeId}
-                                        container={TableRow}
-                                        headers={headers}
-                                        items={[
-                                            {
-                                                content: <Text>#{safeId}</Text>,
-                                            },
-                                            {
-                                                content: isLargerThanSmall ? (
-                                                    <Grid $columns="1fr 24px 48px" $align="center" $gap={8}>
-                                                        <Text $textAlign="right">
-                                                            {formatNumberWithStyle(collateral, {
-                                                                maxDecimals: 4,
-                                                            })}
-                                                        </Text>
-                                                        <TokenPair
-                                                            tokens={[collateralToken as any]}
-                                                            hideLabel
-                                                            size={48}
-                                                        />
-                                                        <Text>{collateralToken}</Text>
-                                                    </Grid>
-                                                ) : (
-                                                    <Flex $justify="flex-start" $align="center" $gap={8}>
-                                                        <Text $textAlign="right">
-                                                            {formatNumberWithStyle(collateral, {
-                                                                maxDecimals: 4,
-                                                            })}
-                                                        </Text>
-                                                        <TokenPair
-                                                            tokens={[collateralToken as any]}
-                                                            hideLabel
-                                                            size={48}
-                                                        />
-                                                        <Text>{collateralToken}</Text>
-                                                    </Flex>
-                                                ),
-                                            },
-                                            {
-                                                content: isLargerThanSmall ? (
-                                                    <Grid $columns="1fr 24px 48px" $align="center" $gap={8}>
-                                                        <Text $textAlign="right">
-                                                            {formatNumberWithStyle(debt, {
-                                                                maxDecimals: 4,
-                                                            })}
-                                                        </Text>
-                                                        <TokenPair tokens={['HAI']} hideLabel size={48} />
-                                                        <Text>HAI</Text>
-                                                    </Grid>
-                                                ) : (
-                                                    <Flex $justify="flex-start" $align="center" $gap={8}>
-                                                        <Text $textAlign="right">
-                                                            {formatNumberWithStyle(debt, {
-                                                                maxDecimals: 4,
-                                                            })}
-                                                        </Text>
-                                                        <TokenPair tokens={['HAI']} hideLabel size={48} />
-                                                        <Text>HAI</Text>
-                                                    </Flex>
-                                                ),
-                                            },
-                                            {
-                                                content: (
-                                                    <Flex $justify="center" $align="center" $gap={12}>
-                                                        <Text>
-                                                            {collateralRatio === Infinity.toString()
-                                                                ? '--'
-                                                                : formatNumberWithStyle(collateralRatio, {
-                                                                      style: 'percent',
-                                                                      scalingFactor: 0.01,
-                                                                  })}
-                                                        </Text>
-                                                        <StatusLabel status={status} size={0.8} />
-                                                    </Flex>
-                                                ),
-                                            },
-                                            {
-                                                content: (
-                                                    <TableButton
-                                                        disabled={
-                                                            !liquidationCRatio ||
-                                                            Number(liquidationCRatio) < Number(collateralRatio)
-                                                        }
-                                                        onClick={(e: any) => {
-                                                            e.stopPropagation()
-                                                            setLiquidateVault({
-                                                                id: safeId,
-                                                                collateralRatio,
-                                                                status,
-                                                            })
-                                                        }}
-                                                    >
-                                                        Liquidate
-                                                    </TableButton>
-                                                ),
-                                                unwrapped: true,
-                                            },
-                                        ]}
-                                    />
-                                </Link>
+                                <Table.Row
+                                    key={safeId}
+                                    container={TableRow}
+                                    headers={headers}
+                                    items={[
+                                        {
+                                            // content: <Text>#{safeId}</Text>,
+                                            content: (
+                                                <Link href={`/vaults/${safeId}`}>
+                                                    <CenteredFlex $gap={4}>
+                                                        <Text>#{safeId}</Text>
+                                                        <HaiArrow direction="upRight" size={14} strokeWidth={1.5} />
+                                                    </CenteredFlex>
+                                                </Link>
+                                            ),
+                                        },
+                                        {
+                                            content: isLargerThanSmall ? (
+                                                <Grid $columns="1fr 24px 48px" $align="center" $gap={8}>
+                                                    <Text $textAlign="right">
+                                                        {formatNumberWithStyle(collateral, {
+                                                            maxDecimals: 4,
+                                                        })}
+                                                    </Text>
+                                                    <TokenPair tokens={[collateralToken as any]} hideLabel size={48} />
+                                                    <Text>{collateralToken}</Text>
+                                                </Grid>
+                                            ) : (
+                                                <Flex $justify="flex-start" $align="center" $gap={8}>
+                                                    <Text $textAlign="right">
+                                                        {formatNumberWithStyle(collateral, {
+                                                            maxDecimals: 4,
+                                                        })}
+                                                    </Text>
+                                                    <TokenPair tokens={[collateralToken as any]} hideLabel size={48} />
+                                                    <Text>{collateralToken}</Text>
+                                                </Flex>
+                                            ),
+                                        },
+                                        {
+                                            content: isLargerThanSmall ? (
+                                                <Grid $columns="1fr 24px 48px" $align="center" $gap={8}>
+                                                    <Text $textAlign="right">
+                                                        {formatNumberWithStyle(debt, {
+                                                            maxDecimals: 4,
+                                                        })}
+                                                    </Text>
+                                                    <TokenPair tokens={['HAI']} hideLabel size={48} />
+                                                    <Text>HAI</Text>
+                                                </Grid>
+                                            ) : (
+                                                <Flex $justify="flex-start" $align="center" $gap={8}>
+                                                    <Text $textAlign="right">
+                                                        {formatNumberWithStyle(debt, {
+                                                            maxDecimals: 4,
+                                                        })}
+                                                    </Text>
+                                                    <TokenPair tokens={['HAI']} hideLabel size={48} />
+                                                    <Text>HAI</Text>
+                                                </Flex>
+                                            ),
+                                        },
+                                        {
+                                            content: (
+                                                <Flex $justify="center" $align="center" $gap={12}>
+                                                    <Text>
+                                                        {collateralRatio === Infinity.toString()
+                                                            ? '--'
+                                                            : formatNumberWithStyle(collateralRatio, {
+                                                                  style: 'percent',
+                                                                  scalingFactor: 0.01,
+                                                              })}
+                                                    </Text>
+                                                    <StatusLabel status={status} size={0.8} />
+                                                </Flex>
+                                            ),
+                                        },
+                                        {
+                                            content: (
+                                                <TableButton
+                                                    disabled={
+                                                        !liquidationCRatio ||
+                                                        100 * Number(liquidationCRatio) < Number(collateralRatio)
+                                                    }
+                                                    onClick={(e: any) => {
+                                                        e.stopPropagation()
+                                                        setLiquidateVault({
+                                                            id: safeId,
+                                                            collateralRatio,
+                                                            status,
+                                                        })
+                                                    }}
+                                                >
+                                                    Liquidate
+                                                </TableButton>
+                                            ),
+                                            unwrapped: true,
+                                        },
+                                    ]}
+                                />
                             )
                         })}
                     footer={

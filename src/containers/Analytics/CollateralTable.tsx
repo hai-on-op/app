@@ -128,9 +128,7 @@ export function CollateralTable() {
                                 content: <AddressLink address={delayedOracle} />,
                             },
                             {
-                                content: (
-                                    <Text>{formatDataNumber(currentPrice?.toString() || '0', 18, 2, true)}</Text>
-                                ),
+                                content: <Text>{formatDataNumber(currentPrice?.toString() || '0', 18, 2, true)}</Text>,
                             },
                             {
                                 content: <Text>{formatDataNumber(nextPrice?.toString() || '0', 18, 2, true)}</Text>,

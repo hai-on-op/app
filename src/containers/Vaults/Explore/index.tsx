@@ -169,7 +169,7 @@ export function VaultExplorer() {
                                                 <TableButton
                                                     disabled={
                                                         !liquidationCRatio ||
-                                                        Number(liquidationCRatio) < Number(collateralRatio)
+                                                        100 * Number(liquidationCRatio) < Number(collateralRatio)
                                                     }
                                                     onClick={() =>
                                                         setLiquidateVault({

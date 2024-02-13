@@ -79,9 +79,11 @@ export function LiquidateVaultModal({ id, collateralRatio, status, ...props }: P
             }
         >
             <AlertContainer $column $gap={32}>
-                <AlertTriangle size="90px" />
-                <Flex $column $gap={12}>
+                <Flex $width="100%" $justify="flex-start" $align="center" $gap={18}>
+                    <AlertTriangle size="64px" />
                     <Text>{t('liquidate_vault_warning')}</Text>
+                </Flex>
+                <Flex $width="100%" $column $gap={12}>
                     <TransactionSummary
                         heading="Vault Details"
                         items={[
@@ -105,7 +107,7 @@ export function LiquidateVaultModal({ id, collateralRatio, status, ...props }: P
                                 label: 'Status',
                                 value: {
                                     after: '',
-                                    label: <StatusLabel status={status} size={0.8} textOnly />,
+                                    label: <StatusLabel status={status} size={0.8} textOnly $padding="0 4px" />,
                                 },
                             },
                         ]}
