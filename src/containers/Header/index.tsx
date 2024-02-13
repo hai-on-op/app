@@ -55,10 +55,9 @@ export function Header({ tickerActive = false }: HeaderProps) {
     const [wrapEthActive, setWrapEthActive] = useState(false)
 
     const tickerText = useMemo(() => {
-        // TODO: figure out %change (or drop it)
         const arr = [
-            ['HAI (MP)', marketPrice.formatted, '↑34%', '\u2022'],
-            ['HAI (RP)', redemptionPrice.formatted, '↑34%', '\u2022'],
+            ['HAI (MP)', marketPrice.formatted, '\u2022'],
+            ['HAI (RP)', redemptionPrice.formatted, '\u2022'],
         ]
         if (liquidationData) {
             Object.entries(liquidationData.collateralLiquidationData).forEach(([token, data]) => {
@@ -69,7 +68,6 @@ export function Header({ tickerActive = false }: HeaderProps) {
                         style: 'currency',
                         maxDecimals: 3,
                     }),
-                    '↑34%',
                     '\u2022',
                 ])
             })
