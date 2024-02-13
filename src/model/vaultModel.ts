@@ -2,14 +2,22 @@ import { type Action, type Thunk, action, thunk } from 'easy-peasy'
 
 import { type StoreModel } from './index'
 import { handleDepositAndBorrow, handleRepayAndWithdraw } from '~/services/blockchain'
-import { fetchUserVaults } from '~/services/vaults'
-import type { IFetchVaultsPayload, ILiquidationData, IVault, IVaultData, IVaultPayload } from '~/types'
+import { fetchLiquidationData, fetchUserVaults } from '~/services/vaults'
+import type {
+    IFetchLiquidationDataPayload,
+    IFetchVaultsPayload,
+    ILiquidationData,
+    IVault,
+    IVaultData,
+    IVaultPayload,
+} from '~/types'
 import { WrapEtherProps, handleUnwrapEther, handleWrapEther, timeout } from '~/utils'
 import { ActionState } from '~/utils/constants'
 
 export interface VaultModel {
     list: Array<IVault>
     setList: Action<VaultModel, Array<IVault>>
+    fetchLiquidationData: Thunk<VaultModel, IFetchLiquidationDataPayload, any, StoreModel>
     fetchUserVaults: Thunk<VaultModel, IFetchVaultsPayload, any, StoreModel>
 
     singleVault?: IVault
@@ -78,6 +86,13 @@ export const vaultModel: VaultModel = {
     list: [],
     setList: action((state, payload) => {
         state.list = payload
+    }),
+    fetchLiquidationData: thunk(async (actions, payload) => {
+        const data = await fetchLiquidationData(payload)
+
+        actions.setLiquidationData(data)
+
+        return data
     }),
     fetchUserVaults: thunk(async (actions, payload, { getStoreActions, getState }) => {
         const storeActions = getStoreActions()

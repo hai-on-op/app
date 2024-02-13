@@ -1,6 +1,5 @@
 import { useEffect, useReducer, useState } from 'react'
 import { formatEther } from 'ethers/lib/utils'
-import { useNetwork } from 'wagmi'
 import { type AnalyticsData, fetchAnalyticsData } from '@hai-on-op/sdk'
 
 import type { SummaryItemValue } from '~/types'
@@ -33,13 +32,12 @@ export type GebAnalyticsData = {
 
 export function useGebAnalytics() {
     const geb = usePublicGeb()
-    const { chain } = useNetwork()
 
     const [refresher, forceRefresh] = useReducer((x) => x + 1, 0)
     const [data, setData] = useState(DEFAULT_ANALYTICS_DATA)
 
     useEffect(() => {
-        if (!geb || !chain) return
+        if (!geb) return
 
         const getData = async () => {
             try {
@@ -106,7 +104,7 @@ export function useGebAnalytics() {
         }
         getData()
         // eslint-disable-next-line
-    }, [geb, chain?.id, refresher])
+    }, [geb, refresher])
 
     return {
         data,

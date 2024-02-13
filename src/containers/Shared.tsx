@@ -23,7 +23,7 @@ import {
 import { TransactionUpdater } from '~/services/TransactionUpdater'
 import { useStoreState, useStoreActions } from '~/store'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
-import { useTokenContract, useEthersSigner, useGeb, usePlaylist, usePrevious } from '~/hooks'
+import { useTokenContract, useEthersSigner, useGeb, usePlaylist, usePrevious, usePublicGeb } from '~/hooks'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex } from '~/styles'
@@ -55,6 +55,7 @@ export function Shared({ children }: Props) {
     const chainId = chain?.id || NETWORK_ID
     const networkName = getNetworkName(chainId)
     const signer = useEthersSigner()
+    const publicGeb = usePublicGeb()
     const geb = useGeb()
 
     const history = useHistory()
@@ -141,12 +142,21 @@ export function Shared({ children }: Props) {
     }, [auctionsData, setInternalBalance, setProtInternalBalance])
 
     useEffect(() => {
-        connectWalletActions.setTokensData(geb?.tokenList)
-    }, [geb?.tokenList, connectWalletActions])
+        connectWalletActions.setTokensData(publicGeb?.tokenList)
+    }, [publicGeb?.tokenList, connectWalletActions])
 
     useEffect(() => {
         connectWalletActions.fetchFiatPrice()
     }, [connectWalletActions])
+
+    useEffect(() => {
+        if (!publicGeb) return
+
+        vaultActions.fetchLiquidationData({
+            geb: publicGeb,
+            tokensData: publicGeb.tokenList,
+        })
+    }, [vaultActions, publicGeb])
 
     const accountChecker = useCallback(async () => {
         if (!account || !chain?.id || !signer || !geb) {

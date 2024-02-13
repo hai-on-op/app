@@ -126,6 +126,11 @@ export type IVaultQuery = ILiquidationResponse & {
     ]
 }
 
+export type IFetchLiquidationDataPayload = {
+    geb: Geb
+    tokensData: Record<string, TokenData>
+}
+
 export type IFetchVaultsPayload = {
     address: string
     geb: Geb
