@@ -14,16 +14,21 @@ export function BorrowStats() {
     const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
 
     const stats: StatProps[] = useMemo(() => {
-        const totalCollateralInUSD = list.reduce((total, { collateralName, collateral }) => {
-            const collateralPriceInUSD =
-                liquidationData?.collateralLiquidationData[collateralName]?.currentPrice.value || '0'
-            return total + parseFloat(collateral) * parseFloat(collateralPriceInUSD)
-        }, 0)
+        const { totalCollateralInUSD, totalHai, weightedStabilityFee } = list.reduce(
+            (obj, { collateral, collateralName, debt, totalAnnualizedStabilityFee }) => {
+                const collateralPriceInUSD =
+                    liquidationData?.collateralLiquidationData[collateralName]?.currentPrice.value || '0'
+                obj.totalCollateralInUSD += parseFloat(collateral) * parseFloat(collateralPriceInUSD)
+                obj.totalHai += parseFloat(debt)
+                obj.weightedStabilityFee += (parseFloat(totalAnnualizedStabilityFee) - 1) * parseFloat(debt)
+                return obj
+            },
+            { totalCollateralInUSD: 0, totalHai: 0, weightedStabilityFee: 0 }
+        )
 
-        const totalHai = list.reduce((total, { debt }) => {
-            return total + parseFloat(debt)
-        }, 0)
         const totalDebtInUSD = totalHai * parseFloat(liquidationData?.currentRedemptionPrice || '1')
+
+        const weightedStabilityFeeAverage = !list.length || !totalHai ? 0 : weightedStabilityFee / totalHai
 
         // TODO: dynamically calculate apy, hook up rewards
         return [
@@ -66,22 +71,26 @@ export function BorrowStats() {
                 tooltip: 'The total amount of minted debt tokens multiplied by the protocol redemption price of debt.',
             },
             {
-                header: '7.8%',
+                header: formatNumberWithStyle(weightedStabilityFeeAverage, { style: 'percent' }),
                 label: 'My Net Stability Fee',
                 tooltip: 'My Total Debt multiplied by the stability fee rate of Vault.',
             },
             {
                 header: '7.8%',
                 label: 'My Net Rewards APY',
+                // TODO: fill in [Here]
                 tooltip: 'Rewards derived from all campaign activities. See [Here] for more information.',
             },
             {
-                header: '$7,000',
+                header: '$--',
                 headerStatus: <RewardsTokenPair tokens={['OP', 'KITE']} hideLabel />,
                 label: 'My Vault Rewards',
                 tooltip: 'Rewards currently voted upon and distributed by DAO approximately once per month.',
                 button: (
-                    <HaiButton $variant="yellowish" onClick={() => popupsActions.setIsClaimPopupOpen(true)}>
+                    // <HaiButton $variant="yellowish" onClick={() => popupsActions.setIsClaimPopupOpen(true)}>
+                    //     Claim
+                    // </HaiButton>
+                    <HaiButton title="Claim window is closed" $variant="yellowish" disabled>
                         Claim
                     </HaiButton>
                 ),

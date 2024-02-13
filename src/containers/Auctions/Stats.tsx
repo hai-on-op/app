@@ -1,7 +1,7 @@
 import { useAccount } from 'wagmi'
 
 import { formatNumberWithStyle } from '~/utils'
-import { useStoreActions } from '~/store'
+// import { useStoreActions } from '~/store'
 import { useMyBids } from '~/hooks'
 
 import { HaiButton } from '~/styles'
@@ -11,10 +11,10 @@ import { Stats, type StatProps } from '~/components/Stats'
 export function AuctionStats() {
     const { address } = useAccount()
 
-    const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
+    // const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
 
-    const { activeBids, activeBidsValue } = useMyBids()
-    // TODO: calculate claim stats
+    const { activeBids, activeBidsValue, claimableAssetValue } = useMyBids()
+    // TODO: calculate claim stats from auction results
     const dummyStats: StatProps[] = [
         {
             header: activeBids.length,
@@ -27,14 +27,17 @@ export function AuctionStats() {
             tooltip: 'Total dollar value of all your active bids placed in auctions',
         },
         {
-            header: '$7,000',
+            header: claimableAssetValue ? formatNumberWithStyle(claimableAssetValue, { style: 'currency' }) : '$--',
             headerStatus: <RewardsTokenPair tokens={['OP', 'KITE']} hideLabel />,
             label: 'My Claimable Assets',
-            tooltip: 'Claim assets purchased in auctions and/or rewards from earn strategies',
+            tooltip: 'Claim assets purchased in auctions',
             button: (
-                <HaiButton $variant="yellowish" onClick={() => popupsActions.setIsClaimPopupOpen(true)}>
+                <HaiButton $variant="yellowish" disabled>
                     Claim
                 </HaiButton>
+                // <HaiButton $variant="yellowish" onClick={() => popupsActions.setIsClaimPopupOpen(true)}>
+                //     Claim
+                // </HaiButton>
             ),
         },
     ]

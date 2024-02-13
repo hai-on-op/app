@@ -1,6 +1,6 @@
 import { useAccount } from 'wagmi'
 
-import { useStoreActions } from '~/store'
+// import { useStoreActions } from '~/store'
 
 import { HaiButton } from '~/styles'
 import { RewardsTokenPair } from '~/components/TokenPair'
@@ -9,7 +9,7 @@ import { Stats, type StatProps } from '~/components/Stats'
 export function EarnStats() {
     const { address } = useAccount()
 
-    const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
+    // const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
 
     // TODO: dynamically calculate stats
     const dummyStats: StatProps[] = [
@@ -24,16 +24,27 @@ export function EarnStats() {
             tooltip: 'Hello World',
         },
         {
-            header: '$7,000',
+            header: '$--',
             headerStatus: <RewardsTokenPair tokens={['OP', 'KITE']} hideLabel />,
             label: 'My Farm Rewards',
-            tooltip: 'Hello World',
+            tooltip: 'Rewards currently voted upon and distributed by DAO approximately once per month.',
             button: (
-                <HaiButton $variant="yellowish" onClick={() => popupsActions.setIsClaimPopupOpen(true)}>
+                <HaiButton title="Claim window is closed" $variant="yellowish" disabled>
                     Claim
                 </HaiButton>
             ),
         },
+        // {
+        //     header: '$7,000',
+        //     headerStatus: <RewardsTokenPair tokens={['OP', 'KITE']} hideLabel />,
+        //     label: 'My Farm Rewards',
+        //     tooltip: 'Hello World',
+        //     button: (
+        //         <HaiButton $variant="yellowish" onClick={() => popupsActions.setIsClaimPopupOpen(true)}>
+        //             Claim
+        //         </HaiButton>
+        //     ),
+        // },
     ]
 
     if (!address) return null
