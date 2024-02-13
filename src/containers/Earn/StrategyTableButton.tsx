@@ -3,7 +3,6 @@ import { LINK_TO_DOCS } from '~/utils'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
-import { HaiArrow } from '~/components/Icons/HaiArrow'
 import { HaiFace } from '~/components/Icons/HaiFace'
 import { Link } from '~/components/Link'
 
@@ -52,10 +51,7 @@ type ButtonProps = Props & {
 function Button({ earnPlatform, size, logo }: ButtonProps) {
     return (
         <EarnButton $width="100%" $justify="space-between" $align="center">
-            <CenteredFlex $gap={4}>
-                <Text>Earn</Text>
-                <HaiArrow size={15} direction="upRight" />
-            </CenteredFlex>
+            <CenteredFlex $gap={4}>Earn on</CenteredFlex>
             <Flex $justify="flex-start" $align="center" $gap={earnPlatform === 'uniswap' ? 4 : 12}>
                 {logo ? (
                     <img src={logo} alt="" width={size} height={size} />

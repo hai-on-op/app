@@ -110,14 +110,12 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
         >
             {navIndex === 0 ? (
                 <>
-                    <ProxyPrompt connectWalletOnly continueText="view available vaults">
-                        <AvailableVaultsTable
-                            headers={availableHeaders}
-                            rows={availableVaults}
-                            sorting={availableSorting}
-                            setSorting={setAvailableSorting}
-                        />
-                    </ProxyPrompt>
+                    <AvailableVaultsTable
+                        headers={availableHeaders}
+                        rows={availableVaults}
+                        sorting={availableSorting}
+                        setSorting={setAvailableSorting}
+                    />
                     {strategies.map((strat, i) => (
                         <StrategyAd key={i} bgVariant={i} {...strat} />
                     ))}

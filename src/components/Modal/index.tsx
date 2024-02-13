@@ -90,7 +90,7 @@ const Overlay = styled(CenteredFlex)`
     perspective-origin: 50% 50%;
     perspective: 190px;
 
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: rgba(0, 0, 0, 0.3);
     z-index: 998;
 `
 Modal.Overlay = Overlay

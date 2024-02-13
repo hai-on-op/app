@@ -83,7 +83,7 @@ export function OverviewProgressStat({
 }: OverviewProgressStatProps) {
     return (
         <StatContainer $fullWidth={fullWidth}>
-            <Flex $width="100%" $column $gap={4}>
+            <Flex $width="100%" $column $gap={12}>
                 <Flex $width="100%" $justify="space-between" $align="center">
                     <CenteredFlex $gap={4}>
                         <Text>{label}</Text>
@@ -123,7 +123,6 @@ const StatContainer = styled(Flex).attrs((props) => ({
     ...props,
 }))<DashedContainerProps & { $fullWidth?: boolean }>`
     ${DashedContainerStyle}
-    height: 112px;
     ${({ $fullWidth }) =>
         $fullWidth &&
         css`

@@ -341,14 +341,15 @@ const Container = styled(Flex).attrs((props) => ({
     ...props,
 }))`
     max-width: 100%;
-    /* width: 360px; */
-    height: 604px;
+    height: calc(100% + 96px);
     margin-bottom: -140px;
     background-color: ${({ theme }) => theme.colors.background};
     border-radius: 24px;
     border: ${({ theme }) => theme.border.medium};
 
     ${({ theme }) => theme.mediaWidth.upToMedium`
+        height: auto;
+        min-height: 480px;
         margin-bottom: -119px;
     `}
 `
