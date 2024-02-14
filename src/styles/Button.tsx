@@ -84,5 +84,8 @@ export const TableButton = styled(HaiButton)<HaiButtonProps>`
         grid-column: 1 / -1;
         background: ${theme.colors.yellowish};
         border: ${$unbordered ? 'none' : theme.border.medium};
+        &:disabled {
+            background: #c5c0cb77;
+        }
     `}
 `

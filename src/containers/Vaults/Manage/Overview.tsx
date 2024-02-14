@@ -200,16 +200,21 @@ const Header = styled(Flex).attrs((props) => ({
 const Inner = styled(Grid).attrs((props) => ({
     $width: '100%',
     $columns: '1fr 1fr',
-    $align: 'center',
+    $align: 'stretch',
     ...props,
 }))<DashedContainerProps>`
     ${DashedContainerStyle}
     & > * {
         padding: 24px;
-        min-height: 100px;
     }
     &::after {
         border-top: none;
         border-right: none;
     }
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        & > * {
+            padding: 12px;
+        }
+    `}
 `

@@ -183,5 +183,8 @@ const TableRow = styled(TableHeader)`
         &:hover {
             background-color: unset;
         }
+        & > *:last-child {
+            grid-column: 1 / -1;
+        }
     `}
 `

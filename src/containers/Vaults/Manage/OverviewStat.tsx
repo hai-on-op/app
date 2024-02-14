@@ -1,5 +1,6 @@
 import type { TokenKey } from '~/types'
 import { Status } from '~/utils'
+import { useMediaQuery } from '~/hooks'
 
 import styled, { css } from 'styled-components'
 import { CenteredFlex, type DashedContainerProps, DashedContainerStyle, Flex, Text } from '~/styles'
@@ -36,21 +37,28 @@ export function OverviewStat({
             <Flex $align="center" $gap={12}>
                 {!!token && <TokenPair size={96} tokens={[token]} hideLabel />}
                 <Flex $column $justify="center" $align="flex-start" $gap={4}>
-                    <Flex $justify="flex-start" $align="center" $gap={8}>
+                    <ValueContainer>
                         <Text $fontSize="1.25em" $fontWeight={700}>
                             {value || '--'} {token}
                         </Text>
                         <Text $fontSize="0.8em" $color="rgba(0,0,0,0.6)">
                             {convertedValue}
                         </Text>
-                    </Flex>
+                    </ValueContainer>
                     <Flex $justify="flex-start" $align="center" $gap={4}>
-                        <Text $fontSize="0.8em">{label}</Text>
+                        <Text $fontSize="0.8em" $whiteSpace="nowrap">
+                            {label}
+                        </Text>
                         {!!tooltip && <Tooltip width="200px">{tooltip}</Tooltip>}
                     </Flex>
                 </Flex>
             </Flex>
-            <CenteredFlex $gap={12}>
+            <StatusContainer hidden={!simulatedValue && !alert}>
+                {!!alert && (
+                    <StatusLabel status={alert.status} size={0.8}>
+                        {alert.value || alert.status}
+                    </StatusLabel>
+                )}
                 {!!simulatedValue && (
                     <StatusLabel status={Status.CUSTOM} background="gradientCooler" size={0.8}>
                         <Text $fontSize="0.67rem" $fontWeight={700}>
@@ -61,12 +69,7 @@ export function OverviewStat({
                         </Text>
                     </StatusLabel>
                 )}
-                {!!alert && (
-                    <StatusLabel status={alert.status} size={0.8}>
-                        {alert.value || alert.status}
-                    </StatusLabel>
-                )}
-            </CenteredFlex>
+            </StatusContainer>
         </StatContainer>
     )
 }
@@ -81,44 +84,56 @@ export function OverviewProgressStat({
     fullWidth = false,
     ...props
 }: OverviewProgressStatProps) {
+    const isLargerThanSmall = useMediaQuery('upToSmall')
+
     return (
-        <StatContainer $fullWidth={fullWidth}>
-            <Flex $width="100%" $column $gap={12}>
-                <Flex $width="100%" $justify="space-between" $align="center">
-                    <CenteredFlex $gap={4}>
-                        <Text>{label}</Text>
-                        <Text $fontWeight={700} $fontSize="1.25em">
-                            {value}
-                        </Text>
-                        {!!tooltip && <Tooltip width="200px">{tooltip}</Tooltip>}
-                    </CenteredFlex>
-                    <CenteredFlex $gap={8}>
-                        {simulatedValue && (
-                            <StatusLabel status={Status.CUSTOM} background="gradientCooler" size={0.8}>
-                                <Text $fontSize="0.67rem" $fontWeight={700}>
-                                    {simulatedValue}
-                                </Text>
-                                <Text $fontSize="0.67rem" $fontWeight={400}>
-                                    After Tx
-                                </Text>
-                            </StatusLabel>
-                        )}
-                        {!!alert && (
-                            <StatusLabel status={alert.status} size={0.8}>
-                                {alert.value || alert.status}
-                            </StatusLabel>
-                        )}
-                    </CenteredFlex>
-                </Flex>
-                <ProgressIndicator {...props} />
+        <ProgressStatContainer $fullWidth={fullWidth}>
+            <Flex $width="100%" $justify="space-between" $align="center">
+                <CenteredFlex $gap={4}>
+                    <Text>{label}</Text>
+                    <Text $fontWeight={700} $fontSize="1.25em">
+                        {value}
+                    </Text>
+                    {!!tooltip && <Tooltip width="200px">{tooltip}</Tooltip>}
+                </CenteredFlex>
+                <StatusContainer hidden={!(simulatedValue && isLargerThanSmall) && !alert}>
+                    {!!alert && (
+                        <StatusLabel status={alert.status} size={0.8}>
+                            {alert.value || alert.status}
+                        </StatusLabel>
+                    )}
+                    {simulatedValue && isLargerThanSmall && (
+                        <StatusLabel status={Status.CUSTOM} background="gradientCooler" size={0.8}>
+                            <Text $fontSize="0.67rem" $fontWeight={700}>
+                                {simulatedValue}
+                            </Text>
+                            <Text $fontSize="0.67rem" $fontWeight={400}>
+                                After Tx
+                            </Text>
+                        </StatusLabel>
+                    )}
+                </StatusContainer>
             </Flex>
-        </StatContainer>
+            <ProgressIndicator {...props} />
+            {simulatedValue && !isLargerThanSmall && (
+                <Flex $width="100%" $justify="flex-end" $align="center">
+                    <StatusLabel status={Status.CUSTOM} background="gradientCooler" size={0.8}>
+                        <Text $fontSize="0.67rem" $fontWeight={700}>
+                            {simulatedValue}
+                        </Text>
+                        <Text $fontSize="0.67rem" $fontWeight={400}>
+                            After Tx
+                        </Text>
+                    </StatusLabel>
+                </Flex>
+            )}
+        </ProgressStatContainer>
     )
 }
 
 const StatContainer = styled(Flex).attrs((props) => ({
     $justify: 'space-between',
-    $align: 'center',
+    $align: 'flex-start',
     $borderOpacity: 0.2,
     ...props,
 }))<DashedContainerProps & { $fullWidth?: boolean }>`
@@ -133,4 +148,57 @@ const StatContainer = styled(Flex).attrs((props) => ({
         border-bottom: none;
         border-left: none;
     }
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: flex-start;
+        gap: 12px;
+    `}
+`
+const ProgressStatContainer = styled(StatContainer)`
+    width: 100%;
+    flex-direction: column;
+    gap: 12px;
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        & > *:nth-child(2) {
+            margin-bottom: 8px;
+        }
+    `}
+`
+
+const ValueContainer = styled(Flex).attrs((props) => ({
+    $justify: 'flex-start',
+    $align: 'center',
+    $gap: 8,
+    ...props,
+}))`
+    /* ${({ theme }) => theme.mediaWidth.upToSmall`
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    `} */
+`
+
+const StatusContainer = styled(Flex).attrs((props) => ({
+    $justify: 'center',
+    $align: 'center',
+    $gap: 12,
+    ...props,
+}))`
+    ${({ hidden }) =>
+        hidden &&
+        css`
+            display: none;
+        `}
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        width: 100%;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-end;
+        // justify-content: flex-end;
+        gap: 8px;
+    `}
 `

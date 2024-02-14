@@ -7,7 +7,7 @@ import { VaultProvider } from '~/providers/VaultProvider'
 import { useVaultRouting } from '~/hooks'
 
 import styled from 'styled-components'
-import { HaiButton, Text } from '~/styles'
+import { CenteredFlex, HaiButton } from '~/styles'
 import { Caret } from '~/components/Icons/Caret'
 import { ManageVault } from './Manage'
 import { VaultsList } from './VaultsList'
@@ -38,7 +38,9 @@ export function Vaults() {
                     headerContent={
                         <BackButton onClick={() => history.push(`/vaults`)}>
                             <Caret direction="left" />
-                            <Text>Back to {navIndex === 0 ? 'Available' : 'My'} Vaults</Text>
+                            <CenteredFlex $width="100%">
+                                Back to {navIndex === 0 ? 'Available' : 'My'} Vaults
+                            </CenteredFlex>
                         </BackButton>
                     }
                 />

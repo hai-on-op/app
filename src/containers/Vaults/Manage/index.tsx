@@ -2,7 +2,9 @@ import { useEffect } from 'react'
 
 import type { ReactChildren } from '~/types'
 import { formatNumberWithStyle } from '~/utils'
+import { useStoreState } from '~/store'
 import { useVault } from '~/providers/VaultProvider'
+import { useMediaQuery } from '~/hooks'
 
 import styled from 'styled-components'
 import { BlurContainer, CenteredFlex, Flex, Grid, Text } from '~/styles'
@@ -11,7 +13,6 @@ import { ProxyPrompt } from '~/components/ProxyPrompt'
 import { Overview } from './Overview'
 import { VaultActions } from './VaultActions'
 import { ManageDropdown } from './ManageDropdown'
-import { useStoreState } from '~/store'
 
 type ManageVaultProps = {
     headerContent?: ReactChildren
@@ -20,6 +21,8 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
     const {
         vaultModel: { liquidationData },
     } = useStoreState((state) => state)
+
+    const isLargerThanSmall = useMediaQuery('upToSmall')
 
     const { updateForm, collateral } = useVault()
 
@@ -31,7 +34,7 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
             <Header>
                 <CenteredFlex $gap={12}>
                     <ManageDropdown />
-                    <RewardsTokenPair tokens={['OP', 'KITE']} />
+                    <RewardsTokenPair tokens={['OP', 'KITE']} hideLabel={!isLargerThanSmall} />
                 </CenteredFlex>
                 <Flex $column $justify="center" $align="flex-start" $gap={4}>
                     <Text>
@@ -92,9 +95,10 @@ const Header = styled(Flex).attrs((props) => ({
         padding: 24px;
 
         & > * {
-            &:first-child {
-                flex-direction: column;
-            }
+            width: 100%;
+            // &:first-child {
+            //     flex-direction: column;
+            // }
         }
     `}
 

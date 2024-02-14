@@ -38,29 +38,19 @@ export function StrategyTableButton({ earnPlatform }: Props) {
     const { logo, size, link } = platformMap[earnPlatform || 'hai']
 
     return (
-        <Link href={link} $width="100%" $textDecoration="none">
-            <Button earnPlatform={earnPlatform} logo={logo} size={size} />
+        <Link href={link} $width="100%" $justify="flex-start" $textDecoration="none">
+            <EarnButton as="div" $width="100%" $justify="space-between" $align="center">
+                <CenteredFlex $gap={4}>Earn on</CenteredFlex>
+                <Flex $justify="flex-start" $align="center" $gap={earnPlatform === 'uniswap' ? 4 : 12}>
+                    {logo ? (
+                        <img src={logo} alt="" width={size} height={size} />
+                    ) : (
+                        <HaiFace size={28} filled style={{ marginLeft: '-4px' }} />
+                    )}
+                    <Text $fontSize="0.9em">{(earnPlatform || 'HAI').toUpperCase()}</Text>
+                </Flex>
+            </EarnButton>
         </Link>
-    )
-}
-
-type ButtonProps = Props & {
-    size?: number
-    logo?: string
-}
-function Button({ earnPlatform, size, logo }: ButtonProps) {
-    return (
-        <EarnButton $width="100%" $justify="space-between" $align="center">
-            <CenteredFlex $gap={4}>Earn on</CenteredFlex>
-            <Flex $justify="flex-start" $align="center" $gap={earnPlatform === 'uniswap' ? 4 : 12}>
-                {logo ? (
-                    <img src={logo} alt="" width={size} height={size} />
-                ) : (
-                    <HaiFace size={28} filled style={{ marginLeft: '-4px' }} />
-                )}
-                <Text $fontSize="0.9em">{(earnPlatform || 'HAI').toUpperCase()}</Text>
-            </Flex>
-        </EarnButton>
     )
 }
 
@@ -79,4 +69,8 @@ const EarnButton = styled(HaiButton)`
         width: 100%;
         height: 36px;
     }
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        width: fit-content;
+    `}
 `

@@ -5,6 +5,7 @@ import { ActionState, Status, formatNumberWithStyle } from '~/utils'
 import { useStoreActions } from '~/store'
 import { handleTransactionError, useStartAuction } from '~/hooks'
 
+import styled from 'styled-components'
 import { Flex, HaiButton, Text } from '~/styles'
 import { Stats } from '~/components/Stats'
 import { StatusLabel } from '~/components/StatusLabel'
@@ -73,7 +74,7 @@ export function StartAuction() {
     return (
         <>
             <Flex $width="100%" $column $justify="flex-start" $align="flex-start" $gap={16}>
-                <Flex $width="100%" $justify="space-between" $align="center">
+                <Header>
                     {/* <BrandedTitle
                     textContent="SUPRLUS AUCTION"
                     $fontSize="2.4rem"
@@ -88,7 +89,7 @@ export function StartAuction() {
                     >
                         Start Surplus Auction
                     </HaiButton>
-                </Flex>
+                </Header>
                 <Stats
                     stats={[
                         {
@@ -120,7 +121,7 @@ export function StartAuction() {
                 />
             </Flex>
             <Flex $width="100%" $column $justify="flex-start" $align="flex-start" $gap={16}>
-                <Flex $width="100%" $justify="space-between" $align="center">
+                <Header>
                     {/* <BrandedTitle
                     textContent="DEBT AUCTION"
                     $fontSize="2.4rem"
@@ -135,7 +136,7 @@ export function StartAuction() {
                     >
                         Start Debt Auction
                     </HaiButton>
-                </Flex>
+                </Header>
                 <Stats
                     stats={[
                         {
@@ -166,3 +167,17 @@ export function StartAuction() {
         </>
     )
 }
+
+const Header = styled(Flex).attrs((props) => ({
+    $width: '100%',
+    $justify: 'space-between',
+    $align: 'center',
+    $gap: 8,
+    ...props,
+}))`
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+    `}
+`

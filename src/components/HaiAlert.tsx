@@ -11,6 +11,7 @@ export function HaiAlert() {
 
     const {
         data: { marketPrice, redemptionPrice, priceDiff },
+        graphSummary,
     } = useAnalytics()
 
     return (
@@ -30,6 +31,9 @@ export function HaiAlert() {
                     {` • `}
                     {isLargerThanSmall ? `PRICE DIFFERENCE ` : `DIFF. `}
                     <strong>{parseFloat(priceDiff.toFixed(2))}%</strong>
+                    {` • `}
+                    {isLargerThanSmall ? `REDEMPTION RATE ` : `RATE `}
+                    <strong>{graphSummary?.redemptionRate.formatted || '--%'}</strong>
                 </Text>
             </CenteredFlex>
             <ElfContainer>
@@ -91,6 +95,10 @@ const Container = styled(Flex).attrs((props) => ({
     background: ${({ theme }) => theme.colors.gradientSecondary};
     animation: ${popup} 0.5s ease forwards;
 
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        font-size: ${theme.font.small};
+    `}
+
     z-index: 10;
 `
 const HaiIconContainer = styled(CenteredFlex).attrs((props) => ({
@@ -106,6 +114,10 @@ const HaiIconContainer = styled(CenteredFlex).attrs((props) => ({
         width: 80%;
         height: auto;
     }
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        display: none;
+    `}
 `
 
 const ElfContainer = styled(CenteredFlex)`

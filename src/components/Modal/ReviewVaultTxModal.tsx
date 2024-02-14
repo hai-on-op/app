@@ -162,7 +162,11 @@ export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
     )
 }
 
-const Description = styled(Text)``
+const Description = styled(Text)`
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        font-size: ${theme.font.small};
+    `}
+`
 
 const Footer = styled(Flex).attrs((props) => ({
     $width: '100%',
