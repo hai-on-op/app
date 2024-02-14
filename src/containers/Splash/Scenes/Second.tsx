@@ -8,7 +8,7 @@ import { ZoomScene, type ZoomSceneProps } from './ZoomScene'
 import { BrandedTitle } from '~/components/BrandedTitle'
 import { ProgressBar } from '~/components/ProgressBar'
 import { FloatingElements, type FloatingElementsProps } from '~/components/BrandElements/FloatingElements'
-import { TokenPair } from '~/components/TokenPair'
+import { TokenArray } from '~/components/TokenArray'
 
 const elves: FloatingElementsProps['elves'] = [
     {
@@ -99,7 +99,7 @@ export function Second({ zIndex }: ZoomSceneProps) {
                     </Subtitle>
                 </Flex>
                 <PairContainer>
-                    <TokenPair tokens={['WETH', 'HAI']} />
+                    <TokenArray tokens={['WETH', 'HAI']} />
                     <Grid $width="100%" $columns="110px 1fr" $align="center" $gap={12}>
                         <Text>
                             Ratio&nbsp;<strong>{Math.round(progress * 10_000) / 100}%</strong>

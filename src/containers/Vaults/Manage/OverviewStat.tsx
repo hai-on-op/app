@@ -5,7 +5,7 @@ import { useMediaQuery } from '~/hooks'
 import styled, { css } from 'styled-components'
 import { CenteredFlex, type DashedContainerProps, DashedContainerStyle, Flex, Text } from '~/styles'
 import { StatusLabel } from '~/components/StatusLabel'
-import { TokenPair } from '~/components/TokenPair'
+import { TokenArray } from '~/components/TokenArray'
 import { Tooltip } from '~/components/Tooltip'
 import { ProgressIndicator, ProgressIndicatorProps } from '~/components/ProgressIndicator'
 
@@ -35,7 +35,7 @@ export function OverviewStat({
     return (
         <StatContainer $fullWidth={fullWidth}>
             <Flex $align="center" $gap={12}>
-                {!!token && <TokenPair size={96} tokens={[token]} hideLabel />}
+                {!!token && <TokenArray size={48} tokens={[token]} hideLabel />}
                 <Flex $column $justify="center" $align="flex-start" $gap={4}>
                     <ValueContainer>
                         <Text $fontSize="1.25em" $fontWeight={700}>

@@ -7,7 +7,7 @@ import { useMediaQuery, usePublicGeb } from '~/hooks'
 
 import styled from 'styled-components'
 import { Flex, Grid, Text } from '~/styles'
-import { TokenPair } from '~/components/TokenPair'
+import { TokenArray } from '~/components/TokenArray'
 import { NavContainer } from '~/components/NavContainer'
 import { AddressLink } from '~/components/AddressLink'
 import { SortByDropdown } from '~/components/SortByDropdown'
@@ -111,7 +111,7 @@ export function CollateralTable() {
                             {
                                 content: (
                                     <Flex $align="center" $gap={8}>
-                                        <TokenPair tokens={[symbol as any]} hideLabel />
+                                        <TokenArray tokens={[symbol as any]} hideLabel />
                                         <Text $fontWeight={700}>{symbol}</Text>
                                     </Flex>
                                 ),

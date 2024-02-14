@@ -8,7 +8,7 @@ import { useAuction, useMediaQuery } from '~/hooks'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
-import { TokenPair } from '~/components/TokenPair'
+import { TokenArray } from '~/components/TokenArray'
 import { StatusLabel } from '~/components/StatusLabel'
 import { Caret } from '~/components/Icons/Caret'
 import { BidTable } from './BidTable'
@@ -106,7 +106,7 @@ export function AuctionTableRow({ headers, auction, container, expanded, onSelec
                     {
                         content: (
                             <Flex $justify="flex-start" $align="center" $gap={8}>
-                                <TokenPair tokens={[sellToken as any]} hideLabel />
+                                <TokenArray tokens={[sellToken as any]} hideLabel />
                                 <Flex $column $align="flex-start">
                                     <Text>
                                         {auction.englishAuctionType === 'COLLATERAL'
@@ -135,7 +135,7 @@ export function AuctionTableRow({ headers, auction, container, expanded, onSelec
                     {
                         content: (
                             <Flex $justify="flex-start" $align="center" $gap={8}>
-                                <TokenPair tokens={[buyToken as any]} hideLabel />
+                                <TokenArray tokens={[buyToken as any]} hideLabel />
                                 <Flex $column $align="flex-start">
                                     <Text>
                                         {auction.englishAuctionType === 'COLLATERAL' ? remainingToRaise || '--' : ''}{' '}

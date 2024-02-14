@@ -1,5 +1,3 @@
-import { useEffect, useState } from 'react'
-
 import type { ReactChildren, TokenKey } from '~/types'
 import { TOKEN_LOGOS } from '~/utils'
 import { useStoreState } from '~/store'
@@ -7,13 +5,14 @@ import { useStoreState } from '~/store'
 import styled, { css } from 'styled-components'
 import { CenteredFlex, Flex, Text } from '~/styles'
 import { Tooltip } from './Tooltip'
+import { IconCycler } from './Icons/IconCycler'
 
-type TokenPairProps = {
-    tokens: [TokenKey] | [TokenKey, TokenKey]
+type TokenArrayProps = {
+    tokens: TokenKey[]
     size?: number
     hideLabel?: boolean
 }
-export function TokenPair({ tokens, size = 64, hideLabel = false }: TokenPairProps) {
+export function TokenArray({ tokens, size = 32, hideLabel = false }: TokenArrayProps) {
     return (
         <Flex $align="center" $gap={12} $grow={0}>
             <IconContainer $size={size}>
@@ -35,12 +34,12 @@ export function TokenPair({ tokens, size = 64, hideLabel = false }: TokenPairPro
     )
 }
 
-const IconContainer = styled(CenteredFlex)<{ $size?: number; $isKite?: boolean }>`
+const IconContainer = styled(CenteredFlex)<{ $size: number; $isKite?: boolean }>`
     width: fit-content;
 
     & > * {
-        width: ${({ $size = 64 }) => $size / 2}px;
-        height: ${({ $size = 64 }) => $size / 2}px;
+        width: ${({ $size }) => $size}px;
+        height: ${({ $size }) => $size}px;
         border-radius: 50%;
         border: ${({ theme }) => theme.border.thin};
         background-color: ${({ theme }) => theme.colors.greenish};
@@ -49,8 +48,8 @@ const IconContainer = styled(CenteredFlex)<{ $size?: number; $isKite?: boolean }
             background-color: #eecabc;
         }
 
-        &:nth-child(2) {
-            margin-left: -${({ $size = 64 }) => 0.16 * $size}px;
+        &:not(:first-child) {
+            margin-left: -${({ $size }) => 0.32 * $size}px;
         }
     }
     & svg {
@@ -59,13 +58,13 @@ const IconContainer = styled(CenteredFlex)<{ $size?: number; $isKite?: boolean }
     }
 `
 
-type RewardsPairProps = TokenPairProps & {
+type RewardsArrayProps = TokenArrayProps & {
     tooltip?: ReactChildren
 }
-export function RewardsTokenPair({ tokens, hideLabel = false, tooltip }: RewardsPairProps) {
+export function RewardsTokenArray({ tokens, size = 18, hideLabel = false, tooltip }: RewardsArrayProps) {
     return (
         <RewardsContainer $pad={!hideLabel} $gap={8} $grow={0}>
-            <TokenPair tokens={tokens} size={36} hideLabel />
+            <TokenArray tokens={tokens} size={size} hideLabel />
             {!hideLabel && <Text $fontWeight={700}>REWARDS</Text>}
             {!!tooltip && <Tooltip>{tooltip}</Tooltip>}
         </RewardsContainer>
@@ -84,46 +83,27 @@ const RewardsContainer = styled(CenteredFlex)<{ $pad?: boolean }>`
     background-color: white;
 `
 
-export function CyclingTokenIcons({ size = 32 }: { size?: number }) {
+type CyclingTokenArrayProps = {
+    size?: number
+    tokens?: TokenKey[]
+    includeProtocolTokens?: boolean
+}
+export function CyclingTokenArray({ size = 32, tokens, includeProtocolTokens = false }: CyclingTokenArrayProps) {
     const {
         connectWalletModel: { tokensData },
     } = useStoreState((state) => state)
 
-    const [currentIcon, setCurrentIcon] = useState<string>()
+    const icons = tokens
+        ? tokens.map((token) => ({
+              icon: TOKEN_LOGOS[token],
+              bg: token === 'KITE' ? '#eecabc' : 'greenish',
+          }))
+        : Object.values(tokensData || {})
+              .filter(({ isCollateral }) => includeProtocolTokens || isCollateral)
+              .map(({ symbol }) => ({
+                  icon: TOKEN_LOGOS[symbol as TokenKey],
+                  bg: symbol === 'KITE' ? '#eecabc' : 'greenish',
+              }))
 
-    useEffect(() => {
-        const tokens = Object.values(tokensData || {})
-            .filter(({ isCollateral }) => isCollateral)
-            .map((data) => data.symbol)
-        if (!tokens.length) return
-
-        let index = 0
-        const int = setInterval(() => {
-            index = (index + 1) % tokens.length
-            setCurrentIcon(tokens[index])
-        }, 1000)
-
-        return () => clearInterval(int)
-    }, [tokensData])
-
-    return (
-        <CyclingContainer $size={size}>
-            <img src={TOKEN_LOGOS[(currentIcon || 'HAI') as TokenKey]} alt="" />
-        </CyclingContainer>
-    )
+    return <IconCycler size={size} icons={icons} />
 }
-
-const CyclingContainer = styled(CenteredFlex)<{ $size: number }>`
-    width: ${({ $size }) => $size}px;
-    height: ${({ $size }) => $size}px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    border: ${({ theme }) => theme.border.medium};
-    background-color: ${({ theme }) => theme.colors.greenish};
-    overflow: hidden;
-
-    & > img {
-        width: ${({ $size }) => $size}px;
-        height: ${({ $size }) => $size}px;
-    }
-`

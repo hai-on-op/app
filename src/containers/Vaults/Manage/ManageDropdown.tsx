@@ -5,7 +5,7 @@ import { useVault } from '~/providers/VaultProvider'
 
 import { CenteredFlex, Text } from '~/styles'
 import { BrandedDropdown, DropdownOption } from '~/components/BrandedDropdown'
-import { TokenPair } from '~/components/TokenPair'
+import { TokenArray } from '~/components/TokenArray'
 
 export function ManageDropdown() {
     const {
@@ -48,7 +48,7 @@ export function ManageDropdown() {
                         }}
                         style={{ paddingLeft: '8px' }}
                     >
-                        <TokenPair tokens={[symbol as any]} hideLabel />
+                        <TokenArray tokens={[symbol as any]} hideLabel />
                         <Text>{symbol}</Text>
                     </DropdownOption>
                 )),
@@ -71,7 +71,7 @@ export function ManageDropdown() {
                     onClick={() => setActiveVault({ vault })}
                     style={{ paddingLeft: '10px' }}
                 >
-                    <TokenPair tokens={[listVault.collateralName as any]} hideLabel />
+                    <TokenArray tokens={[listVault.collateralName as any]} hideLabel />
                     <CenteredFlex $gap={8}>
                         <Text>{collateral.name}</Text>
                         <Text $fontWeight={400}>#{listVault.id}</Text>
@@ -88,7 +88,7 @@ export function ManageDropdown() {
             style={{ paddingLeft: '8px' }}
             label={
                 <>
-                    <TokenPair tokens={[collateral.name as any]} hideLabel />
+                    <TokenArray tokens={[collateral.name as any]} hideLabel />
                     {label}
                 </>
             }

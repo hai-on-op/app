@@ -3,7 +3,7 @@ import { useStoreState } from '~/store'
 import styled, { css } from 'styled-components'
 import { Text } from '~/styles'
 import { BrandedDropdown, DropdownOption } from './BrandedDropdown'
-import { TokenPair } from './TokenPair'
+import { TokenArray } from './TokenArray'
 
 type CollateralDropdownProps = {
     label: string
@@ -36,7 +36,7 @@ export function CollateralDropdown({ label, selectedAsset, onSelect, excludeAll 
                     $pad={token !== 'All'}
                     onClick={() => onSelect(token === 'All' ? undefined : token)}
                 >
-                    {token !== 'All' && <TokenPair tokens={[token as any]} hideLabel />}
+                    {token !== 'All' && <TokenArray tokens={[token as any]} hideLabel />}
                     <Text>{token}</Text>
                 </Option>
             ))}

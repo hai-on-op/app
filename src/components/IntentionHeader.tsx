@@ -2,14 +2,13 @@ import { useMemo } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 
 import type { ReactChildren } from '~/types'
-import { LINK_TO_DOCS, TOKEN_LOGOS } from '~/utils'
+import { LINK_TO_DOCS } from '~/utils'
 import { useMediaQuery } from '~/hooks'
 
 import styled from 'styled-components'
 import { BlurContainer, Flex, Text } from '~/styles'
-import { HaiFace } from './Icons/HaiFace'
 import { BrandedTitle } from './BrandedTitle'
-import { BrandedSelect } from './BrandedSelect'
+import { BrandedSelect, type BrandedSelectOption } from './BrandedSelect'
 import { Link } from './Link'
 import { BorrowStats } from '~/containers/Vaults/Stats'
 import { EarnStats } from '~/containers/Earn/Stats'
@@ -48,30 +47,30 @@ const copy: Record<
     },
 }
 
-const typeOptions = [
+const typeOptions: BrandedSelectOption[] = [
     {
         label: 'Get $HAI',
         value: Intention.BORROW,
-        icon: <HaiFace filled />,
+        icon: ['HAI'],
         description: 'Mint & borrow $HAI stablecoin against your preferred collateral',
     },
     {
         label: 'Buy $HAI',
         value: '',
-        icon: uniswapLogo,
+        icon: <img src={uniswapLogo} alt="" />,
         description: 'Market buy $HAI from various pairs on Uniswap',
         href: 'https://app.uniswap.org/swap',
     },
     {
         label: 'Earn Rewards',
         value: Intention.EARN,
-        icon: [TOKEN_LOGOS.OP, TOKEN_LOGOS.WETH, TOKEN_LOGOS.WSTETH],
+        icon: ['OP', 'KITE'],
         description: 'Earn long term yields by staking a growing list of crypto assets',
     },
     {
         label: 'Buy Liquidated Assets',
         value: Intention.AUCTION,
-        icon: [TOKEN_LOGOS.OP, TOKEN_LOGOS.WETH, TOKEN_LOGOS.WSTETH],
+        icon: 'ALL_TOKENS',
         description: 'Buy your favorite assets from liquidated loans at a discount',
     },
 ]

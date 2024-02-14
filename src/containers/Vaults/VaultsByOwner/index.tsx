@@ -10,7 +10,7 @@ import { BlurContainer, CenteredFlex, Flex, Grid, TableButton, Text } from '~/st
 import { BrandedTitle } from '~/components/BrandedTitle'
 import { Pagination } from '~/components/Pagination'
 import { StatusLabel } from '~/components/StatusLabel'
-import { TokenPair } from '~/components/TokenPair'
+import { TokenArray } from '~/components/TokenArray'
 import { LiquidateVaultModal } from '~/components/Modal/LiquidateVaultModal'
 import { SortByDropdown } from '~/components/SortByDropdown'
 import { Table, TableContainer } from '~/components/Table'
@@ -119,7 +119,7 @@ export function VaultsByOwner() {
                                                             maxDecimals: 4,
                                                         })}
                                                     </Text>
-                                                    <TokenPair tokens={[collateralToken as any]} hideLabel size={48} />
+                                                    <TokenArray tokens={[collateralToken as any]} hideLabel size={24} />
                                                     <Text>{collateralToken}</Text>
                                                 </Grid>
                                             ) : (
@@ -129,7 +129,7 @@ export function VaultsByOwner() {
                                                             maxDecimals: 4,
                                                         })}
                                                     </Text>
-                                                    <TokenPair tokens={[collateralToken as any]} hideLabel size={48} />
+                                                    <TokenArray tokens={[collateralToken as any]} hideLabel size={24} />
                                                     <Text>{collateralToken}</Text>
                                                 </Flex>
                                             ),
@@ -142,7 +142,7 @@ export function VaultsByOwner() {
                                                             maxDecimals: 4,
                                                         })}
                                                     </Text>
-                                                    <TokenPair tokens={['HAI']} hideLabel size={48} />
+                                                    <TokenArray tokens={['HAI']} hideLabel size={24} />
                                                     <Text>HAI</Text>
                                                 </Grid>
                                             ) : (
@@ -152,7 +152,7 @@ export function VaultsByOwner() {
                                                             maxDecimals: 4,
                                                         })}
                                                     </Text>
-                                                    <TokenPair tokens={['HAI']} hideLabel size={48} />
+                                                    <TokenArray tokens={['HAI']} hideLabel size={24} />
                                                     <Text>HAI</Text>
                                                 </Flex>
                                             ),

@@ -3,7 +3,7 @@ import { useAccount } from 'wagmi'
 // import { useStoreActions } from '~/store'
 
 import { HaiButton } from '~/styles'
-import { RewardsTokenPair } from '~/components/TokenPair'
+import { RewardsTokenArray } from '~/components/TokenArray'
 import { Stats, type StatProps } from '~/components/Stats'
 
 export function EarnStats() {
@@ -25,7 +25,7 @@ export function EarnStats() {
         },
         {
             header: '$--',
-            headerStatus: <RewardsTokenPair tokens={['OP', 'KITE']} hideLabel />,
+            headerStatus: <RewardsTokenArray tokens={['OP', 'KITE']} hideLabel />,
             label: 'My Farm Rewards',
             tooltip: 'Rewards currently voted upon and distributed by DAO approximately once per month.',
             button: (
@@ -36,7 +36,7 @@ export function EarnStats() {
         },
         // {
         //     header: '$7,000',
-        //     headerStatus: <RewardsTokenPair tokens={['OP', 'KITE']} hideLabel />,
+        //     headerStatus: <RewardsTokenArray tokens={['OP', 'KITE']} hideLabel />,
         //     label: 'My Farm Rewards',
         //     tooltip: 'Hello World',
         //     button: (

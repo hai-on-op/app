@@ -10,7 +10,7 @@ import { AuctionTable } from './AuctionTable'
 import { SortByDropdown } from '~/components/SortByDropdown'
 import { CollateralDropdown } from '~/components/CollateralDropdown'
 import { capitalizeName } from '~/utils'
-import { CyclingTokenIcons, TokenPair } from '~/components/TokenPair'
+import { CyclingTokenArray, TokenArray } from '~/components/TokenArray'
 
 type AuctionTypeFilter = {
     type: AuctionEventType | 'All'
@@ -82,9 +82,9 @@ export function AuctionsList({ isLoading, error }: AuctionsListProps) {
                                 }}
                             >
                                 {!icon ? null : icon === 'All' ? (
-                                    <CyclingTokenIcons />
+                                    <CyclingTokenArray />
                                 ) : (
-                                    <TokenPair tokens={[icon as TokenKey]} hideLabel />
+                                    <TokenArray tokens={[icon as TokenKey]} hideLabel />
                                 )}
                                 {capitalizeName(type.toLowerCase())}
                             </Option>

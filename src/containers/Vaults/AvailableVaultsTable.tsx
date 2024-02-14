@@ -7,7 +7,7 @@ import { useMediaQuery } from '~/hooks'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, Grid, HaiButton, TableButton, Text } from '~/styles'
-import { RewardsTokenPair, TokenPair } from '~/components/TokenPair'
+import { RewardsTokenArray, TokenArray } from '~/components/TokenArray'
 import { Tooltip } from '~/components/Tooltip'
 import { HaiArrow } from '~/components/Icons/HaiArrow'
 import { Table, TableContainer } from '~/components/Table'
@@ -42,8 +42,8 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                 {
                                     content: (
                                         <Grid $columns="2fr min-content 1fr" $align="center" $gap={12}>
-                                            <TokenPair tokens={[collateralName.toUpperCase() as any]} />
-                                            <RewardsTokenPair tokens={['OP']} />
+                                            <TokenArray tokens={[collateralName.toUpperCase() as any]} />
+                                            <RewardsTokenArray tokens={['OP']} />
                                         </Grid>
                                     ),
                                     props: { $fontSize: 'inherit' },

@@ -10,7 +10,7 @@ import { BrandedTitle } from '~/components/BrandedTitle'
 import { AddressLink } from '~/components/AddressLink'
 import { Pagination } from '~/components/Pagination'
 import { StatusLabel } from '~/components/StatusLabel'
-import { TokenPair } from '~/components/TokenPair'
+import { TokenArray } from '~/components/TokenArray'
 import { CheckboxButton } from '~/components/CheckboxButton'
 import { LiquidateVaultModal } from '~/components/Modal/LiquidateVaultModal'
 import { SortByDropdown } from '~/components/SortByDropdown'
@@ -113,7 +113,7 @@ export function VaultExplorer() {
                                                             maxDecimals: 4,
                                                         })}
                                                     </Text>
-                                                    <TokenPair tokens={[collateralToken as any]} hideLabel size={48} />
+                                                    <TokenArray tokens={[collateralToken as any]} hideLabel size={24} />
                                                     <Text>{collateralToken}</Text>
                                                 </Grid>
                                             ) : (
@@ -123,7 +123,7 @@ export function VaultExplorer() {
                                                             maxDecimals: 4,
                                                         })}
                                                     </Text>
-                                                    <TokenPair tokens={[collateralToken as any]} hideLabel size={48} />
+                                                    <TokenArray tokens={[collateralToken as any]} hideLabel size={24} />
                                                     <Text>{collateralToken}</Text>
                                                 </Flex>
                                             ),

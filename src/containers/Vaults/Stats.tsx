@@ -4,7 +4,7 @@ import { formatNumberWithStyle } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 
 import { Flex, HaiButton, Text } from '~/styles'
-import { RewardsTokenPair } from '~/components/TokenPair'
+import { RewardsTokenArray } from '~/components/TokenArray'
 import { Stats, type StatProps } from '~/components/Stats'
 
 export function BorrowStats() {
@@ -83,7 +83,7 @@ export function BorrowStats() {
             },
             {
                 header: '$--',
-                headerStatus: <RewardsTokenPair tokens={['OP', 'KITE']} hideLabel />,
+                headerStatus: <RewardsTokenArray tokens={['OP', 'KITE']} hideLabel />,
                 label: 'My Vault Rewards',
                 tooltip: 'Rewards currently voted upon and distributed by DAO approximately once per month.',
                 button: (

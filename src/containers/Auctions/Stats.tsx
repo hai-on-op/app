@@ -5,7 +5,7 @@ import { formatNumberWithStyle } from '~/utils'
 import { useMyBids } from '~/hooks'
 
 import { HaiButton } from '~/styles'
-import { RewardsTokenPair } from '~/components/TokenPair'
+import { RewardsTokenArray } from '~/components/TokenArray'
 import { Stats, type StatProps } from '~/components/Stats'
 
 export function AuctionStats() {
@@ -28,7 +28,7 @@ export function AuctionStats() {
         },
         {
             header: claimableAssetValue ? formatNumberWithStyle(claimableAssetValue, { style: 'currency' }) : '$--',
-            headerStatus: <RewardsTokenPair tokens={['OP', 'KITE']} hideLabel />,
+            headerStatus: <RewardsTokenArray tokens={['OP', 'KITE']} hideLabel />,
             label: 'My Claimable Assets',
             tooltip: 'Claim assets purchased in auctions',
             button: (

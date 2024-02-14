@@ -3,17 +3,12 @@ import { useNetwork } from 'wagmi'
 import dayjs from 'dayjs'
 
 import type { IAuction, IAuctionBidder, SortableHeader } from '~/types'
-import { type ChainId, parseRemainingTime, formatNumberWithStyle } from '~/utils'
+import { type ChainId, parseRemainingTime, formatNumberWithStyle, tokenMap } from '~/utils'
 
 import styled from 'styled-components'
 import { Flex, Grid, Text } from '~/styles'
 import { AddressLink } from '~/components/AddressLink'
 import { Table } from '~/components/Table'
-
-const tokenMap: Record<string, string> = {
-    PROTOCOL_TOKEN: 'HAI',
-    COIN: 'KITE',
-}
 
 const sortableHeaders: SortableHeader[] = [
     { label: 'Event' },

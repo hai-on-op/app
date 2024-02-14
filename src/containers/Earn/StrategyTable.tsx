@@ -3,7 +3,7 @@ import { formatNumberWithStyle } from '~/utils'
 
 import styled from 'styled-components'
 import { Flex, Grid, Text } from '~/styles'
-import { RewardsTokenPair, TokenPair } from '~/components/TokenPair'
+import { RewardsTokenArray, TokenArray } from '~/components/TokenArray'
 import { StrategyTableButton } from './StrategyTableButton'
 import { Table } from '~/components/Table'
 import { Link } from '~/components/Link'
@@ -32,10 +32,10 @@ export function StrategyTable({ headers, rows, sorting, setSorting }: StrategyTa
                             content: (
                                 <Grid $columns="1fr min-content 12px" $align="center" $gap={12}>
                                     <Flex $justify="flex-start" $align="center" $gap={8}>
-                                        <TokenPair tokens={pair} hideLabel />
+                                        <TokenArray tokens={pair} hideLabel />
                                         <Text $fontWeight={700}>{pair.join('/')}</Text>
                                     </Flex>
-                                    <RewardsTokenPair
+                                    <RewardsTokenArray
                                         tokens={rewards}
                                         tooltip={
                                             <Flex

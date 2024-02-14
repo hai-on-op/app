@@ -4,7 +4,7 @@ import { useVault } from '~/providers/VaultProvider'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, Grid, HaiButton, TableButton, Text } from '~/styles'
-import { RewardsTokenPair, TokenPair } from '~/components/TokenPair'
+import { RewardsTokenArray, TokenArray } from '~/components/TokenArray'
 import { StatusLabel } from '~/components/StatusLabel'
 import { Table } from '~/components/Table'
 
@@ -54,10 +54,10 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                                 content: (
                                     <Grid $columns="2fr min-content 1fr" $align="center" $gap={12}>
                                         <CenteredFlex $width="fit-content" $gap={4}>
-                                            <TokenPair tokens={[collateralName as any]} />
+                                            <TokenArray tokens={[collateralName as any]} />
                                             <Text>#{id}</Text>
                                         </CenteredFlex>
-                                        <RewardsTokenPair tokens={['OP']} />
+                                        <RewardsTokenArray tokens={['OP']} />
                                     </Grid>
                                 ),
                                 props: { $fontSize: 'inherit' },

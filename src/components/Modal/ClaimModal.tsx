@@ -4,7 +4,7 @@ import { useStoreActions, useStoreState } from '~/store'
 import styled from 'styled-components'
 import { Flex, HaiButton, Text } from '~/styles'
 import { Modal, type ModalProps } from './index'
-import { TokenPair } from '../TokenPair'
+import { TokenArray } from '../TokenArray'
 import { useMemo } from 'react'
 
 type DummyClaimableAsset = {
@@ -103,7 +103,7 @@ type ClaimableAssetProps = {
 function ClaimableAsset({ asset, price = 0 }: ClaimableAssetProps) {
     return (
         <ClaimableAssetContainer>
-            <TokenPair tokens={[asset.asset as any]} hideLabel />
+            <TokenArray tokens={[asset.asset as any]} hideLabel />
             <Flex $width="100%" $column $justify="center" $align="flex-start" $gap={4}>
                 <Text $fontSize="1em" $fontWeight={700}>
                     {formatNumberWithStyle(asset.amount, { maxDecimals: 4 })} {asset.asset}

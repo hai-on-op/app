@@ -8,7 +8,7 @@ import { useMediaQuery } from '~/hooks'
 
 import styled from 'styled-components'
 import { BlurContainer, CenteredFlex, Flex, Grid, Text } from '~/styles'
-import { RewardsTokenPair } from '~/components/TokenPair'
+import { RewardsTokenArray } from '~/components/TokenArray'
 import { ProxyPrompt } from '~/components/ProxyPrompt'
 import { Overview } from './Overview'
 import { VaultActions } from './VaultActions'
@@ -34,7 +34,7 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
             <Header>
                 <CenteredFlex $gap={12}>
                     <ManageDropdown />
-                    <RewardsTokenPair tokens={['OP', 'KITE']} hideLabel={!isLargerThanSmall} />
+                    <RewardsTokenArray tokens={['OP', 'KITE']} hideLabel={!isLargerThanSmall} />
                 </CenteredFlex>
                 <Flex $column $justify="center" $align="flex-start" $gap={4}>
                     <Text>
