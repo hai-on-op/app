@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 
 import { Status, formatNumberWithStyle, returnWalletAddress } from '~/utils'
-import { useStoreState } from '~/store'
+import { useStoreActions, useStoreState } from '~/store'
 import { useMediaQuery, useVaultsByOwner } from '~/hooks'
 
 import styled from 'styled-components'
@@ -29,6 +29,9 @@ export function VaultsByOwner() {
     const {
         vaultModel: { liquidationData },
     } = useStoreState((state) => state)
+    const {
+        popupsModel: { toggleModal },
+    } = useStoreActions((actions) => actions)
 
     const {
         invalidAddress,
@@ -49,6 +52,12 @@ export function VaultsByOwner() {
         collateralRatio: string
         status: Status
     }>()
+    useEffect(() => {
+        toggleModal({
+            modal: 'liquidate',
+            isOpen: !!liquidateVault,
+        })
+    }, [liquidateVault, toggleModal])
 
     return (
         <>
