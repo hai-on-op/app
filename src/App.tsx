@@ -7,6 +7,7 @@ import { ApolloProvider } from '@apollo/client'
 import type { Theme } from '~/types'
 import { ChainId, NETWORK_ID, client } from '~/utils'
 import { AnalyticsProvider } from '~/providers/AnalyticsProvider'
+import { EffectsProvider } from './providers/EffectsProvider'
 
 import { GlobalStyle } from '~/styles'
 import { ErrorBoundary } from '~/ErrorBoundary'
@@ -32,31 +33,33 @@ const App = () => {
             <ErrorBoundary>
                 <ApolloProvider client={client}>
                     <AnalyticsProvider>
-                        <Shared>
-                            <Suspense fallback={null}>
-                                <Route />
-                                <>
-                                    <Switch>
-                                        {NETWORK_ID === ChainId.OPTIMISM_SEPOLIA && (
-                                            <Route exact strict component={TestClaim} path={'/test/claim'} />
-                                        )}
-                                        <Route exact strict component={Splash} path={'/'} />
-                                        <Route exact strict component={Auctions} path={'/auctions'} />
-                                        <Route exact strict component={Analytics} path={'/analytics'} />
-                                        <Route exact strict component={Contracts} path={'/contracts'} />
-                                        <Route exact strict component={Learn} path={'/learn'} />
-                                        <Route exact strict component={Earn} path={'/earn'} />
-                                        <Route exact strict component={VaultExplorer} path={'/vaults/explore'} />
-                                        <Route exact strict component={Vaults} path={'/vaults/manage'} />
-                                        <Route exact strict component={Vaults} path={'/vaults/open'} />
-                                        <Route exact component={Vaults} path={'/vaults/:idOrOwner'} />
-                                        <Route exact strict component={Vaults} path={'/vaults'} />
+                        <EffectsProvider>
+                            <Shared>
+                                <Suspense fallback={null}>
+                                    <Route />
+                                    <>
+                                        <Switch>
+                                            {NETWORK_ID === ChainId.OPTIMISM_SEPOLIA && (
+                                                <Route exact strict component={TestClaim} path={'/test/claim'} />
+                                            )}
+                                            <Route exact strict component={Splash} path={'/'} />
+                                            <Route exact strict component={Auctions} path={'/auctions'} />
+                                            <Route exact strict component={Analytics} path={'/analytics'} />
+                                            <Route exact strict component={Contracts} path={'/contracts'} />
+                                            <Route exact strict component={Learn} path={'/learn'} />
+                                            <Route exact strict component={Earn} path={'/earn'} />
+                                            <Route exact strict component={VaultExplorer} path={'/vaults/explore'} />
+                                            <Route exact strict component={Vaults} path={'/vaults/manage'} />
+                                            <Route exact strict component={Vaults} path={'/vaults/open'} />
+                                            <Route exact component={Vaults} path={'/vaults/:idOrOwner'} />
+                                            <Route exact strict component={Vaults} path={'/vaults'} />
 
-                                        <Redirect from="*" to="/" />
-                                    </Switch>
-                                </>
-                            </Suspense>
-                        </Shared>
+                                            <Redirect from="*" to="/" />
+                                        </Switch>
+                                    </>
+                                </Suspense>
+                            </Shared>
+                        </EffectsProvider>
                     </AnalyticsProvider>
                 </ApolloProvider>
             </ErrorBoundary>

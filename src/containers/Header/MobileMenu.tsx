@@ -11,6 +11,7 @@ import {
     LINK_TO_TWITTER,
     NETWORK_ID,
 } from '~/utils'
+import { useEffects } from '~/providers/EffectsProvider'
 import { useMediaQuery, useOutsideClick } from '~/hooks'
 
 import styled from 'styled-components'
@@ -31,6 +32,7 @@ import {
     Search,
     ShoppingBag,
     TrendingUp,
+    Tv,
 } from 'react-feather'
 import { Twitter } from '~/components/Icons/Twitter'
 import { Telegram } from '~/components/Icons/Telegram'
@@ -43,6 +45,8 @@ type MobileMenuProps = {
     showWrapEth: () => void
 }
 export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) {
+    const { toggleScreensaver } = useEffects()
+
     const isLargerThanSmall = useMediaQuery('upToSmall')
     const isLargerThanMedium = useMediaQuery('upToMedium')
     const isLargerThanLarge = useMediaQuery('upToLarge')
@@ -165,6 +169,9 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
                             icon={<Discord size={19} stroke="black" strokeWidth={2} />}
                         >
                             Discord
+                        </BrandedDropdown.Item>
+                        <BrandedDropdown.Item onClick={() => toggleScreensaver(true)} icon={<Tv size={18} />}>
+                            Screensaver
                         </BrandedDropdown.Item>
                     </Inner>
                 </Dropdown>
