@@ -60,8 +60,8 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
         setSorting: setMyVaultsSorting,
         assetsFilter,
         setAssetsFilter,
-        showClosedVaults,
-        setShowClosedVaults,
+        showEmptyVaults,
+        setShowEmptyVaults,
     } = useMyVaults()
 
     return (
@@ -94,8 +94,8 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
                             selectedAsset={assetsFilter}
                             onSelect={setAssetsFilter}
                         />
-                        <CheckboxButton checked={showClosedVaults} toggle={() => setShowClosedVaults((e) => !e)}>
-                            Show Closed Vaults
+                        <CheckboxButton checked={showEmptyVaults} toggle={() => setShowEmptyVaults((e) => !e)}>
+                            Show Empty Vaults
                         </CheckboxButton>
                         {!isLargerThanSmall && (
                             <SortByDropdown
