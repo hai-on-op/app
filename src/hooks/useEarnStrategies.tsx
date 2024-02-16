@@ -24,22 +24,38 @@ const sortableHeaders: SortableHeader[] = [
 
 // TODO: calculate velodrome and uniswap pool values based on Kingfish doc
 const dummyRows: Strategy[] = [
+    // {
+    //     pair: ['HAI', 'ETH'],
+    //     rewards: ['OP', 'KITE'],
+    //     tvl: '5600000',
+    //     vol24hr: '4600000',
+    //     apy: 0.19,
+    //     userPosition: '300000',
+    //     userApy: 0.15,
+    //     earnPlatform: 'uniswap',
+    // },
+    // {
+    //     pair: ['HAI', 'SUSD'],
+    //     rewards: ['OP', 'KITE'],
+    //     tvl: '5500000',
+    //     vol24hr: '5100000',
+    //     apy: 0.11,
+    //     earnPlatform: 'velodrome',
+    // },
     {
         pair: ['HAI', 'ETH'],
         rewards: ['OP', 'KITE'],
-        tvl: '5600000',
-        vol24hr: '4600000',
-        apy: 0.19,
-        userPosition: '300000',
-        userApy: 0.15,
+        tvl: '',
+        vol24hr: '',
+        apy: 0,
         earnPlatform: 'uniswap',
     },
     {
         pair: ['HAI', 'SUSD'],
         rewards: ['OP', 'KITE'],
-        tvl: '5500000',
-        vol24hr: '5100000',
-        apy: 0.11,
+        tvl: '',
+        vol24hr: '',
+        apy: 0,
         earnPlatform: 'velodrome',
     },
 ]
