@@ -79,7 +79,7 @@ export const formatNumberWithSuffix = (value: number | string, options: FormatOp
         case 'currency':
             return `$${formatted}`
         case 'percent':
-            return `${formatted} %`
+            return `${formatted}%`
         default:
             return formatted
     }

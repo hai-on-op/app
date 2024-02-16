@@ -155,7 +155,7 @@ export function StrategyTable({ headers, rows, sorting, setSorting }: StrategyTa
 }
 
 const TableHeader = styled(Grid)`
-    grid-template-columns: 340px minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) 224px;
+    grid-template-columns: 340px minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) 220px;
     align-items: center;
     padding: 0px;
     padding-left: 6px;

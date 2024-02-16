@@ -1,12 +1,14 @@
+import ethImg from '~/assets/eth-img.svg'
 import haiImg from '~/assets/hai-logo.svg'
 import kiteImg from '~/assets/kite-img.svg'
 import opImg from '~/assets/op-img.svg'
 import snxImg from '~/assets/snx-img.png'
 import stnImg from '~/assets/stn-img.png'
+import susdImg from '~/assets/susd-img.svg'
 import ttmImg from '~/assets/ttm-img.png'
 import wbtcImg from '~/assets/wbtc-img.svg'
-import wethImg from '~/assets/eth-img.svg'
-import wstethImg from '~/assets/wsteth-img.png'
+import wethImg from '~/assets/weth-img.svg'
+import wstethImg from '~/assets/wsteth-img.svg'
 
 export type Tokens = {
     [key: string]: {
@@ -19,11 +21,13 @@ export type Tokens = {
 }
 
 export const TOKEN_LOGOS = {
+    ETH: ethImg,
     HAI: haiImg,
     KITE: kiteImg,
     OP: opImg,
     SNX: snxImg,
     STN: stnImg,
+    SUSD: susdImg,
     TTM: ttmImg,
     WBTC: wbtcImg,
     WETH: wethImg,
@@ -42,6 +46,11 @@ export type Token = {
     icon: string
 }
 export const tokenAssets: Record<string, Token> = {
+    ETH: {
+        symbol: 'ETH',
+        name: 'Ethereum',
+        icon: ethImg,
+    },
     HAI: {
         symbol: 'HAI',
         name: 'Hai',
@@ -66,6 +75,11 @@ export const tokenAssets: Record<string, Token> = {
         symbol: 'STN',
         name: 'STONES',
         icon: stnImg,
+    },
+    SUSD: {
+        symbol: 'SUSD',
+        name: 'sUSD',
+        icon: susdImg,
     },
     TTM: {
         symbol: 'TTM',

@@ -25,7 +25,7 @@ const sortableHeaders: SortableHeader[] = [
 // TODO: calculate velodrome and uniswap pool values based on Kingfish doc
 const dummyRows: Strategy[] = [
     {
-        pair: ['WETH', 'HAI'],
+        pair: ['HAI', 'ETH'],
         rewards: ['OP', 'KITE'],
         tvl: '5600000',
         vol24hr: '4600000',
@@ -35,28 +35,18 @@ const dummyRows: Strategy[] = [
         earnPlatform: 'uniswap',
     },
     {
-        pair: ['WBTC', 'HAI'],
+        pair: ['HAI', 'SUSD'],
         rewards: ['OP', 'KITE'],
         tvl: '5500000',
         vol24hr: '5100000',
         apy: 0.11,
         earnPlatform: 'velodrome',
     },
-    {
-        pair: ['KITE', 'OP'],
-        rewards: ['OP', 'KITE'],
-        tvl: '4600000',
-        vol24hr: '1200000',
-        apy: 0.09,
-        userPosition: '169000',
-        userApy: 0.11,
-        earnPlatform: 'velodrome',
-    },
 ]
 
 export function useEarnStrategies() {
     const {
-        vaultModel: { list },
+        vaultModel: { list, liquidationData },
     } = useStoreState((state) => state)
 
     const { data } = useQuery<{ collateralTypes: QueryCollateralType[] }>(ALL_COLLATERAL_TYPES_QUERY)
@@ -72,7 +62,12 @@ export function useEarnStrategies() {
                     {}
                 // ((kite-daily-emission * kite-price + op-daily-emission * op-price) * 365) / (hai-debt-per-collateral * hai-redemption-price)
                 // TODO: plug in actual values
-                const nominal = ((12 * 10 + 25 * 3.85) * 365) / (parseFloat(cType.debtAmount) * 1.05)
+                const opPrice = parseFloat(liquidationData?.collateralLiquidationData['OP']?.currentPrice.value || '0')
+                const nominal =
+                    !liquidationData?.currentRedemptionPrice || !opPrice
+                        ? Infinity
+                        : ((12 * 10 + 25 * opPrice) * 365) /
+                          (parseFloat(cType.debtAmount) * parseFloat(liquidationData?.currentRedemptionPrice || '0'))
                 const apy = nominal === Infinity ? 0 : Math.pow(1 + nominal / 12, 12) - 1
                 return {
                     pair: [symbol || 'HAI'],
@@ -90,14 +85,14 @@ export function useEarnStrategies() {
                 } as Strategy
             })
             .concat(dummyRows)
-    }, [data?.collateralTypes, list])
+    }, [data?.collateralTypes, list, liquidationData])
 
     const [filterEmpty, setFilterEmpty] = useState(false)
 
     const filteredRows = useMemo(() => {
         if (!filterEmpty) return collateralStrategies
 
-        return collateralStrategies.filter(({ userPosition }) => !!userPosition)
+        return collateralStrategies.filter(({ userPosition }) => !!userPosition && userPosition !== '0')
     }, [collateralStrategies, filterEmpty])
 
     const [sorting, setSorting] = useState<Sorting>({
