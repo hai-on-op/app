@@ -62,11 +62,11 @@ export function EffectsProvider({ children }: Props) {
         })
 
         const update = (delta: number) => {
-            ctx.save()
+            // ctx.save()
             // ctx.globalAlpha = 0.98
-            ctx.globalCompositeOperation = 'copy'
-            ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height)
-            ctx.restore()
+            // ctx.globalCompositeOperation = 'copy'
+            // ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height)
+            // ctx.restore()
             screensaver.update(delta)
         }
 
