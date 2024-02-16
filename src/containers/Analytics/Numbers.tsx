@@ -23,6 +23,7 @@ import { useDummyData as useDummyPieData } from '~/components/Charts/Pie/useDumm
 import { PriceDisplay } from './PriceDisplay'
 import { PieChart } from '~/components/Charts/Pie'
 import { Legend } from '~/components/Charts/Legend'
+import { ComingSoon } from '~/components/ComingSoon'
 
 const dummyPieDataBase = [
     {
@@ -271,9 +272,13 @@ export function Numbers() {
                     >
                         <Stat
                             stat={{
-                                header: `$${dummyPieData[0].value.toLocaleString('en-US', {
-                                    maximumFractionDigits: 2,
-                                })}`,
+                                header: (
+                                    <ComingSoon $justify="flex-start" $fontSize="1.2rem">
+                                        {`$${dummyPieData[0].value.toLocaleString('en-US', {
+                                            maximumFractionDigits: 2,
+                                        })}`}
+                                    </ComingSoon>
+                                ),
                                 label: 'HAI in Liquidity Pools',
                                 tooltip: 'Hello world',
                             }}
@@ -281,9 +286,13 @@ export function Numbers() {
                         />
                         <Stat
                             stat={{
-                                header: `$${dummyPieData[1].value.toLocaleString('en-US', {
-                                    maximumFractionDigits: 2,
-                                })}`,
+                                header: (
+                                    <ComingSoon $justify="flex-start" $fontSize="1.2rem">
+                                        {`$${dummyPieData[1].value.toLocaleString('en-US', {
+                                            maximumFractionDigits: 2,
+                                        })}`}
+                                    </ComingSoon>
+                                ),
                                 label: 'UNIv3 Pool',
                                 tooltip: 'Hello world',
                             }}
@@ -291,7 +300,11 @@ export function Numbers() {
                         />
                         <Stat
                             stat={{
-                                header: 'Coming Soon',
+                                header: (
+                                    <ComingSoon $justify="flex-start" $fontSize="1.2rem">
+                                        --
+                                    </ComingSoon>
+                                ),
                                 label: 'Depth to Equilibrium',
                                 tooltip: 'Hello world',
                             }}

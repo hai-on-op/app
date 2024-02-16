@@ -8,6 +8,7 @@ import { StrategyTableButton } from './StrategyTableButton'
 import { Table } from '~/components/Table'
 import { Link } from '~/components/Link'
 import { ArrowUpRight } from 'react-feather'
+import { ComingSoon } from '~/components/ComingSoon'
 
 type StrategyTableProps = {
     headers: SortableHeader[]
@@ -77,15 +78,17 @@ export function StrategyTable({ headers, rows, sorting, setSorting }: StrategyTa
                         },
                         {
                             content: (
-                                <Text $fontWeight={700}>
-                                    {tvl
-                                        ? formatNumberWithStyle(tvl, {
-                                              style: 'currency',
-                                              maxDecimals: 1,
-                                              suffixed: true,
-                                          })
-                                        : '-'}
-                                </Text>
+                                <ComingSoon $justify="flex-start" active={!!earnPlatform}>
+                                    <Text $fontWeight={700}>
+                                        {tvl
+                                            ? formatNumberWithStyle(tvl, {
+                                                  style: 'currency',
+                                                  maxDecimals: 1,
+                                                  suffixed: true,
+                                              })
+                                            : '-'}
+                                    </Text>
+                                </ComingSoon>
                             ),
                         },
                         // {
@@ -104,29 +107,33 @@ export function StrategyTable({ headers, rows, sorting, setSorting }: StrategyTa
                         // },
                         {
                             content: (
-                                <Text $fontWeight={700}>
-                                    {apy
-                                        ? formatNumberWithStyle(apy, {
-                                              style: 'percent',
-                                              scalingFactor: 100,
-                                              maxDecimals: 1,
-                                              suffixed: true,
-                                          })
-                                        : '-'}
-                                </Text>
+                                <ComingSoon $justify="flex-start" active={!!earnPlatform}>
+                                    <Text $fontWeight={700}>
+                                        {apy
+                                            ? formatNumberWithStyle(apy, {
+                                                  style: 'percent',
+                                                  scalingFactor: 100,
+                                                  maxDecimals: 1,
+                                                  suffixed: true,
+                                              })
+                                            : '-'}
+                                    </Text>
+                                </ComingSoon>
                             ),
                         },
                         {
                             content: (
-                                <Text $fontWeight={700}>
-                                    {userPosition && userPosition !== '0'
-                                        ? formatNumberWithStyle(userPosition, {
-                                              style: 'currency',
-                                              maxDecimals: 1,
-                                              suffixed: true,
-                                          })
-                                        : '-'}
-                                </Text>
+                                <ComingSoon $justify="flex-start" active={!!earnPlatform}>
+                                    <Text $fontWeight={700}>
+                                        {userPosition && userPosition !== '0'
+                                            ? formatNumberWithStyle(userPosition, {
+                                                  style: 'currency',
+                                                  maxDecimals: 1,
+                                                  suffixed: true,
+                                              })
+                                            : '-'}
+                                    </Text>
+                                </ComingSoon>
                             ),
                         },
                         // {
