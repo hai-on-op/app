@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { Status, formatNumberWithStyle } from '~/utils'
-import { useStoreState } from '~/store'
+import { useStoreActions, useStoreState } from '~/store'
 import { useAllVaults, useMediaQuery } from '~/hooks'
 
 import styled from 'styled-components'
@@ -25,6 +25,9 @@ export function VaultExplorer() {
     const {
         vaultModel: { liquidationData },
     } = useStoreState((state) => state)
+    const {
+        popupsModel: { toggleModal },
+    } = useStoreActions((actions) => actions)
 
     const isLargerThanSmall = useMediaQuery('upToSmall')
 
@@ -48,6 +51,12 @@ export function VaultExplorer() {
         collateralRatio: string
         status: Status
     }>()
+    useEffect(() => {
+        toggleModal({
+            modal: 'liquidate',
+            isOpen: !!liquidateVault,
+        })
+    }, [liquidateVault, toggleModal])
 
     return (
         <>

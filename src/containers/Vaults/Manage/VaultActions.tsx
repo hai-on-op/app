@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { ActionState, VaultAction, formatNumberWithStyle } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
@@ -16,7 +16,10 @@ import { CheckBox } from '~/components/CheckBox'
 export function VaultActions() {
     const proxyAddress = useProxyAddress()
     const { vaultModel: vaultState } = useStoreState((state) => state)
-    const { vaultModel: vaultActions } = useStoreActions((actions) => actions)
+    const {
+        vaultModel: vaultActions,
+        popupsModel: { toggleModal },
+    } = useStoreActions((actions) => actions)
 
     const { vault, action, setAction, formState, updateForm, collateral, debt, error } = useVault()
 
@@ -39,6 +42,18 @@ export function VaultActions() {
 
     const [reviewActive, setReviewActive] = useState(false)
     const [wrapEthActive, setWrapEthActive] = useState(false)
+    useEffect(() => {
+        toggleModal({
+            modal: 'reviewTx',
+            isOpen: reviewActive,
+        })
+    }, [reviewActive, toggleModal])
+    useEffect(() => {
+        toggleModal({
+            modal: 'wrapETH',
+            isOpen: wrapEthActive,
+        })
+    }, [wrapEthActive, toggleModal])
 
     const [buttonActive, buttonLabel] = useMemo(() => {
         let label = ''

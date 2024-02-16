@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 
 import { LINK_TO_DISCORD, LINK_TO_DOCS, LINK_TO_TELEGRAM, LINK_TO_TWITTER, formatNumberWithStyle } from '~/utils'
@@ -40,7 +40,10 @@ export function Header({ tickerActive = false }: HeaderProps) {
         vaultModel: { liquidationData },
         settingsModel: { headerBgActive, isPlayingMusic },
     } = useStoreState((state) => state)
-    const { setIsPlayingMusic } = useStoreActions((actions) => actions.settingsModel)
+    const {
+        popupsModel: { toggleModal },
+        settingsModel: { setIsPlayingMusic },
+    } = useStoreActions((actions) => actions)
 
     const {
         data: { marketPrice, redemptionPrice },
@@ -53,6 +56,12 @@ export function Header({ tickerActive = false }: HeaderProps) {
     useOutsideClick(communityContainer, () => setCommunityDropdownActive(false))
 
     const [wrapEthActive, setWrapEthActive] = useState(false)
+    useEffect(() => {
+        toggleModal({
+            modal: 'wrapETH',
+            isOpen: wrapEthActive,
+        })
+    }, [wrapEthActive, toggleModal])
 
     const tickerText = useMemo(() => {
         const arr = [

@@ -41,6 +41,13 @@ export function AuctionTable({ headers, rows, sorting, setSorting, isLoading, er
         })
     }, [selectedAuction, rows])
 
+    useEffect(() => {
+        popupsActions.toggleModal({
+            modal: 'auction',
+            isOpen: !!selectedAuction,
+        })
+    }, [selectedAuction, popupsActions])
+
     const [expandedId, setExpandedId] = useState<string>()
 
     const [paging, setPaging] = useState<number>(0)
