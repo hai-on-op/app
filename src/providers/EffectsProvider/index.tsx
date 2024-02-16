@@ -60,7 +60,7 @@ export function EffectsProvider({ children }: Props) {
             x: Math.random() * canvas.width,
             y: Math.random() * canvas.height,
         })
-        
+
         const update = (delta: number) => {
             ctx.save()
             // ctx.globalAlpha = 0.98
