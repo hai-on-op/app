@@ -68,6 +68,13 @@ export class Effect {
         this.ctx.restore()
     }
 
+    updateCanvas(newCanvas: HTMLCanvasElement) {
+        this.canvas = newCanvas
+        const ctx = newCanvas.getContext('2d')
+        if (!ctx) throw new Error('Failed to get context')
+        this.ctx = ctx
+    }
+
     clear() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
     }

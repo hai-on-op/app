@@ -1,39 +1,18 @@
-import { Dispatch, createContext, useContext, useEffect, useReducer, useRef, useState } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
 
 import type { ReactChildren, SetState } from '~/types'
-import { Effect } from './Effect'
-
-import styled from 'styled-components'
 import { ElfettiEffect } from './Elfetti'
 
-type EffectState = {
-    id: string
-    effect: Effect
-}
-type EffectUpdate =
-    | {
-          action: 'disable' | 'enable'
-          id?: string
-      }
-    | {
-          action: 'add'
-          effect: Effect | Effect[]
-      }
-
-type EffectReducer = (state: EffectState[], update: EffectUpdate) => EffectState[]
+import styled from 'styled-components'
 
 type EffectsContext = {
     canvas: HTMLCanvasElement | null
-    effects: EffectState[]
-    updateEffects: Dispatch<EffectUpdate>
     screensaverActive: boolean
     toggleScreensaver: SetState<boolean>
 }
 
 const defaultState: EffectsContext = {
     canvas: null,
-    effects: [],
-    updateEffects: (state) => state,
     screensaverActive: false,
     toggleScreensaver: () => undefined,
 }
@@ -47,47 +26,17 @@ type Props = {
 }
 export function EffectsProvider({ children }: Props) {
     const [screensaverActive, toggleScreensaver] = useState(false)
-    const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null)
+    const [screensaver, setScreensaver] = useState<ElfettiEffect>()
+    const screensaverRef = useRef(screensaver)
+    screensaverRef.current = screensaver
 
-    const [effects, updateEffects] = useReducer<EffectReducer>((state, update) => {
-        switch (update.action) {
-            case 'add': {
-                const toAdd = Array.isArray(update.effect) ? update.effect : [update.effect]
-                return [
-                    ...state,
-                    ...toAdd.map((effect, i) => ({
-                        id: (Object.keys(state).length + i + 1).toString(),
-                        effect,
-                    })),
-                ]
-            }
-            case 'enable': {
-                if (!update.id)
-                    return state.map((obj) => {
-                        obj.effect.enabled = true
-                        return obj
-                    })
-                const existing = state.find(({ id }) => id === update.id)
-                if (!existing) return state
-                existing.effect.enabled = true
-                return [...state]
-            }
-            case 'disable': {
-                if (!update.id)
-                    return state.map((obj) => {
-                        obj.effect.enabled = false
-                        return obj
-                    })
-                const existing = state.find(({ id }) => id === update.id)
-                if (!existing) return state
-                existing.effect.enabled = false
-                return [...state]
-            }
-        }
-    }, [])
+    const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null)
 
     useEffect(() => {
         if (!canvas) return
+
+        if (screensaverRef.current) screensaverRef.current.updateCanvas(canvas)
+        else setScreensaver(new ElfettiEffect(canvas))
 
         const onResize = () => {
             canvas.width = window.devicePixelRatio * window.innerWidth
@@ -97,56 +46,28 @@ export function EffectsProvider({ children }: Props) {
 
         window.addEventListener('resize', onResize)
 
-        const elfetti = new ElfettiEffect(canvas)
-        updateEffects({
-            action: 'add',
-            effect: [elfetti],
-        })
-
-        // const onClick = (event: MouseEvent | TouchEvent) => {
-        //     const pos = Object.prototype.hasOwnProperty.call(event, 'touches')
-        //         ? {
-        //             x: (event as TouchEvent).touches[0].clientX,
-        //             y: (event as TouchEvent).touches[0].clientY,
-        //         }
-        //         : {
-        //             x: (event as MouseEvent).clientX,
-        //             y: (event as MouseEvent).clientY,
-        //         }
-        //     elfetti.trigger({
-        //         x: pos.x * window.devicePixelRatio,
-        //         y: pos.y * window.devicePixelRatio,
-        //     })
-        // }
-        // window.addEventListener('click', onClick)
-
         return () => {
             window.removeEventListener('resize', onResize)
             // window.removeEventListener('click', onClick)
         }
     }, [canvas])
 
-    const effectsRef = useRef(effects)
-    effectsRef.current = effects
-
     useEffect(() => {
-        if (!canvas || !screensaverActive) return
+        if (!canvas || !screensaverActive || !screensaver) return
 
-        const ctx = canvas.getContext('2d')
-        if (!ctx) return
-
-        ;(effectsRef.current[0]?.effect as any).trigger?.({
+        const ctx = screensaver.ctx
+        screensaver.trigger({
             x: Math.random() * canvas.width,
             y: Math.random() * canvas.height,
         })
+        
         const update = (delta: number) => {
-            // canvas.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height)
             ctx.save()
             // ctx.globalAlpha = 0.98
             ctx.globalCompositeOperation = 'copy'
             ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height)
             ctx.restore()
-            effectsRef.current.forEach(({ effect }) => effect.update(delta))
+            screensaver.update(delta)
         }
 
         let animation: any
@@ -167,14 +88,12 @@ export function EffectsProvider({ children }: Props) {
             ctx.clearRect(0, 0, canvas.width, canvas.height)
             cancelAnimationFrame(animation)
         }
-    }, [canvas, screensaverActive])
+    }, [canvas, screensaverActive, screensaver])
 
     return (
         <EffectsContext.Provider
             value={{
                 canvas,
-                effects,
-                updateEffects,
                 screensaverActive,
                 toggleScreensaver,
             }}
