@@ -42,14 +42,11 @@ const Container = styled(Flex)`
 const Band = styled(CenteredFlex)<{ $offset: number }>`
     position: absolute;
     padding: 4px 12px;
-    border-radius: 4px;
-    background: white;
-    box-shadow: 0px 2px 7px rgba(0, 0, 0, 0.3);
+    background: black;
 
     & > span {
         font-weight: 700;
         letter-spacing: 0.05em;
-        -webkit-text-stroke: 0.025em black;
         ${({ theme, $offset }) => css`
             &:nth-child(5n + ${(1 + $offset) % 5}) {
                 color: ${theme.colors.greenish};
