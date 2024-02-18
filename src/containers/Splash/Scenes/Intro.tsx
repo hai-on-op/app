@@ -1,10 +1,9 @@
 import { useMediaQuery } from '~/hooks'
 
-import styled from 'styled-components'
+import styled, { keyframes } from 'styled-components'
 import { Flex, HaiButton, Text } from '~/styles'
 import { ZoomScene, type ZoomSceneProps } from './ZoomScene'
 import { BrandedTitle } from '~/components/BrandedTitle'
-import { Swirl } from '~/components/Icons/Swirl'
 import { Send } from 'react-feather'
 import { PairsBanner } from '../PairsBanner'
 import { FloatingElements, type FloatingElementsProps } from '~/components/BrandElements/FloatingElements'
@@ -125,23 +124,13 @@ export function Intro({ zIndex }: ZoomSceneProps) {
                     The <strong>multi-collateral stablecoin</strong> for smooth financial highs.
                 </Text>
                 <ButtonContainer>
-                    <HaiButton
-                        $variant="yellowish"
-                        onClick={() => {
-                            const zoomEl = document.getElementById('zoom-scroll-container')
-                            if (!zoomEl) return
-                            zoomEl.scrollTop = window.innerHeight
-                        }}
-                    >
-                        <Swirl />
-                        Scroll to Explore
-                    </HaiButton>
                     <Link href="/vaults" $textDecoration="none">
                         <HaiButton $variant="yellowish">
                             <Send size={18} strokeWidth={2.5} />
                             Enter App
                         </HaiButton>
                     </Link>
+                    <FlashingText>Scroll to Explore</FlashingText>
                 </ButtonContainer>
                 {/*
                 Note: FloatingElements MUST be a direct child of ZoomScene
@@ -194,4 +183,14 @@ const ButtonContainer = styled(Flex)`
             justify-content: flex-start;
         }
     `}
+`
+
+const flash = keyframes`
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
+`
+const FlashingText = styled(Text)`
+    font-weight: 700;
+    animation: ${flash} 2s ease infinite;
 `
