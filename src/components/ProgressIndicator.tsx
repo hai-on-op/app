@@ -117,7 +117,7 @@ const Label = styled(Flex).attrs((props) => ({
     $column: true,
     $justify: 'flex-start',
     $align: 'center',
-    $fontSize: '8px',
+    $fontSize: '10px',
     ...props,
 }))<{ $left: string }>`
     position: absolute;
@@ -134,6 +134,10 @@ const Label = styled(Flex).attrs((props) => ({
         height: ${BAR_SIZE + 4}px;
         background-color: black;
     }
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        font-size: 8px;
+    `}
 
     z-index: 1;
 `
