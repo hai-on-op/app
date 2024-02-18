@@ -148,9 +148,9 @@ export function StrategyTable({ headers, rows, sorting, setSorting }: StrategyTa
                         // },
                         {
                             content: (
-                                // <ButtonContainer>
-                                <StrategyTableButton earnPlatform={earnPlatform} />
-                                // </ButtonContainer>
+                                <Flex $width="100%" $justify="flex-end">
+                                    <StrategyTableButton earnPlatform={earnPlatform} />
+                                </Flex>
                             ),
                             unwrapped: true,
                         },

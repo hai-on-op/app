@@ -38,7 +38,7 @@ export function StrategyTableButton({ earnPlatform }: Props) {
     const { logo, size, link } = platformMap[earnPlatform || 'hai']
 
     return (
-        <Link href={link} $width="100%" $justify="flex-start" $textDecoration="none">
+        <Link href={link} $justify="flex-start" $textDecoration="none">
             <EarnButton as="div" $width="100%" $justify="space-between" $align="center">
                 <CenteredFlex $gap={4}>Earn on</CenteredFlex>
                 <Flex $justify="flex-start" $align="center" $gap={earnPlatform === 'uniswap' ? 4 : 12}>
@@ -66,7 +66,6 @@ const EarnButton = styled(HaiButton)`
         border-radius: 999px;
         padding: 4px 12px;
         padding-right: 16px;
-        width: 100%;
         height: 36px;
     }
 
