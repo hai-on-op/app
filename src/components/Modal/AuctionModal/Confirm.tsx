@@ -2,9 +2,9 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAccount } from 'wagmi'
 
-import { ActionState, COIN_TICKER, formatNumberWithStyle } from '~/utils'
+import { ActionState, COIN_TICKER, formatNumberWithStyle, wait } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
-import { handleTransactionError, useEthersSigner } from '~/hooks'
+import { handleTransactionError, useEthersSigner, usePublicGeb } from '~/hooks'
 
 import { ModalBody, ModalFooter } from '../index'
 import { CenteredFlex, HaiButton } from '~/styles'
@@ -25,6 +25,7 @@ export function Confirm({ previousStep }: ConfirmProps) {
     const { t } = useTranslation()
     const { address: account } = useAccount()
     const signer = useEthersSigner()
+    const geb = usePublicGeb()
 
     const {
         auctionModel: auctionState,
@@ -40,8 +41,8 @@ export function Confirm({ previousStep }: ConfirmProps) {
         if (type.includes('claim')) return ActionType.CLAIM
         if (type.includes('settle')) return ActionType.SETTLE
         if (type.includes('buy')) return ActionType.BUY
-        return ActionType.BID
-    }, [type])
+        return auctionState.selectedAuction?.englishAuctionType === 'COLLATERAL' ? ActionType.BUY : ActionType.BID
+    }, [type, auctionState.selectedAuction])
 
     const title = useMemo(() => {
         switch (auctionState.selectedAuction?.englishAuctionType) {
@@ -119,11 +120,6 @@ export function Confirm({ previousStep }: ConfirmProps) {
 
         setStatus(ActionState.LOADING)
         try {
-            popupsActions.setAuctionOperationPayload({
-                isOpen: false,
-                type: '',
-                auctionType: '',
-            })
             popupsActions.setIsWaitingModalOpen(true)
             popupsActions.setWaitingPayload({
                 title: 'Waiting For Confirmation',
@@ -183,6 +179,27 @@ export function Confirm({ previousStep }: ConfirmProps) {
                     break
                 }
             }
+            setStatus(ActionState.SUCCESS)
+            // refetch auction status async
+            auctionActions.fetchAuctions({
+                geb,
+                type: 'COLLATERAL',
+                tokenSymbol: auctionState.selectedAuction.sellToken,
+            })
+            auctionActions.fetchAuctions({
+                geb,
+                type: 'DEBT',
+            })
+            auctionActions.fetchAuctions({
+                geb,
+                type: 'SURPLUS',
+            })
+            await wait(3000)
+            popupsActions.setAuctionOperationPayload({
+                isOpen: false,
+                type: '',
+                auctionType: '',
+            })
             setStatus(ActionState.NONE)
         } catch (e) {
             setStatus(ActionState.ERROR)
