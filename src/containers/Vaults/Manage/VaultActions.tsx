@@ -342,9 +342,11 @@ export function VaultActions() {
                             {wrapEthActive && <WrapETHModal onClose={() => setWrapEthActive(false)} />}
                         </>
                     )}
-                    <VaultActionError />
                 </Body>
-                <Footer>{button}</Footer>
+                <Footer>
+                    <VaultActionError />
+                    {button}
+                </Footer>
             </Container>
         </>
     )
@@ -409,7 +411,11 @@ const WrapEthText = styled(Text).attrs((props) => ({
     cursor: pointer;
 `
 
-const Footer = styled(CenteredFlex)`
+const Footer = styled(CenteredFlex).attrs((props) => ({
+    $column: true,
+    $gap: 12,
+    ...props,
+}))`
     width: 100%;
     padding: 24px;
     border-top: ${({ theme }) => theme.border.thin};

@@ -24,7 +24,7 @@ export function VaultActionError() {
 
     return (
         <Container>
-            <Text $fontSize="0.8em" $color="red">
+            <Text $fontSize="0.8em" $color="red" $textAlign="left">
                 Error: {errorMessage}
             </Text>
         </Container>
@@ -33,5 +33,7 @@ export function VaultActionError() {
 
 const Container = styled(CenteredFlex)`
     width: 100%;
-    margin-top: 24px;
+    & > * {
+        width: fit-content;
+    }
 `
