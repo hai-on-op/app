@@ -18,12 +18,14 @@ type StatsProps = FlexProps & {
     stats?: StatProps[]
     columns?: string
     children?: ReactNode[]
+    fun?: boolean
 }
-export function Stats({ stats, columns, children, ...props }: StatsProps) {
+export function Stats({ stats, columns, children, fun = false, ...props }: StatsProps) {
     return (
         <Container
             $borderOpacity={0.2}
             $columns={columns || `repeat(${(stats || []).length + (children || []).length}, 1fr)`}
+            $fun={fun}
         >
             {stats?.map((stat, i) => <Stat key={i} stat={stat} {...props} />)}
             {children}
@@ -53,23 +55,6 @@ export function Stat({ stat, unbordered, ...props }: StatElProps) {
         </StatContainer>
     )
 }
-
-const Container = styled(Grid)<DashedContainerProps>`
-    ${DashedContainerStyle}
-    width: 100%;
-
-    &::after {
-        border-top: none;
-        border-right: none;
-    }
-
-    ${({ theme }) => theme.mediaWidth.upToSmall`
-        grid-template-columns: 1fr 1fr;
-    `}
-    ${({ theme }) => theme.mediaWidth.upToExtraSmall`
-        grid-template-columns: 1fr;
-    `}
-`
 
 const StatContainer = styled(Flex).attrs((props: FlexProps) => ({
     $justify: 'space-between',
@@ -103,6 +88,51 @@ const StatContainer = styled(Flex).attrs((props: FlexProps) => ({
     }
     `}
 `
+const Container = styled(Grid)<DashedContainerProps & { $fun: boolean }>`
+    ${DashedContainerStyle}
+    width: 100%;
+
+    ${({ theme, $fun }) =>
+        $fun &&
+        css`
+            &::before {
+                content: '';
+                position: absolute;
+                inset: 0px;
+                background-image: url('/assets/hai-tabs.png');
+                background-position: center;
+                background-size: contain;
+                background-repeat: repeat;
+                z-index: -1;
+            }
+            & ${StatContainer} {
+                &:nth-child(4n + 1) {
+                    background: ${theme.colors.greenish}44;
+                }
+                &:nth-child(4n + 2) {
+                    background: ${theme.colors.blueish}44;
+                }
+                &:nth-child(4n + 3) {
+                    background: ${theme.colors.orangeish}44;
+                }
+                &:nth-child(4n) {
+                    background: ${theme.colors.pinkish}44;
+                }
+            }
+        `}
+    &::after {
+        border-top: none;
+        border-right: none;
+    }
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        grid-template-columns: 1fr 1fr;
+    `}
+    ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+        grid-template-columns: 1fr;
+    `}
+`
+
 const StatText = styled(Flex).attrs((props) => ({
     $column: true,
     $justify: 'center',

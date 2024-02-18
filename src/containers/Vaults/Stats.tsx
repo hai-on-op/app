@@ -100,5 +100,5 @@ export function BorrowStats() {
 
     if (!list.length) return null
 
-    return <Stats stats={stats} columns="repeat(4, 1fr) 1.6fr" />
+    return <Stats stats={stats} columns="repeat(4, 1fr) 1.6fr" fun />
 }

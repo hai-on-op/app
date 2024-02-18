@@ -44,5 +44,5 @@ export function AuctionStats() {
 
     if (!address) return null
 
-    return <Stats stats={dummyStats} columns="repeat(3, 1fr)" />
+    return <Stats stats={dummyStats} columns="repeat(3, 1fr)" fun />
 }
