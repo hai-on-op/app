@@ -63,6 +63,7 @@ export const mediaWidthTemplates: {
 }, {}) as any
 
 export enum Status {
+    DEBTLESS = 'DEBTLESS',
     SAFE = 'SAFE',
     UNSAFE = 'UNSAFE',
     DANGER = 'DANGER',

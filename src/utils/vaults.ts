@@ -178,6 +178,7 @@ export const vaultIsSafe = (totalCollateral: string, totalDebt: string, safetyPr
 
 export enum RiskState {
     UNKNOWN,
+    DEBTLESS,
     LOW,
     MEDIUM,
     HIGH,
@@ -190,6 +191,8 @@ export const ratioChecker = (currentLiquitdationRatio: number, minLiquidationRat
 
     if (currentLiquitdationRatio < minLiquidationRatioPercent && currentLiquitdationRatio > 0) {
         return RiskState.LIQUIDATION
+    } else if (currentLiquitdationRatio === Infinity) {
+        return RiskState.DEBTLESS
     } else if (currentLiquitdationRatio >= safestRatio) {
         return RiskState.LOW
     } else if (currentLiquitdationRatio < safestRatio && currentLiquitdationRatio >= midSafeRatio) {
@@ -259,6 +262,7 @@ export const returnTotalDebtPlusInterest = (
 }
 
 export const riskStateToStatus: Record<RiskState | number, Status> = {
+    [RiskState.DEBTLESS]: Status.DEBTLESS,
     [RiskState.LOW]: Status.SAFE,
     [RiskState.MEDIUM]: Status.OKAY,
     [RiskState.HIGH]: Status.UNSAFE,
