@@ -34,6 +34,7 @@ export function VaultExplorer() {
     const {
         error,
         loading,
+        refetch,
         headers,
         rows,
         sorting,
@@ -61,7 +62,11 @@ export function VaultExplorer() {
     return (
         <>
             {!!liquidateVault && (
-                <LiquidateVaultModal onClose={() => setLiquidateVault(undefined)} {...liquidateVault} />
+                <LiquidateVaultModal
+                    onClose={() => setLiquidateVault(undefined)}
+                    {...liquidateVault}
+                    onSuccess={refetch}
+                />
             )}
             <Container>
                 <Header>

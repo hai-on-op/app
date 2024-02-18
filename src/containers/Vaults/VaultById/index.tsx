@@ -25,7 +25,7 @@ export function VaultById({ id = '' }: VaultByIdProps) {
         popupsModel: { toggleModal },
     } = useStoreActions((actions) => actions)
 
-    const { error, loading, vault } = useVaultById(id)
+    const { error, loading, vault, refetch } = useVaultById(id)
 
     const isLargerThanSmall = useMediaQuery('upToSmall')
 
@@ -48,7 +48,11 @@ export function VaultById({ id = '' }: VaultByIdProps) {
     return (
         <>
             {!!liquidateVault && (
-                <LiquidateVaultModal onClose={() => setLiquidateVault(undefined)} {...liquidateVault} />
+                <LiquidateVaultModal
+                    onClose={() => setLiquidateVault(undefined)}
+                    {...liquidateVault}
+                    onSuccess={refetch}
+                />
             )}
             <Container>
                 <Header>

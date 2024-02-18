@@ -33,7 +33,7 @@ export function useVaultsByOwner(address?: string) {
 
     const addressIsAddress = isAddress(address || '')
 
-    const { data, loading, error } = useQuery<{ safes: QuerySafe[] }>(SAFES_BY_OWNER, {
+    const { data, loading, error, refetch } = useQuery<{ safes: QuerySafe[] }>(SAFES_BY_OWNER, {
         variables: { address: address?.toLowerCase() },
         skip: !addressIsAddress,
     })
@@ -92,6 +92,7 @@ export function useVaultsByOwner(address?: string) {
         invalidAddress: !addressIsAddress,
         error,
         loading,
+        refetch,
         headers: sortableHeaders,
         rows: filteredAndSortedRows,
         rowsUnmodified: vaultsWithCRatioAndToken,

@@ -7,7 +7,7 @@ import { useStoreState } from '~/store'
 export function useVaultById(id: string) {
     const { vaultModel: vaultState } = useStoreState((state) => state)
 
-    const { data, loading, error } = useQuery<{
+    const { data, loading, error, refetch } = useQuery<{
         safes: QuerySafe[]
         confiscateSAFECollateralAndDebts: QueryConfiscateSAFECollateralAndDebt[]
     }>(SAFE_QUERY, {
@@ -31,5 +31,6 @@ export function useVaultById(id: string) {
         vault,
         loading,
         error,
+        refetch,
     }
 }

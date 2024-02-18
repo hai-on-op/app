@@ -62,7 +62,7 @@ export function useAllVaults() {
         }
     }, [sorting.key])
 
-    const { data, error, loading } = useQuery<{ safes: QuerySafe[] }>(
+    const { data, error, loading, refetch } = useQuery<{ safes: QuerySafe[] }>(
         filterEmpty ? ALLSAFES_QUERY_NOT_ZERO : ALLSAFES_QUERY_WITH_ZERO,
         {
             variables: {
@@ -129,6 +129,7 @@ export function useAllVaults() {
     return {
         error,
         loading,
+        refetch,
         headers: sortableHeaders,
         rows: filteredAndSortedRows,
         rowsUnmodified: vaultsWithCRatioAndToken,

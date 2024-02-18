@@ -37,6 +37,7 @@ export function VaultsByOwner() {
         invalidAddress,
         error,
         loading,
+        refetch,
         headers,
         rows,
         sorting,
@@ -62,7 +63,11 @@ export function VaultsByOwner() {
     return (
         <>
             {!!liquidateVault && (
-                <LiquidateVaultModal onClose={() => setLiquidateVault(undefined)} {...liquidateVault} />
+                <LiquidateVaultModal
+                    onClose={() => setLiquidateVault(undefined)}
+                    {...liquidateVault}
+                    onSuccess={refetch}
+                />
             )}
             <Container>
                 <Header>
