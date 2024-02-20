@@ -10,9 +10,10 @@ import { IconCycler } from './Icons/IconCycler'
 type TokenArrayProps = {
     tokens: TokenKey[]
     size?: number
+    label?: string
     hideLabel?: boolean
 }
-export function TokenArray({ tokens, size = 32, hideLabel = false }: TokenArrayProps) {
+export function TokenArray({ tokens, size = 32, label, hideLabel = false }: TokenArrayProps) {
     return (
         <Flex $align="center" $gap={12} $grow={0}>
             <IconContainer $size={size}>
@@ -28,7 +29,9 @@ export function TokenArray({ tokens, size = 32, hideLabel = false }: TokenArrayP
                 ))}
             </IconContainer>
             {!hideLabel && (
-                <Text $fontWeight={700}>{tokens.length === 1 ? tokens[0] : `${tokens[0]}/${tokens[1]}`}</Text>
+                <Text $fontWeight={700}>
+                    {label || (tokens.length === 1 ? tokens[0] : `${tokens[0]}/${tokens[1]}`)}
+                </Text>
             )}
         </Flex>
     )
@@ -61,12 +64,18 @@ const IconContainer = styled(CenteredFlex)<{ $size: number; $isKite?: boolean }>
 type RewardsArrayProps = TokenArrayProps & {
     tooltip?: ReactChildren
 }
-export function RewardsTokenArray({ tokens, size = 18, hideLabel = false, tooltip }: RewardsArrayProps) {
+export function RewardsTokenArray({
+    tokens,
+    size = 18,
+    label = 'REWARDS',
+    hideLabel = false,
+    tooltip,
+}: RewardsArrayProps) {
     return (
         <RewardsContainer $pad={!hideLabel} $gap={8} $grow={0}>
             <TokenArray tokens={tokens} size={size} hideLabel />
-            {!hideLabel && <Text $fontWeight={700}>REWARDS</Text>}
-            {!!tooltip && <Tooltip>{tooltip}</Tooltip>}
+            {!hideLabel && <Text $fontWeight={700}>{label}</Text>}
+            {!!tooltip && <Tooltip width="200px">{tooltip}</Tooltip>}
         </RewardsContainer>
     )
 }

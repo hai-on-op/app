@@ -49,7 +49,11 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                     content: (
                                         <Grid $columns="2fr min-content 1fr" $align="center" $gap={12}>
                                             <TokenArray tokens={[collateralName.toUpperCase() as any]} />
-                                            <RewardsTokenArray tokens={['OP', 'KITE']} />
+                                            <RewardsTokenArray
+                                                tokens={['OP', 'KITE']}
+                                                label="EARN"
+                                                tooltip={`Earn OP/KITE tokens by minting HAI and providing liquidity`}
+                                            />
                                         </Grid>
                                     ),
                                     props: { $fontSize: 'inherit' },

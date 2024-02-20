@@ -57,7 +57,11 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                                             <TokenArray tokens={[collateralName as any]} />
                                             <Text>#{id}</Text>
                                         </CenteredFlex>
-                                        <RewardsTokenArray tokens={['OP', 'KITE']} />
+                                        <RewardsTokenArray
+                                            tokens={['OP', 'KITE']}
+                                            label="EARN"
+                                            tooltip={`Earn OP/KITE tokens by minting HAI and providing liquidity`}
+                                        />
                                     </Grid>
                                 ),
                                 props: { $fontSize: 'inherit' },
