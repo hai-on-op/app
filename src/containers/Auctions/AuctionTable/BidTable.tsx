@@ -34,7 +34,9 @@ type BidTableProps = {
 export function BidTable({ auction }: BidTableProps) {
     const hasSettled = auction.isClaimed && auction.winner
 
-    const withSell = auction.englishAuctionType === 'COLLATERAL'
+    const withSell = auction.englishAuctionType !== 'SURPLUS'
+
+    const buyOrBid = auction.englishAuctionType === 'COLLATERAL' ? 'Buy' : 'Bid'
 
     return (
         <Table
@@ -50,7 +52,7 @@ export function BidTable({ auction }: BidTableProps) {
                     bidToken={tokenMap[auction.buyToken] || auction.buyToken}
                     sellToken={tokenMap[auction.sellToken] || auction.sellToken}
                     eventType={
-                        i === auction.biddersList.length - 1 ? 'Start' : hasSettled && i === 0 ? 'Settle' : 'Buy'
+                        i === auction.biddersList.length - 1 ? 'Start' : hasSettled && i === 0 ? 'Settle' : buyOrBid
                     }
                     withSell={withSell}
                 />
@@ -102,7 +104,7 @@ type BidTableRowProps = {
     bid: IAuctionBidder
     bidToken: string
     sellToken?: string
-    eventType: 'Start' | 'Buy' | 'Settle'
+    eventType: 'Start' | 'Buy' | 'Bid' | 'Settle'
     withSell?: boolean
 }
 function BidTableRow({ bid, eventType, bidToken, sellToken, withSell }: BidTableRowProps) {

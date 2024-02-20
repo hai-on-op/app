@@ -71,7 +71,7 @@ export function AuctionsList({ isLoading, error }: AuctionsListProps) {
                     <BrandedDropdown
                         label={
                             <Text $fontWeight={400} $textAlign="left">
-                                Auction Type: <strong>{typeFilter || 'All'}</strong>
+                                Type: <strong>{typeFilter || 'All'}</strong>
                             </Text>
                         }
                     >
@@ -97,7 +97,7 @@ export function AuctionsList({ isLoading, error }: AuctionsListProps) {
                     <BrandedDropdown
                         label={
                             <Text $fontWeight={400} $textAlign="left">
-                                Auction Status: <strong>{statusFilter || 'All'}</strong>
+                                Status: <strong>{statusFilter || 'All'}</strong>
                             </Text>
                         }
                     >
