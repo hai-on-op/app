@@ -16,6 +16,7 @@ export type SystemData = {
         erc20Supply: SummaryItemValue
         redemptionPrice: SummaryItemValue
         redemptionRate: SummaryItemValue
+        debtAvailableToSettle: SummaryItemValue
     }
 }
 
@@ -35,6 +36,7 @@ export function useSystemData(): SystemData {
                     currentRedemptionPrice,
                     currentRedemptionRate,
                     erc20CoinTotalSupply,
+                    debtAvailableToSettle,
                 },
             ],
         } = data
@@ -71,6 +73,7 @@ export function useSystemData(): SystemData {
                 maxDecimals: 1,
                 style: 'percent',
             })!,
+            debtAvailableToSettle: formatSummaryValue(debtAvailableToSettle, { maxDecimals: 2 })!,
         }
     }, [data])
 
