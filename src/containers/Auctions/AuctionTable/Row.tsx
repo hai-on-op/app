@@ -67,7 +67,10 @@ export function AuctionTableRow({ headers, auction, container, expanded, onSelec
                 <HaiButton
                     $variant="yellowish"
                     disabled={auctionState.isSubmitting}
-                    onClick={() => onButtonClick('settle')}
+                    onClick={(e: any) => {
+                        e.stopPropagation()
+                        onButtonClick('settle')
+                    }}
                 >
                     {t('Settle')}
                 </HaiButton>
@@ -82,7 +85,10 @@ export function AuctionTableRow({ headers, auction, container, expanded, onSelec
                 <HaiButton
                     $variant="yellowish"
                     disabled={!proxyAddress || auctionState.isSubmitting || (status === Status.LIVE && isWinner)}
-                    onClick={() => onButtonClick('hai_bid')}
+                    onClick={(e: any) => {
+                        e.stopPropagation()
+                        onButtonClick('hai_bid')
+                    }}
                 >
                     Place Bid
                 </HaiButton>

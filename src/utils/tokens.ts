@@ -35,8 +35,8 @@ export const TOKEN_LOGOS = {
 }
 
 export const tokenMap: Record<string, string> = {
-    PROTOCOL_TOKEN: 'HAI',
-    COIN: 'KITE',
+    PROTOCOL_TOKEN: 'KITE',
+    COIN: 'HAI',
     PROTOCOL_TOKEN_LP: 'KITE/ETH LP',
 }
 
