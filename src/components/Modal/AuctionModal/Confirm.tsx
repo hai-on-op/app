@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAccount } from 'wagmi'
 
-import { ActionState, COIN_TICKER, formatNumberWithStyle, wait } from '~/utils'
+import { ActionState, COIN_TICKER, formatNumberWithStyle, tokenMap, wait } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { handleTransactionError, useEthersSigner, usePublicGeb } from '~/hooks'
 
@@ -95,20 +95,30 @@ export function Confirm({ previousStep }: ConfirmProps) {
                 switch (englishAuctionType) {
                     case 'COLLATERAL':
                         return {
-                            Bid: `${formatNumberWithStyle(amount, { maxDecimals: 7 })} ${buyToken}`,
+                            Bid: `${formatNumberWithStyle(amount, { maxDecimals: 7 })} ${
+                                tokenMap[buyToken] || buyToken
+                            }`,
                             'Amount to Receive': `${formatNumberWithStyle(collateralAmount, {
                                 maxDecimals: 7,
-                            })} ${sellToken}`,
+                            })} ${tokenMap[sellToken] || sellToken}`,
                         }
                     case 'DEBT':
                         return {
-                            Bid: `${formatNumberWithStyle(buyInitialAmount, { maxDecimals: 7 })} ${buyToken}`,
-                            'Amount to Receive': `${formatNumberWithStyle(amount, { maxDecimals: 7 })} ${sellToken}`,
+                            Bid: `${formatNumberWithStyle(buyInitialAmount, { maxDecimals: 7 })} ${
+                                tokenMap[buyToken] || buyToken
+                            }`,
+                            'Amount to Receive': `${formatNumberWithStyle(amount, { maxDecimals: 7 })} ${
+                                tokenMap[sellToken] || sellToken
+                            }`,
                         }
                     case 'SURPLUS':
                         return {
-                            Bid: `${formatNumberWithStyle(sellInitialAmount, { maxDecimals: 7 })} ${sellToken}`,
-                            'Amount to Receive': `${formatNumberWithStyle(amount, { maxDecimals: 7 })} ${buyToken}`,
+                            Bid: `${formatNumberWithStyle(sellInitialAmount, { maxDecimals: 7 })} ${
+                                tokenMap[sellToken] || sellToken
+                            }`,
+                            'Amount to Receive': `${formatNumberWithStyle(amount, { maxDecimals: 7 })} ${
+                                tokenMap[buyToken] || buyToken
+                            }`,
                         }
                 }
             }

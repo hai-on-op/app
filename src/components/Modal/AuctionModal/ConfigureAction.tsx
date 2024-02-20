@@ -172,6 +172,13 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
         const totalKiteBalance = kiteBalanceBN.add(kiteInternalBalanceBN)
 
         const buyAmountBN = parseWadAmount(auction.buyAmount)
+        // console.log({
+        //     hai: haiBalanceBN.toString(),
+        //     kite: kiteBalanceBN.toString(),
+        //     value: valueBN.toString(),
+        //     maxBid: maxBidAmountBN.toString(),
+        //     buy: buyAmountBN.toString(),
+        // })
 
         if (valueBN.lt(0)) {
             setError('You cannot bid a negative number')
@@ -197,18 +204,20 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
                 break
             }
             case 'DEBT': {
-                if (buyAmountBN.gt(totalHaiBalance) || valueBN.gt(haiBalanceBN)) {
+                if (buyAmountBN.gt(haiBalanceBN)) {
                     setError(`Insufficient HAI balance.`)
                     return false
                 }
-                if (!auction.biddersList.length && valueBN.gt(maxBidAmountBN)) {
-                    setError(`You can only bid a maximum of ${maxBid} ${sellToken}`)
-                    return false
-                }
-                if (auction.biddersList.length && valueBN.gt(maxBidAmountBN)) {
-                    setError(
-                        `You need to bid ${((Number(bidDecrease) - 1) * 100).toFixed(0)}% less KITE vs the lowest bid`
-                    )
+                if (valueBN.gt(maxBidAmountBN)) {
+                    if (!auction.biddersList.length) {
+                        setError(`You can only bid to receive a maximum of ${maxBid} ${sellToken}`)
+                    } else {
+                        setError(
+                            `You need to bid to receive ${((Number(bidDecrease) - 1) * 100).toFixed(
+                                0
+                            )}% less KITE vs the lowest bid`
+                        )
+                    }
                     return false
                 }
                 break
