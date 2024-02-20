@@ -51,46 +51,40 @@ export function ManageDropdown() {
             ),
             options: Object.entries(sortedVaults).reduce((options, [symbol, vaults]) => {
                 options.push(
-                    <Flex $width="100%" $justify="space-between" $align="center" $gap={8}>
-                        <CenteredFlex $gap={8}>
-                            <TokenArray tokens={[symbol as TokenKey]} hideLabel size={28} />
-                            <Text>{symbol}</Text>
-                        </CenteredFlex>
-                        <IconButton
-                            title={`Open New ${symbol} Vault`}
-                            onClick={() => {
-                                setActiveVault({
-                                    create: true,
-                                    vault: undefined,
-                                    collateralName: symbol,
-                                })
-                            }}
-                        >
-                            <Plus size={16} />
-                        </IconButton>
-                    </Flex>
-                )
-                if (!vaults.length) {
-                    options.push(<Separator />)
-                    return options
-                }
-                const temp = options.concat(
-                    vaults.map((listVault) => (
-                        <DropdownOption
-                            key={`${listVault.collateralName}-${listVault.id}`}
-                            $active={listVault.id === vault?.id}
-                            onClick={() => setActiveVault({ vault: listVault })}
-                        >
-                            {/* <TokenArray tokens={[listVault.collateralName as any]} hideLabel /> */}
+                    <VaultDropdownContainer key={symbol}>
+                        <VaultDropdownHeading>
                             <CenteredFlex $gap={8}>
-                                <Text>Vault</Text>
-                                <Text $fontWeight={400}>#{listVault.id}</Text>
+                                <TokenArray tokens={[symbol as TokenKey]} hideLabel size={28} />
+                                <Text>{symbol}</Text>
                             </CenteredFlex>
-                        </DropdownOption>
-                    ))
+                            <IconButton
+                                title={`Open New ${symbol} Vault`}
+                                onClick={() => {
+                                    setActiveVault({
+                                        create: true,
+                                        vault: undefined,
+                                        collateralName: symbol,
+                                    })
+                                }}
+                            >
+                                <Plus size={16} />
+                            </IconButton>
+                        </VaultDropdownHeading>
+                        {vaults.map((listVault) => (
+                            <DropdownOption
+                                key={`${listVault.collateralName}-${listVault.id}`}
+                                $active={listVault.id === vault?.id}
+                                onClick={() => setActiveVault({ vault: listVault })}
+                            >
+                                <CenteredFlex $gap={8}>
+                                    <Text>Vault</Text>
+                                    <Text $fontWeight={400}>#{listVault.id}</Text>
+                                </CenteredFlex>
+                            </DropdownOption>
+                        ))}
+                    </VaultDropdownContainer>
                 )
-                temp.push(<Separator />)
-                return temp
+                return options
             }, [] as ReactChildren[]),
         }
     }, [vault, setActiveVault, updateForm, collateral, tokensData])
@@ -99,6 +93,7 @@ export function ManageDropdown() {
 
     return (
         <BrandedDropdown
+            width="200px"
             style={{ paddingLeft: '8px' }}
             label={
                 <>
@@ -106,6 +101,8 @@ export function ManageDropdown() {
                     {label}
                 </>
             }
+            maxHeight="max(calc(100vh - 400px), 200px)"
+            innerPadding="0px"
         >
             {options}
         </BrandedDropdown>
@@ -120,10 +117,23 @@ const IconButton = styled(HaiButton)`
     align-items: center;
 `
 
-const Separator = styled.div`
-    width: 100%;
-    height: 2px;
-    background: rgba(0, 0, 0, 0.1);
-    flex-grow: 0;
-    flex-shrink: 0;
+const VaultDropdownContainer = styled(Flex).attrs((props) => ({
+    $width: '100%',
+    $column: true,
+    $justify: 'flex-start',
+    $align: 'stretch',
+    $padding: '8px 12px',
+    $gap: 6,
+    ...props,
+}))`
+    &:not(:first-child) {
+        border-top: 1px solid rgba(0, 0, 0, 0.2);
+    }
 `
+const VaultDropdownHeading = styled(Flex).attrs((props) => ({
+    $width: '100%',
+    $justify: 'space-between',
+    $align: 'center',
+    $gap: 8,
+    ...props,
+}))``
