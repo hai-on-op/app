@@ -1,6 +1,7 @@
 import { JsonRpcSigner } from '@ethersproject/providers/lib/json-rpc-provider'
 import { Geb, TransactionRequest } from '@hai-on-op/sdk'
-import { BigNumber, ethers, utils as ethersUtils } from 'ethers'
+import { BigNumber, ethers } from 'ethers'
+import { parseEther } from 'ethers/lib/utils'
 
 import type { IVaultData } from '~/types'
 import { getNetworkName } from '~/utils'
@@ -53,8 +54,8 @@ export const handleDepositAndBorrow = async (signer: JsonRpcSigner, vaultData: I
         return false
     }
 
-    const collateralBN = vaultData.leftInput ? ethersUtils.parseEther(vaultData.leftInput) : ethersUtils.parseEther('0')
-    const debtBN = vaultData.rightInput ? ethersUtils.parseEther(vaultData.rightInput) : ethersUtils.parseEther('0')
+    const collateralBN = vaultData.leftInput ? parseEther(vaultData.leftInput) : parseEther('0')
+    const debtBN = vaultData.rightInput ? parseEther(vaultData.rightInput) : parseEther('0')
 
     const chainId = await signer.getChainId()
     const networkName = getNetworkName(chainId)
@@ -94,17 +95,20 @@ export const handleRepayAndWithdraw = async (signer: JsonRpcSigner, vaultData: I
     const networkName = getNetworkName(chainId)
     const geb = new Geb(networkName, signer)
 
-    const totalDebtBN = ethersUtils.parseEther(vaultData.totalDebt || '0')
-    const totalCollateralBN = ethersUtils.parseEther(vaultData.totalCollateral || '0')
-    const collateralToFree = ethersUtils.parseEther(vaultData.leftInput || '0')
-    const haiToRepay = ethersUtils.parseEther(vaultData.rightInput || '0')
+    const totalDebtBN = parseEther(vaultData.totalDebt || '0')
+    // const totalCollateralBN = parseEther(vaultData.totalCollateral || '0')
+    const collateralToFree = parseEther(vaultData.leftInput || '0')
+    const haiToRepay = parseEther(vaultData.rightInput || '0')
     const proxy = await geb.getProxyAction(signer._address)
+
+    const shouldRepayAll =
+        (totalDebtBN.isZero() && !haiToRepay.isZero()) || totalDebtBN.sub(haiToRepay).lt(parseEther('1'))
 
     let txData: TransactionRequest = {}
 
-    if (!collateralToFree.isZero() && !haiToRepay.isZero() && totalCollateralBN.isZero() && totalDebtBN.isZero()) {
+    if (!collateralToFree.isZero() && shouldRepayAll) {
         txData = await proxy.repayAllDebtAndFreeTokenCollateral(vaultData.collateral, vaultId, collateralToFree)
-    } else if (collateralToFree.isZero() && totalDebtBN.isZero() && !haiToRepay.isZero()) {
+    } else if (collateralToFree.isZero() && shouldRepayAll) {
         txData = await proxy.repayAllDebt(vaultId)
     } else if (collateralToFree.isZero() && !haiToRepay.isZero()) {
         txData = await proxy.repayDebt(vaultId, haiToRepay)
