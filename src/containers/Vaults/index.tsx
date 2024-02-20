@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 
 import { VaultAction } from '~/utils'
@@ -22,9 +22,15 @@ export function Vaults() {
         vaultModel: { singleVault },
     } = useStoreState((state) => state)
 
-    const { action, setAction } = useVaultRouting()
+    const { location, params, action, setAction } = useVaultRouting()
 
-    const [navIndex, setNavIndex] = useState(0)
+    const [navIndex, setNavIndex] = useState(params.get('tab') === 'user' ? 1 : 0)
+
+    useEffect(() => {
+        if (location.pathname === '/vaults') {
+            history.replace({ pathname: '/vaults', search: `?tab=${navIndex === 0 ? 'available' : 'user'}` })
+        }
+    }, [navIndex, location.pathname, history.replace])
 
     if (idOrOwner) {
         if (idOrOwner.startsWith('0x')) return <VaultsByOwner />

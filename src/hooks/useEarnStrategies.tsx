@@ -68,7 +68,7 @@ export function useEarnStrategies() {
     const { data } = useQuery<{ collateralTypes: QueryCollateralType[] }>(ALL_COLLATERAL_TYPES_QUERY)
 
     const collateralStrategies: Strategy[] = useMemo(() => {
-        if (!data?.collateralTypes) return []
+        if (!data?.collateralTypes) return dummyRows
 
         return data.collateralTypes
             .map((cType) => {

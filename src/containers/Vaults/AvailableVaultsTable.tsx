@@ -32,7 +32,13 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
             setSorting={setSorting}
             isEmpty={!rows.length}
             rows={rows.map(
-                ({ collateralName, collateralizationFactor, apy, eligibleBalance, myVaults: existingVaults }) => {
+                ({
+                    collateralName,
+                    collateralizationFactor,
+                    stabilityFee,
+                    eligibleBalance,
+                    myVaults: existingVaults,
+                }) => {
                     return (
                         <Table.Row
                             key={collateralName}
@@ -43,7 +49,7 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                     content: (
                                         <Grid $columns="2fr min-content 1fr" $align="center" $gap={12}>
                                             <TokenArray tokens={[collateralName.toUpperCase() as any]} />
-                                            <RewardsTokenArray tokens={['OP']} />
+                                            <RewardsTokenArray tokens={['OP', 'KITE']} />
                                         </Grid>
                                     ),
                                     props: { $fontSize: 'inherit' },
@@ -64,10 +70,20 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                     ),
                                 },
                                 {
+                                    // content: (
+                                    //     <Text>
+                                    //         {apy
+                                    //             ? formatNumberWithStyle(apy, {
+                                    //                   maxDecimals: 0,
+                                    //                   style: 'percent',
+                                    //               })
+                                    //             : '--%'}
+                                    //     </Text>
+                                    // ),
                                     content: (
                                         <Text>
-                                            {apy
-                                                ? formatNumberWithStyle(apy, {
+                                            {stabilityFee
+                                                ? formatNumberWithStyle(stabilityFee, {
                                                       maxDecimals: 0,
                                                       style: 'percent',
                                                   })

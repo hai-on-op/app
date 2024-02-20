@@ -83,6 +83,8 @@ export function useVaultRouting(address?: string) {
     }, [account, address, isWrongNetwork, tokensData, geb, signer, vaultActions])
 
     return {
+        location,
+        params,
         action,
         setAction,
     }

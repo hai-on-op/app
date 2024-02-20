@@ -125,7 +125,7 @@ export function Overview() {
                 <OverviewStat
                     value={summary.collateral.current?.formatted || summary.collateral.after.formatted}
                     token={collateral.name as any}
-                    label="Collateral Asset"
+                    label="Locked Collateral"
                     convertedValue={summary.collateral.current?.usdFormatted || summary.collateral.after.usdFormatted}
                     simulatedValue={vault && simulation?.collateral ? summary.collateral.after.formatted : ''}
                     fullWidth
@@ -133,7 +133,7 @@ export function Overview() {
                 <OverviewStat
                     value={summary.debt.current?.formatted || summary.debt.after.formatted}
                     token="HAI"
-                    label="Debt Asset"
+                    label="Minted HAI Debt"
                     convertedValue={summary.debt.current?.usdFormatted || summary.debt.after.usdFormatted}
                     simulatedValue={vault && simulation?.debt ? summary.debt.after.formatted : ''}
                     alert={{
@@ -142,9 +142,35 @@ export function Overview() {
                     }}
                     fullWidth
                 />
+                <OverviewStat
+                    value={summary.stabilityFee.formatted}
+                    label="Stability Fee"
+                    tooltip={t('stability_fee_tip')}
+                />
+                <OverviewStat
+                    value={
+                        safetyRatio
+                            ? formatNumberWithStyle(safetyRatio, {
+                                  style: 'percent',
+                                  maxDecimals: 1,
+                                  scalingFactor: 0.01,
+                              })
+                            : '--'
+                    }
+                    label="Min. Coll. Ratio"
+                    tooltip={`Collateral ratio under which this Vault can get liquidated`}
+                />
+                <OverviewStat
+                    value={summary.liquidationPrice.current?.formatted || summary.liquidationPrice.after.formatted}
+                    label="Liq. Price"
+                    simulatedValue={
+                        vault && simulation?.liquidationPrice ? summary.liquidationPrice.after.formatted : undefined
+                    }
+                    tooltip={t('liquidation_price_tip')}
+                />
                 <OverviewProgressStat
                     value={summary.collateralRatio.current?.formatted || summary.collateralRatio.after.formatted}
-                    label="Ratio:"
+                    label="My Collateral Ratio:"
                     simulatedValue={
                         vault && simulation?.riskStatus
                             ? `${simulation.collateralRatio ? summary.collateralRatio.after.formatted : '--%'} (${
@@ -156,24 +182,6 @@ export function Overview() {
                     {...progressProps}
                     fullWidth
                 />
-                <OverviewStat
-                    value={summary.stabilityFee.formatted}
-                    label="Stability Fee"
-                    tooltip={t('stability_fee_tip')}
-                />
-                <OverviewStat
-                    value={summary.liquidationPrice.current?.formatted || summary.liquidationPrice.after.formatted}
-                    label="Liq. Price"
-                    simulatedValue={
-                        vault && simulation?.liquidationPrice ? summary.liquidationPrice.after.formatted : undefined
-                    }
-                    tooltip={t('liquidation_price_tip')}
-                />
-                {/* <OverviewStat
-                    value={parseFloat((100 * parseFloat(vault?.totalAnnualizedStabilityFee || '0')).toFixed(2)) + '%'}
-                    label="Rewards APY"
-                    tooltip="Hello world"
-                /> */}
             </Inner>
         </Container>
     )
@@ -199,7 +207,7 @@ const Header = styled(Flex).attrs((props) => ({
 
 const Inner = styled(Grid).attrs((props) => ({
     $width: '100%',
-    $columns: '1fr 1fr',
+    $columns: '1fr 1fr 1fr',
     $align: 'stretch',
     ...props,
 }))<DashedContainerProps>`

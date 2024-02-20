@@ -64,7 +64,7 @@ export function OverviewStat({
                         <Text $fontSize="0.67rem" $fontWeight={700}>
                             {simulatedValue || '--'} {token}
                         </Text>
-                        <Text $fontSize="0.67rem" $fontWeight={400}>
+                        <Text $fontSize="0.67rem" $fontWeight={400} $whiteSpace="nowrap">
                             After Tx
                         </Text>
                     </StatusLabel>

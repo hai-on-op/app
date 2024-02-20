@@ -9,7 +9,8 @@ const sortableHeaders: SortableHeader[] = [
     { label: 'Collateral Ratio' },
     { label: 'Collateral' },
     { label: 'Debt' },
-    { label: 'Net APY' },
+    // { label: 'Net APY' },
+    { label: 'Stability Fee' },
     {
         label: '',
         unsortable: true,
@@ -36,8 +37,8 @@ export function useMyVaults() {
     }, [list, assetsFilter, showEmptyVaults])
 
     const [sorting, setSorting] = useState<Sorting>({
-        key: 'Risk Ratio',
-        dir: 'desc',
+        key: 'Collateral Ratio',
+        dir: 'asc',
     })
 
     const sortedRows = useMemo(() => {
@@ -48,7 +49,7 @@ export function useMyVaults() {
                     dir: sorting.dir,
                     type: 'parseInt',
                 })
-            case 'Risk Ratio':
+            case 'Collateral Ratio':
                 return arrayToSorted(myVaults, {
                     getProperty: (row) => row.collateralRatio || '0',
                     dir: sorting.dir,
@@ -66,7 +67,13 @@ export function useMyVaults() {
                     dir: sorting.dir,
                     type: 'parseFloat',
                 })
-            case 'Net APY':
+            // case 'Net APY':
+            //     return arrayToSorted(myVaults, {
+            //         getProperty: (row) => row.totalAnnualizedStabilityFee || '0',
+            //         dir: sorting.dir,
+            //         type: 'parseFloat',
+            //     })
+            case 'Stability Fee':
             default:
                 return arrayToSorted(myVaults, {
                     getProperty: (row) => row.totalAnnualizedStabilityFee || '0',

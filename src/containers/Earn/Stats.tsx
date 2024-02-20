@@ -15,13 +15,14 @@ export function EarnStats() {
     const dummyStats: StatProps[] = [
         {
             header: '$45,600',
-            label: 'My Farm TVL',
-            tooltip: 'Hello World',
+            label: 'Value Participating',
+            tooltip: 'Total eligible value participating in DAO rewards campaign activities',
         },
         {
             header: '7.8%',
-            label: 'My Net Farm Rewards APY',
-            tooltip: 'Hello World',
+            label: 'My Estimated Rewards APY',
+            tooltip:
+                'Current estimated APY of campaign rewards based on current value participating and value of rewards tokens',
         },
         {
             header: '$--',

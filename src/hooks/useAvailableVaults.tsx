@@ -8,7 +8,8 @@ import { useStoreState } from '~/store'
 const sortableHeaders: SortableHeader[] = [
     { label: 'Pair' },
     { label: 'Coll. Factor' },
-    { label: 'Net APY' },
+    // { label: 'Net APY' },
+    { label: 'Stability Fee' },
     { label: 'My Eligible Collateral' },
     { label: 'My Vaults' },
     {
@@ -38,6 +39,7 @@ export function useAvailableVaults() {
             return {
                 collateralName: symbol,
                 collateralizationFactor: liquidationCRatio || '',
+                stabilityFee: (1 - parseFloat(totalAnnualizedStabilityFee || '1')).toString(),
                 apy: totalAnnualizedStabilityFee || '',
                 eligibleBalance: tokensFetchedData[symbol]?.balanceE18,
                 myVaults: vaultState.list.filter(({ collateralName }) => collateralName === symbol),
@@ -68,6 +70,12 @@ export function useAvailableVaults() {
                     getProperty: (vault) => vault.collateralName,
                     dir: sorting.dir,
                     type: 'alphabetical',
+                })
+            case 'Stability Fee':
+                return arrayToSorted(filteredAvailableVaults, {
+                    getProperty: (vault) => vault.stabilityFee || '0',
+                    dir: sorting.dir,
+                    type: 'parseFloat',
                 })
             case 'Net APY':
                 return arrayToSorted(filteredAvailableVaults, {

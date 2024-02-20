@@ -95,6 +95,7 @@ export const floatsTypes = {
 export const network_name = VITE_NETWORK_ID === '1' ? 'mainnet' : 'optimism-sepolia'
 
 export const LINK_TO_DOCS = 'https://docs.letsgethai.com/'
+export const LINK_TO_MEDIUM = 'https://medium.com/hai-finance'
 export const LINK_TO_GOVERNANCE = 'https://gov.letsgethai.com/'
 export const LINK_TO_PRIVACY_POLICY =
     'https://docs.google.com/document/d/16MWB3hWZaRmmdQDJjCUe2CHyzgpYDzMpGiYJQdKLzZA/edit?usp=sharing'

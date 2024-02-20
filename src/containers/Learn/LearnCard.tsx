@@ -1,3 +1,4 @@
+import type { ReactChildren } from '~/types'
 import { useMediaQuery } from '~/hooks'
 
 import styled from 'styled-components'
@@ -9,7 +10,7 @@ import { Link } from '~/components/Link'
 type LearnCardProps = {
     title: string
     description?: string
-    link: string
+    link: ReactChildren
     titleColorOffset?: number
 }
 export function LearnCard({ title, description, link, titleColorOffset }: LearnCardProps) {
@@ -27,18 +28,22 @@ export function LearnCard({ title, description, link, titleColorOffset }: LearnC
                 />
                 {!!description && <Text>{description}</Text>}
             </Flex>
-            <Link href={link} $textDecoration="none">
-                <CenteredFlex $gap={12}>
-                    <Text
-                        $fontSize={isLargerThanExtraSmall ? '1.2rem' : '1rem'}
-                        $fontWeight={700}
-                        $letterSpacing="0.35rem"
-                    >
-                        LEARN MORE
-                    </Text>
-                    <HaiArrow direction="right" strokeWidth={2.5} />
-                </CenteredFlex>
-            </Link>
+            {typeof link !== 'string' ? (
+                link
+            ) : (
+                <Link href={link} $textDecoration="none">
+                    <CenteredFlex $gap={12}>
+                        <Text
+                            $fontSize={isLargerThanExtraSmall ? '1.2rem' : '1rem'}
+                            $fontWeight={700}
+                            $letterSpacing="0.35rem"
+                        >
+                            LEARN MORE
+                        </Text>
+                        <HaiArrow direction="right" strokeWidth={2.5} />
+                    </CenteredFlex>
+                </Link>
+            )}
         </Container>
     )
 }

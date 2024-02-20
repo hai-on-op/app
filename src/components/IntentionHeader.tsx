@@ -41,7 +41,7 @@ const copy: Record<
         ctaLink: LINK_TO_DOCS,
     },
     [Intention.EARN]: {
-        subtitle: 'Stake various liquidity positions to earn yields. ',
+        subtitle: 'Participate in DAO incentive campaigns to earn rewards. ',
         cta: 'Read more about earning opportunities →',
         ctaLink: LINK_TO_DOCS,
     },

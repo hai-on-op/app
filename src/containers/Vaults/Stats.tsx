@@ -6,6 +6,7 @@ import { useStoreActions, useStoreState } from '~/store'
 import { Flex, HaiButton, Text } from '~/styles'
 import { RewardsTokenArray } from '~/components/TokenArray'
 import { Stats, type StatProps } from '~/components/Stats'
+import { Link } from '~/components/Link'
 
 export function BorrowStats() {
     const {
@@ -56,7 +57,7 @@ export function BorrowStats() {
                                   })
                                 : '--'}
                         </Text>
-                        <Text $fontSize="0.5em" $fontWeight={400} $color="rgba(0,0,0,0.6)">
+                        {/* <Text $fontSize="0.5em" $fontWeight={400} $color="rgba(0,0,0,0.6)">
                             {totalHai
                                 ? formatNumberWithStyle(totalHai.toString(), {
                                       maxDecimals: 2,
@@ -64,7 +65,7 @@ export function BorrowStats() {
                                   })
                                 : '--'}{' '}
                             HAI
-                        </Text>
+                        </Text> */}
                     </Flex>
                 ),
                 label: 'My Total Debt',
@@ -73,13 +74,17 @@ export function BorrowStats() {
             {
                 header: formatNumberWithStyle(weightedStabilityFeeAverage, { style: 'percent' }),
                 label: 'My Net Stability Fee',
-                tooltip: 'My Total Debt multiplied by the stability fee rate of Vault.',
+                tooltip: 'Weighted average stability fee of My Total Debt',
             },
             {
                 header: '7.8%',
                 label: 'My Net Rewards APY',
-                // TODO: fill in [Here]
-                tooltip: 'Rewards derived from all campaign activities. See [Here] for more information.',
+                tooltip: (
+                    <Text>
+                        Rewards derived from all campaign activities. See <Link href="/earn">here</Link> for more
+                        information.
+                    </Text>
+                ),
             },
             {
                 header: '$--',

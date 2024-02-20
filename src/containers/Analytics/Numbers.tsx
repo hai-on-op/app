@@ -93,7 +93,7 @@ export function Numbers() {
         <Container>
             <Section>
                 <BrandedTitle textContent="HAI LEVEL NUMBERS" $fontSize="3rem" />
-                <Text>Explore global HAI protocol analytics.</Text>
+                <SectionHeader>IMPORTANT STUFF</SectionHeader>
                 <Stats>
                     <Stat
                         stat={{
@@ -108,7 +108,7 @@ export function Numbers() {
                                 ? erc20Supply.formatted
                                 : graphSummary?.erc20Supply.formatted || '--',
                             label: 'Outstanding $HAI',
-                            tooltip: 'Total $HAI minted in the system',
+                            tooltip: 'Total amount of HAI issued',
                         }}
                     />
                     <Stat
@@ -188,7 +188,7 @@ export function Numbers() {
                 </SectionContent>
             </Section>
             <Section>
-                <SectionHeader>REDEMPTION</SectionHeader>
+                <SectionHeader>REDEMPTION RATE</SectionHeader>
                 <SectionContent>
                     <Flex
                         $column={!isLargerThanSmall}
@@ -219,7 +219,7 @@ export function Numbers() {
                                     stat={{
                                         header: pRate.formatted || '--%',
                                         label: 'pRate',
-                                        tooltip: 'Hello world',
+                                        tooltip: `Proportional rate of controller. This rate increases and decreases based on the current error between the market price and redemption price. This component acts quickly to encourage stability during short-term shocks.`,
                                     }}
                                     unbordered
                                 />
@@ -227,7 +227,7 @@ export function Numbers() {
                                     stat={{
                                         header: iRate.formatted || '--%',
                                         label: 'iRate',
-                                        tooltip: 'Hello world',
+                                        tooltip: `Integral rate of controller. This rate increases and decreases based on the historical error between the market price and redemption price. This component acts slowly, but is better at handling long-term spreads.`,
                                     }}
                                     unbordered
                                 />
@@ -261,7 +261,7 @@ export function Numbers() {
                 </SectionContent>
             </Section>
             <Section>
-                <SectionHeader>LIQUIDITY</SectionHeader>
+                <SectionHeader>HAI LIQUIDITY</SectionHeader>
                 <SectionContent $gap={0}>
                     <Flex
                         $column={!isLargerThanSmall}
@@ -280,11 +280,11 @@ export function Numbers() {
                                     </ComingSoon>
                                 ),
                                 label: 'HAI in Liquidity Pools',
-                                tooltip: 'Hello world',
+                                tooltip: `Amount of HAI locked in tracked liquidity pools`,
                             }}
                             unbordered
                         />
-                        <Stat
+                        {/* <Stat
                             stat={{
                                 header: (
                                     <ComingSoon $justify="flex-start" $fontSize="1.2rem">
@@ -297,7 +297,7 @@ export function Numbers() {
                                 tooltip: 'Hello world',
                             }}
                             unbordered
-                        />
+                        /> */}
                         <Stat
                             stat={{
                                 header: (
@@ -306,7 +306,7 @@ export function Numbers() {
                                     </ComingSoon>
                                 ),
                                 label: 'Depth to Equilibrium',
-                                tooltip: 'Hello world',
+                                tooltip: `Amount of HAI required to be bought (positive) or sold (negative) for the Market Price to approximately equal the Redemption Price. This is an estimate based on the tracked liquidity pools and their current locked liquidity.`,
                             }}
                             unbordered
                         />
@@ -332,14 +332,14 @@ export function Numbers() {
                         stat={{
                             header: `${graphSummary?.systemSurplus.formatted || '--'} HAI`,
                             label: 'System Surplus Buffer',
-                            tooltip: 'Hello world',
+                            tooltip: `Total surplus accrued in the protocol's balance sheet. This is used to cover potential bad debt and for surplus auctions.`,
                         }}
                     />
                     <Stat
                         stat={{
                             header: `${surplusInTreasury.formatted} HAI`,
                             label: 'Keeper Treasury',
-                            tooltip: `Total HAI accrued by the system's stability fees. It's stored in the Stability Fee Treasury accountance`,
+                            tooltip: `Amount of HAI accumulated for use in remunerating keepers that play key roles in the protocol (e.g. updating oracles, update redemption rate, cleaning up state).`,
                         }}
                     />
                     <Stat
