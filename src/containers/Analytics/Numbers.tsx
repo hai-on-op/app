@@ -39,7 +39,7 @@ const dummyPieDataBase = [
 // TODO: check to make sure data usage and calculations are correct, fill out tooltips
 export function Numbers() {
     const {
-        data: { erc20Supply, marketPrice, redemptionPrice, annualRate, pRate, iRate, surplusInTreasury, globalDebt },
+        data: { erc20Supply, marketPrice, redemptionPrice, annualRate, pRate, iRate, surplusInTreasury },
         graphSummary,
         haiPriceHistory,
         redemptionRateHistory,
@@ -344,9 +344,9 @@ export function Numbers() {
                     />
                     <Stat
                         stat={{
-                            header: `${globalDebt.formatted} HAI`,
+                            header: `${graphSummary?.debtAvailableToSettle.formatted || '--'} HAI`,
                             label: 'Debt to Settle',
-                            tooltip: 'Total HAI minted in the system',
+                            tooltip: `Pending amount of debt in the protocol's balance sheet which still needs to be settled using surplus that comes from collateral auctions and/or accrued stability fees`,
                         }}
                     />
                 </Stats>
