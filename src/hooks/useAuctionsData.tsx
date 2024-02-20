@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useAccount } from 'wagmi'
 
 import type { AuctionEventType, IAuction, SortableHeader, Sorting } from '~/types'
-import { arrayToSorted, getAuctionStatus, stringsExistAndAreEqual, tokenMap } from '~/utils'
+import { Status, arrayToSorted, getAuctionStatus, stringsExistAndAreEqual, tokenMap } from '~/utils'
 import { useGetAuctions } from './useAuctions'
 
 const headers: SortableHeader[] = [
@@ -19,6 +19,7 @@ export function useAuctionsData() {
     const { address } = useAccount()
     const [filterMyBids, setFilterMyBids] = useState(false)
     const [typeFilter, setTypeFilter] = useState<AuctionEventType>()
+    const [statusFilter, setStatusFilter] = useState<Status>()
     const [saleAssetsFilter, setSaleAssetsFilter] = useState<string>()
 
     const collateralAuctions = useGetAuctions('COLLATERAL', saleAssetsFilter)
@@ -54,8 +55,11 @@ export function useAuctionsData() {
                 return true
             })
         }
+        if (statusFilter) {
+            temp = temp.filter((auction) => statusFilter === getAuctionStatus(auction))
+        }
         return temp
-    }, [collateralAuctions, debtAuctions, surplusAuctions, typeFilter, typeFilter, saleAssetsFilter])
+    }, [collateralAuctions, debtAuctions, surplusAuctions, typeFilter, typeFilter, saleAssetsFilter, statusFilter])
 
     const [sorting, setSorting] = useState<Sorting>({
         key: 'Time Left',
@@ -135,6 +139,8 @@ export function useAuctionsData() {
         setFilterMyBids,
         typeFilter,
         setTypeFilter,
+        statusFilter,
+        setStatusFilter,
         saleAssetsFilter,
         setSaleAssetsFilter,
     }

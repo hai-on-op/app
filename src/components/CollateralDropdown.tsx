@@ -34,6 +34,7 @@ export function CollateralDropdown({ label, selectedAsset, onSelect, excludeAll 
                 <Option
                     key={token}
                     $pad={token !== 'All'}
+                    $active={token === 'All' ? !selectedAsset : selectedAsset === token}
                     onClick={() => onSelect(token === 'All' ? undefined : token)}
                 >
                     {token !== 'All' && <TokenArray tokens={[token as any]} hideLabel />}
