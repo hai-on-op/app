@@ -3,6 +3,7 @@ import { useAccount } from 'wagmi'
 
 import type { AuctionEventType, IAuction, SortableHeader, Sorting } from '~/types'
 import { Status, arrayToSorted, getAuctionStatus, stringsExistAndAreEqual, tokenMap } from '~/utils'
+import { useStoreState } from '~/store'
 import { useGetAuctions } from './useAuctions'
 
 const headers: SortableHeader[] = [
@@ -17,6 +18,11 @@ const headers: SortableHeader[] = [
 
 export function useAuctionsData() {
     const { address } = useAccount()
+
+    const {
+        connectWalletModel: { proxyAddress },
+    } = useStoreState((state) => state)
+
     const [filterMyBids, setFilterMyBids] = useState(false)
     const [typeFilter, setTypeFilter] = useState<AuctionEventType>()
     const [statusFilter, setStatusFilter] = useState<Status>()
@@ -72,13 +78,14 @@ export function useAuctionsData() {
         const withBids = auctions.map((auction) => ({
             ...auction,
             myBids: auction.biddersList.reduce((total, { bidder }) => {
-                if (stringsExistAndAreEqual(bidder, address)) return total + 1
+                if (stringsExistAndAreEqual(bidder, address) || stringsExistAndAreEqual(bidder, proxyAddress))
+                    return total + 1
                 return total
             }, 0),
             status: getAuctionStatus(auction),
         }))
         return filterMyBids ? withBids.filter(({ myBids }) => !!myBids) : withBids
-    }, [auctions, address, filterMyBids])
+    }, [auctions, address, proxyAddress, filterMyBids])
 
     const sortedRows = useMemo(() => {
         switch (sorting.key) {
