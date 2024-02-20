@@ -19,7 +19,7 @@ export const claimAirdrop = async (signer: JsonRpcSigner) => {
             airdropContract = new ethers.Contract('0xC20D579004ae4AB1481f936230E4029d6D677B5d', abi, signer)
             break
         case 11155420: // op sepolia
-            airdropContract = new ethers.Contract('0x24f454f5ce376E828657758255E00a0a358EA0B9', abi, signer)
+            airdropContract = new ethers.Contract('0x76654B57c89411b02913a0cf5A1A4E0381FA653A', abi, signer)
             break
     }
 
