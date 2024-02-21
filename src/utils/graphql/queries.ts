@@ -242,6 +242,16 @@ export const MY_AUCTION_BIDS_QUERY = gql`
                 winner
                 isClaimed
                 auctionDeadline
+                englishAuctionBids {
+                    id
+                    bidNumber
+                    type
+                    sellAmount
+                    buyAmount
+                    price
+                    bidder
+                    createdAt
+                }
             }
             sellAmount
             buyAmount

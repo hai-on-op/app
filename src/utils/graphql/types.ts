@@ -319,11 +319,11 @@ export type QueryEnglishAuction = {
     buyAmount: string // Amount of tokens that that are currently being bought in the auction
     price: string // Sell price (sellAmount / buyAMount) of the best offer
     targetAmount?: string // Used for collateral auctions only. Threshold of buyToken at which the system starts to decrease the amount sold
-    winner?: string // Auction winner
+    winner: string // Auction winner
     startedBy: string // Address that started the auction
     isClaimed: boolean // Whether the bought tokens were claimed by the auction winner
     numberOfBids?: string // Total number of bids
-    auctionDeadline?: string // Deadline for the auction after which no more bids can be placed
+    auctionDeadline: string // Deadline for the auction after which no more bids can be placed
     englishAuctionConfiguration?: QueryEnglishAuctionConfiguration // Auction configuration
     safe: QuerySafe // Used only for collateral auctions. This is the Safe that got liquidated
     createdAt: string // Timestamp of the block at which the auction started

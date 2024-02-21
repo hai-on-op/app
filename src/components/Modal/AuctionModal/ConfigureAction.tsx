@@ -403,7 +403,7 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
                                         ? lowerInput.value || '0'
                                         : action.includes('claim')
                                         ? claimValues.amount.toLocaleString()
-                                        : auction.sellAmount,
+                                        : auction.buyAmount,
                             },
                         },
                     ]}

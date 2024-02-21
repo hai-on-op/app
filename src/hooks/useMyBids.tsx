@@ -2,14 +2,21 @@ import { useMemo } from 'react'
 import { useQuery } from '@apollo/client'
 import { useAccount } from 'wagmi'
 
-import { MY_AUCTION_BIDS_QUERY, QueryEnglishAuctionBid, stringsExistAndAreEqual, tokenMap } from '~/utils'
+import {
+    MY_AUCTION_BIDS_QUERY,
+    type QueryEnglishAuctionBid,
+    Status,
+    convertQueryAuction,
+    getAuctionStatus,
+    stringsExistAndAreEqual,
+} from '~/utils'
 import { useStoreState } from '~/store'
 
 export function useMyBids() {
     const { address } = useAccount()
 
     const {
-        auctionModel: { internalBalance, protInternalBalance },
+        auctionModel: { auctionsData, internalBalance, protInternalBalance },
         vaultModel: { liquidationData },
         connectWalletModel: { proxyAddress },
     } = useStoreState((state) => state)
@@ -22,61 +29,101 @@ export function useMyBids() {
         }
     )
 
-    const activeBids = useMemo(
-        () =>
-            data?.englishAuctionBids.filter(({ auction }) => {
-                const { auctionDeadline = '0', winner, isClaimed } = auction || {}
-                if (winner || isClaimed) return false
-                if (parseInt(auctionDeadline) * 1000 < Date.now()) return false
-                return true
-            }) || [],
-        [data?.englishAuctionBids]
-    )
+    const formattedAuctionBids = useMemo(() => {
+        // console.log(data?.englishAuctionBids)
+        return (
+            data?.englishAuctionBids.map((bid) => ({
+                ...bid,
+                auction: bid.auction ? convertQueryAuction(bid.auction) : undefined,
+            })) || []
+        )
+    }, [data?.englishAuctionBids])
 
-    const activeBidsValue = useMemo(
-        () =>
-            activeBids.reduce((value, bid) => {
-                // TODO: fix valuing based on auction type
-                return value + parseFloat(bid.buyAmount)
-            }, 0),
-        [activeBids]
-    )
+    const activeBids = useMemo(() => {
+        return (
+            formattedAuctionBids.filter(({ auction }) => {
+                if (!auction || !auctionsData) return false
+                const status = getAuctionStatus(auction, auctionsData)
+                if (status === Status.RESTARTING || status === Status.COMPLETED) return false
+                return true
+            }) || []
+        )
+    }, [formattedAuctionBids, auctionsData])
+
+    const activeBidsValue = useMemo(() => {
+        return activeBids.reduce((total, { buyAmount, auction }) => {
+            if (!auction) return total
+            const { currentRedemptionPrice = '0' } = liquidationData || {}
+            switch (auction.englishAuctionType) {
+                case 'DEBT':
+                    return total + parseFloat(buyAmount) * parseFloat(currentRedemptionPrice)
+                case 'SURPLUS':
+                    return total + parseFloat(buyAmount) * 10
+                default:
+                    return total
+            }
+            // const token = tokenMap[auction.buyToken] || auction.buyToken
+            // console.log(token)
+            // switch (token) {
+            //     case 'HAI':
+            //         console.log(buyAmount)
+            //         return total + parseFloat(buyAmount) * parseFloat(currentRedemptionPrice || '0')
+            //     case 'KITE':
+            //         // TODO: get KITE price
+            //         console.log(buyAmount)
+            //         return total + parseFloat(buyAmount).toString()) * 10
+            //     default:
+            //         return (
+            //             total +
+            //             parseFloat(buyAmount) *
+            //                 parseFloat(collateralLiquidationData?.[auction.buyToken]?.currentPrice.value || '0')
+            //         )
+            // }
+        }, 0)
+    }, [activeBids, liquidationData])
 
     const claimableAuctions = useMemo(() => {
         return (
-            data?.englishAuctionBids.filter(({ auction }) => {
+            formattedAuctionBids.filter(({ auction }) => {
                 const { winner, isClaimed } = auction || {}
                 if (!winner || isClaimed) return false
                 return stringsExistAndAreEqual(winner, address) || stringsExistAndAreEqual(winner, proxyAddress)
             }) || []
         )
-    }, [data?.englishAuctionBids, address, proxyAddress])
+    }, [formattedAuctionBids, address, proxyAddress])
 
     const claimableAssetValue = useMemo(() => {
-        // console.log(claimableAuctions)
         const winnings = claimableAuctions.reduce((total, { sellAmount, auction }) => {
             if (!auction) return total
-            const { collateralLiquidationData, currentRedemptionPrice } = liquidationData || {}
-            const token = tokenMap[auction.sellToken] || auction.sellToken
-            switch (token) {
-                case 'HAI':
-                    return total + parseFloat(sellAmount) * parseFloat(currentRedemptionPrice || '0')
-                case 'KITE':
-                    // TODO: get KITE price
+            const { currentRedemptionPrice = '0' } = liquidationData || {}
+            switch (auction.englishAuctionType) {
+                case 'DEBT':
                     return total + parseFloat(sellAmount) * 10
+                case 'SURPLUS':
+                    return total + parseFloat(sellAmount) * parseFloat(currentRedemptionPrice)
                 default:
-                    return (
-                        total +
-                        parseFloat(sellAmount) *
-                            parseFloat(collateralLiquidationData?.[auction.sellToken]?.currentPrice.value || '0')
-                    )
+                    return total
             }
+            // const token = tokenMap[auction.sellToken] || auction.sellToken
+            // switch (token) {
+            //     case 'HAI':
+            //         return total + parseFloat(sellAmount) * parseFloat(currentRedemptionPrice || '0')
+            //     case 'KITE':
+            //         // TODO: get KITE price
+            //         return total + parseFloat(sellAmount) * 10
+            //     default:
+            //         return (
+            //             total +
+            //             parseFloat(sellAmount) *
+            //                 parseFloat(collateralLiquidationData?.[auction.sellToken]?.currentPrice.value || '0')
+            //         )
+            // }
         }, 0)
         return winnings + parseFloat(internalBalance) + 10 * parseFloat(protInternalBalance)
-    }, [claimableAuctions, internalBalance, protInternalBalance])
+    }, [claimableAuctions, liquidationData, internalBalance, protInternalBalance])
 
     return {
-        bids: data?.englishAuctionBids || [],
+        bids: formattedAuctionBids,
         activeBids,
         activeBidsValue,
         claimableAuctions,

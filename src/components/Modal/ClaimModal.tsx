@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 
-import { ActionState, QueryEnglishAuction, formatNumberWithStyle, tokenMap } from '~/utils'
+import type { IAuction } from '~/types'
+import { ActionState, formatNumberWithStyle, tokenMap, wait } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { handleTransactionError, useEthersSigner, useMyBids } from '~/hooks'
 
@@ -110,7 +111,7 @@ const ClaimableAssetContainer = styled(Flex).attrs((props) => ({
     ...props,
 }))`
     padding: 8px 16px;
-    border-radius: 999px;
+    border-radius: 20px;
     border: 2px solid rgba(0, 0, 0, 0.1);
 `
 
@@ -119,43 +120,47 @@ type ClaimableAssetProps = {
     amount: string
     price?: number
 } & {
-    auction: QueryEnglishAuction
+    auction: IAuction
 }
 function ClaimableAsset({ asset, amount, price = 0, auction }: ClaimableAssetProps) {
     const signer = useEthersSigner()
 
-    const { auctionModel: auctionActions } = useStoreActions((actions) => actions)
+    const { auctionModel: auctionActions, popupsModel: popupsActions } = useStoreActions((actions) => actions)
 
     const [status, setStatus] = useState(ActionState.NONE)
-
-    const auctionType = (() => {
-        switch (auction.englishAuctionType) {
-            case 'DEBT':
-            case 'SURPLUS':
-                return auction.englishAuctionType
-            case 'LIQUIDATION':
-            default:
-                return 'COLLATERAL'
-        }
-    })()
 
     const onClaim = async () => {
         if (status === ActionState.LOADING || !signer) return
 
         setStatus(ActionState.LOADING)
+        popupsActions.setIsWaitingModalOpen(true)
+        popupsActions.setWaitingPayload({
+            status: ActionState.LOADING,
+            title: 'Claiming Assets',
+        })
         try {
-            await auctionActions.auctionClaimInternalBalance({
+            await auctionActions.auctionClaim({
                 signer,
                 auctionId: auction.auctionId,
                 title: 'Claim Assets',
-                auctionType,
+                auctionType: auction.englishAuctionType,
                 bid: amount,
-                token: asset === 'HAI' ? 'COIN' : 'PROTOCOL_TOKEN',
             })
             setStatus(ActionState.SUCCESS)
+            popupsActions.setWaitingPayload({
+                status: ActionState.SUCCESS,
+                title: 'Claiming Assets',
+            })
+            await wait(3000)
+            popupsActions.setIsWaitingModalOpen(true)
         } catch (e: any) {
             handleTransactionError(e)
             setStatus(ActionState.ERROR)
+            popupsActions.setWaitingPayload({
+                status: ActionState.ERROR,
+                title: 'Claiming Assets',
+                hint: 'An error occurred',
+            })
         }
     }
 
@@ -165,7 +170,7 @@ function ClaimableAsset({ asset, amount, price = 0, auction }: ClaimableAssetPro
                 <TokenArray size={48} tokens={[asset as any]} hideLabel />
                 <Flex $width="100%" $column $justify="center" $align="flex-start" $gap={4}>
                     <Text $fontSize="0.7em">
-                        Auction: #{auction.auctionId} ({auctionType})
+                        Auction: #{auction.auctionId} ({auction.englishAuctionType})
                     </Text>
                     <Text $fontSize="1em" $fontWeight={700}>
                         {formatNumberWithStyle(amount, { maxDecimals: 4 })} {asset}
