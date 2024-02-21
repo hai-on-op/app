@@ -20,6 +20,7 @@ export function useAuctionsData() {
     const { address } = useAccount()
 
     const {
+        auctionModel: { auctionsData },
         connectWalletModel: { proxyAddress },
     } = useStoreState((state) => state)
 
@@ -62,10 +63,19 @@ export function useAuctionsData() {
             })
         }
         if (statusFilter) {
-            temp = temp.filter((auction) => statusFilter === getAuctionStatus(auction))
+            temp = temp.filter((auction) => statusFilter === getAuctionStatus(auction, auctionsData))
         }
         return temp
-    }, [collateralAuctions, debtAuctions, surplusAuctions, typeFilter, typeFilter, saleAssetsFilter, statusFilter])
+    }, [
+        auctionsData,
+        collateralAuctions,
+        debtAuctions,
+        surplusAuctions,
+        typeFilter,
+        typeFilter,
+        saleAssetsFilter,
+        statusFilter,
+    ])
 
     const [sorting, setSorting] = useState<Sorting>({
         key: 'Time Left',
@@ -82,10 +92,10 @@ export function useAuctionsData() {
                     return total + 1
                 return total
             }, 0),
-            status: getAuctionStatus(auction),
+            status: getAuctionStatus(auction, auctionsData),
         }))
         return filterMyBids ? withBids.filter(({ myBids }) => !!myBids) : withBids
-    }, [auctions, address, proxyAddress, filterMyBids])
+    }, [auctions, auctionsData, address, proxyAddress, filterMyBids])
 
     const sortedRows = useMemo(() => {
         switch (sorting.key) {

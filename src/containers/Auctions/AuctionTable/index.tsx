@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import type { IAuction, SetState, SortableHeader, Sorting } from '~/types'
 import { tokenMap } from '~/utils'
@@ -51,6 +51,14 @@ export function AuctionTable({ headers, rows, sorting, setSorting, isLoading, er
     const [expandedId, setExpandedId] = useState<string>()
 
     const [paging, setPaging] = useState<number>(0)
+    const pagingRef = useRef(paging)
+    pagingRef.current = paging
+
+    useEffect(() => {
+        if (!rows.length) return setPaging(0)
+        if (pagingRef.current * ITEMS_PER_PAGE < rows.length) return
+        setPaging(Math.ceil(rows.length / ITEMS_PER_PAGE) - 1)
+    }, [rows.length])
 
     return (
         <>

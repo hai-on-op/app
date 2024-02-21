@@ -9,13 +9,18 @@ export function useMyBids() {
     const { address } = useAccount()
 
     const {
+        auctionModel: { internalBalance, protInternalBalance },
         vaultModel: { liquidationData },
+        connectWalletModel: { proxyAddress },
     } = useStoreState((state) => state)
 
-    const { data, loading, error } = useQuery<{ englishAuctionBids: QueryEnglishAuctionBid[] }>(MY_AUCTION_BIDS_QUERY, {
-        variables: { address },
-        skip: !address,
-    })
+    const { data, loading, error, refetch } = useQuery<{ englishAuctionBids: QueryEnglishAuctionBid[] }>(
+        MY_AUCTION_BIDS_QUERY,
+        {
+            variables: { address: proxyAddress.toLowerCase() },
+            skip: !proxyAddress,
+        }
+    )
 
     const activeBids = useMemo(
         () =>
@@ -42,21 +47,33 @@ export function useMyBids() {
             data?.englishAuctionBids.filter(({ auction }) => {
                 const { winner, isClaimed } = auction || {}
                 if (!winner || isClaimed) return false
-                return stringsExistAndAreEqual(winner, address)
+                return stringsExistAndAreEqual(winner, address) || stringsExistAndAreEqual(winner, proxyAddress)
             }) || []
         )
-    }, [data?.englishAuctionBids, address])
+    }, [data?.englishAuctionBids, address, proxyAddress])
 
     const claimableAssetValue = useMemo(() => {
-        return claimableAuctions.reduce((total, { auction }) => {
+        // console.log(claimableAuctions)
+        const winnings = claimableAuctions.reduce((total, { sellAmount, auction }) => {
             if (!auction) return total
             const { collateralLiquidationData, currentRedemptionPrice } = liquidationData || {}
-            return total + tokenMap[auction.sellToken] === 'HAI'
-                ? parseFloat(auction.sellAmount) * parseFloat(currentRedemptionPrice || '0')
-                : parseFloat(auction.sellAmount) *
-                      parseFloat(collateralLiquidationData?.[auction.sellToken]?.currentPrice.value || '0')
+            const token = tokenMap[auction.sellToken] || auction.sellToken
+            switch (token) {
+                case 'HAI':
+                    return total + parseFloat(sellAmount) * parseFloat(currentRedemptionPrice || '0')
+                case 'KITE':
+                    // TODO: get KITE price
+                    return total + parseFloat(sellAmount) * 10
+                default:
+                    return (
+                        total +
+                        parseFloat(sellAmount) *
+                            parseFloat(collateralLiquidationData?.[auction.sellToken]?.currentPrice.value || '0')
+                    )
+            }
         }, 0)
-    }, [claimableAuctions])
+        return winnings + parseFloat(internalBalance) + 10 * parseFloat(protInternalBalance)
+    }, [claimableAuctions, internalBalance, protInternalBalance])
 
     return {
         bids: data?.englishAuctionBids || [],
@@ -66,5 +83,6 @@ export function useMyBids() {
         claimableAssetValue,
         loading,
         error,
+        refetch,
     }
 }

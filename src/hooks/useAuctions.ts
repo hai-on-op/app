@@ -189,13 +189,10 @@ export function useStartAuction() {
     }, [auctionsData])
 
     // Check surplus cooldown. Time now > lastSurplusTime + surplusDelay
-    const surplusCooldownDone = useMemo(
-        () =>
-            lastSurplusTime && surplusDelay
-                ? new Date() > new Date(lastSurplusTime.add(surplusDelay).mul(1000).toNumber())
-                : false,
-        [lastSurplusTime, surplusDelay]
-    )
+    const surplusCooldownDone = useMemo(() => {
+        if (!lastSurplusTime || !surplusDelay) return false
+        return new Date() > new Date(lastSurplusTime.add(surplusDelay).mul(1000).toNumber())
+    }, [lastSurplusTime, surplusDelay])
 
     // if delta to start surplus auction is negative and cooldown is over we can allow to start surplus auction
     const allowStartSurplusAuction = useMemo(() => {

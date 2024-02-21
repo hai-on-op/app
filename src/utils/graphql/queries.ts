@@ -238,6 +238,7 @@ export const MY_AUCTION_BIDS_QUERY = gql`
             auction {
                 auctionId
                 englishAuctionType
+                sellToken
                 winner
                 isClaimed
                 auctionDeadline

@@ -398,7 +398,12 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
                         {
                             label: lowerInput.label,
                             value: {
-                                after: lowerInput.value || '0',
+                                after:
+                                    !action.includes('settle') && !action.includes('claim')
+                                        ? lowerInput.value || '0'
+                                        : action.includes('claim')
+                                        ? claimValues.amount.toLocaleString()
+                                        : auction.sellAmount,
                             },
                         },
                     ]}
