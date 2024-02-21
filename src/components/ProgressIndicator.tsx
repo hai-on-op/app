@@ -51,6 +51,7 @@ const Container = styled(CenteredFlex)`
     height: ${CONTAINER_SIZE}px;
     background-color: transparent;
     overflow: visible;
+    z-index: 0;
 `
 const Inner = styled.div<{ $limits: [string, string, string] }>`
     position: relative;

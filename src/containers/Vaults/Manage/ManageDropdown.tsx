@@ -77,8 +77,8 @@ export function ManageDropdown() {
                                 onClick={() => setActiveVault({ vault: listVault })}
                             >
                                 <CenteredFlex $gap={8}>
-                                    <Text>Vault</Text>
-                                    <Text $fontWeight={400}>#{listVault.id}</Text>
+                                    <Text $fontWeight={400}>Vault</Text>
+                                    <Text>#{listVault.id}</Text>
                                 </CenteredFlex>
                             </DropdownOption>
                         ))}
@@ -122,8 +122,8 @@ const VaultDropdownContainer = styled(Flex).attrs((props) => ({
     $column: true,
     $justify: 'flex-start',
     $align: 'stretch',
-    $padding: '8px 12px',
-    $gap: 6,
+    $padding: '12px',
+    $gap: 12,
     ...props,
 }))`
     &:not(:first-child) {
