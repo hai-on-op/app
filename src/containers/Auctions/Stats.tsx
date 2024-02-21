@@ -22,7 +22,7 @@ export function AuctionStats() {
         },
         {
             header: activeBidsValue ? formatNumberWithStyle(activeBidsValue, { style: 'currency' }) : '$--',
-            label: 'My Active Bids Value',
+            label: `My Active Bid Value`,
             tooltip: 'Total dollar value of all your active bids placed in auctions',
         },
         {

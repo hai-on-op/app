@@ -18,9 +18,11 @@ export function StartAuction() {
     const {
         startSurplusAcution,
         systemSurplus,
+        surplusRequiredToAuction,
         surplusAmountToSell,
         surplusCooldownDone,
         allowStartSurplusAuction,
+        surplusDelay,
         startDebtAcution,
         systemDebt,
         debtAmountToSell,
@@ -75,10 +77,6 @@ export function StartAuction() {
         <>
             <Flex $width="100%" $column $justify="flex-start" $align="flex-start" $gap={16}>
                 <Header>
-                    {/* <BrandedTitle
-                    textContent="SUPRLUS AUCTION"
-                    $fontSize="2.4rem"
-                /> */}
                     <Text $fontSize="1.4rem" $fontWeight={700}>
                         Surplus Auction Details
                     </Text>
@@ -95,12 +93,16 @@ export function StartAuction() {
                         {
                             header: formatNumberWithStyle(systemSurplus) + ' HAI',
                             label: 'System Surplus',
-                            tooltip: 'Hello World',
+                            tooltip: `Total surplus accrued in the protocol's balance sheet. This is used to cover potential bad debt and for surplus auctions.`,
                         },
                         {
                             header: formatNumberWithStyle(surplusAmountToSell) + ' HAI',
                             label: 'Surplus Amount to Sell',
-                            tooltip: 'Hello World',
+                            tooltip: `Amount of HAI sold in Surplus Auction. System surplus must exceed ${
+                                surplusRequiredToAuction.total
+                                    ? formatNumberWithStyle(surplusRequiredToAuction.total)
+                                    : '--'
+                            } HAI before auction may begin`,
                         },
                         {
                             header: (
@@ -109,23 +111,16 @@ export function StartAuction() {
                                 </StatusLabel>
                             ),
                             label: 'Cooldown Status',
-                            tooltip: 'Hello World',
+                            tooltip: `Surplus auction may only trigger once every ${
+                                surplusDelay ? surplusDelay.toNumber().toLocaleString() : '--'
+                            } seconds.`,
                         },
-                        // {
-                        //     header: formatNumberWithStyle(deltaToStartSurplusAuction) + ' HAI',
-                        //     label: 'Fee to Start Surplus Auction',
-                        //     tooltip: 'Hello World',
-                        // },
                     ]}
                     columns="repeat(3, 1fr)"
                 />
             </Flex>
             <Flex $width="100%" $column $justify="flex-start" $align="flex-start" $gap={16}>
                 <Header>
-                    {/* <BrandedTitle
-                    textContent="DEBT AUCTION"
-                    $fontSize="2.4rem"
-                /> */}
                     <Text $fontSize="1.4rem" $fontWeight={700}>
                         Debt Auction Details
                     </Text>
@@ -155,11 +150,6 @@ export function StartAuction() {
                             label: 'Protocol Tokens to be Offered',
                             tooltip: 'Hello World',
                         },
-                        // {
-                        //     header: formatNumberWithStyle(deltaToStartDebtAuction) + ' HAI',
-                        //     label: 'Fee to Start Debt Auction',
-                        //     tooltip: 'Hello World',
-                        // },
                     ]}
                     columns="repeat(3, 1fr)"
                 />

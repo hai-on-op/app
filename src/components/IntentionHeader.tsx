@@ -31,7 +31,7 @@ const copy: Record<
     }
 > = {
     [Intention.AUCTION]: {
-        subtitle: 'Buy your favorite crypto assets from liquidated loan auctions at a discount. ',
+        subtitle: 'Buy your favorite crypto assets from auctions at a potential discount. ',
         cta: 'Read more about auctions →',
         ctaLink: `${LINK_TO_DOCS}detailed/auctions/index.html`,
     },
