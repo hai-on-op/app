@@ -8,6 +8,7 @@ import {
     LINK_TO_GOVERNANCE,
     LINK_TO_PRIVACY_POLICY,
     LINK_TO_TELEGRAM,
+    LINK_TO_TOS,
     LINK_TO_TWITTER,
     NETWORK_ID,
 } from '~/utils'
@@ -33,6 +34,7 @@ import {
     ShoppingBag,
     TrendingUp,
     Tv,
+    User,
 } from 'react-feather'
 import { Twitter } from '~/components/Icons/Twitter'
 import { Telegram } from '~/components/Icons/Telegram'
@@ -151,6 +153,9 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
                         </BrandedDropdown.Item>
                         <BrandedDropdown.Item href={LINK_TO_PRIVACY_POLICY} icon={<EyeOff size={18} />}>
                             Privacy Policy
+                        </BrandedDropdown.Item>
+                        <BrandedDropdown.Item href={LINK_TO_TOS} icon={<User size={18} />}>
+                            Terms of Service
                         </BrandedDropdown.Item>
                         <BrandedDropdown.Item
                             href={LINK_TO_TWITTER}
