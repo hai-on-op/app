@@ -18,6 +18,14 @@ export const isAddress = (value: any): boolean => {
     }
 }
 
-export const stringsExistAndAreEqual = (a: string | undefined, b: string | undefined) => {
+export const stringsExistAndAreEqual = (a: string | null | undefined, b: string | null | undefined) => {
     return !!a && !!b && a.toLowerCase() === b.toLowerCase()
+}
+
+export const stringExistsAndMatchesOne = (s: string | null | undefined, arr: (string | null | undefined)[]) => {
+    if (!s) return false
+    for (const compareTo of arr) {
+        if (s.toLowerCase() === compareTo?.toLowerCase()) return true
+    }
+    return false
 }

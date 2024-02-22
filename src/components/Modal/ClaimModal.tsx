@@ -31,13 +31,14 @@ export function ClaimModal(props: ModalProps) {
         return activeAuctions.claimableAuctions.reduce(
             (acc, { sellAmount, auction }) => {
                 if (!auction) return acc
+                const token = tokenMap[auction.sellToken] || auction.sellToken
                 const price =
-                    tokenMap[auction.sellToken] === 'HAI'
+                    token === 'HAI'
                         ? parseFloat(currentRedemptionPrice || '1')
-                        : tokenMap[auction.sellToken] === 'KITE'
+                        : token === 'KITE'
                         ? 10
-                        : parseFloat(collateralLiquidationData?.[auction.sellToken]?.currentPrice.value || '0')
-                acc.prices[tokenMap[auction.sellToken] || auction.sellToken] = price
+                        : parseFloat(collateralLiquidationData?.[token]?.currentPrice.value || '0')
+                acc.prices[token] = price
                 acc.total += parseFloat(sellAmount) * price
                 return acc
             },
@@ -68,7 +69,7 @@ export function ClaimModal(props: ModalProps) {
                       key="internalHai"
                       asset="COIN"
                       amount={internalBalances.HAI?.raw || '0'}
-                      price={prices.HAI}
+                      price={parseFloat(liquidationData?.currentRedemptionPrice || '1')}
                       internal
                       onSuccess={internalBalances.refetch}
                   />,
@@ -80,7 +81,7 @@ export function ClaimModal(props: ModalProps) {
                       key="internalKITE"
                       asset="PROTOCOL_TOKEN"
                       amount={internalBalances.KITE?.raw || '0'}
-                      price={prices.KITE}
+                      price={10}
                       internal
                       onSuccess={internalBalances.refetch}
                   />,
@@ -230,10 +231,10 @@ function ClaimableAsset({ asset, amount, price = 0, auction, internal, onSuccess
                     <Text $fontSize="0.7em">
                         {auction
                             ? `Auction: #${auction.auctionId} (${auction.englishAuctionType})`
-                            : `Claimable ${tokenMap[asset]}`}
+                            : `Unsuccessful Bid(s)`}
                     </Text>
                     <Text $fontSize="1em" $fontWeight={700}>
-                        {formatNumberWithStyle(amount, { maxDecimals: 4 })} {asset}
+                        {formatNumberWithStyle(amount, { maxDecimals: 4 })} {tokenMap[asset] || asset}
                     </Text>
                     <Text $fontSize="0.7em">
                         {formatNumberWithStyle(parseFloat(amount) * price, { style: 'currency' })}

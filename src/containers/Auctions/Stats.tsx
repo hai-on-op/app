@@ -12,7 +12,7 @@ export function AuctionStats() {
 
     const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
 
-    const { activeAuctions } = useClaims()
+    const { activeAuctions, totalUSD } = useClaims()
 
     const dummyStats: StatProps[] = [
         {
@@ -26,14 +26,14 @@ export function AuctionStats() {
             tooltip: 'Total dollar value of all your active bids placed in auctions',
         },
         {
-            header: activeAuctions.claimableAssetValue.formatted,
+            header: totalUSD?.formatted || '$0',
             headerStatus: <RewardsTokenArray tokens={['HAI', 'KITE', 'Collateral']} size={24} hideLabel />,
             label: 'My Claimable Assets',
             tooltip: 'Claim assets purchased in auctions',
             button: (
                 <HaiButton
                     $variant="yellowish"
-                    disabled={activeAuctions.claimableAssetValue.raw === '0'}
+                    disabled={!totalUSD?.raw || totalUSD.raw === '0'}
                     onClick={() => popupsActions.setIsClaimPopupOpen(true)}
                 >
                     Claim

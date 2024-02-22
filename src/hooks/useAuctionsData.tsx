@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useAccount } from 'wagmi'
 
 import type { AuctionEventType, IAuction, SortableHeader, Sorting } from '~/types'
-import { Status, arrayToSorted, getAuctionStatus, stringsExistAndAreEqual, tokenMap } from '~/utils'
+import { Status, arrayToSorted, getAuctionStatus, stringExistsAndMatchesOne, tokenMap } from '~/utils'
 import { useStoreState } from '~/store'
 import { useGetAuctions } from './useAuctions'
 
@@ -91,7 +91,7 @@ export function useAuctionsData() {
         const withBids = auctions.map((auction) => ({
             ...auction,
             myBids: auction.biddersList.reduce((hashes, { bidder, createdAtTransaction }) => {
-                if (stringsExistAndAreEqual(bidder, address) || stringsExistAndAreEqual(bidder, proxyAddress)) {
+                if (stringExistsAndMatchesOne(bidder, [address, proxyAddress])) {
                     if (!hashes.includes(createdAtTransaction)) hashes.push(createdAtTransaction)
                 }
                 return hashes

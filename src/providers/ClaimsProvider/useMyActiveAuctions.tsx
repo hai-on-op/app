@@ -8,9 +8,9 @@ import {
     type QueryEnglishAuctionBid,
     Status,
     convertQueryAuction,
-    getAuctionStatus,
-    stringsExistAndAreEqual,
     formatSummaryValue,
+    getAuctionStatus,
+    stringExistsAndMatchesOne,
 } from '~/utils'
 import { useStoreState } from '~/store'
 
@@ -51,6 +51,7 @@ export function useMyActiveAuctions() {
                 if (!auction || !auctionsData) return false
                 const status = getAuctionStatus(auction, auctionsData)
                 if (status === Status.RESTARTING || status === Status.COMPLETED) return false
+                if (!stringExistsAndMatchesOne(auction.winner, [address, proxyAddress])) return false
                 return true
             }) || []
         )
@@ -64,27 +65,11 @@ export function useMyActiveAuctions() {
                 case 'DEBT':
                     return total + parseFloat(buyAmount) * parseFloat(currentRedemptionPrice)
                 case 'SURPLUS':
+                    // TODO: get KITE price
                     return total + parseFloat(buyAmount) * 10
                 default:
                     return total
             }
-            // const token = tokenMap[auction.buyToken] || auction.buyToken
-            // console.log(token)
-            // switch (token) {
-            //     case 'HAI':
-            //         console.log(buyAmount)
-            //         return total + parseFloat(buyAmount) * parseFloat(currentRedemptionPrice || '0')
-            //     case 'KITE':
-            //         // TODO: get KITE price
-            //         console.log(buyAmount)
-            //         return total + parseFloat(buyAmount).toString()) * 10
-            //     default:
-            //         return (
-            //             total +
-            //             parseFloat(buyAmount) *
-            //                 parseFloat(collateralLiquidationData?.[auction.buyToken]?.currentPrice.value || '0')
-            //         )
-            // }
         }, 0)
         return formatSummaryValue(value.toString(), { style: 'currency' })!
     }, [activeBids, liquidationData])
@@ -95,10 +80,7 @@ export function useMyActiveAuctions() {
                 if (!auction || !auctionsData) return false
                 const status = getAuctionStatus(auction, auctionsData)
                 if (status !== Status.SETTLING) return false
-                return (
-                    stringsExistAndAreEqual(auction.winner, address) ||
-                    stringsExistAndAreEqual(auction.winner, proxyAddress)
-                )
+                return stringExistsAndMatchesOne(auction.winner, [address, proxyAddress])
             }) || []
         )
     }, [formattedAuctionBids, auctionsData, address, proxyAddress])
@@ -109,26 +91,13 @@ export function useMyActiveAuctions() {
             const { currentRedemptionPrice = '0' } = liquidationData || {}
             switch (auction.englishAuctionType) {
                 case 'DEBT':
+                    // TODO: get KITE price
                     return total + parseFloat(sellAmount) * 10
                 case 'SURPLUS':
                     return total + parseFloat(sellAmount) * parseFloat(currentRedemptionPrice)
                 default:
                     return total
             }
-            // const token = tokenMap[auction.sellToken] || auction.sellToken
-            // switch (token) {
-            //     case 'HAI':
-            //         return total + parseFloat(sellAmount) * parseFloat(currentRedemptionPrice || '0')
-            //     case 'KITE':
-            //         // TODO: get KITE price
-            //         return total + parseFloat(sellAmount) * 10
-            //     default:
-            //         return (
-            //             total +
-            //             parseFloat(sellAmount) *
-            //                 parseFloat(collateralLiquidationData?.[auction.sellToken]?.currentPrice.value || '0')
-            //         )
-            // }
         }, 0)
         return formatSummaryValue(winnings.toString(), { style: 'currency' })!
     }, [claimableAuctions, liquidationData])
