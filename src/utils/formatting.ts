@@ -6,9 +6,14 @@ import type { FormattedBalance, SummaryCurrency, SummaryItem } from '~/types'
 import { floatsTypes } from './constants'
 import { sanitizeDecimals } from './helper'
 
-export const returnWalletAddress = (walletAddress: string, endLength = 4) => {
+type FormatAddressOptions = {
+    startLength?: number
+    endLength?: number
+}
+export const returnWalletAddress = (walletAddress: string, options?: FormatAddressOptions) => {
     if (!walletAddress) return 'undefined'
-    return `${walletAddress.slice(0, 4 + 2)}...${walletAddress.slice(-endLength)}`
+    const { startLength = 6, endLength = 4 } = options || {}
+    return `${walletAddress.slice(0, startLength)}...${walletAddress.slice(-endLength)}`
 }
 
 export const capitalizeName = (name: string) => name.charAt(0).toUpperCase() + name.slice(1)

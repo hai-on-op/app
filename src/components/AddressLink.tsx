@@ -42,5 +42,5 @@ const TruncatedAddress = ({ address }: { address: string }) => {
 
     if (stringsExistAndAreEqual(address, proxyAddress)) return <Text>You (Proxy)</Text>
 
-    return <Text>{returnWalletAddress(address)}</Text>
+    return <Text>{returnWalletAddress(address, { startLength: 4 })}</Text>
 }

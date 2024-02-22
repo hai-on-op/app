@@ -74,7 +74,7 @@ export function VaultsByOwner() {
                 <Header>
                     <BrandedTitle
                         textContent={`${
-                            !invalidAddress ? returnWalletAddress(idOrOwner as string, 2) : 'UNKNOWN'
+                            !invalidAddress ? returnWalletAddress(idOrOwner as string, { startLength: 4 }) : 'UNKNOWN'
                         }'s VAULTS`}
                         $fontSize={isLargerThanSmall ? '3rem' : '2.4rem'}
                     />
@@ -82,7 +82,7 @@ export function VaultsByOwner() {
                         <Flex $justify="flex-start" $align="center" $gap={8}>
                             {!!owner && <Text>Proxy Owner:</Text>}
                             <AddressLink address={(owner || idOrOwner) as string}>
-                                {owner ? returnWalletAddress(owner, 2) : 'View on Etherscan →'}
+                                {owner ? returnWalletAddress(owner, { startLength: 4 }) : 'View on Etherscan →'}
                             </AddressLink>
                         </Flex>
                     )}

@@ -11,7 +11,7 @@ import {
     tokenAssets,
 } from '~/utils'
 
-type CollateralStat = {
+export type CollateralStat = {
     totalCollateral?: SummaryItemValue<SummaryCurrency>
     totalDebt?: SummaryItemValue<SummaryCurrency>
     ratio?: SummaryItemValue
@@ -59,9 +59,8 @@ export function useSystemData(): SystemData {
                 if (currentPrice) {
                     const totalCollateral = formatSummaryCurrency(totalCollateralLockedInSafes, currentPrice.value)
                     const totalDebt = formatSummaryCurrency(debtAmount, currentRedemptionPrice.value || '1')
-                    const ratio = formatSummaryPercentage(
-                        (parseFloat(totalCollateral?.usdRaw || '0') / parseFloat(totalDebt?.usdRaw || '0')).toString()
-                    )
+                    const ratioRaw = parseFloat(totalCollateral?.usdRaw || '0') / parseFloat(totalDebt?.usdRaw || '0')
+                    const ratio = formatSummaryPercentage(isNaN(ratioRaw) ? '' : ratioRaw.toString())
                     const key = tokenAssets[id]
                         ? id
                         : Object.values(tokenAssets).find(({ name }) => id === name)?.symbol || id
