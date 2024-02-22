@@ -1,7 +1,9 @@
-import { useNetwork } from 'wagmi'
+import { useAccount, useNetwork } from 'wagmi'
 
-import { NETWORK_ID, getEtherscanLink, returnWalletAddress } from '~/utils'
+import { NETWORK_ID, getEtherscanLink, returnWalletAddress, stringsExistAndAreEqual } from '~/utils'
+import { useStoreState } from '~/store'
 
+import { Text } from '~/styles'
 import { Link, type LinkProps } from './Link'
 
 type AddressLinkProps = Omit<LinkProps, 'type' | 'href'> & {
@@ -25,7 +27,20 @@ export const AddressLink = ({
 
     return (
         <Link {...props} href={link}>
-            {children || returnWalletAddress(address)}
+            {children || <TruncatedAddress address={address} />}
         </Link>
     )
+}
+
+const TruncatedAddress = ({ address }: { address: string }) => {
+    const { address: account } = useAccount()
+    const {
+        connectWalletModel: { proxyAddress },
+    } = useStoreState((state) => state)
+
+    if (stringsExistAndAreEqual(address, account)) return <Text>You</Text>
+
+    if (stringsExistAndAreEqual(address, proxyAddress)) return <Text>You (Proxy)</Text>
+
+    return <Text>{returnWalletAddress(address)}</Text>
 }
