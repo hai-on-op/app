@@ -35,6 +35,7 @@ export function VaultsByOwner() {
 
     const {
         invalidAddress,
+        owner,
         error,
         loading,
         refetch,
@@ -78,8 +79,11 @@ export function VaultsByOwner() {
                         $fontSize={isLargerThanSmall ? '3rem' : '2.4rem'}
                     />
                     {!invalidAddress && (
-                        <Flex $justify="flex-start" $align="center">
-                            <AddressLink address={idOrOwner as string}>View on Etherscan →</AddressLink>
+                        <Flex $justify="flex-start" $align="center" $gap={8}>
+                            {!!owner && <Text>Proxy Owner:</Text>}
+                            <AddressLink address={(owner || idOrOwner) as string}>
+                                {owner ? returnWalletAddress(owner, 2) : 'View on Etherscan →'}
+                            </AddressLink>
                         </Flex>
                     )}
                     <CenteredFlex $column={!isLargerThanSmall} $gap={24}>

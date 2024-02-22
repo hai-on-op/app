@@ -28,6 +28,7 @@ export type SplashImage = {
 export type SortableHeader = {
     label: string
     tooltip?: ReactChildren
+    tooltipAnchor?: 'top' | 'bottom'
     unsortable?: boolean
 }
 

@@ -43,7 +43,7 @@ export function Table({
         <Container {...props}>
             {isLargerThanSmall && (
                 <Header {...headerProps}>
-                    {headers.map(({ label, tooltip, unsortable }) => (
+                    {headers.map(({ label, tooltip, tooltipAnchor, unsortable }) => (
                         <TableHeaderItem
                             key={label}
                             sortable={!unsortable}
@@ -58,6 +58,7 @@ export function Table({
                                           }))
                             }
                             tooltip={tooltip}
+                            tooltipAnchor={tooltipAnchor}
                         >
                             <Text $fontWeight={sorting.key === label ? 700 : 400}>{label}</Text>
                         </TableHeaderItem>

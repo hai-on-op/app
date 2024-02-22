@@ -355,6 +355,7 @@ export type QueryEnglishAuctionBid = {
     buyAmount: string // How many tokens are being bought from the auction
     price: string // Price of the asset being sold (sellAmount / buyAmount)
     bidder: string // Bidder address
+    owner?: string // Owner of proxy 'Bidder' address (if exists)
     createdAt: string // Timestamp of the block at which the liquidation started
     createdAtBlock?: string // Block number at which the liquidation started
     createdAtTransaction?: string // Hash of the transaction that started the liquidation

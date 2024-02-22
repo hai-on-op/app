@@ -7,6 +7,7 @@ export type AuctionEventType = 'DEBT' | 'SURPLUS' | 'COLLATERAL'
 
 export type IAuctionBidder = {
     bidder: string
+    owner?: string
     buyAmount: string
     createdAt: string
     sellAmount: string

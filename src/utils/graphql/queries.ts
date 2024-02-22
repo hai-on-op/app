@@ -257,7 +257,22 @@ export const MY_AUCTION_BIDS_QUERY = gql`
             buyAmount
             price
             bidder
+            owner
             createdAt
+        }
+    }
+`
+
+export const PROXY_OWNER_QUERY = gql`
+    query ProxyOwner($address: Bytes!) {
+        userProxies(
+            where: { address: $address }
+        ){
+            id
+            address
+            owner {
+                address
+            }
         }
     }
 `

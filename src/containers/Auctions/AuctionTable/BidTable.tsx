@@ -12,21 +12,29 @@ import { Table } from '~/components/Table'
 
 const sortableHeaders: SortableHeader[] = [
     { label: 'Event' },
-    { label: 'Bidder' },
+    {
+        label: 'Bidder',
+        tooltip: `The bidder is typically a proxy address. You can click the address link to view the owner's address and vaults`,
+        tooltipAnchor: 'top',
+    },
     { label: 'Buy Amount' },
     { label: 'Transaction Hash' },
     { label: 'Time' },
     { label: '' },
-].map((obj) => ({ ...obj, unsortable: true }))
+].map((obj) => ({ ...obj, unsortable: true }) as SortableHeader)
 const sortableHeadersWithSell: SortableHeader[] = [
     { label: 'Event' },
-    { label: 'Bidder' },
+    {
+        label: 'Bidder',
+        tooltip: `The bidder is typically a proxy address. You can click the address link to view the owner's address and vaults`,
+        tooltipAnchor: 'top',
+    },
     { label: 'Sell Amount' },
     { label: 'Buy Amount' },
     { label: 'Transaction Hash' },
     { label: 'Time' },
     { label: '' },
-].map((obj) => ({ ...obj, unsortable: true }))
+].map((obj) => ({ ...obj, unsortable: true }) as SortableHeader)
 
 type BidTableProps = {
     auction: IAuction
@@ -134,7 +142,7 @@ function BidTableRow({ bid, eventType, bidToken, sellToken, withSell }: BidTable
                             {eventType === 'Start' ? (
                                 <Text>--</Text>
                             ) : (
-                                <AddressLink chainId={chain?.id as ChainId} address={bid.bidder} isOwner />
+                                <AddressLink chainId={chain?.id as ChainId} address={bid.owner || bid.bidder} isOwner />
                             )}
                         </Flex>
                     ),

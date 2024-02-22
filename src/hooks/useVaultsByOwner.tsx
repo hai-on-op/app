@@ -3,7 +3,7 @@ import { useQuery } from '@apollo/client'
 import { isAddress } from 'viem'
 
 import type { SortableHeader, Sorting } from '~/types'
-import { SAFES_BY_OWNER, type QuerySafe, arrayToSorted, formatQuerySafeToVault } from '~/utils'
+import { SAFES_BY_OWNER, type QuerySafe, arrayToSorted, formatQuerySafeToVault, PROXY_OWNER_QUERY } from '~/utils'
 import { useStoreState } from '~/store'
 
 const sortableHeaders: SortableHeader[] = [
@@ -33,8 +33,15 @@ export function useVaultsByOwner(address?: string) {
 
     const addressIsAddress = isAddress(address || '')
 
-    const { data, loading, error, refetch } = useQuery<{ safes: QuerySafe[] }>(SAFES_BY_OWNER, {
+    const { data: ownerData } = useQuery<{ userProxies: { owner: { address: string } }[] }>(PROXY_OWNER_QUERY, {
         variables: { address: address?.toLowerCase() },
+        skip: !addressIsAddress,
+    })
+
+    const owner = ownerData?.userProxies[0]?.owner.address
+
+    const { data, loading, error, refetch } = useQuery<{ safes: QuerySafe[] }>(SAFES_BY_OWNER, {
+        variables: { address: owner?.toLowerCase() || address?.toLowerCase() },
         skip: !addressIsAddress,
     })
 
@@ -90,6 +97,7 @@ export function useVaultsByOwner(address?: string) {
 
     return {
         invalidAddress: !addressIsAddress,
+        owner,
         error,
         loading,
         refetch,
