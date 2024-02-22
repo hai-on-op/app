@@ -289,12 +289,14 @@ export function Numbers() {
                                     header: (
                                         <ComingSoon $justify="flex-start" $fontSize="1.2rem">
                                             {convertPieToUSD
-                                                ? formatNumberWithStyle(dummyPieData[0].value * parseFloat(redemptionPrice.raw), {
-                                                    maxDecimals: 2,
-                                                    style: 'currency',
-                                                })
-                                                : formatNumberWithStyle(dummyPieData[0].value, { maxDecimals: 0 })
-                                            }
+                                                ? formatNumberWithStyle(
+                                                      dummyPieData[0].value * parseFloat(redemptionPrice.raw),
+                                                      {
+                                                          maxDecimals: 2,
+                                                          style: 'currency',
+                                                      }
+                                                  )
+                                                : formatNumberWithStyle(dummyPieData[0].value, { maxDecimals: 0 })}
                                         </ComingSoon>
                                     ),
                                     label: 'HAI in Liquidity Pools',

@@ -124,7 +124,8 @@ export function VaultExplorer() {
                                                 <Grid $columns="1fr 24px 48px" $align="center" $gap={8}>
                                                     <Text $textAlign="right">
                                                         {formatNumberWithStyle(collateral, {
-                                                            maxDecimals: 4,
+                                                            maxDecimals: 2,
+                                                            maxSigFigs: 4,
                                                         })}
                                                     </Text>
                                                     <TokenArray tokens={[collateralToken as any]} hideLabel size={24} />
@@ -134,7 +135,8 @@ export function VaultExplorer() {
                                                 <Flex $justify="flex-start" $align="center" $gap={8}>
                                                     <Text $textAlign="right">
                                                         {formatNumberWithStyle(collateral, {
-                                                            maxDecimals: 4,
+                                                            maxDecimals: 2,
+                                                            maxSigFigs: 4,
                                                         })}
                                                     </Text>
                                                     <TokenArray tokens={[collateralToken as any]} hideLabel size={24} />
@@ -147,7 +149,8 @@ export function VaultExplorer() {
                                                 <Grid $columns="1fr 24px" $gap={8}>
                                                     <Text $textAlign="right">
                                                         {formatNumberWithStyle(debt, {
-                                                            maxDecimals: 4,
+                                                            maxDecimals: 2,
+                                                            maxSigFigs: 4,
                                                         })}
                                                     </Text>
                                                     <Text>HAI</Text>
@@ -156,7 +159,8 @@ export function VaultExplorer() {
                                                 <Flex $justify="flex-start" $align="center" $gap={8}>
                                                     <Text $textAlign="right">
                                                         {formatNumberWithStyle(debt, {
-                                                            maxDecimals: 4,
+                                                            maxDecimals: 2,
+                                                            maxSigFigs: 4,
                                                         })}
                                                     </Text>
                                                     <Text>HAI</Text>
@@ -165,17 +169,21 @@ export function VaultExplorer() {
                                         },
                                         {
                                             content: (
-                                                <Flex $justify="center" $align="center" $gap={12}>
-                                                    <Text>
-                                                        {collateralRatio === Infinity.toString()
-                                                            ? '--'
-                                                            : formatNumberWithStyle(collateralRatio, {
-                                                                  style: 'percent',
-                                                                  scalingFactor: 0.01,
-                                                              })}
-                                                    </Text>
-                                                    <StatusLabel status={status} size={0.8} />
-                                                </Flex>
+                                                <Grid $columns="1fr 1fr" $gap={12}>
+                                                    <Flex $justify="flex-end" $align="center">
+                                                        <Text>
+                                                            {collateralRatio === Infinity.toString()
+                                                                ? '--'
+                                                                : formatNumberWithStyle(collateralRatio, {
+                                                                      style: 'percent',
+                                                                      scalingFactor: 0.01,
+                                                                  })}
+                                                        </Text>
+                                                    </Flex>
+                                                    <Flex $justify="flex-start" $align="center">
+                                                        <StatusLabel status={status} size={0.8} />
+                                                    </Flex>
+                                                </Grid>
                                             ),
                                         },
                                         {
