@@ -35,30 +35,33 @@ export function useAuctionsData() {
 
     const auctions = useMemo(() => {
         let temp: IAuction[] = []
+        let tokenFilter = saleAssetsFilter
         switch (typeFilter) {
             case 'COLLATERAL': {
                 temp = [...collateralAuctions]
                 break
             }
             case 'DEBT': {
-                return debtAuctions
-                // temp = [...debtAuctions]
-                // break
+                temp = [...debtAuctions]
+                // don't filter by sale asset as all debt auctions are selling KITE
+                tokenFilter = undefined
+                break
             }
             case 'SURPLUS': {
-                return surplusAuctions
-                // temp = [...surplusAuctions]
-                // break
+                temp = [...surplusAuctions]
+                // don't filter by sale asset as all surplus auctions are selling HAI
+                tokenFilter = undefined
+                break
             }
             default: {
                 temp = [...collateralAuctions, ...debtAuctions, ...surplusAuctions]
                 break
             }
         }
-        if (saleAssetsFilter) {
+        if (tokenFilter) {
             temp = temp.filter(({ sellToken }) => {
                 const parsedSellToken = tokenMap[sellToken] || sellToken
-                if (saleAssetsFilter && saleAssetsFilter !== parsedSellToken) return false
+                if (saleAssetsFilter !== parsedSellToken) return false
                 return true
             })
         }
@@ -87,11 +90,12 @@ export function useAuctionsData() {
 
         const withBids = auctions.map((auction) => ({
             ...auction,
-            myBids: auction.biddersList.reduce((total, { bidder }) => {
-                if (stringsExistAndAreEqual(bidder, address) || stringsExistAndAreEqual(bidder, proxyAddress))
-                    return total + 1
-                return total
-            }, 0),
+            myBids: auction.biddersList.reduce((hashes, { bidder, createdAtTransaction }) => {
+                if (stringsExistAndAreEqual(bidder, address) || stringsExistAndAreEqual(bidder, proxyAddress)) {
+                    if (!hashes.includes(createdAtTransaction)) hashes.push(createdAtTransaction)
+                }
+                return hashes
+            }, [] as string[]).length,
             status: getAuctionStatus(auction, auctionsData),
         }))
         return filterMyBids ? withBids.filter(({ myBids }) => !!myBids) : withBids
