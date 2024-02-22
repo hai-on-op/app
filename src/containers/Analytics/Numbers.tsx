@@ -1,6 +1,6 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
-import { getRatePercentage } from '~/utils'
+import { formatNumberWithStyle, getRatePercentage } from '~/utils'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { useMediaQuery } from '~/hooks'
 
@@ -35,6 +35,10 @@ const dummyPieDataBase = [
         color: 'hsl(115, 70%, 84%)',
     },
 ]
+const dummyPieOptions = {
+    min: 30_000,
+    max: 100_000,
+}
 
 // TODO: check to make sure data usage and calculations are correct, fill out tooltips
 export function Numbers() {
@@ -81,11 +85,9 @@ export function Numbers() {
         ]
     }, [redemptionRateHistory])
 
+    const [convertPieToUSD, setConvertPieToUSD] = useState(true)
     // TODO: remove and use actual data
-    const dummyPieData = useDummyPieData(dummyPieDataBase, {
-        min: 30_000,
-        max: 100_000,
-    })
+    const dummyPieData = useDummyPieData(dummyPieDataBase, dummyPieOptions)
 
     const isLargerThanSmall = useMediaQuery('upToSmall')
 
@@ -180,7 +182,12 @@ export function Numbers() {
                                 // max: 1.1
                             }}
                             axisRight={{
-                                format: (value) => `$${parseFloat(parseFloat(value).toFixed(3))}`,
+                                format: (value) =>
+                                    formatNumberWithStyle(value, {
+                                        minDecimals: 2,
+                                        minSigFigs: 2,
+                                        style: 'currency',
+                                    }),
                             }}
                         />
                         <Legend data={haiPriceData} />
@@ -266,59 +273,84 @@ export function Numbers() {
                     <Flex
                         $column={!isLargerThanSmall}
                         $width="100%"
-                        $justify="flex-start"
+                        $justify="space-between"
                         $align={!isLargerThanSmall ? 'flex-start' : 'center'}
-                        $gap={!isLargerThanSmall ? 12 : 36}
+                        $gap={24}
                     >
-                        <Stat
-                            stat={{
-                                header: (
-                                    <ComingSoon $justify="flex-start" $fontSize="1.2rem">
-                                        {`$${dummyPieData[0].value.toLocaleString('en-US', {
-                                            maximumFractionDigits: 2,
-                                        })}`}
-                                    </ComingSoon>
-                                ),
-                                label: 'HAI in Liquidity Pools',
-                                tooltip: `Amount of HAI locked in tracked liquidity pools`,
-                            }}
-                            unbordered
-                        />
-                        {/* <Stat
-                            stat={{
-                                header: (
-                                    <ComingSoon $justify="flex-start" $fontSize="1.2rem">
-                                        {`$${dummyPieData[1].value.toLocaleString('en-US', {
-                                            maximumFractionDigits: 2,
-                                        })}`}
-                                    </ComingSoon>
-                                ),
-                                label: 'UNIv3 Pool',
-                                tooltip: 'Hello world',
-                            }}
-                            unbordered
-                        /> */}
-                        <Stat
-                            stat={{
-                                header: (
-                                    <ComingSoon $justify="flex-start" $fontSize="1.2rem">
-                                        --
-                                    </ComingSoon>
-                                ),
-                                label: 'Depth to Equilibrium',
-                                tooltip: `Amount of HAI required to be bought (positive) or sold (negative) for the Market Price to approximately equal the Redemption Price. This is an estimate based on the tracked liquidity pools and their current locked liquidity.`,
-                            }}
-                            unbordered
-                        />
+                        <Flex
+                            $column={!isLargerThanSmall}
+                            $width="100%"
+                            $justify="flex-start"
+                            $align={!isLargerThanSmall ? 'flex-start' : 'center'}
+                            $gap={!isLargerThanSmall ? 12 : 36}
+                        >
+                            <Stat
+                                stat={{
+                                    header: (
+                                        <ComingSoon $justify="flex-start" $fontSize="1.2rem">
+                                            {convertPieToUSD
+                                                ? formatNumberWithStyle(dummyPieData[0].value * parseFloat(redemptionPrice.raw), {
+                                                    maxDecimals: 2,
+                                                    style: 'currency',
+                                                })
+                                                : formatNumberWithStyle(dummyPieData[0].value, { maxDecimals: 0 })
+                                            }
+                                        </ComingSoon>
+                                    ),
+                                    label: 'HAI in Liquidity Pools',
+                                    tooltip: `Amount of HAI locked in tracked liquidity pools`,
+                                }}
+                                unbordered
+                            />
+                            {/* <Stat
+                                stat={{
+                                    header: (
+                                        <ComingSoon $justify="flex-start" $fontSize="1.2rem">
+                                            {`$${dummyPieData[1].value.toLocaleString('en-US', {
+                                                maximumFractionDigits: 2,
+                                            })}`}
+                                        </ComingSoon>
+                                    ),
+                                    label: 'UNIv3 Pool',
+                                    tooltip: 'Hello world',
+                                }}
+                                unbordered
+                            /> */}
+                            <Stat
+                                stat={{
+                                    header: (
+                                        <ComingSoon $justify="flex-start" $fontSize="1.2rem">
+                                            --
+                                        </ComingSoon>
+                                    ),
+                                    label: 'Depth to Equilibrium',
+                                    tooltip: `Amount of HAI required to be bought (positive) or sold (negative) for the Market Price to approximately equal the Redemption Price. This is an estimate based on the tracked liquidity pools and their current locked liquidity.`,
+                                }}
+                                unbordered
+                            />
+                        </Flex>
+                        <ToggleSlider
+                            selectedIndex={convertPieToUSD ? 1 : 0}
+                            setSelectedIndex={(index: number) => setConvertPieToUSD(!!index)}
+                        >
+                            <TimeframeLabel>HAI</TimeframeLabel>
+                            <TimeframeLabel>USD</TimeframeLabel>
+                        </ToggleSlider>
                     </Flex>
                     <PieContainer>
                         <PieChart
                             data={dummyPieData}
-                            valueFormat={(value) =>
-                                '$' +
-                                value.toLocaleString('en-US', {
-                                    maximumFractionDigits: 2,
-                                })
+                            valueFormat={
+                                convertPieToUSD
+                                    ? (value) => {
+                                          return formatNumberWithStyle(value * parseFloat(redemptionPrice.raw), {
+                                              maxDecimals: 2,
+                                              style: 'currency',
+                                          })
+                                      }
+                                    : (value) => {
+                                          return `${formatNumberWithStyle(value, { maxDecimals: 0 })} HAI`
+                                      }
                             }
                         />
                         <Legend $column data={dummyPieData} style={{ top: 'calc(50% - 96px)' }} />

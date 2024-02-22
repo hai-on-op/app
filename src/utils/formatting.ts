@@ -37,20 +37,30 @@ export const formatNumber = (value: string, digits = 6, round = false) => {
 const MINIMUM_DECIMAL = 0.00001
 type FormatOptions = {
     scalingFactor?: number
+    minDecimals?: number
     maxDecimals?: number
+    minSigFigs?: number
     maxSigFigs?: number
     style?: 'currency' | 'percent'
     suffixed?: boolean
 }
 export const formatNumberWithStyle = (value: number | string, options: FormatOptions = {}) => {
-    const { scalingFactor = 1, maxDecimals = 2, maxSigFigs = 2, style, suffixed = false } = options
+    const {
+        scalingFactor = 1,
+        minDecimals = 0,
+        maxDecimals = 2,
+        maxSigFigs = 2,
+        minSigFigs = 1,
+        style,
+        suffixed = false,
+    } = options
 
     if (suffixed) return formatNumberWithSuffix(value, options)
 
     const scaledValue = scalingFactor * parseFloat((value || '0').toString())
     // truncate tiny amounts
     if (!!scaledValue && Math.abs(scaledValue) < MINIMUM_DECIMAL) {
-        return `<${MINIMUM_DECIMAL.toLocaleString(undefined, {
+        return `<${MINIMUM_DECIMAL.toLocaleString('en-US', {
             style,
             currency: style === 'currency' ? 'USD' : undefined,
             minimumSignificantDigits: 1,
@@ -58,12 +68,13 @@ export const formatNumberWithStyle = (value: number | string, options: FormatOpt
     }
     // if decimal, use signifcant digits instead of fraction digits
     const isLessThanOne = Math.abs(scaledValue) < 1
-    return scaledValue.toLocaleString(undefined, {
+    return scaledValue.toLocaleString('en-US', {
         style,
         currency: style === 'currency' ? 'USD' : undefined,
+        minimumFractionDigits: minDecimals,
         maximumFractionDigits: maxDecimals,
         ...(isLessThanOne && {
-            minimumSignificantDigits: 1,
+            minimumSignificantDigits: minSigFigs,
             maximumSignificantDigits: maxSigFigs || maxDecimals || 1,
         }),
     })
