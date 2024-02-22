@@ -92,12 +92,16 @@ export function useMyActiveAuctions() {
     const claimableAuctions: FormattedQueryAuctionBid[] = useMemo(() => {
         return (
             formattedAuctionBids.filter(({ auction }) => {
-                const { winner, isClaimed } = auction || {}
-                if (!winner || isClaimed) return false
-                return stringsExistAndAreEqual(winner, address) || stringsExistAndAreEqual(winner, proxyAddress)
+                if (!auction || !auctionsData) return false
+                const status = getAuctionStatus(auction, auctionsData)
+                if (status !== Status.SETTLING) return false
+                return (
+                    stringsExistAndAreEqual(auction.winner, address) ||
+                    stringsExistAndAreEqual(auction.winner, proxyAddress)
+                )
             }) || []
         )
-    }, [formattedAuctionBids, address, proxyAddress])
+    }, [formattedAuctionBids, auctionsData, address, proxyAddress])
 
     const claimableAssetValue = useMemo(() => {
         const winnings = claimableAuctions.reduce((total, { sellAmount, auction }) => {

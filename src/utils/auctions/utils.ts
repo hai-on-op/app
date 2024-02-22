@@ -36,7 +36,6 @@ export function getAuctionStatus(auction: AuctionStatusProps, auctionsData: Auct
             if (auction.isClaimed) return Status.COMPLETED
             if (auctionsData && bids.length > 1) {
                 const { createdAt } = bids[bids.length - 1]
-                console.log(auctionsData.surplusAuctionHouseParams.bidDuration.toNumber())
                 if (
                     Date.now() / 1000 - parseInt(createdAt) >
                     auctionsData.surplusAuctionHouseParams.bidDuration.toNumber()

@@ -210,7 +210,7 @@ function ClaimableAsset({ asset, amount, price = 0, auction, internal, onSuccess
             })
             onSuccess?.()
             await wait(3000)
-            popupsActions.setIsWaitingModalOpen(true)
+            popupsActions.setIsWaitingModalOpen(false)
         } catch (e: any) {
             handleTransactionError(e)
             setStatus(ActionState.ERROR)
