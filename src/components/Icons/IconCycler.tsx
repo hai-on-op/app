@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 
 import styled from 'styled-components'
 import { Flex } from '~/styles'
@@ -31,7 +31,9 @@ export function IconCycler({ size = 32, icons, duration = 1500 }: IconCyclerProp
     return (
         <Container $size={size} $bg={icons[index]?.bg}>
             <Inner $index={index}>
-                {icons.map(({ icon }, i) => (typeof icon === 'string' ? <img key={i} src={icon} alt="" /> : icon))}
+                {icons.map(({ icon }, i) =>
+                    typeof icon === 'string' ? <img key={i} src={icon} alt="" /> : <Fragment key={i}>{icon}</Fragment>
+                )}
             </Inner>
         </Container>
     )

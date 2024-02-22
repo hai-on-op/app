@@ -112,8 +112,10 @@ export function StartAuction() {
                             ),
                             label: 'Cooldown Status',
                             tooltip: `Surplus auction may only trigger once every ${
-                                surplusDelay ? surplusDelay.toNumber().toLocaleString() : '--'
-                            } seconds.`,
+                                surplusDelay
+                                    ? formatNumberWithStyle(surplusDelay.toNumber() / 3600, { maxDecimals: 1 })
+                                    : '--'
+                            } hours.`,
                         },
                     ]}
                     columns="repeat(3, 1fr)"
@@ -137,18 +139,18 @@ export function StartAuction() {
                         {
                             header: formatNumberWithStyle(systemDebt) + ' HAI',
                             label: 'System Debt',
-                            tooltip: 'Hello World',
+                            tooltip: 'Amount of uncovered or bad debt in protocol',
                         },
                         {
                             header: formatNumberWithStyle(debtAmountToSell) + ' HAI',
                             label: 'Debt Amount to Sell',
-                            tooltip: 'Hello World',
+                            tooltip: `Amount of HAI raised per Debt Auction.  If needed, multiple Debt Auctions may run simultaneously.`,
                         },
 
                         {
                             header: formatNumberWithStyle(protocolTokensOffered) + ' KITE',
                             label: 'Protocol Tokens to be Offered',
-                            tooltip: 'Hello World',
+                            tooltip: `Maximum number of protocol tokens to be minted and sold during a Debt Auction`,
                         },
                     ]}
                     columns="repeat(3, 1fr)"

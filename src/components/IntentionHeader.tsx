@@ -68,10 +68,10 @@ const typeOptions: BrandedSelectOption[] = [
         description: 'Earn long term yields by staking a growing list of crypto assets',
     },
     {
-        label: 'Buy Liquidated Assets',
+        label: 'Buy Auctioned Assets',
         value: Intention.AUCTION,
         icon: 'ALL_TOKENS',
-        description: 'Buy your favorite assets from liquidated loans at a discount',
+        description: 'Buy your favorite assets from auctions at a potential discount',
     },
 ]
 

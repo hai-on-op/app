@@ -8,7 +8,7 @@ import { Tooltip } from './Tooltip'
 import { IconCycler } from './Icons/IconCycler'
 
 type TokenArrayProps = {
-    tokens: TokenKey[]
+    tokens: (TokenKey | 'All' | 'Collateral')[]
     size?: number
     label?: string
     hideLabel?: boolean
@@ -17,18 +17,26 @@ export function TokenArray({ tokens, size = 32, label, hideLabel = false }: Toke
     return (
         <Flex $align="center" $gap={12} $grow={0}>
             <IconContainer $size={size}>
-                {tokens.map((token, i) => (
-                    <img
-                        key={i}
-                        src={TOKEN_LOGOS[token]}
-                        alt={token}
-                        width={48}
-                        height={48}
-                        className={`token-${token}`}
-                    />
-                ))}
+                {tokens.map((token, i) => {
+                    switch (token) {
+                        case 'All':
+                        case 'Collateral':
+                            return <CyclingTokenArray key={i} size={size} includeProtocolTokens={token === 'All'} />
+                        default:
+                            return (
+                                <img
+                                    key={i}
+                                    src={TOKEN_LOGOS[token]}
+                                    alt={token}
+                                    width={48}
+                                    height={48}
+                                    className={`token-${token}`}
+                                />
+                            )
+                    }
+                })}
             </IconContainer>
-            {!hideLabel && (
+            {!hideLabel && tokens.length < 3 && (
                 <Text $fontWeight={700}>
                     {label || (tokens.length === 1 ? tokens[0] : `${tokens[0]}/${tokens[1]}`)}
                 </Text>

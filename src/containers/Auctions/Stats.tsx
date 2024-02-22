@@ -1,8 +1,7 @@
 import { useAccount } from 'wagmi'
 
-import { formatNumberWithStyle } from '~/utils'
 import { useStoreActions } from '~/store'
-import { useMyBids } from '~/hooks'
+import { useClaims } from '~/providers/ClaimsProvider'
 
 import { HaiButton } from '~/styles'
 import { RewardsTokenArray } from '~/components/TokenArray'
@@ -13,27 +12,28 @@ export function AuctionStats() {
 
     const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
 
-    const { activeBids, activeBidsValue, claimableAssetValue } = useMyBids()
+    const { activeAuctions } = useClaims()
+
     const dummyStats: StatProps[] = [
         {
-            header: activeBids.length,
+            header: activeAuctions.activeBids.length,
             label: 'My Active Bids',
             tooltip: 'Number of your active bids placed in auctions',
         },
         {
-            header: activeBidsValue ? formatNumberWithStyle(activeBidsValue, { style: 'currency' }) : '$--',
+            header: activeAuctions.activeBidsValue.formatted,
             label: `My Active Bid Value`,
             tooltip: 'Total dollar value of all your active bids placed in auctions',
         },
         {
-            header: claimableAssetValue ? formatNumberWithStyle(claimableAssetValue, { style: 'currency' }) : '$--',
-            headerStatus: <RewardsTokenArray tokens={['OP', 'KITE']} hideLabel />,
+            header: activeAuctions.claimableAssetValue.formatted,
+            headerStatus: <RewardsTokenArray tokens={['HAI', 'KITE', 'Collateral']} size={24} hideLabel />,
             label: 'My Claimable Assets',
             tooltip: 'Claim assets purchased in auctions',
             button: (
                 <HaiButton
                     $variant="yellowish"
-                    disabled={!claimableAssetValue}
+                    disabled={activeAuctions.claimableAssetValue.raw === '0'}
                     onClick={() => popupsActions.setIsClaimPopupOpen(true)}
                 >
                     Claim
