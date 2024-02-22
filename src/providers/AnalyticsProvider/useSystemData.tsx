@@ -1,8 +1,21 @@
 import { useMemo } from 'react'
 import { ApolloError, useQuery } from '@apollo/client'
 
-import type { SummaryItemValue } from '~/types'
-import { SYSTEMSTATE_QUERY, type QuerySystemStateData, formatSummaryValue } from '~/utils'
+import type { SummaryCurrency, SummaryItemValue } from '~/types'
+import {
+    SYSTEMSTATE_QUERY,
+    type QuerySystemStateData,
+    formatSummaryValue,
+    formatSummaryCurrency,
+    formatSummaryPercentage,
+    tokenAssets,
+} from '~/utils'
+
+type CollateralStat = {
+    totalCollateral?: SummaryItemValue<SummaryCurrency>
+    totalDebt?: SummaryItemValue<SummaryCurrency>
+    ratio?: SummaryItemValue
+}
 
 export type SystemData = {
     loading: boolean
@@ -17,6 +30,7 @@ export type SystemData = {
         redemptionPrice: SummaryItemValue
         redemptionRate: SummaryItemValue
         debtAvailableToSettle: SummaryItemValue
+        collateralStats: Record<string, CollateralStat>
     }
 }
 
@@ -40,21 +54,37 @@ export function useSystemData(): SystemData {
                 },
             ],
         } = data
-        const total = collateralTypes.reduce((sum, { totalCollateralLockedInSafes, currentPrice }) => {
-            if (currentPrice) {
-                const collateralUSD = parseFloat(currentPrice.value) * parseFloat(totalCollateralLockedInSafes)
-                return sum + collateralUSD
-            }
-            return sum
-        }, 0)
+        const { total, collateralStats } = collateralTypes.reduce(
+            (stats, { id, totalCollateralLockedInSafes, debtAmount, currentPrice }) => {
+                if (currentPrice) {
+                    const totalCollateral = formatSummaryCurrency(totalCollateralLockedInSafes, currentPrice.value)
+                    const totalDebt = formatSummaryCurrency(debtAmount, currentRedemptionPrice.value || '1')
+                    const ratio = formatSummaryPercentage(
+                        (parseFloat(totalCollateral?.usdRaw || '0') / parseFloat(totalDebt?.usdRaw || '0')).toString()
+                    )
+                    const key = tokenAssets[id]
+                        ? id
+                        : Object.values(tokenAssets).find(({ name }) => id === name)?.symbol || id
+                    stats.collateralStats[key] = {
+                        totalCollateral,
+                        totalDebt,
+                        ratio,
+                    }
+                    stats.total += parseFloat(totalCollateral?.usdRaw || '0')
+                }
+                return stats
+            },
+            { total: 0, collateralStats: {} as Record<string, CollateralStat> }
+        )
 
-        const cRatio = total / (parseFloat(globalDebt) * parseFloat(currentRedemptionPrice.value || '0'))
+        const cRatio = total / (parseFloat(globalDebt) * parseFloat(currentRedemptionPrice.value || '1'))
 
         return {
             totalCollateralLocked: formatSummaryValue(total.toString(), {
                 maxDecimals: 0,
                 style: 'currency',
             })!,
+            collateralStats,
             globalCRatio: formatSummaryValue(cRatio.toString(), {
                 maxDecimals: 1,
                 style: 'percent',

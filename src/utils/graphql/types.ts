@@ -135,7 +135,7 @@ export type QuerySafe = {
 
 export type QuerySystemStateData = {
     systemStates: [QuerySystemState]
-    collateralTypes: [QueryCollateralType]
+    collateralTypes: QueryCollateralType[]
     // dailyStats: [QueryHistoricalStat],
     // redemptionRates: [QueryRedemptionRate],
     // safes: [QuerySafe]
