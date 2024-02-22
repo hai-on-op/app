@@ -203,7 +203,7 @@ export function AuctionTableRow({ headers, auction, container, expanded, onSelec
                     },
                 ]}
             />
-            <TableRowBody>
+            <TableRowBody onClick={(e: any) => e.stopPropagation()}>
                 <BidTable auction={auction} />
             </TableRowBody>
             <TableRowFooter>
