@@ -80,7 +80,7 @@ const InputContainer = styled(Flex).attrs((props) => ({
 `
 const Input = styled.input`
     width: 100%;
-    height: 48px;
+    height: 46px;
     padding-left: 24px;
     padding-right: 12px;
     outline: none;
