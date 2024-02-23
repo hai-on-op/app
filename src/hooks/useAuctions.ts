@@ -70,7 +70,6 @@ export function convertCollateralAuction(auction: SDKCollateralAuction, tokenSym
 export function useStartAuction() {
     const {
         auctionModel: { auctionsData },
-        connectWalletModel: { proxyAddress },
     } = useStoreState((state) => state)
     const {
         auctionModel: auctionActions,
@@ -174,7 +173,14 @@ export function useStartAuction() {
             status: ActionState.SUCCESS,
         })
         await txResponse.wait()
-        proxyAddress && auctionActions.fetchAuctionsData({ geb, proxyAddress })
+        auctionActions.fetchAuctions({
+            geb,
+            type: 'DEBT',
+        })
+        auctionActions.fetchAuctions({
+            geb,
+            type: 'SURPLUS',
+        })
     }
 
     const startDebtAcution = async function () {
@@ -200,7 +206,14 @@ export function useStartAuction() {
             status: ActionState.SUCCESS,
         })
         await txResponse.wait()
-        proxyAddress && auctionActions.fetchAuctionsData({ geb, proxyAddress })
+        auctionActions.fetchAuctions({
+            geb,
+            type: 'DEBT',
+        })
+        auctionActions.fetchAuctions({
+            geb,
+            type: 'SURPLUS',
+        })
     }
 
     return {
@@ -219,7 +232,6 @@ export function useRestartAuction(auction: IAuction) {
 
     const {
         auctionModel: { auctionsData },
-        connectWalletModel: { proxyAddress },
     } = useStoreState((state) => state)
     const {
         auctionModel: auctionActions,
@@ -264,7 +276,14 @@ export function useRestartAuction(auction: IAuction) {
             status: ActionState.SUCCESS,
         })
         await txResponse.wait()
-        proxyAddress && auctionActions.fetchAuctionsData({ geb, proxyAddress })
+        auctionActions.fetchAuctions({
+            geb,
+            type: 'DEBT',
+        })
+        auctionActions.fetchAuctions({
+            geb,
+            type: 'SURPLUS',
+        })
     }
 
     return {

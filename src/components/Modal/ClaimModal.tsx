@@ -4,7 +4,7 @@ import type { IAuction } from '~/types'
 import { ActionState, formatNumberWithStyle, tokenMap, wait } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { useClaims } from '~/providers/ClaimsProvider'
-import { handleTransactionError, useEthersSigner } from '~/hooks'
+import { handleTransactionError, useEthersSigner, useGeb } from '~/hooks'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
@@ -17,7 +17,12 @@ export function ClaimModal(props: ModalProps) {
         vaultModel: { liquidationData },
         popupsModel: { isClaimPopupOpen },
     } = useStoreState((state) => state)
-    const { setIsClaimPopupOpen } = useStoreActions(({ popupsModel }) => popupsModel)
+    const {
+        auctionModel: auctionActions,
+        popupsModel: { setIsClaimPopupOpen },
+    } = useStoreActions((actions) => actions)
+
+    const geb = useGeb()
 
     const { activeAuctions, internalBalances } = useClaims()
 
@@ -59,7 +64,17 @@ export function ClaimModal(props: ModalProps) {
                     amount={sellAmount}
                     price={prices[asset]}
                     auction={auction}
-                    onSuccess={activeAuctions.refetch}
+                    onSuccess={() => {
+                        auctionActions.fetchAuctions({
+                            geb,
+                            type: 'DEBT',
+                        })
+                        auctionActions.fetchAuctions({
+                            geb,
+                            type: 'SURPLUS',
+                        })
+                        activeAuctions.refetch()
+                    }}
                 />
             )
         }),
