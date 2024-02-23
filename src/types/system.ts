@@ -1,4 +1,6 @@
-import { TOKEN_LOGOS } from '~/utils'
+import { type AnalyticsData } from '@hai-on-op/sdk'
+import { TOKEN_LOGOS } from '~/utils/tokens'
+import { SummaryCurrency, SummaryItemValue } from './vaults'
 
 export type SystemSate = {
     currentRedemptionPrice: {
@@ -23,4 +25,14 @@ export type Strategy = {
     userPosition?: string
     userApy?: number
     earnPlatform?: 'uniswap' | 'velodrome'
+}
+
+export type TokenAnalyticsData = AnalyticsData['tokenAnalyticsData'][string] & {
+    symbol: string
+}
+
+export type CollateralStat = {
+    totalCollateral?: SummaryItemValue<SummaryCurrency>
+    totalDebt?: SummaryItemValue<SummaryCurrency>
+    ratio?: SummaryItemValue
 }

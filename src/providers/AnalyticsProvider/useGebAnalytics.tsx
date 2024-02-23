@@ -1,8 +1,8 @@
 import { useEffect, useReducer, useState } from 'react'
 import { formatEther } from 'ethers/lib/utils'
-import { type AnalyticsData, fetchAnalyticsData } from '@hai-on-op/sdk'
+import { fetchAnalyticsData } from '@hai-on-op/sdk'
 
-import type { SummaryItemValue } from '~/types'
+import type { SummaryItemValue, TokenAnalyticsData } from '~/types'
 import {
     formatSummaryValue,
     transformToAnnualRate,
@@ -11,9 +11,6 @@ import {
 } from '~/utils'
 import { usePublicGeb } from '~/hooks'
 
-export type TokenAnalyticsData = AnalyticsData['tokenAnalyticsData'][string] & {
-    symbol: string
-}
 export type GebAnalyticsData = {
     erc20Supply: SummaryItemValue
     globalDebt: SummaryItemValue

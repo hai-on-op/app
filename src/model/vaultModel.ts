@@ -10,8 +10,9 @@ import type {
     IVault,
     IVaultData,
     IVaultPayload,
-} from '~/types'
-import { WrapEtherProps, handleUnwrapEther, handleWrapEther, timeout } from '~/utils'
+} from '~/types/vaults'
+import { type WrapEtherProps, handleUnwrapEther, handleWrapEther } from '~/utils/wrapEther'
+import { timeout } from '~/utils/time'
 import { ActionState } from '~/utils/constants'
 
 export interface VaultModel {

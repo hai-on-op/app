@@ -3,8 +3,8 @@ import { Geb, TransactionRequest } from '@hai-on-op/sdk'
 import { BigNumber, ethers } from 'ethers'
 import { parseEther } from 'ethers/lib/utils'
 
-import type { IVaultData } from '~/types'
-import { getNetworkName } from '~/utils'
+import type { IVaultData } from '~/types/vaults'
+import { getNetworkName } from '~/utils/constants'
 import { handlePreTxGasEstimate } from '~/hooks'
 
 const abi = ['function drop() public view returns ()']

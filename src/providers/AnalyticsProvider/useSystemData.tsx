@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { ApolloError, useQuery } from '@apollo/client'
 
-import type { SummaryCurrency, SummaryItemValue } from '~/types'
+import type { CollateralStat, SummaryItemValue } from '~/types'
 import {
     SYSTEMSTATE_QUERY,
     type QuerySystemStateData,
@@ -10,12 +10,6 @@ import {
     formatSummaryPercentage,
     tokenAssets,
 } from '~/utils'
-
-export type CollateralStat = {
-    totalCollateral?: SummaryItemValue<SummaryCurrency>
-    totalDebt?: SummaryItemValue<SummaryCurrency>
-    ratio?: SummaryItemValue
-}
 
 export type SystemData = {
     loading: boolean

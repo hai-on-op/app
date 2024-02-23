@@ -1,10 +1,8 @@
 import { useMemo, useState } from 'react'
 
-import type { SortableHeader, Sorting } from '~/types'
+import type { CollateralStat, SortableHeader, Sorting, TokenAnalyticsData } from '~/types'
 import { arrayToSorted } from '~/utils'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
-import { type CollateralStat } from '~/providers/AnalyticsProvider/useSystemData'
-import { type TokenAnalyticsData } from '~/providers/AnalyticsProvider/useGebAnalytics'
 
 const collateralHeaders: SortableHeader[] = [
     { label: 'Collateral Asset' },

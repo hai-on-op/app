@@ -1,6 +1,5 @@
-import type { SetState, SortableHeader, Sorting } from '~/types'
+import type { SetState, SortableHeader, Sorting, TokenAnalyticsData } from '~/types'
 import { formatDataNumber, transformToAnnualRate } from '~/utils'
-import { TokenAnalyticsData } from '~/providers/AnalyticsProvider/useGebAnalytics'
 import { usePublicGeb } from '~/hooks'
 
 import styled from 'styled-components'
