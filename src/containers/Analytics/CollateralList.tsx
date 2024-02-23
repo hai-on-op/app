@@ -16,21 +16,6 @@ export function CollateralList() {
     const content = [
         {
             sortingProps: {
-                headers: collateralInfo.headers,
-                sorting: collateralInfo.sorting,
-                setSorting: collateralInfo.setSorting,
-            },
-            table: (
-                <CollateralTable
-                    headers={collateralInfo.headers}
-                    rows={collateralInfo.rows}
-                    sorting={collateralInfo.sorting}
-                    setSorting={collateralInfo.setSorting}
-                />
-            ),
-        },
-        {
-            sortingProps: {
                 headers: collateralStats.headers,
                 sorting: collateralStats.sorting,
                 setSorting: collateralStats.setSorting,
@@ -44,13 +29,28 @@ export function CollateralList() {
                 />
             ),
         },
+        {
+            sortingProps: {
+                headers: collateralInfo.headers,
+                sorting: collateralInfo.sorting,
+                setSorting: collateralInfo.setSorting,
+            },
+            table: (
+                <CollateralTable
+                    headers={collateralInfo.headers}
+                    rows={collateralInfo.rows}
+                    sorting={collateralInfo.sorting}
+                    setSorting={collateralInfo.setSorting}
+                />
+            ),
+        },
     ][tab]
 
     const isLargerThanSmall = useMediaQuery('upToSmall')
 
     return (
         <NavContainer
-            navItems={[`Collaterals`, `System Stats`]}
+            navItems={[`System Stats`, `Collaterals`]}
             selected={tab}
             onSelect={setTab}
             headerContent={!isLargerThanSmall && <SortByDropdown {...content.sortingProps} />}
