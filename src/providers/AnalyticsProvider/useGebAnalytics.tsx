@@ -11,7 +11,7 @@ import {
 } from '~/utils'
 import { usePublicGeb } from '~/hooks'
 
-type TokenAnalyticsData = AnalyticsData['tokenAnalyticsData'][string] & {
+export type TokenAnalyticsData = AnalyticsData['tokenAnalyticsData'][string] & {
     symbol: string
 }
 export type GebAnalyticsData = {

@@ -1,11 +1,11 @@
-import { CollateralTable } from './CollateralTable'
+import { CollateralList } from './CollateralList'
 import { Numbers } from './Numbers'
 
 export function Analytics() {
     return (
         <>
             <Numbers />
-            <CollateralTable />
+            <CollateralList />
         </>
     )
 }
