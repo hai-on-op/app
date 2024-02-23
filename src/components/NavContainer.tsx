@@ -7,20 +7,31 @@ type NavContainerProps = BlurContainerProps & {
     navItems: string[]
     selected: number
     onSelect: (index: number) => void
+    stackHeader?: boolean
     headerContent?: ReactChildren
     children: ReactChildren
 }
-export function NavContainer({ navItems, selected, onSelect, headerContent, children, ...props }: NavContainerProps) {
+export function NavContainer({
+    navItems,
+    selected,
+    onSelect,
+    stackHeader = false,
+    headerContent,
+    children,
+    ...props
+}: NavContainerProps) {
     return (
         <Container {...props}>
-            <Header>
-                <NavGrid $columns={navItems.map(() => '1fr').join(' ')}>
-                    {navItems.map((item, i) => (
-                        <Nav key={i} $active={selected === i} onClick={() => onSelect(i)}>
-                            {item}
-                        </Nav>
-                    ))}
-                </NavGrid>
+            <Header $stack={stackHeader}>
+                {!!navItems.length && (
+                    <NavGrid $columns={navItems.map(() => '1fr').join(' ')}>
+                        {navItems.map((item, i) => (
+                            <Nav key={i} $active={selected === i} onClick={() => onSelect(i)}>
+                                {item}
+                            </Nav>
+                        ))}
+                    </NavGrid>
+                )}
                 {headerContent}
             </Header>
             <Body>{children}</Body>
@@ -38,11 +49,20 @@ const Header = styled(Flex).attrs((props) => ({
     $align: 'center',
     $gap: 24,
     ...props,
-}))`
+}))<{ $stack: boolean }>`
     position: relative;
     height: 144px;
     padding: 0 48px;
     border-bottom: ${({ theme }) => theme.border.medium};
+    ${({ $stack }) =>
+        $stack &&
+        css`
+            flex-direction: column-reverse;
+            justify-content: flex-end;
+            align-items: flex-start;
+            height: auto;
+            padding-top: 48px;
+        `}
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
         flex-direction: column;

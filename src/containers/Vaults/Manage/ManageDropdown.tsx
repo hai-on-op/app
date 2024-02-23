@@ -5,12 +5,12 @@ import { useStoreState } from '~/store'
 import { useVault } from '~/providers/VaultProvider'
 
 import styled from 'styled-components'
-import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
+import { CenteredFlex, Flex, type FlexProps, HaiButton, Text } from '~/styles'
 import { BrandedDropdown, DropdownOption } from '~/components/BrandedDropdown'
 import { TokenArray } from '~/components/TokenArray'
 import { Plus } from 'react-feather'
 
-export function ManageDropdown() {
+export function ManageDropdown(props: FlexProps) {
     const {
         connectWalletModel: { tokensData },
         vaultModel: { list },
@@ -103,6 +103,7 @@ export function ManageDropdown() {
             }
             maxHeight="max(calc(100vh - 400px), 200px)"
             innerPadding="0px"
+            {...props}
         >
             {options}
         </BrandedDropdown>

@@ -91,7 +91,12 @@ export function VaultById({ id = '' }: VaultByIdProps) {
                                 </BodyHeader>
                             )}
                             <Overview vault={vault} />
-                            <ActivityTable vault={vault} />
+                            <ActivityContainer>
+                                <ActivityHeader>
+                                    <Text $fontWeight={700}>Activity</Text>
+                                </ActivityHeader>
+                                <ActivityTable vault={vault} />
+                            </ActivityContainer>
                         </BodyGrid>
                     </ContentWithStatus>
                 </Body>
@@ -130,7 +135,7 @@ const Body = styled(Flex).attrs((props) => ({
     $width: '100%',
     $justify: 'space-between',
     $align: 'flex-start',
-    $gap: 48,
+    $gap: 24,
     ...props,
 }))`
     padding: 0px;
@@ -139,10 +144,16 @@ const Body = styled(Flex).attrs((props) => ({
 const BodyGrid = styled(Grid)`
     width: 100%;
     grid-template-columns: 1fr;
+    grid-gap: 24px;
+    & > * {
+        padding: 0px 48px;
+    }
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
         grid-template-columns: 1fr;
-        grid-gap: 24px;
+        & > * {
+            padding: 0px 24px;
+        }
     `}
 `
 
@@ -158,5 +169,37 @@ const BodyHeader = styled(Flex).attrs((props) => ({
     ${({ theme }) => theme.mediaWidth.upToSmall`
         padding: 24px;
         padding-bottom: 0px;
+    `}
+`
+
+const ActivityContainer = styled(Flex).attrs((props) => ({
+    $width: '100%',
+    $column: true,
+    $justify: 'flex-start',
+    $align: 'flex-start',
+    ...props,
+}))`
+    padding: 48px;
+    padding-top: 0px;
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        padding: 0px;
+        & > *:last-child {
+            border-top: ${theme.border.medium};
+        }
+    `}
+`
+const ActivityHeader = styled(Flex).attrs((props) => ({
+    $width: '100%',
+    $justify: 'flex-start',
+    $align: 'center',
+    $gap: 12,
+    ...props,
+}))`
+    height: 60px;
+    padding: 24px 0px;
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        padding: 24px;
     `}
 `

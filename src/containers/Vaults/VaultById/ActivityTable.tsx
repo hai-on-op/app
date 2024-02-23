@@ -102,10 +102,7 @@ export function ActivityTable({ vault }: ActivityTableProps) {
     const [offset, setOffset] = useState(0)
 
     return (
-        <Container>
-            <Header>
-                <Text $fontWeight={700}>Activity</Text>
-            </Header>
+        <>
             <Table
                 headers={sortableHeaders}
                 headerContainer={TableHeader}
@@ -194,38 +191,9 @@ export function ActivityTable({ vault }: ActivityTableProps) {
                 handlePagingMargin={setOffset}
                 perPage={MAX_RECORDS_PER_PAGE}
             />
-        </Container>
+        </>
     )
 }
-
-const Container = styled(Flex).attrs((props) => ({
-    $width: '100%',
-    $column: true,
-    $justify: 'flex-start',
-    $align: 'flex-start',
-    ...props,
-}))`
-    padding: 48px;
-    padding-top: 0px;
-
-    ${({ theme }) => theme.mediaWidth.upToSmall`
-        padding: 0px;
-    `}
-`
-const Header = styled(Flex).attrs((props) => ({
-    $width: '100%',
-    $justify: 'flex-start',
-    $align: 'center',
-    $gap: 12,
-    ...props,
-}))`
-    height: 60px;
-    padding: 24px 0px;
-
-    ${({ theme }) => theme.mediaWidth.upToSmall`
-        padding: 24px;
-    `}
-`
 
 const TableRowBase = styled(Grid)`
     grid-template-columns: 5fr 3fr 3fr 4fr 3fr;
@@ -256,7 +224,9 @@ const TableRow = styled(TableRowBase)`
         align-items: flex-start;
         border-radius: 0px;
 
-        border-top: ${theme.border.medium};
+        &:not(:first-child) {
+            border-top: ${theme.border.medium};
+        }
         &:hover {
             background-color: unset;
         }
@@ -300,7 +270,7 @@ const AcitivityIconContainer = styled(CenteredFlex)`
     height: 40px;
     flex-shrink: 0;
     border-radius: 999px;
-    border: ${({ theme }) => theme.border.medium};
+    border: ${({ theme }) => theme.border.thin};
 
     & > svg {
         margin: 0 -5px;

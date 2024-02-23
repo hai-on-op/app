@@ -94,7 +94,7 @@ const InputLabel = styled(Text).attrs((props) => ({
 }))`
     min-width: 48px;
     flex-shrink: 0;
-    z-index: 1;
+    z-index: 0;
 `
 
 const ConversionText = styled(Text).attrs((props) => ({

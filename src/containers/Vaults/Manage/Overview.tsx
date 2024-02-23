@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { Status, VaultAction, formatNumberWithStyle } from '~/utils'
+import { useStoreState } from '~/store'
 import { useVault } from '~/providers/VaultProvider'
 
 import styled from 'styled-components'
@@ -13,6 +14,10 @@ import { AlertTriangle, ArrowLeft, ArrowRight } from 'react-feather'
 
 export function Overview() {
     const { t } = useTranslation()
+
+    const {
+        vaultModel: { liquidationData },
+    } = useStoreState((state) => state)
 
     const { action, vault, collateral, riskStatus, safetyRatio, collateralRatio, simulation, summary } = useVault()
 
@@ -109,17 +114,45 @@ export function Overview() {
     return (
         <Container>
             <Header>
-                <Text $fontWeight={700}>Vault Overview {vault ? `#${vault.id}` : ''}</Text>
-                {!!simulation && !!vault && (
-                    <StatusLabel status={Status.CUSTOM} background="gradientCooler">
-                        <CenteredFlex $gap={8}>
-                            <Swirl size={14} />
-                            <Text $fontSize="0.67rem" $fontWeight={700}>
-                                Simulation
-                            </Text>
-                        </CenteredFlex>
-                    </StatusLabel>
-                )}
+                <Flex $justify="flex-start" $align="center" $gap={12}>
+                    <Text $fontWeight={700}>Vault Overview {vault ? `#${vault.id}` : ''}</Text>
+                    {!!simulation && !!vault && (
+                        <StatusLabel status={Status.CUSTOM} background="gradientCooler">
+                            <CenteredFlex $gap={8}>
+                                <Swirl size={14} />
+                                <Text $fontSize="0.67rem" $fontWeight={700}>
+                                    Simulation
+                                </Text>
+                            </CenteredFlex>
+                        </StatusLabel>
+                    )}
+                </Flex>
+                <Flex $justify="flex-end" $align="center" $gap={12} $fontSize="0.8em">
+                    <Text>
+                        {collateral.name}:&nbsp;
+                        <strong>
+                            {collateral.priceInUSD
+                                ? formatNumberWithStyle(collateral.priceInUSD.toString(), {
+                                      minDecimals: 2,
+                                      maxDecimals: 2,
+                                      style: 'currency',
+                                  })
+                                : '--'}
+                        </strong>
+                    </Text>
+                    <Text>
+                        HAI (RP):&nbsp;
+                        <strong>
+                            {liquidationData?.currentRedemptionPrice
+                                ? formatNumberWithStyle(liquidationData.currentRedemptionPrice, {
+                                      minDecimals: 2,
+                                      maxDecimals: 2,
+                                      style: 'currency',
+                                  })
+                                : '--'}
+                        </strong>
+                    </Text>
+                </Flex>
             </Header>
             <Inner $borderOpacity={0.2}>
                 <OverviewStat
@@ -196,7 +229,7 @@ const Container = styled(Flex).attrs((props) => ({
 }))``
 const Header = styled(Flex).attrs((props) => ({
     $width: '100%',
-    $justify: 'flex-start',
+    $justify: 'space-between',
     $align: 'center',
     $gap: 12,
     ...props,
