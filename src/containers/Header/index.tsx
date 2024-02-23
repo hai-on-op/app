@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 
-import { LINK_TO_DISCORD, LINK_TO_DOCS, LINK_TO_TELEGRAM, LINK_TO_TWITTER, formatNumberWithStyle } from '~/utils'
+import { LINK_TO_DISCORD, LINK_TO_DOCS, LINK_TO_TELEGRAM, LINK_TO_TWITTER, formatDataNumber } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { useMediaQuery, useOutsideClick } from '~/hooks'
@@ -37,7 +37,6 @@ export function Header({ tickerActive = false }: HeaderProps) {
     const isLargerThanLarge = useMediaQuery('upToLarge')
 
     const {
-        vaultModel: { liquidationData },
         settingsModel: { headerBgActive, isPlayingMusic },
     } = useStoreState((state) => state)
     const {
@@ -46,7 +45,7 @@ export function Header({ tickerActive = false }: HeaderProps) {
     } = useStoreActions((actions) => actions)
 
     const {
-        data: { marketPrice, redemptionPrice },
+        data: { marketPrice, redemptionPrice, tokenAnalyticsData },
     } = useAnalytics()
 
     const [dropdownActive, setDropdownActive] = useState(false)
@@ -68,21 +67,12 @@ export function Header({ tickerActive = false }: HeaderProps) {
             ['HAI (MP)', marketPrice.formatted, '\u2022'],
             ['HAI (RP)', redemptionPrice.formatted, '\u2022'],
         ]
-        if (liquidationData) {
-            Object.entries(liquidationData.collateralLiquidationData).forEach(([token, data]) => {
-                if (!data?.currentPrice.value) return
-                arr.push([
-                    token,
-                    formatNumberWithStyle(data.currentPrice.value, {
-                        style: 'currency',
-                        maxDecimals: 3,
-                    }),
-                    '\u2022',
-                ])
-            })
-        }
+        tokenAnalyticsData.forEach(({ symbol, currentPrice }) => {
+            const price = formatDataNumber(currentPrice.toString() || '0', 18, 2, true)
+            arr.push([symbol, price, '\u2022'])
+        })
         return arr.flat()
-    }, [liquidationData, marketPrice, redemptionPrice])
+    }, [tokenAnalyticsData, marketPrice, redemptionPrice])
 
     const logoEl = useMemo(
         () =>

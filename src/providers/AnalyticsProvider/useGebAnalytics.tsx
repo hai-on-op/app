@@ -64,11 +64,13 @@ export function useGebAnalytics() {
                         // style: 'currency',
                     })!,
                     marketPrice: formatSummaryValue(marketPrice, {
+                        minDecimals: 2,
                         maxDecimals: 3,
                         maxSigFigs: 3,
                         style: 'currency',
                     })!,
                     redemptionPrice: formatSummaryValue(redemptionPrice, {
+                        minDecimals: 2,
                         maxDecimals: 3,
                         maxSigFigs: 3,
                         style: 'currency',
