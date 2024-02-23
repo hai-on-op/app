@@ -1,10 +1,10 @@
-import { type ComponentType, useCallback, useMemo, useState } from 'react'
+import { type ComponentType, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { IAuction, SortableHeader } from '~/types'
-import { Status, formatNumberWithStyle, stringsExistAndAreEqual } from '~/utils'
+import { ActionState, Status, formatNumberWithStyle, stringsExistAndAreEqual } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
-import { useAuction, useMediaQuery } from '~/hooks'
+import { handleTransactionError, useAuction, useMediaQuery, useRestartAuction } from '~/hooks'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
@@ -46,21 +46,54 @@ export function AuctionTableRow({ headers, auction, container, expanded, onSelec
         remainingToRaise,
     } = useAuction(auction, timeEl)
 
+    const { canRestart, restartDebtOrSurplusAuction } = useRestartAuction(auction)
+
     const { auctionId, englishAuctionType, buyInitialAmount, auctionDeadline, biddersList } = auction
 
-    const onButtonClick = useCallback(
-        (type: string) => {
-            popupsActions.setAuctionOperationPayload({
-                isOpen: true,
-                type,
-                auctionType: auction.englishAuctionType,
-            })
-            auctionActions.setSelectedAuction(auction)
-        },
-        [auction, auctionActions, popupsActions]
-    )
+    const [isRestarting, setIsRestarting] = useState(false)
+    const handleRestartAuction = async () => {
+        if (!canRestart || isRestarting) return
 
-    const button = useMemo(() => {
+        setIsRestarting(true)
+        try {
+            popupsActions.setIsWaitingModalOpen(true)
+            popupsActions.setWaitingPayload({
+                title: 'Waiting For Confirmation',
+                hint: 'Confirm this transaction in your wallet',
+                status: ActionState.LOADING,
+            })
+            await restartDebtOrSurplusAuction()
+        } catch (e) {
+            handleTransactionError(e)
+        } finally {
+            setIsRestarting(false)
+        }
+    }
+
+    const onButtonClick = (type: string) => {
+        popupsActions.setAuctionOperationPayload({
+            isOpen: true,
+            type,
+            auctionType: auction.englishAuctionType,
+        })
+        auctionActions.setSelectedAuction(auction)
+    }
+
+    const button = (() => {
+        if (status === Status.RESTARTING) {
+            return (
+                <HaiButton
+                    $variant="yellowish"
+                    disabled={!canRestart}
+                    onClick={(e: any) => {
+                        e.stopPropagation()
+                        handleRestartAuction()
+                    }}
+                >
+                    Restart
+                </HaiButton>
+            )
+        }
         const isWinner = stringsExistAndAreEqual(proxyAddress, auction.winner)
         if (status === Status.SETTLING && isWinner && auction.biddersList.length) {
             return (
@@ -95,7 +128,7 @@ export function AuctionTableRow({ headers, auction, container, expanded, onSelec
             )
         }
         return null
-    }, [status, proxyAddress, auctionState.isSubmitting, auction, onButtonClick, t])
+    })()
 
     return (
         <TableRowContainer onClick={onSelect} $expanded={expanded}>

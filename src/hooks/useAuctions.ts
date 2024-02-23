@@ -5,7 +5,7 @@ import { radToFixed, wadToFixed, type ICollateralAuction as SDKCollateralAuction
 import { useAccount } from 'wagmi'
 
 import type { AuctionEventType, IAuction } from '~/types'
-import { ActionState } from '~/utils'
+import { ActionState, Status, getAuctionStatus } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { useGeb } from './useGeb'
 
@@ -70,8 +70,13 @@ export function convertCollateralAuction(auction: SDKCollateralAuction, tokenSym
 export function useStartAuction() {
     const {
         auctionModel: { auctionsData },
+        connectWalletModel: { proxyAddress },
     } = useStoreState((state) => state)
-    const { transactionsModel: transactionsActions, popupsModel: popupsActions } = useStoreActions((actions) => actions)
+    const {
+        auctionModel: auctionActions,
+        popupsModel: popupsActions,
+        transactionsModel: transactionsActions,
+    } = useStoreActions((actions) => actions)
 
     const { address: account } = useAccount()
     const geb = useGeb()
@@ -120,7 +125,7 @@ export function useStartAuction() {
             debtAmountToSell: radToFixed(debtAmountToSell).toString(),
             protocolTokensOffered: wadToFixed(protocolTokensOffered).toString(),
         })
-    }, [auctionsData])
+    }, [auctionsData?.accountingEngineData])
 
     // Check surplus cooldown. Time now > lastSurplusTime + surplusDelay
     const surplusCooldownDone = useMemo(() => {
@@ -169,6 +174,7 @@ export function useStartAuction() {
             status: ActionState.SUCCESS,
         })
         await txResponse.wait()
+        proxyAddress && auctionActions.fetchAuctionsData({ geb, proxyAddress })
     }
 
     const startDebtAcution = async function () {
@@ -194,6 +200,7 @@ export function useStartAuction() {
             status: ActionState.SUCCESS,
         })
         await txResponse.wait()
+        proxyAddress && auctionActions.fetchAuctionsData({ geb, proxyAddress })
     }
 
     return {
@@ -204,5 +211,64 @@ export function useStartAuction() {
         allowStartDebtAuction,
         surplusDelay: auctionsData?.accountingEngineData.accountingEngineParams.surplusDelay,
         surplusCooldownDone,
+    }
+}
+
+export function useRestartAuction(auction: IAuction) {
+    const { address: account } = useAccount()
+
+    const {
+        auctionModel: { auctionsData },
+        connectWalletModel: { proxyAddress },
+    } = useStoreState((state) => state)
+    const {
+        auctionModel: auctionActions,
+        popupsModel: popupsActions,
+        transactionsModel: transactionsActions,
+    } = useStoreActions((actions) => actions)
+
+    const geb = useGeb()
+
+    const status = getAuctionStatus(auction, auctionsData)
+
+    const canRestart = !!account && !!geb && auction.englishAuctionType !== 'COLLATERAL' && status === Status.RESTARTING
+
+    const restartDebtOrSurplusAuction = async () => {
+        if (!canRestart) return
+
+        let txResponse: any
+        switch (auction.englishAuctionType) {
+            case 'DEBT':
+                txResponse = await geb.contracts.debtAuctionHouse.restartAuction(auction.auctionId)
+                break
+            case 'SURPLUS':
+                txResponse = await geb.contracts.surplusAuctionHouse.restartAuction(auction.auctionId)
+                break
+        }
+
+        if (!txResponse) throw new Error('No transaction request!')
+
+        const { hash, chainId } = txResponse
+        transactionsActions.addTransaction({
+            chainId,
+            hash,
+            from: txResponse.from,
+            summary: `Restarting ${auction.englishAuctionType.toLowerCase()} auction`,
+            addedTime: new Date().getTime(),
+            originalTx: txResponse,
+        })
+        popupsActions.setIsWaitingModalOpen(true)
+        popupsActions.setWaitingPayload({
+            title: 'Transaction Submitted',
+            hash: txResponse.hash,
+            status: ActionState.SUCCESS,
+        })
+        await txResponse.wait()
+        proxyAddress && auctionActions.fetchAuctionsData({ geb, proxyAddress })
+    }
+
+    return {
+        canRestart,
+        restartDebtOrSurplusAuction,
     }
 }

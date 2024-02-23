@@ -80,7 +80,8 @@ export function useAuction(auction: IAuction, timeEl?: HTMLElement | null) {
             case 'HAI':
                 return liquidationData?.currentRedemptionPrice || '0'
             case 'KITE':
-                return '0'
+                // TODO: get KITE price
+                return '10'
             default:
                 return liquidationData?.collateralLiquidationData[sellToken]?.currentPrice.value || '0'
         }

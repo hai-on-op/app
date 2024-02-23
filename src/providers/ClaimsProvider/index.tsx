@@ -81,7 +81,7 @@ export function ClaimsProvider({ children }: Props) {
             parseFloat(internalBalances.KITE?.usdRaw || '0') +
             parseFloat(activeAuctions.claimableAssetValue.raw)
         ).toString(),
-        { style: 'currency' }
+        { style: 'currency', minDecimals: 2, maxDecimals: 2 }
     )!
 
     return (

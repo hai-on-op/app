@@ -4,6 +4,7 @@ import { useAccount } from 'wagmi'
 
 import { ActionState, COIN_TICKER, formatNumberWithStyle, tokenMap, wait } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
+import { useClaims } from '~/providers/ClaimsProvider'
 import { handleTransactionError, useEthersSigner, usePublicGeb } from '~/hooks'
 
 import { ModalBody, ModalFooter } from '../index'
@@ -34,6 +35,8 @@ export function Confirm({ previousStep }: ConfirmProps) {
         },
     } = useStoreState((state) => state)
     const { auctionModel: auctionActions, popupsModel: popupsActions } = useStoreActions((actions) => actions)
+
+    const { activeAuctions } = useClaims()
 
     const [status, setStatus] = useState<ActionState>(ActionState.NONE)
 
@@ -204,6 +207,7 @@ export function Confirm({ previousStep }: ConfirmProps) {
                 geb,
                 type: 'SURPLUS',
             })
+            activeAuctions.refetch()
             await wait(3000)
             popupsActions.setAuctionOperationPayload({
                 isOpen: false,

@@ -21,11 +21,9 @@ export function getAuctionStatus(auction: AuctionStatusProps, auctionsData: Auct
         case 'DEBT': {
             if (auction.isClaimed) return Status.COMPLETED
             if (auctionsData && bids.length > 1) {
-                const { createdAt } = bids[bids.length - 1]
-                if (
-                    Date.now() / 1000 - parseInt(createdAt) >
-                    auctionsData.debtAuctionHouseParams.bidDuration.toNumber()
-                ) {
+                const { createdAt } = bids[0]
+                const timeSinceBid = Date.now() / 1000 - parseInt(createdAt)
+                if (timeSinceBid > auctionsData.debtAuctionHouseParams.bidDuration.toNumber()) {
                     return Status.SETTLING
                 }
             }
@@ -35,11 +33,9 @@ export function getAuctionStatus(auction: AuctionStatusProps, auctionsData: Auct
         case 'SURPLUS': {
             if (auction.isClaimed) return Status.COMPLETED
             if (auctionsData && bids.length > 1) {
-                const { createdAt } = bids[bids.length - 1]
-                if (
-                    Date.now() / 1000 - parseInt(createdAt) >
-                    auctionsData.surplusAuctionHouseParams.bidDuration.toNumber()
-                ) {
+                const { createdAt } = bids[0]
+                const timeSinceBid = Date.now() / 1000 - parseInt(createdAt)
+                if (timeSinceBid > auctionsData.surplusAuctionHouseParams.bidDuration.toNumber()) {
                     return Status.SETTLING
                 }
             }
@@ -55,6 +51,18 @@ export function convertQueryAuction(auction: QueryEnglishAuction): IAuction {
             ...bid,
             createdAtTransaction: '',
         })) || []
+    // add start tx as (mostly) empty bid
+    bids.push({
+        createdAtTransaction: '',
+        id: '',
+        sellAmount: '',
+        buyAmount: '',
+        bidNumber: '-1',
+        type: auction.englishAuctionType === 'DEBT' ? 'DECREASE_SOLD' : 'INCREASE_BUY',
+        price: '',
+        bidder: '',
+        createdAt: '',
+    })
 
     const englishAuctionType: IAuction['englishAuctionType'] = (() => {
         switch (auction.englishAuctionType) {

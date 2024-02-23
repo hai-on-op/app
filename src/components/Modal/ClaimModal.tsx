@@ -49,12 +49,12 @@ export function ClaimModal(props: ModalProps) {
     if (!isClaimPopupOpen) return null
 
     const content = [
-        ...activeAuctions.claimableAuctions.map(({ sellAmount, auction }, i) => {
+        ...activeAuctions.claimableAuctions.map(({ sellAmount, auction }) => {
             if (!auction) return null
             const asset = tokenMap[auction.sellToken] || auction.sellToken
             return (
                 <ClaimableAsset
-                    key={i}
+                    key={auction.auctionId}
                     asset={asset}
                     amount={sellAmount}
                     price={prices[asset]}
@@ -237,7 +237,11 @@ function ClaimableAsset({ asset, amount, price = 0, auction, internal, onSuccess
                         {formatNumberWithStyle(amount, { maxDecimals: 4 })} {tokenMap[asset] || asset}
                     </Text>
                     <Text $fontSize="0.7em">
-                        {formatNumberWithStyle(parseFloat(amount) * price, { style: 'currency' })}
+                        {formatNumberWithStyle(parseFloat(amount) * price, {
+                            style: 'currency',
+                            minDecimals: 2,
+                            maxDecimals: 2,
+                        })}
                     </Text>
                 </Flex>
             </CenteredFlex>
