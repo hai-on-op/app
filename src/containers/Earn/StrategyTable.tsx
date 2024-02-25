@@ -109,10 +109,9 @@ export function StrategyTable({ headers, rows, sorting, setSorting }: StrategyTa
                             content: (
                                 <ComingSoon $justify="flex-start" active={!!earnPlatform}>
                                     <Text $fontWeight={700}>
-                                        {apy
-                                            ? formatNumberWithStyle(apy, {
-                                                  style: 'percent',
-                                                  scalingFactor: 100,
+                                        {userPosition && userPosition !== '0'
+                                            ? formatNumberWithStyle(userPosition, {
+                                                  style: 'currency',
                                                   maxDecimals: 1,
                                                   suffixed: true,
                                               })
@@ -125,9 +124,10 @@ export function StrategyTable({ headers, rows, sorting, setSorting }: StrategyTa
                             content: (
                                 <ComingSoon $justify="flex-start" active={!!earnPlatform}>
                                     <Text $fontWeight={700}>
-                                        {userPosition && userPosition !== '0'
-                                            ? formatNumberWithStyle(userPosition, {
-                                                  style: 'currency',
+                                        {apy
+                                            ? formatNumberWithStyle(apy, {
+                                                  style: 'percent',
+                                                  scalingFactor: 100,
                                                   maxDecimals: 1,
                                                   suffixed: true,
                                               })

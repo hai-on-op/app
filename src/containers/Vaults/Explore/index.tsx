@@ -70,7 +70,7 @@ export function VaultExplorer() {
             )}
             <Container>
                 <Header>
-                    <BrandedTitle textContent="ALL VAULTS" $fontSize={isLargerThanSmall ? '3rem' : '2.4rem'} />
+                    <BrandedTitle textContent="VAULT EXPLORER" $fontSize={isLargerThanSmall ? '3rem' : '2.4rem'} />
                     <CenteredFlex $column={!isLargerThanSmall} $gap={24}>
                         <CheckboxButton checked={filterEmpty} toggle={() => setFilterEmpty((e) => !e)}>
                             Hide Empty Vaults

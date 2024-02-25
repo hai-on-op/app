@@ -74,7 +74,8 @@ export function ConnectButton({ showBalance, ...props }: ConnectButtonProps) {
                                 <BalanceContainer>
                                     <Text>
                                         {formatNumberWithStyle(formatEther(ethBalance?.value || BigInt(0)), {
-                                            maxDecimals: 0,
+                                            maxDecimals: 1,
+                                            maxSigFigs: 2,
                                         })}{' '}
                                         ETH
                                     </Text>

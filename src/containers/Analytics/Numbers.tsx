@@ -96,7 +96,7 @@ export function Numbers() {
             <Section>
                 <BrandedTitle textContent="HAI LEVEL NUMBERS" $fontSize="3rem" />
                 <SectionHeader>IMPORTANT STUFF</SectionHeader>
-                <Stats>
+                <Stats fun>
                     <Stat
                         stat={{
                             header: graphSummary?.totalCollateralLocked.formatted || '--',

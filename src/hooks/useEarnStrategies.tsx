@@ -13,12 +13,12 @@ const sortableHeaders: SortableHeader[] = [
         tooltip: `Value participating in campaign`,
     },
     {
-        label: 'Rewards APY',
-        tooltip: `Variable based upon participation and value of campaign emissions`,
-    },
-    {
         label: 'My Position',
         tooltip: `Your value participating in the campaign`,
+    },
+    {
+        label: 'Rewards APY',
+        tooltip: `Variable based upon participation and value of campaign emissions`,
     },
 ]
 

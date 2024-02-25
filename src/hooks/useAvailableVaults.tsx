@@ -7,7 +7,7 @@ import { useStoreState } from '~/store'
 
 const sortableHeaders: SortableHeader[] = [
     { label: 'Pair' },
-    { label: 'Coll. Factor' },
+    { label: 'Liquidation Ratio' },
     // { label: 'Net APY' },
     { label: 'Stability Fee' },
     { label: 'My Eligible Collateral' },
@@ -59,8 +59,8 @@ export function useAvailableVaults() {
     }, [availableVaults, eligibleOnly])
 
     const [sorting, setSorting] = useState<Sorting>({
-        key: 'Coll. Factor',
-        dir: 'desc',
+        key: 'Liquidation Ratio',
+        dir: 'asc',
     })
 
     const sortedRows = useMemo(() => {
@@ -97,7 +97,7 @@ export function useAvailableVaults() {
                     type: 'numerical',
                     checkValueExists: true,
                 })
-            case 'Coll. Factor':
+            case 'Liquidation Ratio':
             default:
                 return arrayToSorted(filteredAvailableVaults, {
                     getProperty: (vault) => vault.collateralizationFactor || '0',

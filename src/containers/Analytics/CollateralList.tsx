@@ -50,7 +50,7 @@ export function CollateralList() {
 
     return (
         <NavContainer
-            navItems={[`System Stats`, `Collaterals`]}
+            navItems={[`System Stats`, `Collateral Info`]}
             selected={tab}
             onSelect={setTab}
             headerContent={!isLargerThanSmall && <SortByDropdown {...content.sortingProps} />}

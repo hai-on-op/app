@@ -27,7 +27,7 @@ export function EarnStats() {
         {
             header: '$--',
             headerStatus: <RewardsTokenArray tokens={['OP', 'KITE']} hideLabel />,
-            label: 'My Farm Rewards',
+            label: 'My Campaign Rewards',
             tooltip: 'Rewards currently voted upon and distributed by DAO approximately once per month.',
             button: (
                 <HaiButton title="Claim window is closed" $variant="yellowish" disabled>
