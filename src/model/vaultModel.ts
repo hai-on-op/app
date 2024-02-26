@@ -1,7 +1,12 @@
 import { type Action, type Thunk, action, thunk } from 'easy-peasy'
 
 import { type StoreModel } from './index'
-import { handleDepositAndBorrow, handleRepayAndWithdraw } from '~/services/blockchain'
+import {
+    handleDepositAndBorrow,
+    handleDepositAndRepay,
+    handleRepayAndWithdraw,
+    handleWithdrawAndBorrow,
+} from '~/services/blockchain'
 import { fetchLiquidationData, fetchUserVaults } from '~/services/vaults'
 import type {
     IFetchLiquidationDataPayload,
@@ -60,6 +65,8 @@ export interface VaultModel {
 
     depositAndBorrow: Thunk<VaultModel, IVaultPayload & { vaultId?: string }, any, StoreModel>
     repayAndWithdraw: Thunk<VaultModel, IVaultPayload & { vaultId: string }, any, StoreModel>
+    depositAndRepay: Thunk<VaultModel, IVaultPayload & { vaultId: string }, any, StoreModel>
+    withdrawAndBorrow: Thunk<VaultModel, IVaultPayload & { vaultId: string }, any, StoreModel>
     // collectETH: Thunk<
     //     VaultModel,
     //     { signer: JsonRpcSigner; vault: IVault },
@@ -76,8 +83,10 @@ export interface VaultModel {
 const DEFAULT_VAULT_DATA: IVaultData = {
     totalCollateral: '',
     totalDebt: '',
-    leftInput: '',
-    rightInput: '',
+    deposit: '',
+    withdraw: '',
+    borrow: '',
+    repay: '',
     collateralRatio: 0,
     liquidationPrice: 0,
     collateral: '',
@@ -247,6 +256,70 @@ export const vaultModel: VaultModel = {
             await txResponse.wait()
             // actions.setStage(0)
             // actions.setUniSwapPool(DEFAULT_VAULT_DATA)
+            actions.setVaultData(DEFAULT_VAULT_DATA)
+            storeActions.connectWalletModel.setForceUpdateTokens(true)
+        }
+    }),
+    depositAndRepay: thunk(async (actions, payload, { getStoreActions }) => {
+        const storeActions = getStoreActions()
+        const txResponses = await handleDepositAndRepay(payload.signer, payload.vaultData, payload.vaultId)
+        if (txResponses) {
+            await Promise.all(
+                txResponses.map(async (res) => {
+                    if (!res) return
+                    const { hash, chainId, from } = res
+                    storeActions.transactionsModel.addTransaction({
+                        chainId,
+                        hash,
+                        from,
+                        summary: 'Modifying Vault',
+                        addedTime: new Date().getTime(),
+                        originalTx: res,
+                    })
+                    storeActions.popupsModel.setIsWaitingModalOpen(true)
+                    storeActions.popupsModel.setWaitingPayload({
+                        title: 'Transaction Submitted',
+                        hash: hash,
+                        status: ActionState.SUCCESS,
+                    })
+
+                    await res.wait()
+                    return
+                })
+            )
+
+            actions.setVaultData(DEFAULT_VAULT_DATA)
+            storeActions.connectWalletModel.setForceUpdateTokens(true)
+        }
+    }),
+    withdrawAndBorrow: thunk(async (actions, payload, { getStoreActions }) => {
+        const storeActions = getStoreActions()
+        const txResponses = await handleWithdrawAndBorrow(payload.signer, payload.vaultData, payload.vaultId)
+        if (txResponses) {
+            await Promise.all(
+                txResponses.map(async (res) => {
+                    if (!res) return
+                    const { hash, chainId, from } = res
+                    storeActions.transactionsModel.addTransaction({
+                        chainId,
+                        hash,
+                        from,
+                        summary: 'Modifying Vault',
+                        addedTime: new Date().getTime(),
+                        originalTx: res,
+                    })
+                    storeActions.popupsModel.setIsWaitingModalOpen(true)
+                    storeActions.popupsModel.setWaitingPayload({
+                        title: 'Transaction Submitted',
+                        hash: hash,
+                        status: ActionState.SUCCESS,
+                    })
+
+                    await res.wait()
+                    return
+                })
+            )
+
             actions.setVaultData(DEFAULT_VAULT_DATA)
             storeActions.connectWalletModel.setForceUpdateTokens(true)
         }

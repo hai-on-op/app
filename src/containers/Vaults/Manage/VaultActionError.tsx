@@ -10,15 +10,20 @@ export function VaultActionError() {
     if (!error) return null
 
     if (error === VaultInfoError.ZERO_AMOUNT) {
-        if (action === VaultAction.CREATE) {
-            // ignore error on initial form state
-            if (!formState.deposit || !formState.borrow) return null
-        } else if (action === VaultAction.DEPOSIT_BORROW) {
-            // ignore single-sided empty error
-            if (!formState.deposit || !formState.borrow) return null
-        } else if (action === VaultAction.WITHDRAW_REPAY) {
-            // ignore single-sided empty error
-            if (!formState.withdraw || !formState.repay) return null
+        switch (action) {
+            case VaultAction.CREATE:
+            case VaultAction.DEPOSIT_BORROW:
+                if (!formState.deposit || !formState.borrow) return null
+                break
+            case VaultAction.DEPOSIT_REPAY:
+                if (!formState.deposit || !formState.repay) return null
+                break
+            case VaultAction.WITHDRAW_BORROW:
+                if (!formState.withdraw || !formState.borrow) return null
+                break
+            case VaultAction.WITHDRAW_REPAY:
+                if (!formState.withdraw || !formState.repay) return null
+                break
         }
     }
 

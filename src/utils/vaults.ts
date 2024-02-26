@@ -11,6 +11,8 @@ import { tokenAssets } from './tokens'
 
 export enum VaultAction {
     DEPOSIT_BORROW,
+    DEPOSIT_REPAY,
+    WITHDRAW_BORROW,
     WITHDRAW_REPAY,
     CREATE,
     INFO,
@@ -47,8 +49,10 @@ export const vaultInfoErrors: Record<number, string> = {
 export const DEFAULT_VAULT_DATA: IVaultData = {
     totalCollateral: '',
     totalDebt: '',
-    leftInput: '',
-    rightInput: '',
+    deposit: '',
+    withdraw: '',
+    borrow: '',
+    repay: '',
     collateralRatio: 0,
     liquidationPrice: 0,
     collateral: '',

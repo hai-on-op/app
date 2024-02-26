@@ -63,8 +63,12 @@ const defaultState: VaultContext = {
     updateForm: () => {},
     collateral: {
         name: 'WETH',
-        total: '',
-        available: '',
+        total: {
+            after: {
+                raw: '',
+                formatted: '0',
+            },
+        },
         balance: {
             e18: '',
             raw: '',
@@ -72,8 +76,16 @@ const defaultState: VaultContext = {
         },
     },
     debt: {
-        total: '',
-        available: '',
+        total: {
+            after: {
+                raw: '',
+                formatted: '0',
+            },
+        },
+        available: {
+            raw: '',
+            formatted: '0',
+        },
         balance: {
             e18: '',
             raw: '',
@@ -125,49 +137,37 @@ export function VaultProvider({ action, setAction, children }: Props) {
     )
 
     const [formState, updateForm] = useReducer((previous: FormState, update: Partial<FormState> | 'clear') => {
-        if (update === 'clear') return {}
+        if (update === 'clear') {
+            vaultActions.setVaultData({
+                ...dataRef.current,
+                deposit: '',
+                withdraw: '',
+                borrow: '',
+                repay: '',
+            })
+            return {}
+        }
 
-        return {
+        const newState = {
             ...previous,
             ...update,
         }
-    }, {})
-
-    useEffect(() => {
-        const inputs = {
-            leftInput: '',
-            rightInput: '',
-        }
-        if (action === VaultAction.DEPOSIT_BORROW || action === VaultAction.CREATE) {
-            inputs.leftInput = formState.deposit?.toString() || ''
-            inputs.rightInput = formState.borrow?.toString() || ''
-        } else if (action === VaultAction.WITHDRAW_REPAY) {
-            inputs.leftInput = formState.withdraw?.toString() || ''
-            inputs.rightInput = formState.repay?.toString() || ''
-        }
         vaultActions.setVaultData({
             ...dataRef.current,
-            ...inputs,
+            ...newState,
         })
+        return newState
+    }, {})
 
-        return () => {
-            vaultActions.setVaultData({
-                ...dataRef.current,
-                leftInput: '',
-                rightInput: '',
-            })
-        }
-    }, [action, formState, vaultActions])
-
-    const collateral = useCollateral(action)
-    const debt = useDebt(action, collateral.liquidationData)
+    const collateral = useCollateral(action, formState, vaultData.collateral)
+    const debt = useDebt(action, formState, collateral.liquidationData)
 
     const liquidationPrice = useMemo(() => {
         if (!liquidationData?.currentRedemptionPrice || !collateral.liquidationData?.liquidationCRatio) return ''
 
         return getLiquidationPrice(
-            collateral.total || '0',
-            debt.total || '0',
+            collateral.total.current?.raw || '0',
+            debt.total.current?.raw || '0',
             collateral.liquidationData.liquidationCRatio,
             liquidationData.currentRedemptionPrice
         ).toString()
@@ -180,8 +180,8 @@ export function VaultProvider({ action, setAction, children }: Props) {
         if (!currentPrice?.liquidationPrice || !liquidationCRatio) return '0'
 
         return getCollateralRatio(
-            collateral.total || '0',
-            debt.total || '0',
+            collateral.total.current?.raw || '0',
+            debt.total.current?.raw || '0',
             currentPrice.liquidationPrice,
             liquidationCRatio
         ).toString()
@@ -207,8 +207,8 @@ export function VaultProvider({ action, setAction, children }: Props) {
         if (!collateral.liquidationData?.currentPrice.safetyPrice) return true
 
         return vaultIsSafe(
-            collateral.total || '0',
-            debt.total || '0',
+            collateral.total.after.raw || '0',
+            debt.total.after.raw || '0',
             collateral.liquidationData.currentPrice.safetyPrice
         )
     }, [collateral, debt])
@@ -225,11 +225,12 @@ export function VaultProvider({ action, setAction, children }: Props) {
         collateral,
         debt,
         simulatedCR: simulation?.collateralRatio,
-        liquidationPrice,
+        liquidationPrice: simulation?.liquidationPrice || liquidationPrice,
     })
 
     const { error, errorMessage } = useVaultError({
         action,
+        formState,
         collateral,
         debt,
         collateralRatio,
@@ -240,8 +241,8 @@ export function VaultProvider({ action, setAction, children }: Props) {
     useEffect(() => {
         vaultActions.setVaultData({
             ...dataRef.current,
-            totalCollateral: collateral.total,
-            totalDebt: debt.total,
+            totalCollateral: collateral.total.after.raw,
+            totalDebt: debt.total.after.raw,
             collateralRatio: parseFloat(collateralRatio),
             liquidationPrice: parseFloat(liquidationPrice),
         })

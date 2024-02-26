@@ -30,8 +30,10 @@ export type IVault = {
 export type IVaultData = {
     totalCollateral: string
     totalDebt: string
-    leftInput: string
-    rightInput: string
+    deposit: string
+    withdraw: string
+    borrow: string
+    repay: string
     collateralRatio: number
     liquidationPrice: number
     isGnosisSafe?: boolean
@@ -170,17 +172,16 @@ export type FormState = {
 export type Collateral = {
     name: string
     data?: TokenData
-    total: string
-    available: string
+    total: SummaryItem<SummaryItemValue>
     balance: FormattedBalance
     priceInUSD?: string
     liquidationData?: CollateralLiquidationData
 }
 
 export type Debt = {
-    total: string
     data?: TokenData
-    available: string
+    total: SummaryItem<SummaryItemValue>
+    available: SummaryItemValue
     balance: FormattedBalance
     priceInUSD: string
 }

@@ -1,4 +1,3 @@
-import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { useAccount, useNetwork } from 'wagmi'
@@ -33,7 +32,7 @@ export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
 
     const { action, updateForm, collateral, summary } = useVault()
 
-    const reset = useCallback(() => {
+    const reset = () => {
         updateForm('clear')
         vaultActions.setVaultData(DEFAULT_VAULT_DATA)
         connectWalletActions.setIsStepLoading(true)
@@ -43,9 +42,9 @@ export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
             tokensData,
             chainId: chain?.id || DEFAULT_NETWORK_ID,
         })
-    }, [updateForm, vaultActions, connectWalletActions, account, geb, tokensData])
+    }
 
-    const handleConfirm = useCallback(async () => {
+    const handleConfirm = async () => {
         if (!account || !signer) return
 
         vaultActions.setTransactionState(ActionState.LOADING)
@@ -58,6 +57,7 @@ export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
         })
         try {
             connectWalletActions.setIsStepLoading(true)
+            console.log(vaultData)
             switch (action) {
                 case VaultAction.CREATE: {
                     await vaultActions.depositAndBorrow({
@@ -76,9 +76,27 @@ export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
                     })
                     break
                 }
+                case VaultAction.DEPOSIT_REPAY: {
+                    if (!singleVault) throw new Error('Vault marked for modification, but no vault is selected')
+                    await vaultActions.depositAndRepay({
+                        vaultData,
+                        signer,
+                        vaultId: singleVault.id,
+                    })
+                    break
+                }
                 case VaultAction.WITHDRAW_REPAY: {
                     if (!singleVault) throw new Error('Vault marked for modification, but no vault is selected')
                     await vaultActions.repayAndWithdraw({
+                        vaultData,
+                        signer,
+                        vaultId: singleVault.id,
+                    })
+                    break
+                }
+                case VaultAction.WITHDRAW_BORROW: {
+                    if (!singleVault) throw new Error('Vault marked for modification, but no vault is selected')
+                    await vaultActions.withdrawAndBorrow({
                         vaultData,
                         signer,
                         vaultId: singleVault.id,
@@ -96,19 +114,7 @@ export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
             vaultActions.setTransactionState(ActionState.ERROR)
             handleTransactionError(e)
         }
-    }, [
-        onClose,
-        account,
-        signer,
-        history,
-        action,
-        vaultData,
-        singleVault,
-        connectWalletActions,
-        popupsActions,
-        vaultActions,
-        reset,
-    ])
+    }
 
     return (
         <Modal

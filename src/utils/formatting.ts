@@ -220,6 +220,7 @@ export const formatBalance = (valueE18: string): FormattedBalance => {
         raw: value,
         formatted: formatNumberWithStyle(value, {
             maxDecimals: 4,
+            minSigFigs: 1,
         }),
     }
 }

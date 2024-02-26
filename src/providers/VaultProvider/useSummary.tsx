@@ -20,12 +20,12 @@ export function useSummary({ vault, collateral, debt, simulatedCR, liquidationPr
     const stabilityFee = vault?.totalAnnualizedStabilityFee || collateral.liquidationData?.totalAnnualizedStabilityFee
     return {
         collateral: {
-            current: formatSummaryCurrency(vault?.collateral, collateral.priceInUSD),
-            after: formatSummaryCurrency(collateral.total || '0', collateral.priceInUSD)!,
+            current: formatSummaryCurrency(collateral.total.current?.raw || vault?.collateral, collateral.priceInUSD),
+            after: formatSummaryCurrency(collateral.total.after.raw || '0', collateral.priceInUSD)!,
         },
         debt: {
-            current: formatSummaryCurrency(vault?.totalDebt, debt.priceInUSD),
-            after: formatSummaryCurrency(debt.total || '0', debt.priceInUSD)!,
+            current: formatSummaryCurrency(debt.total.current?.raw || vault?.totalDebt, debt.priceInUSD),
+            after: formatSummaryCurrency(debt.total.after.raw || '0', debt.priceInUSD)!,
         },
         collateralRatio: {
             current: formatSummaryPercentage(vault?.collateralRatio, 0.01),
