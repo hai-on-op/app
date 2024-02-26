@@ -1,5 +1,5 @@
 import type { SetState, SortableHeader, Sorting, TokenAnalyticsData } from '~/types'
-import { formatDataNumber, transformToAnnualRate } from '~/utils'
+import { formatDataNumber } from '~/utils'
 import { usePublicGeb } from '~/hooks'
 
 import styled from 'styled-components'
@@ -23,7 +23,7 @@ export function CollateralTable({ headers, rows, sorting, setSorting }: Collater
             headerContainer={TableHeader}
             sorting={sorting}
             setSorting={setSorting}
-            rows={rows.map(({ symbol, delayedOracle, currentPrice, nextPrice, stabilityFee }) => (
+            rows={rows.map(({ symbol, delayedOracle, currentPrice, nextPrice }) => (
                 <Table.Row
                     key={symbol}
                     container={TableRow}
@@ -45,6 +45,10 @@ export function CollateralTable({ headers, rows, sorting, setSorting }: Collater
                             ),
                         },
                         {
+                            // TODO: get actual address
+                            content: <AddressLink address={delayedOracle} />,
+                        },
+                        {
                             content: <AddressLink address={delayedOracle} />,
                         },
                         {
@@ -52,9 +56,6 @@ export function CollateralTable({ headers, rows, sorting, setSorting }: Collater
                         },
                         {
                             content: <Text>{formatDataNumber(nextPrice?.toString() || '0', 18, 2, true)}</Text>,
-                        },
-                        {
-                            content: <Text>{transformToAnnualRate(stabilityFee?.toString() || '0', 27)}</Text>,
                         },
                     ]}
                 />

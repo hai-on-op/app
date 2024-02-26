@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 
 import type { SetState, SortableHeader, Sorting } from '~/types'
-import { formatDataNumber, formatNumberWithStyle, transformToAnnualRate } from '~/utils'
+import { formatNumberWithStyle } from '~/utils'
 import { type CollateralStatWithInfo } from '~/hooks'
 
 import styled from 'styled-components'
@@ -23,7 +23,7 @@ export function CollateralStatsTable({ headers, rows, sorting, setSorting }: Col
             sorting={sorting}
             setSorting={setSorting}
             rows={rows
-                .map(({ token, delayedPrice, stabilityFee, totalCollateral, totalDebt, ratio }) => (
+                .map(({ token, stabilityFee, annualEarnings, totalCollateral, totalDebt, ratio }) => (
                     <Table.Row
                         key={token}
                         container={TableRow}
@@ -37,12 +37,6 @@ export function CollateralStatsTable({ headers, rows, sorting, setSorting }: Col
                                     </Flex>
                                 ),
                                 fullWidth: true,
-                            },
-                            {
-                                content: <Text>{transformToAnnualRate(stabilityFee?.toString() || '0', 27)}</Text>,
-                            },
-                            {
-                                content: <Text>{formatDataNumber(delayedPrice?.toString() || '0', 18, 2, true)}</Text>,
                             },
                             {
                                 content: (
@@ -72,6 +66,28 @@ export function CollateralStatsTable({ headers, rows, sorting, setSorting }: Col
                             },
                             {
                                 content: <Text>{ratio?.formatted || '--%'}</Text>,
+                            },
+                            {
+                                content: (
+                                    <Text>
+                                        {stabilityFee
+                                            ? formatNumberWithStyle(stabilityFee, { maxDecimals: 1, style: 'percent' })
+                                            : '--%'}
+                                    </Text>
+                                ),
+                            },
+                            {
+                                content: (
+                                    <Text>
+                                        {annualEarnings
+                                            ? formatNumberWithStyle(annualEarnings, {
+                                                  maxDecimals: 1,
+                                                  suffixed: true,
+                                                  style: 'currency',
+                                              })
+                                            : '$--'}
+                                    </Text>
+                                ),
                             },
                         ]}
                     />
@@ -135,11 +151,10 @@ type GlobalRowProps = Pick<CollateralStatsTableProps, 'rows' | 'headers'>
 function GlobalRow({ rows, headers }: GlobalRowProps) {
     const stats = useMemo(() => {
         return rows.reduce(
-            (obj, { stabilityFee, totalCollateral, totalDebt }) => {
+            (obj, { stabilityFee = 0, totalCollateral, totalDebt }) => {
                 obj.totalCollateral += parseFloat(totalCollateral?.usdRaw || '0')
                 obj.totalDebt += parseFloat(totalDebt?.usdRaw || '0')
-                const sf = transformToAnnualRate(stabilityFee?.toString() || '0', 27, true) as number
-                obj.fee += sf * parseFloat(totalDebt?.usdRaw || '0')
+                obj.fee += stabilityFee * parseFloat(totalDebt?.usdRaw || '0')
                 return obj
             },
             { totalCollateral: 0, totalDebt: 0, fee: 0 }
@@ -154,21 +169,6 @@ function GlobalRow({ rows, headers }: GlobalRowProps) {
                 {
                     content: <Text $fontWeight={700}>Global Stats</Text>,
                     fullWidth: true,
-                },
-                {
-                    content: (
-                        <Text $fontWeight={700}>
-                            {stats.totalDebt
-                                ? formatNumberWithStyle(stats.fee / stats.totalDebt, {
-                                      maxDecimals: 2,
-                                      style: 'percent',
-                                  })
-                                : '--%'}
-                        </Text>
-                    ),
-                },
-                {
-                    content: <Text>--</Text>,
                 },
                 {
                     content: (
@@ -205,6 +205,31 @@ function GlobalRow({ rows, headers }: GlobalRowProps) {
                                       style: 'percent',
                                   })
                                 : '--%'}
+                        </Text>
+                    ),
+                },
+                {
+                    content: (
+                        <Text $fontWeight={700}>
+                            {stats.totalDebt
+                                ? formatNumberWithStyle(stats.fee / stats.totalDebt, {
+                                      maxDecimals: 2,
+                                      style: 'percent',
+                                  })
+                                : '--%'}
+                        </Text>
+                    ),
+                },
+                {
+                    content: (
+                        <Text>
+                            {stats.totalDebt
+                                ? formatNumberWithStyle(stats.fee, {
+                                      maxDecimals: 1,
+                                      suffixed: true,
+                                      style: 'currency',
+                                  })
+                                : '$--'}
                         </Text>
                     ),
                 },

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 
-import type { CollateralStat, SortableHeader, Sorting, TokenAnalyticsData } from '~/types'
-import { arrayToSorted } from '~/utils'
+import type { CollateralStat, SortableHeader, Sorting } from '~/types'
+import { arrayToSorted, transformToAnnualRate } from '~/utils'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 
 const collateralHeaders: SortableHeader[] = [
@@ -9,6 +9,11 @@ const collateralHeaders: SortableHeader[] = [
     {
         label: 'ERC20',
         tooltip: `Address of the ERC20 collateral token`,
+        unsortable: true,
+    },
+    {
+        label: 'Vault Contract',
+        tooltip: `Address of the protocol vault contract for the specified collateral`,
         unsortable: true,
     },
     {
@@ -23,10 +28,6 @@ const collateralHeaders: SortableHeader[] = [
     {
         label: 'Next Price',
         tooltip: `Next system price of the collateral, this value is already quoted, and will impact the system on the next price update`,
-    },
-    {
-        label: 'Stability Fee',
-        tooltip: `Annual interest rate paid by Vault owners on their debt`,
     },
 ]
 
@@ -54,12 +55,6 @@ export function useCollateralInfo() {
                     dir: sorting.dir,
                     type: 'parseFloat',
                 })
-            case 'Stability Fee':
-                return arrayToSorted(rows, {
-                    getProperty: (row) => row.stabilityFee.toString(),
-                    dir: sorting.dir,
-                    type: 'parseFloat',
-                })
             case 'Collateral Asset':
             default:
                 return arrayToSorted(rows, {
@@ -81,31 +76,31 @@ export function useCollateralInfo() {
 const collateralStatHeaders: SortableHeader[] = [
     { label: 'Collateral Asset' },
     {
-        label: 'Stability Fee',
-        tooltip: `Annual interest rate paid by Vault owners on their debt`,
-    },
-    {
-        label: 'Delayed Price',
-        tooltip: `System price of the collateral, it is delayed from spot price, and updates every period to "Next Price"`,
-    },
-    {
         label: 'TVL',
         tooltip: `Total Value Locked - value of all collateral locked in vaults of a given collateral asset`,
     },
     {
-        label: 'TVI',
-        tooltip: `Total Value Issued - value of all HAI debt issued in vaults of a given collateral asset`,
+        label: 'Debt Issued',
+        tooltip: `Debt Issued - value of all HAI debt issued in vaults of a given collateral asset`,
     },
     {
         label: 'Collateral Ratio',
         tooltip: `System-wide ratio of TVL to TVI for a given collateral asset`,
     },
+    {
+        label: 'Stability Fee',
+        tooltip: `Annual interest rate paid by Vault owners on their debt`,
+    },
+    {
+        label: 'Annual Earnings',
+        tooltip: `Projected earnings of the protocol calculated by multiplying the Stability Fee by Debt Issued`,
+    },
 ]
 
 export type CollateralStatWithInfo = CollateralStat & {
     token: string
-    delayedPrice?: TokenAnalyticsData['currentPrice']
-    stabilityFee?: TokenAnalyticsData['stabilityFee']
+    stabilityFee?: number
+    annualEarnings?: number
 }
 export function useCollateralStats() {
     const {
@@ -120,19 +115,20 @@ export function useCollateralStats() {
 
     const rows: CollateralStatWithInfo[] = useMemo(() => {
         return Object.entries(collateralStats || {}).map(([token, stat]) => {
-            const { currentPrice, stabilityFee } = tokenAnalyticsData.find(({ symbol }) => symbol === token) || {}
+            const { stabilityFee: sfBN } = tokenAnalyticsData.find(({ symbol }) => symbol === token) || {}
+            const stabilityFee = transformToAnnualRate(sfBN?.toString() || '0', 27, true) as number
             return {
                 token,
                 ...stat,
-                delayedPrice: currentPrice,
                 stabilityFee,
+                annualEarnings: parseFloat(stat.totalDebt?.raw || '0') * stabilityFee,
             }
         })
     }, [collateralStats, tokenAnalyticsData])
 
     const sortedRows = useMemo(() => {
         switch (sorting.key) {
-            case 'TVI':
+            case 'Debt Issued':
                 return arrayToSorted(rows, {
                     getProperty: (row) => row.totalDebt?.usdRaw || '0',
                     dir: sorting.dir,
@@ -150,11 +146,11 @@ export function useCollateralStats() {
                     dir: sorting.dir,
                     type: 'alphabetical',
                 })
-            case 'Delayed Price':
+            case 'Annual Earnings':
                 return arrayToSorted(rows, {
-                    getProperty: (row) => row.delayedPrice?.toString() || '0',
+                    getProperty: (row) => row.annualEarnings || 0,
                     dir: sorting.dir,
-                    type: 'parseFloat',
+                    type: 'numerical',
                 })
             case 'Stability Fee':
                 return arrayToSorted(rows, {
