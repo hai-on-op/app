@@ -117,7 +117,7 @@ export function ProxyPrompt({
                     <Text>
                         To {continueText}, please create a proxy contract. A proxy contract allows for transaction
                         bundling as well as other unique features.&nbsp;
-                        <Link href={LINK_TO_DOCS}>Read more →</Link>
+                        <Link href={`${LINK_TO_DOCS}detailed/proxies/hai_proxy.html`}>Read more →</Link>
                     </Text>
                     <HaiButton $variant="yellowish" onClick={handleCreateAccount}>
                         {t('create_account')}

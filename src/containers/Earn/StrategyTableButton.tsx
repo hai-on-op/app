@@ -1,5 +1,4 @@
 import { Strategy } from '~/types'
-import { LINK_TO_DOCS } from '~/utils'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
@@ -9,6 +8,7 @@ import { Link } from '~/components/Link'
 import uniswapLogo from '~/assets/uniswap-icon.svg'
 import velodromeLogo from '~/assets/velodrome-img.svg'
 
+// TODO: update links
 const platformMap: Record<
     string,
     {
@@ -20,12 +20,12 @@ const platformMap: Record<
     uniswap: {
         logo: uniswapLogo,
         size: 28,
-        link: LINK_TO_DOCS,
+        link: 'https://app.uniswap.org',
     },
     velodrome: {
         logo: velodromeLogo,
         size: 20,
-        link: LINK_TO_DOCS,
+        link: 'https://velodrome.finance',
     },
     hai: {
         logo: undefined,

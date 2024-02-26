@@ -39,7 +39,7 @@ export function Footer() {
                         </Flex>
                         <Flex $column $gap={12}>
                             <Text $fontWeight={700}>Resources</Text>
-                            <Link href={LINK_TO_DOCS} $textDecoration="none">
+                            <Link href={`${LINK_TO_DOCS}detailed/intro/hai.html`} $textDecoration="none">
                                 Docs
                             </Link>
                         </Flex>

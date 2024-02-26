@@ -70,7 +70,7 @@ const sortableHeaders: SortableHeader[] = [
         tooltip: (
             <Text>
                 {`Description of the action taken by the vault owner or protocol. Confiscations are performed by authorized accounts. Read more about confiscations in the `}
-                <Link href={LINK_TO_DOCS}>docs.</Link>
+                <Link href={`${LINK_TO_DOCS}detailed/modules/liq_engine.html`}>docs.</Link>
             </Text>
         ),
     },

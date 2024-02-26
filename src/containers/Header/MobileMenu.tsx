@@ -145,7 +145,10 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
                         <BrandedDropdown.Item onClick={showWrapEth} icon={<Repeat size={18} />}>
                             Wrap ETH
                         </BrandedDropdown.Item>
-                        <BrandedDropdown.Item href={LINK_TO_DOCS} icon={<FileText size={18} />}>
+                        <BrandedDropdown.Item
+                            href={`${LINK_TO_DOCS}detailed/intro/hai.html`}
+                            icon={<FileText size={18} />}
+                        >
                             Docs
                         </BrandedDropdown.Item>
                         <BrandedDropdown.Item href={LINK_TO_GOVERNANCE} icon={<Clipboard size={18} />}>

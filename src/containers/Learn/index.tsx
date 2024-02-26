@@ -15,7 +15,7 @@ export function Learn() {
                 <LearnCard
                     title="HAI DOCS"
                     description="Documentation on all aspects of the HAI Protocol"
-                    link={LINK_TO_DOCS}
+                    link={`${LINK_TO_DOCS}detailed/intro/hai.html`}
                 />
             </CenteredFlex>
             <CenteredFlex>

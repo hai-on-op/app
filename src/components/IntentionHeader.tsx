@@ -38,12 +38,12 @@ const copy: Record<
     [Intention.BORROW]: {
         subtitle: 'Mint & borrow HAI against your preferred collateral. ',
         cta: 'Read more about borrowing →',
-        ctaLink: LINK_TO_DOCS,
+        ctaLink: `${LINK_TO_DOCS}detailed/intro/hai.html`,
     },
     [Intention.EARN]: {
         subtitle: 'Participate in DAO incentive campaigns to earn rewards. ',
         cta: 'Read more about earning opportunities →',
-        ctaLink: LINK_TO_DOCS,
+        ctaLink: `${LINK_TO_DOCS}detailed/intro/hai.html`,
     },
 }
 
