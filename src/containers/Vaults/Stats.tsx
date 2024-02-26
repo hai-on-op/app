@@ -40,7 +40,7 @@ export function BorrowStats() {
                           maxDecimals: 1,
                           suffixed: true,
                       })
-                    : '--',
+                    : '$0',
                 label: 'My Locked Collateral',
                 tooltip:
                     'Summation of the total amount of a given collateral locked in your vaults multiplied by the protocol oracle price of that collateral.',
@@ -52,7 +52,7 @@ export function BorrowStats() {
                           maxDecimals: 1,
                           suffixed: true,
                       })
-                    : '--',
+                    : '$0',
                 label: 'My Total Debt',
                 tooltip: 'The total amount of minted debt tokens multiplied by the protocol redemption price of debt.',
             },
@@ -72,7 +72,7 @@ export function BorrowStats() {
                 ),
             },
             {
-                header: '$--',
+                header: '$0',
                 headerStatus: <RewardsTokenArray tokens={['OP', 'KITE']} hideLabel />,
                 label: 'My Vault Rewards',
                 tooltip: 'Rewards currently voted upon and distributed by DAO approximately once per month.',
@@ -87,8 +87,6 @@ export function BorrowStats() {
             },
         ]
     }, [list, liquidationData, popupsActions])
-
-    if (!list.length) return null
 
     return <Stats stats={stats} columns="repeat(4, 1fr) 1.6fr" fun />
 }
