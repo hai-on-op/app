@@ -22,12 +22,27 @@ export function Contracts() {
         if (!geb) return []
 
         return Object.entries(geb.contracts)
-            .filter(([, value]) => !!value.address)
+            .filter(([name, value]) => !!value.address && name !== 'weth')
             .map(([name, value]) => ({
                 name: name.replace('safe', 'vault').replace('Safe', 'Vault'),
                 address: value.address,
                 description: contractsDescriptions[name],
             }))
+            .concat(
+                Object.entries(geb.tokenList).reduce((arr, [token, { address, collateralJoin }]) => {
+                    arr.push({
+                        name: `ERC20 Token - ${token}`,
+                        address,
+                        description: `The ERC20 token contract of the ${token} collateral.`,
+                    })
+                    arr.push({
+                        name: `Collateral Join - ${token}`,
+                        address: collateralJoin,
+                        description: `The address of the Collateral Join contract that holds all ${token} deposited into Vaults.`,
+                    })
+                    return arr
+                }, [] as any[])
+            )
     }, [geb])
 
     const isLargerThanSmall = useMediaQuery('upToSmall')

@@ -9,7 +9,7 @@ const sortableHeaders: SortableHeader[] = [
     { label: 'Asset / Asset Pair' },
     { label: 'Strategy' },
     {
-        label: 'TVL',
+        label: 'TVP',
         tooltip: `Value participating in campaign`,
     },
     {
@@ -152,7 +152,7 @@ export function useEarnStrategies() {
                     dir: sorting.dir,
                     type: 'alphabetical',
                 })
-            case 'TVL':
+            case 'TVP':
                 return arrayToSorted(filteredRows, {
                     getProperty: (row) => row.tvl,
                     dir: sorting.dir,

@@ -51,9 +51,10 @@ export function useMyVaults() {
                 })
             case 'Collateral Ratio':
                 return arrayToSorted(myVaults, {
-                    getProperty: (row) => row.collateralRatio || '0',
+                    getProperty: (row) => row.collateralRatio,
                     dir: sorting.dir,
                     type: 'parseFloat',
+                    checkValueExists: true,
                 })
             case 'Collateral':
                 return arrayToSorted(myVaults, {

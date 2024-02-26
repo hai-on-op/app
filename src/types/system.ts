@@ -33,6 +33,8 @@ export type Strategy = {
 
 export type TokenAnalyticsData = AnalyticsData['tokenAnalyticsData'][string] & {
     symbol: string
+    tokenContract?: string
+    collateralJoin?: string
 }
 
 export type CollateralStat = {

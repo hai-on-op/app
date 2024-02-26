@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 
 import { formatNumberWithStyle } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
+import { useEarnStrategies } from '~/hooks'
 
 import { HaiButton, Text } from '~/styles'
 import { RewardsTokenArray } from '~/components/TokenArray'
@@ -13,6 +14,19 @@ export function BorrowStats() {
         vaultModel: { list, liquidationData },
     } = useStoreState((state) => state)
     const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
+
+    const { rows } = useEarnStrategies()
+
+    const { value, apy } = useMemo(() => {
+        return rows.reduce(
+            (obj, { userPosition = '0', apy }) => {
+                obj.value += parseFloat(userPosition)
+                obj.apy += parseFloat(userPosition) * apy
+                return obj
+            },
+            { value: 0, apy: 0 }
+        )
+    }, [rows])
 
     const stats: StatProps[] = useMemo(() => {
         const { totalCollateralInUSD, totalHai, weightedStabilityFee } = list.reduce(
@@ -66,12 +80,17 @@ export function BorrowStats() {
                     maxDecimals: 1,
                     suffixed: true,
                 }),
-                label: 'My Est. Stability Fee',
+                label: 'My Net Stability Fee',
                 tooltip: 'Weighted average stability fee of My Total Debt',
             },
             {
-                header: '7.8%',
-                label: 'My Net Rewards APY',
+                header: formatNumberWithStyle(value ? apy / value : 0, {
+                    maxDecimals: 1,
+                    scalingFactor: 100,
+                    suffixed: true,
+                    style: 'percent',
+                }),
+                label: 'My Est. Rewards APY',
                 tooltip: (
                     <Text>
                         Rewards derived from all campaign activities. See <Link href="/earn">here</Link> for more
@@ -94,7 +113,7 @@ export function BorrowStats() {
                 ),
             },
         ]
-    }, [list, liquidationData, popupsActions])
+    }, [list, liquidationData, value, apy, popupsActions])
 
     return <Stats stats={stats} columns="repeat(4, 1fr) 1.6fr" fun />
 }

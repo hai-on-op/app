@@ -107,7 +107,7 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                 {logoEl}
                             </CenteredFlex>
                         ) : (
-                            <Link href="/">{logoEl}</Link>
+                            logoEl
                         )}
                         {isLargerThanSmall &&
                             (isSplash ? (

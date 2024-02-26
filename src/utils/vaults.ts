@@ -90,23 +90,20 @@ export const formatUserVault = (
 
             const liquidationPrice = getLiquidationPrice(
                 s.collateral,
-                totalDebt as string,
+                totalDebt,
                 liquidationCRatio,
                 currentRedemptionPrice
             )
 
-            const collateralRatio = getCollateralRatio(
-                s.collateral,
-                totalDebt as string,
-                currentPrice?.liquidationPrice,
-                liquidationCRatio
-            )
+            const collateralRatio = !Number(totalDebt || '0')
+                ? ''
+                : getCollateralRatio(s.collateral, totalDebt, currentPrice?.liquidationPrice, liquidationCRatio)
 
             return {
                 id: s.safeId || s.vaultId,
                 vaultHandler: s.safeHandler || s.vaultHandler,
                 date: s.createdAt,
-                riskState: ratioChecker(Number(collateralRatio), Number(safetyCRatio)),
+                riskState: ratioChecker(!collateralRatio ? Infinity : Number(collateralRatio), Number(safetyCRatio)),
                 collateral: s.collateral,
                 collateralType: s.collateralType,
                 collateralName: collateralBytes32[s.collateralType],
@@ -178,7 +175,7 @@ export const vaultIsSafe = (totalCollateral: string, totalDebt: string, safetyPr
 
 export enum RiskState {
     UNKNOWN,
-    DEBTLESS,
+    NO_DEBT,
     LOW,
     MEDIUM,
     HIGH,
@@ -192,7 +189,7 @@ export const ratioChecker = (currentLiquitdationRatio: number, minLiquidationRat
     if (currentLiquitdationRatio < minLiquidationRatioPercent && currentLiquitdationRatio > 0) {
         return RiskState.LIQUIDATION
     } else if (currentLiquitdationRatio === Infinity) {
-        return RiskState.DEBTLESS
+        return RiskState.NO_DEBT
     } else if (currentLiquitdationRatio >= safestRatio) {
         return RiskState.LOW
     } else if (currentLiquitdationRatio < safestRatio && currentLiquitdationRatio >= midSafeRatio) {
@@ -262,7 +259,7 @@ export const returnTotalDebtPlusInterest = (
 }
 
 export const riskStateToStatus: Record<RiskState | number, Status> = {
-    [RiskState.DEBTLESS]: Status.DEBTLESS,
+    [RiskState.NO_DEBT]: Status.NO_DEBT,
     [RiskState.LOW]: Status.SAFE,
     [RiskState.MEDIUM]: Status.OKAY,
     [RiskState.HIGH]: Status.UNSAFE,
