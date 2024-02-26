@@ -12,6 +12,7 @@ export type StatProps = {
     label: string
     tooltip?: ReactChildren
     button?: ReactChildren
+    fullWidth?: boolean
 }
 
 type StatsProps = FlexProps & {
@@ -38,19 +39,20 @@ type StatElProps = FlexProps & {
     unbordered?: boolean
 }
 export function Stat({ stat, unbordered, ...props }: StatElProps) {
-    const { header, headerStatus, label, tooltip, button } = stat
+    const { header, headerStatus, label, tooltip, button, fullWidth } = stat
+
     return (
-        <StatContainer $unbordered={unbordered} $hasButton={!!button} {...props}>
-            <StatText>
-                <Flex $align="center" $gap={12}>
-                    <StatHeaderText>{header}</StatHeaderText>
+        <StatContainer $unbordered={unbordered} $fullWidth={fullWidth || !!button} {...props}>
+            <Flex $width="100%" $column $justify="flex-end" $align="flex-start" $gap={12} $fontSize="0.7rem">
+                <Flex $width="100%" $justify="flex-start" $align="center" $gap={12}>
+                    {typeof header === 'string' ? <StatHeader>{header}</StatHeader> : header}
                     {headerStatus}
                 </Flex>
-                <Flex $gap={8}>
+                <Flex $justify="flex-start" $align="center" $gap={8}>
                     <Text>{label}</Text>
                     {!!tooltip && <Tooltip width="200px">{tooltip}</Tooltip>}
                 </Flex>
-            </StatText>
+            </Flex>
             {button}
         </StatContainer>
     )
@@ -60,10 +62,14 @@ const StatContainer = styled(Flex).attrs((props: FlexProps) => ({
     $justify: 'space-between',
     $align: 'center',
     $gap: 12,
-    $flexWrap: true,
     ...props,
-}))<{ $unbordered?: boolean; $hasButton?: boolean }>`
+}))<{ $unbordered?: boolean; $fullWidth?: boolean }>`
+    height: 100%;
     padding: 20px 24px;
+
+    & > *:first-child {
+        height: 100%;
+    }
 
     ${({ $unbordered }) =>
         !$unbordered &&
@@ -76,16 +82,16 @@ const StatContainer = styled(Flex).attrs((props: FlexProps) => ({
             }
         `}
 
-    ${({ theme, $hasButton }) => theme.mediaWidth.upToSmall`
+    ${({ theme, $fullWidth }) => theme.mediaWidth.upToSmall`
         padding: 12px 16px;
-    ${
-        $hasButton
-            ? css`
-                  grid-column: 1 / -1;
-              `
-            : // : css`justify-content: center;`
-              ``
-    }
+        flex-direction: column;
+        align-items: flex-start;
+        ${
+            $fullWidth &&
+            css`
+                grid-column: 1 / -1;
+            `
+        }
     `}
 `
 const Container = styled(Grid)<DashedContainerProps & { $fun: boolean }>`
@@ -133,17 +139,10 @@ const Container = styled(Grid)<DashedContainerProps & { $fun: boolean }>`
     `}
 `
 
-const StatText = styled(Flex).attrs((props) => ({
-    $column: true,
-    $justify: 'center',
-    $align: 'flex-start',
-    $gap: 12,
-    ...props,
-}))`
-    font-size: 0.7rem;
-`
-const StatHeaderText = styled(Text).attrs((props) => ({
+const StatHeader = styled(Text).attrs((props) => ({
     $fontSize: '2.2em',
     $fontWeight: 700,
     ...props,
 }))``
+
+Stat.Header = StatHeader

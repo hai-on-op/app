@@ -16,7 +16,7 @@ export function AuctionStats() {
 
     const dummyStats: StatProps[] = [
         {
-            header: activeAuctions.activeBids.length,
+            header: activeAuctions.activeBids.length.toString(),
             label: 'My Active Bids',
             tooltip: 'Number of your active bids placed in auctions',
         },
@@ -39,6 +39,7 @@ export function AuctionStats() {
                     Claim
                 </HaiButton>
             ),
+            fullWidth: true,
         },
     ]
 

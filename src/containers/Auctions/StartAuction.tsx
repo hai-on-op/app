@@ -1,14 +1,14 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useAccount } from 'wagmi'
 
-import { ActionState, Status, formatNumberWithStyle } from '~/utils'
+import { ActionState, formatNumberWithStyle } from '~/utils'
 import { useStoreActions } from '~/store'
-import { handleTransactionError, useStartAuction } from '~/hooks'
+import { handleTransactionError, useCountdown, useStartAuction } from '~/hooks'
 
 import styled from 'styled-components'
 import { Flex, HaiButton, Text } from '~/styles'
 import { Stats } from '~/components/Stats'
-import { StatusLabel } from '~/components/StatusLabel'
+import { ProgressBar } from '~/components/ProgressBar'
 
 export function StartAuction() {
     const { address } = useAccount()
@@ -23,6 +23,7 @@ export function StartAuction() {
         surplusCooldownDone,
         allowStartSurplusAuction,
         surplusDelay,
+        lastSurplusTime,
         startDebtAcution,
         systemDebt,
         debtAmountToSell,
@@ -32,6 +33,8 @@ export function StartAuction() {
 
     const [isLoading, setIsLoading] = useState(false)
     // const [error, setError] = useState('')
+    const [surplusSuccess, setSurplusSuccess] = useState(false)
+    const [debtSuccess, setDebtSuccess] = useState(false)
 
     const handleStartSurplusAuction = async () => {
         if (!address || isLoading || !allowStartSurplusAuction) return
@@ -45,8 +48,10 @@ export function StartAuction() {
                 status: ActionState.LOADING,
             })
             await startSurplusAcution()
+            setSurplusSuccess(true)
         } catch (e) {
             handleTransactionError(e)
+            setSurplusSuccess(false)
         } finally {
             setIsLoading(false)
         }
@@ -64,12 +69,29 @@ export function StartAuction() {
                 status: ActionState.LOADING,
             })
             await startDebtAcution()
+            setDebtSuccess(true)
         } catch (e) {
             handleTransactionError(e)
+            setDebtSuccess(false)
         } finally {
             setIsLoading(false)
         }
     }
+
+    const [countdownEl, setCountdownEl] = useState<HTMLElement | null>(null)
+
+    const countdown = useMemo(() => {
+        if (!lastSurplusTime || !surplusDelay) return 0
+        return lastSurplusTime.add(surplusDelay).toNumber()
+    }, [surplusDelay, lastSurplusTime])
+
+    const [progress, setProgress] = useState(0)
+
+    useCountdown(countdown, countdownEl, {
+        onStart: surplusDelay ? (sec: number) => setProgress(1 - sec / surplusDelay.toNumber()) : undefined,
+        onMinute: surplusDelay ? (min: number) => setProgress(1 - (60 * min) / surplusDelay.toNumber()) : undefined,
+        onEnd: () => setProgress(1),
+    })
 
     if (!address) return null
 
@@ -80,13 +102,6 @@ export function StartAuction() {
                     <Text $fontSize="1.4rem" $fontWeight={700}>
                         Surplus Auction Details
                     </Text>
-                    <HaiButton
-                        disabled={!address || isLoading || !allowStartSurplusAuction}
-                        $variant="yellowish"
-                        onClick={handleStartSurplusAuction}
-                    >
-                        Start Surplus Auction
-                    </HaiButton>
                 </Header>
                 <Stats
                     stats={[
@@ -106,9 +121,18 @@ export function StartAuction() {
                         },
                         {
                             header: (
-                                <StatusLabel status={surplusCooldownDone ? Status.POSITIVE : Status.NEGATIVE}>
-                                    {surplusCooldownDone ? 'INACTIVE' : 'ACTIVE'}
-                                </StatusLabel>
+                                <Flex $width="100%" $justify="flex-start" $align="center" $gap={8} $grow={1}>
+                                    <ProgressBar
+                                        progress={progress}
+                                        overlayLabel={
+                                            <Text
+                                                ref={setCountdownEl}
+                                                $fontSize="0.6rem"
+                                                hidden={!countdown || progress === 1 || surplusCooldownDone}
+                                            />
+                                        }
+                                    />
+                                </Flex>
                             ),
                             label: 'Cooldown Status',
                             tooltip: `Surplus auction may only trigger once every ${
@@ -116,9 +140,18 @@ export function StartAuction() {
                                     ? formatNumberWithStyle(surplusDelay.toNumber() / 3600, { maxDecimals: 1 })
                                     : '--'
                             } hours.`,
+                            button: (
+                                <HaiButton
+                                    disabled={!address || isLoading || !allowStartSurplusAuction || surplusSuccess}
+                                    $variant="yellowish"
+                                    onClick={handleStartSurplusAuction}
+                                >
+                                    Start Surplus Auction
+                                </HaiButton>
+                            ),
                         },
                     ]}
-                    columns="repeat(3, 1fr)"
+                    columns="1fr 1fr 1.5fr"
                 />
             </Flex>
             <Flex $width="100%" $column $justify="flex-start" $align="flex-start" $gap={16}>
@@ -126,13 +159,6 @@ export function StartAuction() {
                     <Text $fontSize="1.4rem" $fontWeight={700}>
                         Debt Auction Details
                     </Text>
-                    <HaiButton
-                        disabled={!address || isLoading || !allowStartDebtAuction}
-                        $variant="yellowish"
-                        onClick={handleStartDebtAuction}
-                    >
-                        Start Debt Auction
-                    </HaiButton>
                 </Header>
                 <Stats
                     stats={[
@@ -151,9 +177,18 @@ export function StartAuction() {
                             header: formatNumberWithStyle(protocolTokensOffered) + ' KITE',
                             label: 'Protocol Tokens to be Offered',
                             tooltip: `Maximum number of protocol tokens to be minted and sold during a Debt Auction`,
+                            button: (
+                                <HaiButton
+                                    disabled={!address || isLoading || !allowStartDebtAuction || debtSuccess}
+                                    $variant="yellowish"
+                                    onClick={handleStartDebtAuction}
+                                >
+                                    Start Debt Auction
+                                </HaiButton>
+                            ),
                         },
                     ]}
-                    columns="repeat(3, 1fr)"
+                    columns="1fr 1fr 1.5fr"
                 />
             </Flex>
         </>

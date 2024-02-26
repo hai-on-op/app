@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import { formatNumberWithStyle } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 
-import { Flex, HaiButton, Text } from '~/styles'
+import { HaiButton, Text } from '~/styles'
 import { RewardsTokenArray } from '~/components/TokenArray'
 import { Stats, type StatProps } from '~/components/Stats'
 import { Link } from '~/components/Link'
@@ -46,28 +46,13 @@ export function BorrowStats() {
                     'Summation of the total amount of a given collateral locked in your vaults multiplied by the protocol oracle price of that collateral.',
             },
             {
-                header: (
-                    <Flex $justify="flex-start" $align="center" $gap={8}>
-                        <Text>
-                            {totalDebtInUSD
-                                ? formatNumberWithStyle(totalDebtInUSD.toString(), {
-                                      style: 'currency',
-                                      maxDecimals: 1,
-                                      suffixed: true,
-                                  })
-                                : '--'}
-                        </Text>
-                        {/* <Text $fontSize="0.5em" $fontWeight={400} $color="rgba(0,0,0,0.6)">
-                            {totalHai
-                                ? formatNumberWithStyle(totalHai.toString(), {
-                                      maxDecimals: 2,
-                                      suffixed: true,
-                                  })
-                                : '--'}{' '}
-                            HAI
-                        </Text> */}
-                    </Flex>
-                ),
+                header: totalDebtInUSD
+                    ? formatNumberWithStyle(totalDebtInUSD.toString(), {
+                          style: 'currency',
+                          maxDecimals: 1,
+                          suffixed: true,
+                      })
+                    : '--',
                 label: 'My Total Debt',
                 tooltip: 'The total amount of minted debt tokens multiplied by the protocol redemption price of debt.',
             },

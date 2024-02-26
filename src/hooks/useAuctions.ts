@@ -222,6 +222,7 @@ export function useStartAuction() {
         ...data,
         allowStartSurplusAuction,
         allowStartDebtAuction,
+        lastSurplusTime: auctionsData?.accountingEngineData.lastSurplusTime,
         surplusDelay: auctionsData?.accountingEngineData.accountingEngineParams.surplusDelay,
         surplusCooldownDone,
     }
