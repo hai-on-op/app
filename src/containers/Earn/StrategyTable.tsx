@@ -37,7 +37,7 @@ export function StrategyTable({ headers, rows, sorting, setSorting }: StrategyTa
                                         <Text $fontWeight={700}>{pair.join('/')}</Text>
                                     </Flex>
                                     <RewardsTokenArray
-                                        tokens={rewards}
+                                        tokens={rewards.map(({ token }) => token)}
                                         tooltip={
                                             <Flex
                                                 $width="140px"
@@ -49,14 +49,20 @@ export function StrategyTable({ headers, rows, sorting, setSorting }: StrategyTa
                                                 <Text $fontWeight={700} $whiteSpace="nowrap">
                                                     Daily Emissions
                                                 </Text>
-                                                <Flex $width="100%" $justify="space-between" $align="center" $gap={12}>
-                                                    <Text>OP:</Text>
-                                                    <Text>TODO</Text>
-                                                </Flex>
-                                                <Flex $width="100%" $justify="space-between" $align="center" $gap={12}>
-                                                    <Text>KITE:</Text>
-                                                    <Text>TODO</Text>
-                                                </Flex>
+                                                {rewards.map(({ token, emission }) => (
+                                                    <Flex
+                                                        key={token}
+                                                        $width="100%"
+                                                        $justify="space-between"
+                                                        $align="center"
+                                                        $gap={12}
+                                                    >
+                                                        <Text>{token}:</Text>
+                                                        <Text>
+                                                            {formatNumberWithStyle(emission, { maxDecimals: 1 })}
+                                                        </Text>
+                                                    </Flex>
+                                                ))}
                                                 {earnPlatform === 'velodrome' && (
                                                     <Text $fontSize="0.8em">
                                                         APY is claimed on&nbsp;

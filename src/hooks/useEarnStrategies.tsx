@@ -44,7 +44,16 @@ const dummyRows: Strategy[] = [
     // },
     {
         pair: ['HAI', 'ETH'],
-        rewards: ['OP', 'KITE'],
+        rewards: [
+            {
+                token: 'OP',
+                emission: 0,
+            },
+            {
+                token: 'KITE',
+                emission: 0,
+            },
+        ],
         tvl: '',
         vol24hr: '',
         apy: 0,
@@ -52,7 +61,16 @@ const dummyRows: Strategy[] = [
     },
     {
         pair: ['HAI', 'SUSD'],
-        rewards: ['OP', 'KITE'],
+        rewards: [
+            {
+                token: 'OP',
+                emission: 0,
+            },
+            {
+                token: 'KITE',
+                emission: 0,
+            },
+        ],
         tvl: '',
         vol24hr: '',
         apy: 0,
@@ -71,23 +89,27 @@ export function useEarnStrategies() {
         if (!data?.collateralTypes) return dummyRows
 
         return data.collateralTypes
-            .map((cType) => {
+            .map((cType, i) => {
                 const { symbol } =
                     tokenAssets[cType.id] ||
                     Object.values(tokenAssets).find(({ name }) => name.toLowerCase() === cType.id.toLowerCase()) ||
                     {}
+                const rewards = {
+                    OP: 10 * (i + 1),
+                    KITE: 10 * (i + 1),
+                }
                 // ((kite-daily-emission * kite-price + op-daily-emission * op-price) * 365) / (hai-debt-per-collateral * hai-redemption-price)
                 // TODO: plug in actual values
                 const opPrice = parseFloat(liquidationData?.collateralLiquidationData['OP']?.currentPrice.value || '0')
                 const nominal =
                     !liquidationData?.currentRedemptionPrice || !opPrice
                         ? Infinity
-                        : ((12 * 10 + 25 * opPrice) * 365) /
+                        : ((rewards.KITE * 10 + rewards.OP * opPrice) * 365) /
                           (parseFloat(cType.debtAmount) * parseFloat(liquidationData?.currentRedemptionPrice || '0'))
                 const apy = nominal === Infinity ? 0 : Math.pow(1 + nominal / 12, 12) - 1
                 return {
                     pair: [symbol || 'HAI'],
-                    rewards: ['OP', 'KITE'],
+                    rewards: Object.entries(rewards).map(([token, emission]) => ({ token, emission })),
                     tvl: cType.debtAmount,
                     vol24hr: '',
                     apy,

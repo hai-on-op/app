@@ -66,7 +66,7 @@ export function BorrowStats() {
                     maxDecimals: 1,
                     suffixed: true,
                 }),
-                label: 'My Net Stability Fee',
+                label: 'My Est. Stability Fee',
                 tooltip: 'Weighted average stability fee of My Total Debt',
             },
             {

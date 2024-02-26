@@ -44,7 +44,7 @@ export function EarnStats() {
                 suffixed: true,
                 style: 'percent',
             }),
-            label: 'My Estimated Rewards APY',
+            label: 'My Est. Rewards APY',
             tooltip:
                 'Current estimated APY of campaign rewards based on current value participating and value of rewards tokens',
         },
