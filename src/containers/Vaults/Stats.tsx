@@ -37,6 +37,7 @@ export function BorrowStats() {
                 header: totalCollateralInUSD
                     ? formatNumberWithStyle(totalCollateralInUSD.toString(), {
                           style: 'currency',
+                          minDecimals: 1,
                           maxDecimals: 1,
                           suffixed: true,
                       })
@@ -49,6 +50,7 @@ export function BorrowStats() {
                 header: totalDebtInUSD
                     ? formatNumberWithStyle(totalDebtInUSD.toString(), {
                           style: 'currency',
+                          minDecimals: 1,
                           maxDecimals: 1,
                           suffixed: true,
                       })
@@ -57,7 +59,13 @@ export function BorrowStats() {
                 tooltip: 'The total amount of minted debt tokens multiplied by the protocol redemption price of debt.',
             },
             {
-                header: formatNumberWithStyle(weightedStabilityFeeAverage, { style: 'percent', maxDecimals: 1 }),
+                header: formatNumberWithStyle(weightedStabilityFeeAverage, {
+                    style: 'percent',
+                    scalingFactor: 100,
+                    minDecimals: 1,
+                    maxDecimals: 1,
+                    suffixed: true,
+                }),
                 label: 'My Net Stability Fee',
                 tooltip: 'Weighted average stability fee of My Total Debt',
             },
