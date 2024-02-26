@@ -449,6 +449,8 @@ const ChartContainer = styled(CenteredFlex)`
     & svg {
         overflow: visible;
     }
+
+    z-index: 2;
 `
 
 const TimeframeLabel = styled(CenteredFlex)`
@@ -480,4 +482,6 @@ const PieContainer = styled(CenteredFlex)`
     ${({ theme }) => theme.mediaWidth.upToExtraSmall`
         height: 240px;
     `}
+
+    z-index: 2;
 `

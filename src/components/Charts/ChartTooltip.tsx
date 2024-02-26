@@ -30,7 +30,6 @@ export const ChartTooltip = forwardRef<HTMLDivElement, ChartTooltipProps>(
 const PopoutContainer = styled(CenteredFlex)<{ $size: number }>`
     width: ${({ $size }) => $size}px;
     height: ${({ $size }) => $size}px;
-    position: absolute;
     overflow: visible;
 
     z-index: 2;
