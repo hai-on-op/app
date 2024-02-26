@@ -71,10 +71,12 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                                 content: (
                                     <Flex $align="center" $gap={12}>
                                         <Text>
-                                            {formatNumberWithStyle(collateralRatio, {
-                                                scalingFactor: 0.01,
-                                                style: 'percent',
-                                            })}
+                                            {collateralRatio
+                                                ? formatNumberWithStyle(collateralRatio, {
+                                                      scalingFactor: 0.01,
+                                                      style: 'percent',
+                                                  })
+                                                : '--%'}
                                         </Text>
                                         <StatusLabel
                                             status={riskStateToStatus[riskState] || Status.UNKNOWN}

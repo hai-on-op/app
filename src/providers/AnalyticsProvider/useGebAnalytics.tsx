@@ -95,6 +95,8 @@ export function useGebAnalytics() {
                     tokenAnalyticsData: Object.entries(result.tokenAnalyticsData).map(([key, value]) => ({
                         symbol: key,
                         ...value,
+                        tokenContract: geb.tokenList?.[key]?.address,
+                        collateralJoin: geb.tokenList?.[key]?.collateralJoin,
                     })),
                 }))
             } catch (e: any) {

@@ -16,9 +16,13 @@ export type SystemSate = {
 
 export type TokenKey = keyof typeof TOKEN_LOGOS
 
+export type EarnStrategyReward = {
+    token: TokenKey
+    emission: number
+}
 export type Strategy = {
     pair: [TokenKey] | [TokenKey, TokenKey]
-    rewards: [TokenKey] | [TokenKey, TokenKey]
+    rewards: [EarnStrategyReward] | [EarnStrategyReward, EarnStrategyReward]
     tvl: string
     vol24hr?: string
     apy: number
@@ -29,6 +33,8 @@ export type Strategy = {
 
 export type TokenAnalyticsData = AnalyticsData['tokenAnalyticsData'][string] & {
     symbol: string
+    tokenContract?: string
+    collateralJoin?: string
 }
 
 export type CollateralStat = {

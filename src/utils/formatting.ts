@@ -86,10 +86,11 @@ export const formatNumberWithStyle = (value: number | string, options: FormatOpt
 }
 
 export const formatNumberWithSuffix = (value: number | string, options: FormatOptions = {}) => {
-    const { scalingFactor = 1, maxDecimals = 3, style } = options
+    const { scalingFactor = 1, minDecimals = 0, maxDecimals = 3, style } = options
 
+    const decimalSpread = Math.max(maxDecimals - minDecimals, 0)
     const numValue = numeral(value).multiply(scalingFactor)
-    const format = maxDecimals > 0 ? `0,0.[${'0'.repeat(maxDecimals)}]a` : '0,0a'
+    const format = maxDecimals > 0 ? `0,0.${'0'.repeat(minDecimals)}[${'0'.repeat(decimalSpread)}]a` : '0,0a'
     const formatted = numValue.format(format).toUpperCase()
     switch (style) {
         case 'currency':

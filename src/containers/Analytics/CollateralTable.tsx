@@ -1,6 +1,5 @@
 import type { SetState, SortableHeader, Sorting, TokenAnalyticsData } from '~/types'
 import { formatDataNumber } from '~/utils'
-import { usePublicGeb } from '~/hooks'
 
 import styled from 'styled-components'
 import { Flex, Grid, Text } from '~/styles'
@@ -15,15 +14,13 @@ type CollateralTableProps = {
     setSorting: SetState<Sorting>
 }
 export function CollateralTable({ headers, rows, sorting, setSorting }: CollateralTableProps) {
-    const geb = usePublicGeb()
-
     return (
         <Table
             headers={headers}
             headerContainer={TableHeader}
             sorting={sorting}
             setSorting={setSorting}
-            rows={rows.map(({ symbol, delayedOracle, currentPrice, nextPrice }) => (
+            rows={rows.map(({ symbol, delayedOracle, currentPrice, nextPrice, tokenContract, collateralJoin }) => (
                 <Table.Row
                     key={symbol}
                     container={TableRow}
@@ -38,15 +35,10 @@ export function CollateralTable({ headers, rows, sorting, setSorting }: Collater
                             ),
                         },
                         {
-                            content: geb?.tokenList?.[symbol] ? (
-                                <AddressLink address={geb.tokenList[symbol].address} />
-                            ) : (
-                                <Text>--</Text>
-                            ),
+                            content: tokenContract ? <AddressLink address={tokenContract} /> : <Text>--</Text>,
                         },
                         {
-                            // TODO: get actual address
-                            content: <AddressLink address={delayedOracle} />,
+                            content: collateralJoin ? <AddressLink address={collateralJoin} /> : <Text>--</Text>,
                         },
                         {
                             content: <AddressLink address={delayedOracle} />,
