@@ -23,6 +23,7 @@ export function Learn() {
                     title="ELI5 VIDEOS"
                     titleColorOffset={1}
                     description="Quick, informative videos designed to educate the viewer on the main concepts of the HAI Protocol"
+                    // TODO: update link
                     link={'https://youtube.com'}
                 />
             </CenteredFlex>
@@ -67,7 +68,9 @@ const Container = styled(Grid).attrs((props) => ({
 
 const SocialGrid = styled(Grid).attrs((props) => ({
     $width: '100%',
-    $columns: 'repeat(auto-fit, minmax(32px, 1fr))',
+    $columns: '1fr 1fr 1fr',
+    $justify: 'center',
+    $align: 'center',
     $gap: 12,
     ...props,
 }))``

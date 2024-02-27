@@ -58,7 +58,6 @@ export function useCollateral(action: VaultAction, formState: FormState, collate
         }
     }, [singleVault, formState.deposit, formState.withdraw, action])
 
-    // TODO: check this usage
     const balance = useBalance(name)
 
     const collateralLiquidationData = liquidationData?.collateralLiquidationData[name]

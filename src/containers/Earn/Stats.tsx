@@ -26,7 +26,6 @@ export function EarnStats() {
         )
     }, [rows])
 
-    // TODO: dynamically calculate stats
     const dummyStats: StatProps[] = [
         {
             header: formatNumberWithStyle(value, {

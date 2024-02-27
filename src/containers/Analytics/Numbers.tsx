@@ -40,7 +40,6 @@ const dummyPieOptions = {
     max: 100_000,
 }
 
-// TODO: check to make sure data usage and calculations are correct, fill out tooltips
 export function Numbers() {
     const {
         data: { erc20Supply, marketPrice, redemptionPrice, annualRate, pRate, iRate, surplusInTreasury },

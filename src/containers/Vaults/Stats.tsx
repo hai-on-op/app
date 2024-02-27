@@ -45,7 +45,6 @@ export function BorrowStats() {
 
         const weightedStabilityFeeAverage = !list.length || !totalHai ? 0 : weightedStabilityFee / totalHai
 
-        // TODO: dynamically calculate apy, hook up rewards
         return [
             {
                 header: totalCollateralInUSD
@@ -93,8 +92,8 @@ export function BorrowStats() {
                 label: 'My Est. Rewards APY',
                 tooltip: (
                     <Text>
-                        Rewards derived from all campaign activities. See <Link href="/earn">here</Link> for more
-                        information.
+                        Rewards derived from all campaign activities. Check out the <Link href="/earn">earn page</Link>{' '}
+                        for more information.
                     </Text>
                 ),
             },
