@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Status, VaultAction, formatNumberWithStyle } from '~/utils'
 import { useStoreState } from '~/store'
 import { useVault } from '~/providers/VaultProvider'
+import { useEarnStrategies } from '~/hooks'
 
 import styled from 'styled-components'
 import { type DashedContainerProps, DashedContainerStyle, Flex, Grid, Text, CenteredFlex } from '~/styles'
@@ -19,7 +20,11 @@ export function Overview() {
         vaultModel: { liquidationData },
     } = useStoreState((state) => state)
 
+    const { rows } = useEarnStrategies()
+
     const { action, vault, collateral, riskStatus, safetyRatio, collateralRatio, simulation, summary } = useVault()
+
+    const { apy = 0 } = rows.find(({ pair }) => pair[0] === collateral.name) || {}
 
     const progressProps = useMemo(() => {
         if (!collateralRatio || !safetyRatio)
@@ -161,6 +166,20 @@ export function Overview() {
                     label="Locked Collateral"
                     convertedValue={summary.collateral.current?.usdFormatted || summary.collateral.after.usdFormatted}
                     simulatedValue={vault && simulation?.collateral ? summary.collateral.after.formatted : ''}
+                    alert={{
+                        value: `${
+                            apy
+                                ? formatNumberWithStyle(apy, {
+                                      minDecimals: 1,
+                                      maxDecimals: 1,
+                                      style: 'percent',
+                                      scalingFactor: 100,
+                                      suffixed: true,
+                                  })
+                                : '--%'
+                        } Rewards APY`,
+                        status: Status.NEGATIVE,
+                    }}
                     fullWidth
                 />
                 <OverviewStat
@@ -169,10 +188,6 @@ export function Overview() {
                     label="Minted HAI Debt"
                     convertedValue={summary.debt.current?.usdFormatted || summary.debt.after.usdFormatted}
                     simulatedValue={vault && simulation?.debt ? summary.debt.after.formatted : ''}
-                    alert={{
-                        value: '7.2% Rewards APY',
-                        status: Status.NEGATIVE,
-                    }}
                     fullWidth
                 />
                 <OverviewStat
