@@ -149,6 +149,20 @@ export const getCollateralRatio = (
     return formatNumber(value.value().toString(), 2, true)
 }
 
+export const getMinimumAllowableCollateral = (totalDebt: string, liquidationPrice: string) => {
+    if (Number(totalDebt) === 0) {
+        return '0'
+    }
+
+    const numerator = numeral(totalDebt)
+
+    const denominator = numeral(liquidationPrice).value()
+
+    const value = numerator.divide(denominator)
+
+    return value.value().toString()
+}
+
 export const getLiquidationPrice = (
     totalCollateral: string,
     totalDebt: string,

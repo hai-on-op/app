@@ -19,7 +19,7 @@ export function VaultActions() {
         popupsModel: { toggleModal },
     } = useStoreActions((actions) => actions)
 
-    const { vault, action, setAction, formState, updateForm, collateral, debt, error } = useVault()
+    const { vault, action, setAction, formState, updateForm, collateral, debt, summary, error } = useVault()
 
     const isWithdraw = action === VaultAction.WITHDRAW_REPAY || action === VaultAction.WITHDRAW_BORROW
     const isRepay = action === VaultAction.WITHDRAW_REPAY || action === VaultAction.DEPOSIT_REPAY
@@ -95,6 +95,8 @@ export function VaultActions() {
         }
         return [!error, label]
     }, [action, formState, error])
+
+    const maxRepay = Number(debt.balance.raw) < Number(debt.total.current?.raw || 0) ? debt.balance : debt.total.current
 
     return (
         <>
@@ -174,16 +176,13 @@ export function VaultActions() {
                                 <Text>Withdraw</Text>
                             </CenteredFlex>
                         }
-                        subLabel={`Max ${formatNumberWithStyle(vault?.collateral || '0', {
-                            maxDecimals: 4,
-                            minSigFigs: 1,
-                        })} ${collateral.name}`}
+                        subLabel={`Max ${summary.availableCollateral?.formatted || '0'} ${collateral.name}`}
                         placeholder="Withdraw Amount"
                         unitLabel={collateral.name}
                         onChange={(value: string) => updateForm({ withdraw: value || undefined })}
                         value={formState.withdraw}
                         disabled={action === VaultAction.CREATE}
-                        onMax={() => updateForm({ withdraw: vault?.collateral || '0' })}
+                        onMax={() => updateForm({ withdraw: summary.availableCollateral?.raw || '0' })}
                         conversion={
                             formState.withdraw && Number(formState.withdraw) > 0
                                 ? `~${formatNumberWithStyle(
@@ -261,13 +260,13 @@ export function VaultActions() {
                                 <Text>Pay Back</Text>
                             </CenteredFlex>
                         }
-                        subLabel={`Max ${debt.total.current?.formatted || '0'} HAI`}
+                        subLabel={`Max ${maxRepay?.formatted || '0'} HAI`}
                         placeholder="Pay Back Amount"
                         unitLabel="HAI"
                         onChange={(value: string) => updateForm({ repay: value || undefined })}
                         value={formState.repay}
                         disabled={action === VaultAction.CREATE}
-                        onMax={() => updateForm({ repay: debt.total.current?.raw || '0' })}
+                        onMax={() => updateForm({ repay: maxRepay?.raw || '0' })}
                         conversion={
                             formState.repay && Number(formState.repay) > 0
                                 ? `~${formatNumberWithStyle(parseFloat(debt.priceInUSD) * parseFloat(formState.repay), {
