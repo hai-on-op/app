@@ -180,8 +180,8 @@ export function VaultProvider({ action, setAction, children }: Props) {
         if (!currentPrice?.liquidationPrice || !liquidationCRatio) return '0'
 
         return getCollateralRatio(
-            collateral.total.current?.raw || '0',
-            debt.total.current?.raw || '0',
+            collateral.total.current?.raw || collateral.total.after.raw,
+            debt.total.current?.raw || debt.total.after.raw,
             currentPrice.liquidationPrice,
             liquidationCRatio
         ).toString()

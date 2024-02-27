@@ -8,11 +8,15 @@ import { useVault } from '~/providers/VaultProvider'
 import { handleTransactionError, useEthersSigner, useGeb } from '~/hooks'
 
 import styled from 'styled-components'
-import { Flex, HaiButton, Text } from '~/styles'
-import { Modal, type ModalProps } from './index'
-import { TransactionSummary } from '../TransactionSummary'
+import { HaiButton, Text } from '~/styles'
+import { TransactionSummary } from '~/components/TransactionSummary'
+import { ModalBody, ModalFooter } from '../index'
+import { useMemo } from 'react'
 
-export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
+type ConfirmProps = {
+    onClose?: () => void
+}
+export function Confirm({ onClose }: ConfirmProps) {
     const { t } = useTranslation()
     const history = useHistory()
     const { address: account } = useAccount()
@@ -31,6 +35,17 @@ export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
     } = useStoreActions((actions) => actions)
 
     const { action, updateForm, collateral, summary } = useVault()
+
+    const notice = useMemo(() => {
+        switch (action) {
+            case VaultAction.DEPOSIT_REPAY:
+                return `Note: Depositing and repaying in the same transaction is not currently supported, so you will be prompted to approve two separate transactions`
+            case VaultAction.WITHDRAW_BORROW:
+                return `Note: Withdrawing and borrowing in the same transaction is not currently supported, so you will be prompted to approve two separate transactions`
+            default:
+                return undefined
+        }
+    }, [action])
 
     const reset = () => {
         updateForm('clear')
@@ -57,7 +72,6 @@ export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
         })
         try {
             connectWalletActions.setIsStepLoading(true)
-            console.log(vaultData)
             switch (action) {
                 case VaultAction.CREATE: {
                     await vaultActions.depositAndBorrow({
@@ -117,54 +131,55 @@ export function ReviewVaultTxModal({ onClose, ...props }: ModalProps) {
     }
 
     return (
-        <Modal
-            heading="REVIEW TRANSACTION"
-            onClose={onClose}
-            {...props}
-            footerContent={
-                <Footer>
-                    <HaiButton $variant="yellowish" disabled={!account || !signer} onClick={handleConfirm}>
-                        Confirm Transaction
-                    </HaiButton>
-                </Footer>
-            }
-        >
-            <Description>{t('confirm_details_text')}</Description>
-            <TransactionSummary
-                items={[
-                    {
-                        label: 'Collateral',
-                        value: {
-                            current: summary.collateral.current?.formatted,
-                            after: summary.collateral.after.formatted,
-                            label: collateral.name,
+        <>
+            <ModalBody>
+                <Description>{t('confirm_details_text')}</Description>
+                <TransactionSummary
+                    items={[
+                        {
+                            label: 'Collateral',
+                            value: {
+                                current: summary.collateral.current?.formatted,
+                                after: summary.collateral.after.formatted,
+                                label: collateral.name,
+                            },
                         },
-                    },
-                    {
-                        label: 'Debt',
-                        value: {
-                            current: summary.debt.current?.formatted,
-                            after: summary.debt.after.formatted,
-                            label: 'HAI',
+                        {
+                            label: 'Debt',
+                            value: {
+                                current: summary.debt.current?.formatted,
+                                after: summary.debt.after.formatted,
+                                label: 'HAI',
+                            },
                         },
-                    },
-                    {
-                        label: 'Collateral Ratio',
-                        value: {
-                            current: summary.collateralRatio.current?.formatted,
-                            after: summary.collateralRatio.after.formatted,
+                        {
+                            label: 'Collateral Ratio',
+                            value: {
+                                current: summary.collateralRatio.current?.formatted,
+                                after: summary.collateralRatio.after.formatted,
+                            },
                         },
-                    },
-                    {
-                        label: 'Liquidation Price',
-                        value: {
-                            current: summary.liquidationPrice.current?.formatted,
-                            after: summary.liquidationPrice.after.formatted,
+                        {
+                            label: 'Liquidation Price',
+                            value: {
+                                current: summary.liquidationPrice.current?.formatted,
+                                after: summary.liquidationPrice.after.formatted,
+                            },
                         },
-                    },
-                ]}
-            />
-        </Modal>
+                    ]}
+                />
+                {!!notice && (
+                    <Text $fontSize="0.8em" $color="rgba(0,0,0,0.4)">
+                        {notice}
+                    </Text>
+                )}
+            </ModalBody>
+            <ModalFooter $justify="flex-end">
+                <HaiButton $variant="yellowish" disabled={!account || !signer} onClick={handleConfirm}>
+                    Confirm Transaction{notice ? 's' : ''}
+                </HaiButton>
+            </ModalFooter>
+        </>
     )
 }
 
@@ -173,10 +188,3 @@ const Description = styled(Text)`
         font-size: ${theme.font.small};
     `}
 `
-
-const Footer = styled(Flex).attrs((props) => ({
-    $width: '100%',
-    $justify: 'flex-end',
-    $align: 'center',
-    ...props,
-}))``

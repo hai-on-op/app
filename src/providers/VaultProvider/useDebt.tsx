@@ -21,7 +21,7 @@ export function useDebt(
     const total: Debt['total'] = useMemo(() => {
         if (!singleVault)
             return {
-                current: formatSummaryValue('0')!,
+                current: undefined,
                 after: formatSummaryValue(formState.borrow || '0', { maxDecimals: 4 })!,
             }
 

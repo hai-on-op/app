@@ -21,7 +21,7 @@ export function useCollateral(action: VaultAction, formState: FormState, collate
     const total: Collateral['total'] = useMemo(() => {
         if (!singleVault)
             return {
-                current: formatSummaryValue('0')!,
+                current: undefined,
                 after: formatSummaryValue(formState.deposit || '0', { maxDecimals: 4, minSigFigs: 1 })!,
             }
 

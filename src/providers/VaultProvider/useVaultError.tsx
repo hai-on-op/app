@@ -33,12 +33,6 @@ export function useVaultError({ action, formState, collateral, debt, collateralR
     const withdrawBN = BigNumber.from(toFixedString(formState.withdraw || '0', 'WAD'))
     const borrowBN = BigNumber.from(toFixedString(formState.borrow || '0', 'WAD'))
     const repayBN = BigNumber.from(toFixedString(formState.repay || '0', 'WAD'))
-    console.log({
-        deposit: depositBN.toString(),
-        withdraw: withdrawBN.toString(),
-        borrow: borrowBN.toString(),
-        repay: repayBN.toString(),
-    })
 
     const { globalDebtCeiling, perVaultDebtCeiling } = liquidationData || {}
     const { debtFloor, safetyCRatio } = collateral.liquidationData || {}
@@ -56,7 +50,12 @@ export function useVaultError({ action, formState, collateral, debt, collateralR
                 return { error: VaultInfoError.INSUFFICIENT_COLLATERAL }
             }
             if (borrowBN.gt(availableHaiBN)) {
-                return { error: VaultInfoError.INSUFFICIENT_HAI }
+                return {
+                    error: VaultInfoError.COLLATERAL_RATIO,
+                    errorMessage: `Too much debt, which would bring vault below ${
+                        Number(safetyCRatio) * 100
+                    }% collateralization ratio`,
+                }
             }
             break
         }
@@ -83,7 +82,12 @@ export function useVaultError({ action, formState, collateral, debt, collateralR
                 return { error: VaultInfoError.WITHDRAW_EXCEEDS_COLLATERAL }
             }
             if (borrowBN.gt(availableHaiBN)) {
-                return { error: VaultInfoError.INSUFFICIENT_HAI }
+                return {
+                    error: VaultInfoError.COLLATERAL_RATIO,
+                    errorMessage: `Too much debt, which would bring vault below ${
+                        Number(safetyCRatio) * 100
+                    }% collateralization ratio`,
+                }
             }
             break
         }
@@ -135,7 +139,7 @@ export function useVaultError({ action, formState, collateral, debt, collateralR
         if (depositBN.isZero()) {
             return { error: VaultInfoError.ZERO_AMOUNT }
         }
-        if (!borrowBN.isZero() && borrowBN.lt(1)) {
+        if (!borrowBN.isZero() && borrowBN.lt(debtFloorBN)) {
             return { error: VaultInfoError.MINIMUM_MINT }
         }
     } else if (perVaultDebtCeiling) {

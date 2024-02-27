@@ -3,18 +3,16 @@ import { useEffect, useMemo, useState } from 'react'
 import { ActionState, VaultAction, formatNumberWithStyle } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { useVault } from '~/providers/VaultProvider'
-import { ApprovalState, useProxyAddress, useTokenApproval } from '~/hooks'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
 import { NumberInput } from '~/components/NumberInput'
 import { WrapETHModal } from '~/components/Modal/WrapETHModal'
-import { ReviewVaultTxModal } from '~/components/Modal/ReviewVaultTxModal'
 import { VaultActionError } from './VaultActionError'
 import { CheckBox } from '~/components/CheckBox'
+import { VaultTxModal } from '~/components/Modal/VaultTxModal'
 
 export function VaultActions() {
-    const proxyAddress = useProxyAddress()
     const { vaultModel: vaultState } = useStoreState((state) => state)
     const {
         vaultModel: vaultActions,
@@ -25,23 +23,6 @@ export function VaultActions() {
 
     const isWithdraw = action === VaultAction.WITHDRAW_REPAY || action === VaultAction.WITHDRAW_BORROW
     const isRepay = action === VaultAction.WITHDRAW_REPAY || action === VaultAction.DEPOSIT_REPAY
-
-    const [collateralApproval, approveCollateral] = useTokenApproval(
-        isWithdraw ? formState.withdraw || '0' : formState.deposit || '0',
-        collateral.data?.address,
-        proxyAddress,
-        collateral.data?.decimals.toString(),
-        true
-    )
-
-    const [debtApproval, approveDebtUnlock] = useTokenApproval(
-        isRepay ? formState.repay || '0' : formState.borrow || '0',
-        debt.data?.address,
-        proxyAddress,
-        debt.data?.decimals.toString() || '18',
-        true,
-        isRepay && formState.repay === debt.available.raw
-    )
 
     const [reviewActive, setReviewActive] = useState(false)
     const [wrapEthActive, setWrapEthActive] = useState(false)
@@ -115,164 +96,10 @@ export function VaultActions() {
         return [!error, label]
     }, [action, formState, error])
 
-    const button = useMemo(() => {
-        switch (action) {
-            case VaultAction.DEPOSIT_BORROW:
-            case VaultAction.CREATE:
-                switch (collateralApproval) {
-                    case ApprovalState.NOT_APPROVED:
-                    case ApprovalState.PENDING:
-                    case ApprovalState.UNKNOWN:
-                        return (
-                            <HaiButton
-                                $variant="yellowish"
-                                $width="100%"
-                                $justify="center"
-                                disabled={!buttonActive || collateralApproval === ApprovalState.PENDING}
-                                onClick={approveCollateral}
-                            >
-                                {collateralApproval === ApprovalState.PENDING
-                                    ? 'Pending Approval..'
-                                    : `Approve ${collateral.name}`}
-                            </HaiButton>
-                        )
-                    case ApprovalState.APPROVED:
-                    default:
-                        return (
-                            <HaiButton
-                                $variant="yellowish"
-                                $width="100%"
-                                $justify="center"
-                                disabled={!buttonActive || vaultState.transactionState === ActionState.LOADING}
-                                onClick={() => setReviewActive(true)}
-                            >
-                                {vaultState.transactionState === ActionState.LOADING
-                                    ? 'Pending Transaction...'
-                                    : `Review ${buttonLabel}`}
-                            </HaiButton>
-                        )
-                }
-            case VaultAction.WITHDRAW_REPAY: {
-                switch (debtApproval) {
-                    case ApprovalState.NOT_APPROVED:
-                    case ApprovalState.PENDING:
-                    case ApprovalState.UNKNOWN:
-                        return (
-                            <HaiButton
-                                $variant="yellowish"
-                                $width="100%"
-                                $justify="center"
-                                disabled={!buttonActive || debtApproval === ApprovalState.PENDING}
-                                onClick={approveDebtUnlock}
-                            >
-                                {debtApproval === ApprovalState.PENDING ? 'Pending Approval..' : `Approve HAI`}
-                            </HaiButton>
-                        )
-                    case ApprovalState.APPROVED:
-                    default:
-                        return (
-                            <HaiButton
-                                $variant="yellowish"
-                                $width="100%"
-                                $justify="center"
-                                disabled={!buttonActive || vaultState.transactionState === ActionState.LOADING}
-                                onClick={() => setReviewActive(true)}
-                            >
-                                {vaultState.transactionState === ActionState.LOADING
-                                    ? 'Pending Transaction...'
-                                    : `Review ${buttonLabel}`}
-                            </HaiButton>
-                        )
-                }
-            }
-            case VaultAction.DEPOSIT_REPAY: {
-                switch (collateralApproval) {
-                    case ApprovalState.NOT_APPROVED:
-                    case ApprovalState.PENDING:
-                    case ApprovalState.UNKNOWN:
-                        return (
-                            <HaiButton
-                                $variant="yellowish"
-                                $width="100%"
-                                $justify="center"
-                                disabled={!buttonActive || collateralApproval === ApprovalState.PENDING}
-                                onClick={approveCollateral}
-                            >
-                                {collateralApproval === ApprovalState.PENDING
-                                    ? 'Pending Approval..'
-                                    : `Approve ${collateral.name}`}
-                            </HaiButton>
-                        )
-                    case ApprovalState.APPROVED:
-                    default: {
-                        switch (debtApproval) {
-                            case ApprovalState.NOT_APPROVED:
-                            case ApprovalState.PENDING:
-                            case ApprovalState.UNKNOWN:
-                                return (
-                                    <HaiButton
-                                        $variant="yellowish"
-                                        $width="100%"
-                                        $justify="center"
-                                        disabled={!buttonActive || debtApproval === ApprovalState.PENDING}
-                                        onClick={approveDebtUnlock}
-                                    >
-                                        {debtApproval === ApprovalState.PENDING ? 'Pending Approval..' : `Approve HAI`}
-                                    </HaiButton>
-                                )
-                            case ApprovalState.APPROVED:
-                            default:
-                                return (
-                                    <HaiButton
-                                        $variant="yellowish"
-                                        $width="100%"
-                                        $justify="center"
-                                        disabled={!buttonActive || vaultState.transactionState === ActionState.LOADING}
-                                        onClick={() => setReviewActive(true)}
-                                    >
-                                        {vaultState.transactionState === ActionState.LOADING
-                                            ? 'Pending Transaction...'
-                                            : `Review ${buttonLabel}`}
-                                    </HaiButton>
-                                )
-                        }
-                    }
-                }
-            }
-            case VaultAction.WITHDRAW_BORROW: {
-                return (
-                    <HaiButton
-                        $variant="yellowish"
-                        $width="100%"
-                        $justify="center"
-                        disabled={!buttonActive || vaultState.transactionState === ActionState.LOADING}
-                        onClick={() => setReviewActive(true)}
-                    >
-                        {vaultState.transactionState === ActionState.LOADING
-                            ? 'Pending Transaction...'
-                            : `Review ${buttonLabel}`}
-                    </HaiButton>
-                )
-            }
-            default:
-                return null
-        }
-    }, [
-        action,
-        vaultState,
-        buttonActive,
-        buttonLabel,
-        collateral,
-        collateralApproval,
-        approveCollateral,
-        debtApproval,
-        approveDebtUnlock,
-    ])
-
     return (
         <>
             {reviewActive && (
-                <ReviewVaultTxModal
+                <VaultTxModal
                     onClose={() => {
                         setReviewActive(false)
                         vaultActions.setTransactionState(ActionState.NONE)
@@ -483,7 +310,15 @@ export function VaultActions() {
                 </Body>
                 <Footer>
                     <VaultActionError />
-                    {button}
+                    <HaiButton
+                        $variant="yellowish"
+                        $width="100%"
+                        $justify="center"
+                        disabled={!buttonActive || vaultState.transactionState === ActionState.LOADING}
+                        onClick={() => setReviewActive(true)}
+                    >
+                        Review {buttonLabel}
+                    </HaiButton>
                 </Footer>
             </Container>
         </>
