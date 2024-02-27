@@ -1,10 +1,8 @@
-import { type Address, useBalance, useAccount } from 'wagmi'
-import { formatEther } from 'viem'
 import { ConnectButton as RKConnectButton } from '@rainbow-me/rainbowkit'
 
 import { NETWORK_ID, formatNumberWithStyle } from '~/utils'
 import { useStoreState } from '~/store'
-import { useAddTokens } from '~/hooks'
+import { useAddTokens, useBalances } from '~/hooks'
 
 import styled, { css } from 'styled-components'
 import { CenteredFlex, type FlexProps, HaiButton, Text, Grid } from '~/styles'
@@ -15,21 +13,11 @@ type ConnectButtonProps = FlexProps & {
     showBalance?: 'horizontal' | 'vertical'
 }
 export function ConnectButton({ showBalance, ...props }: ConnectButtonProps) {
-    const { address } = useAccount()
-
     const {
-        connectWalletModel: { tokensData },
+        connectWalletModel: { ethBalance },
     } = useStoreState((state) => state)
 
-    const { data: ethBalance } = useBalance({ address })
-    const { data: haiBalance } = useBalance({
-        address: tokensData?.HAI?.address ? address : undefined,
-        token: tokensData?.HAI?.address as Address,
-    })
-    const { data: kiteBalance } = useBalance({
-        address: tokensData?.KITE?.address ? address : undefined,
-        token: tokensData?.KITE?.address as Address,
-    })
+    const [haiBalance, kiteBalance] = useBalances(['HAI', 'KITE'])
 
     const { addTokens } = useAddTokens()
 
@@ -56,7 +44,7 @@ export function ConnectButton({ showBalance, ...props }: ConnectButtonProps) {
                                 <BalanceContainer as="button" title="Add HAI & KITE to Wallet" onClick={addTokens}>
                                     <PlusCircle size={18} />
                                     <Text>
-                                        {formatNumberWithStyle(formatEther(kiteBalance?.value || BigInt(0)), {
+                                        {formatNumberWithStyle(kiteBalance.raw, {
                                             maxDecimals: 0,
                                         })}{' '}
                                         KITE
@@ -65,7 +53,7 @@ export function ConnectButton({ showBalance, ...props }: ConnectButtonProps) {
                                 <BalanceContainer as="button" title="Add HAI & KITE to Wallet" onClick={addTokens}>
                                     <PlusCircle size={18} />
                                     <Text>
-                                        {formatNumberWithStyle(formatEther(haiBalance?.value || BigInt(0)), {
+                                        {formatNumberWithStyle(haiBalance.raw, {
                                             maxDecimals: 0,
                                         })}{' '}
                                         HAI
@@ -73,7 +61,7 @@ export function ConnectButton({ showBalance, ...props }: ConnectButtonProps) {
                                 </BalanceContainer>
                                 <BalanceContainer>
                                     <Text>
-                                        {formatNumberWithStyle(formatEther(ethBalance?.value || BigInt(0)), {
+                                        {formatNumberWithStyle(ethBalance[chain.id], {
                                             maxDecimals: 1,
                                             maxSigFigs: 2,
                                         })}{' '}
