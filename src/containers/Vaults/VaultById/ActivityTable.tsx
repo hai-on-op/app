@@ -1,7 +1,13 @@
 import { useMemo, useState } from 'react'
 
 import type { SortableHeader } from '~/types'
-import { formatDate, formatNumberWithStyle, LINK_TO_DOCS, type QueriedVault } from '~/utils'
+import {
+    formatDate,
+    formatNumberWithStyle,
+    LINK_TO_DOCS,
+    type QueriedVault,
+    type QueryModifySAFECollateralization,
+} from '~/utils'
 import { useStoreState } from '~/store'
 
 import styled from 'styled-components'
@@ -115,8 +121,17 @@ export function ActivityTable({ vault }: ActivityTableProps) {
                 emptyContent="No activity found for this vault"
                 rows={(vault?.activity || [])
                     .slice(offset * MAX_RECORDS_PER_PAGE, (offset + 1) * MAX_RECORDS_PER_PAGE)
-                    .map(({ type = 'modify', id, deltaCollateral, deltaDebt, createdAt, createdAtTransaction }) => {
-                        const debt = parseFloat(deltaDebt)
+                    .map((activity) => {
+                        const {
+                            type = 'modify',
+                            id,
+                            deltaCollateral,
+                            deltaDebt,
+                            createdAt,
+                            createdAtTransaction,
+                        } = activity
+                        const { accumulatedRate = '1' } = activity as QueryModifySAFECollateralization
+                        const debt = parseFloat(accumulatedRate) * parseFloat(deltaDebt)
                         const collateral = parseFloat(deltaCollateral)
                         const action = type === 'confiscate' ? ActivityAction.CONFISCATE : getAction(debt, collateral)
                         const label =
@@ -162,7 +177,7 @@ export function ActivityTable({ vault }: ActivityTableProps) {
                                                 <Flex $column $justify="center" $align="flex-start" $gap={4}>
                                                     <Text>
                                                         {debt > 0 ? '+' : ''}
-                                                        {formatNumberWithStyle(deltaDebt)} HAI
+                                                        {formatNumberWithStyle(debt)} HAI
                                                     </Text>
                                                     <Text $fontSize="0.8em">
                                                         {formatNumberWithStyle(Math.abs(debt) * haiPrice, {

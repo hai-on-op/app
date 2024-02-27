@@ -120,11 +120,13 @@ export function Overview({ vault }: OverviewProps) {
                     }
                 />
                 <OverviewStat
-                    value={vault ? formatNumberWithStyle(vault.debt) : '--'}
+                    value={vault ? formatNumberWithStyle(vault.totalDebt) : '--'}
                     token="HAI"
                     label="Debt Asset"
                     convertedValue={
-                        vault ? formatNumberWithStyle(parseFloat(vault.debt) * haiPrice, { style: 'currency' }) : '$--'
+                        vault
+                            ? formatNumberWithStyle(parseFloat(vault.totalDebt) * haiPrice, { style: 'currency' })
+                            : '$--'
                     }
                 />
                 <OverviewProgressStat

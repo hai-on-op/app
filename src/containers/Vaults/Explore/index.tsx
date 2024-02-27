@@ -96,7 +96,7 @@ export function VaultExplorer() {
                     isEmpty={!rows.length}
                     rows={rows
                         .slice(RECORDS_PER_PAGE * offset, RECORDS_PER_PAGE * (offset + 1))
-                        .map(({ safeId, owner, collateral, debt, collateralRatio, collateralToken, status }) => {
+                        .map(({ safeId, owner, collateral, totalDebt, collateralRatio, collateralToken, status }) => {
                             const { liquidationCRatio } =
                                 liquidationData?.collateralLiquidationData[collateralToken] || {}
                             return (
@@ -148,7 +148,7 @@ export function VaultExplorer() {
                                             content: isLargerThanSmall ? (
                                                 <Grid $columns="1fr 24px" $gap={8}>
                                                     <Text $textAlign="right">
-                                                        {formatNumberWithStyle(debt, {
+                                                        {formatNumberWithStyle(totalDebt, {
                                                             maxDecimals: 2,
                                                             maxSigFigs: 4,
                                                         })}
@@ -158,7 +158,7 @@ export function VaultExplorer() {
                                             ) : (
                                                 <Flex $justify="flex-start" $align="center" $gap={8}>
                                                     <Text $textAlign="right">
-                                                        {formatNumberWithStyle(debt, {
+                                                        {formatNumberWithStyle(totalDebt, {
                                                             maxDecimals: 2,
                                                             maxSigFigs: 4,
                                                         })}
