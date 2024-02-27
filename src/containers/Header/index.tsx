@@ -185,7 +185,7 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                 showWrapEth={() => setWrapEthActive(true)}
                             />
                         )}
-                        <MusicButton onClick={() => setIsPlayingMusic(!isPlayingMusic)}>
+                        <MusicButton aria-label="Toggle Music" onClick={() => setIsPlayingMusic(!isPlayingMusic)}>
                             <Sound muted={!isPlayingMusic} size={21} />
                         </MusicButton>
                         {isSplash ? (

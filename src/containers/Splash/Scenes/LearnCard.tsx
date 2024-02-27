@@ -26,6 +26,7 @@ export function LearnCard({ title, link, titleColorOffset }: LearnCardProps) {
                 />
             </Flex>
             <Link href={link} $textDecoration="none">
+                <HiddenSEOText>{title}</HiddenSEOText>
                 <CenteredFlex $gap={12}>
                     <Text
                         $fontSize={isLargerThanExtraSmall ? '1.2rem' : '1rem'}
@@ -68,4 +69,8 @@ const Container = styled(Flex).attrs((props) => ({
         padding: 36px;
         height: max(400px, min(420px, 65vh));
     `}
+`
+
+const HiddenSEOText = styled(Text)`
+    display: none !important;
 `
