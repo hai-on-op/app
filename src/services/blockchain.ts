@@ -55,8 +55,8 @@ export const handleDepositAndBorrow = async (signer: JsonRpcSigner, vaultData: I
         return false
     }
 
-    const collateralBN = vaultData.deposit ? parseEther(vaultData.deposit) : parseEther('0')
-    const debtBN = vaultData.borrow ? parseEther(vaultData.borrow) : parseEther('0')
+    const collateralBN = parseEther(vaultData.deposit || '0')
+    const debtBN = parseEther(vaultData.borrow || '0')
 
     const chainId = await signer.getChainId()
     const networkName = getNetworkName(chainId)
@@ -93,8 +93,8 @@ export const handleDepositAndRepay = async (signer: JsonRpcSigner, vaultData: IV
     if (!vaultId) throw new Error('No vault Id')
 
     const totalDebtBN = parseEther(vaultData.totalDebt || '0')
-    const collateralBN = vaultData.deposit ? parseEther(vaultData.deposit) : parseEther('0')
-    const haiToRepay = vaultData.borrow ? parseEther(vaultData.repay) : parseEther('0')
+    const collateralBN = parseEther(vaultData.deposit || '0')
+    const haiToRepay = parseEther(vaultData.repay || '0')
     const shouldRepayAll =
         (totalDebtBN.isZero() && !haiToRepay.isZero()) || totalDebtBN.sub(haiToRepay).lt(parseEther('1'))
 
@@ -182,7 +182,7 @@ export const handleWithdrawAndBorrow = async (signer: JsonRpcSigner, vaultData: 
     const geb = new Geb(networkName, signer)
 
     const collateralToFree = parseEther(vaultData.withdraw || '0')
-    const debtBN = vaultData.borrow ? parseEther(vaultData.borrow) : parseEther('0')
+    const debtBN = parseEther(vaultData.borrow || '0')
     const proxy = await geb.getProxyAction(signer._address)
 
     let txResponse1: TransactionResponse | undefined = undefined

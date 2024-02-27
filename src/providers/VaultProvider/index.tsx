@@ -241,8 +241,8 @@ export function VaultProvider({ action, setAction, children }: Props) {
     useEffect(() => {
         vaultActions.setVaultData({
             ...dataRef.current,
-            totalCollateral: collateral.total.after.raw,
-            totalDebt: debt.total.after.raw,
+            totalCollateral: collateral.total.current?.raw || collateral.total.after.raw,
+            totalDebt: debt.total.current?.raw || debt.total.after.raw,
             collateralRatio: parseFloat(collateralRatio),
             liquidationPrice: parseFloat(liquidationPrice),
         })

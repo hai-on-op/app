@@ -26,7 +26,7 @@ export function Confirm({ onClose }: ConfirmProps) {
 
     const {
         connectWalletModel: { tokensData },
-        vaultModel: { vaultData, singleVault },
+        vaultModel: { vaultData, singleVault, transactionState },
     } = useStoreState((state) => state)
     const {
         connectWalletModel: connectWalletActions,
@@ -60,7 +60,7 @@ export function Confirm({ onClose }: ConfirmProps) {
     }
 
     const handleConfirm = async () => {
-        if (!account || !signer) return
+        if (!account || !signer || transactionState === ActionState.LOADING) return
 
         vaultActions.setTransactionState(ActionState.LOADING)
         popupsActions.setIsWaitingModalOpen(true)
@@ -175,7 +175,11 @@ export function Confirm({ onClose }: ConfirmProps) {
                 )}
             </ModalBody>
             <ModalFooter $justify="flex-end">
-                <HaiButton $variant="yellowish" disabled={!account || !signer} onClick={handleConfirm}>
+                <HaiButton
+                    $variant="yellowish"
+                    disabled={!account || !signer || transactionState === ActionState.LOADING}
+                    onClick={handleConfirm}
+                >
                     Confirm Transaction{notice ? 's' : ''}
                 </HaiButton>
             </ModalFooter>
