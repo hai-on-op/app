@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation } from 'react-router-dom'
+import { useAccount } from 'wagmi'
 
 import { LINK_TO_DISCORD, LINK_TO_DOCS, LINK_TO_TELEGRAM, LINK_TO_TWITTER, formatDataNumber } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
@@ -31,10 +32,12 @@ export function Header({ tickerActive = false }: HeaderProps) {
     const location = useLocation()
     const isSplash = location.pathname === '/'
 
-    const isLargerThanExtraSmall = useMediaQuery('upToExtraSmall')
-    const isLargerThanSmall = useMediaQuery('upToSmall')
-    const isLargerThanMedium = useMediaQuery('upToMedium')
-    const isLargerThanLarge = useMediaQuery('upToLarge')
+    const isUpToExtraSmall = useMediaQuery('upToExtraSmall')
+    const isUpToSmall = useMediaQuery('upToSmall')
+    const isUpToMedium = useMediaQuery('upToMedium')
+    const isUpToLarge = useMediaQuery('upToLarge')
+
+    const { isConnected } = useAccount()
 
     const {
         settingsModel: { headerBgActive, isPlayingMusic },
@@ -76,12 +79,8 @@ export function Header({ tickerActive = false }: HeaderProps) {
 
     const logoEl = useMemo(
         () =>
-            isLargerThanExtraSmall ? (
-                <Logo src={haiLogo} alt="HAI" width={701} height={264} />
-            ) : (
-                <HaiFace filled size={56} />
-            ),
-        [isLargerThanExtraSmall]
+            isUpToExtraSmall ? <HaiFace filled size={56} /> : <Logo src={haiLogo} alt="HAI" width={701} height={264} />,
+        [isUpToExtraSmall]
     )
 
     return (
@@ -109,7 +108,7 @@ export function Header({ tickerActive = false }: HeaderProps) {
                         ) : (
                             logoEl
                         )}
-                        {isLargerThanSmall &&
+                        {!isUpToSmall &&
                             (isSplash ? (
                                 <>
                                     <HeaderLink
@@ -158,27 +157,30 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                     </CommunityDropdownContainer>
                                 </>
                             ) : (
-                                isLargerThanMedium && (
+                                (isConnected ? !isUpToLarge : !isUpToMedium) && (
                                     <>
                                         <Link href="/vaults" $textDecoration="none">
-                                            <HeaderLink $active={location.pathname.startsWith('/vaults')}>
+                                            <HeaderLink
+                                                $active={
+                                                    location.pathname.startsWith('/vaults') &&
+                                                    !location.pathname.includes('explore')
+                                                }
+                                            >
                                                 GET HAI
                                             </HeaderLink>
                                         </Link>
                                         <Link href="/earn" $textDecoration="none">
                                             <HeaderLink $active={location.pathname === '/earn'}>EARN</HeaderLink>
                                         </Link>
-                                        {isLargerThanLarge && (
-                                            <Link href="/learn" $textDecoration="none">
-                                                <HeaderLink $active={location.pathname === '/learn'}>LEARN</HeaderLink>
-                                            </Link>
-                                        )}
+                                        <Link href="/learn" $textDecoration="none">
+                                            <HeaderLink $active={location.pathname === '/learn'}>LEARN</HeaderLink>
+                                        </Link>
                                     </>
                                 )
                             ))}
                     </LeftSide>
                     <RightSide>
-                        {isLargerThanSmall && !isSplash && (
+                        {!isUpToSmall && !isSplash && (
                             <MobileMenu
                                 active={dropdownActive}
                                 setActive={setDropdownActive}
@@ -197,14 +199,14 @@ export function Header({ tickerActive = false }: HeaderProps) {
                             </Link>
                         ) : (
                             <>
-                                {isLargerThanSmall && <ConnectButton showBalance="horizontal" />}
+                                {!isUpToSmall && <ConnectButton showBalance="horizontal" />}
                                 {/* <Notifications
                                         active={notificationsActive}
                                         setActive={setNotificationsActive}
                                     /> */}
                             </>
                         )}
-                        {!isLargerThanSmall && (
+                        {isUpToSmall && (
                             <MobileMenu
                                 active={dropdownActive}
                                 setActive={setDropdownActive}

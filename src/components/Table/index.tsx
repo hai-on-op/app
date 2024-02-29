@@ -40,11 +40,11 @@ export function Table({
     compactQuery = 'upToSmall',
     ...props
 }: TableProps) {
-    const isLargerThanCompact = useMediaQuery(compactQuery)
+    const isCompact = useMediaQuery(compactQuery)
 
     return (
         <Container {...props}>
-            {isLargerThanCompact && (
+            {!isCompact && (
                 <Header {...headerProps}>
                     {headers.map(({ label, tooltip, tooltipAnchor, unsortable }) => (
                         <TableHeaderItem

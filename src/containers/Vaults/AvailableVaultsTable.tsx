@@ -21,7 +21,7 @@ type AvailableVaultsTableProps = {
 export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: AvailableVaultsTableProps) {
     const { setActiveVault } = useVault()
 
-    const isLargerThanSmall = useMediaQuery('upToSmall')
+    const isUpToSmall = useMediaQuery('upToSmall')
 
     return (
         <Table
@@ -31,6 +31,7 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
             sorting={sorting}
             setSorting={setSorting}
             isEmpty={!rows.length}
+            compactQuery="upToMedium"
             rows={rows.map(
                 ({
                     collateralName,
@@ -44,6 +45,7 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                             key={collateralName}
                             container={TableRow}
                             headers={headers}
+                            compactQuery="upToMedium"
                             items={[
                                 {
                                     content: (
@@ -57,7 +59,6 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                         </Grid>
                                     ),
                                     props: { $fontSize: 'inherit' },
-                                    fullWidth: true,
                                 },
                                 {
                                     content: (
@@ -110,14 +111,27 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                             )}
                                         </Flex>
                                     ),
-                                    fullWidth: true,
                                 },
                                 {
                                     content: (
                                         <Flex>
                                             {!existingVaults?.length ? (
                                                 <Text>-</Text>
-                                            ) : isLargerThanSmall ? (
+                                            ) : isUpToSmall ? (
+                                                <ScrollableContainer>
+                                                    {existingVaults.map((vault) => (
+                                                        <HaiButton
+                                                            key={vault.id}
+                                                            onClick={() => setActiveVault({ vault })}
+                                                        >
+                                                            <Text $whiteSpace="nowrap" $fontWeight={700}>
+                                                                Vault #{vault.id}
+                                                            </Text>
+                                                            <HaiArrow size={14} strokeWidth={2} direction="upRight" />
+                                                        </HaiButton>
+                                                    ))}
+                                                </ScrollableContainer>
+                                            ) : (
                                                 <CenteredFlex $gap={4}>
                                                     <Text>{existingVaults.length}</Text>
                                                     <Tooltip $gap={12}>
@@ -138,24 +152,9 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                                         ))}
                                                     </Tooltip>
                                                 </CenteredFlex>
-                                            ) : (
-                                                <ScrollableContainer>
-                                                    {existingVaults.map((vault) => (
-                                                        <HaiButton
-                                                            key={vault.id}
-                                                            onClick={() => setActiveVault({ vault })}
-                                                        >
-                                                            <Text $whiteSpace="nowrap" $fontWeight={700}>
-                                                                Vault #{vault.id}
-                                                            </Text>
-                                                            <HaiArrow size={14} strokeWidth={2} direction="upRight" />
-                                                        </HaiButton>
-                                                    ))}
-                                                </ScrollableContainer>
                                             )}
                                         </Flex>
                                     ),
-                                    fullWidth: true,
                                 },
                                 {
                                     content: (
@@ -210,9 +209,9 @@ const TableRow = styled(TableHeader)`
         background-color: rgba(0, 0, 0, 0.1);
     }
 
-    ${({ theme }) => theme.mediaWidth.upToSmall`
+    ${({ theme }) => theme.mediaWidth.upToMedium`
         padding: 24px;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr 1fr 1fr;
         grid-gap: 12px;
         border-radius: 0px;
 
@@ -221,6 +220,12 @@ const TableRow = styled(TableHeader)`
         }
         &:hover {
             background-color: unset;
+        }
+    `}
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        grid-template-columns: 1fr 1fr;
+        & > *:nth-child(1) {
+            grid-column: 1 / -1;
         }
     `}
 `

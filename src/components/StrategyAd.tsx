@@ -65,7 +65,7 @@ const Container = styled(Flex).attrs((props) => ({
     padding: 36px;
     overflow: hidden;
 
-    ${({ theme }) => theme.mediaWidth.upToSmall`
+    ${({ theme }) => theme.mediaWidth.upToMedium`
         &::after {
             border-left: none;
             border-right: none;
@@ -92,7 +92,7 @@ const Header = styled(Flex).attrs((props) => ({
     font-size: 1.6rem;
     letter-spacing: 0.4rem;
 
-    ${({ theme }) => theme.mediaWidth.upToSmall`
+    ${({ theme }) => theme.mediaWidth.upToMedium`
         font-size: 1.1rem;
         & > *:last-child {
             display: none;

@@ -88,7 +88,7 @@ export function Numbers() {
     // TODO: remove and use actual data
     const dummyPieData = useDummyPieData(dummyPieDataBase, dummyPieOptions)
 
-    const isLargerThanSmall = useMediaQuery('upToSmall')
+    const isUpToSmall = useMediaQuery('upToSmall')
 
     return (
         <Container>
@@ -131,19 +131,8 @@ export function Numbers() {
             <Section>
                 <SectionHeader>PRICES</SectionHeader>
                 <SectionContent>
-                    <Flex
-                        $column={!isLargerThanSmall}
-                        $width="100%"
-                        $justify="space-between"
-                        $align={!isLargerThanSmall ? 'flex-start' : 'center'}
-                        $gap={24}
-                    >
-                        <Flex
-                            $column={!isLargerThanSmall}
-                            $justify="flex-start"
-                            $align={!isLargerThanSmall ? 'flex-start' : 'center'}
-                            $gap={24}
-                        >
+                    <SectionContentHeader>
+                        <SectionInnerHeader>
                             <PriceDisplay
                                 token="HAI"
                                 price={marketPrice.formatted}
@@ -160,7 +149,7 @@ export function Numbers() {
                                 label="$HAI Redemption Price"
                                 tooltip={`HAI's "moving peg". It's the price at which HAI is minted or repaid inside the protocol. The HAI market price is expected to fluctuate around the redemption price.`}
                             />
-                        </Flex>
+                        </SectionInnerHeader>
                         <ToggleSlider
                             selectedIndex={haiPriceHistory.timeframe}
                             setSelectedIndex={haiPriceHistory.setTimeframe}
@@ -170,7 +159,7 @@ export function Numbers() {
                             <TimeframeLabel>1M</TimeframeLabel>
                             {/* <TimeframeLabel>1YR</TimeframeLabel> */}
                         </ToggleSlider>
-                    </Flex>
+                    </SectionContentHeader>
                     <ChartContainer>
                         <LineChart
                             data={haiPriceData}
@@ -196,20 +185,8 @@ export function Numbers() {
             <Section>
                 <SectionHeader>REDEMPTION RATE</SectionHeader>
                 <SectionContent>
-                    <Flex
-                        $column={!isLargerThanSmall}
-                        $width="100%"
-                        $justify="space-between"
-                        $align={!isLargerThanSmall ? 'flex-start' : 'center'}
-                        $gap={24}
-                    >
-                        <Flex
-                            $column={!isLargerThanSmall}
-                            $width="100%"
-                            $justify="flex-start"
-                            $align={!isLargerThanSmall ? 'flex-start' : 'center'}
-                            $gap={!isLargerThanSmall ? 12 : 36}
-                        >
+                    <SectionContentHeader>
+                        <SectionInnerHeader>
                             <Stat
                                 stat={{
                                     header: annualRate.raw
@@ -220,7 +197,7 @@ export function Numbers() {
                                 }}
                                 unbordered
                             />
-                            <CenteredFlex $gap={!isLargerThanSmall ? 12 : 36}>
+                            <CenteredFlex $gap={isUpToSmall ? 12 : 36}>
                                 <Stat
                                     stat={{
                                         header: pRate.formatted || '--%',
@@ -238,7 +215,7 @@ export function Numbers() {
                                     unbordered
                                 />
                             </CenteredFlex>
-                        </Flex>
+                        </SectionInnerHeader>
                         <ToggleSlider
                             selectedIndex={redemptionRateHistory.timeframe}
                             setSelectedIndex={redemptionRateHistory.setTimeframe}
@@ -248,7 +225,7 @@ export function Numbers() {
                             <TimeframeLabel>1M</TimeframeLabel>
                             {/* <TimeframeLabel>1YR</TimeframeLabel> */}
                         </ToggleSlider>
-                    </Flex>
+                    </SectionContentHeader>
                     <ChartContainer>
                         <LineChart
                             data={redemptionRateData}
@@ -269,20 +246,8 @@ export function Numbers() {
             <Section>
                 <SectionHeader>HAI LIQUIDITY</SectionHeader>
                 <SectionContent $gap={0}>
-                    <Flex
-                        $column={!isLargerThanSmall}
-                        $width="100%"
-                        $justify="space-between"
-                        $align={!isLargerThanSmall ? 'flex-start' : 'center'}
-                        $gap={24}
-                    >
-                        <Flex
-                            $column={!isLargerThanSmall}
-                            $width="100%"
-                            $justify="flex-start"
-                            $align={!isLargerThanSmall ? 'flex-start' : 'center'}
-                            $gap={!isLargerThanSmall ? 12 : 36}
-                        >
+                    <SectionContentHeader>
+                        <SectionInnerHeader>
                             <Stat
                                 stat={{
                                     header: (
@@ -329,7 +294,7 @@ export function Numbers() {
                                 }}
                                 unbordered
                             />
-                        </Flex>
+                        </SectionInnerHeader>
                         <ToggleSlider
                             selectedIndex={convertPieToUSD ? 1 : 0}
                             setSelectedIndex={(index: number) => setConvertPieToUSD(!!index)}
@@ -337,7 +302,7 @@ export function Numbers() {
                             <TimeframeLabel>HAI</TimeframeLabel>
                             <TimeframeLabel>USD</TimeframeLabel>
                         </ToggleSlider>
-                    </Flex>
+                    </SectionContentHeader>
                     <PieContainer>
                         <PieChart
                             data={dummyPieData}
@@ -433,6 +398,31 @@ const SectionContent = styled(Flex).attrs((props) => ({
     padding: 24px;
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
+        gap: 12px;
+    `}
+`
+const SectionContentHeader = styled(Flex).attrs((props) => ({
+    $width: '100%',
+    $justify: 'space-between',
+    $align: 'center',
+    $gap: 24,
+    ...props,
+}))`
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        flex-direction: column;
+        align-items: flex-start;
+    `}
+`
+const SectionInnerHeader = styled(Flex).attrs((props) => ({
+    $width: '100%',
+    $justify: 'flex-start',
+    $align: 'center',
+    $gap: 36,
+    ...props,
+}))`
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        flex-direction: column;
+        align-items: flex-start;
         gap: 12px;
     `}
 `

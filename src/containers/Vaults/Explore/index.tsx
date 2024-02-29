@@ -29,7 +29,7 @@ export function VaultExplorer() {
         popupsModel: { toggleModal },
     } = useStoreActions((actions) => actions)
 
-    const isLargerThanSmall = useMediaQuery('upToSmall')
+    const isUpToSmall = useMediaQuery('upToSmall')
 
     const {
         error,
@@ -70,8 +70,8 @@ export function VaultExplorer() {
             )}
             <Container>
                 <Header>
-                    <BrandedTitle textContent="VAULT EXPLORER" $fontSize={isLargerThanSmall ? '3rem' : '2.4rem'} />
-                    <CenteredFlex $column={!isLargerThanSmall} $gap={24}>
+                    <BrandedTitle textContent="VAULT EXPLORER" $fontSize={isUpToSmall ? '2.4rem' : '3rem'} />
+                    <CenteredFlex $column={isUpToSmall} $gap={24}>
                         <CheckboxButton checked={filterEmpty} toggle={() => setFilterEmpty((e) => !e)}>
                             Hide Empty Vaults
                         </CheckboxButton>
@@ -80,9 +80,7 @@ export function VaultExplorer() {
                             selectedAsset={collateralFilter}
                             onSelect={setCollateralFilter}
                         />
-                        {!isLargerThanSmall && (
-                            <SortByDropdown headers={headers} sorting={sorting} setSorting={setSorting} />
-                        )}
+                        {isUpToSmall && <SortByDropdown headers={headers} sorting={sorting} setSorting={setSorting} />}
                     </CenteredFlex>
                 </Header>
                 <Table

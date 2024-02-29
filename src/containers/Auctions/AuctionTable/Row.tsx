@@ -31,7 +31,7 @@ export function AuctionTableRow({ headers, auction, container, expanded, onSelec
     } = useStoreState((state) => state)
     const { auctionModel: auctionActions, popupsModel: popupsActions } = useStoreActions((actions) => actions)
 
-    const isLargerThanSmall = useMediaQuery('upToSmall')
+    const isUpToMedium = useMediaQuery('upToMedium')
 
     const [timeEl, setTimeEl] = useState<HTMLElement | null>()
 
@@ -135,6 +135,7 @@ export function AuctionTableRow({ headers, auction, container, expanded, onSelec
             <TableRow
                 container={container}
                 headers={headers}
+                compactQuery="upToMedium"
                 items={[
                     {
                         content: <Text $fontWeight={700}>#{auctionId}</Text>,
@@ -218,11 +219,7 @@ export function AuctionTableRow({ headers, auction, container, expanded, onSelec
                         ),
                     },
                     {
-                        content: isLargerThanSmall ? (
-                            <DropdownIcon $expanded={expanded}>
-                                <Caret direction="down" />
-                            </DropdownIcon>
-                        ) : (
+                        content: isUpToMedium ? (
                             <Flex $column $justify="flex-end" $align="stretch" style={{ height: '100%' }}>
                                 <Flex $width="100%" $justify="flex-end" $align="center" $gap={12}>
                                     <Text $textDecoration="underline">{expanded ? 'Hide' : 'View'} Bids</Text>
@@ -231,6 +228,10 @@ export function AuctionTableRow({ headers, auction, container, expanded, onSelec
                                     </DropdownIcon>
                                 </Flex>
                             </Flex>
+                        ) : (
+                            <DropdownIcon $expanded={expanded}>
+                                <Caret direction="down" />
+                            </DropdownIcon>
                         ),
                         unwrapped: true,
                     },
@@ -260,7 +261,7 @@ const TableRowContainer = styled(Flex).attrs((props) => ({
     border: 2px solid rgba(0, 0, 0, 0.1);
     overflow: hidden;
 
-    ${({ theme, $expanded }) => theme.mediaWidth.upToSmall`
+    ${({ theme, $expanded }) => theme.mediaWidth.upToMedium`
         height: ${$expanded ? 652 : 312}px;
         border-radius: 0px;
         border: none;

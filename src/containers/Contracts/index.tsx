@@ -45,12 +45,12 @@ export function Contracts() {
             )
     }, [geb])
 
-    const isLargerThanSmall = useMediaQuery('upToSmall')
+    const isUpToSmall = useMediaQuery('upToSmall')
 
     return (
         <Container>
             <Header>
-                <BrandedTitle textContent="CONTRACTS" $fontSize={isLargerThanSmall ? '3rem' : '2.4rem'} />
+                <BrandedTitle textContent="CONTRACTS" $fontSize={isUpToSmall ? '2.4rem' : '3rem'} />
             </Header>
             <Table
                 container={StyledTableContainer}
@@ -60,7 +60,7 @@ export function Contracts() {
                 setSorting={() => {}}
                 rows={contracts.map(({ name, address, description }) => (
                     <TableRow key={name}>
-                        <Text $fontWeight={isLargerThanSmall ? 400 : 700}>{name}</Text>
+                        <Text $fontWeight={isUpToSmall ? 700 : 400}>{name}</Text>
                         <Copyable text={address} limitClickToIcon>
                             <AddressLink address={address} />
                         </Copyable>

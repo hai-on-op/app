@@ -84,7 +84,7 @@ export function OverviewProgressStat({
     fullWidth = false,
     ...props
 }: OverviewProgressStatProps) {
-    const isLargerThanSmall = useMediaQuery('upToSmall')
+    const isUpToSmall = useMediaQuery('upToSmall')
 
     return (
         <ProgressStatContainer $fullWidth={fullWidth}>
@@ -96,13 +96,13 @@ export function OverviewProgressStat({
                     </Text>
                     {!!tooltip && <Tooltip width="200px">{tooltip}</Tooltip>}
                 </CenteredFlex>
-                <StatusContainer hidden={!(simulatedValue && isLargerThanSmall) && !alert}>
+                <StatusContainer hidden={!(simulatedValue && !isUpToSmall) && !alert}>
                     {!!alert && (
                         <StatusLabel status={alert.status} size={0.8}>
                             {alert.value || alert.status}
                         </StatusLabel>
                     )}
-                    {simulatedValue && isLargerThanSmall && (
+                    {simulatedValue && !isUpToSmall && (
                         <StatusLabel status={Status.CUSTOM} background="gradientCooler" size={0.8}>
                             <Text $fontSize="0.67rem" $fontWeight={700}>
                                 {simulatedValue}
@@ -115,7 +115,7 @@ export function OverviewProgressStat({
                 </StatusContainer>
             </Flex>
             <ProgressIndicator {...props} />
-            {simulatedValue && !isLargerThanSmall && (
+            {simulatedValue && isUpToSmall && (
                 <Flex $width="100%" $justify="flex-end" $align="center">
                     <StatusLabel status={Status.CUSTOM} background="gradientCooler" size={0.8}>
                         <Text $fontSize="0.67rem" $fontWeight={700}>

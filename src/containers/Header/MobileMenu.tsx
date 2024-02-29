@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useAccount } from 'wagmi'
 
 import type { SetState } from '~/types'
 import {
@@ -49,9 +50,11 @@ type MobileMenuProps = {
 export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) {
     const { toggleScreensaver } = useEffects()
 
-    const isLargerThanSmall = useMediaQuery('upToSmall')
-    const isLargerThanMedium = useMediaQuery('upToMedium')
-    const isLargerThanLarge = useMediaQuery('upToLarge')
+    const isUpToSmall = useMediaQuery('upToSmall')
+    const isUpToMedium = useMediaQuery('upToMedium')
+    const isUpToLarge = useMediaQuery('upToLarge')
+
+    const { isConnected } = useAccount()
 
     const [button, setButton] = useState<HTMLElement | null>(null)
 
@@ -60,15 +63,15 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
     return (
         <DropdownButton
             as="div"
-            $variant={isLargerThanSmall ? undefined : 'yellowish'}
+            $variant={isUpToSmall ? 'yellowish' : undefined}
             ref={setButton}
             onClick={() => setActive((a) => !a)}
         >
-            {!isLargerThanSmall ? (
+            {isUpToSmall ? (
                 <Hamburger size={20} />
             ) : (
                 <CenteredFlex $gap={12}>
-                    {!isLargerThanMedium ? 'Menu' : 'More'}
+                    {(isConnected ? isUpToLarge : isUpToMedium) ? 'Menu' : 'More'}
                     <IconContainer $rotate={active}>
                         <Caret direction="down" />
                     </IconContainer>
@@ -77,13 +80,16 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
             {active && (
                 <Dropdown $float="left" $margin="20px">
                     <Inner>
-                        {!isLargerThanSmall && <ConnectButton $width="100%" showBalance="vertical" />}
-                        {!isLargerThanMedium && (
+                        {isUpToSmall && <ConnectButton $width="100%" showBalance="vertical" />}
+                        {(isConnected ? isUpToLarge : isUpToMedium) && (
                             <>
                                 <BrandedDropdown.Item
                                     href="/vaults"
                                     icon={<Database size={18} />}
-                                    active={location.pathname.startsWith('/vaults')}
+                                    active={
+                                        location.pathname.startsWith('/vaults') &&
+                                        !location.pathname.includes('explore')
+                                    }
                                 >
                                     Get HAI
                                 </BrandedDropdown.Item>
@@ -94,16 +100,14 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
                                 >
                                     Earn
                                 </BrandedDropdown.Item>
+                                <BrandedDropdown.Item
+                                    href="/learn"
+                                    icon={<Grid size={18} />}
+                                    active={location.pathname === '/learn'}
+                                >
+                                    Learn
+                                </BrandedDropdown.Item>
                             </>
-                        )}
-                        {!isLargerThanLarge && (
-                            <BrandedDropdown.Item
-                                href="/learn"
-                                icon={<Grid size={18} />}
-                                active={location.pathname === '/learn'}
-                            >
-                                Learn
-                            </BrandedDropdown.Item>
                         )}
                         <BrandedDropdown.Item
                             href="/auctions"

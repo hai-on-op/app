@@ -40,7 +40,8 @@ type VaultsListProps = {
 export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
     const { setActiveVault } = useVault()
 
-    const isLargerThanSmall = useMediaQuery('upToSmall')
+    const isUpToSmall = useMediaQuery('upToSmall')
+    const isUpToMedium = useMediaQuery('upToMedium')
 
     const { vaultModel: vaultState } = useStoreState((state) => state)
 
@@ -67,16 +68,17 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
     return (
         <NavContainer
             navItems={
-                isLargerThanSmall
-                    ? [`Available Vaults (${availableVaults.length})`, `My Vaults (${vaultState.list.length})`]
-                    : ['Available Vaults', 'My Vaults']
+                isUpToSmall
+                    ? ['Available Vaults', 'My Vaults']
+                    : [`Available Vaults (${availableVaults.length})`, `My Vaults (${vaultState.list.length})`]
             }
             selected={navIndex}
             onSelect={(i: number) => setNavIndex(i)}
+            compactQuery="upToMedium"
             headerContent={
                 navIndex === 0 ? (
                     <HeaderContent>
-                        {!isLargerThanSmall && (
+                        {isUpToMedium && (
                             <SortByDropdown
                                 headers={availableHeaders}
                                 sorting={availableSorting}
@@ -97,7 +99,7 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
                         <CheckboxButton checked={showEmptyVaults} toggle={() => setShowEmptyVaults((e) => !e)}>
                             Show Empty Vaults
                         </CheckboxButton>
-                        {!isLargerThanSmall && (
+                        {isUpToMedium && (
                             <SortByDropdown
                                 headers={myVaultsHeaders}
                                 sorting={myVaultsSorting}

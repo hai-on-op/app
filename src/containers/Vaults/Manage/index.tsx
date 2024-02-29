@@ -23,8 +23,8 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
 
     const { vault: vaultWithActivity } = useVaultById(vault?.id || '')
 
-    const isLargerThanExtraSmall = useMediaQuery('upToExtraSmall')
-    const isLargerThanSmall = useMediaQuery('upToSmall')
+    const isUpToExtraSmall = useMediaQuery('upToExtraSmall')
+    const isUpToSmall = useMediaQuery('upToSmall')
 
     // clear form inputs when unmounting
     useEffect(() => () => updateForm('clear'), [updateForm])
@@ -41,8 +41,8 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
                 <Header $removePadding={action === VaultAction.CREATE}>
                     {headerContent}
                     <CenteredFlex $gap={12}>
-                        <RewardsTokenArray tokens={['OP', 'KITE']} hideLabel={!isLargerThanExtraSmall} />
-                        <ManageDropdown $width={isLargerThanSmall ? undefined : '100%'} />
+                        <RewardsTokenArray tokens={['OP', 'KITE']} hideLabel={isUpToExtraSmall} />
+                        <ManageDropdown $width={isUpToSmall ? '100%' : undefined} />
                     </CenteredFlex>
                 </Header>
             }
@@ -100,7 +100,7 @@ const BodyGrid = styled(Grid)`
     grid-template-columns: 5fr 3fr;
     grid-gap: 48px;
 
-    ${({ theme }) => theme.mediaWidth.upToSmall`
+    ${({ theme }) => theme.mediaWidth.upToMedium`
         grid-template-columns: 1fr;
         grid-gap: 24px;
         padding: 24px;

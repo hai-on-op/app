@@ -109,16 +109,16 @@ const coins: FloatingElementsProps['coins'] = [
 ]
 
 export function Intro({ zIndex }: ZoomSceneProps) {
-    const isLargerThanExtraSmall = useMediaQuery('upToExtraSmall')
-    const isLargerThanSmall = useMediaQuery('upToSmall')
+    const isUpToExtraSmall = useMediaQuery('upToExtraSmall')
+    const isUpToSmall = useMediaQuery('upToSmall')
 
     return (
         <ZoomScene $zIndex={zIndex} style={{ width: '100%', height: '100%' }}>
             <Container>
                 <BrandedTitle
                     textContent="GET $HAI ON YOUR OWN SUPPLY."
-                    $fontSize={isLargerThanSmall ? '6rem' : isLargerThanExtraSmall ? '3.6rem' : '3rem'}
-                    $letterSpacing={isLargerThanSmall ? '1.2rem' : isLargerThanExtraSmall ? '0.8rem' : '0.5rem'}
+                    $fontSize={isUpToExtraSmall ? '3rem' : isUpToSmall ? '3.6rem' : '6rem'}
+                    $letterSpacing={isUpToExtraSmall ? '0.5rem' : isUpToSmall ? '0.8rem' : '1.2rem'}
                 />
                 <Text $lineHeight="1.6">
                     The <strong>multi-collateral stablecoin</strong> for smooth financial highs.

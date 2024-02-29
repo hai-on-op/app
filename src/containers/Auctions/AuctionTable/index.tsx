@@ -82,6 +82,7 @@ export function AuctionTable({ headers, rows, sorting, setSorting, isLoading, er
                 loading={isLoading}
                 error={error}
                 isEmpty={!rows.length}
+                compactQuery="upToMedium"
                 rows={rows.slice(paging * ITEMS_PER_PAGE, (paging + 1) * ITEMS_PER_PAGE).map((auction) => {
                     const key = `${auction.englishAuctionType}-${auction.sellToken}-${auction.auctionId}`
                     return (
@@ -123,10 +124,10 @@ const TableRow = styled(TableHeader)`
     height: 55px;
     cursor: pointer;
 
-    ${({ theme }) => theme.mediaWidth.upToSmall`
+    ${({ theme }) => theme.mediaWidth.upToMedium`
         height: 312px;
         padding: 24px;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr 1fr 1fr;
         grid-gap: 12px;
         align-items: flex-start;
         border-radius: 0px;
@@ -137,6 +138,23 @@ const TableRow = styled(TableHeader)`
         &:hover {
             background-color: unset;
         }
+        & > *:nth-child(7) {
+            grid-row: 1;
+            grid-column: 3;
+        }
+        & > *:last-child {
+            grid-column: 3;
+        }
+    `}
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        grid-template-columns: 1fr 1fr;
+        & > *:nth-child(7) {
+            grid-row: unset;
+            grid-column: unset;
+        }
+        & > *:last-child {
+            grid-column: 2;
+        }
     `}
 `
 
@@ -145,7 +163,7 @@ const Footer = styled(Flex).attrs((props) => ({
     $align: 'center',
     ...props,
 }))<{ $bordered: boolean }>`
-    ${({ theme, $bordered }) => theme.mediaWidth.upToSmall`
+    ${({ theme, $bordered }) => theme.mediaWidth.upToMedium`
         border-top: ${$bordered ? theme.border.medium : 'none'};
         padding: 0 24px;
     `}

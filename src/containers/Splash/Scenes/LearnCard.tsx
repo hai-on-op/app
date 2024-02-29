@@ -12,14 +12,14 @@ type LearnCardProps = {
     titleColorOffset?: number
 }
 export function LearnCard({ title, link, titleColorOffset }: LearnCardProps) {
-    const isLargerThanExtraSmall = useMediaQuery('upToExtraSmall')
+    const isUpToSmall = useMediaQuery('upToExtraSmall')
 
     return (
         <Container>
             <Flex $column $gap={24}>
                 <BrandedTitle
                     textContent={title}
-                    $fontSize={isLargerThanExtraSmall ? '2.2rem' : '1.9rem'}
+                    $fontSize={isUpToSmall ? '1.9rem' : '2.2rem'}
                     $letterSpacing="0.4rem"
                     $lineHeight="1.4"
                     colorOffset={titleColorOffset}
@@ -28,11 +28,7 @@ export function LearnCard({ title, link, titleColorOffset }: LearnCardProps) {
             <Link href={link} $textDecoration="none">
                 <HiddenSEOText>{title}</HiddenSEOText>
                 <CenteredFlex $gap={12}>
-                    <Text
-                        $fontSize={isLargerThanExtraSmall ? '1.2rem' : '1rem'}
-                        $fontWeight={700}
-                        $letterSpacing="0.35rem"
-                    >
+                    <Text $fontSize={isUpToSmall ? '1rem' : '1.2rem'} $fontWeight={700} $letterSpacing="0.35rem">
                         LEARN MORE
                     </Text>
                     <HaiArrow direction="right" strokeWidth={2.5} />

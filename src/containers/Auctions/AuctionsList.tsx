@@ -53,21 +53,21 @@ export function AuctionsList({ isLoading, error }: AuctionsListProps) {
         setSaleAssetsFilter,
     } = useAuctionsData()
 
-    const isLargerThanSmall = useMediaQuery('upToSmall')
+    const isUpToMedium = useMediaQuery('upToMedium')
 
     return (
         <NavContainer
             navItems={[`All Auctions (${rows.length.toLocaleString()})`]}
             selected={0}
             onSelect={() => 0}
+            stackHeader={isUpToMedium}
+            compactQuery="upToMedium"
             headerContent={
                 <HeaderContainer $flexWrap>
                     <CheckboxButton checked={filterMyBids} toggle={() => setFilterMyBids((f) => !f)}>
                         Only Show My Bids
                     </CheckboxButton>
-                    {!isLargerThanSmall && (
-                        <SortByDropdown headers={headers} sorting={sorting} setSorting={setSorting} />
-                    )}
+                    {isUpToMedium && <SortByDropdown headers={headers} sorting={sorting} setSorting={setSorting} />}
                     <BrandedDropdown
                         label={
                             <Text $fontWeight={400} $textAlign="left">

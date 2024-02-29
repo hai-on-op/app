@@ -33,6 +33,7 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                     </HaiButton>
                 </>
             }
+            compactQuery="upToMedium"
             rows={rows.map((vault) => {
                 const {
                     id,
@@ -49,6 +50,7 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                         key={id}
                         container={TableRow}
                         headers={headers}
+                        compactQuery="upToMedium"
                         items={[
                             {
                                 content: (
@@ -65,11 +67,10 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                                     </Grid>
                                 ),
                                 props: { $fontSize: 'inherit' },
-                                fullWidth: true,
                             },
                             {
                                 content: (
-                                    <Table.ItemGrid $columns="1fr 1.25fr">
+                                    <Table.ItemGrid $columns="1fr 1.25fr" $compactQuery="upToMedium">
                                         <Text $textAlign="right">
                                             {collateralRatio
                                                 ? formatNumberWithStyle(collateralRatio, {
@@ -89,7 +90,7 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                             },
                             {
                                 content: (
-                                    <Table.ItemGrid>
+                                    <Table.ItemGrid $compactQuery="upToMedium">
                                         <Text $textAlign="right">
                                             {formatNumberWithStyle(collateral, { maxDecimals: 4 })}
                                         </Text>
@@ -99,7 +100,7 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                             },
                             {
                                 content: (
-                                    <Table.ItemGrid>
+                                    <Table.ItemGrid $compactQuery="upToMedium">
                                         <Text $textAlign="right">{formatNumberWithStyle(totalDebt)}</Text>
                                         <Text>HAI</Text>
                                     </Table.ItemGrid>
@@ -151,9 +152,9 @@ const TableRow = styled(TableHeader)`
         background-color: rgba(0, 0, 0, 0.1);
     }
 
-    ${({ theme }) => theme.mediaWidth.upToSmall`
+    ${({ theme }) => theme.mediaWidth.upToMedium`
         padding: 24px;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr 1fr 1fr;
         grid-gap: 12px;
         border-radius: 0px;
 
@@ -162,6 +163,16 @@ const TableRow = styled(TableHeader)`
         }
         &:hover {
             background-color: unset;
+        }
+    `}
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        grid-template-columns: 1fr 1fr;
+        & > *:nth-child(1) {
+            grid-column: 1 / -1;
+        }
+        & > *:nth-child(5) {
+            grid-row: 2;
+            grid-column: 2;
         }
     `}
 `

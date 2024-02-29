@@ -7,7 +7,7 @@ import { HaiFace } from './Icons/HaiFace'
 import { Elf } from './BrandElements/Elf'
 
 export function HaiAlert() {
-    const isLargerThanSmall = useMediaQuery('upToSmall')
+    const isUpToSmall = useMediaQuery('upToSmall')
 
     const {
         data: { marketPrice, redemptionPrice, priceDiff },
@@ -23,16 +23,16 @@ export function HaiAlert() {
                 <Text>
                     <strong>$HAI ALERT</strong>
                     {` • `}
-                    {isLargerThanSmall ? `MARKET PRICE ` : `MP `}
+                    {isUpToSmall ? `MP ` : `MARKET PRICE `}
                     <strong>{marketPrice.formatted}</strong>
                     {` • `}
-                    {isLargerThanSmall ? `REDEMPTION PRICE ` : `RP `}
+                    {isUpToSmall ? `RP ` : `REDEMPTION PRICE `}
                     <strong>{redemptionPrice.formatted}</strong>
                     {` • `}
-                    {isLargerThanSmall ? `PRICE DIFFERENCE ` : `DIFF. `}
+                    {isUpToSmall ? `DIFF. ` : `PRICE DIFFERENCE `}
                     <strong>{parseFloat(priceDiff.toFixed(2))}%</strong>
                     {` • `}
-                    {isLargerThanSmall ? `REDEMPTION RATE ` : `RATE `}
+                    {isUpToSmall ? `RATE ` : `REDEMPTION RATE `}
                     <strong>{graphSummary?.redemptionRate.formatted || '--%'}</strong>
                 </Text>
             </CenteredFlex>

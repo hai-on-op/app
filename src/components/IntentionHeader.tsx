@@ -82,7 +82,7 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
     const location = useLocation()
     const history = useHistory()
 
-    const isLargerThanExtraSmall = useMediaQuery('upToExtraSmall')
+    const isUpToExtraSmall = useMediaQuery('upToExtraSmall')
 
     const { type, stats } = useMemo(() => {
         if (location.pathname.startsWith('/auctions')) {
@@ -122,12 +122,12 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
         <Container>
             <Inner>
                 <Flex $justify="flex-start" $align="center" $gap={12} $flexWrap>
-                    <BrandedTitle textContent="I WANT TO" $fontSize={isLargerThanExtraSmall ? '3.2em' : '2.5em'} />
+                    <BrandedTitle textContent="I WANT TO" $fontSize={isUpToExtraSmall ? '2.5em' : '3.2em'} />
                     <BrandedSelect
                         value={type}
                         onChange={(value: string) => !!value && history.push(`/${value}`)}
                         options={typeOptions}
-                        $fontSize={isLargerThanExtraSmall ? '3.2em' : '2.5em'}
+                        $fontSize={isUpToExtraSmall ? '2.5em' : '3.2em'}
                         aria-label="Action"
                     />
                 </Flex>

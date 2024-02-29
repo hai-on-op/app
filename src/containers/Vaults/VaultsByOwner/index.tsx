@@ -24,7 +24,7 @@ const RECORDS_PER_PAGE = 10
 export function VaultsByOwner() {
     const { idOrOwner } = useParams<{ idOrOwner?: string }>()
 
-    const isLargerThanSmall = useMediaQuery('upToSmall')
+    const isUpToSmall = useMediaQuery('upToSmall')
 
     const {
         vaultModel: { liquidationData },
@@ -76,7 +76,7 @@ export function VaultsByOwner() {
                         textContent={`${
                             !invalidAddress ? returnWalletAddress(idOrOwner as string, { startLength: 4 }) : 'UNKNOWN'
                         }'s VAULTS`}
-                        $fontSize={isLargerThanSmall ? '3rem' : '2.4rem'}
+                        $fontSize={isUpToSmall ? '2.4rem' : '3rem'}
                     />
                     {!invalidAddress && (
                         <Flex $justify="flex-start" $align="center" $gap={8}>
@@ -86,15 +86,13 @@ export function VaultsByOwner() {
                             </AddressLink>
                         </Flex>
                     )}
-                    <CenteredFlex $column={!isLargerThanSmall} $gap={24}>
+                    <CenteredFlex $column={isUpToSmall} $gap={24}>
                         <CollateralDropdown
                             label="Collateral"
                             selectedAsset={collateralFilter}
                             onSelect={setCollateralFilter}
                         />
-                        {!isLargerThanSmall && (
-                            <SortByDropdown headers={headers} sorting={sorting} setSorting={setSorting} />
-                        )}
+                        {isUpToSmall && <SortByDropdown headers={headers} sorting={sorting} setSorting={setSorting} />}
                     </CenteredFlex>
                 </Header>
                 <Table
@@ -130,17 +128,7 @@ export function VaultsByOwner() {
                                             ),
                                         },
                                         {
-                                            content: isLargerThanSmall ? (
-                                                <Grid $columns="1fr 24px 48px" $align="center" $gap={8}>
-                                                    <Text $textAlign="right">
-                                                        {formatNumberWithStyle(collateral, {
-                                                            maxDecimals: 4,
-                                                        })}
-                                                    </Text>
-                                                    <TokenArray tokens={[collateralToken as any]} hideLabel size={24} />
-                                                    <Text>{collateralToken}</Text>
-                                                </Grid>
-                                            ) : (
+                                            content: isUpToSmall ? (
                                                 <Flex $justify="flex-start" $align="center" $gap={8}>
                                                     <Text $textAlign="right">
                                                         {formatNumberWithStyle(collateral, {
@@ -150,20 +138,20 @@ export function VaultsByOwner() {
                                                     <TokenArray tokens={[collateralToken as any]} hideLabel size={24} />
                                                     <Text>{collateralToken}</Text>
                                                 </Flex>
+                                            ) : (
+                                                <Grid $columns="1fr 24px 48px" $align="center" $gap={8}>
+                                                    <Text $textAlign="right">
+                                                        {formatNumberWithStyle(collateral, {
+                                                            maxDecimals: 4,
+                                                        })}
+                                                    </Text>
+                                                    <TokenArray tokens={[collateralToken as any]} hideLabel size={24} />
+                                                    <Text>{collateralToken}</Text>
+                                                </Grid>
                                             ),
                                         },
                                         {
-                                            content: isLargerThanSmall ? (
-                                                <Grid $columns="1fr 24px 48px" $align="center" $gap={8}>
-                                                    <Text $textAlign="right">
-                                                        {formatNumberWithStyle(debt, {
-                                                            maxDecimals: 4,
-                                                        })}
-                                                    </Text>
-                                                    <TokenArray tokens={['HAI']} hideLabel size={24} />
-                                                    <Text>HAI</Text>
-                                                </Grid>
-                                            ) : (
+                                            content: isUpToSmall ? (
                                                 <Flex $justify="flex-start" $align="center" $gap={8}>
                                                     <Text $textAlign="right">
                                                         {formatNumberWithStyle(debt, {
@@ -173,6 +161,16 @@ export function VaultsByOwner() {
                                                     <TokenArray tokens={['HAI']} hideLabel size={24} />
                                                     <Text>HAI</Text>
                                                 </Flex>
+                                            ) : (
+                                                <Grid $columns="1fr 24px 48px" $align="center" $gap={8}>
+                                                    <Text $textAlign="right">
+                                                        {formatNumberWithStyle(debt, {
+                                                            maxDecimals: 4,
+                                                        })}
+                                                    </Text>
+                                                    <TokenArray tokens={['HAI']} hideLabel size={24} />
+                                                    <Text>HAI</Text>
+                                                </Grid>
                                             ),
                                         },
                                         {

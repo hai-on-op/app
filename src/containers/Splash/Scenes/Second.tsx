@@ -69,8 +69,8 @@ const coins: FloatingElementsProps['coins'] = [
 ]
 
 export function Second({ zIndex }: ZoomSceneProps) {
-    const isLargerThanExtraSmall = useMediaQuery('upToExtraSmall')
-    const isLargerThanSmall = useMediaQuery('upToSmall')
+    const isUpToExtraSmall = useMediaQuery('upToExtraSmall')
+    const isUpToSmall = useMediaQuery('upToSmall')
 
     const [progress, setProgress] = useState(0.72)
     useEffect(() => {
@@ -81,12 +81,12 @@ export function Second({ zIndex }: ZoomSceneProps) {
     return (
         <ZoomScene $zIndex={zIndex}>
             <Container>
-                <Flex $column $gap={isLargerThanExtraSmall ? 24 : 12}>
+                <Flex $column $gap={isUpToExtraSmall ? 12 : 24}>
                     <BrandedTitle
                         textContent="ELEVATE ASSETS, NOT ANXIETY."
-                        $fontSize={isLargerThanSmall ? '3.6rem' : isLargerThanExtraSmall ? '3rem' : '2rem'}
-                        $letterSpacing={isLargerThanSmall ? '0.7rem' : isLargerThanExtraSmall ? '0.6rem' : '0.5rem'}
-                        $lineHeight={isLargerThanSmall ? '1.4' : '1.2'}
+                        $fontSize={isUpToExtraSmall ? '2rem' : isUpToSmall ? '3rem' : '3.6rem'}
+                        $letterSpacing={isUpToExtraSmall ? '0.5rem' : isUpToSmall ? '0.6rem' : '0.7rem'}
+                        $lineHeight={isUpToSmall ? '1.2' : '1.4'}
                     />
                     <Subtitle>
                         <Text as="span" $fontWeight={700}>

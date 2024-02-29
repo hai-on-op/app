@@ -23,11 +23,13 @@ export function StrategyTable({ headers, rows, sorting, setSorting }: StrategyTa
             headerContainer={TableHeader}
             sorting={sorting}
             setSorting={setSorting}
+            compactQuery="upToMedium"
             rows={rows.map(({ pair, rewards, tvl, apy, userPosition, earnPlatform }, i) => (
                 <Table.Row
                     key={i}
                     container={TableRow}
                     headers={headers}
+                    compactQuery="upToMedium"
                     items={[
                         {
                             content: (
@@ -77,7 +79,6 @@ export function StrategyTable({ headers, rows, sorting, setSorting }: StrategyTa
                                 </Grid>
                             ),
                             props: { $fontSize: 'inherit' },
-                            fullWidth: true,
                         },
                         {
                             content: <Text $fontWeight={700}>{earnPlatform ? 'FARM' : 'BORROW'}</Text>,
@@ -184,9 +185,9 @@ const TableRow = styled(TableHeader)`
         background-color: rgba(0, 0, 0, 0.1);
     }
 
-    ${({ theme }) => theme.mediaWidth.upToSmall`
+    ${({ theme }) => theme.mediaWidth.upToMedium`
         padding: 24px;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1.25fr 1fr 1fr;
         grid-gap: 12px;
         border-radius: 0px;
 
@@ -195,6 +196,15 @@ const TableRow = styled(TableHeader)`
         }
         &:hover {
             background-color: unset;
+        }
+        & > *:last-child {
+            justify-content: flex-start;
+        }
+    `}
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        grid-template-columns: 1fr 1fr;
+        & > *:first-child {
+            grid-column: 1 / -1;
         }
         & > *:last-child {
             grid-column: 1 / -1;

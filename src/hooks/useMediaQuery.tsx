@@ -4,7 +4,7 @@ import { MEDIA_WIDTHS, type MediaWidth } from '~/utils'
 const matchMedia = (query: string) =>
     window.matchMedia(
         // eslint-disable-next-line no-prototype-builtins
-        MEDIA_WIDTHS.hasOwnProperty(query) ? `(min-width: ${MEDIA_WIDTHS[query as MediaWidth]}px)` : query
+        MEDIA_WIDTHS.hasOwnProperty(query) ? `(max-width: ${MEDIA_WIDTHS[query as MediaWidth]}px)` : query
     )
 
 export function useMediaQuery(query: MediaWidth | string) {

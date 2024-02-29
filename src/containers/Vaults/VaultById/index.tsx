@@ -27,7 +27,7 @@ export function VaultById({ id = '' }: VaultByIdProps) {
 
     const { error, loading, vault, refetch } = useVaultById(id)
 
-    const isLargerThanSmall = useMediaQuery('upToSmall')
+    const isUpToSmall = useMediaQuery('upToSmall')
 
     const [liquidateVault, setLiquidateVault] = useState<{
         id: string
@@ -56,7 +56,7 @@ export function VaultById({ id = '' }: VaultByIdProps) {
             )}
             <Container>
                 <Header>
-                    <BrandedTitle textContent={`VAULT #${id}`} $fontSize={isLargerThanSmall ? '3rem' : '2.4rem'} />
+                    <BrandedTitle textContent={`VAULT #${id}`} $fontSize={isUpToSmall ? '2.4rem' : '3rem'} />
                 </Header>
                 <Body>
                     <ContentWithStatus
