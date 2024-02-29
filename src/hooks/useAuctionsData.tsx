@@ -1,8 +1,17 @@
 import { useMemo, useState } from 'react'
 import { useAccount } from 'wagmi'
+import { useQuery } from '@apollo/client'
 
 import type { AuctionEventType, IAuction, SortableHeader, Sorting } from '~/types'
-import { Status, arrayToSorted, getAuctionStatus, stringExistsAndMatchesOne, tokenMap } from '~/utils'
+import {
+    AUCTION_RESTART_QUERY,
+    QueryAuctionRestarts,
+    Status,
+    arrayToSorted,
+    getAuctionStatus,
+    stringExistsAndMatchesOne,
+    tokenMap,
+} from '~/utils'
 import { useStoreState } from '~/store'
 import { useGetAuctions } from './useAuctions'
 
@@ -85,21 +94,45 @@ export function useAuctionsData() {
         dir: 'desc',
     })
 
+    const { data } = useQuery<{ englishAuctions: QueryAuctionRestarts[] }>(AUCTION_RESTART_QUERY)
+
+    const restarts = useMemo(() => {
+        if (!data) return {}
+
+        return data.englishAuctions.reduce(
+            (obj, { auctionId, englishAuctionType, auctionRestartHashes, auctionRestartTimestamps }) => {
+                const type =
+                    englishAuctionType === 'LIQUIDATION' || englishAuctionType === 'STAKED_TOKEN'
+                        ? 'COLLATERAL'
+                        : englishAuctionType
+                obj[`${type}-${auctionId}`] = auctionRestartHashes.map((hash, i) => ({
+                    hash,
+                    timestamp: auctionRestartTimestamps[i],
+                }))
+                return obj
+            },
+            {} as Record<string, { hash: string; timestamp: string }[]>
+        )
+    }, [data])
+
     const auctionsWithExtras = useMemo(() => {
         if (!address) return auctions
 
-        const withBids = auctions.map((auction) => ({
-            ...auction,
-            myBids: auction.biddersList.reduce((hashes, { bidder, createdAtTransaction }) => {
-                if (stringExistsAndMatchesOne(bidder, [address, proxyAddress])) {
-                    if (!hashes.includes(createdAtTransaction)) hashes.push(createdAtTransaction)
-                }
-                return hashes
-            }, [] as string[]).length,
-            status: getAuctionStatus(auction, auctionsData),
-        }))
+        const withBids = auctions.map((auction) => {
+            return {
+                ...auction,
+                myBids: auction.biddersList.reduce((hashes, { bidder, createdAtTransaction }) => {
+                    if (stringExistsAndMatchesOne(bidder, [address, proxyAddress])) {
+                        if (!hashes.includes(createdAtTransaction)) hashes.push(createdAtTransaction)
+                    }
+                    return hashes
+                }, [] as string[]).length,
+                status: getAuctionStatus(auction, auctionsData),
+                restarts: restarts[`${auction.englishAuctionType}-${auction.auctionId}`] || [],
+            }
+        })
         return filterMyBids ? withBids.filter(({ myBids }) => !!myBids) : withBids
-    }, [auctions, auctionsData, address, proxyAddress, filterMyBids])
+    }, [auctions, auctionsData, address, proxyAddress, filterMyBids, restarts])
 
     const sortedRows = useMemo(() => {
         switch (sorting.key) {

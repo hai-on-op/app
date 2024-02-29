@@ -362,3 +362,10 @@ export type QueryEnglishAuctionBid = {
 }
 
 export type QueryEnglishBidType = 'INCREASE_BUY' | 'DECREASE_SOLD'
+
+export type QueryAuctionRestarts = {
+    auctionId: string
+    englishAuctionType: QueryEnglishAuctionType
+    auctionRestartTimestamps: string[]
+    auctionRestartHashes: string[]
+}

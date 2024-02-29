@@ -46,6 +46,24 @@ export function BidTable({ auction }: BidTableProps) {
 
     const buyOrBid = auction.englishAuctionType === 'COLLATERAL' ? 'Buy' : 'Bid'
 
+    const rows: (IAuctionBidder & { isRestart?: boolean })[] = auction.biddersList
+        .concat(
+            (auction as any).restarts.map(
+                ({ hash, timestamp }: any) =>
+                    ({
+                        bidder: '',
+                        buyAmount: '',
+                        sellAmount: '',
+                        createdAt: timestamp,
+                        createdAtTransaction: hash,
+                        isRestart: true,
+                    }) as IAuctionBidder & { isRestart?: boolean }
+            )
+        )
+        .sort((a, b) => {
+            return parseInt(b.createdAt) - parseInt(a.createdAt)
+        })
+
     return (
         <Table
             headers={withSell ? sortableHeadersWithSell : sortableHeaders}
@@ -53,14 +71,20 @@ export function BidTable({ auction }: BidTableProps) {
             headerProps={{ $withSell: withSell }}
             sorting={{ key: '', dir: 'desc' }}
             setSorting={() => {}}
-            rows={auction.biddersList.map((bid, i) => (
+            rows={rows.map((bid, i) => (
                 <BidTableRow
                     key={i}
                     bid={bid}
                     bidToken={tokenMap[auction.buyToken] || auction.buyToken}
                     sellToken={tokenMap[auction.sellToken] || auction.sellToken}
                     eventType={
-                        i === auction.biddersList.length - 1 ? 'Start' : hasSettled && i === 0 ? 'Settle' : buyOrBid
+                        bid.isRestart
+                            ? 'Restart'
+                            : i === rows.length - 1
+                            ? 'Start'
+                            : hasSettled && i === 0
+                            ? 'Settle'
+                            : buyOrBid
                     }
                     withSell={withSell}
                 />
@@ -112,7 +136,7 @@ type BidTableRowProps = {
     bid: IAuctionBidder
     bidToken: string
     sellToken?: string
-    eventType: 'Start' | 'Buy' | 'Bid' | 'Settle'
+    eventType: 'Start' | 'Buy' | 'Bid' | 'Settle' | 'Restart'
     withSell?: boolean
 }
 function BidTableRow({ bid, eventType, bidToken, sellToken, withSell }: BidTableRowProps) {
@@ -128,6 +152,8 @@ function BidTableRow({ bid, eventType, bidToken, sellToken, withSell }: BidTable
         return ['Seconds ago', timestamp]
     }, [bid.createdAt])
 
+    const isStartOrRestart = eventType === 'Start' || eventType === 'Restart'
+
     return (
         <Table.Row
             container={TableRow}
@@ -139,7 +165,7 @@ function BidTableRow({ bid, eventType, bidToken, sellToken, withSell }: BidTable
                 {
                     content: (
                         <Flex>
-                            {eventType === 'Start' ? (
+                            {isStartOrRestart ? (
                                 <Text>--</Text>
                             ) : (
                                 <AddressLink chainId={chain?.id as ChainId} address={bid.owner || bid.bidder} isOwner />
@@ -152,7 +178,7 @@ function BidTableRow({ bid, eventType, bidToken, sellToken, withSell }: BidTable
                           {
                               content: (
                                   <Text>
-                                      {eventType === 'Start'
+                                      {isStartOrRestart
                                           ? '--'
                                           : `${formatNumberWithStyle(bid.sellAmount, { maxDecimals: 4 })} ${sellToken}`}
                                   </Text>
@@ -163,7 +189,7 @@ function BidTableRow({ bid, eventType, bidToken, sellToken, withSell }: BidTable
                 {
                     content: (
                         <Text>
-                            {eventType === 'Start'
+                            {isStartOrRestart
                                 ? '--'
                                 : `${formatNumberWithStyle(bid.buyAmount, { maxDecimals: 4 })} ${bidToken}`}
                         </Text>

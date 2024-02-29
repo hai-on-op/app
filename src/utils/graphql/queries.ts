@@ -276,3 +276,16 @@ export const PROXY_OWNER_QUERY = gql`
         }
     }
 `
+
+export const AUCTION_RESTART_QUERY = gql`
+    query AuctionRestarts {
+        englishAuctions(
+            where: { auctionRestartHashes_not: [] }
+        ) {
+            auctionId
+            englishAuctionType
+            auctionRestartHashes
+            auctionRestartTimestamps
+        }
+    }
+`
