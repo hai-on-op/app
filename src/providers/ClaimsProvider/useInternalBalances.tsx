@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
-import { usePublicGeb } from '~/hooks'
-import { useStoreActions, useStoreState } from '~/store'
+
 import { formatSummaryCurrency } from '~/utils'
+import { useStoreActions, useStoreState } from '~/store'
+import { usePublicGeb } from '~/hooks'
 
 export function useInternalBalances() {
     const {
@@ -14,9 +15,13 @@ export function useInternalBalances() {
     const geb = usePublicGeb()
 
     return useMemo(() => {
+        // ignore tiny balances
+        const haiBalance = parseFloat(internalBalance) < 0.1 ? '0' : internalBalance
+        const kiteBalance = parseFloat(protInternalBalance) < 0.01 ? '0' : protInternalBalance
         const balances = {
-            HAI: formatSummaryCurrency(internalBalance, liquidationData?.currentRedemptionPrice || '1'),
-            KITE: formatSummaryCurrency(protInternalBalance, '10'),
+            HAI: formatSummaryCurrency(haiBalance, liquidationData?.currentRedemptionPrice || '1'),
+            // TODO: get kite price
+            KITE: formatSummaryCurrency(kiteBalance, '10'),
         }
         return {
             ...balances,
