@@ -1,15 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
-import { MEDIA_WIDTHS } from '~/utils'
+import { MEDIA_WIDTHS, type MediaWidth } from '~/utils'
 
 const matchMedia = (query: string) =>
     window.matchMedia(
         // eslint-disable-next-line no-prototype-builtins
-        MEDIA_WIDTHS.hasOwnProperty(query)
-            ? `(min-width: ${MEDIA_WIDTHS[query as keyof typeof MEDIA_WIDTHS]}px)`
-            : query
+        MEDIA_WIDTHS.hasOwnProperty(query) ? `(min-width: ${MEDIA_WIDTHS[query as MediaWidth]}px)` : query
     )
 
-export function useMediaQuery(query: keyof typeof MEDIA_WIDTHS | string) {
+export function useMediaQuery(query: MediaWidth | string) {
     const [matches, setMatches] = useState(() => matchMedia(query).matches)
     const matchesRef = useRef(matches)
     matchesRef.current = matches

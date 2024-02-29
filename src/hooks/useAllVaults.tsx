@@ -14,22 +14,10 @@ import { useStoreState } from '~/store'
 import { type FlexProps } from '~/styles'
 
 const sortableHeaders: (SortableHeader & FlexProps)[] = [
-    {
-        label: 'Vault',
-        $justify: 'flex-start',
-    },
-    {
-        label: 'Owner',
-        $justify: 'flex-start',
-    },
-    {
-        label: 'Collateral',
-        $justify: 'flex-end',
-    },
-    {
-        label: 'Debt',
-        $justify: 'flex-end',
-    },
+    { label: 'Vault' },
+    { label: 'Owner' },
+    { label: 'Collateral' },
+    { label: 'Debt' },
     { label: 'Collateral Ratio' },
     {
         label: '',

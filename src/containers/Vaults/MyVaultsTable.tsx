@@ -69,8 +69,8 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                             },
                             {
                                 content: (
-                                    <Flex $align="center" $gap={12}>
-                                        <Text>
+                                    <Table.ItemGrid $columns="1fr 1.25fr">
+                                        <Text $textAlign="right">
                                             {collateralRatio
                                                 ? formatNumberWithStyle(collateralRatio, {
                                                       scalingFactor: 0.01,
@@ -78,27 +78,31 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                                                   })
                                                 : '--%'}
                                         </Text>
-                                        <StatusLabel
-                                            status={riskStateToStatus[riskState] || Status.UNKNOWN}
-                                            size={0.8}
-                                        />
-                                    </Flex>
+                                        <Flex $justify="flex-start" $align="center">
+                                            <StatusLabel
+                                                status={riskStateToStatus[riskState] || Status.UNKNOWN}
+                                                size={0.8}
+                                            />
+                                        </Flex>
+                                    </Table.ItemGrid>
                                 ),
                             },
                             {
                                 content: (
-                                    <Flex $align="center" $gap={8}>
-                                        <Text>{formatNumberWithStyle(collateral, { maxDecimals: 4 })}</Text>
+                                    <Table.ItemGrid>
+                                        <Text $textAlign="right">
+                                            {formatNumberWithStyle(collateral, { maxDecimals: 4 })}
+                                        </Text>
                                         <Text>{collateralName.toUpperCase()}</Text>
-                                    </Flex>
+                                    </Table.ItemGrid>
                                 ),
                             },
                             {
                                 content: (
-                                    <Flex $align="center" $gap={8}>
-                                        <Text>{formatNumberWithStyle(totalDebt)}</Text>
+                                    <Table.ItemGrid>
+                                        <Text $textAlign="right">{formatNumberWithStyle(totalDebt)}</Text>
                                         <Text>HAI</Text>
-                                    </Flex>
+                                    </Table.ItemGrid>
                                 ),
                             },
                             {
@@ -124,7 +128,7 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
 }
 
 const TableHeader = styled(Grid)`
-    grid-template-columns: 2.25fr minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) 120px;
+    grid-template-columns: 2.25fr minmax(100px, 1.25fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) 120px;
     align-items: center;
     padding: 4px;
     padding-left: 8px;

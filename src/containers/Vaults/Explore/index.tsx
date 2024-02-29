@@ -94,6 +94,7 @@ export function VaultExplorer() {
                     loading={loading}
                     error={error?.message}
                     isEmpty={!rows.length}
+                    compactQuery="upToMedium"
                     rows={rows
                         .slice(RECORDS_PER_PAGE * offset, RECORDS_PER_PAGE * (offset + 1))
                         .map(({ safeId, owner, collateral, totalDebt, collateralRatio, collateralToken, status }) => {
@@ -104,6 +105,7 @@ export function VaultExplorer() {
                                     key={safeId}
                                     container={TableRow}
                                     headers={headers}
+                                    compactQuery="upToMedium"
                                     items={[
                                         {
                                             // content: <Text>#{safeId}</Text>,
@@ -120,8 +122,8 @@ export function VaultExplorer() {
                                             content: <AddressLink address={owner.address} isOwner />,
                                         },
                                         {
-                                            content: isLargerThanSmall ? (
-                                                <Grid $columns="1fr 24px 48px" $align="center" $gap={8}>
+                                            content: (
+                                                <Table.ItemGrid $columns="1fr 24px 48px" $compactQuery="upToMedium">
                                                     <Text $textAlign="right">
                                                         {formatNumberWithStyle(collateral, {
                                                             maxDecimals: 2,
@@ -130,46 +132,25 @@ export function VaultExplorer() {
                                                     </Text>
                                                     <TokenArray tokens={[collateralToken as any]} hideLabel size={24} />
                                                     <Text>{collateralToken}</Text>
-                                                </Grid>
-                                            ) : (
-                                                <Flex $justify="flex-start" $align="center" $gap={8}>
-                                                    <Text $textAlign="right">
-                                                        {formatNumberWithStyle(collateral, {
-                                                            maxDecimals: 2,
-                                                            maxSigFigs: 4,
-                                                        })}
-                                                    </Text>
-                                                    <TokenArray tokens={[collateralToken as any]} hideLabel size={24} />
-                                                    <Text>{collateralToken}</Text>
-                                                </Flex>
-                                            ),
-                                        },
-                                        {
-                                            content: isLargerThanSmall ? (
-                                                <Grid $columns="1fr 24px" $gap={8}>
-                                                    <Text $textAlign="right">
-                                                        {formatNumberWithStyle(totalDebt, {
-                                                            maxDecimals: 2,
-                                                            maxSigFigs: 4,
-                                                        })}
-                                                    </Text>
-                                                    <Text>HAI</Text>
-                                                </Grid>
-                                            ) : (
-                                                <Flex $justify="flex-start" $align="center" $gap={8}>
-                                                    <Text $textAlign="right">
-                                                        {formatNumberWithStyle(totalDebt, {
-                                                            maxDecimals: 2,
-                                                            maxSigFigs: 4,
-                                                        })}
-                                                    </Text>
-                                                    <Text>HAI</Text>
-                                                </Flex>
+                                                </Table.ItemGrid>
                                             ),
                                         },
                                         {
                                             content: (
-                                                <Grid $columns="1fr 1fr" $gap={12}>
+                                                <Table.ItemGrid $columns="1fr 24px" $compactQuery="upToMedium">
+                                                    <Text $textAlign="right">
+                                                        {formatNumberWithStyle(totalDebt, {
+                                                            maxDecimals: 2,
+                                                            maxSigFigs: 4,
+                                                        })}
+                                                    </Text>
+                                                    <Text>HAI</Text>
+                                                </Table.ItemGrid>
+                                            ),
+                                        },
+                                        {
+                                            content: (
+                                                <Table.ItemGrid $columns="1fr 1fr" $gap={12} $compactQuery="upToMedium">
                                                     <Flex $justify="flex-end" $align="center">
                                                         <Text>
                                                             {collateralRatio === Infinity.toString()
@@ -183,7 +164,7 @@ export function VaultExplorer() {
                                                     <Flex $justify="flex-start" $align="center">
                                                         <StatusLabel status={status} size={0.8} />
                                                     </Flex>
-                                                </Grid>
+                                                </Table.ItemGrid>
                                             ),
                                         },
                                         {
@@ -278,12 +259,12 @@ const StyledTableContainer = styled(TableContainer)`
     padding: 48px;
     padding-top: 24px;
 
-    ${({ theme }) => theme.mediaWidth.upToSmall`
+    ${({ theme }) => theme.mediaWidth.upToMedium`
         padding: 0px;
     `}
 `
 const TableHeaderBase = styled(Grid)`
-    grid-template-columns: 80px 120px 180px 180px 1fr 120px;
+    grid-template-columns: 80px 120px 1fr 1fr 1.5fr 120px;
     align-items: center;
     grid-gap: 12px;
     padding: 8px 16px;
@@ -308,17 +289,25 @@ const TableRow = styled(TableHeaderBase)`
         background-color: rgba(0, 0, 0, 0.1);
     }
 
-    ${({ theme }) => theme.mediaWidth.upToSmall`
+    ${({ theme }) => theme.mediaWidth.upToMedium`
         padding: 24px;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr 1fr 1fr;
         grid-gap: 12px;
         border-radius: 0px;
         border-bottom: ${theme.border.medium};
         &:hover {
             background-color: unset;
         }
-        & > * > * {
-            justify-content: flex-start;
+        & > *:nth-child(6) {
+            grid-row: 1;
+            grid-column: 3;
+        }
+    `}
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        grid-template-columns: 1fr 1fr;
+        & > *:nth-child(6) {
+            grid-row: unset;
+            grid-column: 1 / -1;
         }
     `}
 `
