@@ -1,7 +1,5 @@
 import { useEffect, useCallback, useMemo } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { toast } from 'react-toastify'
 import { utils } from 'ethers'
 import { useAccount, useNetwork } from 'wagmi'
 import { getTokenList } from '@hai-on-op/sdk'
@@ -9,13 +7,11 @@ import { getTokenList } from '@hai-on-op/sdk'
 import type { ReactChildren } from '~/types'
 import {
     EMPTY_ADDRESS,
-    ETHERSCAN_PREFIXES,
     NETWORK_ID,
     // SYSTEM_STATUS,
     ActionState,
     ChainId,
     blockedAddresses,
-    capitalizeName,
     getNetworkName,
     isAddress,
     timeout,
@@ -29,7 +25,6 @@ import styled from 'styled-components'
 import { CenteredFlex, Flex } from '~/styles'
 import { ImagePreloader } from '~/components/ImagePreloader'
 import { BlockedAddress } from '~/components/BlockedAddress'
-import { ToastPayload } from '~/components/ToastPayload'
 import { ParallaxBackground } from '~/components/ParallaxBackground'
 import { Header } from './Header'
 import { WaitingModal } from '~/components/Modal/WaitingModal'
@@ -40,15 +35,10 @@ import { StartAuction } from './Auctions/StartAuction'
 
 const playlist = ['/audio/get-hai-together.wav', '/audio/hai-as-fuck.wav']
 
-const toastId = 'networdToastHash'
-const successAccountConnection = 'successAccountConnection'
-
 type Props = {
     children: ReactChildren
 }
 export function Shared({ children }: Props) {
-    const { t } = useTranslation()
-
     const { address: account } = useAccount()
     const previousAccount = usePrevious(account)
     const { chain } = useNetwork()
@@ -230,32 +220,10 @@ export function Shared({ children }: Props) {
         const id: ChainId = chainId
         if (chain?.id !== id) {
             popupsActions.setIsInitializing(false)
-            const chainName = ETHERSCAN_PREFIXES[id]
             connectWalletActions.setIsWrongNetwork(true)
-            toast(
-                <ToastPayload
-                    icon="AlertTriangle"
-                    iconSize={40}
-                    iconColor="orange"
-                    textColor="#272727"
-                    text={`
-                        ${t('wrong_network')} ${capitalizeName(chainName === '' ? 'Mainnet' : chainName)}
-                    `}
-                />,
-                {
-                    autoClose: false,
-                    type: 'warning',
-                    toastId,
-                }
-            )
         } else {
-            toast.update(toastId, { autoClose: 1 })
             connectWalletActions.setIsWrongNetwork(false)
             if (account) {
-                toast(<ToastPayload icon="Check" iconColor="green" text={t('wallet_connected')} />, {
-                    type: 'success',
-                    toastId: successAccountConnection,
-                })
                 connectWalletActions.setStep(1)
                 accountChecker()
             } else {

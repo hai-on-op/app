@@ -1,11 +1,8 @@
 import { useEffect, useMemo } from 'react'
-import { toast } from 'react-toastify'
 import { useNetwork } from 'wagmi'
 
 import { useStoreActions, useStoreState } from '~/store'
 import { useEthersProvider } from '~/hooks'
-
-import { ToastPayload } from '~/components/ToastPayload'
 
 type CheckTransaction = {
     addedTime: number
@@ -31,7 +28,6 @@ export function shouldCheck(lastBlockNumber: number, tx: CheckTransaction): bool
 }
 
 export function TransactionUpdater(): null {
-    const toastId = 'transactionId'
     const { chain } = useNetwork()
     const chainId = chain?.id
     const provider = useEthersProvider()
@@ -66,23 +62,6 @@ export function TransactionUpdater(): null {
                                 },
                                 confirmedTime: new Date().getTime(),
                             })
-                            toast(
-                                <ToastPayload
-                                    icon={receipt.status === 1 ? 'Check' : 'AlertTriangle'}
-                                    iconColor={receipt.status === 1 ? 'green' : 'red'}
-                                    text={
-                                        receipt.status === 1
-                                            ? transactions[hash].summary || 'Transaction Confirmed'
-                                            : 'Transaction Failed'
-                                    }
-                                    payload={{
-                                        type: 'transaction',
-                                        value: hash,
-                                        chainId,
-                                    }}
-                                />,
-                                { toastId }
-                            )
                         } else {
                             transactionsActions.checkTransaction({
                                 tx: transactions[hash],

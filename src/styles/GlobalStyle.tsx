@@ -153,8 +153,4 @@ export const GlobalStyle = createGlobalStyle`
     .text-strike {
         text-decoration: line-through;
     }
-
-    .Toastify__toast-container--top-right {
-        top: 6rem !important;
-    }
 `
