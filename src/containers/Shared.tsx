@@ -269,7 +269,7 @@ export function Shared({ children }: Props) {
                 )}
             </Background>
             {!isSplash && <ParallaxBackground />}
-            <Header tickerActive={!isSplash} />
+            <Header tickerActive={true} />
             <ClaimModal />
             {!isSplash && <WaitingModal />}
 
