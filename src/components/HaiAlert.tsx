@@ -26,7 +26,7 @@ export function HaiAlert({ active, setActive }: HaiAlertProps) {
         <Container $active={active}>
             <HaiIconContainer $active={active} onClick={() => setActive((a) => !a)}>
                 <ChevronLeft />
-                <StatusLabel status={Status.NEUTRAL} unpadded $padding="2px 8px 2px 4px">
+                <StatusLabel status={Status.UNKNOWN} unpadded $padding="2px 8px 2px 4px">
                     <HaiFace size={18} filled />
                     <Text $fontWeight={700}>HAI</Text>
                 </StatusLabel>
