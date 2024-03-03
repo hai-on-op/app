@@ -2,7 +2,13 @@ import { useMemo, useState } from 'react'
 import { useQuery } from '@apollo/client'
 
 import type { SortableHeader, Sorting, Strategy } from '~/types'
-import { ALL_COLLATERAL_TYPES_QUERY, type QueryCollateralType, arrayToSorted, tokenAssets } from '~/utils'
+import {
+    ALL_COLLATERAL_TYPES_QUERY,
+    type QueryCollateralType,
+    arrayToSorted,
+    tokenAssets,
+    HARDCODED_KITE,
+} from '~/utils'
 import { useStoreState } from '~/store'
 
 const sortableHeaders: SortableHeader[] = [
@@ -86,7 +92,7 @@ export function useEarnStrategies() {
                 const nominal =
                     !liquidationData?.currentRedemptionPrice || !opPrice
                         ? Infinity
-                        : ((rewards.KITE * 10 + rewards.OP * opPrice) * 365) /
+                        : ((rewards.KITE * HARDCODED_KITE + rewards.OP * opPrice) * 365) /
                           (parseFloat(cType.debtAmount) * parseFloat(liquidationData?.currentRedemptionPrice || '0'))
                 const apy = nominal === Infinity ? 0 : Math.pow(1 + nominal / 12, 12) - 1
                 return {

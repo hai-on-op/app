@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { formatSummaryCurrency } from '~/utils'
+import { HARDCODED_KITE, formatSummaryCurrency } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { usePublicGeb } from '~/hooks'
 
@@ -21,7 +21,7 @@ export function useInternalBalances() {
         const balances = {
             HAI: formatSummaryCurrency(haiBalance, liquidationData?.currentRedemptionPrice || '1'),
             // TODO: get kite price
-            KITE: formatSummaryCurrency(kiteBalance, '10'),
+            KITE: formatSummaryCurrency(kiteBalance, HARDCODED_KITE.toString()),
         }
         return {
             ...balances,

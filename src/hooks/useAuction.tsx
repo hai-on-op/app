@@ -3,7 +3,7 @@ import { BigNumber } from 'ethers'
 import { formatEther } from 'ethers/lib/utils'
 
 import type { IAuction } from '~/types'
-import { formatNumberWithStyle, getAuctionStatus, parseRemainingTime, tokenMap } from '~/utils'
+import { HARDCODED_KITE, formatNumberWithStyle, getAuctionStatus, parseRemainingTime, tokenMap } from '~/utils'
 import { useStoreState } from '~/store'
 
 export function useAuction(auction: IAuction, timeEl?: HTMLElement | null) {
@@ -81,7 +81,7 @@ export function useAuction(auction: IAuction, timeEl?: HTMLElement | null) {
                 return liquidationData?.currentRedemptionPrice || '0'
             case 'KITE':
                 // TODO: get KITE price
-                return '10'
+                return HARDCODED_KITE.toString()
             default:
                 return liquidationData?.collateralLiquidationData[sellToken]?.currentPrice.value || '0'
         }

@@ -11,6 +11,7 @@ import {
     formatSummaryValue,
     getAuctionStatus,
     stringExistsAndMatchesOne,
+    HARDCODED_KITE,
 } from '~/utils'
 import { useStoreState } from '~/store'
 
@@ -66,7 +67,7 @@ export function useMyActiveAuctions() {
                     return total + parseFloat(buyAmount) * parseFloat(currentRedemptionPrice)
                 case 'SURPLUS':
                     // TODO: get KITE price
-                    return total + parseFloat(buyAmount) * 10
+                    return total + parseFloat(buyAmount) * HARDCODED_KITE
                 default:
                     return total
             }
@@ -92,7 +93,7 @@ export function useMyActiveAuctions() {
             switch (auction.englishAuctionType) {
                 case 'DEBT':
                     // TODO: get KITE price
-                    return total + parseFloat(sellAmount) * 10
+                    return total + parseFloat(sellAmount) * HARDCODED_KITE
                 case 'SURPLUS':
                     return total + parseFloat(sellAmount) * parseFloat(currentRedemptionPrice)
                 default:
