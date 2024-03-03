@@ -30,7 +30,7 @@ export function IconCycler({ size = 32, icons, duration = 1500 }: IconCyclerProp
 
     return (
         <Container $size={size} $bg={icons[index]?.bg}>
-            <Inner $index={index}>
+            <Inner $size={size} $index={index}>
                 {icons.map(({ icon }, i) =>
                     typeof icon === 'string' ? <img key={i} src={icon} alt="" /> : <Fragment key={i}>{icon}</Fragment>
                 )}
@@ -57,6 +57,9 @@ const Container = styled(Flex).attrs((props) => ({
     & img {
         width: ${({ $size }) => $size - 2}px;
         height: ${({ $size }) => $size - 2}px;
+        flex-grow: 0;
+        flex-shrink: 0;
+        border-radius: 50%;
     }
 `
 const Inner = styled(Flex).attrs((props) => ({
@@ -64,12 +67,12 @@ const Inner = styled(Flex).attrs((props) => ({
     $align: 'center',
     $shrink: 0,
     ...props,
-}))<{ $index: number }>`
+}))<{ $size: number; $index: number }>`
     position: absolute;
-    top: -1px;
-    bottom: -1px;
+    top: 0px;
+    bottom: 0px;
     transition: left 0.25s ease;
-    left: ${({ $index }) => `${-100 * $index}%`};
+    left: ${({ $size, $index }) => `${-$index * ($size - 2)}px`};
 `
 
 IconCycler.Container = Container
