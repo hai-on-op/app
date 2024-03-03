@@ -33,16 +33,14 @@ export function ProgressIndicator({ progress, simulatedProgress, colorLimits, la
             )}
             {labels?.map(({ progress: p, label }, i) => (
                 <Label key={i} $left={progressToPercentage(p)}>
-                    <Text $whiteSpace="nowrap" $fontSize="8px">
-                        {label}
-                    </Text>
+                    <Text $whiteSpace="nowrap">{label}</Text>
                 </Label>
             ))}
         </Container>
     )
 }
 
-const CONTAINER_SIZE = 52
+const CONTAINER_SIZE = 72
 const BAR_SIZE = 12
 
 const Container = styled(CenteredFlex)`
@@ -51,6 +49,7 @@ const Container = styled(CenteredFlex)`
     height: ${CONTAINER_SIZE}px;
     background-color: transparent;
     overflow: visible;
+
     z-index: 0;
 `
 const Inner = styled.div<{ $limits: [string, string, string] }>`
@@ -74,7 +73,7 @@ const Indicator = styled(Flex).attrs((props) => ({
     $column: true,
     $justify: 'flex-end',
     $align: 'center',
-    $fontSize: '11px',
+    $fontSize: '14px',
     $fontWeight: 700,
     ...props,
 }))<{ $left: string }>`
@@ -112,6 +111,10 @@ const Indicator = styled(Flex).attrs((props) => ({
         )`};
     }
 
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        font-size: 11px;
+    `}
+
     z-index: 1;
 `
 const Label = styled(Flex).attrs((props) => ({
@@ -136,6 +139,9 @@ const Label = styled(Flex).attrs((props) => ({
         background-color: black;
     }
 
+    ${({ theme }) => theme.mediaWidth.upToMedium`
+        font-size: 9px;
+    `}
     ${({ theme }) => theme.mediaWidth.upToSmall`
         font-size: 8px;
     `}

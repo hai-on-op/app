@@ -13,6 +13,7 @@ type OverviewStatProps = {
     token?: TokenKey
     value: string | number
     label: string
+    labelOnTop?: boolean
     tooltip?: string
     convertedValue?: string | number
     alert?: {
@@ -26,6 +27,7 @@ export function OverviewStat({
     token,
     value,
     label,
+    labelOnTop = false,
     tooltip,
     convertedValue,
     alert,
@@ -34,25 +36,35 @@ export function OverviewStat({
 }: OverviewStatProps) {
     return (
         <StatContainer $fullWidth={fullWidth}>
+            {labelOnTop && (
+                <Flex $justify="flex-start" $align="center" $gap={4}>
+                    <Text $fontSize="0.8em" $whiteSpace="nowrap">
+                        {label}
+                    </Text>
+                    {!!tooltip && <Tooltip width="200px">{tooltip}</Tooltip>}
+                </Flex>
+            )}
             <Flex $align="center" $gap={12}>
                 {!!token && <TokenArray size={48} tokens={[token]} hideLabel />}
                 <Flex $column $justify="center" $align="flex-start" $gap={4}>
                     <ValueContainer>
-                        <Text $fontSize="1.25em" $fontWeight={700}>
+                        <Text $fontSize="1.5em" $fontWeight={700}>
                             {value || '--'} {token}
                         </Text>
-                        <Text $fontSize="0.8em" $color="rgba(0,0,0,0.6)">
+                        <Text $fontSize="1.2em" $color="rgba(0,0,0,0.6)">
                             {convertedValue}
                         </Text>
                     </ValueContainer>
-                    <Flex $justify="flex-start" $align="center" $gap={4}>
-                        <Text $fontSize="0.8em" $whiteSpace="nowrap">
-                            {label}
-                        </Text>
-                        {!!tooltip && <Tooltip width="200px">{tooltip}</Tooltip>}
-                    </Flex>
                 </Flex>
             </Flex>
+            {!labelOnTop && (
+                <Flex $justify="flex-start" $align="center" $gap={4}>
+                    <Text $fontSize="0.8em" $whiteSpace="nowrap">
+                        {label}
+                    </Text>
+                    {!!tooltip && <Tooltip width="200px">{tooltip}</Tooltip>}
+                </Flex>
+            )}
             <StatusContainer hidden={!simulatedValue && !alert}>
                 {!!alert && (
                     <StatusLabel status={alert.status} size={0.8}>
@@ -132,8 +144,10 @@ export function OverviewProgressStat({
 }
 
 const StatContainer = styled(Flex).attrs((props) => ({
+    $column: true,
     $justify: 'space-between',
     $align: 'flex-start',
+    $gap: 4,
     $borderOpacity: 0.2,
     ...props,
 }))<DashedContainerProps & { $fullWidth?: boolean }>`
@@ -154,6 +168,7 @@ const StatContainer = styled(Flex).attrs((props) => ({
         justify-content: flex-start;
         align-items: flex-start;
         gap: 12px;
+        font-size: 0.8rem;
     `}
 `
 const ProgressStatContainer = styled(StatContainer)`
@@ -169,9 +184,10 @@ const ProgressStatContainer = styled(StatContainer)`
 `
 
 const ValueContainer = styled(Flex).attrs((props) => ({
+    $column: true,
     $justify: 'flex-start',
-    $align: 'center',
-    $gap: 8,
+    $align: 'flex-start',
+    $gap: 0,
     ...props,
 }))`
     /* ${({ theme }) => theme.mediaWidth.upToSmall`

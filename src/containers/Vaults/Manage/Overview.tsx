@@ -132,6 +132,18 @@ export function Overview() {
                         </StatusLabel>
                     )}
                 </Flex>
+                <StatusLabel status={Status.NEGATIVE}>
+                    {apy
+                        ? formatNumberWithStyle(apy, {
+                              minDecimals: 1,
+                              maxDecimals: 1,
+                              style: 'percent',
+                              scalingFactor: 100,
+                              suffixed: true,
+                          })
+                        : '--%'}{' '}
+                    Rewards APY
+                </StatusLabel>
                 <Flex $justify="flex-end" $align="center" $gap={12} $fontSize="0.8em">
                     <Text>
                         {collateral.name}:&nbsp;
@@ -166,21 +178,7 @@ export function Overview() {
                     label="Locked Collateral"
                     convertedValue={summary.collateral.current?.usdFormatted || summary.collateral.after.usdFormatted}
                     simulatedValue={vault && simulation?.collateral ? summary.collateral.after.formatted : ''}
-                    alert={{
-                        value: `${
-                            apy
-                                ? formatNumberWithStyle(apy, {
-                                      minDecimals: 1,
-                                      maxDecimals: 1,
-                                      style: 'percent',
-                                      scalingFactor: 100,
-                                      suffixed: true,
-                                  })
-                                : '--%'
-                        } Rewards APY`,
-                        status: Status.NEGATIVE,
-                    }}
-                    fullWidth
+                    labelOnTop
                 />
                 <OverviewStat
                     value={summary.debt.current?.formatted || summary.debt.after.formatted}
@@ -188,12 +186,15 @@ export function Overview() {
                     label="Minted HAI Debt"
                     convertedValue={summary.debt.current?.usdFormatted || summary.debt.after.usdFormatted}
                     simulatedValue={vault && simulation?.debt ? summary.debt.after.formatted : ''}
-                    fullWidth
+                    labelOnTop
                 />
                 <OverviewStat
-                    value={summary.stabilityFee.formatted}
-                    label="Stability Fee"
-                    tooltip={t('stability_fee_tip')}
+                    value={summary.liquidationPrice.current?.formatted || summary.liquidationPrice.after.formatted}
+                    label="Liq. Price"
+                    simulatedValue={
+                        vault && simulation?.liquidationPrice ? summary.liquidationPrice.after.formatted : undefined
+                    }
+                    tooltip={t('liquidation_price_tip')}
                 />
                 <OverviewStat
                     value={
@@ -209,12 +210,9 @@ export function Overview() {
                     tooltip={`Collateral ratio under which this Vault can get liquidated`}
                 />
                 <OverviewStat
-                    value={summary.liquidationPrice.current?.formatted || summary.liquidationPrice.after.formatted}
-                    label="Liq. Price"
-                    simulatedValue={
-                        vault && simulation?.liquidationPrice ? summary.liquidationPrice.after.formatted : undefined
-                    }
-                    tooltip={t('liquidation_price_tip')}
+                    value={summary.stabilityFee.formatted}
+                    label="Stability Fee"
+                    tooltip={t('stability_fee_tip')}
                 />
                 <OverviewProgressStat
                     value={summary.collateralRatio.current?.formatted || summary.collateralRatio.after.formatted}
@@ -249,27 +247,54 @@ const Header = styled(Flex).attrs((props) => ({
     $gap: 12,
     ...props,
 }))`
-    height: 60px;
+    min-height: 60px;
     padding: 24px 0px;
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: flex-start;
+    `}
 `
 
 const Inner = styled(Grid).attrs((props) => ({
     $width: '100%',
-    $columns: '1fr 1fr 1fr',
+    $columns: 'repeat(6, 1fr)',
     $align: 'stretch',
     ...props,
 }))<DashedContainerProps>`
     ${DashedContainerStyle}
     & > * {
-        padding: 24px;
+        padding: 18px;
+        &:nth-child(1) {
+            grid-column: 1 / 4;
+        }
+        &:nth-child(2) {
+            grid-column: 4 / -1;
+        }
+        &:nth-child(3) {
+            grid-column: 1 / 3;
+        }
+        &:nth-child(4) {
+            grid-column: 3 / 5;
+        }
+        &:nth-child(5) {
+            grid-column: 5 / -1;
+        }
     }
     &::after {
         border-top: none;
         border-right: none;
     }
 
-    ${({ theme }) => theme.mediaWidth.upToSmall`
+    ${({ theme }) => theme.mediaWidth.upToMedium`
         & > * {
+            &:nth-child(1) {
+                grid-column: 1 / -1;
+            }
+            &:nth-child(2) {
+                grid-column: 1 / -1;
+            }
             padding: 12px;
         }
     `}
