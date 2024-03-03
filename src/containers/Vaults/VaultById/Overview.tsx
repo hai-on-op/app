@@ -118,6 +118,7 @@ export function Overview({ vault }: OverviewProps) {
                               })
                             : '$--'
                     }
+                    labelOnTop
                 />
                 <OverviewStat
                     value={vault ? formatNumberWithStyle(vault.totalDebt) : '--'}
@@ -128,6 +129,7 @@ export function Overview({ vault }: OverviewProps) {
                             ? formatNumberWithStyle(parseFloat(vault.totalDebt) * haiPrice, { style: 'currency' })
                             : '$--'
                     }
+                    labelOnTop
                 />
                 <OverviewProgressStat
                     value={
