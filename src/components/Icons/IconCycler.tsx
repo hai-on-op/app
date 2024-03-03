@@ -55,8 +55,8 @@ const Container = styled(Flex).attrs((props) => ({
     overflow: hidden;
 
     & img {
-        width: ${({ $size }) => $size}px;
-        height: ${({ $size }) => $size}px;
+        width: ${({ $size }) => $size - 2}px;
+        height: ${({ $size }) => $size - 2}px;
     }
 `
 const Inner = styled(Flex).attrs((props) => ({
@@ -69,7 +69,7 @@ const Inner = styled(Flex).attrs((props) => ({
     top: -1px;
     bottom: -1px;
     transition: left 0.25s ease;
-    left: ${({ $index }) => `calc(${-100 * $index}% - ${1 + 2 * $index}px)`};
+    left: ${({ $index }) => `${-100 * $index}%`};
 `
 
 IconCycler.Container = Container
