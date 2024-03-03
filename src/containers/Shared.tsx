@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useMemo } from 'react'
+import { useEffect, useCallback, useState } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 import { utils } from 'ethers'
 import { useAccount, useNetwork } from 'wagmi'
@@ -18,7 +18,7 @@ import {
 } from '~/utils'
 import { TransactionUpdater } from '~/services/TransactionUpdater'
 import { useStoreState, useStoreActions } from '~/store'
-import { useAnalytics } from '~/providers/AnalyticsProvider'
+// import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { useTokenContract, useEthersSigner, useGeb, usePlaylist, usePrevious, usePublicGeb } from '~/hooks'
 
 import styled from 'styled-components'
@@ -244,13 +244,14 @@ export function Shared({ children }: Props) {
         else pause()
     }, [settingsState.isPlayingMusic, play, pause])
 
-    const {
-        data: { priceDiff },
-    } = useAnalytics()
-    const haiAlertActive = useMemo(() => {
-        // TODO: determine diff threshold
-        return priceDiff > 0
-    }, [priceDiff])
+    // const {
+    //     data: { priceDiff },
+    // } = useAnalytics()
+    // const haiAlertActive = useMemo(() => {
+    //     // TODO: determine diff threshold
+    //     return priceDiff > 0
+    // }, [priceDiff])
+    const [haiAlertActive, setHaiAlertActive] = useState(true)
 
     return (
         <Container>
@@ -294,7 +295,7 @@ export function Shared({ children }: Props) {
                     {children}
                 </Content>
             )}
-            {!isSplash && haiAlertActive && <HaiAlert />}
+            {!isSplash && <HaiAlert active={haiAlertActive} setActive={setHaiAlertActive} />}
             <ImagePreloader />
         </Container>
     )

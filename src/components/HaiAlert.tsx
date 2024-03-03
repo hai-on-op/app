@@ -1,12 +1,20 @@
+import type { SetState } from '~/types'
+import { Status } from '~/utils'
 import { useMediaQuery } from '~/hooks'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 
-import styled, { keyframes } from 'styled-components'
+import styled from 'styled-components'
 import { CenteredFlex, Flex, Text } from '~/styles'
 import { HaiFace } from './Icons/HaiFace'
 import { Elf } from './BrandElements/Elf'
+import { ChevronLeft } from 'react-feather'
+import { StatusLabel } from './StatusLabel'
 
-export function HaiAlert() {
+type HaiAlertProps = {
+    active: boolean
+    setActive: SetState<boolean>
+}
+export function HaiAlert({ active, setActive }: HaiAlertProps) {
     const isUpToSmall = useMediaQuery('upToSmall')
 
     const {
@@ -15,14 +23,17 @@ export function HaiAlert() {
     } = useAnalytics()
 
     return (
-        <Container>
-            <CenteredFlex $gap={24}>
-                <HaiIconContainer>
-                    <HaiFace filled />
-                </HaiIconContainer>
+        <Container $active={active}>
+            <HaiIconContainer $active={active} onClick={() => setActive((a) => !a)}>
+                <ChevronLeft />
+                <StatusLabel status={Status.NEUTRAL} unpadded $padding="2px 8px 2px 4px">
+                    <HaiFace size={18} filled />
+                    <Text $fontWeight={700}>HAI</Text>
+                </StatusLabel>
+                <Text $fontWeight={700}>PRICE ALERT</Text>
+            </HaiIconContainer>
+            <CenteredFlex $width="100%">
                 <Text>
-                    <strong>$HAI ALERT</strong>
-                    {` • `}
                     {isUpToSmall ? `MP ` : `MARKET PRICE `}
                     <strong>{marketPrice.formatted}</strong>
                     {` • `}
@@ -74,56 +85,89 @@ export function HaiAlert() {
     )
 }
 
-const popup = keyframes`
-    0% { bottom: -80px; }
-    100% { bottom: 0px; }
-`
 const Container = styled(Flex).attrs((props) => ({
     $width: '100%',
     $justify: 'space-between',
     $align: 'center',
     $gap: 12,
     ...props,
-}))`
+}))<{ $active: boolean }>`
     position: fixed;
-    left: 0px;
     right: 0px;
-    bottom: -80px;
+    bottom: 0px;
+    left: ${({ $active }) => ($active ? '0vw' : '100vw')};
     height: 80px;
-    padding-left: 24px;
     border-top: ${({ theme }) => theme.border.medium};
     background: ${({ theme }) => theme.colors.gradientSecondary};
-    animation: ${popup} 0.5s ease forwards;
+    transition: left 1s ease;
+    overflow: visible;
+
+    & > *:nth-child(2) {
+        margin-right: 208px;
+        transition: opacity 0.25s ease;
+        transition-delay: ${({ $active }) => ($active ? '0.75s' : '0s')};
+        opacity: ${({ $active }) => ($active ? 1 : 0)};
+    }
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
         font-size: ${theme.font.small};
+        & > *:nth-child(2) {
+            margin-right: 120px;
+        }
     `}
 
     z-index: 10;
 `
-const HaiIconContainer = styled(CenteredFlex).attrs((props) => ({
+const HaiIconContainer = styled(Flex).attrs((props) => ({
+    $justify: 'space-between',
+    $align: 'center',
     $shrink: 0,
+    $gap: 8,
+    $fontSize: '0.875rem',
+    $fontWeight: 700,
     ...props,
-}))`
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    border: ${({ theme }) => theme.border.thin};
-    background-color: ${({ theme }) => theme.colors.greenish};
+}))<{ $active: boolean }>`
+    height: 40px;
+    padding-left: 12px;
+    padding-right: 16px;
+    margin-left: 24px;
+    border-radius: 999px;
+    border: ${({ theme }) => theme.border.medium};
+    background-color: ${({ theme }) => theme.colors.yellowish};
+    transform: translateX(${({ $active }) => ($active ? 'calc(0% + 0px)' : 'calc(-93% - 24px)')});
+    transition: all 1s ease;
+
     & > svg {
-        width: 80%;
+        width: 18px;
         height: auto;
+        transform: rotate(${({ $active }) => ($active ? 180 : 0)}deg);
+        transition: transform 1s ease;
     }
 
-    ${({ theme }) => theme.mediaWidth.upToSmall`
-        display: none;
+    ${({ theme, $active }) => theme.mediaWidth.upToSmall`
+        height: 32px;
+        padding: 0px 4px;
+        margin-left: 12px;
+        transform: translateX(${$active ? 'calc(0% + 0px)' : 'calc(-93% - 8px)'});
+        & > ${Text} {
+            display: none;
+        }
     `}
+
+    cursor: pointer;
+    z-index: 1;
 `
 
 const ElfContainer = styled(CenteredFlex)`
-    position: relative;
+    position: fixed;
+    right: 0px;
     width: 180px;
-    height: 100%;
+    height: 80px;
     overflow: visible;
     pointer-events: none;
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        right: -20px;
+        width: 140px;
+    `}
 `
