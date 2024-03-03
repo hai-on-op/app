@@ -48,7 +48,7 @@ export function BidTable({ auction }: BidTableProps) {
 
     const rows: (IAuctionBidder & { isRestart?: boolean })[] = auction.biddersList
         .concat(
-            (auction as any).restarts.map(
+            (auction as any)?.restarts?.map(
                 ({ hash, timestamp }: any) =>
                     ({
                         bidder: '',
@@ -71,24 +71,27 @@ export function BidTable({ auction }: BidTableProps) {
             headerProps={{ $withSell: withSell }}
             sorting={{ key: '', dir: 'desc' }}
             setSorting={() => {}}
-            rows={rows.map((bid, i) => (
-                <BidTableRow
-                    key={i}
-                    bid={bid}
-                    bidToken={tokenMap[auction.buyToken] || auction.buyToken}
-                    sellToken={tokenMap[auction.sellToken] || auction.sellToken}
-                    eventType={
-                        bid.isRestart
-                            ? 'Restart'
-                            : i === rows.length - 1
-                            ? 'Start'
-                            : hasSettled && i === 0
-                            ? 'Settle'
-                            : buyOrBid
-                    }
-                    withSell={withSell}
-                />
-            ))}
+            rows={rows.map((bid, i) => {
+                if (!bid) return null
+                return (
+                    <BidTableRow
+                        key={i}
+                        bid={bid}
+                        bidToken={tokenMap[auction.buyToken] || auction.buyToken}
+                        sellToken={tokenMap[auction.sellToken] || auction.sellToken}
+                        eventType={
+                            bid.isRestart
+                                ? 'Restart'
+                                : i === rows.length - 1
+                                ? 'Start'
+                                : hasSettled && i === 0
+                                ? 'Settle'
+                                : buyOrBid
+                        }
+                        withSell={withSell}
+                    />
+                )
+            })}
         />
     )
 }
