@@ -23,7 +23,10 @@ export function getAuctionStatus(auction: AuctionStatusProps, auctionsData: Auct
             if (auctionsData && bids.length > 1) {
                 const { createdAt } = bids[0]
                 const timeSinceBid = Date.now() / 1000 - parseInt(createdAt)
-                if (timeSinceBid > auctionsData.debtAuctionHouseParams.bidDuration.toNumber()) {
+                if (
+                    Date.now() > 1000 * parseInt(auction.auctionDeadline) ||
+                    timeSinceBid > auctionsData.debtAuctionHouseParams.bidDuration.toNumber()
+                ) {
                     return Status.SETTLING
                 }
             }
@@ -35,7 +38,10 @@ export function getAuctionStatus(auction: AuctionStatusProps, auctionsData: Auct
             if (auctionsData && bids.length > 1) {
                 const { createdAt } = bids[0]
                 const timeSinceBid = Date.now() / 1000 - parseInt(createdAt)
-                if (timeSinceBid > auctionsData.surplusAuctionHouseParams.bidDuration.toNumber()) {
+                if (
+                    Date.now() > 1000 * parseInt(auction.auctionDeadline) ||
+                    timeSinceBid > auctionsData.surplusAuctionHouseParams.bidDuration.toNumber()
+                ) {
                     return Status.SETTLING
                 }
             }
