@@ -60,6 +60,7 @@ export function AuctionModal({ maxWidth = '600px', onClose, ...props }: ModalPro
     useEffect(() => {
         if (isOpen)
             return () => {
+                setStep(AuctionActionStep.CONFIGURE)
                 auctionActions.setAmount('')
                 auctionActions.setCollateralAmount('')
             }
