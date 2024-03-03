@@ -37,7 +37,8 @@ export function AuctionTable({ headers, rows, sorting, setSorting, isLoading, er
         auctionActions.fetchCollateralData({
             geb,
             collateral: tokenMap[sellToken] || sellToken,
-            auctionIds: rows.filter(({ sellToken: token }) => token === sellToken).map(({ auctionId }) => auctionId),
+            // auctionIds: rows.filter(({ sellToken: token }) => token === sellToken).map(({ auctionId }) => auctionId),
+            auctionIds: [selectedAuction.auctionId],
         })
     }, [selectedAuction, rows])
 
