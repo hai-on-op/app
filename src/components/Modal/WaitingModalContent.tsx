@@ -36,7 +36,7 @@ export function WaitingModalContent({ onClose, hideButton = false }: WaitingModa
         <WaitingContainer className={status}>
             {waitingStatusIcon}
             <Text $fontWeight={700}>{waitingTitle || t('initializing')}</Text>
-            {status === ActionState.SUCCESS && !!hash && (
+            {!!hash && (
                 <AddressLink address={hash} type="transaction">
                     {t('view_etherscan')}
                 </AddressLink>
