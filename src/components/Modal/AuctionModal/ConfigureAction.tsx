@@ -157,6 +157,7 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
 
     const passesChecks = useCallback(() => {
         const maxBidAmountBN = parseWadAmount(maxBid)
+        const maxAmountBN = parseWadAmount(maxAmount)
         const valueBN = parseWadAmount(amount)
         const haiBalanceBN = parseWadAmount(haiBalance)
         const kiteBalanceBN = parseWadAmount(kiteBalance)
@@ -229,6 +230,10 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
                     setError(`Insufficient HAI balance.`)
                     return false
                 }
+                if (valueBN.gt(maxAmountBN)) {
+                    setError(`You cannot bid more than the max`)
+                    return false
+                }
                 const collateralAmountBN = parseWadAmount(collateralAmount)
                 // Collateral Error when there is not enough collateral left to buy
                 if (collateralAmountBN.gt((auction as any).remainingCollateral)) {
@@ -244,6 +249,7 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
         auction,
         maxBid,
         amount,
+        maxAmount,
         collateralAmount,
         bidIncrease,
         bidDecrease,
