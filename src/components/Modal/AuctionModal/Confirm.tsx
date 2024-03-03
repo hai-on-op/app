@@ -98,28 +98,29 @@ export function Confirm({ previousStep }: ConfirmProps) {
                 switch (englishAuctionType) {
                     case 'COLLATERAL':
                         return {
-                            Bid: `${formatNumberWithStyle(amount, { maxDecimals: 7 })} ${
+                            Bid: `${formatNumberWithStyle(amount, { maxSigFigs: 7, maxDecimals: 7 })} ${
                                 tokenMap[buyToken] || buyToken
                             }`,
                             'Amount to Receive': `${formatNumberWithStyle(collateralAmount, {
+                                maxSigFigs: 7,
                                 maxDecimals: 7,
                             })} ${tokenMap[sellToken] || sellToken}`,
                         }
                     case 'DEBT':
                         return {
-                            Bid: `${formatNumberWithStyle(buyInitialAmount, { maxDecimals: 7 })} ${
+                            Bid: `${formatNumberWithStyle(buyInitialAmount, { maxSigFigs: 7, maxDecimals: 7 })} ${
                                 tokenMap[buyToken] || buyToken
                             }`,
-                            'Amount to Receive': `${formatNumberWithStyle(amount, { maxDecimals: 7 })} ${
+                            'Amount to Receive': `${formatNumberWithStyle(amount, { maxSigFigs: 7, maxDecimals: 7 })} ${
                                 tokenMap[sellToken] || sellToken
                             }`,
                         }
                     case 'SURPLUS':
                         return {
-                            Bid: `${formatNumberWithStyle(sellInitialAmount, { maxDecimals: 7 })} ${
+                            Bid: `${formatNumberWithStyle(sellInitialAmount, { maxSigFigs: 7, maxDecimals: 7 })} ${
                                 tokenMap[sellToken] || sellToken
                             }`,
-                            'Amount to Receive': `${formatNumberWithStyle(amount, { maxDecimals: 7 })} ${
+                            'Amount to Receive': `${formatNumberWithStyle(amount, { maxSigFigs: 7, maxDecimals: 7 })} ${
                                 tokenMap[buyToken] || buyToken
                             }`,
                         }
