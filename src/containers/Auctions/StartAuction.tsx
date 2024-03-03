@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react'
 import { useAccount } from 'wagmi'
 
-import { ActionState, formatNumberWithStyle } from '~/utils'
+import { ActionState, formatNumberWithStyle, parseRemainingTime } from '~/utils'
 import { useStoreActions } from '~/store'
-import { handleTransactionError, useCountdown, useStartAuction } from '~/hooks'
+import { handleTransactionError, useCollateralStats, useStartAuction } from '~/hooks'
 
 import styled from 'styled-components'
 import { Flex, HaiButton, Text } from '~/styles'
@@ -20,10 +20,10 @@ export function StartAuction() {
         systemSurplus,
         surplusRequiredToAuction,
         surplusAmountToSell,
-        surplusCooldownDone,
+        // surplusCooldownDone,
         allowStartSurplusAuction,
         surplusDelay,
-        lastSurplusTime,
+        // lastSurplusTime,
         startDebtAcution,
         systemDebt,
         debtAmountToSell,
@@ -78,20 +78,22 @@ export function StartAuction() {
         }
     }
 
-    const [countdownEl, setCountdownEl] = useState<HTMLElement | null>(null)
+    const { rows } = useCollateralStats()
 
-    const countdown = useMemo(() => {
-        if (!lastSurplusTime || !surplusDelay) return 0
-        return lastSurplusTime.add(surplusDelay).toNumber()
-    }, [surplusDelay, lastSurplusTime])
+    const annualEarnings = useMemo(() => {
+        return rows.reduce((earnings, { stabilityFee = 0, totalDebt }) => {
+            return earnings + stabilityFee * parseFloat(totalDebt?.usdRaw || '0')
+        }, 0)
+    }, [rows])
 
-    const [progress, setProgress] = useState(0)
+    const [surplusProgress = undefined, estimatedTimeRemaining = undefined] = useMemo(() => {
+        if (!annualEarnings || !systemSurplus || !surplusRequiredToAuction.total) return []
 
-    useCountdown(countdown, countdownEl, {
-        onStart: surplusDelay ? (sec: number) => setProgress(1 - sec / surplusDelay.toNumber()) : undefined,
-        onMinute: surplusDelay ? (min: number) => setProgress(1 - (60 * min) / surplusDelay.toNumber()) : undefined,
-        onEnd: () => setProgress(1),
-    })
+        const delta = parseFloat(surplusRequiredToAuction.total) - parseFloat(systemSurplus)
+        const progress = 1 - delta / parseFloat(surplusRequiredToAuction.total)
+        const estimatedDays = delta / (annualEarnings / 365)
+        return [progress, parseRemainingTime(estimatedDays * 24 * 60 * 60 * 1000)]
+    }, [annualEarnings, systemSurplus, surplusRequiredToAuction.total])
 
     if (!address) return null
 
@@ -106,12 +108,16 @@ export function StartAuction() {
                 <Stats
                     stats={[
                         {
-                            header: formatNumberWithStyle(systemSurplus) + ' HAI',
+                            header: `${formatNumberWithStyle(systemSurplus)} HAI`,
                             label: 'System Surplus',
-                            tooltip: `Total surplus accrued in the protocol's balance sheet. This is used to cover potential bad debt and for surplus auctions.`,
+                            tooltip: `Total surplus accrued in the protocol's balance sheet. This is used to cover potential bad debt and for surplus auctions. The surplus must exceed ${
+                                surplusRequiredToAuction.total
+                                    ? formatNumberWithStyle(surplusRequiredToAuction.total)
+                                    : '--'
+                            } HAI before auction may begin`,
                         },
                         {
-                            header: formatNumberWithStyle(surplusAmountToSell) + ' HAI',
+                            header: `${formatNumberWithStyle(surplusAmountToSell)} HAI`,
                             label: 'Surplus Amount to Sell',
                             tooltip: `Amount of HAI sold in Surplus Auction. System surplus must exceed ${
                                 surplusRequiredToAuction.total
@@ -122,16 +128,17 @@ export function StartAuction() {
                         {
                             header: (
                                 <Flex $width="100%" $justify="flex-start" $align="center" $gap={8} $grow={1}>
-                                    <ProgressBar
-                                        progress={progress}
-                                        overlayLabel={
-                                            <Text
-                                                ref={setCountdownEl}
-                                                $fontSize="0.6rem"
-                                                hidden={!countdown || progress === 1 || surplusCooldownDone}
-                                            />
-                                        }
-                                    />
+                                    <ProgressBar progress={surplusProgress || 0} />
+                                    <Flex $column $justify="center" $align="flex-start">
+                                        <Text $whiteSpace="nowrap">Est. Time:</Text>
+                                        <Text>
+                                            {estimatedTimeRemaining
+                                                ? estimatedTimeRemaining.days > 1
+                                                    ? `${estimatedTimeRemaining.days}d ${estimatedTimeRemaining.hours}h`
+                                                    : `${estimatedTimeRemaining.hours}h ${estimatedTimeRemaining}m`
+                                                : '--:--:--'}
+                                        </Text>
+                                    </Flex>
                                 </Flex>
                             ),
                             label: 'Cooldown Status',
@@ -139,7 +146,7 @@ export function StartAuction() {
                                 surplusDelay
                                     ? formatNumberWithStyle(surplusDelay.toNumber() / 3600, { maxDecimals: 1 })
                                     : '--'
-                            } hours.`,
+                            } hours. Estimated time remaining is calculated based on the annual earnings of the protocol through stability fees on minted debt.`,
                             button: (
                                 <HaiButton
                                     disabled={!address || isLoading || !allowStartSurplusAuction || surplusSuccess}
@@ -163,18 +170,18 @@ export function StartAuction() {
                 <Stats
                     stats={[
                         {
-                            header: formatNumberWithStyle(systemDebt) + ' HAI',
+                            header: `${formatNumberWithStyle(systemDebt)} HAI`,
                             label: 'System Debt',
                             tooltip: 'Amount of uncovered or bad debt in protocol',
                         },
                         {
-                            header: formatNumberWithStyle(debtAmountToSell) + ' HAI',
+                            header: `${formatNumberWithStyle(debtAmountToSell)} HAI`,
                             label: 'Debt Amount to Sell',
                             tooltip: `Amount of HAI raised per Debt Auction.  If needed, multiple Debt Auctions may run simultaneously.`,
                         },
 
                         {
-                            header: formatNumberWithStyle(protocolTokensOffered) + ' KITE',
+                            header: `${formatNumberWithStyle(protocolTokensOffered)} KITE`,
                             label: 'Protocol Tokens to be Offered',
                             tooltip: `Maximum number of protocol tokens to be minted and sold during a Debt Auction`,
                             button: (
