@@ -25,6 +25,21 @@ const headers: SortableHeader[] = [
     { label: 'Status' },
 ]
 
+function mapStatusToNumber(status: Status | undefined) {
+    switch (status) {
+        case Status.LIVE:
+            return 5
+        case Status.RESTARTING:
+            return 4
+        case Status.SETTLING:
+            return 3
+        case Status.COMPLETED:
+            return 2
+        default:
+            return 1
+    }
+}
+
 export function useAuctionsData() {
     const { address } = useAccount()
 
@@ -90,7 +105,7 @@ export function useAuctionsData() {
     ])
 
     const [sorting, setSorting] = useState<Sorting>({
-        key: 'Time Left',
+        key: 'Status',
         dir: 'desc',
     })
 
@@ -167,12 +182,17 @@ export function useAuctionsData() {
                     type: 'numerical',
                 })
             case 'Status':
-                return arrayToSorted(auctionsWithExtras, {
-                    getProperty: (auction) => auction.status,
-                    dir: sorting.dir,
-                    type: 'alphabetical',
-                    checkValueExists: true,
-                })
+                return arrayToSorted(
+                    auctionsWithExtras.sort((a, b) => {
+                        return parseInt(b.auctionDeadline) - parseInt(a.auctionDeadline)
+                    }),
+                    {
+                        getProperty: (auction) => mapStatusToNumber(auction.status),
+                        dir: sorting.dir,
+                        type: 'numerical',
+                        checkValueExists: true,
+                    }
+                )
             case 'Time Left':
             default:
                 return arrayToSorted(auctionsWithExtras, {
