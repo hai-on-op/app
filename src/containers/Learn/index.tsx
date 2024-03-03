@@ -25,6 +25,7 @@ export function Learn() {
                     description="Quick, informative videos designed to educate the viewer on the main concepts of the HAI Protocol"
                     // TODO: update link
                     link={'https://youtube.com'}
+                    comingSoon
                 />
             </CenteredFlex>
             <CenteredFlex>

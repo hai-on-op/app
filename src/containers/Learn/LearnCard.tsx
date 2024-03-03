@@ -6,14 +6,16 @@ import { CenteredFlex, Flex, Text } from '~/styles'
 import { BrandedTitle } from '~/components/BrandedTitle'
 import { HaiArrow } from '~/components/Icons/HaiArrow'
 import { Link } from '~/components/Link'
+import { ComingSoon } from '~/components/ComingSoon'
 
 type LearnCardProps = {
     title: string
     description?: string
     link: ReactChildren
     titleColorOffset?: number
+    comingSoon?: boolean
 }
-export function LearnCard({ title, description, link, titleColorOffset }: LearnCardProps) {
+export function LearnCard({ title, description, link, titleColorOffset, comingSoon = false }: LearnCardProps) {
     const isUpToExtraSmall = useMediaQuery('upToExtraSmall')
 
     return (
@@ -28,22 +30,24 @@ export function LearnCard({ title, description, link, titleColorOffset }: LearnC
                 />
                 {!!description && <Text>{description}</Text>}
             </Flex>
-            {typeof link !== 'string' ? (
-                link
-            ) : (
-                <Link href={link} $textDecoration="none">
-                    <CenteredFlex $gap={12}>
-                        <Text
-                            $fontSize={isUpToExtraSmall ? '1.2rem' : '1rem'}
-                            $fontWeight={700}
-                            $letterSpacing="0.35rem"
-                        >
-                            LEARN MORE
-                        </Text>
-                        <HaiArrow direction="right" strokeWidth={2.5} />
-                    </CenteredFlex>
-                </Link>
-            )}
+            <ComingSoon active={comingSoon} $width="100%">
+                {typeof link !== 'string' ? (
+                    link
+                ) : (
+                    <Link href={link} $textDecoration="none">
+                        <CenteredFlex $gap={12}>
+                            <Text
+                                $fontSize={isUpToExtraSmall ? '1.2rem' : '1rem'}
+                                $fontWeight={700}
+                                $letterSpacing="0.35rem"
+                            >
+                                LEARN MORE
+                            </Text>
+                            <HaiArrow direction="right" strokeWidth={2.5} />
+                        </CenteredFlex>
+                    </Link>
+                )}
+            </ComingSoon>
         </Container>
     )
 }
