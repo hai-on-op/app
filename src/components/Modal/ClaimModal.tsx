@@ -227,6 +227,7 @@ function ClaimableAsset({ asset, amount, price = 0, auction, internal, onSuccess
             onSuccess?.()
             await wait(3000)
             popupsActions.setIsWaitingModalOpen(false)
+            popupsActions.setWaitingPayload({ status: ActionState.NONE })
         } catch (e: any) {
             handleTransactionError(e)
             setStatus(ActionState.ERROR)

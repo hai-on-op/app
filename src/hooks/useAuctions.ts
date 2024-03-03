@@ -181,6 +181,8 @@ export function useStartAuction() {
             geb,
             type: 'SURPLUS',
         })
+        popupsActions.setIsWaitingModalOpen(false)
+        popupsActions.setWaitingPayload({ status: ActionState.NONE })
     }
 
     const startDebtAcution = async function () {
@@ -214,6 +216,8 @@ export function useStartAuction() {
             geb,
             type: 'SURPLUS',
         })
+        popupsActions.setIsWaitingModalOpen(false)
+        popupsActions.setWaitingPayload({ status: ActionState.NONE })
     }
 
     return {
@@ -285,6 +289,8 @@ export function useRestartAuction(auction: IAuction) {
             geb,
             type: 'SURPLUS',
         })
+        popupsActions.setIsWaitingModalOpen(false)
+        popupsActions.setWaitingPayload({ status: ActionState.NONE })
     }
 
     return {

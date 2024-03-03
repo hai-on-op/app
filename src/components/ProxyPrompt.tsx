@@ -76,6 +76,7 @@ export function ProxyPrompt({
             await txResponse.wait(5)
 
             popupsActions.setIsWaitingModalOpen(false)
+            popupsActions.setWaitingPayload({ status: ActionState.NONE })
             connectWalletActions.setIsStepLoading(false)
             connectWalletActions.setStep(2)
             localStorage.removeItem('ctHash')

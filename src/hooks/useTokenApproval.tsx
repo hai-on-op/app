@@ -162,6 +162,7 @@ export function useTokenApproval(
             // we need to wait until the transaction is mined to fetch the new allowance
             await txResponse.wait()
             popupsActions.setIsWaitingModalOpen(false)
+            popupsActions.setWaitingPayload({ status: ActionState.NONE })
             updateAllowance()
         } catch (error: any) {
             console.debug('Failed to approve token', error)

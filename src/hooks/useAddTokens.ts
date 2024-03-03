@@ -39,6 +39,8 @@ export function useAddTokens() {
                     },
                 }))
             )
+            popupsActions.setIsWaitingModalOpen(false)
+            popupsActions.setWaitingPayload({ status: ActionState.NONE })
             return wasAdded
         } catch (error: any) {
             console.log(error)

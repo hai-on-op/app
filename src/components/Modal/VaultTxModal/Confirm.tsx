@@ -122,6 +122,7 @@ export function Confirm({ onClose }: ConfirmProps) {
             }
             vaultActions.setTransactionState(ActionState.SUCCESS)
             popupsActions.setIsWaitingModalOpen(false)
+            popupsActions.setWaitingPayload({ status: ActionState.NONE })
             onClose?.()
             reset()
         } catch (e: any) {

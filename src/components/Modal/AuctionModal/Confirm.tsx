@@ -214,6 +214,8 @@ export function Confirm({ previousStep }: ConfirmProps) {
                 type: '',
                 auctionType: '',
             })
+            popupsActions.setIsWaitingModalOpen(false)
+            popupsActions.setWaitingPayload({ status: ActionState.NONE })
             setStatus(ActionState.NONE)
         } catch (e) {
             setStatus(ActionState.ERROR)

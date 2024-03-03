@@ -193,6 +193,7 @@ export function Shared({ children }: Props) {
             connectWalletActions.setStep(1)
             popupsActions.setIsInitializing(false)
         } finally {
+            popupsActions.setIsWaitingModalOpen(false)
             popupsActions.setWaitingPayload({
                 title: '',
                 status: ActionState.NONE,

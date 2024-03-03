@@ -66,6 +66,7 @@ export function LiquidateVaultModal({ id, collateralRatio, status, onSuccess, ..
             })
             await wait(3000)
             popupsActions.setIsWaitingModalOpen(false)
+            popupsActions.setWaitingPayload({ status: ActionState.NONE })
             props.onClose?.()
         } catch (error: any) {
             handleTransactionError(error)
