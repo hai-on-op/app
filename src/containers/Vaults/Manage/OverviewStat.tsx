@@ -145,7 +145,7 @@ export function OverviewProgressStat({
 
 const StatContainer = styled(Flex).attrs((props) => ({
     $column: true,
-    $justify: 'space-between',
+    $justify: 'flex-start',
     $align: 'flex-start',
     $gap: 4,
     $borderOpacity: 0.2,

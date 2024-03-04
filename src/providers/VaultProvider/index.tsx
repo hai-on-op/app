@@ -189,7 +189,10 @@ export function VaultProvider({ action, setAction, children }: Props) {
 
     const { safetyRatio, riskStatus } = useMemo(() => {
         const { safetyCRatio } = collateral.liquidationData || {}
-        const cr = parseFloat((singleVault?.collateralRatio || collateralRatio).toString())
+        const cr =
+            singleVault && (!singleVault.debt || !parseFloat(singleVault.debt))
+                ? Infinity
+                : parseFloat((singleVault?.collateralRatio || collateralRatio).toString())
         const state = ratioChecker(cr, Number(safetyCRatio))
         const status = riskStateToStatus[state] || Status.UNKNOWN
 
