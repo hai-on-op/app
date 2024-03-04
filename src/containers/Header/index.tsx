@@ -106,7 +106,9 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                 {logoEl}
                             </CenteredFlex>
                         ) : (
-                            logoEl
+                            <Link href="/vaults" $textDecoration="none">
+                                {logoEl}
+                            </Link>
                         )}
                         {!isUpToSmall &&
                             (isSplash ? (
