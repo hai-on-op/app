@@ -17,19 +17,19 @@ import { Table } from '~/components/Table'
 import { Pagination } from '~/components/Pagination'
 import { Link } from '~/components/Link'
 import { TokenArray } from '~/components/TokenArray'
+import { ArrowDown, ArrowUp } from 'react-feather'
+import { Scales } from '~/components/Icons/Scales'
 
 enum ActivityAction {
     CONFISCATE = 'confiscate',
     INCREASE = 'increase',
     DECREASE = 'decrease',
-    // SWITCH = 'switch',
-    // HYBRID = 'hybrid',
     NONE = 'none',
 }
 
-const ActionIconContainer = styled(CenteredFlex)<{ $topLeft?: boolean }>`
+const ActionIconContainer = styled(CenteredFlex)<{ $topLeft?: boolean; $arrowBg?: string }>`
     position: relative;
-    & > ${Text} {
+    & > *:nth-child(2) {
         position: absolute;
         ${({ $topLeft = false }) =>
             $topLeft
@@ -41,35 +41,60 @@ const ActionIconContainer = styled(CenteredFlex)<{ $topLeft?: boolean }>`
                       right: -4px;
                       bottom: -4px;
                   `}
-        font-size: 14px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        background: ${({ $arrowBg = 'white' }) => $arrowBg};
+        border: 1px solid black;
+        & > svg {
+            width: 80%;
+            height: auto;
+        }
     }
 `
 
 const getActionLabelAndIcon = (
+    action: ActivityAction,
     debt: number,
     collateral: number,
     collateralToken: string
 ): [string, ReactChildren[]] => {
+    if (action === ActivityAction.CONFISCATE)
+        return [
+            'Confiscation',
+            [
+                // <ActionIconContainer key={1}>
+                //     <TokenArray tokens={[collateralToken as any]} hideLabel size={28} />
+                //     <CenteredFlex>
+                //         <ArrowDown/>
+                //     </CenteredFlex>
+                // </ActionIconContainer>,
+                <Scales key={1} size={20} />,
+            ],
+        ]
     const label: string[] = []
     const icons: ReactChildren[] = []
     switch (Math.sign(debt)) {
         case 1:
             label.push('Mint HAI')
-            // icons.push(<TokenArray tokens={['HAI']} hideLabel size={28} />)
             icons.push(
                 <ActionIconContainer $topLeft>
                     <TokenArray tokens={['HAI']} hideLabel size={28} />
-                    <Text>{'⬆️'}</Text>
+                    <CenteredFlex>
+                        <ArrowUp />
+                    </CenteredFlex>
                 </ActionIconContainer>
             )
             break
         case -1:
             label.push('Burn HAI')
-            // icons.push(<Text>{'🔥'}</Text>)
             icons.push(
                 <ActionIconContainer $topLeft>
                     <TokenArray tokens={['HAI']} hideLabel size={28} />
-                    <Text>{'⬇️'}</Text>
+                    <CenteredFlex>
+                        <ArrowDown />
+                    </CenteredFlex>
                 </ActionIconContainer>
             )
             break
@@ -79,21 +104,23 @@ const getActionLabelAndIcon = (
     switch (Math.sign(collateral)) {
         case 1:
             label.push(`Deposit ${collateralToken}`)
-            // icons.push(<Text>{'⬇️'}</Text>)
             icons.push(
                 <ActionIconContainer>
                     <TokenArray tokens={[collateralToken as any]} hideLabel size={28} />
-                    <Text>{'⬆️'}</Text>
+                    <CenteredFlex>
+                        <ArrowUp />
+                    </CenteredFlex>
                 </ActionIconContainer>
             )
             break
         case -1:
             label.push(`Withdraw ${collateralToken}`)
-            // icons.push(<TokenArray tokens={[collateralToken as any]} hideLabel size={28} />)
             icons.push(
                 <ActionIconContainer>
                     <TokenArray tokens={[collateralToken as any]} hideLabel size={28} />
-                    <Text>{'⬇️'}</Text>
+                    <CenteredFlex>
+                        <ArrowDown />
+                    </CenteredFlex>
                 </ActionIconContainer>
             )
             break
@@ -185,10 +212,7 @@ export function ActivityTable({ vault }: ActivityTableProps) {
                         const debt = parseFloat(accumulatedRate) * parseFloat(deltaDebt)
                         const collateral = parseFloat(deltaCollateral)
                         const action = type === 'confiscate' ? ActivityAction.CONFISCATE : getAction(debt, collateral)
-                        const [label, icons] =
-                            type === 'confiscate'
-                                ? ['Confiscation', ['⚖️']]
-                                : getActionLabelAndIcon(debt, collateral, vault!.collateralToken)
+                        const [label, icons] = getActionLabelAndIcon(action, debt, collateral, vault!.collateralToken)
                         return (
                             <Table.Row
                                 key={id}
@@ -310,15 +334,18 @@ const ActivityLabelContainer = styled(Flex).attrs((props) => ({
     $gap: 8,
     ...props,
 }))``
-const AcitivityIconContainer = styled(CenteredFlex)<{ $layer: boolean }>`
+const AcitivityIconContainer = styled(CenteredFlex)<{ $layer: boolean; $bg: boolean }>`
     width: 40px;
     height: 40px;
     flex-shrink: 0;
     border-radius: 999px;
-    // border: 2px solid rgba(0, 0, 0, 0.1);
-    // background: rgba(0, 0, 0, 0.05);
-    font-size: 22px;
+    font-size: 18px;
 
+    ${({ $bg }) =>
+        $bg &&
+        css`
+            background: white;
+        `}
     ${({ $layer }) =>
         $layer &&
         css`
@@ -338,12 +365,14 @@ const AcitivityIconContainer = styled(CenteredFlex)<{ $layer: boolean }>`
 type ActivityLabelProps = {
     action: ActivityAction
     label: string
-    icons: ReactChildren[]
+    icons: string | ReactChildren[]
 }
 function ActivityLabel({ action, label, icons }: ActivityLabelProps) {
     return (
         <ActivityLabelContainer className={action}>
-            <AcitivityIconContainer $layer={icons.length > 1}>{icons}</AcitivityIconContainer>
+            <AcitivityIconContainer $bg={label === 'Confiscation'} $layer={icons.length > 1}>
+                {icons}
+            </AcitivityIconContainer>
             <Text>{label}</Text>
         </ActivityLabelContainer>
     )
