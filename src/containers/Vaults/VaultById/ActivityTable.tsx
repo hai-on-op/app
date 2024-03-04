@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 
-import type { SortableHeader } from '~/types'
+import type { ReactChildren, SortableHeader } from '~/types'
 import {
     formatDate,
     formatNumberWithStyle,
@@ -10,13 +10,13 @@ import {
 } from '~/utils'
 import { useStoreState } from '~/store'
 
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 import { CenteredFlex, Flex, Grid, Text } from '~/styles'
 import { AddressLink } from '~/components/AddressLink'
 import { Table } from '~/components/Table'
-import { HaiArrow } from '~/components/Icons/HaiArrow'
 import { Pagination } from '~/components/Pagination'
 import { Link } from '~/components/Link'
+import { TokenArray } from '~/components/TokenArray'
 
 enum ActivityAction {
     CONFISCATE = 'confiscate',
@@ -27,14 +27,51 @@ enum ActivityAction {
     NONE = 'none',
 }
 
-const getActionLabel = (debt: number, collateral: number, collateralToken: string) => {
+const ActionIconContainer = styled(CenteredFlex)<{ $topLeft?: boolean }>`
+    position: relative;
+    & > ${Text} {
+        position: absolute;
+        ${({ $topLeft = false }) =>
+            $topLeft
+                ? css`
+                      left: -4px;
+                      top: -4px;
+                  `
+                : css`
+                      right: -4px;
+                      bottom: -4px;
+                  `}
+        font-size: 14px;
+    }
+`
+
+const getActionLabelAndIcon = (
+    debt: number,
+    collateral: number,
+    collateralToken: string
+): [string, ReactChildren[]] => {
     const label: string[] = []
+    const icons: ReactChildren[] = []
     switch (Math.sign(debt)) {
         case 1:
             label.push('Mint HAI')
+            // icons.push(<TokenArray tokens={['HAI']} hideLabel size={28} />)
+            icons.push(
+                <ActionIconContainer $topLeft>
+                    <TokenArray tokens={['HAI']} hideLabel size={28} />
+                    <Text>{'⬆️'}</Text>
+                </ActionIconContainer>
+            )
             break
         case -1:
             label.push('Burn HAI')
+            // icons.push(<Text>{'🔥'}</Text>)
+            icons.push(
+                <ActionIconContainer $topLeft>
+                    <TokenArray tokens={['HAI']} hideLabel size={28} />
+                    <Text>{'⬇️'}</Text>
+                </ActionIconContainer>
+            )
             break
         default:
             break
@@ -42,14 +79,28 @@ const getActionLabel = (debt: number, collateral: number, collateralToken: strin
     switch (Math.sign(collateral)) {
         case 1:
             label.push(`Deposit ${collateralToken}`)
+            // icons.push(<Text>{'⬇️'}</Text>)
+            icons.push(
+                <ActionIconContainer>
+                    <TokenArray tokens={[collateralToken as any]} hideLabel size={28} />
+                    <Text>{'⬆️'}</Text>
+                </ActionIconContainer>
+            )
             break
         case -1:
             label.push(`Withdraw ${collateralToken}`)
+            // icons.push(<TokenArray tokens={[collateralToken as any]} hideLabel size={28} />)
+            icons.push(
+                <ActionIconContainer>
+                    <TokenArray tokens={[collateralToken as any]} hideLabel size={28} />
+                    <Text>{'⬇️'}</Text>
+                </ActionIconContainer>
+            )
             break
         default:
             break
     }
-    return !label.length ? 'No change' : label.join(' & ')
+    return [!label.length ? 'No change' : label.join(' & '), icons]
 }
 const getAction = (debt: number, collateral: number) => {
     if (Math.sign(debt) == -1 && collateral == 0) {
@@ -134,10 +185,10 @@ export function ActivityTable({ vault }: ActivityTableProps) {
                         const debt = parseFloat(accumulatedRate) * parseFloat(deltaDebt)
                         const collateral = parseFloat(deltaCollateral)
                         const action = type === 'confiscate' ? ActivityAction.CONFISCATE : getAction(debt, collateral)
-                        const label =
+                        const [label, icons] =
                             type === 'confiscate'
-                                ? 'Confiscation'
-                                : getActionLabel(debt, collateral, vault!.collateralToken)
+                                ? ['Confiscation', ['⚖️']]
+                                : getActionLabelAndIcon(debt, collateral, vault!.collateralToken)
                         return (
                             <Table.Row
                                 key={id}
@@ -145,7 +196,7 @@ export function ActivityTable({ vault }: ActivityTableProps) {
                                 headers={sortableHeaders}
                                 items={[
                                     {
-                                        content: <ActivityLabel action={action} label={label} />,
+                                        content: <ActivityLabel action={action} label={label} icons={icons} />,
                                         fullWidth: true,
                                     },
                                     {
@@ -258,64 +309,41 @@ const ActivityLabelContainer = styled(Flex).attrs((props) => ({
     $align: 'center',
     $gap: 8,
     ...props,
-}))`
-    &.${ActivityAction.CONFISCATE} {
-        & > *:first-child {
-            background-color: ${({ theme }) => theme.colors.reddish};
-        }
-    }
-    &.${ActivityAction.INCREASE} {
-        & > *:first-child {
-            background-color: ${({ theme }) => theme.colors.greenish};
-        }
-    }
-    &.${ActivityAction.DECREASE} {
-        & > *:first-child {
-            background-color: ${({ theme }) => theme.colors.yellowish};
-        }
-    }
-    &.${ActivityAction.NONE} {
-        & > *:first-child {
-            background-color: ${({ theme }) => theme.colors.blueish};
-        }
-    }
-`
-const AcitivityIconContainer = styled(CenteredFlex)`
+}))``
+const AcitivityIconContainer = styled(CenteredFlex)<{ $layer: boolean }>`
     width: 40px;
     height: 40px;
     flex-shrink: 0;
     border-radius: 999px;
-    border: ${({ theme }) => theme.border.thin};
+    // border: 2px solid rgba(0, 0, 0, 0.1);
+    // background: rgba(0, 0, 0, 0.05);
+    font-size: 22px;
 
-    & > svg {
-        margin: 0 -5px;
-        width: 18px;
-        height: auto;
-    }
+    ${({ $layer }) =>
+        $layer &&
+        css`
+            & > * {
+                flex-shrink: 0;
+                &:nth-child(1) {
+                    transform: translate(6px, -6px);
+                    z-index: 1;
+                }
+                &:nth-child(2) {
+                    transform: translate(-6px, 6px);
+                }
+            }
+        `}
 `
 
-function ActivityLabel({ action, label }: { action: ActivityAction; label: string }) {
-    const icon = useMemo(() => {
-        switch (action) {
-            case ActivityAction.CONFISCATE:
-                return <HaiArrow direction="left" />
-            case ActivityAction.INCREASE:
-                return <HaiArrow direction="up" />
-            case ActivityAction.DECREASE:
-                return <HaiArrow direction="down" />
-            default:
-                return (
-                    <>
-                        <HaiArrow direction="up" slim style={{ transform: 'translateY(-2px)' }} />
-                        <HaiArrow direction="down" slim style={{ transform: 'translateY(2px)' }} />
-                    </>
-                )
-        }
-    }, [action])
-
+type ActivityLabelProps = {
+    action: ActivityAction
+    label: string
+    icons: ReactChildren[]
+}
+function ActivityLabel({ action, label, icons }: ActivityLabelProps) {
     return (
         <ActivityLabelContainer className={action}>
-            <AcitivityIconContainer>{icon}</AcitivityIconContainer>
+            <AcitivityIconContainer $layer={icons.length > 1}>{icons}</AcitivityIconContainer>
             <Text>{label}</Text>
         </ActivityLabelContainer>
     )
