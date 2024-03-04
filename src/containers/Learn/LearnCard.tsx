@@ -30,7 +30,7 @@ export function LearnCard({ title, description, link, titleColorOffset, comingSo
                 />
                 {!!description && <Text>{description}</Text>}
             </Flex>
-            <ComingSoon active={comingSoon} $width="100%">
+            <ComingSoon active={comingSoon} width="100%">
                 {typeof link !== 'string' ? (
                     link
                 ) : (

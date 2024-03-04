@@ -6,10 +6,11 @@ import styled, { css } from 'styled-components'
 import { CenteredFlex, Flex, FlexProps } from '~/styles'
 
 type ComingSoonProps = FlexProps & {
+    width?: string
     active?: boolean
     children?: ReactChildren
 }
-export function ComingSoon({ active = true, children, ...props }: ComingSoonProps) {
+export function ComingSoon({ width, active = true, children, ...props }: ComingSoonProps) {
     const [offset] = useState(() => Math.floor(5 * Math.random()))
     const [rotation] = useState(() => Math.floor(-5 + 10 * Math.random()))
 
@@ -18,7 +19,7 @@ export function ComingSoon({ active = true, children, ...props }: ComingSoonProp
     return (
         <Container $width="100%" $justify="center" $align="center" {...props}>
             {children}
-            <Band $offset={offset} style={{ transform: `rotate(${rotation}deg)` }}>
+            <Band $width={width} $offset={offset} style={{ transform: `rotate(${rotation}deg)` }}>
                 <span>C</span>
                 <span>O</span>
                 <span>M</span>
