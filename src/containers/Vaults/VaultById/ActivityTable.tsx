@@ -1,33 +1,102 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 
-import type { SortableHeader } from '~/types'
-import { formatDate, formatNumberWithStyle, type QueriedVault } from '~/utils'
+import type { ReactChildren, SortableHeader } from '~/types'
+import {
+    formatDate,
+    formatNumberWithStyle,
+    LINK_TO_DOCS,
+    type QueriedVault,
+    type QueryModifySAFECollateralization,
+} from '~/utils'
 import { useStoreState } from '~/store'
 
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 import { CenteredFlex, Flex, Grid, Text } from '~/styles'
 import { AddressLink } from '~/components/AddressLink'
 import { Table } from '~/components/Table'
-import { HaiArrow } from '~/components/Icons/HaiArrow'
 import { Pagination } from '~/components/Pagination'
+import { Link } from '~/components/Link'
+import { TokenArray } from '~/components/TokenArray'
+import { ArrowDown, ArrowUp } from 'react-feather'
+import { Scales } from '~/components/Icons/Scales'
 
 enum ActivityAction {
     CONFISCATE = 'confiscate',
     INCREASE = 'increase',
     DECREASE = 'decrease',
-    // SWITCH = 'switch',
-    // HYBRID = 'hybrid',
     NONE = 'none',
 }
 
-const getActionLabel = (debt: number, collateral: number, collateralToken: string) => {
+const ActionIconContainer = styled(CenteredFlex)<{ $topLeft?: boolean; $arrowBg?: string }>`
+    position: relative;
+    & > *:nth-child(2) {
+        position: absolute;
+        ${({ $topLeft = false }) =>
+            $topLeft
+                ? css`
+                      left: -4px;
+                      top: -4px;
+                  `
+                : css`
+                      right: -4px;
+                      bottom: -4px;
+                  `}
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        background: ${({ $arrowBg = 'white' }) => $arrowBg};
+        border: 1px solid black;
+        & > svg {
+            width: 80%;
+            height: auto;
+        }
+    }
+`
+
+const getActionLabelAndIcon = (
+    action: ActivityAction,
+    debt: number,
+    collateral: number,
+    collateralToken: string
+): [string, ReactChildren[]] => {
+    if (action === ActivityAction.CONFISCATE)
+        return [
+            'Confiscation',
+            [
+                // <ActionIconContainer key={1}>
+                //     <TokenArray tokens={[collateralToken as any]} hideLabel size={28} />
+                //     <CenteredFlex>
+                //         <ArrowDown/>
+                //     </CenteredFlex>
+                // </ActionIconContainer>,
+                <Scales key={1} size={20} />,
+            ],
+        ]
     const label: string[] = []
+    const icons: ReactChildren[] = []
     switch (Math.sign(debt)) {
         case 1:
             label.push('Mint HAI')
+            icons.push(
+                <ActionIconContainer $topLeft>
+                    <TokenArray tokens={['HAI']} hideLabel size={28} />
+                    <CenteredFlex>
+                        <ArrowUp />
+                    </CenteredFlex>
+                </ActionIconContainer>
+            )
             break
         case -1:
             label.push('Burn HAI')
+            icons.push(
+                <ActionIconContainer $topLeft>
+                    <TokenArray tokens={['HAI']} hideLabel size={28} />
+                    <CenteredFlex>
+                        <ArrowDown />
+                    </CenteredFlex>
+                </ActionIconContainer>
+            )
             break
         default:
             break
@@ -35,14 +104,30 @@ const getActionLabel = (debt: number, collateral: number, collateralToken: strin
     switch (Math.sign(collateral)) {
         case 1:
             label.push(`Deposit ${collateralToken}`)
+            icons.push(
+                <ActionIconContainer>
+                    <TokenArray tokens={[collateralToken as any]} hideLabel size={28} />
+                    <CenteredFlex>
+                        <ArrowUp />
+                    </CenteredFlex>
+                </ActionIconContainer>
+            )
             break
         case -1:
             label.push(`Withdraw ${collateralToken}`)
+            icons.push(
+                <ActionIconContainer>
+                    <TokenArray tokens={[collateralToken as any]} hideLabel size={28} />
+                    <CenteredFlex>
+                        <ArrowDown />
+                    </CenteredFlex>
+                </ActionIconContainer>
+            )
             break
         default:
             break
     }
-    return !label.length ? 'No change' : label.join(' & ')
+    return [!label.length ? 'No change' : label.join(' & '), icons]
 }
 const getAction = (debt: number, collateral: number) => {
     if (Math.sign(debt) == -1 && collateral == 0) {
@@ -66,7 +151,12 @@ const getAction = (debt: number, collateral: number) => {
 const sortableHeaders: SortableHeader[] = [
     {
         label: 'Action',
-        tooltip: `Description of the action taken by the vault owner or protocol. Confiscations are performed by authorized accounts. Read more about confiscations in the docs.`, // TODO: better tooltip here
+        tooltip: (
+            <Text>
+                {`Description of the action taken by the vault owner or protocol. Confiscations are performed by authorized accounts. Read more about confiscations in the `}
+                <Link href={`${LINK_TO_DOCS}detailed/modules/liq_engine.html`}>docs.</Link>
+            </Text>
+        ),
     },
     {
         label: 'Coll. Change',
@@ -96,10 +186,7 @@ export function ActivityTable({ vault }: ActivityTableProps) {
     const [offset, setOffset] = useState(0)
 
     return (
-        <Container>
-            <Header>
-                <Text $fontWeight={700}>Activity</Text>
-            </Header>
+        <>
             <Table
                 headers={sortableHeaders}
                 headerContainer={TableHeader}
@@ -112,14 +199,20 @@ export function ActivityTable({ vault }: ActivityTableProps) {
                 emptyContent="No activity found for this vault"
                 rows={(vault?.activity || [])
                     .slice(offset * MAX_RECORDS_PER_PAGE, (offset + 1) * MAX_RECORDS_PER_PAGE)
-                    .map(({ type = 'modify', id, deltaCollateral, deltaDebt, createdAt, createdAtTransaction }) => {
-                        const debt = parseFloat(deltaDebt)
+                    .map((activity) => {
+                        const {
+                            type = 'modify',
+                            id,
+                            deltaCollateral,
+                            deltaDebt,
+                            createdAt,
+                            createdAtTransaction,
+                        } = activity
+                        const { accumulatedRate = '1' } = activity as QueryModifySAFECollateralization
+                        const debt = parseFloat(accumulatedRate) * parseFloat(deltaDebt)
                         const collateral = parseFloat(deltaCollateral)
                         const action = type === 'confiscate' ? ActivityAction.CONFISCATE : getAction(debt, collateral)
-                        const label =
-                            type === 'confiscate'
-                                ? 'Confiscation'
-                                : getActionLabel(debt, collateral, vault!.collateralToken)
+                        const [label, icons] = getActionLabelAndIcon(action, debt, collateral, vault!.collateralToken)
                         return (
                             <Table.Row
                                 key={id}
@@ -127,7 +220,7 @@ export function ActivityTable({ vault }: ActivityTableProps) {
                                 headers={sortableHeaders}
                                 items={[
                                     {
-                                        content: <ActivityLabel action={action} label={label} />,
+                                        content: <ActivityLabel action={action} label={label} icons={icons} />,
                                         fullWidth: true,
                                     },
                                     {
@@ -159,7 +252,7 @@ export function ActivityTable({ vault }: ActivityTableProps) {
                                                 <Flex $column $justify="center" $align="flex-start" $gap={4}>
                                                     <Text>
                                                         {debt > 0 ? '+' : ''}
-                                                        {formatNumberWithStyle(deltaDebt)} HAI
+                                                        {formatNumberWithStyle(debt)} HAI
                                                     </Text>
                                                     <Text $fontSize="0.8em">
                                                         {formatNumberWithStyle(Math.abs(debt) * haiPrice, {
@@ -188,38 +281,9 @@ export function ActivityTable({ vault }: ActivityTableProps) {
                 handlePagingMargin={setOffset}
                 perPage={MAX_RECORDS_PER_PAGE}
             />
-        </Container>
+        </>
     )
 }
-
-const Container = styled(Flex).attrs((props) => ({
-    $width: '100%',
-    $column: true,
-    $justify: 'flex-start',
-    $align: 'flex-start',
-    ...props,
-}))`
-    padding: 48px;
-    padding-top: 0px;
-
-    ${({ theme }) => theme.mediaWidth.upToSmall`
-        padding: 0px;
-    `}
-`
-const Header = styled(Flex).attrs((props) => ({
-    $width: '100%',
-    $justify: 'flex-start',
-    $align: 'center',
-    $gap: 12,
-    ...props,
-}))`
-    height: 60px;
-    padding: 24px 0px;
-
-    ${({ theme }) => theme.mediaWidth.upToSmall`
-        padding: 24px;
-    `}
-`
 
 const TableRowBase = styled(Grid)`
     grid-template-columns: 5fr 3fr 3fr 4fr 3fr;
@@ -250,7 +314,9 @@ const TableRow = styled(TableRowBase)`
         align-items: flex-start;
         border-radius: 0px;
 
-        border-top: ${theme.border.medium};
+        &:not(:first-child) {
+            border-top: ${theme.border.medium};
+        }
         &:hover {
             background-color: unset;
         }
@@ -267,64 +333,46 @@ const ActivityLabelContainer = styled(Flex).attrs((props) => ({
     $align: 'center',
     $gap: 8,
     ...props,
-}))`
-    &.${ActivityAction.CONFISCATE} {
-        & > *:first-child {
-            background-color: ${({ theme }) => theme.colors.reddish};
-        }
-    }
-    &.${ActivityAction.INCREASE} {
-        & > *:first-child {
-            background-color: ${({ theme }) => theme.colors.greenish};
-        }
-    }
-    &.${ActivityAction.DECREASE} {
-        & > *:first-child {
-            background-color: ${({ theme }) => theme.colors.yellowish};
-        }
-    }
-    &.${ActivityAction.NONE} {
-        & > *:first-child {
-            background-color: ${({ theme }) => theme.colors.blueish};
-        }
-    }
-`
-const AcitivityIconContainer = styled(CenteredFlex)`
+}))``
+const AcitivityIconContainer = styled(CenteredFlex)<{ $layer: boolean; $bg: boolean }>`
     width: 40px;
     height: 40px;
     flex-shrink: 0;
     border-radius: 999px;
-    border: ${({ theme }) => theme.border.medium};
+    font-size: 18px;
 
-    & > svg {
-        margin: 0 -5px;
-        width: 18px;
-        height: auto;
-    }
+    ${({ $bg }) =>
+        $bg &&
+        css`
+            background: white;
+        `}
+    ${({ $layer }) =>
+        $layer &&
+        css`
+            & > * {
+                flex-shrink: 0;
+                &:nth-child(1) {
+                    transform: translate(6px, -6px);
+                    z-index: 1;
+                }
+                &:nth-child(2) {
+                    transform: translate(-6px, 6px);
+                }
+            }
+        `}
 `
 
-function ActivityLabel({ action, label }: { action: ActivityAction; label: string }) {
-    const icon = useMemo(() => {
-        switch (action) {
-            case ActivityAction.CONFISCATE:
-                return <HaiArrow direction="left" />
-            case ActivityAction.INCREASE:
-                return <HaiArrow direction="up" />
-            case ActivityAction.DECREASE:
-                return <HaiArrow direction="down" />
-            default:
-                return (
-                    <>
-                        <HaiArrow direction="up" slim style={{ transform: 'translateY(-2px)' }} />
-                        <HaiArrow direction="down" slim style={{ transform: 'translateY(2px)' }} />
-                    </>
-                )
-        }
-    }, [action])
-
+type ActivityLabelProps = {
+    action: ActivityAction
+    label: string
+    icons: string | ReactChildren[]
+}
+function ActivityLabel({ action, label, icons }: ActivityLabelProps) {
     return (
         <ActivityLabelContainer className={action}>
-            <AcitivityIconContainer>{icon}</AcitivityIconContainer>
+            <AcitivityIconContainer $bg={label === 'Confiscation'} $layer={icons.length > 1}>
+                {icons}
+            </AcitivityIconContainer>
             <Text>{label}</Text>
         </ActivityLabelContainer>
     )

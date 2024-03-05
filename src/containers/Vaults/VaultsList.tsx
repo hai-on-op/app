@@ -1,35 +1,33 @@
-import { useMemo } from 'react'
-
 import type { SetState } from '~/types'
 import { useStoreState } from '~/store'
 import { useVault } from '~/providers/VaultProvider'
 import { useAvailableVaults, useMediaQuery, useMyVaults } from '~/hooks'
 
-import { CenteredFlex, Text } from '~/styles'
+import styled from 'styled-components'
+import { CenteredFlex } from '~/styles'
 import { NavContainer } from '~/components/NavContainer'
 import { CheckboxButton } from '~/components/CheckboxButton'
-import { BrandedDropdown, DropdownOption } from '~/components/BrandedDropdown'
 import { ProxyPrompt } from '~/components/ProxyPrompt'
 import { StrategyAd, type StrategyAdProps } from '~/components/StrategyAd'
 import { AvailableVaultsTable } from './AvailableVaultsTable'
 import { MyVaultsTable } from './MyVaultsTable'
 import { SortByDropdown } from '~/components/SortByDropdown'
-import styled from 'styled-components'
+import { CollateralDropdown } from '~/components/CollateralDropdown'
 
 const strategies: StrategyAdProps[] = [
     {
         heading: 'OP REWARDS',
         status: 'NOW LIVE',
-        description: 'Earn OP tokens by providing liquidity',
-        cta: 'LP to Earn',
+        description: 'Earn OP tokens by borrowing HAI & providing liquidity',
+        cta: 'Learn More',
         ctaLink: '/earn',
         tokenImages: ['OP'],
     },
     {
         heading: 'KITE REWARDS',
         status: 'NOW LIVE',
-        description: 'Earn KITE tokens by providing liquidity',
-        cta: 'LP to Earn',
+        description: 'Earn KITE tokens by borrowing HAI & providing liquidity',
+        cta: 'Learn More',
         ctaLink: '/earn',
         tokenImages: ['KITE'],
     },
@@ -42,20 +40,10 @@ type VaultsListProps = {
 export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
     const { setActiveVault } = useVault()
 
-    const isLargerThanSmall = useMediaQuery('upToSmall')
+    const isUpToSmall = useMediaQuery('upToSmall')
+    const isUpToMedium = useMediaQuery('upToMedium')
 
-    const {
-        connectWalletModel: { tokensData },
-        vaultModel: vaultState,
-    } = useStoreState((state) => state)
-
-    const symbols = useMemo(
-        () =>
-            Object.values(tokensData || {})
-                .filter(({ isCollateral }) => isCollateral)
-                .map(({ symbol }) => symbol),
-        [tokensData]
-    )
+    const { vaultModel: vaultState } = useStoreState((state) => state)
 
     const {
         headers: availableHeaders,
@@ -73,21 +61,24 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
         setSorting: setMyVaultsSorting,
         assetsFilter,
         setAssetsFilter,
+        showEmptyVaults,
+        setShowEmptyVaults,
     } = useMyVaults()
 
     return (
         <NavContainer
             navItems={
-                isLargerThanSmall
-                    ? [`Available Vaults (${availableVaults.length})`, `My Vaults (${vaultState.list.length})`]
-                    : ['Available Vaults', 'My Vaults']
+                isUpToSmall
+                    ? ['Available Vaults', 'My Vaults']
+                    : [`Available Vaults (${availableVaults.length})`, `My Vaults (${vaultState.list.length})`]
             }
             selected={navIndex}
             onSelect={(i: number) => setNavIndex(i)}
+            compactQuery="upToMedium"
             headerContent={
                 navIndex === 0 ? (
                     <HeaderContent>
-                        {!isLargerThanSmall && (
+                        {isUpToMedium && (
                             <SortByDropdown
                                 headers={availableHeaders}
                                 sorting={availableSorting}
@@ -100,27 +91,15 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
                     </HeaderContent>
                 ) : (
                     <HeaderContent>
-                        <BrandedDropdown
-                            label={
-                                <Text $fontWeight={400} $textAlign="left" style={{ width: '160px' }}>
-                                    Collateral Assets: <strong>{assetsFilter || 'All'}</strong>
-                                </Text>
-                            }
-                        >
-                            {['All', ...symbols].map((label) => (
-                                <DropdownOption
-                                    key={label}
-                                    $active={assetsFilter === label}
-                                    onClick={() => {
-                                        // e.stopPropagation()
-                                        setAssetsFilter(label === 'All' ? undefined : label)
-                                    }}
-                                >
-                                    {label}
-                                </DropdownOption>
-                            ))}
-                        </BrandedDropdown>
-                        {!isLargerThanSmall && (
+                        <CollateralDropdown
+                            label="Collateral Asset"
+                            selectedAsset={assetsFilter}
+                            onSelect={setAssetsFilter}
+                        />
+                        <CheckboxButton checked={showEmptyVaults} toggle={() => setShowEmptyVaults((e) => !e)}>
+                            Show Empty Vaults
+                        </CheckboxButton>
+                        {isUpToMedium && (
                             <SortByDropdown
                                 headers={myVaultsHeaders}
                                 sorting={myVaultsSorting}
@@ -133,14 +112,12 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
         >
             {navIndex === 0 ? (
                 <>
-                    <ProxyPrompt connectWalletOnly continueText="view available vaults">
-                        <AvailableVaultsTable
-                            headers={availableHeaders}
-                            rows={availableVaults}
-                            sorting={availableSorting}
-                            setSorting={setAvailableSorting}
-                        />
-                    </ProxyPrompt>
+                    <AvailableVaultsTable
+                        headers={availableHeaders}
+                        rows={availableVaults}
+                        sorting={availableSorting}
+                        setSorting={setAvailableSorting}
+                    />
                     {strategies.map((strat, i) => (
                         <StrategyAd key={i} bgVariant={i} {...strat} />
                     ))}

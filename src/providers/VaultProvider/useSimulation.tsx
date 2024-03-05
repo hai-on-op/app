@@ -36,12 +36,28 @@ export function useSimulation({ action, formState, collateral, debt }: Props): S
                     debt: Number(borrow) > 0 ? borrow : undefined,
                 }
             }
+            case VaultAction.DEPOSIT_REPAY: {
+                const { deposit = '0', repay = '0' } = formState
+                if (Number(deposit) <= 0 && Number(repay) <= 0) return undefined
+                return {
+                    collateral: Number(deposit) > 0 ? deposit : undefined,
+                    debt: Number(repay) > 0 ? repay : undefined,
+                }
+            }
             case VaultAction.WITHDRAW_REPAY: {
                 const { withdraw = '0', repay = '0' } = formState
                 if (Number(withdraw) <= 0 && Number(repay) <= 0) return undefined
                 return {
                     collateral: Number(withdraw) > 0 ? withdraw : undefined,
                     debt: Number(repay) > 0 ? repay : undefined,
+                }
+            }
+            case VaultAction.WITHDRAW_BORROW: {
+                const { withdraw = '0', borrow = '0' } = formState
+                if (Number(withdraw) <= 0 && Number(borrow) <= 0) return undefined
+                return {
+                    collateral: Number(withdraw) > 0 ? withdraw : undefined,
+                    debt: Number(borrow) > 0 ? borrow : undefined,
                 }
             }
             default:
@@ -55,11 +71,11 @@ export function useSimulation({ action, formState, collateral, debt }: Props): S
 
         const { currentPrice, liquidationCRatio, safetyCRatio } = collateral.liquidationData
         const cr = getCollateralRatio(
-            collateral.total,
-            debt.total,
+            collateral.total.after.raw,
+            debt.total.after.raw,
             currentPrice.liquidationPrice,
             liquidationCRatio
-        ).toString()
+        )
         const state = ratioChecker(Number(cr), Number(safetyCRatio))
         const status = riskStateToStatus[state] || Status.UNKNOWN
         return [cr, status]
@@ -71,8 +87,8 @@ export function useSimulation({ action, formState, collateral, debt }: Props): S
         }
 
         return getLiquidationPrice(
-            collateral.total,
-            debt.total,
+            collateral.total.after.raw,
+            debt.total.after.raw,
             collateral.liquidationData.liquidationCRatio,
             liquidationData?.currentRedemptionPrice
         ).toString()

@@ -1,44 +1,53 @@
+import type { ReactChildren } from '~/types'
 import { useMediaQuery } from '~/hooks'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, Text } from '~/styles'
-import { ExternalLink } from '~/components/ExternalLink'
 import { BrandedTitle } from '~/components/BrandedTitle'
 import { HaiArrow } from '~/components/Icons/HaiArrow'
+import { Link } from '~/components/Link'
+import { ComingSoon } from '~/components/ComingSoon'
 
 type LearnCardProps = {
     title: string
     description?: string
-    link: string
+    link: ReactChildren
     titleColorOffset?: number
+    comingSoon?: boolean
 }
-export function LearnCard({ title, description, link, titleColorOffset }: LearnCardProps) {
-    const isLargerThanExtraSmall = useMediaQuery('upToExtraSmall')
+export function LearnCard({ title, description, link, titleColorOffset, comingSoon = false }: LearnCardProps) {
+    const isUpToExtraSmall = useMediaQuery('upToExtraSmall')
 
     return (
         <Container>
             <Flex $column $gap={24}>
                 <BrandedTitle
                     textContent={title}
-                    $fontSize={isLargerThanExtraSmall ? '2.2rem' : '1.9rem'}
+                    $fontSize={isUpToExtraSmall ? '2.2rem' : '1.9rem'}
                     $letterSpacing="0.2rem"
                     $lineHeight="1.4"
                     colorOffset={titleColorOffset}
                 />
                 {!!description && <Text>{description}</Text>}
             </Flex>
-            <ExternalLink href={link} $textDecoration="none">
-                <CenteredFlex $gap={12}>
-                    <Text
-                        $fontSize={isLargerThanExtraSmall ? '1.2rem' : '1rem'}
-                        $fontWeight={700}
-                        $letterSpacing="0.35rem"
-                    >
-                        LEARN MORE
-                    </Text>
-                    <HaiArrow direction="right" strokeWidth={2.5} />
-                </CenteredFlex>
-            </ExternalLink>
+            <ComingSoon active={comingSoon} width="100%">
+                {typeof link !== 'string' ? (
+                    link
+                ) : (
+                    <Link href={link} $textDecoration="none">
+                        <CenteredFlex $gap={12}>
+                            <Text
+                                $fontSize={isUpToExtraSmall ? '1.2rem' : '1rem'}
+                                $fontWeight={700}
+                                $letterSpacing="0.35rem"
+                            >
+                                LEARN MORE
+                            </Text>
+                            <HaiArrow direction="right" strokeWidth={2.5} />
+                        </CenteredFlex>
+                    </Link>
+                )}
+            </ComingSoon>
         </Container>
     )
 }

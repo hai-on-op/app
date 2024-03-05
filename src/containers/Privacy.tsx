@@ -5,11 +5,11 @@ import { BlurContainer, Flex, Text } from '~/styles'
 import { BrandedTitle } from '~/components/BrandedTitle'
 
 export function Privacy() {
-    const isLargerThanSmall = useMediaQuery('upToSmall')
+    const isUpToSmall = useMediaQuery('upToSmall')
     return (
         <Container>
             <Header>
-                <BrandedTitle textContent="PRIVACY POLICY" $fontSize={isLargerThanSmall ? '3rem' : '2.4rem'} />
+                <BrandedTitle textContent="PRIVACY POLICY" $fontSize={isUpToSmall ? '2.4rem' : '3rem'} />
             </Header>
             <Content>
                 <Text>This is a placeholder : )</Text>

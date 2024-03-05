@@ -238,15 +238,54 @@ export const MY_AUCTION_BIDS_QUERY = gql`
             auction {
                 auctionId
                 englishAuctionType
+                sellToken
                 winner
                 isClaimed
                 auctionDeadline
+                englishAuctionBids {
+                    id
+                    bidNumber
+                    type
+                    sellAmount
+                    buyAmount
+                    price
+                    bidder
+                    createdAt
+                }
             }
             sellAmount
             buyAmount
             price
             bidder
+            owner
             createdAt
+        }
+    }
+`
+
+export const PROXY_OWNER_QUERY = gql`
+    query ProxyOwner($address: Bytes!) {
+        userProxies(
+            where: { address: $address }
+        ){
+            id
+            address
+            owner {
+                address
+            }
+        }
+    }
+`
+
+export const AUCTION_RESTART_QUERY = gql`
+    query AuctionRestarts {
+        englishAuctions(
+            where: { auctionRestartHashes_not: [] }
+        ) {
+            auctionId
+            englishAuctionType
+            auctionRestartHashes
+            auctionRestartTimestamps
         }
     }
 `

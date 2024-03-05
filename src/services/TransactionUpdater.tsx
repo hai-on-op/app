@@ -1,11 +1,8 @@
 import { useEffect, useMemo } from 'react'
-import { toast } from 'react-toastify'
 import { useNetwork } from 'wagmi'
 
-import { store, useStoreState } from '~/store'
+import { useStoreActions, useStoreState } from '~/store'
 import { useEthersProvider } from '~/hooks'
-
-import { ToastPayload } from '~/components/ToastPayload'
 
 type CheckTransaction = {
     addedTime: number
@@ -31,11 +28,11 @@ export function shouldCheck(lastBlockNumber: number, tx: CheckTransaction): bool
 }
 
 export function TransactionUpdater(): null {
-    const toastId = 'transactionId'
     const { chain } = useNetwork()
     const chainId = chain?.id
     const provider = useEthersProvider()
     const { transactionsModel: state, connectWalletModel: connectedWalletState } = useStoreState((state) => state)
+    const { transactionsModel: transactionsActions } = useStoreActions((actions) => actions)
 
     const lastBlockNumber = chainId ? connectedWalletState.blockNumber[chainId] : null
 
@@ -51,7 +48,7 @@ export function TransactionUpdater(): null {
                     .getTransactionReceipt(hash)
                     .then((receipt) => {
                         if (receipt) {
-                            store.dispatch.transactionsModel.finalizeTransaction({
+                            transactionsActions.finalizeTransaction({
                                 ...transactions[hash],
                                 receipt: {
                                     blockHash: receipt.blockHash,
@@ -65,25 +62,8 @@ export function TransactionUpdater(): null {
                                 },
                                 confirmedTime: new Date().getTime(),
                             })
-                            toast(
-                                <ToastPayload
-                                    icon={receipt.status === 1 ? 'Check' : 'AlertTriangle'}
-                                    iconColor={receipt.status === 1 ? 'green' : 'red'}
-                                    text={
-                                        receipt.status === 1
-                                            ? transactions[hash].summary || 'Transaction Confirmed'
-                                            : 'Transaction Failed'
-                                    }
-                                    payload={{
-                                        type: 'transaction',
-                                        value: hash,
-                                        chainId,
-                                    }}
-                                />,
-                                { toastId }
-                            )
                         } else {
-                            store.dispatch.transactionsModel.checkTransaction({
+                            transactionsActions.checkTransaction({
                                 tx: transactions[hash],
                                 blockNumber: lastBlockNumber,
                             })

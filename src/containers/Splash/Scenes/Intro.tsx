@@ -1,12 +1,13 @@
 import { useMediaQuery } from '~/hooks'
 
-import styled from 'styled-components'
+import styled, { keyframes } from 'styled-components'
 import { Flex, HaiButton, Text } from '~/styles'
 import { ZoomScene, type ZoomSceneProps } from './ZoomScene'
 import { BrandedTitle } from '~/components/BrandedTitle'
-import { Swirl } from '~/components/Icons/Swirl'
+import { Send } from 'react-feather'
 import { PairsBanner } from '../PairsBanner'
 import { FloatingElements, type FloatingElementsProps } from '~/components/BrandElements/FloatingElements'
+import { Link } from '~/components/Link'
 
 const elves: FloatingElementsProps['elves'] = [
     {
@@ -108,24 +109,29 @@ const coins: FloatingElementsProps['coins'] = [
 ]
 
 export function Intro({ zIndex }: ZoomSceneProps) {
-    const isLargerThanExtraSmall = useMediaQuery('upToExtraSmall')
-    const isLargerThanSmall = useMediaQuery('upToSmall')
+    const isUpToExtraSmall = useMediaQuery('upToExtraSmall')
+    const isUpToSmall = useMediaQuery('upToSmall')
 
     return (
         <ZoomScene $zIndex={zIndex} style={{ width: '100%', height: '100%' }}>
             <Container>
                 <BrandedTitle
                     textContent="GET $HAI ON YOUR OWN SUPPLY."
-                    $fontSize={isLargerThanSmall ? '6rem' : isLargerThanExtraSmall ? '3.6rem' : '3rem'}
-                    $letterSpacing={isLargerThanSmall ? '1.2rem' : isLargerThanExtraSmall ? '0.8rem' : '0.5rem'}
+                    $fontSize={isUpToExtraSmall ? '3rem' : isUpToSmall ? '3.6rem' : '6rem'}
+                    $letterSpacing={isUpToExtraSmall ? '0.5rem' : isUpToSmall ? '0.8rem' : '1.2rem'}
                 />
                 <Text $lineHeight="1.6">
                     The <strong>multi-collateral stablecoin</strong> for smooth financial highs.
                 </Text>
-                <HaiButton $variant="yellowish">
-                    <Swirl />
-                    SCROLL TO EXPLORE
-                </HaiButton>
+                <ButtonContainer>
+                    <Link href="/vaults" $textDecoration="none">
+                        <HaiButton $variant="yellowish">
+                            <Send size={18} strokeWidth={2.5} />
+                            Enter App
+                        </HaiButton>
+                    </Link>
+                    <FlashingText>Scroll to Explore</FlashingText>
+                </ButtonContainer>
                 {/*
                 Note: FloatingElements MUST be a direct child of ZoomScene
                 EXCEPT in this top-level scene as the opacity calculations of
@@ -155,4 +161,36 @@ const Container = styled(Flex).attrs((props) => ({
     ${({ theme }) => theme.mediaWidth.upToSmall`
         gap: 24px;
     `}
+`
+
+const ButtonContainer = styled(Flex)`
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 24px;
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: flex-start;
+        gap: 12px;
+
+        & > * {
+            width: 100%;
+        }
+        & button {
+            width: 100%;
+            justify-content: flex-start;
+        }
+    `}
+`
+
+const flash = keyframes`
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
+`
+const FlashingText = styled(Text)`
+    font-weight: 700;
+    animation: ${flash} 2s ease infinite;
 `

@@ -43,9 +43,10 @@ export function TestClaim() {
                 hash: txResponse.hash,
                 status: ActionState.SUCCESS,
             })
-            txResponse.wait().then(() => {
-                connectWalletActions.setForceUpdateTokens(true)
-            })
+            await txResponse.wait()
+            connectWalletActions.setForceUpdateTokens(true)
+            popupsActions.setIsWaitingModalOpen(false)
+            popupsActions.setWaitingPayload({ status: ActionState.NONE })
         } catch (err: any) {
             handleTransactionError(err)
         }

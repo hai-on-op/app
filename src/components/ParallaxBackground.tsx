@@ -49,7 +49,7 @@ export function ParallaxBackground() {
                 clouds[i].style.top = `${tops[i] - window.scrollY / (1 - zIndex)}px`
             }
         }
-        window.addEventListener('scroll', onScroll)
+        window.addEventListener('scroll', onScroll, { passive: true })
 
         return () => window.removeEventListener('scroll', onScroll)
     }, [container])

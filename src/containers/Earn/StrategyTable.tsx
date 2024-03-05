@@ -3,9 +3,12 @@ import { formatNumberWithStyle } from '~/utils'
 
 import styled from 'styled-components'
 import { Flex, Grid, Text } from '~/styles'
-import { RewardsTokenPair, TokenPair } from '~/components/TokenPair'
+import { RewardsTokenArray, TokenArray } from '~/components/TokenArray'
 import { StrategyTableButton } from './StrategyTableButton'
 import { Table } from '~/components/Table'
+import { Link } from '~/components/Link'
+import { ArrowUpRight } from 'react-feather'
+import { ComingSoon } from '~/components/ComingSoon'
 
 type StrategyTableProps = {
     headers: SortableHeader[]
@@ -20,39 +23,79 @@ export function StrategyTable({ headers, rows, sorting, setSorting }: StrategyTa
             headerContainer={TableHeader}
             sorting={sorting}
             setSorting={setSorting}
+            compactQuery="upToMedium"
             rows={rows.map(({ pair, rewards, tvl, apy, userPosition, earnPlatform }, i) => (
                 <Table.Row
                     key={i}
                     container={TableRow}
                     headers={headers}
+                    compactQuery="upToMedium"
                     items={[
                         {
                             content: (
                                 <Grid $columns="1fr min-content 12px" $align="center" $gap={12}>
                                     <Flex $justify="flex-start" $align="center" $gap={8}>
-                                        <TokenPair tokens={pair} hideLabel />
+                                        <TokenArray tokens={pair} hideLabel />
                                         <Text $fontWeight={700}>{pair.join('/')}</Text>
                                     </Flex>
-                                    <RewardsTokenPair tokens={rewards} />
+                                    <RewardsTokenArray
+                                        tokens={rewards.map(({ token }) => token)}
+                                        tooltip={
+                                            <Flex
+                                                $width="140px"
+                                                $column
+                                                $justify="flex-end"
+                                                $align="flex-start"
+                                                $gap={4}
+                                            >
+                                                <Text $fontWeight={700} $whiteSpace="nowrap">
+                                                    Daily Emissions
+                                                </Text>
+                                                {rewards.map(({ token, emission }) => (
+                                                    <Flex
+                                                        key={token}
+                                                        $width="100%"
+                                                        $justify="space-between"
+                                                        $align="center"
+                                                        $gap={12}
+                                                    >
+                                                        <Text>{token}:</Text>
+                                                        <Text>
+                                                            {formatNumberWithStyle(emission, { maxDecimals: 1 })}
+                                                        </Text>
+                                                    </Flex>
+                                                ))}
+                                                {earnPlatform === 'velodrome' && (
+                                                    <Text $fontSize="0.8em">
+                                                        APY is claimed on&nbsp;
+                                                        <Link href="https://velodrome.finance">
+                                                            Velodrome <ArrowUpRight size={8} />
+                                                        </Link>
+                                                    </Text>
+                                                )}
+                                            </Flex>
+                                        }
+                                    />
                                 </Grid>
                             ),
                             props: { $fontSize: 'inherit' },
-                            fullWidth: true,
                         },
                         {
                             content: <Text $fontWeight={700}>{earnPlatform ? 'FARM' : 'BORROW'}</Text>,
                         },
                         {
                             content: (
-                                <Text $fontWeight={700}>
-                                    {tvl
-                                        ? formatNumberWithStyle(tvl, {
-                                              style: 'currency',
-                                              maxDecimals: 1,
-                                              suffixed: true,
-                                          })
-                                        : '-'}
-                                </Text>
+                                <ComingSoon $justify="flex-start" active={!!earnPlatform}>
+                                    <Text $fontWeight={700}>
+                                        {tvl
+                                            ? formatNumberWithStyle(tvl, {
+                                                  style: 'currency',
+                                                  maxDecimals: 1,
+                                                  suffixed: true,
+                                              })
+                                            : '-'}
+                                    </Text>
+                                </ComingSoon>
                             ),
                         },
                         // {
@@ -71,25 +114,33 @@ export function StrategyTable({ headers, rows, sorting, setSorting }: StrategyTa
                         // },
                         {
                             content: (
-                                <Text $fontWeight={700}>
-                                    {formatNumberWithStyle(apy, {
-                                        style: 'percent',
-                                        maxDecimals: 1,
-                                    })}
-                                </Text>
+                                <ComingSoon $justify="flex-start" active={!!earnPlatform}>
+                                    <Text $fontWeight={700}>
+                                        {userPosition && userPosition !== '0'
+                                            ? formatNumberWithStyle(userPosition, {
+                                                  style: 'currency',
+                                                  maxDecimals: 1,
+                                                  suffixed: true,
+                                              })
+                                            : '-'}
+                                    </Text>
+                                </ComingSoon>
                             ),
                         },
                         {
                             content: (
-                                <Text $fontWeight={700}>
-                                    {userPosition
-                                        ? formatNumberWithStyle(userPosition, {
-                                              style: 'currency',
-                                              maxDecimals: 1,
-                                              suffixed: true,
-                                          })
-                                        : '-'}
-                                </Text>
+                                <ComingSoon $justify="flex-start" active={!!earnPlatform}>
+                                    <Text $fontWeight={700}>
+                                        {apy
+                                            ? formatNumberWithStyle(apy, {
+                                                  style: 'percent',
+                                                  scalingFactor: 100,
+                                                  maxDecimals: 1,
+                                                  suffixed: true,
+                                              })
+                                            : '-'}
+                                    </Text>
+                                </ComingSoon>
                             ),
                         },
                         // {
@@ -104,9 +155,9 @@ export function StrategyTable({ headers, rows, sorting, setSorting }: StrategyTa
                         // },
                         {
                             content: (
-                                <ButtonContainer>
+                                <Flex $width="100%" $justify="flex-end">
                                     <StrategyTableButton earnPlatform={earnPlatform} />
-                                </ButtonContainer>
+                                </Flex>
                             ),
                             unwrapped: true,
                         },
@@ -118,7 +169,7 @@ export function StrategyTable({ headers, rows, sorting, setSorting }: StrategyTa
 }
 
 const TableHeader = styled(Grid)`
-    grid-template-columns: 3fr minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) 224px;
+    grid-template-columns: 340px minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) 220px;
     align-items: center;
     padding: 0px;
     padding-left: 6px;
@@ -134,9 +185,9 @@ const TableRow = styled(TableHeader)`
         background-color: rgba(0, 0, 0, 0.1);
     }
 
-    ${({ theme }) => theme.mediaWidth.upToSmall`
+    ${({ theme }) => theme.mediaWidth.upToMedium`
         padding: 24px;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1.25fr 1fr 1fr;
         grid-gap: 12px;
         border-radius: 0px;
 
@@ -146,16 +197,17 @@ const TableRow = styled(TableHeader)`
         &:hover {
             background-color: unset;
         }
+        & > *:last-child {
+            justify-content: flex-start;
+        }
     `}
-`
-
-const ButtonContainer = styled(Flex).attrs((props) => ({
-    $justify: 'flex-end',
-    $align: 'center',
-    ...props,
-}))`
     ${({ theme }) => theme.mediaWidth.upToSmall`
-        justify-content: flex-start;
-        grid-column: 1 / -1;
+        grid-template-columns: 1fr 1fr;
+        & > *:first-child {
+            grid-column: 1 / -1;
+        }
+        & > *:last-child {
+            grid-column: 1 / -1;
+        }
     `}
 `

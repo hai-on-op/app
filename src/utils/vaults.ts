@@ -11,6 +11,8 @@ import { tokenAssets } from './tokens'
 
 export enum VaultAction {
     DEPOSIT_BORROW,
+    DEPOSIT_REPAY,
+    WITHDRAW_BORROW,
     WITHDRAW_REPAY,
     CREATE,
     INFO,
@@ -47,8 +49,10 @@ export const vaultInfoErrors: Record<number, string> = {
 export const DEFAULT_VAULT_DATA: IVaultData = {
     totalCollateral: '',
     totalDebt: '',
-    leftInput: '',
-    rightInput: '',
+    deposit: '',
+    withdraw: '',
+    borrow: '',
+    repay: '',
     collateralRatio: 0,
     liquidationPrice: 0,
     collateral: '',
@@ -90,23 +94,20 @@ export const formatUserVault = (
 
             const liquidationPrice = getLiquidationPrice(
                 s.collateral,
-                totalDebt as string,
+                totalDebt,
                 liquidationCRatio,
                 currentRedemptionPrice
             )
 
-            const collateralRatio = getCollateralRatio(
-                s.collateral,
-                totalDebt as string,
-                currentPrice?.liquidationPrice,
-                liquidationCRatio
-            )
+            const collateralRatio = !Number(totalDebt || '0')
+                ? ''
+                : getCollateralRatio(s.collateral, totalDebt, currentPrice?.liquidationPrice, liquidationCRatio)
 
             return {
                 id: s.safeId || s.vaultId,
                 vaultHandler: s.safeHandler || s.vaultHandler,
                 date: s.createdAt,
-                riskState: ratioChecker(Number(collateralRatio), Number(safetyCRatio)),
+                riskState: ratioChecker(!collateralRatio ? Infinity : Number(collateralRatio), Number(safetyCRatio)),
                 collateral: s.collateral,
                 collateralType: s.collateralType,
                 collateralName: collateralBytes32[s.collateralType],
@@ -148,6 +149,20 @@ export const getCollateralRatio = (
     return formatNumber(value.value().toString(), 2, true)
 }
 
+export const getMinimumAllowableCollateral = (totalDebt: string, liquidationPrice: string) => {
+    if (Number(totalDebt) === 0) {
+        return '0'
+    }
+
+    const numerator = numeral(totalDebt)
+
+    const denominator = numeral(liquidationPrice).value()
+
+    const value = numerator.divide(denominator)
+
+    return value.value().toString()
+}
+
 export const getLiquidationPrice = (
     totalCollateral: string,
     totalDebt: string,
@@ -178,6 +193,7 @@ export const vaultIsSafe = (totalCollateral: string, totalDebt: string, safetyPr
 
 export enum RiskState {
     UNKNOWN,
+    NO_DEBT,
     LOW,
     MEDIUM,
     HIGH,
@@ -190,6 +206,8 @@ export const ratioChecker = (currentLiquitdationRatio: number, minLiquidationRat
 
     if (currentLiquitdationRatio < minLiquidationRatioPercent && currentLiquitdationRatio > 0) {
         return RiskState.LIQUIDATION
+    } else if (currentLiquitdationRatio === Infinity) {
+        return RiskState.NO_DEBT
     } else if (currentLiquitdationRatio >= safestRatio) {
         return RiskState.LOW
     } else if (currentLiquitdationRatio < safestRatio && currentLiquitdationRatio >= midSafeRatio) {
@@ -259,9 +277,10 @@ export const returnTotalDebtPlusInterest = (
 }
 
 export const riskStateToStatus: Record<RiskState | number, Status> = {
+    [RiskState.NO_DEBT]: Status.NO_DEBT,
     [RiskState.LOW]: Status.SAFE,
     [RiskState.MEDIUM]: Status.OKAY,
-    [RiskState.HIGH]: Status.DANGER,
+    [RiskState.HIGH]: Status.UNSAFE,
     [RiskState.LIQUIDATION]: Status.DANGER,
     [RiskState.UNKNOWN]: Status.UNKNOWN,
 }

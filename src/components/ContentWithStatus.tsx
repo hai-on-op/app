@@ -25,7 +25,7 @@ export function ContentWithStatus({
 }: ContentWithStatusProps) {
     if (loading) return <Message>{loadingContent || <LoadingContent />}</Message>
     if (error) return <Message>{errorContent || 'An error occurred'}</Message>
-    if (isEmpty) return <Message>{emptyContent || 'No items matched your search'}</Message>
+    if (isEmpty || !children) return <Message>{emptyContent || 'No items matched your search'}</Message>
 
     return <>{children}</>
 }

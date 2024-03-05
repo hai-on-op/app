@@ -1,6 +1,7 @@
 import { type ComponentType, Fragment, type HTMLProps } from 'react'
 
 import type { SortableHeader } from '~/types'
+import { type MediaWidth } from '~/utils'
 
 import styled, { css } from 'styled-components'
 import { Flex, type FlexProps, Text } from '~/styles'
@@ -18,15 +19,22 @@ export type TableRowProps = Omit<HTMLProps<HTMLElement>, 'ref' | 'headers'> &
         container: ComponentType
         headers: SortableHeader[]
         items: RowItemProps[]
+        compactQuery?: MediaWidth
     }
-export function TableRow({ headers, items, container: Container, ...props }: TableRowProps) {
+export function TableRow({
+    headers,
+    items,
+    container: Container,
+    compactQuery = 'upToSmall',
+    ...props
+}: TableRowProps) {
     return (
         <Container {...props}>
             {items.map(({ content, props, unwrapped = false, fullWidth = false }, i) =>
                 unwrapped ? (
                     <Fragment key={i}>{content}</Fragment>
                 ) : (
-                    <RowItem key={i} $fullWidth={fullWidth} {...props}>
+                    <RowItem key={i} $fullWidth={fullWidth} $compactQuery={compactQuery} {...props}>
                         <MobileHeader>
                             <Text>{headers[i].label}</Text>
                             {!!headers[i].tooltip && <Tooltip width="160px">{headers[i].tooltip}</Tooltip>}
@@ -43,12 +51,12 @@ const RowItem = styled(Flex).attrs((props: FlexProps) => ({
     $column: true,
     $gap: 8,
     ...props,
-}))<{ $fullWidth: boolean }>`
+}))<{ $fullWidth: boolean; $compactQuery: MediaWidth }>`
     & > *:first-child {
         display: none;
     }
 
-    ${({ theme, $fontSize = '1.2em', $fullWidth }) => theme.mediaWidth.upToSmall`
+    ${({ theme, $fontSize = '1.2em', $fullWidth, $compactQuery }) => theme.mediaWidth[$compactQuery]`
         ${css`
             font-size: ${$fontSize};
         `}

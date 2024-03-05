@@ -1,39 +1,49 @@
-import { formatNumberWithStyle } from '~/utils'
+import { useAccount } from 'wagmi'
+
 import { useStoreActions } from '~/store'
-import { useMyBids } from '~/hooks'
+import { useClaims } from '~/providers/ClaimsProvider'
 
 import { HaiButton } from '~/styles'
-import { RewardsTokenPair } from '~/components/TokenPair'
+import { RewardsTokenArray } from '~/components/TokenArray'
 import { Stats, type StatProps } from '~/components/Stats'
 
 export function AuctionStats() {
+    const { address } = useAccount()
+
     const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
 
-    const { activeBids, activeBidsValue } = useMyBids()
-    // TODO: calculate claim stats
+    const { activeAuctions, totalUSD } = useClaims()
+
     const dummyStats: StatProps[] = [
         {
-            header: activeBids.length,
+            header: activeAuctions.activeBids.length.toString(),
             label: 'My Active Bids',
-            tooltip: 'Hello World',
+            tooltip: 'Number of your active bids placed in auctions',
         },
         {
-            header: activeBidsValue ? formatNumberWithStyle(activeBidsValue, { style: 'currency' }) : '$--',
-            label: 'My Active Bids Value',
-            tooltip: 'Hello World',
+            header: activeAuctions.activeBidsValue.formatted,
+            label: `My Active Bid Value`,
+            tooltip: 'Total dollar value of all your active bids placed in auctions',
         },
         {
-            header: '$7,000',
-            headerStatus: <RewardsTokenPair tokens={['OP', 'KITE']} hideLabel />,
+            header: totalUSD?.formatted || '$0',
+            headerStatus: <RewardsTokenArray tokens={['HAI', 'KITE', 'Collateral']} size={24} hideLabel />,
             label: 'My Claimable Assets',
-            tooltip: 'Hello World',
+            tooltip: 'Claim assets purchased in auctions',
             button: (
-                <HaiButton $variant="yellowish" onClick={() => popupsActions.setIsClaimPopupOpen(true)}>
+                <HaiButton
+                    $variant="yellowish"
+                    disabled={!totalUSD?.raw || totalUSD.raw === '0'}
+                    onClick={() => popupsActions.setIsClaimPopupOpen(true)}
+                >
                     Claim
                 </HaiButton>
             ),
+            fullWidth: true,
         },
     ]
 
-    return <Stats stats={dummyStats} columns="repeat(3, 1fr)" />
+    if (!address) return null
+
+    return <Stats stats={dummyStats} columns="repeat(3, 1fr)" fun />
 }

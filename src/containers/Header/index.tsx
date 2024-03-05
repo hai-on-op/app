@@ -1,15 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useLocation } from 'react-router-dom'
+import { useAccount } from 'wagmi'
 
-import {
-    ChainId,
-    LINK_TO_DISCORD,
-    LINK_TO_DOCS,
-    LINK_TO_TELEGRAM,
-    LINK_TO_TWITTER,
-    NETWORK_ID,
-    formatNumberWithStyle,
-} from '~/utils'
+import { LINK_TO_DISCORD, LINK_TO_DOCS, LINK_TO_TELEGRAM, LINK_TO_TWITTER, formatDataNumber } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { useMediaQuery, useOutsideClick } from '~/hooks'
@@ -18,13 +11,14 @@ import styled, { css } from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Popout, Title } from '~/styles'
 import { Twitter } from '~/components/Icons/Twitter'
 import { Telegram } from '~/components/Icons/Telegram'
+import { Discord } from '~/components/Icons/Discord'
 import { Sound } from '~/components/Icons/Sound'
 import { HaiFace } from '~/components/Icons/HaiFace'
+import { Send } from 'react-feather'
 import { Marquee, MarqueeChunk } from '~/components/Marquee'
-import { InternalLink } from '~/components/InternalLink'
-import { ExternalLink } from '~/components/ExternalLink'
+import { Link } from '~/components/Link'
 import { ConnectButton } from '~/components/ConnectButton'
-import { BrandedDropdown, DropdownOption } from '~/components/BrandedDropdown'
+import { BrandedDropdown } from '~/components/BrandedDropdown'
 import { WrapETHModal } from '~/components/Modal/WrapETHModal'
 // import { Notifications } from './Notifications'
 import { MobileMenu } from './MobileMenu'
@@ -38,19 +32,23 @@ export function Header({ tickerActive = false }: HeaderProps) {
     const location = useLocation()
     const isSplash = location.pathname === '/'
 
-    const isLargerThanExtraSmall = useMediaQuery('upToExtraSmall')
-    const isLargerThanSmall = useMediaQuery('upToSmall')
-    const isLargerThanMedium = useMediaQuery('upToMedium')
-    const isLargerThanLarge = useMediaQuery('upToLarge')
+    const isUpToExtraSmall = useMediaQuery('upToExtraSmall')
+    const isUpToSmall = useMediaQuery('upToSmall')
+    const isUpToMedium = useMediaQuery('upToMedium')
+    const isUpToLarge = useMediaQuery('upToLarge')
+
+    const { isConnected } = useAccount()
 
     const {
-        vaultModel: { liquidationData },
         settingsModel: { headerBgActive, isPlayingMusic },
     } = useStoreState((state) => state)
-    const { setIsPlayingMusic } = useStoreActions((actions) => actions.settingsModel)
+    const {
+        popupsModel: { toggleModal },
+        settingsModel: { setIsPlayingMusic },
+    } = useStoreActions((actions) => actions)
 
     const {
-        data: { marketPrice, redemptionPrice },
+        data: { marketPrice, redemptionPrice, tokenAnalyticsData },
     } = useAnalytics()
 
     const [dropdownActive, setDropdownActive] = useState(false)
@@ -60,38 +58,29 @@ export function Header({ tickerActive = false }: HeaderProps) {
     useOutsideClick(communityContainer, () => setCommunityDropdownActive(false))
 
     const [wrapEthActive, setWrapEthActive] = useState(false)
+    useEffect(() => {
+        toggleModal({
+            modal: 'wrapETH',
+            isOpen: wrapEthActive,
+        })
+    }, [wrapEthActive, toggleModal])
 
     const tickerText = useMemo(() => {
-        // TODO: figure out %change (or drop it)
         const arr = [
-            ['HAI (MP)', marketPrice.formatted, '↑34%', '\u2022'],
-            ['HAI (RP)', redemptionPrice.formatted, '↑34%', '\u2022'],
+            ['HAI (MP)', marketPrice.formatted, '\u2022'],
+            ['HAI (RP)', redemptionPrice.formatted, '\u2022'],
         ]
-        if (liquidationData) {
-            Object.entries(liquidationData.collateralLiquidationData).forEach(([token, data]) => {
-                if (!data?.currentPrice.value) return
-                arr.push([
-                    token,
-                    formatNumberWithStyle(data.currentPrice.value, {
-                        style: 'currency',
-                        maxDecimals: 3,
-                    }),
-                    '↑34%',
-                    '\u2022',
-                ])
-            })
-        }
+        tokenAnalyticsData.forEach(({ symbol, currentPrice }) => {
+            const price = formatDataNumber(currentPrice.toString() || '0', 18, 2, true)
+            arr.push([symbol, price, '\u2022'])
+        })
         return arr.flat()
-    }, [liquidationData, marketPrice, redemptionPrice])
+    }, [tokenAnalyticsData, marketPrice, redemptionPrice])
 
     const logoEl = useMemo(
         () =>
-            isLargerThanExtraSmall ? (
-                <Logo src={haiLogo} alt="HAI" width={701} height={264} />
-            ) : (
-                <HaiFace filled size={56} />
-            ),
-        [isLargerThanExtraSmall]
+            isUpToExtraSmall ? <HaiFace filled size={56} /> : <Logo src={haiLogo} alt="HAI" width={701} height={264} />,
+        [isUpToExtraSmall]
     )
 
     return (
@@ -117,17 +106,13 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                 {logoEl}
                             </CenteredFlex>
                         ) : (
-                            <InternalLink href="/">{logoEl}</InternalLink>
+                            <Link href="/vaults" $textDecoration="none">
+                                {logoEl}
+                            </Link>
                         )}
-                        {isLargerThanSmall &&
+                        {!isUpToSmall &&
                             (isSplash ? (
                                 <>
-                                    {/* TODO: replace links */}
-                                    {/* <ExternalLink
-                                    href={LINK_TO_DOCS}
-                                    $textDecoration="none">
-                                    <HeaderLink>Learn</HeaderLink>
-                                </ExternalLink> */}
                                     <HeaderLink
                                         style={{ cursor: 'pointer' }}
                                         onClick={() => {
@@ -138,9 +123,9 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                     >
                                         Learn
                                     </HeaderLink>
-                                    <ExternalLink href={LINK_TO_DOCS} $textDecoration="none">
+                                    <Link href={`${LINK_TO_DOCS}detailed/intro/hai.html`} $textDecoration="none">
                                         <HeaderLink>Docs</HeaderLink>
-                                    </ExternalLink>
+                                    </Link>
                                     <CommunityDropdownContainer
                                         ref={setCommunityContainer}
                                         onClick={() => setCommunityDropdownActive((a) => !a)}
@@ -149,143 +134,81 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                         <CommunityDropdown
                                             $anchor="top"
                                             $float="left"
-                                            $width="200px"
+                                            $width="auto"
                                             hidden={!communityDropdownActive}
                                         >
-                                            <ExternalLink href={LINK_TO_TWITTER} $textDecoration="none">
-                                                <DropdownOption>TWITTER</DropdownOption>
-                                            </ExternalLink>
-                                            <ExternalLink href={LINK_TO_TELEGRAM} $textDecoration="none">
-                                                <DropdownOption>TELEGRAM</DropdownOption>
-                                            </ExternalLink>
-                                            <ExternalLink href={LINK_TO_DISCORD} $textDecoration="none">
-                                                <DropdownOption>DISCORD</DropdownOption>
-                                            </ExternalLink>
+                                            <BrandedDropdown.Item
+                                                href={LINK_TO_TWITTER}
+                                                icon={<Twitter size={16} stroke="black" strokeWidth={2} />}
+                                            >
+                                                Twitter
+                                            </BrandedDropdown.Item>
+                                            <BrandedDropdown.Item
+                                                href={LINK_TO_TELEGRAM}
+                                                icon={<Telegram size={17} stroke="black" strokeWidth={2} />}
+                                            >
+                                                Telegram
+                                            </BrandedDropdown.Item>
+                                            <BrandedDropdown.Item
+                                                href={LINK_TO_DISCORD}
+                                                icon={<Discord size={19} stroke="black" strokeWidth={2} />}
+                                            >
+                                                Discord
+                                            </BrandedDropdown.Item>
                                         </CommunityDropdown>
                                     </CommunityDropdownContainer>
                                 </>
                             ) : (
-                                isLargerThanMedium && (
+                                (isConnected ? !isUpToLarge : !isUpToMedium) && (
                                     <>
-                                        <InternalLink
-                                            href="/vaults"
-                                            $textDecoration="none"
-                                            content={
-                                                <HeaderLink $active={location.pathname.startsWith('/vaults')}>
-                                                    GET HAI
-                                                </HeaderLink>
-                                            }
-                                        />
-                                        <InternalLink
-                                            href="/earn"
-                                            $textDecoration="none"
-                                            content={
-                                                <HeaderLink $active={location.pathname === '/earn'}>EARN</HeaderLink>
-                                            }
-                                        />
-                                        {isLargerThanLarge && (
-                                            <InternalLink
-                                                href="/learn"
-                                                $textDecoration="none"
-                                                content={
-                                                    <HeaderLink $active={location.pathname === '/learn'}>
-                                                        LEARN
-                                                    </HeaderLink>
+                                        <Link href="/vaults" $textDecoration="none">
+                                            <HeaderLink
+                                                $active={
+                                                    location.pathname.startsWith('/vaults') &&
+                                                    !location.pathname.includes('explore')
                                                 }
-                                            />
-                                        )}
+                                            >
+                                                GET HAI
+                                            </HeaderLink>
+                                        </Link>
+                                        <Link href="/earn" $textDecoration="none">
+                                            <HeaderLink $active={location.pathname === '/earn'}>EARN</HeaderLink>
+                                        </Link>
+                                        <Link href="/learn" $textDecoration="none">
+                                            <HeaderLink $active={location.pathname === '/learn'}>LEARN</HeaderLink>
+                                        </Link>
                                     </>
                                 )
                             ))}
                     </LeftSide>
                     <RightSide>
-                        {isLargerThanSmall &&
-                            (isSplash ? (
-                                <>
-                                    <ExternalLink href={LINK_TO_TWITTER} $textDecoration="none">
-                                        <Twitter size={28} />
-                                    </ExternalLink>
-                                    <ExternalLink href={LINK_TO_TELEGRAM} $textDecoration="none">
-                                        <Telegram size={32} />
-                                    </ExternalLink>
-                                </>
-                            ) : (
-                                <BrandedDropdown width="200px" label={!isLargerThanMedium ? 'Menu' : 'More'}>
-                                    {!isLargerThanMedium && (
-                                        <>
-                                            <InternalLink href="/vaults" $textDecoration="none">
-                                                <DropdownOption $active={location.pathname.startsWith('/vaults')}>
-                                                    Get HAI
-                                                </DropdownOption>
-                                            </InternalLink>
-                                            <InternalLink href="/earn" $textDecoration="none">
-                                                <DropdownOption $active={location.pathname === '/earn'}>
-                                                    Earn
-                                                </DropdownOption>
-                                            </InternalLink>
-                                        </>
-                                    )}
-                                    {!isLargerThanLarge && (
-                                        <InternalLink href="/learn" $textDecoration="none">
-                                            <DropdownOption $active={location.pathname === '/learn'}>
-                                                Learn
-                                            </DropdownOption>
-                                        </InternalLink>
-                                    )}
-                                    <InternalLink href="/auctions" $textDecoration="none">
-                                        <DropdownOption $active={location.pathname === '/auctions'}>
-                                            Auctions
-                                        </DropdownOption>
-                                    </InternalLink>
-                                    <InternalLink href="/analytics" $textDecoration="none">
-                                        <DropdownOption $active={location.pathname === '/analytics'}>
-                                            Analytics
-                                        </DropdownOption>
-                                    </InternalLink>
-                                    <InternalLink href="/contracts" $textDecoration="none">
-                                        <DropdownOption $active={location.pathname === '/contracts'}>
-                                            Contracts
-                                        </DropdownOption>
-                                    </InternalLink>
-                                    <InternalLink href="/vaults/explore" $textDecoration="none">
-                                        <DropdownOption $active={location.pathname === '/vaults/explore'}>
-                                            Vault Explorer
-                                        </DropdownOption>
-                                    </InternalLink>
-                                    {NETWORK_ID === ChainId.OPTIMISM_SEPOLIA && (
-                                        <InternalLink href="/test/claim" $textDecoration="none">
-                                            <DropdownOption $active={location.pathname === '/test/claim'}>
-                                                Claim Test Tokens
-                                            </DropdownOption>
-                                        </InternalLink>
-                                    )}
-                                    <DropdownOption
-                                        onClick={() => {
-                                            setDropdownActive(false)
-                                            setWrapEthActive(true)
-                                        }}
-                                    >
-                                        Wrap ETH
-                                    </DropdownOption>
-                                </BrandedDropdown>
-                            ))}
-                        <MusicButton onClick={() => setIsPlayingMusic(!isPlayingMusic)}>
+                        {!isUpToSmall && !isSplash && (
+                            <MobileMenu
+                                active={dropdownActive}
+                                setActive={setDropdownActive}
+                                showWrapEth={() => setWrapEthActive(true)}
+                            />
+                        )}
+                        <MusicButton aria-label="Toggle Music" onClick={() => setIsPlayingMusic(!isPlayingMusic)}>
                             <Sound muted={!isPlayingMusic} size={21} />
                         </MusicButton>
                         {isSplash ? (
-                            <InternalLink href="/vaults" $textDecoration="none">
-                                <HaiButton $variant="yellowish">Enter App</HaiButton>
-                            </InternalLink>
+                            <Link href="/vaults" $textDecoration="none">
+                                <HaiButton $variant="yellowish">
+                                    <Send size={18} strokeWidth={2.5} />
+                                    Enter App
+                                </HaiButton>
+                            </Link>
                         ) : (
                             <>
-                                {isLargerThanSmall && <ConnectButton showBalance />}
+                                {!isUpToSmall && <ConnectButton showBalance="horizontal" />}
                                 {/* <Notifications
                                         active={notificationsActive}
                                         setActive={setNotificationsActive}
                                     /> */}
                             </>
                         )}
-                        {!isLargerThanSmall && (
+                        {isUpToSmall && (
                             <MobileMenu
                                 active={dropdownActive}
                                 setActive={setDropdownActive}
@@ -343,7 +266,7 @@ const Ticker = styled(Flex)`
     flex-shrink: 0;
 
     & ${MarqueeChunk} {
-        & > *:nth-child(4n + 1) {
+        & > *:nth-child(3n + 1) {
             font-weight: 700;
         }
     }
@@ -396,12 +319,17 @@ const CommunityDropdown = styled(Popout)`
     gap: 12px;
     margin-top: 20px;
     z-index: 2;
+    font-size: unset;
+    font-weight: 700;
 
-    font-size: 1.2em;
-    line-height: 30px;
-    letter-spacing: 0.2rem;
-    text-transform: uppercase;
     text-align: left;
+
+    & > * {
+        width: 100%;
+    }
+    & svg {
+        flex-shrink: 0;
+    }
 `
 const HeaderLink = styled(Title).attrs((props) => ({
     $fontSize: '1.6em',
@@ -418,6 +346,11 @@ const HeaderLink = styled(Title).attrs((props) => ({
 const RightSide = styled(CenteredFlex)`
     gap: 36px;
 
+    & a {
+        text-decoration: none;
+        width: 100%;
+    }
+
     ${({ theme }) => theme.mediaWidth.upToMedium`
         gap: 24px;
     `}
@@ -432,4 +365,5 @@ const MusicButton = styled(HaiButton)`
     height: 48px;
     padding: 0px;
     justify-content: center;
+    flex-shrink: 0;
 `

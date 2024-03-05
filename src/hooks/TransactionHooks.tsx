@@ -96,7 +96,7 @@ export async function handlePreTxGasEstimate(
         if (gebError) {
             errorMessage = 'Geb error: ' + gebError
         } else {
-            errorMessage = 'Provider error: ' + (err || err.message)
+            errorMessage = 'Provider error: ' + (err?.message || err)
         }
         store.dispatch.popupsModel.setIsWaitingModalOpen(true)
         store.dispatch.popupsModel.setWaitingPayload({

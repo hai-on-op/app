@@ -53,6 +53,7 @@ export function Elf({ variant, width, animated, ...props }: ElfProps) {
     return (
         <ElfImage
             {...elves[variant % elves.length]}
+            alt=""
             {...props}
             $width={width}
             $animated={animated}

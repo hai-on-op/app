@@ -7,7 +7,7 @@ import { useMediaQuery } from '~/hooks'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, Grid, HaiButton, TableButton, Text } from '~/styles'
-import { RewardsTokenPair, TokenPair } from '~/components/TokenPair'
+import { RewardsTokenArray, TokenArray } from '~/components/TokenArray'
 import { Tooltip } from '~/components/Tooltip'
 import { HaiArrow } from '~/components/Icons/HaiArrow'
 import { Table, TableContainer } from '~/components/Table'
@@ -21,7 +21,7 @@ type AvailableVaultsTableProps = {
 export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: AvailableVaultsTableProps) {
     const { setActiveVault } = useVault()
 
-    const isLargerThanSmall = useMediaQuery('upToSmall')
+    const isUpToSmall = useMediaQuery('upToSmall')
 
     return (
         <Table
@@ -31,23 +31,34 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
             sorting={sorting}
             setSorting={setSorting}
             isEmpty={!rows.length}
+            compactQuery="upToMedium"
             rows={rows.map(
-                ({ collateralName, collateralizationFactor, apy, eligibleBalance, myVaults: existingVaults }) => {
+                ({
+                    collateralName,
+                    collateralizationFactor,
+                    stabilityFee,
+                    eligibleBalance,
+                    myVaults: existingVaults,
+                }) => {
                     return (
                         <Table.Row
                             key={collateralName}
                             container={TableRow}
                             headers={headers}
+                            compactQuery="upToMedium"
                             items={[
                                 {
                                     content: (
                                         <Grid $columns="2fr min-content 1fr" $align="center" $gap={12}>
-                                            <TokenPair tokens={[collateralName.toUpperCase() as any, 'HAI']} />
-                                            <RewardsTokenPair tokens={['OP']} />
+                                            <TokenArray tokens={[collateralName.toUpperCase() as any]} />
+                                            <RewardsTokenArray
+                                                tokens={['OP', 'KITE']}
+                                                label="EARN"
+                                                tooltip={`Earn OP/KITE tokens by minting HAI and providing liquidity`}
+                                            />
                                         </Grid>
                                     ),
                                     props: { $fontSize: 'inherit' },
-                                    fullWidth: true,
                                 },
                                 {
                                     content: (
@@ -64,10 +75,20 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                     ),
                                 },
                                 {
+                                    // content: (
+                                    //     <Text>
+                                    //         {apy
+                                    //             ? formatNumberWithStyle(apy, {
+                                    //                   maxDecimals: 0,
+                                    //                   style: 'percent',
+                                    //               })
+                                    //             : '--%'}
+                                    //     </Text>
+                                    // ),
                                     content: (
                                         <Text>
-                                            {apy
-                                                ? formatNumberWithStyle(apy, {
+                                            {stabilityFee
+                                                ? formatNumberWithStyle(stabilityFee, {
                                                       maxDecimals: 0,
                                                       style: 'percent',
                                                   })
@@ -90,14 +111,27 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                             )}
                                         </Flex>
                                     ),
-                                    fullWidth: true,
                                 },
                                 {
                                     content: (
                                         <Flex>
                                             {!existingVaults?.length ? (
                                                 <Text>-</Text>
-                                            ) : isLargerThanSmall ? (
+                                            ) : isUpToSmall ? (
+                                                <ScrollableContainer>
+                                                    {existingVaults.map((vault) => (
+                                                        <HaiButton
+                                                            key={vault.id}
+                                                            onClick={() => setActiveVault({ vault })}
+                                                        >
+                                                            <Text $whiteSpace="nowrap" $fontWeight={700}>
+                                                                Vault #{vault.id}
+                                                            </Text>
+                                                            <HaiArrow size={14} strokeWidth={2} direction="upRight" />
+                                                        </HaiButton>
+                                                    ))}
+                                                </ScrollableContainer>
+                                            ) : (
                                                 <CenteredFlex $gap={4}>
                                                     <Text>{existingVaults.length}</Text>
                                                     <Tooltip $gap={12}>
@@ -118,24 +152,9 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                                         ))}
                                                     </Tooltip>
                                                 </CenteredFlex>
-                                            ) : (
-                                                <ScrollableContainer>
-                                                    {existingVaults.map((vault) => (
-                                                        <HaiButton
-                                                            key={vault.id}
-                                                            onClick={() => setActiveVault({ vault })}
-                                                        >
-                                                            <Text $whiteSpace="nowrap" $fontWeight={700}>
-                                                                Vault #{vault.id}
-                                                            </Text>
-                                                            <HaiArrow size={14} strokeWidth={2} direction="upRight" />
-                                                        </HaiButton>
-                                                    ))}
-                                                </ScrollableContainer>
                                             )}
                                         </Flex>
                                     ),
-                                    fullWidth: true,
                                 },
                                 {
                                     content: (
@@ -167,7 +186,7 @@ const StyledTableContainer = styled(TableContainer)`
     `}
 `
 const TableHeader = styled(Grid)`
-    grid-template-columns: 3fr minmax(100px, 1fr) minmax(100px, 1fr) minmax(200px, 1fr) minmax(100px, 1fr) 120px;
+    grid-template-columns: 2fr minmax(100px, 1fr) minmax(100px, 1fr) minmax(200px, 1fr) minmax(100px, 1fr) 120px;
     align-items: center;
     padding: 4px;
     padding-left: 8px;
@@ -190,9 +209,9 @@ const TableRow = styled(TableHeader)`
         background-color: rgba(0, 0, 0, 0.1);
     }
 
-    ${({ theme }) => theme.mediaWidth.upToSmall`
+    ${({ theme }) => theme.mediaWidth.upToMedium`
         padding: 24px;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr 1fr 1fr;
         grid-gap: 12px;
         border-radius: 0px;
 
@@ -201,6 +220,12 @@ const TableRow = styled(TableHeader)`
         }
         &:hover {
             background-color: unset;
+        }
+    `}
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        grid-template-columns: 1fr 1fr;
+        & > *:nth-child(1) {
+            grid-column: 1 / -1;
         }
     `}
 `

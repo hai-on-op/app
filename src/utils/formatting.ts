@@ -6,9 +6,14 @@ import type { FormattedBalance, SummaryCurrency, SummaryItem } from '~/types'
 import { floatsTypes } from './constants'
 import { sanitizeDecimals } from './helper'
 
-export const returnWalletAddress = (walletAddress: string) => {
+type FormatAddressOptions = {
+    startLength?: number
+    endLength?: number
+}
+export const returnWalletAddress = (walletAddress: string, options?: FormatAddressOptions) => {
     if (!walletAddress) return 'undefined'
-    return `${walletAddress.slice(0, 4 + 2)}...${walletAddress.slice(-4)}`
+    const { startLength = 6, endLength = 4 } = options || {}
+    return `${walletAddress.slice(0, startLength)}...${walletAddress.slice(-endLength)}`
 }
 
 export const capitalizeName = (name: string) => name.charAt(0).toUpperCase() + name.slice(1)
@@ -37,19 +42,30 @@ export const formatNumber = (value: string, digits = 6, round = false) => {
 const MINIMUM_DECIMAL = 0.00001
 type FormatOptions = {
     scalingFactor?: number
+    minDecimals?: number
     maxDecimals?: number
+    minSigFigs?: number
+    maxSigFigs?: number
     style?: 'currency' | 'percent'
     suffixed?: boolean
 }
 export const formatNumberWithStyle = (value: number | string, options: FormatOptions = {}) => {
-    const { scalingFactor = 1, maxDecimals = 2, style, suffixed = false } = options
+    const {
+        scalingFactor = 1,
+        minDecimals = 0,
+        maxDecimals = 2,
+        maxSigFigs = 2,
+        minSigFigs = 1,
+        style,
+        suffixed = false,
+    } = options
 
     if (suffixed) return formatNumberWithSuffix(value, options)
 
     const scaledValue = scalingFactor * parseFloat((value || '0').toString())
     // truncate tiny amounts
     if (!!scaledValue && Math.abs(scaledValue) < MINIMUM_DECIMAL) {
-        return `<${MINIMUM_DECIMAL.toLocaleString(undefined, {
+        return `<${MINIMUM_DECIMAL.toLocaleString('en-US', {
             style,
             currency: style === 'currency' ? 'USD' : undefined,
             minimumSignificantDigits: 1,
@@ -57,28 +73,30 @@ export const formatNumberWithStyle = (value: number | string, options: FormatOpt
     }
     // if decimal, use signifcant digits instead of fraction digits
     const isLessThanOne = Math.abs(scaledValue) < 1
-    return scaledValue.toLocaleString(undefined, {
+    return scaledValue.toLocaleString('en-US', {
         style,
         currency: style === 'currency' ? 'USD' : undefined,
+        minimumFractionDigits: minDecimals,
         maximumFractionDigits: maxDecimals,
         ...(isLessThanOne && {
-            minimumSignificantDigits: 1,
-            maximumSignificantDigits: maxDecimals || 1,
+            minimumSignificantDigits: minSigFigs,
+            maximumSignificantDigits: maxSigFigs || maxDecimals || 1,
         }),
     })
 }
 
 export const formatNumberWithSuffix = (value: number | string, options: FormatOptions = {}) => {
-    const { scalingFactor = 1, maxDecimals = 3, style } = options
+    const { scalingFactor = 1, minDecimals = 0, maxDecimals = 3, style } = options
 
+    const decimalSpread = Math.max(maxDecimals - minDecimals, 0)
     const numValue = numeral(value).multiply(scalingFactor)
-    const format = maxDecimals > 0 ? `0,0.[${'0'.repeat(maxDecimals)}]a` : '0,0a'
+    const format = maxDecimals > 0 ? `0,0.${'0'.repeat(minDecimals)}[${'0'.repeat(decimalSpread)}]a` : '0,0a'
     const formatted = numValue.format(format).toUpperCase()
     switch (style) {
         case 'currency':
             return `$${formatted}`
         case 'percent':
-            return `${formatted} %`
+            return `${formatted}%`
         default:
             return formatted
     }
@@ -189,7 +207,7 @@ export const formatSummaryPercentage = (value: string | undefined, scalingFactor
                 ? formatNumberWithStyle(value, {
                       scalingFactor,
                       style: 'percent',
-                      maxDecimals: 4,
+                      maxDecimals: 1,
                   })
                 : '--%',
     }
@@ -203,6 +221,7 @@ export const formatBalance = (valueE18: string): FormattedBalance => {
         raw: value,
         formatted: formatNumberWithStyle(value, {
             maxDecimals: 4,
+            minSigFigs: 1,
         }),
     }
 }

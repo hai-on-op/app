@@ -6,13 +6,13 @@ import cloud2 from '~/assets/splash/cloud-2.png'
 const clouds = [
     {
         src: cloud1,
-        width: 446,
-        height: 550,
+        width: 626,
+        height: 627,
     },
     {
         src: cloud2,
-        width: 571,
-        height: 528,
+        width: 594,
+        height: 595,
     },
 ]
 
@@ -23,7 +23,7 @@ type CloudProps = {
 }
 
 export function Cloud({ variant, width, ...props }: CloudProps) {
-    return <CloudImage {...clouds[variant % clouds.length]} {...props} $width={width} />
+    return <CloudImage {...clouds[variant % clouds.length]} alt="" {...props} $width={width} />
 }
 
 export const CloudImage = styled.img<{ $width?: string }>`

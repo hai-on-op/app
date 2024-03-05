@@ -6,6 +6,7 @@ export type IColors = {
     gradient: string
     gradientSecondary: string
     gradientCool: string
+    gradientCooler: string
     neutral: string
     background: string
     overlay: string

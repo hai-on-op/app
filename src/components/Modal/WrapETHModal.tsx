@@ -113,6 +113,8 @@ export function WrapETHModal(props: ModalProps) {
                     break
                 }
             }
+            popupsActions.setIsWaitingModalOpen(false)
+            popupsActions.setWaitingPayload({ status: ActionState.NONE })
         } catch (error: any) {
             handleTransactionError(error)
         } finally {

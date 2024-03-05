@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AlertTriangle } from 'react-feather'
 
-import { ActionState, Status, formatNumberWithStyle } from '~/utils'
+import { ActionState, Status, formatNumberWithStyle, wait } from '~/utils'
 import { liquidateVault } from '~/services/blockchain'
 import { useStoreActions } from '~/store'
 import { handleTransactionError, useGeb } from '~/hooks'
@@ -18,8 +18,9 @@ type Props = ModalProps & {
     id: string
     collateralRatio: string
     status: Status
+    onSuccess?: () => void
 }
-export function LiquidateVaultModal({ id, collateralRatio, status, ...props }: Props) {
+export function LiquidateVaultModal({ id, collateralRatio, status, onSuccess, ...props }: Props) {
     const { t } = useTranslation()
     const geb = useGeb()
 
@@ -57,7 +58,15 @@ export function LiquidateVaultModal({ id, collateralRatio, status, ...props }: P
                 status: ActionState.LOADING,
             })
             await txResponse.wait()
+            onSuccess?.()
+            popupsActions.setWaitingPayload({
+                text: `Liquidated vault #${id} successfully`,
+                title: 'Success',
+                status: ActionState.SUCCESS,
+            })
+            await wait(3000)
             popupsActions.setIsWaitingModalOpen(false)
+            popupsActions.setWaitingPayload({ status: ActionState.NONE })
             props.onClose?.()
         } catch (error: any) {
             handleTransactionError(error)
@@ -79,9 +88,11 @@ export function LiquidateVaultModal({ id, collateralRatio, status, ...props }: P
             }
         >
             <AlertContainer $column $gap={32}>
-                <AlertTriangle size="90px" />
-                <Flex $column $gap={12}>
+                <Flex $width="100%" $justify="flex-start" $align="center" $gap={18}>
+                    <AlertTriangle size="64px" />
                     <Text>{t('liquidate_vault_warning')}</Text>
+                </Flex>
+                <Flex $width="100%" $column $gap={12}>
                     <TransactionSummary
                         heading="Vault Details"
                         items={[
@@ -105,7 +116,7 @@ export function LiquidateVaultModal({ id, collateralRatio, status, ...props }: P
                                 label: 'Status',
                                 value: {
                                     after: '',
-                                    label: <StatusLabel status={status} size={0.8} textOnly />,
+                                    label: <StatusLabel status={status} size={0.8} textOnly $padding="0 4px" />,
                                 },
                             },
                         ]}

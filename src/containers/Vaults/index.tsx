@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 
 import { VaultAction } from '~/utils'
@@ -7,7 +7,7 @@ import { VaultProvider } from '~/providers/VaultProvider'
 import { useVaultRouting } from '~/hooks'
 
 import styled from 'styled-components'
-import { HaiButton, Text } from '~/styles'
+import { CenteredFlex, HaiButton } from '~/styles'
 import { Caret } from '~/components/Icons/Caret'
 import { ManageVault } from './Manage'
 import { VaultsList } from './VaultsList'
@@ -22,9 +22,15 @@ export function Vaults() {
         vaultModel: { singleVault },
     } = useStoreState((state) => state)
 
-    const { action, setAction } = useVaultRouting()
+    const { location, params, action, setAction } = useVaultRouting()
 
-    const [navIndex, setNavIndex] = useState(0)
+    const [navIndex, setNavIndex] = useState(params.get('tab') === 'user' ? 1 : 0)
+
+    useEffect(() => {
+        if (location.pathname === '/vaults') {
+            history.replace({ pathname: '/vaults', search: `?tab=${navIndex === 0 ? 'available' : 'user'}` })
+        }
+    }, [navIndex, location.pathname, history.replace])
 
     if (idOrOwner) {
         if (idOrOwner.startsWith('0x')) return <VaultsByOwner />
@@ -38,7 +44,9 @@ export function Vaults() {
                     headerContent={
                         <BackButton onClick={() => history.push(`/vaults`)}>
                             <Caret direction="left" />
-                            <Text>Back to {navIndex === 0 ? 'Available' : 'My'} Vaults</Text>
+                            <CenteredFlex $width="100%">
+                                Back to {navIndex === 0 ? 'Available' : 'My'} Vaults
+                            </CenteredFlex>
                         </BackButton>
                     }
                 />

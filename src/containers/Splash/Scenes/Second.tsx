@@ -8,7 +8,7 @@ import { ZoomScene, type ZoomSceneProps } from './ZoomScene'
 import { BrandedTitle } from '~/components/BrandedTitle'
 import { ProgressBar } from '~/components/ProgressBar'
 import { FloatingElements, type FloatingElementsProps } from '~/components/BrandElements/FloatingElements'
-import { TokenPair } from '~/components/TokenPair'
+import { TokenArray } from '~/components/TokenArray'
 
 const elves: FloatingElementsProps['elves'] = [
     {
@@ -69,8 +69,8 @@ const coins: FloatingElementsProps['coins'] = [
 ]
 
 export function Second({ zIndex }: ZoomSceneProps) {
-    const isLargerThanExtraSmall = useMediaQuery('upToExtraSmall')
-    const isLargerThanSmall = useMediaQuery('upToSmall')
+    const isUpToExtraSmall = useMediaQuery('upToExtraSmall')
+    const isUpToSmall = useMediaQuery('upToSmall')
 
     const [progress, setProgress] = useState(0.72)
     useEffect(() => {
@@ -81,12 +81,12 @@ export function Second({ zIndex }: ZoomSceneProps) {
     return (
         <ZoomScene $zIndex={zIndex}>
             <Container>
-                <Flex $column $gap={isLargerThanExtraSmall ? 24 : 12}>
+                <Flex $column $gap={isUpToExtraSmall ? 12 : 24}>
                     <BrandedTitle
                         textContent="ELEVATE ASSETS, NOT ANXIETY."
-                        $fontSize={isLargerThanSmall ? '3.6rem' : isLargerThanExtraSmall ? '3rem' : '2rem'}
-                        $letterSpacing={isLargerThanSmall ? '0.7rem' : isLargerThanExtraSmall ? '0.6rem' : '0.5rem'}
-                        $lineHeight={isLargerThanSmall ? '1.4' : '1.2'}
+                        $fontSize={isUpToExtraSmall ? '2rem' : isUpToSmall ? '3rem' : '3.6rem'}
+                        $letterSpacing={isUpToExtraSmall ? '0.5rem' : isUpToSmall ? '0.6rem' : '0.7rem'}
+                        $lineHeight={isUpToSmall ? '1.2' : '1.4'}
                     />
                     <Subtitle>
                         <Text as="span" $fontWeight={700}>
@@ -99,7 +99,7 @@ export function Second({ zIndex }: ZoomSceneProps) {
                     </Subtitle>
                 </Flex>
                 <PairContainer>
-                    <TokenPair tokens={['WETH', 'HAI']} />
+                    <TokenArray tokens={['WETH', 'HAI']} />
                     <Grid $width="100%" $columns="110px 1fr" $align="center" $gap={12}>
                         <Text>
                             Ratio&nbsp;<strong>{Math.round(progress * 10_000) / 100}%</strong>
@@ -117,9 +117,9 @@ export function Second({ zIndex }: ZoomSceneProps) {
                     </Grid>
                     <Flex $width="100%" $justify="flex-start" $align="center" $gap={12}>
                         <HaiButton $variant="yellowish" $grow={0}>
-                            DEPOSIT
+                            Deposit
                         </HaiButton>
-                        <HaiButton $grow={0}>GET HAI</HaiButton>
+                        <HaiButton $grow={0}>Get HAI</HaiButton>
                     </Flex>
                 </PairContainer>
             </Container>

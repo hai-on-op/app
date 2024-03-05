@@ -1,104 +1,125 @@
 import { useMemo, useState } from 'react'
+import { useQuery } from '@apollo/client'
 
 import type { SortableHeader, Sorting, Strategy } from '~/types'
-import { arrayToSorted } from '~/utils'
+import {
+    ALL_COLLATERAL_TYPES_QUERY,
+    type QueryCollateralType,
+    arrayToSorted,
+    tokenAssets,
+    HARDCODED_KITE,
+} from '~/utils'
+import { useStoreState } from '~/store'
 
 const sortableHeaders: SortableHeader[] = [
-    { label: 'Asset Pair' },
+    { label: 'Asset / Asset Pair' },
     { label: 'Strategy' },
-    { label: 'TVL' },
-    // { label: 'Vol. 24hr' },
-    { label: 'Rewards APY' },
-    { label: 'My Position' },
-    // { label: 'My APY' },
+    {
+        label: 'TVP',
+        tooltip: `Value participating in campaign`,
+    },
+    {
+        label: 'My Position',
+        tooltip: `Your value participating in the campaign`,
+    },
+    {
+        label: 'Rewards APY',
+        tooltip: `Variable based upon participation and value of campaign emissions`,
+    },
 ]
 
+// TODO: calculate velodrome and uniswap pool values based on Kingfish doc
 const dummyRows: Strategy[] = [
     {
-        pair: ['WETH', 'HAI'],
-        rewards: ['OP', 'KITE'],
-        tvl: '5600000',
-        vol24hr: '4600000',
-        apy: 0.19,
-        userPosition: '300000',
-        userApy: 0.15,
+        pair: ['HAI', 'ETH'],
+        rewards: [
+            {
+                token: 'OP',
+                emission: 0,
+            },
+            {
+                token: 'KITE',
+                emission: 0,
+            },
+        ],
+        tvl: '',
+        vol24hr: '',
+        apy: 0,
         earnPlatform: 'uniswap',
     },
     {
-        pair: ['WBTC', 'HAI'],
-        rewards: ['OP', 'KITE'],
-        tvl: '5500000',
-        vol24hr: '5100000',
-        apy: 0.11,
+        pair: ['HAI', 'SUSD'],
+        rewards: [
+            {
+                token: 'OP',
+                emission: 0,
+            },
+            {
+                token: 'KITE',
+                emission: 0,
+            },
+        ],
+        tvl: '',
+        vol24hr: '',
+        apy: 0,
         earnPlatform: 'velodrome',
-    },
-    {
-        pair: ['KITE', 'OP'],
-        rewards: ['OP', 'KITE'],
-        tvl: '4600000',
-        vol24hr: '1200000',
-        apy: 0.09,
-        userPosition: '169000',
-        userApy: 0.11,
-        earnPlatform: 'velodrome',
-    },
-    {
-        pair: ['WETH'],
-        rewards: ['OP', 'KITE'],
-        tvl: '4600000',
-        vol24hr: '1200000',
-        apy: 0.09,
-        userPosition: '169000',
-        userApy: 0.11,
-    },
-    {
-        pair: ['OP'],
-        rewards: ['OP', 'KITE'],
-        tvl: '4600000',
-        vol24hr: '1200000',
-        apy: 0.09,
-        userPosition: '169000',
-        userApy: 0.11,
-    },
-    {
-        pair: ['WBTC'],
-        rewards: ['OP', 'KITE'],
-        tvl: '4600000',
-        vol24hr: '1200000',
-        apy: 0.09,
-        userPosition: '169000',
-        userApy: 0.11,
-    },
-    {
-        pair: ['WSTETH'],
-        rewards: ['OP', 'KITE'],
-        tvl: '4600000',
-        vol24hr: '1200000',
-        apy: 0.09,
-        userPosition: '169000',
-        userApy: 0.11,
     },
 ]
 
 export function useEarnStrategies() {
+    const {
+        vaultModel: { list, liquidationData },
+    } = useStoreState((state) => state)
+
+    const { data } = useQuery<{ collateralTypes: QueryCollateralType[] }>(ALL_COLLATERAL_TYPES_QUERY)
+
+    const collateralStrategies: Strategy[] = useMemo(() => {
+        if (!data?.collateralTypes) return dummyRows
+
+        return data.collateralTypes
+            .map((cType, i) => {
+                const { symbol } =
+                    tokenAssets[cType.id] ||
+                    Object.values(tokenAssets).find(({ name }) => name.toLowerCase() === cType.id.toLowerCase()) ||
+                    {}
+                const rewards = {
+                    OP: 10 * (i + 1),
+                    KITE: 10 * (i + 1),
+                }
+                // ((kite-daily-emission * kite-price + op-daily-emission * op-price) * 365) / (hai-debt-per-collateral * hai-redemption-price)
+                // TODO: plug in actual values
+                const opPrice = parseFloat(liquidationData?.collateralLiquidationData['OP']?.currentPrice.value || '0')
+                const nominal =
+                    !liquidationData?.currentRedemptionPrice || !opPrice
+                        ? Infinity
+                        : ((rewards.KITE * HARDCODED_KITE + rewards.OP * opPrice) * 365) /
+                          (parseFloat(cType.debtAmount) * parseFloat(liquidationData?.currentRedemptionPrice || '0'))
+                const apy = nominal === Infinity ? 0 : Math.pow(1 + nominal / 12, 12) - 1
+                return {
+                    pair: [symbol || 'HAI'],
+                    rewards: Object.entries(rewards).map(([token, emission]) => ({ token, emission })),
+                    tvl: cType.debtAmount,
+                    vol24hr: '',
+                    apy,
+                    userPosition: list
+                        .reduce((total, { totalDebt, collateralName }) => {
+                            if (collateralName !== symbol) return total
+                            return total + parseFloat(totalDebt)
+                        }, 0)
+                        .toString(),
+                    userApy: apy,
+                } as Strategy
+            })
+            .concat(dummyRows)
+    }, [data?.collateralTypes, list, liquidationData])
+
     const [filterEmpty, setFilterEmpty] = useState(false)
 
-    const [rows] = useState(() =>
-        dummyRows.map((obj) => ({
-            ...obj,
-            tvl: Math.random() < 0.25 ? '' : ((2 + 8 * Math.random()) * 1_000_000).toFixed(0),
-            vol24hr: Math.random() < 0.25 ? undefined : ((1 + 10 * Math.random()) * 100_000).toFixed(0),
-            apy: 0.01 + 0.2 * Math.random(),
-            userPosition: Math.random() < 0.25 ? '' : ((1 + 9 * Math.random()) * 100_000).toFixed(0),
-            userApy: 0.01 + 0.2 * Math.random(),
-        }))
-    )
-
     const filteredRows = useMemo(() => {
-        if (!filterEmpty) return rows
+        if (!filterEmpty) return collateralStrategies
 
-        return rows.filter(({ userPosition }) => !!userPosition)
-    }, [rows, filterEmpty])
+        return collateralStrategies.filter(({ userPosition }) => !!userPosition && userPosition !== '0')
+    }, [collateralStrategies, filterEmpty])
 
     const [sorting, setSorting] = useState<Sorting>({
         key: 'My Position',
@@ -107,7 +128,7 @@ export function useEarnStrategies() {
 
     const sortedRows = useMemo(() => {
         switch (sorting.key) {
-            case 'Asset Pair':
+            case 'Asset / Asset Pair':
                 return arrayToSorted(filteredRows, {
                     getProperty: (row) => row.pair[0],
                     dir: sorting.dir,
@@ -119,33 +140,19 @@ export function useEarnStrategies() {
                     dir: sorting.dir,
                     type: 'alphabetical',
                 })
-            case 'TVL':
+            case 'TVP':
                 return arrayToSorted(filteredRows, {
                     getProperty: (row) => row.tvl,
                     dir: sorting.dir,
                     type: 'parseFloat',
                     checkValueExists: true,
                 })
-            // case 'Vol. 24hr':
-            //     return arrayToSorted(filteredRows, {
-            //         getProperty: row => row.vol24hr,
-            //         dir: sorting.dir,
-            //         type: 'parseFloat',
-            //         checkValueExists: true,
-            //     })
             case 'Rewards APY':
                 return arrayToSorted(filteredRows, {
                     getProperty: (row) => row.apy,
                     dir: sorting.dir,
                     type: 'numerical',
                 })
-            // case 'My APY':
-            //     return arrayToSorted(filteredRows, {
-            //         getProperty: row => row.userApy,
-            //         dir: sorting.dir,
-            //         type: 'numerical',
-            //         checkValueExists: true,
-            //     })
             case 'My Position':
             default:
                 return arrayToSorted(filteredRows, {
@@ -160,7 +167,7 @@ export function useEarnStrategies() {
     return {
         headers: sortableHeaders,
         rows: sortedRows,
-        rowsUnmodified: dummyRows,
+        rowsUnmodified: collateralStrategies,
         sorting,
         setSorting,
         filterEmpty,
