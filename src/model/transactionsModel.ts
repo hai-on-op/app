@@ -1,7 +1,7 @@
 import { type Action, action } from 'easy-peasy'
 
 import type { ITransaction } from '~/types/wallet'
-import { DEFAULT_NETWORK_ID } from '~/utils/constants'
+import { NETWORK_ID } from '~/utils/constants'
 
 export interface TransactionsModel {
     transactions: { [hash: string]: ITransaction }
@@ -20,7 +20,7 @@ export const transactionsModel: TransactionsModel = {
     addTransaction: action((state, payload) => {
         state.transactions[payload.hash] = payload
         localStorage.setItem(
-            `${payload.from}-${payload.chainId ? payload.chainId : DEFAULT_NETWORK_ID}`,
+            `${payload.from}-${payload.chainId ? payload.chainId : NETWORK_ID}`,
             JSON.stringify(state.transactions)
         )
     }),
@@ -35,15 +35,12 @@ export const transactionsModel: TransactionsModel = {
             tx.lastCheckedBlockNumber = Math.max(blockNumber, tx.lastCheckedBlockNumber)
         }
         state.transactions[tx.hash] = tx
-        localStorage.setItem(
-            `${tx.from}-${tx.chainId ? tx.chainId : DEFAULT_NETWORK_ID}`,
-            JSON.stringify(state.transactions)
-        )
+        localStorage.setItem(`${tx.from}-${tx.chainId ? tx.chainId : NETWORK_ID}`, JSON.stringify(state.transactions))
     }),
     finalizeTransaction: action((state, payload) => {
         state.transactions[payload.hash] = payload
         localStorage.setItem(
-            `${payload.from}-${payload.chainId ? payload.chainId : DEFAULT_NETWORK_ID}`,
+            `${payload.from}-${payload.chainId ? payload.chainId : NETWORK_ID}`,
             JSON.stringify(state.transactions)
         )
     }),

@@ -17,7 +17,6 @@ export enum ChainId {
 }
 
 export const NETWORK_ID = parseInt(VITE_NETWORK_ID ?? '11155420')
-export const DEFAULT_NETWORK_ID = 11155420
 
 export const getNetworkName = (chainId: ChainId | number) => {
     switch (chainId) {

@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom'
 import { isAddress } from 'viem'
 import { useAccount, useNetwork } from 'wagmi'
 
-import { DEFAULT_NETWORK_ID, DEFAULT_VAULT_DATA, VaultAction } from '~/utils'
+import { NETWORK_ID, DEFAULT_VAULT_DATA, VaultAction } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { useEthersSigner } from './useEthersAdapters'
 import { useGeb } from './useGeb'
@@ -69,7 +69,7 @@ export function useVaultRouting(address?: string) {
                 address: address || (account as string),
                 geb,
                 tokensData,
-                chainId: chain?.id || DEFAULT_NETWORK_ID,
+                chainId: chain?.id || NETWORK_ID,
             })
         }
         fetchVaults()
