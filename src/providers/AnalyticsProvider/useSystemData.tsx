@@ -70,7 +70,9 @@ export function useSystemData(): SystemData {
             { total: 0, collateralStats: {} as Record<string, CollateralStat> }
         )
 
-        const cRatio = total / (parseFloat(globalDebt) * parseFloat(currentRedemptionPrice.value || '1'))
+        const cRatio = parseFloat(globalDebt)
+            ? total / (parseFloat(globalDebt) * parseFloat(currentRedemptionPrice.value || '1'))
+            : 0
 
         return {
             totalCollateralLocked: formatSummaryValue(total.toString(), {

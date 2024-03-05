@@ -30,16 +30,20 @@ export function Contracts() {
             }))
             .concat(
                 Object.entries(geb.tokenList).reduce((arr, [token, { address, collateralJoin }]) => {
-                    arr.push({
-                        name: `ERC20 Token - ${token}`,
-                        address,
-                        description: `The ERC20 token contract of the ${token} collateral.`,
-                    })
-                    arr.push({
-                        name: `Collateral Join - ${token}`,
-                        address: collateralJoin,
-                        description: `The address of the Collateral Join contract that holds all ${token} deposited into Vaults.`,
-                    })
+                    if (address) {
+                        arr.push({
+                            name: `ERC20 Token - ${token}`,
+                            address,
+                            description: `The ERC20 token contract of the ${token} collateral.`,
+                        })
+                    }
+                    if (collateralJoin) {
+                        arr.push({
+                            name: `Collateral Join - ${token}`,
+                            address: collateralJoin,
+                            description: `The address of the Collateral Join contract that holds all ${token} deposited into Vaults.`,
+                        })
+                    }
                     return arr
                 }, [] as any[])
             )

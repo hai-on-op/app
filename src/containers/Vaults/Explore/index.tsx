@@ -92,6 +92,7 @@ export function VaultExplorer() {
                     loading={loading}
                     error={error?.message}
                     isEmpty={!rows.length}
+                    emptyContent="No vaults matched your search"
                     compactQuery="upToMedium"
                     rows={rows
                         .slice(RECORDS_PER_PAGE * offset, RECORDS_PER_PAGE * (offset + 1))
