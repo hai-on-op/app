@@ -19,13 +19,12 @@ import { BrandedTitle } from '~/components/BrandedTitle'
 import { Stat, Stats } from '~/components/Stats'
 import { ToggleSlider } from '~/components/ToggleSlider'
 import { LineChart } from '~/components/Charts/Line'
-import { useDummyData as useDummyPieData } from '~/components/Charts/Pie/useDummyData'
 import { PriceDisplay } from './PriceDisplay'
 import { PieChart } from '~/components/Charts/Pie'
 import { Legend } from '~/components/Charts/Legend'
 import { ComingSoon } from '~/components/ComingSoon'
 
-const dummyPieDataBase = [
+const poolPieDataBase = [
     {
         id: 'HAI in Liquidity Pools',
         color: 'hsl(49, 84%, 68%)',
@@ -35,10 +34,6 @@ const dummyPieDataBase = [
         color: 'hsl(115, 70%, 84%)',
     },
 ]
-const dummyPieOptions = {
-    min: 30_000,
-    max: 100_000,
-}
 
 export function Numbers() {
     const {
@@ -85,8 +80,13 @@ export function Numbers() {
     }, [redemptionRateHistory])
 
     const [convertPieToUSD, setConvertPieToUSD] = useState(true)
-    // TODO: remove and use actual data
-    const dummyPieData = useDummyPieData(dummyPieDataBase, dummyPieOptions)
+
+    const poolPieData = useMemo(() => {
+        return poolPieDataBase.map((pool) => ({
+            ...pool,
+            value: 1,
+        }))
+    }, [])
 
     const isUpToSmall = useMediaQuery('upToSmall')
 
@@ -254,13 +254,13 @@ export function Numbers() {
                                         <ComingSoon $justify="flex-start" $fontSize="1.2rem">
                                             {convertPieToUSD
                                                 ? formatNumberWithStyle(
-                                                      dummyPieData[0].value * parseFloat(redemptionPrice.raw),
+                                                      poolPieData[0].value * parseFloat(redemptionPrice.raw),
                                                       {
                                                           maxDecimals: 2,
                                                           style: 'currency',
                                                       }
                                                   )
-                                                : formatNumberWithStyle(dummyPieData[0].value, { maxDecimals: 0 })}
+                                                : formatNumberWithStyle(poolPieData[0].value, { maxDecimals: 0 })}
                                         </ComingSoon>
                                     ),
                                     label: 'HAI in Liquidity Pools',
@@ -305,21 +305,22 @@ export function Numbers() {
                     </SectionContentHeader>
                     <PieContainer>
                         <PieChart
-                            data={dummyPieData}
+                            data={poolPieData}
                             valueFormat={
-                                convertPieToUSD
-                                    ? (value) => {
-                                          return formatNumberWithStyle(value * parseFloat(redemptionPrice.raw), {
-                                              maxDecimals: 2,
-                                              style: 'currency',
-                                          })
-                                      }
-                                    : (value) => {
-                                          return `${formatNumberWithStyle(value, { maxDecimals: 0 })} HAI`
-                                      }
+                                // convertPieToUSD
+                                //     ? (value) => {
+                                //           return formatNumberWithStyle(value * parseFloat(redemptionPrice.raw), {
+                                //               maxDecimals: 2,
+                                //               style: 'currency',
+                                //           })
+                                //       }
+                                //     : (value) => {
+                                //           return `${formatNumberWithStyle(value, { maxDecimals: 0 })} HAI`
+                                //       }
+                                convertPieToUSD ? () => '$--' : () => '-- HAI'
                             }
                         />
-                        <Legend $column data={dummyPieData} style={{ top: 'calc(50% - 96px)' }} />
+                        <Legend $column data={poolPieData} style={{ top: 'calc(50% - 96px)' }} />
                     </PieContainer>
                 </SectionContent>
             </Section>
