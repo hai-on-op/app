@@ -5,7 +5,7 @@ import { useStoreActions, useStoreState } from '~/store'
 import { useMediaQuery, useVaultById } from '~/hooks'
 
 import styled from 'styled-components'
-import { BlurContainer, Flex, Grid, HaiButton, Text } from '~/styles'
+import { BlurContainer, CenteredFlex, Flex, Grid, HaiButton, Text } from '~/styles'
 import { ContentWithStatus } from '~/components/ContentWithStatus'
 import { BrandedTitle } from '~/components/BrandedTitle'
 import { Overview } from './Overview'
@@ -13,6 +13,8 @@ import { ActivityTable } from './ActivityTable'
 import { AddressLink } from '~/components/AddressLink'
 import { ArrowUpRight } from 'react-feather'
 import { LiquidateVaultModal } from '~/components/Modal/LiquidateVaultModal'
+import { Link } from '~/components/Link'
+import { Caret } from '~/components/Icons/Caret'
 
 type VaultByIdProps = {
     id?: string
@@ -57,6 +59,14 @@ export function VaultById({ id = '' }: VaultByIdProps) {
             <Container>
                 <Header>
                     <BrandedTitle textContent={`VAULT #${id}`} $fontSize={isUpToSmall ? '2.4rem' : '3rem'} />
+                    <Link href="/vaults/explore" $textDecoration="none">
+                        <HaiButton as="div">
+                            <Caret direction="left" />
+                            <CenteredFlex $width="100%">
+                                Back to Vault Explorer
+                            </CenteredFlex>
+                        </HaiButton>
+                    </Link>
                 </Header>
                 <Body>
                     <ContentWithStatus
@@ -123,7 +133,7 @@ const Header = styled(Flex).attrs((props) => ({
     border-bottom: ${({ theme }) => theme.border.medium};
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
-        flex-direction: column;
+        flex-direction: column-reverse;
         align-items: flex-start;
         padding: 24px;
     `}
