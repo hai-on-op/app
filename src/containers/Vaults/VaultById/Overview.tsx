@@ -110,7 +110,7 @@ export function Overview({ vault }: OverviewProps) {
                 <OverviewStat
                     value={vault ? formatNumberWithStyle(vault.collateral) : '--'}
                     token={(vault?.collateralToken || '???') as any}
-                    label="Collateral Asset"
+                    label="Locked Collateral"
                     convertedValue={
                         vault && collateralPrice
                             ? formatNumberWithStyle(parseFloat(vault.collateral) * collateralPrice, {
@@ -123,7 +123,7 @@ export function Overview({ vault }: OverviewProps) {
                 <OverviewStat
                     value={vault ? formatNumberWithStyle(vault.totalDebt) : '--'}
                     token="HAI"
-                    label="Debt Asset"
+                    label="Minted HAI Debt"
                     convertedValue={
                         vault
                             ? formatNumberWithStyle(parseFloat(vault.totalDebt) * haiPrice, { style: 'currency' })
@@ -140,7 +140,7 @@ export function Overview({ vault }: OverviewProps) {
                               })
                             : '--%'
                     }
-                    label="Ratio:"
+                    label="Collateral Ratio:"
                     alert={vault?.status ? { status: vault.status } : undefined}
                     {...progressProps}
                     fullWidth
