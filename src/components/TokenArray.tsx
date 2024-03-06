@@ -60,7 +60,7 @@ const IconContainer = styled(CenteredFlex)<{ $size: number; $isKite?: boolean }>
         }
 
         &:not(:first-child) {
-            margin-left: -${({ $size }) => 0.32 * $size}px;
+            margin-left: -${({ $size }) => 0.4 * $size}px;
         }
     }
     & svg {

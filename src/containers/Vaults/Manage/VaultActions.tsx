@@ -332,7 +332,7 @@ const Container = styled(Flex).attrs((props) => ({
     max-width: 100%;
     height: 592px;
     margin-bottom: -143px;
-    background-color: ${({ theme }) => theme.colors.background};
+    background-color: #f7f1ff;
     border-radius: 24px;
     border: ${({ theme }) => theme.border.medium};
 

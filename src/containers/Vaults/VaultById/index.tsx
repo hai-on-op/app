@@ -62,9 +62,7 @@ export function VaultById({ id = '' }: VaultByIdProps) {
                     <Link href="/vaults/explore" $textDecoration="none">
                         <HaiButton as="div">
                             <Caret direction="left" />
-                            <CenteredFlex $width="100%">
-                                Back to Vault Explorer
-                            </CenteredFlex>
+                            <CenteredFlex $width="100%">Back to Vault Explorer</CenteredFlex>
                         </HaiButton>
                     </Link>
                 </Header>

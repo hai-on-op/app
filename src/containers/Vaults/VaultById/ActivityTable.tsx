@@ -17,8 +17,7 @@ import { Table } from '~/components/Table'
 import { Pagination } from '~/components/Pagination'
 import { Link } from '~/components/Link'
 import { TokenArray } from '~/components/TokenArray'
-import { ArrowDown, ArrowUp } from 'react-feather'
-import { Scales } from '~/components/Icons/Scales'
+import { ArrowDown, ArrowUp, X } from 'react-feather'
 
 enum ActivityAction {
     CONFISCATE = 'confiscate',
@@ -64,13 +63,12 @@ const getActionLabelAndIcon = (
         return [
             'Confiscation',
             [
-                // <ActionIconContainer key={1}>
-                //     <TokenArray tokens={[collateralToken as any]} hideLabel size={28} />
-                //     <CenteredFlex>
-                //         <ArrowDown/>
-                //     </CenteredFlex>
-                // </ActionIconContainer>,
-                <Scales key={1} size={20} />,
+                <ActionIconContainer key={1}>
+                    <TokenArray tokens={['HAI', collateralToken as any]} hideLabel size={28} />
+                    <CenteredFlex>
+                        <X />
+                    </CenteredFlex>
+                </ActionIconContainer>,
             ],
         ]
     const label: string[] = []
@@ -153,7 +151,7 @@ const sortableHeaders: SortableHeader[] = [
         label: 'Action',
         tooltip: (
             <Text>
-                {`Description of the action taken by the vault owner or protocol. Confiscations are performed by authorized accounts. Read more about confiscations in the `}
+                {`Description of the action taken by the vault owner or protocol. Confiscations represent liquidations performed by authorized accounts. Read more about confiscations in the `}
                 <Link href={`${LINK_TO_DOCS}detailed/modules/liq_engine.html`}>docs.</Link>
             </Text>
         ),
@@ -334,29 +332,24 @@ const ActivityLabelContainer = styled(Flex).attrs((props) => ({
     $gap: 8,
     ...props,
 }))``
-const AcitivityIconContainer = styled(CenteredFlex)<{ $layer: boolean; $bg: boolean }>`
+const AcitivityIconContainer = styled(CenteredFlex)<{ $layer: boolean }>`
     width: 40px;
     height: 40px;
     flex-shrink: 0;
     border-radius: 999px;
     font-size: 18px;
 
-    ${({ $bg }) =>
-        $bg &&
-        css`
-            background: white;
-        `}
     ${({ $layer }) =>
         $layer &&
         css`
             & > * {
                 flex-shrink: 0;
                 &:nth-child(1) {
-                    transform: translate(6px, -6px);
-                    z-index: 1;
+                    transform: translate(6px, 0px);
                 }
                 &:nth-child(2) {
-                    transform: translate(-6px, 6px);
+                    transform: translate(-6px, 0px);
+                    z-index: 1;
                 }
             }
         `}
@@ -370,9 +363,7 @@ type ActivityLabelProps = {
 function ActivityLabel({ action, label, icons }: ActivityLabelProps) {
     return (
         <ActivityLabelContainer className={action}>
-            <AcitivityIconContainer $bg={label === 'Confiscation'} $layer={icons.length > 1}>
-                {icons}
-            </AcitivityIconContainer>
+            <AcitivityIconContainer $layer={icons.length > 1}>{icons}</AcitivityIconContainer>
             <Text>{label}</Text>
         </ActivityLabelContainer>
     )
