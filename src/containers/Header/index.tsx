@@ -12,7 +12,6 @@ import { CenteredFlex, Flex, HaiButton, Popout, Title } from '~/styles'
 import { Twitter } from '~/components/Icons/Twitter'
 import { Telegram } from '~/components/Icons/Telegram'
 import { Discord } from '~/components/Icons/Discord'
-import { Sound } from '~/components/Icons/Sound'
 import { HaiFace } from '~/components/Icons/HaiFace'
 import { Send } from 'react-feather'
 import { Marquee, MarqueeChunk } from '~/components/Marquee'
@@ -22,6 +21,7 @@ import { BrandedDropdown } from '~/components/BrandedDropdown'
 import { WrapETHModal } from '~/components/Modal/WrapETHModal'
 // import { Notifications } from './Notifications'
 import { MobileMenu } from './MobileMenu'
+import { MusicButton } from './MusicButton'
 
 import haiLogo from '~/assets/logo.png'
 
@@ -40,11 +40,10 @@ export function Header({ tickerActive = false }: HeaderProps) {
     const { isConnected } = useAccount()
 
     const {
-        settingsModel: { headerBgActive, isPlayingMusic },
+        settingsModel: { headerBgActive },
     } = useStoreState((state) => state)
     const {
         popupsModel: { toggleModal },
-        settingsModel: { setIsPlayingMusic },
     } = useStoreActions((actions) => actions)
 
     const {
@@ -189,9 +188,7 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                 showWrapEth={() => setWrapEthActive(true)}
                             />
                         )}
-                        <MusicButton aria-label="Toggle Music" onClick={() => setIsPlayingMusic(!isPlayingMusic)}>
-                            <Sound muted={!isPlayingMusic} size={21} />
-                        </MusicButton>
+                        <MusicButton />
                         {isSplash ? (
                             <Link href="/vaults" $textDecoration="none">
                                 <HaiButton $variant="yellowish">
@@ -357,13 +354,4 @@ const RightSide = styled(CenteredFlex)`
     ${({ theme }) => theme.mediaWidth.upToExtraSmall`
         gap: 12px;
     `}
-`
-
-const MusicButton = styled(HaiButton)`
-    width: 48px;
-    min-width: unset;
-    height: 48px;
-    padding: 0px;
-    justify-content: center;
-    flex-shrink: 0;
 `

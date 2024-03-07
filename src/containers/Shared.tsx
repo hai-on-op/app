@@ -19,7 +19,7 @@ import {
 import { TransactionUpdater } from '~/services/TransactionUpdater'
 import { useStoreState, useStoreActions } from '~/store'
 // import { useAnalytics } from '~/providers/AnalyticsProvider'
-import { useTokenContract, useEthersSigner, useGeb, usePlaylist, usePrevious, usePublicGeb } from '~/hooks'
+import { useTokenContract, useEthersSigner, useGeb, usePrevious, usePublicGeb } from '~/hooks'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex } from '~/styles'
@@ -32,8 +32,6 @@ import { ClaimModal } from '~/components/Modal/ClaimModal'
 import { IntentionHeader } from '~/components/IntentionHeader'
 import { HaiAlert } from '~/components/HaiAlert'
 import { StartAuction } from './Auctions/StartAuction'
-
-const playlist = ['/audio/get-hai-together.wav', '/audio/hai-as-fuck.wav']
 
 type Props = {
     children: ReactChildren
@@ -57,7 +55,6 @@ export function Shared({ children }: Props) {
     const protTokenContract = useTokenContract(tokenList.KITE?.address)
 
     const {
-        settingsModel: settingsState,
         connectWalletModel: connectWalletState,
         auctionModel: { auctionsData },
     } = useStoreState((state) => state)
@@ -236,13 +233,6 @@ export function Shared({ children }: Props) {
     useEffect(() => {
         networkChecker()
     }, [networkChecker])
-
-    const { play, pause } = usePlaylist(playlist, 0.2)
-
-    useEffect(() => {
-        if (settingsState.isPlayingMusic) play()
-        else pause()
-    }, [settingsState.isPlayingMusic, play, pause])
 
     // const {
     //     data: { priceDiff },
