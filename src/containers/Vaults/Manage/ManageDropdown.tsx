@@ -9,6 +9,7 @@ import { CenteredFlex, Flex, type FlexProps, HaiButton, Text } from '~/styles'
 import { BrandedDropdown, DropdownOption } from '~/components/BrandedDropdown'
 import { TokenArray } from '~/components/TokenArray'
 import { Plus } from 'react-feather'
+import { ComingSoon } from '~/components/ComingSoon'
 
 export function ManageDropdown(props: FlexProps) {
     const {
@@ -52,24 +53,27 @@ export function ManageDropdown(props: FlexProps) {
             options: Object.entries(sortedVaults).reduce((options, [symbol, vaults]) => {
                 options.push(
                     <VaultDropdownContainer key={symbol}>
-                        <VaultDropdownHeading>
-                            <CenteredFlex $gap={8}>
-                                <TokenArray tokens={[symbol as TokenKey]} hideLabel size={28} />
-                                <Text>{symbol}</Text>
-                            </CenteredFlex>
-                            <IconButton
-                                title={`Open New ${symbol} Vault`}
-                                onClick={() => {
-                                    setActiveVault({
-                                        create: true,
-                                        vault: undefined,
-                                        collateralName: symbol,
-                                    })
-                                }}
-                            >
-                                <Plus size={16} />
-                            </IconButton>
-                        </VaultDropdownHeading>
+                        <ComingSoon width="100%" active={symbol === 'WSTETH'}>
+                            <VaultDropdownHeading>
+                                <CenteredFlex $gap={8}>
+                                    <TokenArray tokens={[symbol as TokenKey]} hideLabel size={28} />
+                                    <Text>{symbol}</Text>
+                                </CenteredFlex>
+                                <IconButton
+                                    title={`Open New ${symbol} Vault`}
+                                    onClick={() => {
+                                        if (symbol === 'WSTETH') return
+                                        setActiveVault({
+                                            create: true,
+                                            vault: undefined,
+                                            collateralName: symbol,
+                                        })
+                                    }}
+                                >
+                                    <Plus size={16} />
+                                </IconButton>
+                            </VaultDropdownHeading>
+                        </ComingSoon>
                         {vaults.map((listVault) => (
                             <DropdownOption
                                 key={`${listVault.collateralName}-${listVault.id}`}

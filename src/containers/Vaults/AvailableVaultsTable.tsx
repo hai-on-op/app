@@ -11,6 +11,7 @@ import { RewardsTokenArray, TokenArray } from '~/components/TokenArray'
 import { Tooltip } from '~/components/Tooltip'
 import { HaiArrow } from '~/components/Icons/HaiArrow'
 import { Table, TableContainer } from '~/components/Table'
+import { ComingSoon } from '~/components/ComingSoon'
 
 type AvailableVaultsTableProps = {
     rows: AvailableVaultPair[]
@@ -158,16 +159,20 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                 },
                                 {
                                     content: (
-                                        <TableButton
-                                            onClick={() =>
-                                                setActiveVault({
-                                                    create: true,
-                                                    collateralName,
-                                                })
-                                            }
-                                        >
-                                            Open New
-                                        </TableButton>
+                                        <ComingSoon active={collateralName === 'WSTETH'}>
+                                            <TableButton
+                                                disabled={collateralName === 'WSTETH'}
+                                                onClick={() => {
+                                                    if (collateralName === 'WSTETH') return
+                                                    setActiveVault({
+                                                        create: true,
+                                                        collateralName,
+                                                    })
+                                                }}
+                                            >
+                                                Open New
+                                            </TableButton>
+                                        </ComingSoon>
                                     ),
                                     unwrapped: true,
                                 },
