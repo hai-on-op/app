@@ -8,6 +8,8 @@ import { HaiButton, Text } from '~/styles'
 import { RewardsTokenArray } from '~/components/TokenArray'
 import { Stats, type StatProps } from '~/components/Stats'
 import { Link } from '~/components/Link'
+import { Loader } from '~/components/Loader'
+import { RefreshCw } from 'react-feather'
 
 export function BorrowStats() {
     const {
@@ -74,7 +76,7 @@ export function BorrowStats() {
             {
                 header: formatNumberWithStyle(weightedStabilityFeeAverage, {
                     style: 'percent',
-                    scalingFactor: 100,
+                    scalingFactor: -100,
                     minDecimals: 1,
                     maxDecimals: 1,
                     suffixed: true,
@@ -98,7 +100,8 @@ export function BorrowStats() {
                 ),
             },
             {
-                header: '$0',
+                // header: '$0',
+                header: <Loader speed={0.5} icon={<RefreshCw />} />,
                 headerStatus: <RewardsTokenArray tokens={['OP', 'KITE']} hideLabel />,
                 label: 'My Vault Rewards',
                 tooltip: 'Rewards currently voted upon and distributed by DAO approximately once per month.',

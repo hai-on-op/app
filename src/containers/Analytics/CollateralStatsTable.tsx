@@ -71,7 +71,7 @@ export function CollateralStatsTable({ headers, rows, sorting, setSorting }: Col
                                 content: (
                                     <Text>
                                         {stabilityFee
-                                            ? formatNumberWithStyle(stabilityFee, { maxDecimals: 1, style: 'percent' })
+                                            ? formatNumberWithStyle(-stabilityFee, { maxDecimals: 1, style: 'percent' })
                                             : '--%'}
                                     </Text>
                                 ),

@@ -7,13 +7,15 @@ import { Loading } from './Icons/Loading'
 type LoaderProps = FlexProps & {
     size?: number
     color?: string
+    icon?: ReactChildren
+    speed?: number
     hideSpinner?: boolean
     children?: ReactChildren
 }
-export function Loader({ size, color, hideSpinner = false, children, ...props }: LoaderProps) {
+export function Loader({ size, color, icon, speed, hideSpinner = false, children, ...props }: LoaderProps) {
     return (
-        <Container $justify="center" $align="center" $gap={8} {...props}>
-            {!hideSpinner && <Loading size={size} stroke={color} />}
+        <Container $justify="center" $align="center" $gap={8} $speed={speed} {...props}>
+            {!hideSpinner && (icon || <Loading size={size} stroke={color} />)}
             {children}
         </Container>
     )
@@ -32,8 +34,8 @@ const rotating = keyframes`
     transform: rotate(360deg);
   }
 `
-const Container = styled(Flex)`
+const Container = styled(Flex)<{ $speed?: number }>`
     & > svg:first-child {
-        animation: ${rotating} 1.5s linear infinite;
+        animation: ${rotating} ${({ $speed = 1 }) => (1.5 / ($speed || 1)).toFixed(4)}s linear infinite;
     }
 `

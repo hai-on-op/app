@@ -8,6 +8,8 @@ import { useEarnStrategies } from '~/hooks'
 import { HaiButton } from '~/styles'
 import { RewardsTokenArray } from '~/components/TokenArray'
 import { Stats, type StatProps } from '~/components/Stats'
+import { Loader } from '~/components/Loader'
+import { RefreshCw } from 'react-feather'
 
 export function EarnStats() {
     const { address } = useAccount()
@@ -48,7 +50,8 @@ export function EarnStats() {
                 'Current estimated APY of campaign rewards based on current value participating and value of rewards tokens',
         },
         {
-            header: '$0',
+            // header: '$0',
+            header: <Loader speed={0.5} icon={<RefreshCw />} />,
             headerStatus: <RewardsTokenArray tokens={['OP', 'KITE']} hideLabel />,
             label: 'My Campaign Rewards',
             tooltip: 'Rewards currently voted upon and distributed by DAO approximately once per month.',
