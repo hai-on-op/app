@@ -77,7 +77,7 @@ const getActionLabelAndIcon = (
         case 1:
             label.push('Mint HAI')
             icons.push(
-                <ActionIconContainer $topLeft>
+                <ActionIconContainer key={icons.length + 1} $topLeft>
                     <TokenArray tokens={['HAI']} hideLabel size={28} />
                     <CenteredFlex>
                         <ArrowUp />
@@ -88,7 +88,7 @@ const getActionLabelAndIcon = (
         case -1:
             label.push('Burn HAI')
             icons.push(
-                <ActionIconContainer $topLeft>
+                <ActionIconContainer key={icons.length + 1} $topLeft>
                     <TokenArray tokens={['HAI']} hideLabel size={28} />
                     <CenteredFlex>
                         <ArrowDown />
@@ -103,7 +103,7 @@ const getActionLabelAndIcon = (
         case 1:
             label.push(`Deposit ${collateralToken}`)
             icons.push(
-                <ActionIconContainer>
+                <ActionIconContainer key={icons.length + 1}>
                     <TokenArray tokens={[collateralToken as any]} hideLabel size={28} />
                     <CenteredFlex>
                         <ArrowUp />
@@ -114,7 +114,7 @@ const getActionLabelAndIcon = (
         case -1:
             label.push(`Withdraw ${collateralToken}`)
             icons.push(
-                <ActionIconContainer>
+                <ActionIconContainer key={icons.length + 1}>
                     <TokenArray tokens={[collateralToken as any]} hideLabel size={28} />
                     <CenteredFlex>
                         <ArrowDown />

@@ -336,7 +336,7 @@ export const formatQuerySafeToVault = (
     const liquidationPrice = getLiquidationPrice(
         safe.collateral,
         totalDebt,
-        collateralLiquidationData[collateralToken].accumulatedRate,
+        collateralLiquidationData[collateralToken].liquidationCRatio,
         currentRedemptionPrice
     )
     return {
