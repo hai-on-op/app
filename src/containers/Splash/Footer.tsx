@@ -1,18 +1,32 @@
 import { LINK_TO_DISCORD, LINK_TO_DOCS, LINK_TO_PRIVACY_POLICY, LINK_TO_TELEGRAM, LINK_TO_TWITTER } from '~/utils'
+import { useMediaQuery } from '~/hooks'
 
 import styled from 'styled-components'
-import { CenteredFlex, Flex, Grid, Text } from '~/styles'
+import { CenteredFlex, Flex, Grid, HaiButton, Text } from '~/styles'
 import { Elf } from '~/components/BrandElements/Elf'
 import { Twitter } from '~/components/Icons/Twitter'
 import { Telegram } from '~/components/Icons/Telegram'
 import { Discord } from '~/components/Icons/Discord'
 import { Link } from '~/components/Link'
+import { ArrowUp } from 'react-feather'
 
 import haiLogo from '~/assets/logo.png'
 
 export function Footer() {
+    const isUpToMedium = useMediaQuery('upToMedium')
+
     return (
         <Container as="footer">
+            <ScrollButton
+                $variant="yellowish"
+                onClick={() => {
+                    const zoomEl = document.getElementById('zoom-scroll-container')
+                    if (!zoomEl) return
+                    zoomEl.scrollTop = 3 * window.innerHeight
+                }}
+            >
+                <ArrowUp />
+            </ScrollButton>
             <Inner>
                 <Description>
                     <Logo src={haiLogo} width={701} height={264} alt="HAI" />
@@ -59,8 +73,9 @@ export function Footer() {
                 <ElfContainer $shrink={0}>
                     <Elf variant={5} width="100%" animated />
                 </ElfContainer>
+                {isUpToMedium && <Bottom>© 2024 HAI</Bottom>}
             </Inner>
-            <Bottom>© 2024 HAI</Bottom>
+            {!isUpToMedium && <Bottom>© 2024 HAI</Bottom>}
         </Container>
     )
 }
@@ -74,12 +89,36 @@ const Container = styled(Flex).attrs((props) => ({
 }))`
     position: relative;
     overflow: hidden;
-    background: ${({ theme }) => theme.colors.gradient};
-    border-top: ${({ theme }) => theme.border.medium};
     margin-top: 80vh;
     scroll-snap-align: end;
+    background: ${({ theme }) => theme.colors.gradient};
+
+    ${({ theme }) => theme.mediaWidth.upToMedium`
+        padding-top: 60px;
+        background: transparent;
+    `}
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        pointer-events: none;
+    `}
 
     z-index: 3;
+`
+const ScrollButton = styled(HaiButton)`
+    display: none;
+    position: absolute;
+    right: 12px;
+    top: 0px;
+    width: 48px;
+    min-width: 48px;
+    height: 48px;
+    justify-content: center;
+    padding: 0px;
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        display: flex;
+    `}
+
+    pointer-events: all;
 `
 
 const Inner = styled(Flex).attrs((props) => ({
@@ -89,15 +128,19 @@ const Inner = styled(Flex).attrs((props) => ({
     $gap: 48,
     ...props,
 }))`
+    background: transparent;
+    border-top: ${({ theme }) => theme.border.medium};
     padding: 48px;
     padding-top: 60px;
     ${({ theme }) => theme.mediaWidth.upToMedium`
+        background: ${({ theme }) => theme.colors.gradient};
         flex-direction: column;
         align-items: center;
+        padding-bottom: 0px;
     `}
     ${({ theme }) => theme.mediaWidth.upToSmall`
-        padding: 24px;
-        padding-top: 36px;
+        padding: 36px 24px;
+        padding-bottom: 0px;
         gap: 24px;
     `}
 `
@@ -144,6 +187,10 @@ const LinksContainer = styled(Flex).attrs((props) => ({
     ...props,
 }))`
     max-width: min(calc(100vw - 48px), 400px);
+
+    & a {
+        pointer-events: all;
+    }
 
     ${({ theme }) => theme.mediaWidth.upToSmall`
         max-width: 100%;
@@ -208,6 +255,12 @@ const Bottom = styled(Flex).attrs((props) => ({
     border-top: ${({ theme }) => theme.border.thin};
     font-size: 0.8rem;
 
+    ${({ theme }) => theme.mediaWidth.upToMedium`
+        width: calc(100% + 96px);
+    `}
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        width: calc(100% + 48px);
+    `}
     ${({ theme }) => theme.mediaWidth.upToExtraSmall`
         padding: 12px;
     `}

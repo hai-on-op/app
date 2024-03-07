@@ -49,8 +49,8 @@ export function Splash() {
             touch.x = e.touches[0].clientX
             touch.y = e.touches[0].clientY
         }
-        zoomContainer.addEventListener('touchstart', onTouchStart, { passive: true })
-        zoomContainer.addEventListener('touchmove', onTouchMove, { passive: true })
+        window.addEventListener('touchstart', onTouchStart)
+        window.addEventListener('touchmove', onTouchMove, { passive: true })
 
         // update 3d scenes
         const scenes = Array.from(zoomContainer.querySelectorAll(ZoomScene)) as HTMLElement[]
@@ -86,8 +86,8 @@ export function Splash() {
 
         return () => {
             zoomContainer.removeEventListener('wheel', onTopLevelScroll)
-            zoomContainer.removeEventListener('touchstart', onTouchStart)
-            zoomContainer.removeEventListener('touchmove', onTouchMove)
+            window.removeEventListener('touchstart', onTouchStart)
+            window.removeEventListener('touchmove', onTouchMove)
             container.removeEventListener('scroll', onScroll)
         }
     }, [container, zoomContainer, settingsActions])

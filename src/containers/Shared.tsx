@@ -243,6 +243,12 @@ export function Shared({ children }: Props) {
     // }, [priceDiff])
     const [haiAlertActive, setHaiAlertActive] = useState(true)
 
+    useEffect(() => {
+        Object.assign(document.body.style, {
+            overflow: isSplash ? 'hidden' : null,
+        })
+    }, [isSplash])
+
     return (
         <Container>
             <TransactionUpdater />
