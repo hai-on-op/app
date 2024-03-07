@@ -68,7 +68,7 @@ const WaitingContainer = styled(CenteredFlex).attrs((props) => ({
     $gap: 12,
     ...props,
 }))`
-    padding: 24px 0;
+    padding: 24px;
     & svg {
         stroke: ${({ theme }) => theme.colors.blueish};
         & > path {
