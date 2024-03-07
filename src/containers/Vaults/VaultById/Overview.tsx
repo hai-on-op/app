@@ -30,9 +30,9 @@ export function Overview({ vault }: OverviewProps) {
                 colorLimits: [0, 0.5, 1] as [number, number, number],
             }
 
-        const { safetyCRatio } = vault.liquidationData
+        const { safetyCRatio, liquidationCRatio } = vault.liquidationData
         const safetyRatio = safetyCRatio ? 100 * parseFloat(safetyCRatio.toString()) : undefined
-        if (!vault.collateralRatio || !safetyRatio)
+        if (!vault.collateralRatio || !safetyRatio || !liquidationCRatio)
             return {
                 progress: {
                     progress: 0,
@@ -43,11 +43,11 @@ export function Overview({ vault }: OverviewProps) {
 
         const MAX_FACTOR = 2.5
 
-        const min = safetyRatio
-        const max = min * MAX_FACTOR
+        const min = 100 * parseFloat(liquidationCRatio)
+        const max = safetyRatio * MAX_FACTOR
         const labels = [
             {
-                progress: 1 / MAX_FACTOR,
+                progress: min / safetyRatio / MAX_FACTOR,
                 label: (
                     <CenteredFlex $column $fontWeight={700}>
                         <CenteredFlex $gap={4}>
@@ -65,7 +65,7 @@ export function Overview({ vault }: OverviewProps) {
                 progress: 1.5 / MAX_FACTOR,
                 label: (
                     <CenteredFlex $column>
-                        <Text>{`${Math.floor(1.5 * min)}%`}</Text>
+                        <Text>{`${Math.floor(1.5 * safetyRatio)}%`}</Text>
                         <CenteredFlex $gap={2}>
                             <Text>OKAY</Text>
                             <ArrowRight size={8} />
@@ -77,7 +77,7 @@ export function Overview({ vault }: OverviewProps) {
                 progress: 2.2 / MAX_FACTOR,
                 label: (
                     <CenteredFlex $column>
-                        <Text>{`${Math.floor(2.2 * min)}%`}</Text>
+                        <Text>{`${Math.floor(2.2 * safetyRatio)}%`}</Text>
                         <CenteredFlex $gap={2}>
                             <Text>SAFE</Text>
                             <ArrowRight size={8} />
