@@ -4,7 +4,7 @@ import { useCountdown } from '~/hooks'
 
 import styled, { css } from 'styled-components'
 import { CenteredFlex, Text } from '~/styles'
-import { ExternalLink } from '~/components/ExternalLink'
+import { Link } from '~/components/Link'
 import { ArrowUpRight } from 'react-feather'
 
 const airdropTarget = new Date('February 13 2024 00:00:00 UTC').getTime() / 1000
@@ -24,12 +24,12 @@ export function Announcement() {
                 <CountdownText ref={setEl} $live={airdropLive}>
                     --:--:--
                 </CountdownText>
-                <ExternalLink href="https://gov.letsgethai.com/dao/claim">
+                <Link href="https://gov.letsgethai.com/dao/claim">
                     <CenteredFlex $gap={4}>
                         <Text>{airdropLive ? 'Claim Now' : 'Learn More'}</Text>
                         <ArrowUpRight size={18} />
                     </CenteredFlex>
-                </ExternalLink>
+                </Link>
             </CenteredFlex>
         </Container>
     )

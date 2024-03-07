@@ -114,6 +114,7 @@ export type QuerySafe = {
     collateralType: QuerySafeCollateralType // Collateral type associated with this Safe
     collateral: string // Amount of collateral locked in the Safe
     debt: string // Outstanding Safe debt
+    cRatio: string // Current CRatio for this Safe
     safeHandler?: string // The address of the Safe handler (ownership at the SAFEEngine level if the Safe was created using GebSafeManager)
     owner: QueryUser // Address of the Safe owner (top level ownership)
     proxy?: QueryUserProxy // Optional proxy address (if the owner used a proxy to create the Safe)
@@ -134,7 +135,7 @@ export type QuerySafe = {
 
 export type QuerySystemStateData = {
     systemStates: [QuerySystemState]
-    collateralTypes: [QueryCollateralType]
+    collateralTypes: QueryCollateralType[]
     // dailyStats: [QueryHistoricalStat],
     // redemptionRates: [QueryRedemptionRate],
     // safes: [QuerySafe]
@@ -318,11 +319,11 @@ export type QueryEnglishAuction = {
     buyAmount: string // Amount of tokens that that are currently being bought in the auction
     price: string // Sell price (sellAmount / buyAMount) of the best offer
     targetAmount?: string // Used for collateral auctions only. Threshold of buyToken at which the system starts to decrease the amount sold
-    winner?: string // Auction winner
+    winner: string // Auction winner
     startedBy: string // Address that started the auction
     isClaimed: boolean // Whether the bought tokens were claimed by the auction winner
     numberOfBids?: string // Total number of bids
-    auctionDeadline?: string // Deadline for the auction after which no more bids can be placed
+    auctionDeadline: string // Deadline for the auction after which no more bids can be placed
     englishAuctionConfiguration?: QueryEnglishAuctionConfiguration // Auction configuration
     safe: QuerySafe // Used only for collateral auctions. This is the Safe that got liquidated
     createdAt: string // Timestamp of the block at which the auction started
@@ -354,9 +355,17 @@ export type QueryEnglishAuctionBid = {
     buyAmount: string // How many tokens are being bought from the auction
     price: string // Price of the asset being sold (sellAmount / buyAmount)
     bidder: string // Bidder address
+    owner?: string // Owner of proxy 'Bidder' address (if exists)
     createdAt: string // Timestamp of the block at which the liquidation started
     createdAtBlock?: string // Block number at which the liquidation started
     createdAtTransaction?: string // Hash of the transaction that started the liquidation
 }
 
 export type QueryEnglishBidType = 'INCREASE_BUY' | 'DECREASE_SOLD'
+
+export type QueryAuctionRestarts = {
+    auctionId: string
+    englishAuctionType: QueryEnglishAuctionType
+    auctionRestartTimestamps: string[]
+    auctionRestartHashes: string[]
+}

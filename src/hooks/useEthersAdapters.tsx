@@ -4,11 +4,11 @@ import { createPublicClient, http, type HttpTransport } from 'viem'
 import { optimism, optimismSepolia } from 'viem/chains'
 import { type PublicClient, type WalletClient, useNetwork, usePublicClient, useWalletClient } from 'wagmi'
 
-import { DEFAULT_NETWORK_ID, VITE_MAINNET_PUBLIC_RPC, VITE_TESTNET_PUBLIC_RPC } from '~/utils'
+import { NETWORK_ID, VITE_MAINNET_PUBLIC_RPC, VITE_TESTNET_PUBLIC_RPC } from '~/utils'
 
 export const useCustomPublicClient = (): PublicClient => {
     const { chain } = useNetwork()
-    const chainId = chain?.id || DEFAULT_NETWORK_ID
+    const chainId = chain?.id || NETWORK_ID
 
     const testnetClient = createPublicClient({
         chain: optimismSepolia,

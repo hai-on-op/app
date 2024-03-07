@@ -1,44 +1,43 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { ActionState, VaultAction, formatNumberWithStyle } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { useVault } from '~/providers/VaultProvider'
-import { ApprovalState, useProxyAddress, useTokenApproval } from '~/hooks'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
 import { NumberInput } from '~/components/NumberInput'
 import { WrapETHModal } from '~/components/Modal/WrapETHModal'
-import { ReviewVaultTxModal } from '~/components/Modal/ReviewVaultTxModal'
 import { VaultActionError } from './VaultActionError'
 import { CheckBox } from '~/components/CheckBox'
+import { VaultTxModal } from '~/components/Modal/VaultTxModal'
 
 export function VaultActions() {
-    const proxyAddress = useProxyAddress()
     const { vaultModel: vaultState } = useStoreState((state) => state)
-    const { vaultModel: vaultActions } = useStoreActions((actions) => actions)
+    const {
+        vaultModel: vaultActions,
+        popupsModel: { toggleModal },
+    } = useStoreActions((actions) => actions)
 
-    const { vault, action, setAction, formState, updateForm, collateral, debt, error } = useVault()
+    const { vault, action, setAction, formState, updateForm, collateral, debt, summary, error } = useVault()
 
-    const [collateralApproval, approveCollateral] = useTokenApproval(
-        action === VaultAction.WITHDRAW_REPAY ? formState.withdraw || '0' : formState.deposit || '0',
-        collateral.data?.address,
-        proxyAddress,
-        collateral.data?.decimals.toString(),
-        true
-    )
-
-    const [debtApproval, approveDebtUnlock] = useTokenApproval(
-        action === VaultAction.WITHDRAW_REPAY ? formState.repay || '0' : formState.borrow || '0',
-        debt.data?.address,
-        proxyAddress,
-        debt.data?.decimals.toString() || '18',
-        true,
-        action === VaultAction.WITHDRAW_REPAY && formState.repay === debt.available
-    )
+    const isWithdraw = action === VaultAction.WITHDRAW_REPAY || action === VaultAction.WITHDRAW_BORROW
+    const isRepay = action === VaultAction.WITHDRAW_REPAY || action === VaultAction.DEPOSIT_REPAY
 
     const [reviewActive, setReviewActive] = useState(false)
     const [wrapEthActive, setWrapEthActive] = useState(false)
+    useEffect(() => {
+        toggleModal({
+            modal: 'reviewTx',
+            isOpen: reviewActive,
+        })
+    }, [reviewActive, toggleModal])
+    useEffect(() => {
+        toggleModal({
+            modal: 'wrapETH',
+            isOpen: wrapEthActive,
+        })
+    }, [wrapEthActive, toggleModal])
 
     const [buttonActive, buttonLabel] = useMemo(() => {
         let label = ''
@@ -61,6 +60,16 @@ export function VaultActions() {
                 else label = 'Deposit & Borrow'
                 break
             }
+            case VaultAction.DEPOSIT_REPAY: {
+                const { deposit = '0', repay = '0' } = formState
+                if (Number(deposit) <= 0 && Number(repay) <= 0) {
+                    return [false, 'Deposit']
+                }
+                if (Number(repay) <= 0) label = 'Deposit'
+                else if (Number(deposit) <= 0) label = 'Pay Back'
+                else label = 'Deposit & Pay Back'
+                break
+            }
             case VaultAction.WITHDRAW_REPAY: {
                 const { withdraw = '0', repay = '0' } = formState
                 if (Number(withdraw) <= 0 && Number(repay) <= 0) {
@@ -71,101 +80,28 @@ export function VaultActions() {
                 else label = 'Withdraw & Pay Back'
                 break
             }
+            case VaultAction.WITHDRAW_BORROW: {
+                const { withdraw = '0', borrow = '0' } = formState
+                if (Number(withdraw) <= 0 && Number(borrow) <= 0) {
+                    return [false, 'Withdraw']
+                }
+                if (Number(borrow) <= 0) label = 'Withdraw'
+                else if (Number(withdraw) <= 0) label = 'Borrow'
+                else label = 'Withdraw & Borrow'
+                break
+            }
             default:
                 return [false, 'Deposit']
         }
         return [!error, label]
     }, [action, formState, error])
 
-    const button = useMemo(() => {
-        switch (action) {
-            case VaultAction.DEPOSIT_BORROW:
-            case VaultAction.CREATE:
-                switch (collateralApproval) {
-                    case ApprovalState.NOT_APPROVED:
-                    case ApprovalState.PENDING:
-                    case ApprovalState.UNKNOWN:
-                        return (
-                            <HaiButton
-                                $variant="yellowish"
-                                $width="100%"
-                                $justify="center"
-                                disabled={!buttonActive || collateralApproval === ApprovalState.PENDING}
-                                onClick={approveCollateral}
-                            >
-                                {collateralApproval === ApprovalState.PENDING
-                                    ? 'Pending Approval..'
-                                    : `Approve ${collateral.name}`}
-                            </HaiButton>
-                        )
-                    case ApprovalState.APPROVED:
-                    default:
-                        return (
-                            <HaiButton
-                                $variant="yellowish"
-                                $width="100%"
-                                $justify="center"
-                                disabled={!buttonActive || vaultState.transactionState === ActionState.LOADING}
-                                onClick={() => setReviewActive(true)}
-                            >
-                                {vaultState.transactionState === ActionState.LOADING
-                                    ? 'Pending Transaction...'
-                                    : `Review ${buttonLabel}`}
-                            </HaiButton>
-                        )
-                }
-            case VaultAction.WITHDRAW_REPAY: {
-                switch (debtApproval) {
-                    case ApprovalState.NOT_APPROVED:
-                    case ApprovalState.PENDING:
-                    case ApprovalState.UNKNOWN:
-                        return (
-                            <HaiButton
-                                $variant="yellowish"
-                                $width="100%"
-                                $justify="center"
-                                disabled={!buttonActive || collateralApproval === ApprovalState.PENDING}
-                                onClick={approveDebtUnlock}
-                            >
-                                {collateralApproval === ApprovalState.PENDING ? 'Pending Approval..' : `Approve HAI`}
-                            </HaiButton>
-                        )
-                    case ApprovalState.APPROVED:
-                    default:
-                        return (
-                            <HaiButton
-                                $variant="yellowish"
-                                $width="100%"
-                                $justify="center"
-                                disabled={!buttonActive || vaultState.transactionState === ActionState.LOADING}
-                                onClick={() => setReviewActive(true)}
-                            >
-                                {vaultState.transactionState === ActionState.LOADING
-                                    ? 'Pending Transaction...'
-                                    : `Review ${buttonLabel}`}
-                            </HaiButton>
-                        )
-                }
-            }
-        }
-    }, [
-        action,
-        vaultState,
-        buttonActive,
-        buttonLabel,
-        collateral,
-        collateralApproval,
-        approveCollateral,
-        debtApproval,
-        approveDebtUnlock,
-    ])
-
-    const isDepositBorrowOrCreate = action === VaultAction.DEPOSIT_BORROW || action === VaultAction.CREATE
+    const maxRepay = Number(debt.balance.raw) < Number(debt.total.current?.raw || 0) ? debt.balance : debt.total.current
 
     return (
         <>
             {reviewActive && (
-                <ReviewVaultTxModal
+                <VaultTxModal
                     onClose={() => {
                         setReviewActive(false)
                         vaultActions.setTransactionState(ActionState.NONE)
@@ -190,26 +126,12 @@ export function VaultActions() {
                             </Text>
                         )}
                     </Flex>
-                    {/* {action !== VaultAction.CREATE && (
-                    <Grid $columns="1fr 1fr">
-                        <HeaderNav
-                            $active={action === VaultAction.DEPOSIT_BORROW}
-                            onClick={() => setAction(VaultAction.DEPOSIT_BORROW)}>
-                            Deposit & Borrow
-                        </HeaderNav>
-                        <HeaderNav
-                            $active={action === VaultAction.WITHDRAW_REPAY}
-                            onClick={() => setAction(VaultAction.WITHDRAW_REPAY)}>
-                            Withdraw & Pay Back
-                        </HeaderNav>
-                    </Grid>
-                )} */}
                 </Header>
                 <Body>
                     <NumberInput
                         label={
                             <CenteredFlex $gap={8}>
-                                <CheckBox checked={isDepositBorrowOrCreate} size={14} />
+                                <CheckBox checked={!isWithdraw} size={14} />
                                 <Text>Deposit</Text>
                             </CenteredFlex>
                         }
@@ -228,26 +150,39 @@ export function VaultActions() {
                                 : ''
                         }
                         onFocus={
-                            action === VaultAction.CREATE ? undefined : () => setAction(VaultAction.DEPOSIT_BORROW)
+                            action === VaultAction.CREATE
+                                ? undefined
+                                : () =>
+                                      setAction((a) => {
+                                          switch (a) {
+                                              case VaultAction.WITHDRAW_BORROW:
+                                                  return VaultAction.DEPOSIT_BORROW
+                                              case VaultAction.WITHDRAW_REPAY:
+                                                  return VaultAction.DEPOSIT_REPAY
+                                              // case VaultAction.DEPOSIT_BORROW:
+                                              // case VaultAction.DEPOSIT_REPAY:
+                                              // case VaultAction.CREATE:
+                                              default:
+                                                  return a
+                                          }
+                                      })
                         }
-                        style={action !== VaultAction.WITHDRAW_REPAY ? undefined : { opacity: 0.4 }}
+                        style={!isWithdraw ? undefined : { opacity: 0.4 }}
                     />
                     <NumberInput
                         label={
                             <CenteredFlex $gap={8}>
-                                <CheckBox checked={!isDepositBorrowOrCreate} size={14} />
+                                <CheckBox checked={isWithdraw} size={14} />
                                 <Text>Withdraw</Text>
                             </CenteredFlex>
                         }
-                        subLabel={`Max ${formatNumberWithStyle(collateral.available, { maxDecimals: 4 })} ${
-                            collateral.name
-                        }`}
+                        subLabel={`Max ${summary.availableCollateral?.formatted || '0'} ${collateral.name}`}
                         placeholder="Withdraw Amount"
                         unitLabel={collateral.name}
                         onChange={(value: string) => updateForm({ withdraw: value || undefined })}
                         value={formState.withdraw}
                         disabled={action === VaultAction.CREATE}
-                        onMax={() => updateForm({ withdraw: collateral.available })}
+                        onMax={() => updateForm({ withdraw: summary.availableCollateral?.raw || '0' })}
                         conversion={
                             formState.withdraw && Number(formState.withdraw) > 0
                                 ? `~${formatNumberWithStyle(
@@ -257,23 +192,39 @@ export function VaultActions() {
                                 : ''
                         }
                         onFocus={
-                            action === VaultAction.CREATE ? undefined : () => setAction(VaultAction.WITHDRAW_REPAY)
+                            action === VaultAction.CREATE
+                                ? undefined
+                                : () =>
+                                      setAction((a) => {
+                                          switch (a) {
+                                              case VaultAction.DEPOSIT_BORROW:
+                                                  return VaultAction.WITHDRAW_BORROW
+                                              case VaultAction.DEPOSIT_REPAY:
+                                                  return VaultAction.WITHDRAW_REPAY
+                                              // case VaultAction.WITHDRAW_BORROW:
+                                              // case VaultAction.WITHDRAW_REPAY:
+                                              // case VaultAction.CREATE:
+                                              default:
+                                                  return a
+                                          }
+                                      })
                         }
-                        style={action === VaultAction.WITHDRAW_REPAY ? undefined : { opacity: 0.4 }}
+                        style={isWithdraw ? undefined : { opacity: 0.4 }}
+                        hidden={action === VaultAction.CREATE}
                     />
                     <NumberInput
                         label={
                             <CenteredFlex $gap={8}>
-                                <CheckBox checked={isDepositBorrowOrCreate} size={14} />
+                                <CheckBox checked={!isRepay} size={14} />
                                 <Text>Borrow</Text>
                             </CenteredFlex>
                         }
-                        subLabel={`Max ${formatNumberWithStyle(debt.available, { maxDecimals: 4 })} HAI`}
+                        subLabel={`Max ${debt.available.formatted} HAI`}
                         placeholder="Borrow Amount"
                         unitLabel="HAI"
                         onChange={(value: string) => updateForm({ borrow: value || undefined })}
                         value={formState.borrow}
-                        onMax={() => updateForm({ borrow: debt.available })}
+                        onMax={() => updateForm({ borrow: debt.available.raw })}
                         conversion={
                             formState.borrow && Number(formState.borrow) > 0
                                 ? `~${formatNumberWithStyle(
@@ -283,25 +234,39 @@ export function VaultActions() {
                                 : ''
                         }
                         onFocus={
-                            action === VaultAction.CREATE ? undefined : () => setAction(VaultAction.DEPOSIT_BORROW)
+                            action === VaultAction.CREATE
+                                ? undefined
+                                : () =>
+                                      setAction((a) => {
+                                          switch (a) {
+                                              case VaultAction.DEPOSIT_REPAY:
+                                                  return VaultAction.DEPOSIT_BORROW
+                                              case VaultAction.WITHDRAW_REPAY:
+                                                  return VaultAction.WITHDRAW_BORROW
+                                              // case VaultAction.DEPOSIT_BORROW:
+                                              // case VaultAction.WITHDRAW_BORROW:
+                                              // case VaultAction.CREATE:
+                                              default:
+                                                  return a
+                                          }
+                                      })
                         }
-                        style={action !== VaultAction.WITHDRAW_REPAY ? undefined : { opacity: 0.4 }}
+                        style={!isRepay ? undefined : { opacity: 0.4 }}
                     />
                     <NumberInput
                         label={
                             <CenteredFlex $gap={8}>
-                                <CheckBox checked={!isDepositBorrowOrCreate} size={14} />
+                                <CheckBox checked={isRepay} size={14} />
                                 <Text>Pay Back</Text>
                             </CenteredFlex>
                         }
-                        subLabel={`Max ${formatNumberWithStyle(debt.available, { maxDecimals: 4 })} HAI`}
+                        subLabel={`Max ${maxRepay?.formatted || '0'} HAI`}
                         placeholder="Pay Back Amount"
                         unitLabel="HAI"
                         onChange={(value: string) => updateForm({ repay: value || undefined })}
                         value={formState.repay}
                         disabled={action === VaultAction.CREATE}
-                        // hidden={action !== VaultAction.WITHDRAW_REPAY}
-                        onMax={() => updateForm({ repay: debt.available })}
+                        onMax={() => updateForm({ repay: maxRepay?.raw || '0' })}
                         conversion={
                             formState.repay && Number(formState.repay) > 0
                                 ? `~${formatNumberWithStyle(parseFloat(debt.priceInUSD) * parseFloat(formState.repay), {
@@ -310,11 +275,27 @@ export function VaultActions() {
                                 : ''
                         }
                         onFocus={
-                            action === VaultAction.CREATE ? undefined : () => setAction(VaultAction.WITHDRAW_REPAY)
+                            action === VaultAction.CREATE
+                                ? undefined
+                                : () =>
+                                      setAction((a) => {
+                                          switch (a) {
+                                              case VaultAction.DEPOSIT_BORROW:
+                                                  return VaultAction.DEPOSIT_REPAY
+                                              case VaultAction.WITHDRAW_BORROW:
+                                                  return VaultAction.WITHDRAW_REPAY
+                                              // case VaultAction.DEPOSIT_REPAY:
+                                              // case VaultAction.WITHDRAW_REPAY:
+                                              // case VaultAction.CREATE:
+                                              default:
+                                                  return a
+                                          }
+                                      })
                         }
-                        style={action === VaultAction.WITHDRAW_REPAY ? undefined : { opacity: 0.4 }}
+                        style={isRepay ? undefined : { opacity: 0.4 }}
+                        hidden={action === VaultAction.CREATE}
                     />
-                    {collateral.name === 'WETH' && isDepositBorrowOrCreate && (
+                    {collateral.name === 'WETH' && !isWithdraw && (
                         <>
                             <WrapEthText onClick={() => setWrapEthActive(true)}>
                                 Need WETH?&nbsp;
@@ -325,9 +306,19 @@ export function VaultActions() {
                             {wrapEthActive && <WrapETHModal onClose={() => setWrapEthActive(false)} />}
                         </>
                     )}
-                    <VaultActionError />
                 </Body>
-                <Footer>{button}</Footer>
+                <Footer>
+                    <VaultActionError />
+                    <HaiButton
+                        $variant="yellowish"
+                        $width="100%"
+                        $justify="center"
+                        disabled={!buttonActive || vaultState.transactionState === ActionState.LOADING}
+                        onClick={() => setReviewActive(true)}
+                    >
+                        Review {buttonLabel}
+                    </HaiButton>
+                </Footer>
             </Container>
         </>
     )
@@ -339,12 +330,17 @@ const Container = styled(Flex).attrs((props) => ({
     ...props,
 }))`
     max-width: 100%;
-    /* width: 360px; */
-    height: 564px;
-    margin-bottom: -140px;
-    background-color: ${({ theme }) => theme.colors.background};
+    height: 592px;
+    margin-bottom: -143px;
+    background-color: #f7f1ff;
     border-radius: 24px;
     border: ${({ theme }) => theme.border.medium};
+
+    ${({ theme }) => theme.mediaWidth.upToMedium`
+        height: auto;
+        min-height: 480px;
+        margin-bottom: -119px;
+    `}
 `
 const Header = styled(Flex).attrs((props) => ({
     $width: '100%',
@@ -387,7 +383,11 @@ const WrapEthText = styled(Text).attrs((props) => ({
     cursor: pointer;
 `
 
-const Footer = styled(CenteredFlex)`
+const Footer = styled(CenteredFlex).attrs((props) => ({
+    $column: true,
+    $gap: 12,
+    ...props,
+}))`
     width: 100%;
     padding: 24px;
     border-top: ${({ theme }) => theme.border.thin};

@@ -66,7 +66,7 @@ const cardTitles = [
     },
     {
         title: 'FARM REWARDS BY PROVIDING LIQUIDITY',
-        link: `${LINK_TO_DOCS}`,
+        link: `${LINK_TO_DOCS}detailed/intro/hai.html`,
     },
 ]
 

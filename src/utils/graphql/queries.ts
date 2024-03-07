@@ -9,7 +9,11 @@ import {
 // TODO: get refactored version with fragments working
 export const SYSTEMSTATE_QUERY = gql`
     query GetSystemState {
-        systemStates(first: 1, orderBy: createdAt, orderDirection: desc) {
+        systemStates(
+            first: 1,
+            orderBy: createdAt,
+            orderDirection: desc
+        ) {
             safeCount
             unmanagedSafeCount
             totalActiveSafeCount
@@ -69,8 +73,21 @@ export const SYSTEMSTATE_QUERY = gql`
 `
 
 export const ALLSAFES_QUERY_WITH_ZERO = gql`
-    query GetAllSafes($first: Int, $skip: Int, $orderBy: String, $orderDirection: String) {
-        safes(first: $first, skip: $skip, orderBy: $orderBy, orderDirection: $orderDirection) {
+    query GetAllSafes(
+        $first: Int,
+        $skip: Int,
+        $orderBy: String,
+        $orderDirection: String
+    ) {
+        safes(
+            first: $first,
+            skip: $skip,
+            orderBy: $orderBy,
+            orderDirection: $orderDirection,
+            where: {
+                safeId_not: null
+            }
+        ) {
             ...SafeFragment
         }
     }
@@ -78,7 +95,12 @@ export const ALLSAFES_QUERY_WITH_ZERO = gql`
 `
 export const SAFES_BY_OWNER = gql`
     query SafesByOwner($address: Bytes!) {
-        safes(where: { owner: $address }) {
+        safes(
+            where: {
+                owner: $address,
+                safeId_not: null
+            }
+        ) {
             ...SafeFragment
         }
     }
@@ -86,13 +108,21 @@ export const SAFES_BY_OWNER = gql`
 `
 
 export const ALLSAFES_QUERY_NOT_ZERO = gql`
-    query GetAllSafes($first: Int, $skip: Int, $orderBy: String, $orderDirection: String) {
+    query GetAllSafes(
+        $first: Int,
+        $skip: Int,
+        $orderBy: String,
+        $orderDirection: String
+    ) {
         safes(
             first: $first
             skip: $skip
             orderBy: $orderBy
             orderDirection: $orderDirection
-            where: { collateral_not: "0" }
+            where: {
+                collateral_not: "0",
+                safeId_not: null
+            }
         ) {
             ...SafeFragment
         }
@@ -102,9 +132,16 @@ export const ALLSAFES_QUERY_NOT_ZERO = gql`
 
 export const SAFE_QUERY = gql`
     query GetSafe($id: String) {
-        safes(where: { safeId: $id }) {
+        safes(
+            where: {
+                safeId: $id
+            }
+        ) {
             ...SafeFragment
-            modifySAFECollateralization(orderBy: createdAt, orderDirection: desc) {
+            modifySAFECollateralization(
+                orderBy: createdAt,
+                orderDirection: desc
+            ) {
                 id
                 deltaDebt
                 deltaCollateral
@@ -113,7 +150,15 @@ export const SAFE_QUERY = gql`
                 accumulatedRate
             }
         }
-        confiscateSAFECollateralAndDebts(where: { safe_: { safeId: $id } }, orderBy: createdAt, orderDirection: desc) {
+        confiscateSAFECollateralAndDebts(
+            where: {
+                safe_: {
+                    safeId: $id
+                }
+            },
+            orderBy: createdAt,
+            orderDirection: desc
+        ) {
             id
             deltaDebt
             deltaCollateral
@@ -127,7 +172,10 @@ export const SAFE_QUERY = gql`
 export const SAFE_ACTIVITY_QUERY = gql`
     query GetSafeActivity($id: String) {
         safe(id: $id) {
-            modifySAFECollateralization(orderBy: createdAt, orderDirection: desc) {
+            modifySAFECollateralization(
+                orderBy: createdAt,
+                orderDirection: desc
+            ) {
                 id
                 deltaDebt
                 deltaCollateral
@@ -141,7 +189,13 @@ export const SAFE_ACTIVITY_QUERY = gql`
 
 export const HOURLY_STATS_QUERY = gql`
     query HourlyStatsQuery($since: BigInt) {
-        hourlyStats(orderBy: timestamp, orderDirection: desc, where: { timestamp_gt: $since }) {
+        hourlyStats(
+            orderBy: timestamp,
+            orderDirection: desc,
+            where: {
+                timestamp_gt: $since
+            }
+        ) {
             ...HourlyStatFragment
         }
     }
@@ -150,7 +204,13 @@ export const HOURLY_STATS_QUERY = gql`
 
 export const DAILY_STATS_QUERY = gql`
     query DailyStats($since: BigInt) {
-        dailyStats(orderBy: timestamp, orderDirection: desc, where: { timestamp_gt: $since }) {
+        dailyStats(
+            orderBy: timestamp,
+            orderDirection: desc,
+            where: {
+                timestamp_gt: $since
+            }
+        ) {
             ...DailyStatFragment
         }
     }
@@ -168,21 +228,64 @@ export const ALL_COLLATERAL_TYPES_QUERY = gql`
 
 export const MY_AUCTION_BIDS_QUERY = gql`
     query MyBids($address: Bytes!) {
-        englishAuctionBids(where: { bidder: $address }) {
+        englishAuctionBids(
+            where: {
+                bidder: $address
+            }
+        ) {
             id
             type
             auction {
                 auctionId
                 englishAuctionType
+                sellToken
                 winner
                 isClaimed
                 auctionDeadline
+                englishAuctionBids {
+                    id
+                    bidNumber
+                    type
+                    sellAmount
+                    buyAmount
+                    price
+                    bidder
+                    createdAt
+                }
             }
             sellAmount
             buyAmount
             price
             bidder
+            owner
             createdAt
+        }
+    }
+`
+
+export const PROXY_OWNER_QUERY = gql`
+    query ProxyOwner($address: Bytes!) {
+        userProxies(
+            where: { address: $address }
+        ){
+            id
+            address
+            owner {
+                address
+            }
+        }
+    }
+`
+
+export const AUCTION_RESTART_QUERY = gql`
+    query AuctionRestarts {
+        englishAuctions(
+            where: { auctionRestartHashes_not: [] }
+        ) {
+            auctionId
+            englishAuctionType
+            auctionRestartHashes
+            auctionRestartTimestamps
         }
     }
 `

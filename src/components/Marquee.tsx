@@ -87,14 +87,24 @@ const createScrollAnimation = (distance: number) => keyframes`
     100% { transform: translate(${-distance}px) }
 `
 
-const Container = styled(CenteredFlex)`
+const Container = styled(CenteredFlex).attrs((props) => ({
+    $grow: 0,
+    $shrink: 0,
+    ...props,
+}))`
     position: relative;
     width: 100%;
     height: 100%;
     overflow: visible;
 `
 
-const Banner = styled(Flex)<{
+const Banner = styled(Flex).attrs((props) => ({
+    $justify: 'flex-start',
+    $align: 'center',
+    $shrink: 0,
+    $grow: 0,
+    ...props,
+}))<{
     $scrollDistance?: number
     $speed: number
     $reverse?: boolean
@@ -121,5 +131,6 @@ export const MarqueeChunk = styled(Flex).attrs((props) => ({
     $justify: 'space-between',
     $align: 'center',
     $shrink: 0,
+    $grow: 0,
     ...props,
 }))``

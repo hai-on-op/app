@@ -10,3 +10,8 @@ export type IPaging = {
     from: number
     to: number
 }
+
+export type Vector2 = {
+    x: number
+    y: number
+}

@@ -65,6 +65,11 @@ export const HaiButton = styled.button.attrs((props: HaiButtonProps) => ({
     &:disabled {
         opacity: 0.7;
         cursor: not-allowed;
+        ${({ $variant = 'default' }) =>
+            $variant !== 'default' &&
+            css`
+                background: #c5c0cb77;
+            `};
     }
 `
 
@@ -79,5 +84,8 @@ export const TableButton = styled(HaiButton)<HaiButtonProps>`
         grid-column: 1 / -1;
         background: ${theme.colors.yellowish};
         border: ${$unbordered ? 'none' : theme.border.medium};
+        &:disabled {
+            background: #c5c0cb77;
+        }
     `}
 `

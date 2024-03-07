@@ -1,30 +1,43 @@
-import type { AuctionEventType } from '~/types'
-import { useStoreState } from '~/store'
+import type { AuctionEventType, TokenKey } from '~/types'
 import { useAuctionsData, useMediaQuery } from '~/hooks'
 
-import styled from 'styled-components'
-import { CenteredFlex, Text } from '~/styles'
+import styled, { css } from 'styled-components'
+import { Flex, Text } from '~/styles'
 import { NavContainer } from '~/components/NavContainer'
 import { CheckboxButton } from '~/components/CheckboxButton'
 import { BrandedDropdown, DropdownOption } from '~/components/BrandedDropdown'
 import { AuctionTable } from './AuctionTable'
 import { SortByDropdown } from '~/components/SortByDropdown'
+import { CollateralDropdown } from '~/components/CollateralDropdown'
+import { Status, capitalizeName } from '~/utils'
+import { CyclingTokenArray, TokenArray } from '~/components/TokenArray'
+import { StatusLabel } from '~/components/StatusLabel'
 
-const auctionFilters: (AuctionEventType | 'All')[] = ['All', 'COLLATERAL', 'DEBT', 'SURPLUS']
+type AuctionTypeFilter = {
+    type: AuctionEventType | 'All'
+    icon?: TokenKey | 'All'
+}
+const auctionFilters: AuctionTypeFilter[] = [
+    { type: 'All' },
+    {
+        type: 'COLLATERAL',
+        icon: 'All',
+    },
+    {
+        type: 'DEBT',
+        icon: 'HAI',
+    },
+    {
+        type: 'SURPLUS',
+        icon: 'KITE',
+    },
+]
 
 type AuctionsListProps = {
     isLoading: boolean
     error?: string
 }
 export function AuctionsList({ isLoading, error }: AuctionsListProps) {
-    const {
-        connectWalletModel: { tokensData },
-    } = useStoreState((state) => state)
-
-    const symbols = Object.values(tokensData || {})
-        .filter(({ isCollateral }) => isCollateral)
-        .map(({ symbol }) => symbol)
-
     const {
         headers,
         rows,
@@ -34,64 +47,91 @@ export function AuctionsList({ isLoading, error }: AuctionsListProps) {
         setFilterMyBids,
         typeFilter,
         setTypeFilter,
+        statusFilter,
+        setStatusFilter,
         saleAssetsFilter,
         setSaleAssetsFilter,
     } = useAuctionsData()
 
-    const isLargerThanSmall = useMediaQuery('upToSmall')
+    const isUpToMedium = useMediaQuery('upToMedium')
 
     return (
         <NavContainer
             navItems={[`All Auctions (${rows.length.toLocaleString()})`]}
             selected={0}
             onSelect={() => 0}
+            stackHeader={isUpToMedium}
+            compactQuery="upToMedium"
             headerContent={
-                <HeaderContainer>
+                <HeaderContainer $flexWrap>
                     <CheckboxButton checked={filterMyBids} toggle={() => setFilterMyBids((f) => !f)}>
                         Only Show My Bids
                     </CheckboxButton>
-                    {!isLargerThanSmall && (
-                        <SortByDropdown headers={headers} sorting={sorting} setSorting={setSorting} />
-                    )}
+                    {isUpToMedium && <SortByDropdown headers={headers} sorting={sorting} setSorting={setSorting} />}
                     <BrandedDropdown
                         label={
                             <Text $fontWeight={400} $textAlign="left">
-                                Auction Type: <strong>{typeFilter || 'All'}</strong>
+                                Type: <strong>{typeFilter || 'All'}</strong>
                             </Text>
                         }
                     >
-                        {auctionFilters.map((label) => (
-                            <DropdownOption
-                                key={label}
+                        {auctionFilters.map(({ type, icon }) => (
+                            <Option
+                                key={type}
+                                $pad={!!icon}
+                                $active={type === 'All' ? !typeFilter : typeFilter === type}
                                 onClick={() => {
                                     // e.stopPropagation()
-                                    setTypeFilter(label === 'All' ? undefined : label)
+                                    setTypeFilter(type === 'All' ? undefined : type)
                                 }}
                             >
-                                {label}
-                            </DropdownOption>
+                                {!icon ? null : icon === 'All' ? (
+                                    <CyclingTokenArray />
+                                ) : (
+                                    <TokenArray tokens={[icon as TokenKey]} hideLabel />
+                                )}
+                                {capitalizeName(type.toLowerCase())}
+                            </Option>
                         ))}
                     </BrandedDropdown>
-                    {(!typeFilter || typeFilter === 'COLLATERAL') && (
-                        <BrandedDropdown
-                            label={
-                                <Text $fontWeight={400} $textAlign="left">
-                                    For Sale Asset: <strong>{saleAssetsFilter || 'All'}</strong>
-                                </Text>
-                            }
+                    <BrandedDropdown
+                        label={
+                            <Text $fontWeight={400} $textAlign="left">
+                                Status: <strong>{statusFilter || 'All'}</strong>
+                            </Text>
+                        }
+                    >
+                        <Option $active={!statusFilter} onClick={() => setStatusFilter(undefined)}>
+                            All
+                        </Option>
+                        <Option $active={statusFilter === Status.LIVE} onClick={() => setStatusFilter(Status.LIVE)}>
+                            <StatusLabel status={Status.LIVE} background="transparent" unpadded />
+                        </Option>
+                        <Option
+                            $active={statusFilter === Status.COMPLETED}
+                            onClick={() => setStatusFilter(Status.COMPLETED)}
                         >
-                            {['All', ...symbols].map((label) => (
-                                <DropdownOption
-                                    key={label}
-                                    onClick={() => {
-                                        // e.stopPropagation()
-                                        setSaleAssetsFilter(label === 'All' ? undefined : label)
-                                    }}
-                                >
-                                    {label}
-                                </DropdownOption>
-                            ))}
-                        </BrandedDropdown>
+                            <StatusLabel status={Status.COMPLETED} background="transparent" unpadded />
+                        </Option>
+                        <Option
+                            $active={statusFilter === Status.SETTLING}
+                            onClick={() => setStatusFilter(Status.SETTLING)}
+                        >
+                            <StatusLabel status={Status.SETTLING} background="transparent" unpadded />
+                        </Option>
+                        <Option
+                            $active={statusFilter === Status.RESTARTING}
+                            onClick={() => setStatusFilter(Status.RESTARTING)}
+                        >
+                            <StatusLabel status={Status.RESTARTING} background="transparent" unpadded />
+                        </Option>
+                    </BrandedDropdown>
+                    {(!typeFilter || typeFilter === 'COLLATERAL') && (
+                        <CollateralDropdown
+                            label="For Sale Asset"
+                            selectedAsset={saleAssetsFilter}
+                            onSelect={setSaleAssetsFilter}
+                        />
                     )}
                 </HeaderContainer>
             }
@@ -108,11 +148,15 @@ export function AuctionsList({ isLoading, error }: AuctionsListProps) {
     )
 }
 
-const HeaderContainer = styled(CenteredFlex)`
-    gap: 24px;
-
+const HeaderContainer = styled(Flex).attrs((props) => ({
+    $justify: 'flex-end',
+    $align: 'center',
+    $gap: 24,
+    ...props,
+}))`
     ${({ theme }) => theme.mediaWidth.upToSmall`
         flex-direction: column;
+        justify-content: center;
         gap: 12px;
         & > * {
             width: 100%;
@@ -133,4 +177,12 @@ const HeaderContainer = styled(CenteredFlex)`
             }
         }
     `}
+`
+
+const Option = styled(DropdownOption)<{ $pad?: boolean }>`
+    ${({ $pad }) =>
+        !!$pad &&
+        css`
+            padding-left: 8px;
+        `}
 `

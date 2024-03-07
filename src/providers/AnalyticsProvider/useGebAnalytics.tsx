@@ -1,9 +1,8 @@
 import { useEffect, useReducer, useState } from 'react'
 import { formatEther } from 'ethers/lib/utils'
-import { useNetwork } from 'wagmi'
-import { type AnalyticsData, fetchAnalyticsData } from '@hai-on-op/sdk'
+import { fetchAnalyticsData } from '@hai-on-op/sdk'
 
-import type { SummaryItemValue } from '~/types'
+import type { SummaryItemValue, TokenAnalyticsData } from '~/types'
 import {
     formatSummaryValue,
     transformToAnnualRate,
@@ -12,9 +11,6 @@ import {
 } from '~/utils'
 import { usePublicGeb } from '~/hooks'
 
-type TokenAnalyticsData = AnalyticsData['tokenAnalyticsData'][string] & {
-    symbol: string
-}
 export type GebAnalyticsData = {
     erc20Supply: SummaryItemValue
     globalDebt: SummaryItemValue
@@ -33,13 +29,12 @@ export type GebAnalyticsData = {
 
 export function useGebAnalytics() {
     const geb = usePublicGeb()
-    const { chain } = useNetwork()
 
     const [refresher, forceRefresh] = useReducer((x) => x + 1, 0)
     const [data, setData] = useState(DEFAULT_ANALYTICS_DATA)
 
     useEffect(() => {
-        if (!geb || !chain) return
+        if (!geb) return
 
         const getData = async () => {
             try {
@@ -54,7 +49,7 @@ export function useGebAnalytics() {
                     erc20Supply: formatSummaryValue(formatEther(result.erc20Supply).toString(), { maxDecimals: 0 })!,
                     globalDebt: formatSummaryValue(formatEther(result.globalDebt).toString(), {
                         maxDecimals: 0,
-                        style: 'currency',
+                        // style: 'currency',
                     })!,
                     globalDebtCeiling: formatSummaryValue(formatEther(result.globalDebtCeiling).toString(), {
                         maxDecimals: 0,
@@ -63,14 +58,18 @@ export function useGebAnalytics() {
                     globalDebtUtilization: transformToWadPercentage(result.globalDebt, result.globalDebtCeiling),
                     surplusInTreasury: formatSummaryValue(formatEther(result.surplusInTreasury).toString(), {
                         maxDecimals: 0,
-                        style: 'currency',
+                        // style: 'currency',
                     })!,
                     marketPrice: formatSummaryValue(marketPrice, {
-                        maxDecimals: 3,
+                        minDecimals: 4,
+                        maxDecimals: 4,
+                        maxSigFigs: 4,
                         style: 'currency',
                     })!,
                     redemptionPrice: formatSummaryValue(redemptionPrice, {
-                        maxDecimals: 3,
+                        minDecimals: 4,
+                        maxDecimals: 4,
+                        maxSigFigs: 4,
                         style: 'currency',
                     })!,
                     priceDiff,
@@ -96,6 +95,8 @@ export function useGebAnalytics() {
                     tokenAnalyticsData: Object.entries(result.tokenAnalyticsData).map(([key, value]) => ({
                         symbol: key,
                         ...value,
+                        tokenContract: geb.tokenList?.[key]?.address,
+                        collateralJoin: geb.tokenList?.[key]?.collateralJoin,
                     })),
                 }))
             } catch (e: any) {
@@ -104,7 +105,7 @@ export function useGebAnalytics() {
         }
         getData()
         // eslint-disable-next-line
-    }, [geb, chain?.id, refresher])
+    }, [geb, refresher])
 
     return {
         data,

@@ -1,14 +1,14 @@
-import { type ComponentType, useCallback, useMemo, useState } from 'react'
+import { type ComponentType, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { IAuction, SortableHeader } from '~/types'
-import { Status, formatNumberWithStyle, stringsExistAndAreEqual } from '~/utils'
+import { ActionState, Status, formatNumberWithStyle, stringsExistAndAreEqual } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
-import { useAuction, useMediaQuery } from '~/hooks'
+import { handleTransactionError, useAuction, useMediaQuery, useRestartAuction } from '~/hooks'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
-import { TokenPair } from '~/components/TokenPair'
+import { TokenArray } from '~/components/TokenArray'
 import { StatusLabel } from '~/components/StatusLabel'
 import { Caret } from '~/components/Icons/Caret'
 import { BidTable } from './BidTable'
@@ -31,7 +31,7 @@ export function AuctionTableRow({ headers, auction, container, expanded, onSelec
     } = useStoreState((state) => state)
     const { auctionModel: auctionActions, popupsModel: popupsActions } = useStoreActions((actions) => actions)
 
-    const isLargerThanSmall = useMediaQuery('upToSmall')
+    const isUpToMedium = useMediaQuery('upToMedium')
 
     const [timeEl, setTimeEl] = useState<HTMLElement | null>()
 
@@ -46,28 +46,64 @@ export function AuctionTableRow({ headers, auction, container, expanded, onSelec
         remainingToRaise,
     } = useAuction(auction, timeEl)
 
+    const { canRestart, restartDebtOrSurplusAuction } = useRestartAuction(auction)
+
     const { auctionId, englishAuctionType, buyInitialAmount, auctionDeadline, biddersList } = auction
 
-    const onButtonClick = useCallback(
-        (type: string) => {
-            popupsActions.setAuctionOperationPayload({
-                isOpen: true,
-                type,
-                auctionType: auction.englishAuctionType,
-            })
-            auctionActions.setSelectedAuction(auction)
-        },
-        [auction, auctionActions, popupsActions]
-    )
+    const [isRestarting, setIsRestarting] = useState(false)
+    const handleRestartAuction = async () => {
+        if (!canRestart || isRestarting) return
 
-    const button = useMemo(() => {
+        setIsRestarting(true)
+        try {
+            popupsActions.setIsWaitingModalOpen(true)
+            popupsActions.setWaitingPayload({
+                title: 'Waiting For Confirmation',
+                hint: 'Confirm this transaction in your wallet',
+                status: ActionState.LOADING,
+            })
+            await restartDebtOrSurplusAuction()
+        } catch (e) {
+            handleTransactionError(e)
+        } finally {
+            setIsRestarting(false)
+        }
+    }
+
+    const onButtonClick = (type: string) => {
+        popupsActions.setAuctionOperationPayload({
+            isOpen: true,
+            type,
+            auctionType: auction.englishAuctionType,
+        })
+        auctionActions.setSelectedAuction(auction)
+    }
+
+    const button = (() => {
+        if (status === Status.RESTARTING) {
+            return (
+                <HaiButton
+                    $variant="yellowish"
+                    disabled={!canRestart}
+                    onClick={(e: any) => {
+                        e.stopPropagation()
+                        handleRestartAuction()
+                    }}
+                >
+                    Restart
+                </HaiButton>
+            )
+        }
         const isWinner = stringsExistAndAreEqual(proxyAddress, auction.winner)
         if (status === Status.SETTLING && isWinner && auction.biddersList.length) {
             return (
                 <HaiButton
                     $variant="yellowish"
                     disabled={auctionState.isSubmitting}
-                    onClick={() => onButtonClick('settle')}
+                    onClick={(e: any) => {
+                        e.stopPropagation()
+                        onButtonClick('settle')
+                    }}
                 >
                     {t('Settle')}
                 </HaiButton>
@@ -82,20 +118,24 @@ export function AuctionTableRow({ headers, auction, container, expanded, onSelec
                 <HaiButton
                     $variant="yellowish"
                     disabled={!proxyAddress || auctionState.isSubmitting || (status === Status.LIVE && isWinner)}
-                    onClick={() => onButtonClick('hai_bid')}
+                    onClick={(e: any) => {
+                        e.stopPropagation()
+                        onButtonClick('hai_bid')
+                    }}
                 >
                     Place Bid
                 </HaiButton>
             )
         }
         return null
-    }, [status, proxyAddress, auctionState.isSubmitting, auction, onButtonClick, t])
+    })()
 
     return (
         <TableRowContainer onClick={onSelect} $expanded={expanded}>
             <TableRow
                 container={container}
                 headers={headers}
+                compactQuery="upToMedium"
                 items={[
                     {
                         content: <Text $fontWeight={700}>#{auctionId}</Text>,
@@ -106,7 +146,7 @@ export function AuctionTableRow({ headers, auction, container, expanded, onSelec
                     {
                         content: (
                             <Flex $justify="flex-start" $align="center" $gap={8}>
-                                <TokenPair tokens={[sellToken as any]} hideLabel />
+                                <TokenArray tokens={[sellToken as any]} hideLabel />
                                 <Flex $column $align="flex-start">
                                     <Text>
                                         {auction.englishAuctionType === 'COLLATERAL'
@@ -135,7 +175,7 @@ export function AuctionTableRow({ headers, auction, container, expanded, onSelec
                     {
                         content: (
                             <Flex $justify="flex-start" $align="center" $gap={8}>
-                                <TokenPair tokens={[buyToken as any]} hideLabel />
+                                <TokenArray tokens={[buyToken as any]} hideLabel />
                                 <Flex $column $align="flex-start">
                                     <Text>
                                         {auction.englishAuctionType === 'COLLATERAL' ? remainingToRaise || '--' : ''}{' '}
@@ -179,11 +219,7 @@ export function AuctionTableRow({ headers, auction, container, expanded, onSelec
                         ),
                     },
                     {
-                        content: isLargerThanSmall ? (
-                            <DropdownIcon $expanded={expanded}>
-                                <Caret direction="down" />
-                            </DropdownIcon>
-                        ) : (
+                        content: isUpToMedium ? (
                             <Flex $column $justify="flex-end" $align="stretch" style={{ height: '100%' }}>
                                 <Flex $width="100%" $justify="flex-end" $align="center" $gap={12}>
                                     <Text $textDecoration="underline">{expanded ? 'Hide' : 'View'} Bids</Text>
@@ -192,12 +228,16 @@ export function AuctionTableRow({ headers, auction, container, expanded, onSelec
                                     </DropdownIcon>
                                 </Flex>
                             </Flex>
+                        ) : (
+                            <DropdownIcon $expanded={expanded}>
+                                <Caret direction="down" />
+                            </DropdownIcon>
                         ),
                         unwrapped: true,
                     },
                 ]}
             />
-            <TableRowBody>
+            <TableRowBody onClick={(e: any) => e.stopPropagation()}>
                 <BidTable auction={auction} />
             </TableRowBody>
             <TableRowFooter>
@@ -221,7 +261,7 @@ const TableRowContainer = styled(Flex).attrs((props) => ({
     border: 2px solid rgba(0, 0, 0, 0.1);
     overflow: hidden;
 
-    ${({ theme, $expanded }) => theme.mediaWidth.upToSmall`
+    ${({ theme, $expanded }) => theme.mediaWidth.upToMedium`
         height: ${$expanded ? 652 : 312}px;
         border-radius: 0px;
         border: none;

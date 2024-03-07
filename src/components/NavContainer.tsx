@@ -1,4 +1,5 @@
 import type { ReactChildren } from '~/types'
+import { type MediaWidth } from '~/utils'
 
 import styled, { css } from 'styled-components'
 import { BlurContainer, type BlurContainerProps, CenteredFlex, Flex, Grid } from '~/styles'
@@ -7,23 +8,41 @@ type NavContainerProps = BlurContainerProps & {
     navItems: string[]
     selected: number
     onSelect: (index: number) => void
+    stackHeader?: boolean
     headerContent?: ReactChildren
     children: ReactChildren
+    compactQuery?: MediaWidth
 }
-export function NavContainer({ navItems, selected, onSelect, headerContent, children, ...props }: NavContainerProps) {
+export function NavContainer({
+    navItems,
+    selected,
+    onSelect,
+    stackHeader = false,
+    headerContent,
+    compactQuery = 'upToSmall',
+    children,
+    ...props
+}: NavContainerProps) {
     return (
         <Container {...props}>
-            <Header>
-                <NavGrid $columns={navItems.map(() => '1fr').join(' ')}>
-                    {navItems.map((item, i) => (
-                        <Nav key={i} $active={selected === i} onClick={() => onSelect(i)}>
-                            {item}
-                        </Nav>
-                    ))}
-                </NavGrid>
+            <Header $stack={stackHeader} $compactQuery={compactQuery}>
+                {!!navItems.length && (
+                    <NavGrid $columns={navItems.map(() => '1fr').join(' ')} $compactQuery={compactQuery}>
+                        {navItems.map((item, i) => (
+                            <Nav
+                                key={i}
+                                $active={selected === i}
+                                onClick={() => onSelect(i)}
+                                $compactQuery={compactQuery}
+                            >
+                                {item}
+                            </Nav>
+                        ))}
+                    </NavGrid>
+                )}
                 {headerContent}
             </Header>
-            <Body>{children}</Body>
+            <Body $compactQuery={compactQuery}>{children}</Body>
         </Container>
     )
 }
@@ -38,13 +57,22 @@ const Header = styled(Flex).attrs((props) => ({
     $align: 'center',
     $gap: 24,
     ...props,
-}))`
+}))<{ $stack: boolean; $compactQuery: MediaWidth }>`
     position: relative;
     height: 144px;
     padding: 0 48px;
     border-bottom: ${({ theme }) => theme.border.medium};
+    ${({ $stack }) =>
+        $stack &&
+        css`
+            flex-direction: column-reverse;
+            justify-content: flex-end;
+            align-items: flex-start;
+            height: auto;
+            padding-top: 48px;
+        `}
 
-    ${({ theme }) => theme.mediaWidth.upToSmall`
+    ${({ theme, $compactQuery }) => theme.mediaWidth[$compactQuery]`
         flex-direction: column;
         height: auto;
         padding: 24px;
@@ -59,10 +87,10 @@ const Header = styled(Flex).attrs((props) => ({
 const NavGrid = styled(Grid).attrs((props) => ({
     $align: 'flex-end',
     ...props,
-}))<{ $active?: boolean }>`
+}))<{ $active?: boolean; $compactQuery: MediaWidth }>`
     height: 100%;
 
-    ${({ theme }) => theme.mediaWidth.upToSmall`
+    ${({ theme, $compactQuery }) => theme.mediaWidth[$compactQuery]`
         width: 100%;
         height: 48px;
         align-items: center;
@@ -71,7 +99,7 @@ const NavGrid = styled(Grid).attrs((props) => ({
         border-radius: 999px;
     `}
 `
-const Nav = styled(CenteredFlex)<{ $active?: boolean }>`
+const Nav = styled(CenteredFlex)<{ $active?: boolean; $compactQuery: MediaWidth }>`
     padding: 24px 16px;
     ${({ theme, $active = false }) =>
         $active
@@ -83,7 +111,7 @@ const Nav = styled(CenteredFlex)<{ $active?: boolean }>`
                   border-bottom: 2px solid transparent;
                   font-weight: 400;
               `}
-    ${({ theme, $active = false }) => theme.mediaWidth.upToSmall`
+    ${({ theme, $active = false, $compactQuery }) => theme.mediaWidth[$compactQuery]`
         height: 100%;
         padding: 0 16px;
         font-weight: 700;
@@ -106,12 +134,12 @@ const Body = styled(Flex).attrs((props) => ({
     $column: true,
     $gap: 24,
     ...props,
-}))`
+}))<{ $compactQuery: MediaWidth }>`
     width: 100%;
     padding: 48px;
     padding-top: 24px;
 
-    ${({ theme }) => theme.mediaWidth.upToSmall`
+    ${({ theme, $compactQuery }) => theme.mediaWidth[$compactQuery]`
         padding: 0px;
         gap: 0px;
     `}

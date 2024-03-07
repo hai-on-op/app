@@ -1,4 +1,4 @@
-import type { IFetchVaultsPayload, IUserVaultList } from '~/types'
+import type { IFetchLiquidationDataPayload, IFetchVaultsPayload, IUserVaultList } from '~/types'
 import { formatUserVault, gebManager } from '~/utils'
 
 export const fetchUserVaults = async (config: IFetchVaultsPayload) => {
@@ -35,4 +35,18 @@ export const fetchUserVaultsRaw = async (config: IFetchVaultsPayload) => {
     })
 
     return response
+}
+
+export const fetchLiquidationData = async (config: IFetchLiquidationDataPayload) => {
+    const response = await gebManager.getLiquidationDataRpc(config.geb, config.tokensData)
+
+    const liquidationData = {
+        collateralLiquidationData: response.collateralLiquidationData,
+        currentRedemptionPrice: response.systemState.currentRedemptionPrice.value,
+        currentRedemptionRate: response.systemState.currentRedemptionRate.annualizedRate,
+        globalDebt: response.systemState.globalDebt,
+        globalDebtCeiling: response.systemState.globalDebtCeiling,
+        perVaultDebtCeiling: response.systemState.perSafeDebtCeiling,
+    }
+    return liquidationData
 }

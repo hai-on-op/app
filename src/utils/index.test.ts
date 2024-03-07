@@ -76,25 +76,29 @@ describe('utils', () => {
         })
 
         it('returns 1', () => {
-            expect(ratioChecker(300, 1)).toEqual(1)
-        })
-        it('returns 1', () => {
-            expect(ratioChecker(301, 1)).toEqual(1)
+            expect(ratioChecker(Infinity, 1)).toEqual(1)
         })
 
         it('returns 2', () => {
-            expect(ratioChecker(200, 1)).toEqual(2)
+            expect(ratioChecker(300, 1)).toEqual(2)
         })
-
         it('returns 2', () => {
-            expect(ratioChecker(201, 1)).toEqual(2)
-        })
-        it('returns 3', () => {
-            expect(ratioChecker(199, 1)).toEqual(2)
+            expect(ratioChecker(301, 1)).toEqual(2)
         })
 
         it('returns 3', () => {
-            expect(ratioChecker(50, 1)).toEqual(4)
+            expect(ratioChecker(200, 1)).toEqual(3)
+        })
+
+        it('returns 3', () => {
+            expect(ratioChecker(201, 1)).toEqual(3)
+        })
+        it('returns 4', () => {
+            expect(ratioChecker(199, 1)).toEqual(3)
+        })
+
+        it('returns 5', () => {
+            expect(ratioChecker(50, 1)).toEqual(5)
         })
     })
 

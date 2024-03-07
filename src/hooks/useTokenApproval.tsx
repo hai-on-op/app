@@ -5,7 +5,7 @@ import { BigNumber, ethers } from 'ethers'
 import { useAccount } from 'wagmi'
 
 import { ActionState, sanitizeDecimals } from '~/utils'
-import { store } from '~/store'
+import { useStoreActions } from '~/store'
 
 import { calculateGasMargin, handleTransactionError } from './TransactionHooks'
 import { useTokenContract } from './useContract'
@@ -48,6 +48,8 @@ export function useTokenApproval(
     exactApproval: boolean = false,
     isRepayAll?: boolean
 ): [ApprovalState, () => Promise<void>] {
+    const { popupsModel: popupsActions, transactionsModel: transactionsActions } = useStoreActions((actions) => actions)
+
     const { address: account } = useAccount()
     const geb = useGeb()
     const {
@@ -119,8 +121,8 @@ export function useTokenApproval(
             return
         }
 
-        store.dispatch.popupsModel.setIsWaitingModalOpen(true)
-        store.dispatch.popupsModel.setWaitingPayload({
+        popupsActions.setIsWaitingModalOpen(true)
+        popupsActions.setWaitingPayload({
             title: 'Waiting for confirmation',
             text: 'Confirm this transaction in your wallet',
             status: ActionState.LOADING,
@@ -133,40 +135,41 @@ export function useTokenApproval(
             return tokenContract.estimateGas.approve(spender, approvalAmount.toString())
         })
         setLoading(true)
-        return tokenContract
-            .approve(spender, useExact ? approvalAmount.toString() : MaxUint256, {
-                gasLimit: calculateGasMargin(estimatedGas),
+        try {
+            const txResponse: TransactionResponse = await tokenContract.approve(
+                spender,
+                useExact ? approvalAmount.toString() : MaxUint256,
+                { gasLimit: calculateGasMargin(estimatedGas) }
+            )
+            const { hash, chainId } = txResponse
+            transactionsActions.addTransaction({
+                chainId,
+                hash,
+                from: txResponse.from,
+                summary: 'Token Approval',
+                addedTime: new Date().getTime(),
+                originalTx: txResponse,
+                approval: {
+                    tokenAddress,
+                    spender,
+                },
             })
-            .then((txResponse: TransactionResponse) => {
-                const { hash, chainId } = txResponse
-                store.dispatch.transactionsModel.addTransaction({
-                    chainId,
-                    hash,
-                    from: txResponse.from,
-                    summary: 'Token Approval',
-                    addedTime: new Date().getTime(),
-                    originalTx: txResponse,
-                    approval: {
-                        tokenAddress,
-                        spender,
-                    },
-                })
-                store.dispatch.popupsModel.setWaitingPayload({
-                    title: 'Transaction Submitted',
-                    hash: txResponse.hash,
-                    status: ActionState.SUCCESS,
-                })
-                // we need to wait until the transaction is mined to fetch the new allowance
-                txResponse.wait().then(() => {
-                    updateAllowance()
-                    setLoading(false)
-                })
+            popupsActions.setWaitingPayload({
+                title: 'Waiting for confirmation',
+                text: 'Transaction successfull, confirming updated allowance...',
+                status: ActionState.LOADING,
             })
-            .catch((error: Error) => {
-                console.debug('Failed to approve token', error)
-                handleTransactionError(error)
-                setLoading(false)
-            })
+            // we need to wait until the transaction is mined to fetch the new allowance
+            await txResponse.wait()
+            popupsActions.setIsWaitingModalOpen(false)
+            popupsActions.setWaitingPayload({ status: ActionState.NONE })
+            updateAllowance()
+        } catch (error: any) {
+            console.debug('Failed to approve token', error)
+            handleTransactionError(error)
+        } finally {
+            setLoading(false)
+        }
     }, [approvalState, tokenAddress, tokenContract, amount, spender, exactApproval, approvalAmount, updateAllowance])
 
     return [approvalState, approve]

@@ -2,64 +2,112 @@ import numeral from 'numeral'
 import { BigNumber } from 'ethers'
 import { useAccount } from 'wagmi'
 
-import type { Collateral, Debt } from '~/types'
+import type { Collateral, Debt, FormState } from '~/types'
 import { VaultAction, VaultInfoError, formatNumber, toFixedString } from '~/utils'
 import { useStoreState } from '~/store'
 import { useProxyAddress } from '~/hooks'
 
 type Props = {
     action: VaultAction
+    formState: FormState
     collateral: Collateral
     debt: Debt
     collateralRatio: string
     isSafe: boolean
 }
-export function useVaultError({ action, collateral, debt, collateralRatio, isSafe }: Props) {
+export function useVaultError({ action, formState, collateral, debt, collateralRatio, isSafe }: Props) {
     const { address: account } = useAccount()
     const proxyAddress = useProxyAddress()
-    const { liquidationData, vaultData } = useStoreState(({ vaultModel }) => vaultModel)
+    const { liquidationData } = useStoreState(({ vaultModel }) => vaultModel)
 
     if (!account) return { error: VaultInfoError.NO_WALLET }
     if (!proxyAddress) return { error: VaultInfoError.NO_PROXY }
 
-    const availableCollateralBN = BigNumber.from(toFixedString(collateral.available, 'WAD'))
+    const availableCollateralBN = BigNumber.from(toFixedString(collateral.total.current?.raw || '0', 'WAD'))
     const collateralBalanceBN = BigNumber.from(toFixedString(collateral.balance.raw, 'WAD'))
-    const availableHaiBN = BigNumber.from(toFixedString(debt.available, 'WAD'))
+    const totalHaiBN = BigNumber.from(toFixedString(debt.total.current?.raw || '0', 'WAD'))
+    const availableHaiBN = BigNumber.from(toFixedString(debt.available.raw, 'WAD'))
     const haiBalanceBN = BigNumber.from(toFixedString(debt.balance.raw || '0', 'WAD'))
 
-    const leftInputBN = BigNumber.from(toFixedString(vaultData.leftInput || '0', 'WAD'))
-    const rightInputBN = BigNumber.from(toFixedString(vaultData.rightInput || '0', 'WAD'))
+    const depositBN = BigNumber.from(toFixedString(formState.deposit || '0', 'WAD'))
+    const withdrawBN = BigNumber.from(toFixedString(formState.withdraw || '0', 'WAD'))
+    const borrowBN = BigNumber.from(toFixedString(formState.borrow || '0', 'WAD'))
+    const repayBN = BigNumber.from(toFixedString(formState.repay || '0', 'WAD'))
 
     const { globalDebtCeiling, perVaultDebtCeiling } = liquidationData || {}
     const { debtFloor, safetyCRatio } = collateral.liquidationData || {}
 
     const debtFloorBN = BigNumber.from(toFixedString(debtFloor || '0', 'WAD'))
-    const totalDebtBN = BigNumber.from(toFixedString(debt.total, 'WAD'))
+    const totalDebtBN = BigNumber.from(toFixedString(debt.total.after.raw, 'WAD'))
 
-    if (action === VaultAction.DEPOSIT_BORROW || action === VaultAction.CREATE) {
-        if (leftInputBN.isZero() && rightInputBN.isZero()) {
-            return { error: VaultInfoError.ZERO_AMOUNT }
+    switch (action) {
+        case VaultAction.CREATE:
+        case VaultAction.DEPOSIT_BORROW: {
+            if (depositBN.isZero() && borrowBN.isZero()) {
+                return { error: VaultInfoError.ZERO_AMOUNT }
+            }
+            if (depositBN.gt(collateralBalanceBN)) {
+                return { error: VaultInfoError.INSUFFICIENT_COLLATERAL }
+            }
+            if (borrowBN.gt(availableHaiBN)) {
+                return {
+                    error: VaultInfoError.COLLATERAL_RATIO,
+                    errorMessage: `Too much debt, which would bring vault below ${
+                        Number(safetyCRatio) * 100
+                    }% collateralization ratio`,
+                }
+            }
+            break
         }
-        if (leftInputBN.gt(collateralBalanceBN)) {
-            return { error: VaultInfoError.INSUFFICIENT_COLLATERAL }
+        case VaultAction.DEPOSIT_REPAY: {
+            if (depositBN.isZero() && repayBN.isZero()) {
+                return { error: VaultInfoError.ZERO_AMOUNT }
+            }
+            if (depositBN.gt(collateralBalanceBN)) {
+                return { error: VaultInfoError.INSUFFICIENT_COLLATERAL }
+            }
+            if (repayBN.gt(totalHaiBN)) {
+                return { error: VaultInfoError.REPAY_EXCEEDS_OWED }
+            }
+            if (!repayBN.isZero() && repayBN.gt(haiBalanceBN)) {
+                return { error: VaultInfoError.INSUFFICIENT_HAI }
+            }
+            break
         }
-        if (rightInputBN.gt(availableHaiBN)) {
-            return { error: VaultInfoError.INSUFFICIENT_HAI }
+        case VaultAction.WITHDRAW_BORROW: {
+            if (withdrawBN.isZero() && borrowBN.isZero()) {
+                return { error: VaultInfoError.ZERO_AMOUNT }
+            }
+            if (withdrawBN.gt(availableCollateralBN)) {
+                return { error: VaultInfoError.WITHDRAW_EXCEEDS_COLLATERAL }
+            }
+            if (borrowBN.gt(availableHaiBN)) {
+                return {
+                    error: VaultInfoError.COLLATERAL_RATIO,
+                    errorMessage: `Too much debt, which would bring vault below ${
+                        Number(safetyCRatio) * 100
+                    }% collateralization ratio`,
+                }
+            }
+            break
         }
-    } else if (action === VaultAction.WITHDRAW_REPAY) {
-        if (leftInputBN.isZero() && rightInputBN.isZero()) {
-            return { error: VaultInfoError.ZERO_AMOUNT }
-        }
-        if (leftInputBN.gt(availableCollateralBN)) {
-            return { error: VaultInfoError.WITHDRAW_EXCEEDS_COLLATERAL }
-        }
-        if (rightInputBN.gt(availableHaiBN)) {
-            return { error: VaultInfoError.REPAY_EXCEEDS_OWED }
-        }
-        if (!rightInputBN.isZero() && rightInputBN.gt(haiBalanceBN)) {
-            return { error: VaultInfoError.INSUFFICIENT_HAI }
+        case VaultAction.WITHDRAW_REPAY: {
+            if (withdrawBN.isZero() && repayBN.isZero()) {
+                return { error: VaultInfoError.ZERO_AMOUNT }
+            }
+            if (withdrawBN.gt(availableCollateralBN)) {
+                return { error: VaultInfoError.WITHDRAW_EXCEEDS_COLLATERAL }
+            }
+            if (repayBN.gt(totalHaiBN)) {
+                return { error: VaultInfoError.REPAY_EXCEEDS_OWED }
+            }
+            if (!repayBN.isZero() && repayBN.gt(haiBalanceBN)) {
+                return { error: VaultInfoError.INSUFFICIENT_HAI }
+            }
+            break
         }
     }
+
     if (debtFloor && !totalDebtBN.isZero() && totalDebtBN.lt(debtFloorBN)) {
         const debtFloorFormatted = Math.ceil(Number(formatNumber(debtFloor)))
         return {
@@ -88,10 +136,10 @@ export function useVaultError({ action, collateral, debt, collateralRatio, isSaf
         }
     }
     if (action === VaultAction.CREATE) {
-        if (leftInputBN.isZero()) {
+        if (depositBN.isZero()) {
             return { error: VaultInfoError.ZERO_AMOUNT }
         }
-        if (!rightInputBN.isZero() && rightInputBN.lt(1)) {
+        if (!borrowBN.isZero() && borrowBN.lt(debtFloorBN)) {
             return { error: VaultInfoError.MINIMUM_MINT }
         }
     } else if (perVaultDebtCeiling) {

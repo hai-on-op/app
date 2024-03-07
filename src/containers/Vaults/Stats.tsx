@@ -2,10 +2,12 @@ import { useMemo } from 'react'
 
 import { formatNumberWithStyle } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
+import { useEarnStrategies } from '~/hooks'
 
-import { HaiButton } from '~/styles'
-import { RewardsTokenPair } from '~/components/TokenPair'
+import { HaiButton, Text } from '~/styles'
+import { RewardsTokenArray } from '~/components/TokenArray'
 import { Stats, type StatProps } from '~/components/Stats'
+import { Link } from '~/components/Link'
 
 export function BorrowStats() {
     const {
@@ -13,64 +15,104 @@ export function BorrowStats() {
     } = useStoreState((state) => state)
     const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
 
+    const { rows } = useEarnStrategies()
+
+    const { value, apy } = useMemo(() => {
+        return rows.reduce(
+            (obj, { userPosition = '0', apy }) => {
+                obj.value += parseFloat(userPosition)
+                obj.apy += parseFloat(userPosition) * apy
+                return obj
+            },
+            { value: 0, apy: 0 }
+        )
+    }, [rows])
+
     const stats: StatProps[] = useMemo(() => {
-        const totalCollateralInUSD = list.reduce((total, { collateralName, collateral }) => {
-            const collateralPriceInUSD =
-                liquidationData?.collateralLiquidationData[collateralName]?.currentPrice.value || '0'
-            return total + parseFloat(collateral) * parseFloat(collateralPriceInUSD)
-        }, 0)
+        const { totalCollateralInUSD, totalHai, weightedStabilityFee } = list.reduce(
+            (obj, { collateral, collateralName, debt, totalAnnualizedStabilityFee }) => {
+                const collateralPriceInUSD =
+                    liquidationData?.collateralLiquidationData[collateralName]?.currentPrice.value || '0'
+                obj.totalCollateralInUSD += parseFloat(collateral) * parseFloat(collateralPriceInUSD)
+                obj.totalHai += parseFloat(debt)
+                obj.weightedStabilityFee += (parseFloat(totalAnnualizedStabilityFee) - 1) * parseFloat(debt)
+                return obj
+            },
+            { totalCollateralInUSD: 0, totalHai: 0, weightedStabilityFee: 0 }
+        )
 
-        const totalDebtInUSD = list.reduce((total, { debt }) => {
-            return total + parseFloat(debt) * parseFloat(liquidationData?.currentRedemptionPrice || '1')
-        }, 0)
+        const totalDebtInUSD = totalHai * parseFloat(liquidationData?.currentRedemptionPrice || '1')
 
-        // TODO: dynamically calculate apy, hook up rewards
+        const weightedStabilityFeeAverage = !list.length || !totalHai ? 0 : weightedStabilityFee / totalHai
+
         return [
             {
                 header: totalCollateralInUSD
                     ? formatNumberWithStyle(totalCollateralInUSD.toString(), {
                           style: 'currency',
-                          maxDecimals: 0,
+                          minDecimals: 1,
+                          maxDecimals: 1,
+                          suffixed: true,
                       })
-                    : '--',
+                    : '$0',
                 label: 'My Locked Collateral',
-                tooltip: 'Hello world',
+                tooltip:
+                    'Summation of the total amount of a given collateral locked in your vaults multiplied by the protocol oracle price of that collateral.',
             },
             {
                 header: totalDebtInUSD
                     ? formatNumberWithStyle(totalDebtInUSD.toString(), {
                           style: 'currency',
-                          maxDecimals: 0,
+                          minDecimals: 1,
+                          maxDecimals: 1,
+                          suffixed: true,
                       })
-                    : '--',
+                    : '$0',
                 label: 'My Total Debt',
-                tooltip: 'Hello World',
+                tooltip: 'The total amount of minted debt tokens multiplied by the protocol redemption price of debt.',
             },
             {
-                header: '7.8%',
+                header: formatNumberWithStyle(weightedStabilityFeeAverage, {
+                    style: 'percent',
+                    scalingFactor: 100,
+                    minDecimals: 1,
+                    maxDecimals: 1,
+                    suffixed: true,
+                }),
                 label: 'My Net Stability Fee',
-                tooltip: 'Hello World',
+                tooltip: 'Weighted average stability fee of My Total Debt',
             },
             {
-                header: '7.8%',
-                label: 'My Net Rewards APY',
-                tooltip: 'Hello World',
+                header: formatNumberWithStyle(value ? apy / value : 0, {
+                    maxDecimals: 1,
+                    scalingFactor: 100,
+                    suffixed: true,
+                    style: 'percent',
+                }),
+                label: 'My Est. Rewards APY',
+                tooltip: (
+                    <Text>
+                        Rewards derived from all campaign activities. Check out the <Link href="/earn">earn page</Link>{' '}
+                        for more information.
+                    </Text>
+                ),
             },
             {
-                header: '$7,000',
-                headerStatus: <RewardsTokenPair tokens={['OP', 'KITE']} hideLabel />,
+                header: '$0',
+                headerStatus: <RewardsTokenArray tokens={['OP', 'KITE']} hideLabel />,
                 label: 'My Vault Rewards',
-                tooltip: 'Hello World',
+                tooltip: 'Rewards currently voted upon and distributed by DAO approximately once per month.',
                 button: (
-                    <HaiButton $variant="yellowish" onClick={() => popupsActions.setIsClaimPopupOpen(true)}>
+                    // <HaiButton $variant="yellowish" onClick={() => popupsActions.setIsClaimPopupOpen(true)}>
+                    //     Claim
+                    // </HaiButton>
+                    <HaiButton title="Claim window is closed" $variant="yellowish" disabled>
                         Claim
                     </HaiButton>
                 ),
             },
         ]
-    }, [list, liquidationData, popupsActions])
+    }, [list, liquidationData, value, apy, popupsActions])
 
-    if (!list.length) return null
-
-    return <Stats stats={stats} columns="repeat(4, 1fr) 1.6fr" />
+    return <Stats stats={stats} columns="repeat(4, 1fr) 1.6fr" fun />
 }

@@ -9,6 +9,7 @@ import { BlurContainer, Flex, Grid, Text } from '~/styles'
 import { BrandedTitle } from '~/components/BrandedTitle'
 import { AddressLink } from '~/components/AddressLink'
 import { Table, TableContainer } from '~/components/Table'
+import { Copyable } from '~/components/Copyable'
 
 const sortableHeaders: SortableHeader[] = [{ label: 'Contract' }, { label: 'Address' }, { label: 'Description' }].map(
     (obj) => ({ ...obj, unsortable: true })
@@ -21,20 +22,39 @@ export function Contracts() {
         if (!geb) return []
 
         return Object.entries(geb.contracts)
-            .filter(([, value]) => !!value.address)
+            .filter(([name, value]) => !!value.address && name !== 'weth')
             .map(([name, value]) => ({
                 name: name.replace('safe', 'vault').replace('Safe', 'Vault'),
                 address: value.address,
                 description: contractsDescriptions[name],
             }))
+            .concat(
+                Object.entries(geb.tokenList).reduce((arr, [token, { address, collateralJoin }]) => {
+                    if (address) {
+                        arr.push({
+                            name: `ERC20 Token - ${token}`,
+                            address,
+                            description: `The ERC20 token contract of the ${token} collateral.`,
+                        })
+                    }
+                    if (collateralJoin) {
+                        arr.push({
+                            name: `Collateral Join - ${token}`,
+                            address: collateralJoin,
+                            description: `The address of the Collateral Join contract that holds all ${token} deposited into Vaults.`,
+                        })
+                    }
+                    return arr
+                }, [] as any[])
+            )
     }, [geb])
 
-    const isLargerThanSmall = useMediaQuery('upToSmall')
+    const isUpToSmall = useMediaQuery('upToSmall')
 
     return (
         <Container>
             <Header>
-                <BrandedTitle textContent="CONTRACTS" $fontSize={isLargerThanSmall ? '3rem' : '2.4rem'} />
+                <BrandedTitle textContent="CONTRACTS" $fontSize={isUpToSmall ? '2.4rem' : '3rem'} />
             </Header>
             <Table
                 container={StyledTableContainer}
@@ -44,8 +64,10 @@ export function Contracts() {
                 setSorting={() => {}}
                 rows={contracts.map(({ name, address, description }) => (
                     <TableRow key={name}>
-                        <Text $fontWeight={isLargerThanSmall ? 400 : 700}>{name}</Text>
-                        <AddressLink address={address} />
+                        <Text $fontWeight={isUpToSmall ? 700 : 400}>{name}</Text>
+                        <Copyable text={address} limitClickToIcon>
+                            <AddressLink address={address} />
+                        </Copyable>
                         <Text>{description}</Text>
                     </TableRow>
                 ))}
@@ -89,7 +111,7 @@ const StyledTableContainer = styled(TableContainer)`
     `}
 `
 const TableHeaderBase = styled(Grid)`
-    grid-template-columns: 240px 120px 1fr;
+    grid-template-columns: 240px 128px 1fr;
     align-items: center;
     grid-gap: 12px;
     padding: 8px 16px;

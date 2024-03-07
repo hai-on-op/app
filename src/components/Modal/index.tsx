@@ -5,7 +5,7 @@ import type { ReactChildren } from '~/types'
 import { useStoreState } from '~/store'
 
 import styled from 'styled-components'
-import { CenteredFlex, Flex } from '~/styles'
+import { CenteredFlex, Flex, Title } from '~/styles'
 import { X } from '../Icons/X'
 import { BrandedTitle } from '../BrandedTitle'
 import { FloatingElements, type FloatingElementsProps } from '../BrandElements/FloatingElements'
@@ -56,7 +56,7 @@ export function Modal({
                         <>
                             <ModalHeader>
                                 {typeof heading === 'string' ? (
-                                    <BrandedTitle textContent={heading.toUpperCase()} $fontSize="2.5em" />
+                                    <BrandedTitle textContent={heading.toUpperCase()} />
                                 ) : (
                                     heading
                                 )}
@@ -90,7 +90,7 @@ const Overlay = styled(CenteredFlex)`
     perspective-origin: 50% 50%;
     perspective: 190px;
 
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: rgba(0, 0, 0, 0.3);
     z-index: 998;
 `
 Modal.Overlay = Overlay
@@ -113,7 +113,7 @@ export const ModalContainer = styled(CenteredFlex)<{ $width?: string; $maxWidth?
         transform 1s cubic-bezier(0.33, 1, 0.68, 1);
 
     ${({ theme }) => theme.mediaWidth.upToExtraSmall`
-        max-height: calc(100vh - 240px);
+        max-height: calc(100vh - 200px);
     `}
 `
 Modal.Container = ModalContainer
@@ -137,10 +137,16 @@ export const ModalHeader = styled(Flex).attrs((props) => ({
     $shrink: 0,
     ...props,
 }))`
+    & > ${Title} {
+        font-size: 2.5rem;
+    }
     padding: 24px 36px;
 
     ${({ theme }) => theme.mediaWidth.upToExtraSmall`
-        padding: 12px 16px;
+        & > ${Title} {
+            font-size: 2rem;
+        }
+        padding: 20px 16px;
     `}
 `
 Modal.Header = ModalHeader

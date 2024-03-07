@@ -4,7 +4,7 @@ import { useVault } from '~/providers/VaultProvider'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, Grid, HaiButton, TableButton, Text } from '~/styles'
-import { RewardsTokenPair, TokenPair } from '~/components/TokenPair'
+import { RewardsTokenArray, TokenArray } from '~/components/TokenArray'
 import { StatusLabel } from '~/components/StatusLabel'
 import { Table } from '~/components/Table'
 
@@ -33,6 +33,7 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                     </HaiButton>
                 </>
             }
+            compactQuery="upToMedium"
             rows={rows.map((vault) => {
                 const {
                     id,
@@ -49,50 +50,60 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                         key={id}
                         container={TableRow}
                         headers={headers}
+                        compactQuery="upToMedium"
                         items={[
                             {
                                 content: (
                                     <Grid $columns="2fr min-content 1fr" $align="center" $gap={12}>
                                         <CenteredFlex $width="fit-content" $gap={4}>
-                                            <TokenPair tokens={[collateralName as any, 'HAI']} />
+                                            <TokenArray tokens={[collateralName as any]} />
                                             <Text>#{id}</Text>
                                         </CenteredFlex>
-                                        <RewardsTokenPair tokens={['OP']} />
+                                        <RewardsTokenArray
+                                            tokens={['OP', 'KITE']}
+                                            label="EARN"
+                                            tooltip={`Earn OP/KITE tokens by minting HAI and providing liquidity`}
+                                        />
                                     </Grid>
                                 ),
                                 props: { $fontSize: 'inherit' },
-                                fullWidth: true,
                             },
                             {
                                 content: (
-                                    <Flex $align="center" $gap={12}>
-                                        <Text>
-                                            {formatNumberWithStyle(collateralRatio, {
-                                                scalingFactor: 0.01,
-                                                style: 'percent',
-                                            })}
+                                    <Table.ItemGrid $columns="1fr 1.25fr" $compactQuery="upToMedium">
+                                        <Text $textAlign="right">
+                                            {collateralRatio
+                                                ? formatNumberWithStyle(collateralRatio, {
+                                                      scalingFactor: 0.01,
+                                                      style: 'percent',
+                                                  })
+                                                : '--%'}
                                         </Text>
-                                        <StatusLabel
-                                            status={riskStateToStatus[riskState] || Status.UNKNOWN}
-                                            size={0.8}
-                                        />
-                                    </Flex>
+                                        <Flex $justify="flex-start" $align="center">
+                                            <StatusLabel
+                                                status={riskStateToStatus[riskState] || Status.UNKNOWN}
+                                                size={0.8}
+                                            />
+                                        </Flex>
+                                    </Table.ItemGrid>
                                 ),
                             },
                             {
                                 content: (
-                                    <Flex $align="center" $gap={8}>
-                                        <Text>{formatNumberWithStyle(collateral, { maxDecimals: 4 })}</Text>
+                                    <Table.ItemGrid $compactQuery="upToMedium">
+                                        <Text $textAlign="right">
+                                            {formatNumberWithStyle(collateral, { maxDecimals: 4 })}
+                                        </Text>
                                         <Text>{collateralName.toUpperCase()}</Text>
-                                    </Flex>
+                                    </Table.ItemGrid>
                                 ),
                             },
                             {
                                 content: (
-                                    <Flex $align="center" $gap={8}>
-                                        <Text>{formatNumberWithStyle(totalDebt)}</Text>
+                                    <Table.ItemGrid $compactQuery="upToMedium">
+                                        <Text $textAlign="right">{formatNumberWithStyle(totalDebt)}</Text>
                                         <Text>HAI</Text>
-                                    </Flex>
+                                    </Table.ItemGrid>
                                 ),
                             },
                             {
@@ -118,7 +129,7 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
 }
 
 const TableHeader = styled(Grid)`
-    grid-template-columns: 3fr minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) 120px;
+    grid-template-columns: 2.25fr minmax(100px, 1.25fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) 120px;
     align-items: center;
     padding: 4px;
     padding-left: 8px;
@@ -141,9 +152,9 @@ const TableRow = styled(TableHeader)`
         background-color: rgba(0, 0, 0, 0.1);
     }
 
-    ${({ theme }) => theme.mediaWidth.upToSmall`
+    ${({ theme }) => theme.mediaWidth.upToMedium`
         padding: 24px;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr 1fr 1fr;
         grid-gap: 12px;
         border-radius: 0px;
 
@@ -152,6 +163,16 @@ const TableRow = styled(TableHeader)`
         }
         &:hover {
             background-color: unset;
+        }
+    `}
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        grid-template-columns: 1fr 1fr;
+        & > *:nth-child(1) {
+            grid-column: 1 / -1;
+        }
+        & > *:nth-child(5) {
+            grid-row: 2;
+            grid-column: 2;
         }
     `}
 `

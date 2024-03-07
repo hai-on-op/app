@@ -1,17 +1,18 @@
+import { type HTMLProps } from 'react'
+
 import styled from 'styled-components'
 import { CenteredFlex } from '~/styles'
 import { Check } from './Icons/Check'
 
-type CheckboxProps = {
-    checked: boolean
+export type CheckboxProps = Omit<HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'type' | 'onChange' | 'children'> & {
     onChange?: (value: boolean) => void
     size?: number
 }
-export function CheckBox({ checked, onChange, size = 20 }: CheckboxProps) {
+export function CheckBox({ checked, onChange, size = 20, ...props }: CheckboxProps) {
     return (
         <Container $active={checked} $size={size}>
             <Check />
-            <HiddenInput type="checkbox" checked={checked} onChange={(e) => onChange?.(e.target.checked)} />
+            <HiddenInput {...props} type="checkbox" checked={checked} onChange={(e) => onChange?.(e.target.checked)} />
         </Container>
     )
 }

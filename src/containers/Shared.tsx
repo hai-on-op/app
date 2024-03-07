@@ -1,7 +1,5 @@
-import { useEffect, useCallback, useMemo, useState } from 'react'
+import { useEffect, useCallback, useState } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { toast } from 'react-toastify'
 import { utils } from 'ethers'
 import { useAccount, useNetwork } from 'wagmi'
 import { getTokenList } from '@hai-on-op/sdk'
@@ -9,52 +7,43 @@ import { getTokenList } from '@hai-on-op/sdk'
 import type { ReactChildren } from '~/types'
 import {
     EMPTY_ADDRESS,
-    ETHERSCAN_PREFIXES,
     NETWORK_ID,
     // SYSTEM_STATUS,
     ActionState,
     ChainId,
     blockedAddresses,
-    capitalizeName,
     getNetworkName,
     isAddress,
     timeout,
 } from '~/utils'
 import { TransactionUpdater } from '~/services/TransactionUpdater'
 import { useStoreState, useStoreActions } from '~/store'
-import { useAnalytics } from '~/providers/AnalyticsProvider'
-import { useTokenContract, useEthersSigner, useGeb, usePlaylist, usePrevious } from '~/hooks'
+// import { useAnalytics } from '~/providers/AnalyticsProvider'
+import { useTokenContract, useEthersSigner, useGeb, usePrevious, usePublicGeb } from '~/hooks'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex } from '~/styles'
 import { ImagePreloader } from '~/components/ImagePreloader'
 import { BlockedAddress } from '~/components/BlockedAddress'
-import { ToastPayload } from '~/components/ToastPayload'
 import { ParallaxBackground } from '~/components/ParallaxBackground'
 import { Header } from './Header'
-import { InitializationModal } from '~/components/Modal/InitializationModal'
+import { WaitingModal } from '~/components/Modal/WaitingModal'
 import { ClaimModal } from '~/components/Modal/ClaimModal'
 import { IntentionHeader } from '~/components/IntentionHeader'
 import { HaiAlert } from '~/components/HaiAlert'
 import { StartAuction } from './Auctions/StartAuction'
 
-const playlist = ['/audio/get-hai-together.wav', '/audio/hai-as-fuck.wav']
-
-const toastId = 'networdToastHash'
-const successAccountConnection = 'successAccountConnection'
-
 type Props = {
     children: ReactChildren
 }
 export function Shared({ children }: Props) {
-    const { t } = useTranslation()
-
     const { address: account } = useAccount()
     const previousAccount = usePrevious(account)
     const { chain } = useNetwork()
     const chainId = chain?.id || NETWORK_ID
     const networkName = getNetworkName(chainId)
     const signer = useEthersSigner()
+    const publicGeb = usePublicGeb()
     const geb = useGeb()
 
     const history = useHistory()
@@ -66,7 +55,6 @@ export function Shared({ children }: Props) {
     const protTokenContract = useTokenContract(tokenList.KITE?.address)
 
     const {
-        settingsModel: settingsState,
         connectWalletModel: connectWalletState,
         auctionModel: { auctionsData },
     } = useStoreState((state) => state)
@@ -141,23 +129,33 @@ export function Shared({ children }: Props) {
     }, [auctionsData, setInternalBalance, setProtInternalBalance])
 
     useEffect(() => {
-        connectWalletActions.setTokensData(geb?.tokenList)
-    }, [geb?.tokenList, connectWalletActions])
+        connectWalletActions.setTokensData(publicGeb?.tokenList)
+    }, [publicGeb?.tokenList, connectWalletActions])
 
     useEffect(() => {
         connectWalletActions.fetchFiatPrice()
     }, [connectWalletActions])
 
-    const [initializing, setInitializing] = useState(false)
+    useEffect(() => {
+        if (!publicGeb) return
+
+        vaultActions.fetchLiquidationData({
+            geb: publicGeb,
+            tokensData: publicGeb.tokenList,
+        })
+    }, [vaultActions, publicGeb])
 
     const accountChecker = useCallback(async () => {
-        if (!account || !chain?.id || !signer || !geb) return setInitializing(false)
+        if (!account || !chain?.id || !signer || !geb) {
+            popupsActions.setIsInitializing(false)
+            return
+        }
 
         popupsActions.setWaitingPayload({
             title: '',
             status: ActionState.LOADING,
         })
-        setInitializing(true)
+        popupsActions.setIsInitializing(true)
         try {
             connectWalletActions.setProxyAddress('')
             const userProxy = await geb.getProxyAction(account)
@@ -190,11 +188,17 @@ export function Shared({ children }: Props) {
         } catch (error: any) {
             console.error(error)
             connectWalletActions.setStep(1)
-            setInitializing(false)
+            popupsActions.setIsInitializing(false)
+        } finally {
+            popupsActions.setIsWaitingModalOpen(false)
+            popupsActions.setWaitingPayload({
+                title: '',
+                status: ActionState.NONE,
+            })
         }
 
         await timeout(500)
-        setInitializing(false)
+        popupsActions.setIsInitializing(false)
     }, [account, chain?.id, signer, geb, connectWalletActions, popupsActions, vaultActions, transactionsActions])
 
     const accountChange = useCallback(() => {
@@ -213,68 +217,53 @@ export function Shared({ children }: Props) {
         accountChange()
         const id: ChainId = chainId
         if (chain?.id !== id) {
-            const chainName = ETHERSCAN_PREFIXES[id]
+            popupsActions.setIsInitializing(false)
             connectWalletActions.setIsWrongNetwork(true)
-            toast(
-                <ToastPayload
-                    icon="AlertTriangle"
-                    iconSize={40}
-                    iconColor="orange"
-                    textColor="#272727"
-                    text={`
-                        ${t('wrong_network')} ${capitalizeName(chainName === '' ? 'Mainnet' : chainName)}
-                    `}
-                />,
-                {
-                    autoClose: false,
-                    type: 'warning',
-                    toastId,
-                }
-            )
         } else {
-            toast.update(toastId, { autoClose: 1 })
             connectWalletActions.setIsWrongNetwork(false)
             if (account) {
-                toast(<ToastPayload icon="Check" iconColor="green" text={t('wallet_connected')} />, {
-                    type: 'success',
-                    toastId: successAccountConnection,
-                })
                 connectWalletActions.setStep(1)
                 accountChecker()
+            } else {
+                popupsActions.setIsInitializing(false)
             }
         }
-    }, [accountChange, accountChecker, account, chainId, chain?.id, geb, connectWalletActions])
+    }, [accountChange, accountChecker, account, chainId, chain?.id, geb, connectWalletActions, popupsActions])
 
     useEffect(() => {
         networkChecker()
     }, [networkChecker])
 
-    const { play, pause } = usePlaylist(playlist, 0.2)
-
-    useEffect(() => {
-        if (settingsState.isPlayingMusic) play()
-        else pause()
-    }, [settingsState.isPlayingMusic, play, pause])
-
-    const {
-        data: { priceDiff },
-    } = useAnalytics()
-    const haiAlertActive = useMemo(() => {
-        // TODO: determine diff threshold
-        return priceDiff > 0
-    }, [priceDiff])
+    // const {
+    //     data: { priceDiff },
+    // } = useAnalytics()
+    // const haiAlertActive = useMemo(() => {
+    //     // TODO: determine diff threshold
+    //     return priceDiff > 0
+    // }, [priceDiff])
+    const [haiAlertActive, setHaiAlertActive] = useState(true)
 
     return (
         <Container>
             <TransactionUpdater />
 
-            <Background>
-                <video src="/assets/tie-dye-reduced.mov" width={1920} height={1072} muted autoPlay playsInline loop />
+            <Background aria-hidden="true">
+                {isSplash && (
+                    <video
+                        src="/assets/tie-dye-reduced.mov"
+                        width={1920}
+                        height={1072}
+                        muted
+                        autoPlay
+                        playsInline
+                        loop
+                    />
+                )}
             </Background>
             {!isSplash && <ParallaxBackground />}
-            <Header tickerActive={true} />
+            <Header tickerActive={!isSplash} />
             <ClaimModal />
-            {!isSplash && initializing && <InitializationModal />}
+            {!isSplash && <WaitingModal />}
 
             {/* {SYSTEM_STATUS && SYSTEM_STATUS.toLowerCase() === 'shutdown' && (
                 <AlertContainer>
@@ -296,7 +285,7 @@ export function Shared({ children }: Props) {
                     {children}
                 </Content>
             )}
-            {!isSplash && haiAlertActive && <HaiAlert />}
+            {!isSplash && <HaiAlert active={haiAlertActive} setActive={setHaiAlertActive} />}
             <ImagePreloader />
         </Container>
     )
@@ -314,6 +303,10 @@ const Background = styled(CenteredFlex)`
     right: 0px;
     bottom: 0px;
     background-color: white;
+    background-image: url('/assets/tie-dye.jpg');
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
     pointer-events: none;
 
     & video {

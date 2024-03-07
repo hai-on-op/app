@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import type { IAuction, SetState, SortableHeader, Sorting } from '~/types'
 import { tokenMap } from '~/utils'
@@ -37,13 +37,29 @@ export function AuctionTable({ headers, rows, sorting, setSorting, isLoading, er
         auctionActions.fetchCollateralData({
             geb,
             collateral: tokenMap[sellToken] || sellToken,
-            auctionIds: rows.filter(({ sellToken: token }) => token === sellToken).map(({ auctionId }) => auctionId),
+            // auctionIds: rows.filter(({ sellToken: token }) => token === sellToken).map(({ auctionId }) => auctionId),
+            auctionIds: [selectedAuction.auctionId],
         })
     }, [selectedAuction, rows])
+
+    useEffect(() => {
+        popupsActions.toggleModal({
+            modal: 'auction',
+            isOpen: !!selectedAuction,
+        })
+    }, [selectedAuction, popupsActions])
 
     const [expandedId, setExpandedId] = useState<string>()
 
     const [paging, setPaging] = useState<number>(0)
+    const pagingRef = useRef(paging)
+    pagingRef.current = paging
+
+    useEffect(() => {
+        if (!rows.length) return setPaging(0)
+        if (pagingRef.current * ITEMS_PER_PAGE < rows.length) return
+        setPaging(Math.ceil(rows.length / ITEMS_PER_PAGE) - 1)
+    }, [rows.length])
 
     return (
         <>
@@ -67,6 +83,7 @@ export function AuctionTable({ headers, rows, sorting, setSorting, isLoading, er
                 loading={isLoading}
                 error={error}
                 isEmpty={!rows.length}
+                compactQuery="upToMedium"
                 rows={rows.slice(paging * ITEMS_PER_PAGE, (paging + 1) * ITEMS_PER_PAGE).map((auction) => {
                     const key = `${auction.englishAuctionType}-${auction.sellToken}-${auction.auctionId}`
                     return (
@@ -108,10 +125,10 @@ const TableRow = styled(TableHeader)`
     height: 55px;
     cursor: pointer;
 
-    ${({ theme }) => theme.mediaWidth.upToSmall`
+    ${({ theme }) => theme.mediaWidth.upToMedium`
         height: 312px;
         padding: 24px;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr 1fr 1fr;
         grid-gap: 12px;
         align-items: flex-start;
         border-radius: 0px;
@@ -122,6 +139,23 @@ const TableRow = styled(TableHeader)`
         &:hover {
             background-color: unset;
         }
+        & > *:nth-child(7) {
+            grid-row: 1;
+            grid-column: 3;
+        }
+        & > *:last-child {
+            grid-column: 3;
+        }
+    `}
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        grid-template-columns: 1fr 1fr;
+        & > *:nth-child(7) {
+            grid-row: unset;
+            grid-column: unset;
+        }
+        & > *:last-child {
+            grid-column: 2;
+        }
     `}
 `
 
@@ -130,7 +164,7 @@ const Footer = styled(Flex).attrs((props) => ({
     $align: 'center',
     ...props,
 }))<{ $bordered: boolean }>`
-    ${({ theme, $bordered }) => theme.mediaWidth.upToSmall`
+    ${({ theme, $bordered }) => theme.mediaWidth.upToMedium`
         border-top: ${$bordered ? theme.border.medium : 'none'};
         padding: 0 24px;
     `}

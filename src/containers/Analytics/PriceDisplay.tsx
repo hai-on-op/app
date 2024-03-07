@@ -1,5 +1,5 @@
 import { CenteredFlex, Flex, Text } from '~/styles'
-import { TokenPair } from '~/components/TokenPair'
+import { TokenArray } from '~/components/TokenArray'
 import { Tooltip } from '~/components/Tooltip'
 
 type PriceDisplayProps = {
@@ -11,7 +11,7 @@ type PriceDisplayProps = {
 export function PriceDisplay({ token = 'HAI', price, label, tooltip }: PriceDisplayProps) {
     return (
         <CenteredFlex $gap={12}>
-            <TokenPair size={96} tokens={[token as any]} hideLabel />
+            <TokenArray size={48} tokens={[token as any]} hideLabel />
             <Flex $column $justify="center" $align="flex-start" $gap={4}>
                 <Text $fontSize="1.54rem" $fontWeight={700}>
                     {price || '--'}

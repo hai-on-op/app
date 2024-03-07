@@ -12,7 +12,7 @@ import { HaiCoin } from '~/components/BrandElements/HaiCoin'
 import { Elf } from '~/components/BrandElements/Elf'
 import { BrandedTitle } from '~/components/BrandedTitle'
 import { HaiFace } from '~/components/Icons/HaiFace'
-import { ExternalLink } from '~/components/ExternalLink'
+import { Link } from '~/components/Link'
 
 const clouds: SplashImage[] = [
     {
@@ -42,8 +42,8 @@ const DOT_SIZE = window.devicePixelRatio * 5
 const ARROW_SIZE = window.devicePixelRatio * 14
 
 export function Third({ zIndex }: ZoomSceneProps) {
-    const isLargerThanExtraSmall = useMediaQuery('upToExtraSmall')
-    const isLargerThanSmall = useMediaQuery('upToSmall')
+    const isUpToExtraSmall = useMediaQuery('upToExtraSmall')
+    const isUpToSmall = useMediaQuery('upToSmall')
 
     const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null)
     const priceText = useRef<HTMLDivElement | null>(null)
@@ -126,20 +126,20 @@ export function Third({ zIndex }: ZoomSceneProps) {
     return (
         <ZoomScene $zIndex={zIndex}>
             <Container>
-                <Flex $column $gap={isLargerThanExtraSmall ? 24 : 12}>
+                <Flex $column $gap={isUpToExtraSmall ? 12 : 24}>
                     <BrandedTitle
                         textContent="AVOID TURBULENCE WITH MELLOW MONEY TECHNOLOGY™"
-                        $fontSize={isLargerThanSmall ? '2.9rem' : isLargerThanExtraSmall ? '2.6rem' : '2rem'}
-                        $letterSpacing={isLargerThanSmall ? '0.5rem' : isLargerThanExtraSmall ? '0.5rem' : '0.4rem'}
-                        $lineHeight={isLargerThanSmall ? '1.4' : '1.2'}
+                        $fontSize={isUpToExtraSmall ? '2rem' : isUpToSmall ? '2.6rem' : '2.9rem'}
+                        $letterSpacing={isUpToExtraSmall ? '0.4rem' : isUpToSmall ? '0.5rem' : '0.5rem'}
+                        $lineHeight={isUpToSmall ? '1.2' : '1.4'}
                     />
                     <Text $lineHeight="1.6">
                         $HAI is more stable than other stables, automatically.&nbsp;
                         <strong>
                             Learn more about the&nbsp;
-                            <ExternalLink href={`${LINK_TO_DOCS}detailed/modules/pid_controller.html`}>
+                            <Link href={`${LINK_TO_DOCS}detailed/modules/pid_controller.html`}>
                                 $HAI PID controller nerd stuff →
-                            </ExternalLink>
+                            </Link>
                         </strong>
                     </Text>
                 </Flex>

@@ -9,7 +9,8 @@ type TableHeaderItemProps = FlexProps & {
     sortable?: boolean
     isSorting?: 'asc' | 'desc' | false
     onClick?: () => void
-    tooltip?: string
+    tooltip?: ReactChildren
+    tooltipAnchor?: 'top' | 'bottom'
     children?: ReactChildren
 }
 export function TableHeaderItem({
@@ -17,6 +18,7 @@ export function TableHeaderItem({
     isSorting,
     onClick,
     tooltip,
+    tooltipAnchor,
     children,
     ...props
 }: TableHeaderItemProps) {
@@ -32,7 +34,11 @@ export function TableHeaderItem({
         >
             {sortable && <HaiArrow strokeWidth={isSorting ? 3 : 2} direction={isSorting === 'asc' ? 'up' : 'down'} />}
             {typeof children === 'string' ? <Text>{children}</Text> : children}
-            {!!tooltip && <Tooltip width="200px">{tooltip}</Tooltip>}
+            {!!tooltip && (
+                <Tooltip width="200px" $anchor={tooltipAnchor} $color="black">
+                    {tooltip}
+                </Tooltip>
+            )}
         </Container>
     )
 }

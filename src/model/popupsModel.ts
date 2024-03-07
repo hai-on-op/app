@@ -16,10 +16,15 @@ export interface PopupsModel {
     // isLoadingModalOpen: LoadingPayload
     // setIsLoadingModalOpen: Action<PopupsModel, LoadingPayload>
 
+    isInitializing: boolean
+    setIsInitializing: Action<PopupsModel, boolean>
     isWaitingModalOpen: boolean
     setIsWaitingModalOpen: Action<PopupsModel, boolean>
     waitingPayload: IWaitingPayload
     setWaitingPayload: Action<PopupsModel, IWaitingPayload | undefined>
+    // a better approach definitely exists, but oh well
+    openModals: string[]
+    toggleModal: Action<PopupsModel, { modal: string; isOpen: boolean }>
 
     // hasFLXClaim: boolean
     // setHasFLXClaim: Action<PopupsModel, boolean>
@@ -84,6 +89,10 @@ export const popupsModel: PopupsModel = {
     //     state.isLoadingModalOpen = isOpen
     // }),
 
+    isInitializing: true,
+    setIsInitializing: action((state, payload) => {
+        state.isInitializing = payload
+    }),
     isWaitingModalOpen: false,
     setIsWaitingModalOpen: action((state, isOpen) => {
         state.isWaitingModalOpen = isOpen
@@ -94,6 +103,20 @@ export const popupsModel: PopupsModel = {
     waitingPayload: DEFAULT_WAITING_PAYLOAD,
     setWaitingPayload: action((state, payload = DEFAULT_WAITING_PAYLOAD) => {
         state.waitingPayload = payload
+    }),
+
+    openModals: [],
+    toggleModal: action((state, { modal, isOpen }) => {
+        if (isOpen) {
+            if (state.openModals.includes(modal)) return
+            state.openModals.push(modal)
+            return
+        }
+        const existingIndex = state.openModals.indexOf(modal)
+        if (existingIndex === -1) return
+        const temp = [...state.openModals]
+        temp.splice(existingIndex)
+        state.openModals = temp
     }),
 
     // hasFLXClaim: false,

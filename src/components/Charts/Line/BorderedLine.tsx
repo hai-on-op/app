@@ -17,7 +17,7 @@ export const BorderedLine: CustomLayer = ({ series, lineGenerator, xScale, yScal
                     d={line}
                     fill="none"
                     stroke="black"
-                    strokeWidth={14}
+                    strokeWidth={12}
                     strokeLinecap="round"
                     strokeLinejoin="round"
                 />
@@ -25,7 +25,7 @@ export const BorderedLine: CustomLayer = ({ series, lineGenerator, xScale, yScal
                     d={line}
                     fill="none"
                     stroke={color}
-                    strokeWidth={10}
+                    strokeWidth={8}
                     strokeLinecap="round"
                     strokeLinejoin="round"
                 />

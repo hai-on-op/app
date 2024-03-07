@@ -30,8 +30,10 @@ export type IVault = {
 export type IVaultData = {
     totalCollateral: string
     totalDebt: string
-    leftInput: string
-    rightInput: string
+    deposit: string
+    withdraw: string
+    borrow: string
+    repay: string
     collateralRatio: number
     liquidationPrice: number
     isGnosisSafe?: boolean
@@ -126,6 +128,11 @@ export type IVaultQuery = ILiquidationResponse & {
     ]
 }
 
+export type IFetchLiquidationDataPayload = {
+    geb: Geb
+    tokensData: Record<string, TokenData>
+}
+
 export type IFetchVaultsPayload = {
     address: string
     geb: Geb
@@ -149,6 +156,7 @@ export type IManageVault = {
 export type AvailableVaultPair = {
     collateralName: string
     collateralizationFactor: string
+    stabilityFee: string
     apy: string
     eligibleBalance?: string
     myVaults?: IVault[]
@@ -164,17 +172,16 @@ export type FormState = {
 export type Collateral = {
     name: string
     data?: TokenData
-    total: string
-    available: string
+    total: SummaryItem<SummaryItemValue>
     balance: FormattedBalance
     priceInUSD?: string
     liquidationData?: CollateralLiquidationData
 }
 
 export type Debt = {
-    total: string
     data?: TokenData
-    available: string
+    total: SummaryItem<SummaryItemValue>
+    available: SummaryItemValue
     balance: FormattedBalance
     priceInUSD: string
 }

@@ -9,10 +9,8 @@ import {
     fetchCollateralAuctionData,
 } from '@hai-on-op/sdk'
 
+import type { IAuctionBid, IAuction, AuctionEventType, LoadingAuctionsData } from '~/types/auctions'
 import {
-    COLLATERAL_BATCH_SIZE,
-    DEBT_BATCH_SIZE,
-    SURPLUS_BATCH_SIZE,
     type IAuctionBuy,
     type IClaimInternalBalance,
     formatSurplusAndDebtAuctions,
@@ -24,9 +22,8 @@ import {
     handleAuctionBuy,
     handleAuctionClaim,
     handleClaimInternalBalance,
-} from '~/utils'
-import { ActionState } from '~/utils/constants'
-import type { IAuctionBid, IAuction, AuctionEventType, LoadingAuctionsData } from '~/types'
+} from '~/utils/auctions'
+import { COLLATERAL_BATCH_SIZE, DEBT_BATCH_SIZE, SURPLUS_BATCH_SIZE, ActionState } from '~/utils/constants'
 import { type StoreModel } from './index'
 
 export interface AuctionModel {

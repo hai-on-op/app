@@ -1,4 +1,4 @@
-import { LINK_TO_DISCORD, LINK_TO_DOCS, LINK_TO_TELEGRAM, LINK_TO_TWITTER } from '~/utils'
+import { LINK_TO_DISCORD, LINK_TO_DOCS, LINK_TO_PRIVACY_POLICY, LINK_TO_TELEGRAM, LINK_TO_TWITTER } from '~/utils'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, Grid, Text } from '~/styles'
@@ -6,8 +6,7 @@ import { Elf } from '~/components/BrandElements/Elf'
 import { Twitter } from '~/components/Icons/Twitter'
 import { Telegram } from '~/components/Icons/Telegram'
 import { Discord } from '~/components/Icons/Discord'
-// import { InternalLink } from '~/components/InternalLink'
-import { ExternalLink } from '~/components/ExternalLink'
+import { Link } from '~/components/Link'
 
 import haiLogo from '~/assets/logo.png'
 
@@ -26,38 +25,34 @@ export function Footer() {
                     </Text>
                 </Description>
                 <LinksContainer>
-                    <Grid $columns="1fr min-content" $gap={12}>
-                        {/* <Flex
-                            $column
-                            $gap={12}>
+                    <Grid $columns="1fr 1fr min-content" $gap={12}>
+                        <Flex $column $gap={12}>
                             <Text $fontWeight={700}>About</Text>
-                            <InternalLink
-                                href="/privacy"
-                                $textDecoration="none">
+                            <Link href={LINK_TO_PRIVACY_POLICY} $textDecoration="none">
                                 Privacy
-                            </InternalLink>
-                            <InternalLink
+                            </Link>
+                            {/* <Link
                                 href="/terms"
                                 $textDecoration="none">
                                 Terms
-                            </InternalLink>
-                        </Flex> */}
+                            </Link> */}
+                        </Flex>
                         <Flex $column $gap={12}>
                             <Text $fontWeight={700}>Resources</Text>
-                            <ExternalLink href={LINK_TO_DOCS} $textDecoration="none">
+                            <Link href={`${LINK_TO_DOCS}detailed/intro/hai.html`} $textDecoration="none">
                                 Docs
-                            </ExternalLink>
+                            </Link>
                         </Flex>
                         <IconContainer>
-                            <ExternalLink href={LINK_TO_TWITTER} $textDecoration="none">
+                            <Link href={LINK_TO_TWITTER} $textDecoration="none" aria-label="Twitter">
                                 <Twitter size={28} />
-                            </ExternalLink>
-                            <ExternalLink href={LINK_TO_TELEGRAM} $textDecoration="none">
+                            </Link>
+                            <Link href={LINK_TO_TELEGRAM} $textDecoration="none" aria-label="Telegram">
                                 <Telegram size={32} />
-                            </ExternalLink>
-                            <ExternalLink href={LINK_TO_DISCORD} $textDecoration="none">
+                            </Link>
+                            <Link href={LINK_TO_DISCORD} $textDecoration="none" aria-label="Discord">
                                 <Discord size={32} />
-                            </ExternalLink>
+                            </Link>
                         </IconContainer>
                     </Grid>
                 </LinksContainer>
@@ -171,6 +166,15 @@ const IconContainer = styled(Flex).attrs((props) => ({
         fill: black;
         stroke: none;
     }
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        flex-direction: column;
+        align-items: center;
+        & svg {
+            width: 24px;
+            height: auto;
+        }
+    `}
 `
 
 const ElfContainer = styled(CenteredFlex)`

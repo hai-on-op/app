@@ -29,6 +29,7 @@ export const Popout = styled(Flex).attrs((props) => ({
     $column: true,
     $justify: 'center',
     $align: 'center',
+    $color: 'inherit',
     ...props,
 }))<PopoutProps>`
     position: absolute;
@@ -55,7 +56,6 @@ export const Popout = styled(Flex).attrs((props) => ({
               `}
     min-width: 100px;
     background-color: ${({ theme }) => theme.colors.background};
-    color: inherit;
     border: ${({ theme }) => theme.border.medium};
     border-radius: 24px;
 

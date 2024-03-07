@@ -1,16 +1,20 @@
-import { useState, type ChangeEvent, useEffect } from 'react'
+import { useState, type ChangeEvent } from 'react'
 
+import type { TokenKey } from '~/types'
+import { TOKEN_LOGOS } from '~/utils'
 import { useOutsideClick } from '~/hooks'
 
 import styled from 'styled-components'
 import { CenteredFlex, Popout, type TextProps, Title, Flex, Text } from '~/styles'
-import { ExternalLink } from './ExternalLink'
 import { CaretWithOutline } from './Icons/CaretWithOutline'
+import { Link } from './Link'
+import { CyclingTokenArray, TokenArray } from './TokenArray'
+import { IconCycler } from './Icons/IconCycler'
 
-type BrandedSelectOption = {
+export type BrandedSelectOption = {
     label: string
     value: string
-    icon?: JSX.Element | string | (JSX.Element | string)[]
+    icon?: JSX.Element | TokenKey | 'ALL_COLLATERAL' | 'ALL_TOKENS' | JSX.Element[] | TokenKey[]
     description?: string
     href?: string
 }
@@ -24,19 +28,11 @@ type BrandedSelectProps = TextProps & {
 export function BrandedSelect({ width, options, value, onChange, ...props }: BrandedSelectProps) {
     const [container, setContainer] = useState<HTMLElement | null>(null)
     const [persistent, setPersistent] = useState(false)
-    // const [active, setActive] = useState(false)
 
     useOutsideClick(container, () => setPersistent(false))
 
     return (
-        <Container
-            ref={setContainer}
-            $width={width}
-            $gap={8}
-            // onPointerOver={() => setActive(true)}
-            // onPointerLeave={() => setActive(false)}
-            onClick={() => setPersistent((p) => !p)}
-        >
+        <Container ref={setContainer} $width={width} $gap={8} onClick={() => setPersistent((p) => !p)}>
             <HiddenText $fontSize="3.2em" $lineHeight="1" {...props}>
                 {options.find(({ value: v }) => v === value)?.label.toUpperCase()}
             </HiddenText>
@@ -76,7 +72,7 @@ export function BrandedSelect({ width, options, value, onChange, ...props }: Bra
                             </Flex>
                         </DropdownOption>
                     ) : (
-                        <ExternalLink key={v} href={href} $textDecoration="none">
+                        <Link key={v} href={href} $textDecoration="none">
                             <DropdownOption
                                 $active={v === value}
                                 onClick={() => {
@@ -90,7 +86,7 @@ export function BrandedSelect({ width, options, value, onChange, ...props }: Bra
                                     <Text>{description}</Text>
                                 </Flex>
                             </DropdownOption>
-                        </ExternalLink>
+                        </Link>
                     )
                 )}
             </Dropdown>
@@ -163,39 +159,19 @@ const DropdownOption = styled(Flex).attrs((props) => ({
         background-color: rgba(0, 0, 0, 0.05);
     }
 `
-const DropdownIconContainer = styled(CenteredFlex)`
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    border: ${({ theme }) => theme.border.medium};
-    background-color: ${({ theme }) => theme.colors.greenish};
-    overflow: hidden;
-
-    & > img {
-        width: 52px;
-        height: 52px;
-    }
-`
 
 function DropdownIcon({ icon }: { icon: BrandedSelectOption['icon'] }) {
-    const [currentIcon, setCurrentIcon] = useState(Array.isArray(icon) ? icon[0] : icon)
+    if (!icon) return null
 
-    useEffect(() => {
-        if (!Array.isArray(icon)) return
+    if (typeof icon === 'string') {
+        if (TOKEN_LOGOS[icon as TokenKey]) return <TokenArray tokens={[icon as TokenKey]} size={52} />
+        return <CyclingTokenArray size={52} includeProtocolTokens={icon === 'ALL_TOKENS'} />
+    }
 
-        let index = 0
-        const int = setInterval(() => {
-            index++
-            setCurrentIcon(icon[index % icon.length])
-        }, 3000)
+    if (Array.isArray(icon)) {
+        if (typeof icon[0] === 'string') return <CyclingTokenArray size={52} tokens={icon as TokenKey[]} />
+        return <IconCycler size={52} icons={icon.map((i) => ({ icon: i }))} />
+    }
 
-        return () => clearInterval(int)
-    }, [icon])
-
-    return (
-        <DropdownIconContainer>
-            {typeof currentIcon === 'string' ? <img src={currentIcon} alt="" /> : currentIcon}
-        </DropdownIconContainer>
-    )
+    return <IconCycler.Container $size={52}>{icon}</IconCycler.Container>
 }

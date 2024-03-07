@@ -3,9 +3,8 @@ import type { TokenKey } from '~/types'
 import styled from 'styled-components'
 import { DashedContainerStyle, Flex, HaiButton, Text } from '~/styles'
 import { HaiArrow } from '~/components/Icons/HaiArrow'
-import { InternalLink } from '~/components/InternalLink'
-import { ExternalLink } from '~/components/ExternalLink'
 import { FloatingElements, type FloatingElementsProps } from '~/components/BrandElements/FloatingElements'
+import { Link } from './Link'
 
 export type StrategyAdProps = {
     heading: string
@@ -45,21 +44,12 @@ export function StrategyAd({
                 </Header>
                 <Text $fontSize="0.8rem">{description}</Text>
             </Flex>
-            {ctaLink.startsWith('/') ? (
-                <InternalLink href={ctaLink} $textDecoration="none">
-                    <HaiButton $variant="yellowish" $gap={8}>
-                        <Text>{cta}</Text>
-                        <HaiArrow size={15} direction="upRight" />
-                    </HaiButton>
-                </InternalLink>
-            ) : (
-                <ExternalLink href={ctaLink} $textDecoration="none">
-                    <HaiButton $variant="yellowish" $gap={8}>
-                        <Text>{cta}</Text>
-                        <HaiArrow size={15} direction="upRight" />
-                    </HaiButton>
-                </ExternalLink>
-            )}
+            <Link href={ctaLink} $textDecoration="none">
+                <HaiButton $variant="yellowish" $gap={8}>
+                    <Text>{cta}</Text>
+                    <HaiArrow size={15} direction="upRight" />
+                </HaiButton>
+            </Link>
         </Container>
     )
 }
@@ -75,7 +65,7 @@ const Container = styled(Flex).attrs((props) => ({
     padding: 36px;
     overflow: hidden;
 
-    ${({ theme }) => theme.mediaWidth.upToSmall`
+    ${({ theme }) => theme.mediaWidth.upToMedium`
         &::after {
             border-left: none;
             border-right: none;
@@ -102,7 +92,7 @@ const Header = styled(Flex).attrs((props) => ({
     font-size: 1.6rem;
     letter-spacing: 0.4rem;
 
-    ${({ theme }) => theme.mediaWidth.upToSmall`
+    ${({ theme }) => theme.mediaWidth.upToMedium`
         font-size: 1.1rem;
         & > *:last-child {
             display: none;

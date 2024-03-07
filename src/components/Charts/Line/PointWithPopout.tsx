@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react'
-import { createPortal } from 'react-dom'
+import { useState } from 'react'
 import { type Point } from '@nivo/line'
 
 import styled from 'styled-components'
@@ -11,55 +10,26 @@ type PointProps = Point & {
 }
 export const PointWithPopout = ({ serieId, x, y, data, serieColor, formatX, formatY }: PointProps) => {
     const [hovered, setHovered] = useState(false)
-    const [circle, setCircle] = useState<SVGCircleElement | null>(null)
-    const [container, setContainer] = useState<HTMLElement | null>(null)
-
-    useEffect(() => {
-        if (!circle || !container) return
-
-        const onResize = () => {
-            const { left, top, width, height } = circle.getBoundingClientRect()
-            Object.assign(container.style, {
-                top: `${top + window.scrollY}px`,
-                left: `${left}px`,
-                width: `${width}px`,
-                height: `${height}px`,
-            })
-        }
-        onResize()
-        window.addEventListener('resize', onResize)
-
-        return () => window.removeEventListener('resize', onResize)
-    }, [circle, container, x, y])
 
     return (
-        <>
-            <Circle
-                ref={setCircle}
-                $hovered={hovered}
-                x={0}
-                y={0}
-                r={12}
-                transform={`translate(${x}, ${y})`}
-                fill="white"
-                stroke="black"
-                strokeWidth={2}
-            />
-            {createPortal(
+        <g x={0} y={0} transform={`translate(${x}, ${y})`}>
+            <Circle $hovered={hovered} r={12} fill="white" stroke="black" strokeWidth={2} />
+            <TooltipContainer
+                x={-12}
+                y={-12}
+                onPointerEnter={() => setHovered(true)}
+                onPointerLeave={() => setHovered(false)}
+            >
                 <ChartTooltip
-                    ref={setContainer}
-                    onPointerEnter={() => setHovered(true)}
-                    onPointerLeave={() => setHovered(false)}
                     active={hovered}
                     heading={formatY ? formatY(data.yFormatted) : data.yFormatted}
                     subHeading={serieId}
                     label={formatX ? formatX(data.xFormatted) : data.xFormatted}
                     color={serieColor}
-                    size={10}
-                />,
-                document.body
-            )}
-        </>
+                    size={24}
+                />
+            </TooltipContainer>
+        </g>
     )
 }
 
@@ -68,4 +38,11 @@ const Circle = styled.circle<{ $hovered?: boolean }>`
     &:hover {
         opacity: 1;
     }
+`
+
+const TooltipContainer = styled.foreignObject`
+    width: 24px;
+    height: 24px;
+    overflow: visible;
+    z-index: 2;
 `

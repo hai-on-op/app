@@ -1,6 +1,6 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
-import { getRatePercentage } from '~/utils'
+import { formatNumberWithStyle, getRatePercentage } from '~/utils'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { useMediaQuery } from '~/hooks'
 
@@ -19,12 +19,12 @@ import { BrandedTitle } from '~/components/BrandedTitle'
 import { Stat, Stats } from '~/components/Stats'
 import { ToggleSlider } from '~/components/ToggleSlider'
 import { LineChart } from '~/components/Charts/Line'
-import { useDummyData as useDummyPieData } from '~/components/Charts/Pie/useDummyData'
 import { PriceDisplay } from './PriceDisplay'
 import { PieChart } from '~/components/Charts/Pie'
 import { Legend } from '~/components/Charts/Legend'
+import { ComingSoon } from '~/components/ComingSoon'
 
-const dummyPieDataBase = [
+const poolPieDataBase = [
     {
         id: 'HAI in Liquidity Pools',
         color: 'hsl(49, 84%, 68%)',
@@ -35,10 +35,9 @@ const dummyPieDataBase = [
     },
 ]
 
-// TODO: check to make sure data usage and calculations are correct, fill out tooltips
 export function Numbers() {
     const {
-        data: { erc20Supply, marketPrice, redemptionPrice, annualRate, pRate, iRate, surplusInTreasury, globalDebt },
+        data: { erc20Supply, marketPrice, redemptionPrice, annualRate, pRate, iRate, surplusInTreasury },
         graphSummary,
         haiPriceHistory,
         redemptionRateHistory,
@@ -80,20 +79,23 @@ export function Numbers() {
         ]
     }, [redemptionRateHistory])
 
-    // TODO: remove and use actual data
-    const dummyPieData = useDummyPieData(dummyPieDataBase, {
-        min: 30_000,
-        max: 100_000,
-    })
+    const [convertPieToUSD, setConvertPieToUSD] = useState(true)
 
-    const isLargerThanSmall = useMediaQuery('upToSmall')
+    const poolPieData = useMemo(() => {
+        return poolPieDataBase.map((pool) => ({
+            ...pool,
+            value: 1,
+        }))
+    }, [])
+
+    const isUpToSmall = useMediaQuery('upToSmall')
 
     return (
         <Container>
             <Section>
                 <BrandedTitle textContent="HAI LEVEL NUMBERS" $fontSize="3rem" />
-                <Text>Explore global HAI protocol analytics.</Text>
-                <Stats>
+                <SectionHeader>IMPORTANT STUFF</SectionHeader>
+                <Stats fun>
                     <Stat
                         stat={{
                             header: graphSummary?.totalCollateralLocked.formatted || '--',
@@ -107,7 +109,7 @@ export function Numbers() {
                                 ? erc20Supply.formatted
                                 : graphSummary?.erc20Supply.formatted || '--',
                             label: 'Outstanding $HAI',
-                            tooltip: 'Total $HAI minted in the system',
+                            tooltip: 'Total amount of HAI issued',
                         }}
                     />
                     <Stat
@@ -129,19 +131,8 @@ export function Numbers() {
             <Section>
                 <SectionHeader>PRICES</SectionHeader>
                 <SectionContent>
-                    <Flex
-                        $column={!isLargerThanSmall}
-                        $width="100%"
-                        $justify="space-between"
-                        $align={!isLargerThanSmall ? 'flex-start' : 'center'}
-                        $gap={24}
-                    >
-                        <Flex
-                            $column={!isLargerThanSmall}
-                            $justify="flex-start"
-                            $align={!isLargerThanSmall ? 'flex-start' : 'center'}
-                            $gap={24}
-                        >
+                    <SectionContentHeader>
+                        <SectionInnerHeader>
                             <PriceDisplay
                                 token="HAI"
                                 price={marketPrice.formatted}
@@ -158,7 +149,7 @@ export function Numbers() {
                                 label="$HAI Redemption Price"
                                 tooltip={`HAI's "moving peg". It's the price at which HAI is minted or repaid inside the protocol. The HAI market price is expected to fluctuate around the redemption price.`}
                             />
-                        </Flex>
+                        </SectionInnerHeader>
                         <ToggleSlider
                             selectedIndex={haiPriceHistory.timeframe}
                             setSelectedIndex={haiPriceHistory.setTimeframe}
@@ -168,7 +159,7 @@ export function Numbers() {
                             <TimeframeLabel>1M</TimeframeLabel>
                             {/* <TimeframeLabel>1YR</TimeframeLabel> */}
                         </ToggleSlider>
-                    </Flex>
+                    </SectionContentHeader>
                     <ChartContainer>
                         <LineChart
                             data={haiPriceData}
@@ -179,7 +170,12 @@ export function Numbers() {
                                 // max: 1.1
                             }}
                             axisRight={{
-                                format: (value) => `$${parseFloat(parseFloat(value).toFixed(3))}`,
+                                format: (value) =>
+                                    formatNumberWithStyle(value, {
+                                        minDecimals: 2,
+                                        minSigFigs: 2,
+                                        style: 'currency',
+                                    }),
                             }}
                         />
                         <Legend data={haiPriceData} />
@@ -187,22 +183,10 @@ export function Numbers() {
                 </SectionContent>
             </Section>
             <Section>
-                <SectionHeader>REDEMPTION</SectionHeader>
+                <SectionHeader>REDEMPTION RATE</SectionHeader>
                 <SectionContent>
-                    <Flex
-                        $column={!isLargerThanSmall}
-                        $width="100%"
-                        $justify="space-between"
-                        $align={!isLargerThanSmall ? 'flex-start' : 'center'}
-                        $gap={24}
-                    >
-                        <Flex
-                            $column={!isLargerThanSmall}
-                            $width="100%"
-                            $justify="flex-start"
-                            $align={!isLargerThanSmall ? 'flex-start' : 'center'}
-                            $gap={!isLargerThanSmall ? 12 : 36}
-                        >
+                    <SectionContentHeader>
+                        <SectionInnerHeader>
                             <Stat
                                 stat={{
                                     header: annualRate.raw
@@ -213,12 +197,12 @@ export function Numbers() {
                                 }}
                                 unbordered
                             />
-                            <CenteredFlex $gap={!isLargerThanSmall ? 12 : 36}>
+                            <CenteredFlex $gap={isUpToSmall ? 12 : 36}>
                                 <Stat
                                     stat={{
                                         header: pRate.formatted || '--%',
                                         label: 'pRate',
-                                        tooltip: 'Hello world',
+                                        tooltip: `Proportional rate of controller. This rate increases and decreases based on the current error between the market price and redemption price. This component acts quickly to encourage stability during short-term shocks.`,
                                     }}
                                     unbordered
                                 />
@@ -226,12 +210,12 @@ export function Numbers() {
                                     stat={{
                                         header: iRate.formatted || '--%',
                                         label: 'iRate',
-                                        tooltip: 'Hello world',
+                                        tooltip: `Integral rate of controller. This rate increases and decreases based on the historical error between the market price and redemption price. This component acts slowly, but is better at handling long-term spreads.`,
                                     }}
                                     unbordered
                                 />
                             </CenteredFlex>
-                        </Flex>
+                        </SectionInnerHeader>
                         <ToggleSlider
                             selectedIndex={redemptionRateHistory.timeframe}
                             setSelectedIndex={redemptionRateHistory.setTimeframe}
@@ -241,7 +225,7 @@ export function Numbers() {
                             <TimeframeLabel>1M</TimeframeLabel>
                             {/* <TimeframeLabel>1YR</TimeframeLabel> */}
                         </ToggleSlider>
-                    </Flex>
+                    </SectionContentHeader>
                     <ChartContainer>
                         <LineChart
                             data={redemptionRateData}
@@ -260,55 +244,83 @@ export function Numbers() {
                 </SectionContent>
             </Section>
             <Section>
-                <SectionHeader>LIQUIDITY</SectionHeader>
+                <SectionHeader>HAI LIQUIDITY</SectionHeader>
                 <SectionContent $gap={0}>
-                    <Flex
-                        $column={!isLargerThanSmall}
-                        $width="100%"
-                        $justify="flex-start"
-                        $align={!isLargerThanSmall ? 'flex-start' : 'center'}
-                        $gap={!isLargerThanSmall ? 12 : 36}
-                    >
-                        <Stat
-                            stat={{
-                                header: `$${dummyPieData[0].value.toLocaleString('en-US', {
-                                    maximumFractionDigits: 2,
-                                })}`,
-                                label: 'HAI in Liquidity Pools',
-                                tooltip: 'Hello world',
-                            }}
-                            unbordered
-                        />
-                        <Stat
-                            stat={{
-                                header: `$${dummyPieData[1].value.toLocaleString('en-US', {
-                                    maximumFractionDigits: 2,
-                                })}`,
-                                label: 'UNIv3 Pool',
-                                tooltip: 'Hello world',
-                            }}
-                            unbordered
-                        />
-                        <Stat
-                            stat={{
-                                header: '$XX,XXX',
-                                label: 'Depth to Equilibrium',
-                                tooltip: 'Hello world',
-                            }}
-                            unbordered
-                        />
-                    </Flex>
+                    <SectionContentHeader>
+                        <SectionInnerHeader>
+                            <Stat
+                                stat={{
+                                    header: (
+                                        <ComingSoon $justify="flex-start" $fontSize="1.2rem">
+                                            {convertPieToUSD
+                                                ? formatNumberWithStyle(
+                                                      poolPieData[0].value * parseFloat(redemptionPrice.raw),
+                                                      {
+                                                          maxDecimals: 2,
+                                                          style: 'currency',
+                                                      }
+                                                  )
+                                                : formatNumberWithStyle(poolPieData[0].value, { maxDecimals: 0 })}
+                                        </ComingSoon>
+                                    ),
+                                    label: 'HAI in Liquidity Pools',
+                                    tooltip: `Amount of HAI locked in tracked liquidity pools`,
+                                }}
+                                unbordered
+                            />
+                            {/* <Stat
+                                stat={{
+                                    header: (
+                                        <ComingSoon $justify="flex-start" $fontSize="1.2rem">
+                                            {`$${dummyPieData[1].value.toLocaleString('en-US', {
+                                                maximumFractionDigits: 2,
+                                            })}`}
+                                        </ComingSoon>
+                                    ),
+                                    label: 'UNIv3 Pool',
+                                    tooltip: 'Hello world',
+                                }}
+                                unbordered
+                            /> */}
+                            <Stat
+                                stat={{
+                                    header: (
+                                        <ComingSoon $justify="flex-start" $fontSize="1.2rem">
+                                            --
+                                        </ComingSoon>
+                                    ),
+                                    label: 'Depth to Equilibrium',
+                                    tooltip: `Amount of HAI required to be bought (positive) or sold (negative) for the Market Price to approximately equal the Redemption Price. This is an estimate based on the tracked liquidity pools and their current locked liquidity.`,
+                                }}
+                                unbordered
+                            />
+                        </SectionInnerHeader>
+                        <ToggleSlider
+                            selectedIndex={convertPieToUSD ? 1 : 0}
+                            setSelectedIndex={(index: number) => setConvertPieToUSD(!!index)}
+                        >
+                            <TimeframeLabel>HAI</TimeframeLabel>
+                            <TimeframeLabel>USD</TimeframeLabel>
+                        </ToggleSlider>
+                    </SectionContentHeader>
                     <PieContainer>
                         <PieChart
-                            data={dummyPieData}
-                            valueFormat={(value) =>
-                                '$' +
-                                value.toLocaleString('en-US', {
-                                    maximumFractionDigits: 2,
-                                })
+                            data={poolPieData}
+                            valueFormat={
+                                // convertPieToUSD
+                                //     ? (value) => {
+                                //           return formatNumberWithStyle(value * parseFloat(redemptionPrice.raw), {
+                                //               maxDecimals: 2,
+                                //               style: 'currency',
+                                //           })
+                                //       }
+                                //     : (value) => {
+                                //           return `${formatNumberWithStyle(value, { maxDecimals: 0 })} HAI`
+                                //       }
+                                convertPieToUSD ? () => '$--' : () => '-- HAI'
                             }
                         />
-                        <Legend $column data={dummyPieData} style={{ top: 'calc(50% - 96px)' }} />
+                        <Legend $column data={poolPieData} style={{ top: 'calc(50% - 96px)' }} />
                     </PieContainer>
                 </SectionContent>
             </Section>
@@ -317,23 +329,23 @@ export function Numbers() {
                 <Stats>
                     <Stat
                         stat={{
-                            header: graphSummary?.systemSurplus.formatted || '$--',
+                            header: `${graphSummary?.systemSurplus.formatted || '--'} HAI`,
                             label: 'System Surplus Buffer',
-                            tooltip: 'Hello world',
+                            tooltip: `Total surplus accrued in the protocol's balance sheet. This is used to cover potential bad debt and for surplus auctions.`,
                         }}
                     />
                     <Stat
                         stat={{
-                            header: surplusInTreasury.formatted,
+                            header: `${surplusInTreasury.formatted} HAI`,
                             label: 'Keeper Treasury',
-                            tooltip: `Total HAI accrued by the system's stability fees. It's stored in the Stability Fee Treasury accountance`,
+                            tooltip: `Amount of HAI accumulated for use in remunerating keepers that play key roles in the protocol (e.g. updating oracles, update redemption rate, cleaning up state).`,
                         }}
                     />
                     <Stat
                         stat={{
-                            header: globalDebt.formatted,
+                            header: `${graphSummary?.debtAvailableToSettle.formatted || '--'} HAI`,
                             label: 'Debt to Settle',
-                            tooltip: 'Total HAI minted in the system',
+                            tooltip: `Pending amount of debt in the protocol's balance sheet which still needs to be settled using surplus that comes from collateral auctions and/or accrued stability fees`,
                         }}
                     />
                 </Stats>
@@ -390,6 +402,31 @@ const SectionContent = styled(Flex).attrs((props) => ({
         gap: 12px;
     `}
 `
+const SectionContentHeader = styled(Flex).attrs((props) => ({
+    $width: '100%',
+    $justify: 'space-between',
+    $align: 'center',
+    $gap: 24,
+    ...props,
+}))`
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        flex-direction: column;
+        align-items: flex-start;
+    `}
+`
+const SectionInnerHeader = styled(Flex).attrs((props) => ({
+    $width: '100%',
+    $justify: 'flex-start',
+    $align: 'center',
+    $gap: 36,
+    ...props,
+}))`
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    `}
+`
 
 const ChartContainer = styled(CenteredFlex)`
     position: relative;
@@ -402,6 +439,8 @@ const ChartContainer = styled(CenteredFlex)`
     & svg {
         overflow: visible;
     }
+
+    z-index: 2;
 `
 
 const TimeframeLabel = styled(CenteredFlex)`
@@ -433,4 +472,6 @@ const PieContainer = styled(CenteredFlex)`
     ${({ theme }) => theme.mediaWidth.upToExtraSmall`
         height: 240px;
     `}
+
+    z-index: 2;
 `

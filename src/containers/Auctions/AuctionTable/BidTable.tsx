@@ -3,35 +3,38 @@ import { useNetwork } from 'wagmi'
 import dayjs from 'dayjs'
 
 import type { IAuction, IAuctionBidder, SortableHeader } from '~/types'
-import { type ChainId, parseRemainingTime, formatNumberWithStyle } from '~/utils'
+import { type ChainId, parseRemainingTime, formatNumberWithStyle, tokenMap } from '~/utils'
 
 import styled from 'styled-components'
 import { Flex, Grid, Text } from '~/styles'
 import { AddressLink } from '~/components/AddressLink'
 import { Table } from '~/components/Table'
 
-const tokenMap: Record<string, string> = {
-    PROTOCOL_TOKEN: 'HAI',
-    COIN: 'KITE',
-}
-
 const sortableHeaders: SortableHeader[] = [
     { label: 'Event' },
-    { label: 'Bidder' },
+    {
+        label: 'Bidder',
+        tooltip: `The bidder is typically a proxy address. You can click the address link to view the owner's address and vaults`,
+        tooltipAnchor: 'top',
+    },
     { label: 'Buy Amount' },
     { label: 'Transaction Hash' },
     { label: 'Time' },
     { label: '' },
-].map((obj) => ({ ...obj, unsortable: true }))
+].map((obj) => ({ ...obj, unsortable: true }) as SortableHeader)
 const sortableHeadersWithSell: SortableHeader[] = [
     { label: 'Event' },
-    { label: 'Bidder' },
+    {
+        label: 'Bidder',
+        tooltip: `The bidder is typically a proxy address. You can click the address link to view the owner's address and vaults`,
+        tooltipAnchor: 'top',
+    },
     { label: 'Sell Amount' },
     { label: 'Buy Amount' },
     { label: 'Transaction Hash' },
     { label: 'Time' },
     { label: '' },
-].map((obj) => ({ ...obj, unsortable: true }))
+].map((obj) => ({ ...obj, unsortable: true }) as SortableHeader)
 
 type BidTableProps = {
     auction: IAuction
@@ -39,7 +42,27 @@ type BidTableProps = {
 export function BidTable({ auction }: BidTableProps) {
     const hasSettled = auction.isClaimed && auction.winner
 
-    const withSell = auction.englishAuctionType === 'COLLATERAL'
+    const withSell = auction.englishAuctionType !== 'SURPLUS'
+
+    const buyOrBid = auction.englishAuctionType === 'COLLATERAL' ? 'Buy' : 'Bid'
+
+    const rows: (IAuctionBidder & { isRestart?: boolean })[] = auction.biddersList
+        .concat(
+            (auction as any)?.restarts?.map(
+                ({ hash, timestamp }: any) =>
+                    ({
+                        bidder: '',
+                        buyAmount: '',
+                        sellAmount: '',
+                        createdAt: timestamp,
+                        createdAtTransaction: hash,
+                        isRestart: true,
+                    }) as IAuctionBidder & { isRestart?: boolean }
+            )
+        )
+        .sort((a, b) => {
+            return parseInt(b.createdAt) - parseInt(a.createdAt)
+        })
 
     return (
         <Table
@@ -48,18 +71,27 @@ export function BidTable({ auction }: BidTableProps) {
             headerProps={{ $withSell: withSell }}
             sorting={{ key: '', dir: 'desc' }}
             setSorting={() => {}}
-            rows={auction.biddersList.map((bid, i) => (
-                <BidTableRow
-                    key={i}
-                    bid={bid}
-                    bidToken={tokenMap[auction.buyToken] || auction.buyToken}
-                    sellToken={tokenMap[auction.sellToken] || auction.sellToken}
-                    eventType={
-                        i === auction.biddersList.length - 1 ? 'Start' : hasSettled && i === 0 ? 'Settle' : 'Buy'
-                    }
-                    withSell={withSell}
-                />
-            ))}
+            rows={rows.map((bid, i) => {
+                if (!bid) return null
+                return (
+                    <BidTableRow
+                        key={i}
+                        bid={bid}
+                        bidToken={tokenMap[auction.buyToken] || auction.buyToken}
+                        sellToken={tokenMap[auction.sellToken] || auction.sellToken}
+                        eventType={
+                            bid.isRestart
+                                ? 'Restart'
+                                : i === rows.length - 1
+                                ? 'Start'
+                                : hasSettled && i === 0
+                                ? 'Settle'
+                                : buyOrBid
+                        }
+                        withSell={withSell}
+                    />
+                )
+            })}
         />
     )
 }
@@ -107,7 +139,7 @@ type BidTableRowProps = {
     bid: IAuctionBidder
     bidToken: string
     sellToken?: string
-    eventType: 'Start' | 'Buy' | 'Settle'
+    eventType: 'Start' | 'Buy' | 'Bid' | 'Settle' | 'Restart'
     withSell?: boolean
 }
 function BidTableRow({ bid, eventType, bidToken, sellToken, withSell }: BidTableRowProps) {
@@ -123,6 +155,8 @@ function BidTableRow({ bid, eventType, bidToken, sellToken, withSell }: BidTable
         return ['Seconds ago', timestamp]
     }, [bid.createdAt])
 
+    const isStartOrRestart = eventType === 'Start' || eventType === 'Restart'
+
     return (
         <Table.Row
             container={TableRow}
@@ -134,10 +168,10 @@ function BidTableRow({ bid, eventType, bidToken, sellToken, withSell }: BidTable
                 {
                     content: (
                         <Flex>
-                            {eventType === 'Start' ? (
+                            {isStartOrRestart ? (
                                 <Text>--</Text>
                             ) : (
-                                <AddressLink chainId={chain?.id as ChainId} address={bid.bidder} />
+                                <AddressLink chainId={chain?.id as ChainId} address={bid.owner || bid.bidder} isOwner />
                             )}
                         </Flex>
                     ),
@@ -147,7 +181,7 @@ function BidTableRow({ bid, eventType, bidToken, sellToken, withSell }: BidTable
                           {
                               content: (
                                   <Text>
-                                      {eventType === 'Start'
+                                      {isStartOrRestart
                                           ? '--'
                                           : `${formatNumberWithStyle(bid.sellAmount, { maxDecimals: 4 })} ${sellToken}`}
                                   </Text>
@@ -158,7 +192,7 @@ function BidTableRow({ bid, eventType, bidToken, sellToken, withSell }: BidTable
                 {
                     content: (
                         <Text>
-                            {eventType === 'Start'
+                            {isStartOrRestart
                                 ? '--'
                                 : `${formatNumberWithStyle(bid.buyAmount, { maxDecimals: 4 })} ${bidToken}`}
                         </Text>

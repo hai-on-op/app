@@ -14,22 +14,10 @@ import { useStoreState } from '~/store'
 import { type FlexProps } from '~/styles'
 
 const sortableHeaders: (SortableHeader & FlexProps)[] = [
-    {
-        label: 'Vault',
-        $justify: 'flex-start',
-    },
-    {
-        label: 'Owner',
-        $justify: 'flex-start',
-    },
-    {
-        label: 'Collateral',
-        $justify: 'flex-end',
-    },
-    {
-        label: 'Debt',
-        $justify: 'flex-end',
-    },
+    { label: 'Vault' },
+    { label: 'Owner' },
+    { label: 'Collateral' },
+    { label: 'Debt' },
     { label: 'Collateral Ratio' },
     {
         label: '',
@@ -39,6 +27,7 @@ const sortableHeaders: (SortableHeader & FlexProps)[] = [
 
 const MAX_VAULTS_TO_FETCH = 500
 
+type OrderBy = 'collateral' | 'cRatio' | 'debt'
 export function useAllVaults() {
     const { vaultModel: vaultState } = useStoreState((state) => state)
 
@@ -50,14 +39,25 @@ export function useAllVaults() {
         dir: 'asc',
     })
 
-    const { data, error, loading } = useQuery<{ safes: QuerySafe[] }>(
+    const orderBy: OrderBy = useMemo(() => {
+        switch (sorting.key) {
+            case 'Collateral':
+                return 'collateral'
+            case 'Debt':
+                return 'debt'
+            default:
+                return 'cRatio'
+        }
+    }, [sorting.key])
+
+    const { data, error, loading, refetch } = useQuery<{ safes: QuerySafe[] }>(
         filterEmpty ? ALLSAFES_QUERY_NOT_ZERO : ALLSAFES_QUERY_WITH_ZERO,
         {
             variables: {
                 first: MAX_VAULTS_TO_FETCH,
                 skip: 0,
-                orderBy: 'collateral',
-                orderDirection: 'desc',
+                orderBy,
+                orderDirection: sorting.dir,
             },
         }
     )
@@ -100,7 +100,8 @@ export function useAllVaults() {
             case 'Collateral Ratio':
             default:
                 return arrayToSorted(vaultsWithCRatioAndToken, {
-                    getProperty: (vault) => vault.collateralRatio,
+                    getProperty: (vault) =>
+                        vault.cRatio && vault.cRatio !== '0' ? vault.cRatio : vault.collateralRatio,
                     dir: sorting.dir,
                     type: 'parseFloat',
                 })
@@ -116,6 +117,7 @@ export function useAllVaults() {
     return {
         error,
         loading,
+        refetch,
         headers: sortableHeaders,
         rows: filteredAndSortedRows,
         rowsUnmodified: vaultsWithCRatioAndToken,

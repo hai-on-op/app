@@ -10,7 +10,7 @@ import { handleTransactionError, useEthersSigner, useGeb, useTransactionAdder } 
 import styled from 'styled-components'
 import { CenteredFlex, HaiButton, Text } from '~/styles'
 import { ConnectButton } from './ConnectButton'
-import { ExternalLink } from './ExternalLink'
+import { Link } from './Link'
 
 enum PromptStep {
     CONNECT_WALLET,
@@ -76,6 +76,7 @@ export function ProxyPrompt({
             await txResponse.wait(5)
 
             popupsActions.setIsWaitingModalOpen(false)
+            popupsActions.setWaitingPayload({ status: ActionState.NONE })
             connectWalletActions.setIsStepLoading(false)
             connectWalletActions.setStep(2)
             localStorage.removeItem('ctHash')
@@ -117,7 +118,7 @@ export function ProxyPrompt({
                     <Text>
                         To {continueText}, please create a proxy contract. A proxy contract allows for transaction
                         bundling as well as other unique features.&nbsp;
-                        <ExternalLink href={LINK_TO_DOCS}>Read more →</ExternalLink>
+                        <Link href={`${LINK_TO_DOCS}detailed/proxies/hai_proxy.html`}>Read more →</Link>
                     </Text>
                     <HaiButton $variant="yellowish" onClick={handleCreateAccount}>
                         {t('create_account')}

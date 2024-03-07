@@ -6,10 +6,11 @@ import { useStoreState } from '~/store'
 
 const sortableHeaders: SortableHeader[] = [
     { label: 'Vault' },
-    { label: 'Risk Ratio' },
+    { label: 'Collateral Ratio' },
     { label: 'Collateral' },
     { label: 'Debt' },
-    { label: 'Net APY' },
+    // { label: 'Net APY' },
+    { label: 'Stability Fee' },
     {
         label: '',
         unsortable: true,
@@ -21,18 +22,23 @@ export function useMyVaults() {
         vaultModel: { list },
     } = useStoreState((state) => state)
 
+    const [showEmptyVaults, setShowEmptyVaults] = useState(true)
+
     const [assetsFilter, setAssetsFilter] = useState<string>()
 
     const myVaults = useMemo(() => {
-        const temp = list
-        if (!assetsFilter) return temp
-
-        return temp.filter(({ collateralName }) => collateralName.toUpperCase() === assetsFilter)
-    }, [list, assetsFilter])
+        let temp = [...list]
+        if (!showEmptyVaults)
+            temp = temp.filter(
+                ({ collateral, debt }) => parseFloat(collateral || '0') > 0 || parseFloat(debt || '0') > 0
+            )
+        if (assetsFilter) temp = temp.filter(({ collateralName }) => collateralName.toUpperCase() === assetsFilter)
+        return temp
+    }, [list, assetsFilter, showEmptyVaults])
 
     const [sorting, setSorting] = useState<Sorting>({
-        key: 'Risk Ratio',
-        dir: 'desc',
+        key: 'Collateral Ratio',
+        dir: 'asc',
     })
 
     const sortedRows = useMemo(() => {
@@ -43,11 +49,12 @@ export function useMyVaults() {
                     dir: sorting.dir,
                     type: 'parseInt',
                 })
-            case 'Risk Ratio':
+            case 'Collateral Ratio':
                 return arrayToSorted(myVaults, {
-                    getProperty: (row) => row.collateralRatio || '0',
+                    getProperty: (row) => row.collateralRatio,
                     dir: sorting.dir,
                     type: 'parseFloat',
+                    checkValueExists: true,
                 })
             case 'Collateral':
                 return arrayToSorted(myVaults, {
@@ -61,7 +68,13 @@ export function useMyVaults() {
                     dir: sorting.dir,
                     type: 'parseFloat',
                 })
-            case 'Net APY':
+            // case 'Net APY':
+            //     return arrayToSorted(myVaults, {
+            //         getProperty: (row) => row.totalAnnualizedStabilityFee || '0',
+            //         dir: sorting.dir,
+            //         type: 'parseFloat',
+            //     })
+            case 'Stability Fee':
             default:
                 return arrayToSorted(myVaults, {
                     getProperty: (row) => row.totalAnnualizedStabilityFee || '0',
@@ -79,5 +92,7 @@ export function useMyVaults() {
         setSorting,
         assetsFilter,
         setAssetsFilter,
+        showEmptyVaults,
+        setShowEmptyVaults,
     }
 }

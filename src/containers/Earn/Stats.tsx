@@ -1,36 +1,77 @@
-import { useStoreActions } from '~/store'
+import { useMemo } from 'react'
+import { useAccount } from 'wagmi'
+
+import { formatNumberWithStyle } from '~/utils'
+// import { useStoreActions } from '~/store'
+import { useEarnStrategies } from '~/hooks'
 
 import { HaiButton } from '~/styles'
-import { RewardsTokenPair } from '~/components/TokenPair'
+import { RewardsTokenArray } from '~/components/TokenArray'
 import { Stats, type StatProps } from '~/components/Stats'
 
 export function EarnStats() {
-    const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
+    const { address } = useAccount()
 
-    // TODO: dynamically calculate stats
+    const { rows } = useEarnStrategies()
+    // const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
+
+    const { value, apy } = useMemo(() => {
+        return rows.reduce(
+            (obj, { userPosition = '0', apy }) => {
+                obj.value += parseFloat(userPosition)
+                obj.apy += parseFloat(userPosition) * apy
+                return obj
+            },
+            { value: 0, apy: 0 }
+        )
+    }, [rows])
+
     const dummyStats: StatProps[] = [
         {
-            header: '$45,600',
-            label: 'My Farm TVL',
-            tooltip: 'Hello World',
+            header: formatNumberWithStyle(value, {
+                maxDecimals: 1,
+                suffixed: true,
+                style: 'currency',
+            }),
+            label: 'Value Participating',
+            tooltip: 'Total eligible value participating in DAO rewards campaign activities',
         },
         {
-            header: '7.8%',
-            label: 'My Net Farm Rewards APY',
-            tooltip: 'Hello World',
+            header: formatNumberWithStyle(value ? apy / value : 0, {
+                maxDecimals: 1,
+                scalingFactor: 100,
+                suffixed: true,
+                style: 'percent',
+            }),
+            label: 'My Est. Rewards APY',
+            tooltip:
+                'Current estimated APY of campaign rewards based on current value participating and value of rewards tokens',
         },
         {
-            header: '$7,000',
-            headerStatus: <RewardsTokenPair tokens={['OP', 'KITE']} hideLabel />,
-            label: 'My Farm Rewards',
-            tooltip: 'Hello World',
+            header: '$0',
+            headerStatus: <RewardsTokenArray tokens={['OP', 'KITE']} hideLabel />,
+            label: 'My Campaign Rewards',
+            tooltip: 'Rewards currently voted upon and distributed by DAO approximately once per month.',
             button: (
-                <HaiButton $variant="yellowish" onClick={() => popupsActions.setIsClaimPopupOpen(true)}>
+                <HaiButton title="Claim window is closed" $variant="yellowish" disabled>
                     Claim
                 </HaiButton>
             ),
         },
+        // {
+        //     header: '$7,000',
+        //     headerStatus: <RewardsTokenArray tokens={['OP', 'KITE']} hideLabel />,
+        //     label: 'My Farm Rewards',
+        //     tooltip: 'Hello World',
+        //     button: (
+        //         <HaiButton $variant="yellowish" onClick={() => popupsActions.setIsClaimPopupOpen(true)}>
+        //             Claim
+        //         </HaiButton>
+        //     ),
+        // },
     ]
 
-    return <Stats stats={dummyStats} />
+    if (!address) return null
+
+    return <Stats stats={dummyStats} fun />
 }

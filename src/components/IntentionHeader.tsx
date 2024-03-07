@@ -2,15 +2,14 @@ import { useMemo } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 
 import type { ReactChildren } from '~/types'
-import { LINK_TO_DOCS, TOKEN_LOGOS } from '~/utils'
+import { LINK_TO_DOCS } from '~/utils'
 import { useMediaQuery } from '~/hooks'
 
 import styled from 'styled-components'
 import { BlurContainer, Flex, Text } from '~/styles'
-import { HaiFace } from './Icons/HaiFace'
 import { BrandedTitle } from './BrandedTitle'
-import { ExternalLink } from './ExternalLink'
-import { BrandedSelect } from './BrandedSelect'
+import { BrandedSelect, type BrandedSelectOption } from './BrandedSelect'
+import { Link } from './Link'
 import { BorrowStats } from '~/containers/Vaults/Stats'
 import { EarnStats } from '~/containers/Earn/Stats'
 import { AuctionStats } from '~/containers/Auctions/Stats'
@@ -32,47 +31,47 @@ const copy: Record<
     }
 > = {
     [Intention.AUCTION]: {
-        subtitle: 'Buy your favorite crypto assets from liquidated loan auctions at a discount. ',
+        subtitle: 'Buy your favorite crypto assets from auctions at a potential discount. ',
         cta: 'Read more about auctions →',
-        ctaLink: LINK_TO_DOCS,
+        ctaLink: `${LINK_TO_DOCS}detailed/auctions/index.html`,
     },
     [Intention.BORROW]: {
         subtitle: 'Mint & borrow HAI against your preferred collateral. ',
         cta: 'Read more about borrowing →',
-        ctaLink: LINK_TO_DOCS,
+        ctaLink: `${LINK_TO_DOCS}detailed/intro/hai.html`,
     },
     [Intention.EARN]: {
-        subtitle: 'Stake various liquidity positions to earn yields. ',
+        subtitle: 'Participate in DAO incentive campaigns to earn rewards. ',
         cta: 'Read more about earning opportunities →',
-        ctaLink: LINK_TO_DOCS,
+        ctaLink: `${LINK_TO_DOCS}detailed/intro/hai.html`,
     },
 }
 
-const typeOptions = [
+const typeOptions: BrandedSelectOption[] = [
     {
         label: 'Get $HAI',
         value: Intention.BORROW,
-        icon: <HaiFace filled />,
+        icon: ['HAI'],
         description: 'Mint & borrow $HAI stablecoin against your preferred collateral',
     },
     {
         label: 'Buy $HAI',
         value: '',
-        icon: uniswapLogo,
+        icon: <img src={uniswapLogo} alt="" />,
         description: 'Market buy $HAI from various pairs on Uniswap',
         href: 'https://app.uniswap.org/swap',
     },
     {
         label: 'Earn Rewards',
         value: Intention.EARN,
-        icon: [TOKEN_LOGOS.OP, TOKEN_LOGOS.WETH, TOKEN_LOGOS.WSTETH],
+        icon: ['OP', 'KITE'],
         description: 'Earn long term yields by staking a growing list of crypto assets',
     },
     {
-        label: 'Buy Liquidated Assets',
+        label: 'Buy Auctioned Assets',
         value: Intention.AUCTION,
-        icon: [TOKEN_LOGOS.OP, TOKEN_LOGOS.WETH, TOKEN_LOGOS.WSTETH],
-        description: 'Buy your favorite assets from liquidated loans at a discount',
+        icon: 'ALL_TOKENS',
+        description: 'Buy your favorite assets from auctions at a potential discount',
     },
 ]
 
@@ -83,7 +82,7 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
     const location = useLocation()
     const history = useHistory()
 
-    const isLargerThanExtraSmall = useMediaQuery('upToExtraSmall')
+    const isUpToExtraSmall = useMediaQuery('upToExtraSmall')
 
     const { type, stats } = useMemo(() => {
         if (location.pathname.startsWith('/auctions')) {
@@ -123,19 +122,20 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
         <Container>
             <Inner>
                 <Flex $justify="flex-start" $align="center" $gap={12} $flexWrap>
-                    <BrandedTitle textContent="I WANT TO" $fontSize={isLargerThanExtraSmall ? '3.2em' : '2.5em'} />
+                    <BrandedTitle textContent="I WANT TO" $fontSize={isUpToExtraSmall ? '2.5em' : '3.2em'} />
                     <BrandedSelect
                         value={type}
                         onChange={(value: string) => !!value && history.push(`/${value}`)}
                         options={typeOptions}
-                        $fontSize={isLargerThanExtraSmall ? '3.2em' : '2.5em'}
+                        $fontSize={isUpToExtraSmall ? '2.5em' : '3.2em'}
+                        aria-label="Action"
                     />
                 </Flex>
                 <Text>
                     {subtitle}
-                    <ExternalLink href={ctaLink} $fontWeight={700}>
+                    <Link href={ctaLink} $fontWeight={700}>
                         {cta}
-                    </ExternalLink>
+                    </Link>
                 </Text>
                 {stats}
                 {children}
