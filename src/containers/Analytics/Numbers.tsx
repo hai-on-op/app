@@ -66,7 +66,7 @@ export function Numbers() {
     }, [haiPriceHistory])
 
     const redemptionRateData = useMemo(() => {
-        const data = haiPriceHistory.data?.dailyStats || haiPriceHistory.data?.hourlyStats || []
+        const data = redemptionRateHistory.data?.dailyStats || redemptionRateHistory.data?.hourlyStats || []
         return [
             {
                 id: 'Redemption Rate',
