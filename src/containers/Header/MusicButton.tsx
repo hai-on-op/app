@@ -56,6 +56,12 @@ export function MusicButton() {
                     // console.error(e)
                     setIsPlayingMusic(false)
                 }}
+                onEnd={() => {
+                    if (!player) return
+
+                    player.seekTo(0, false)
+                    player.playVideo()
+                }}
             />
         </Container>
     )
