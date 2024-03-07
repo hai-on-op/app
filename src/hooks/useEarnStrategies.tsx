@@ -4,10 +4,12 @@ import { useQuery } from '@apollo/client'
 import type { SortableHeader, Sorting, Strategy } from '~/types'
 import {
     ALL_COLLATERAL_TYPES_QUERY,
+    HARDCODED_KITE,
+    NETWORK_ID,
+    ChainId,
     type QueryCollateralType,
     arrayToSorted,
     tokenAssets,
-    HARDCODED_KITE,
 } from '~/utils'
 import { useStoreState } from '~/store'
 
@@ -66,6 +68,49 @@ const dummyRows: Strategy[] = [
     },
 ]
 
+const rewards: Record<string, { OP: number; KITE: number }> =
+    NETWORK_ID === ChainId.MAINNET
+        ? {
+              WETH: {
+                  OP: 25,
+                  KITE: 20,
+              },
+              WSTETH: {
+                  OP: 25,
+                  KITE: 20,
+              },
+              OP: {
+                  OP: 50,
+                  KITE: 20,
+              },
+          }
+        : {
+              WBTC: {
+                  OP: 10,
+                  KITE: 10,
+              },
+              WETH: {
+                  OP: 20,
+                  KITE: 20,
+              },
+              STN: {
+                  OP: 30,
+                  KITE: 30,
+              },
+              TTM: {
+                  OP: 40,
+                  KITE: 40,
+              },
+              OP: {
+                  OP: 50,
+                  KITE: 50,
+              },
+          }
+const DEFAULT_REWARDS = {
+    OP: 0,
+    KITE: 0,
+}
+
 export function useEarnStrategies() {
     const {
         vaultModel: { list, liquidationData },
@@ -77,27 +122,24 @@ export function useEarnStrategies() {
         if (!data?.collateralTypes) return dummyRows
 
         return data.collateralTypes
-            .map((cType, i) => {
+            .map((cType) => {
                 const { symbol } =
                     tokenAssets[cType.id] ||
                     Object.values(tokenAssets).find(({ name }) => name.toLowerCase() === cType.id.toLowerCase()) ||
                     {}
-                const rewards = {
-                    OP: 10 * (i + 1),
-                    KITE: 10 * (i + 1),
-                }
+                const cRewards = rewards[symbol] || DEFAULT_REWARDS
                 // ((kite-daily-emission * kite-price + op-daily-emission * op-price) * 365) / (hai-debt-per-collateral * hai-redemption-price)
-                // TODO: plug in actual values
+                // TODO: get KITE price
                 const opPrice = parseFloat(liquidationData?.collateralLiquidationData['OP']?.currentPrice.value || '0')
                 const nominal =
                     !liquidationData?.currentRedemptionPrice || !opPrice
                         ? Infinity
-                        : ((rewards.KITE * HARDCODED_KITE + rewards.OP * opPrice) * 365) /
+                        : ((cRewards.KITE * HARDCODED_KITE + cRewards.OP * opPrice) * 365) /
                           (parseFloat(cType.debtAmount) * parseFloat(liquidationData?.currentRedemptionPrice || '0'))
                 const apy = nominal === Infinity ? 0 : Math.pow(1 + nominal / 12, 12) - 1
                 return {
                     pair: [symbol || 'HAI'],
-                    rewards: Object.entries(rewards).map(([token, emission]) => ({ token, emission })),
+                    rewards: Object.entries(cRewards).map(([token, emission]) => ({ token, emission })),
                     tvl: cType.debtAmount,
                     vol24hr: '',
                     apy,
