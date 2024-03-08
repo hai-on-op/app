@@ -6,7 +6,7 @@ import { CheckboxButton } from '~/components/CheckboxButton'
 import { SortByDropdown } from '~/components/SortByDropdown'
 
 export function Earn() {
-    const { headers, rows, sorting, setSorting, filterEmpty, setFilterEmpty } = useEarnStrategies()
+    const { headers, rows, loading, error, sorting, setSorting, filterEmpty, setFilterEmpty } = useEarnStrategies()
 
     const isUpToMedium = useMediaQuery('upToMedium')
 
@@ -25,7 +25,14 @@ export function Earn() {
                 </>
             }
         >
-            <StrategyTable headers={headers} rows={rows} sorting={sorting} setSorting={setSorting} />
+            <StrategyTable
+                headers={headers}
+                rows={rows}
+                loading={loading}
+                error={error}
+                sorting={sorting}
+                setSorting={setSorting}
+            />
         </NavContainer>
     )
 }

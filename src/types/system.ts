@@ -28,8 +28,18 @@ export type Strategy = {
     apy: number
     userPosition?: string
     userApy?: number
-    earnPlatform?: 'uniswap' | 'velodrome'
-}
+} & (
+    | {
+          earnPlatform?: undefined
+          earnAddress?: undefined
+          earnLink?: undefined
+      }
+    | {
+          earnPlatform: 'uniswap' | 'velodrome'
+          earnAddress: string
+          earnLink: string
+      }
+)
 
 export type TokenAnalyticsData = AnalyticsData['tokenAnalyticsData'][string] & {
     symbol: string

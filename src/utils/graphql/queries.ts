@@ -289,3 +289,60 @@ export const AUCTION_RESTART_QUERY = gql`
         }
     }
 `
+
+export const UNISWAP_PAIRS_QUERY = gql`
+    query Pairs {
+        uniswapPairs {
+            address
+            token0
+            token1
+            sqrtPriceX96
+        }
+    }
+`
+
+export const OPTIMISM_UNISWAP_POOL_QUERY = gql`
+    query Pools($ids: [Bytes!]) {
+        liquidityPools(
+            where: {
+                id_in: $ids
+            }
+        ) {
+            id
+            inputTokens {
+                symbol
+            }
+            totalValueLockedUSD
+        }
+    }
+`
+
+export const OPTIMISM_UNISWAP_POOL_WITH_POSITION_QUERY = gql`
+    query Pools($ids: [Bytes!], $address: Bytes!) {
+        liquidityPools(
+            where: {
+                id_in: $ids
+            }
+        ) {
+            id
+            inputTokens {
+                symbol
+            }
+            totalValueLockedUSD
+            positions(
+                where: {
+                    account_: {
+                        id: $address
+                    }
+                    hashClosed: null
+                }
+            ) {
+                account {
+                    id
+                }
+                cumulativeDepositUSD
+                cumulativeWithdrawUSD
+            }
+        }
+    }
+`
