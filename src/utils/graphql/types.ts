@@ -375,6 +375,7 @@ export type QueryLiquidityPool = {
     inputTokens: {
         symbol: string
     }[]
+    inputTokenBalances: [string, string]
     totalValueLockedUSD: string
 }
 
@@ -384,6 +385,8 @@ export type QueryLiquidityPoolWithPositions = QueryLiquidityPool & {
             id: string
         }
         cumulativeDepositUSD: string
+        cumulativeDepositTokenAmounts: [string, string]
         cumulativeWithdrawUSD: string
+        cumulativeWithdrawTokenAmounts: [string, string]
     }[]
 }

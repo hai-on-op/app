@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
+import { formatUnits } from 'ethers/lib/utils'
 import { useQuery } from '@apollo/client'
-// import { useAccount } from 'wagmi'
+import { useAccount } from 'wagmi'
 
 import type { SortableHeader, Sorting, Strategy } from '~/types'
 import {
@@ -12,7 +13,7 @@ import {
     arrayToSorted,
     tokenAssets,
     QueryLiquidityPoolWithPositions,
-    // OPTIMISM_UNISWAP_POOL_WITH_POSITION_QUERY,
+    OPTIMISM_UNISWAP_POOL_WITH_POSITION_QUERY,
     OPTIMISM_UNISWAP_POOL_QUERY,
     uniClient,
 } from '~/utils'
@@ -127,33 +128,23 @@ export function useEarnStrategies() {
         vaultModel: { list, liquidationData },
     } = useStoreState((state) => state)
 
-    // const { address } = useAccount()
+    const { address } = useAccount()
 
     const { data, loading, error } = useQuery<{ collateralTypes: QueryCollateralType[] }>(ALL_COLLATERAL_TYPES_QUERY)
-    // const {
-    //     data: uniData,
-    //     loading: uniLoading,
-    //     error: uniError,
-    // } = useQuery<{ liquidityPools: QueryLiquidityPoolWithPositions[] }>(
-    //     address ? OPTIMISM_UNISWAP_POOL_WITH_POSITION_QUERY : OPTIMISM_UNISWAP_POOL_QUERY,
-    //     {
-    //         client: uniClient,
-    //         variables: {
-    //             ids: ['0x146b020399769339509c98b7b353d19130c150ec'],
-    //             address,
-    //         },
-    //     }
-    // )
     const {
         data: uniData,
         loading: uniLoading,
         error: uniError,
-    } = useQuery<{ liquidityPools: QueryLiquidityPoolWithPositions[] }>(OPTIMISM_UNISWAP_POOL_QUERY, {
-        client: uniClient,
-        variables: {
-            ids: ['0x146b020399769339509c98b7b353d19130c150ec'],
-        },
-    })
+    } = useQuery<{ liquidityPools: QueryLiquidityPoolWithPositions[] }>(
+        address ? OPTIMISM_UNISWAP_POOL_WITH_POSITION_QUERY : OPTIMISM_UNISWAP_POOL_QUERY,
+        {
+            client: uniClient,
+            variables: {
+                ids: ['0x146b020399769339509c98b7b353d19130c150ec'],
+                address,
+            },
+        }
+    )
 
     const strategies: Strategy[] = useMemo(() => {
         let temp = [...dummyRows]
@@ -203,6 +194,14 @@ export function useEarnStrategies() {
                         OP: 200,
                         KITE: 30,
                     }
+
+                    const haiPrice = parseFloat(liquidationData?.currentRedemptionPrice || '0')
+                    const tvlHAI = parseFloat(formatUnits(pool.inputTokenBalances[0], 18)) * haiPrice
+                    const wethPrice = parseFloat(
+                        liquidationData?.collateralLiquidationData['WETH']?.currentPrice.value || '0'
+                    )
+                    const tvlETH = parseFloat(formatUnits(pool.inputTokenBalances[1], 18)) * wethPrice
+                    const tvl = tvlHAI + tvlETH
                     // ((kite-daily-emission * kite-price + op-daily-emission * op-price) * 365) / (hai-debt-per-collateral * hai-redemption-price)
                     // TODO: get KITE price
                     const opPrice = parseFloat(
@@ -211,18 +210,23 @@ export function useEarnStrategies() {
                     const nominal =
                         !liquidationData?.currentRedemptionPrice || !opPrice
                             ? Infinity
-                            : ((uniRewards.KITE * HARDCODED_KITE + uniRewards.OP * opPrice) * 365) /
-                              parseFloat(pool.totalValueLockedUSD)
+                            : ((uniRewards.KITE * HARDCODED_KITE + uniRewards.OP * opPrice) * 365) / tvl
                     const apy = nominal === Infinity ? 0 : Math.pow(1 + nominal / 12, 12) - 1
                     return {
                         pair: pool.inputTokens.map((token) => token.symbol) as any,
                         rewards: Object.entries(uniRewards).map(([token, emission]) => ({ token, emission })) as any,
-                        tvl: pool.totalValueLockedUSD,
+                        tvl: tvl.toString(),
                         vol24hr: '',
                         apy,
                         userPosition: (pool.positions || [])
-                            .reduce((total, { cumulativeDepositUSD, cumulativeWithdrawUSD }) => {
-                                return total + (parseFloat(cumulativeDepositUSD) - parseFloat(cumulativeWithdrawUSD))
+                            .reduce((total, { cumulativeDepositTokenAmounts, cumulativeWithdrawTokenAmounts }) => {
+                                const posHai =
+                                    parseFloat(formatUnits(cumulativeDepositTokenAmounts[0], 18)) -
+                                    parseFloat(formatUnits(cumulativeWithdrawTokenAmounts[0], 18))
+                                const posETH =
+                                    parseFloat(formatUnits(cumulativeDepositTokenAmounts[1], 18)) -
+                                    parseFloat(formatUnits(cumulativeWithdrawTokenAmounts[1], 18))
+                                return total + (posHai * haiPrice + posETH * wethPrice)
                             }, 0)
                             .toString(),
                         userApy: apy,
