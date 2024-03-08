@@ -313,6 +313,7 @@ export const OPTIMISM_UNISWAP_POOL_QUERY = gql`
                 symbol
             }
             totalValueLockedUSD
+            inputTokenBalances
         }
     }
 `
@@ -329,6 +330,7 @@ export const OPTIMISM_UNISWAP_POOL_WITH_POSITION_QUERY = gql`
                 symbol
             }
             totalValueLockedUSD
+            inputTokenBalances
             positions(
                 where: {
                     account_: {
@@ -341,7 +343,9 @@ export const OPTIMISM_UNISWAP_POOL_WITH_POSITION_QUERY = gql`
                     id
                 }
                 cumulativeDepositUSD
+                cumulativeDepositTokenAmounts
                 cumulativeWithdrawUSD
+                cumulativeWithdrawTokenAmounts
             }
         }
     }
