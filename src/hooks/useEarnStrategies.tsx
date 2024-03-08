@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@apollo/client'
+import { useAccount } from 'wagmi'
 
 import type { SortableHeader, Sorting, Strategy } from '~/types'
 import {
@@ -10,6 +11,10 @@ import {
     type QueryCollateralType,
     arrayToSorted,
     tokenAssets,
+    QueryLiquidityPoolWithPositions,
+    OPTIMISM_UNISWAP_POOL_WITH_POSITION_QUERY,
+    OPTIMISM_UNISWAP_POOL_QUERY,
+    uniClient,
 } from '~/utils'
 import { useStoreState } from '~/store'
 
@@ -33,38 +38,44 @@ const sortableHeaders: SortableHeader[] = [
 // TODO: calculate velodrome and uniswap pool values based on Kingfish doc
 const dummyRows: Strategy[] = [
     {
-        pair: ['HAI', 'ETH'],
-        rewards: [
-            {
-                token: 'OP',
-                emission: 0,
-            },
-            {
-                token: 'KITE',
-                emission: 0,
-            },
-        ],
-        tvl: '',
-        vol24hr: '',
-        apy: 0,
-        earnPlatform: 'uniswap',
-    },
-    {
         pair: ['HAI', 'SUSD'],
         rewards: [
             {
                 token: 'OP',
-                emission: 0,
+                emission: 100,
             },
             {
                 token: 'KITE',
-                emission: 0,
+                emission: 30,
             },
         ],
         tvl: '',
         vol24hr: '',
         apy: 0,
         earnPlatform: 'velodrome',
+        earnAddress: '',
+        earnLink:
+            'https://velodrome.finance/deposit?token0=0x10398AbC267496E49106B07dd6BE13364D10dC71&token1=0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9&type=0',
+    },
+    {
+        pair: ['KITE', 'OP'],
+        rewards: [
+            {
+                token: 'OP',
+                emission: 0,
+            },
+            {
+                token: 'KITE',
+                emission: 50,
+            },
+        ],
+        tvl: '',
+        vol24hr: '',
+        apy: 0,
+        earnPlatform: 'velodrome',
+        earnAddress: '',
+        earnLink:
+            'https://velodrome.finance/deposit?token0=0x4200000000000000000000000000000000000042&token1=0xf467C7d5a4A9C4687fFc7986aC6aD5A4c81E1404&type=-1',
     },
 ]
 
@@ -116,52 +127,113 @@ export function useEarnStrategies() {
         vaultModel: { list, liquidationData },
     } = useStoreState((state) => state)
 
-    const { data } = useQuery<{ collateralTypes: QueryCollateralType[] }>(ALL_COLLATERAL_TYPES_QUERY)
+    const { address } = useAccount()
 
-    const collateralStrategies: Strategy[] = useMemo(() => {
-        if (!data?.collateralTypes) return dummyRows
+    const { data, loading, error } = useQuery<{ collateralTypes: QueryCollateralType[] }>(ALL_COLLATERAL_TYPES_QUERY)
+    const {
+        data: uniData,
+        loading: uniLoading,
+        error: uniError,
+    } = useQuery<{ liquidityPools: QueryLiquidityPoolWithPositions[] }>(
+        address ? OPTIMISM_UNISWAP_POOL_WITH_POSITION_QUERY : OPTIMISM_UNISWAP_POOL_QUERY,
+        {
+            client: uniClient,
+            variables: {
+                ids: ['0x146b020399769339509c98b7b353d19130c150ec'],
+                address,
+            },
+        }
+    )
 
-        return data.collateralTypes
-            .map((cType) => {
-                const { symbol } =
-                    tokenAssets[cType.id] ||
-                    Object.values(tokenAssets).find(({ name }) => name.toLowerCase() === cType.id.toLowerCase()) ||
-                    {}
-                const cRewards = rewards[symbol] || DEFAULT_REWARDS
-                // ((kite-daily-emission * kite-price + op-daily-emission * op-price) * 365) / (hai-debt-per-collateral * hai-redemption-price)
-                // TODO: get KITE price
-                const opPrice = parseFloat(liquidationData?.collateralLiquidationData['OP']?.currentPrice.value || '0')
-                const nominal =
-                    !liquidationData?.currentRedemptionPrice || !opPrice
-                        ? Infinity
-                        : ((cRewards.KITE * HARDCODED_KITE + cRewards.OP * opPrice) * 365) /
-                          (parseFloat(cType.debtAmount) * parseFloat(liquidationData?.currentRedemptionPrice || '0'))
-                const apy = nominal === Infinity ? 0 : Math.pow(1 + nominal / 12, 12) - 1
-                return {
-                    pair: [symbol || 'HAI'],
-                    rewards: Object.entries(cRewards).map(([token, emission]) => ({ token, emission })),
-                    tvl: cType.debtAmount,
-                    vol24hr: '',
-                    apy,
-                    userPosition: list
-                        .reduce((total, { totalDebt, collateralName }) => {
-                            if (collateralName !== symbol) return total
-                            return total + parseFloat(totalDebt)
-                        }, 0)
-                        .toString(),
-                    userApy: apy,
-                } as Strategy
-            })
-            .concat(dummyRows)
-    }, [data?.collateralTypes, list, liquidationData])
+    const strategies: Strategy[] = useMemo(() => {
+        let temp = [...dummyRows]
+
+        if (data?.collateralTypes.length) {
+            temp = temp.concat(
+                data.collateralTypes.map((cType) => {
+                    const { symbol } =
+                        tokenAssets[cType.id] ||
+                        Object.values(tokenAssets).find(({ name }) => name.toLowerCase() === cType.id.toLowerCase()) ||
+                        {}
+                    const cRewards = rewards[symbol] || DEFAULT_REWARDS
+                    // ((kite-daily-emission * kite-price + op-daily-emission * op-price) * 365) / (hai-debt-per-collateral * hai-redemption-price)
+                    // TODO: get KITE price
+                    const opPrice = parseFloat(
+                        liquidationData?.collateralLiquidationData['OP']?.currentPrice.value || '0'
+                    )
+                    const nominal =
+                        !liquidationData?.currentRedemptionPrice || !opPrice
+                            ? Infinity
+                            : ((cRewards.KITE * HARDCODED_KITE + cRewards.OP * opPrice) * 365) /
+                              (parseFloat(cType.debtAmount) *
+                                  parseFloat(liquidationData?.currentRedemptionPrice || '0'))
+                    const apy = nominal === Infinity ? 0 : Math.pow(1 + nominal / 12, 12) - 1
+                    return {
+                        pair: [symbol || 'HAI'],
+                        rewards: Object.entries(cRewards).map(([token, emission]) => ({ token, emission })),
+                        tvl: cType.debtAmount,
+                        vol24hr: '',
+                        apy,
+                        userPosition: list
+                            .reduce((total, { totalDebt, collateralName }) => {
+                                if (collateralName !== symbol) return total
+                                return total + parseFloat(totalDebt)
+                            }, 0)
+                            .toString(),
+                        userApy: apy,
+                    } as Strategy
+                })
+            )
+        }
+
+        if (uniData?.liquidityPools.length) {
+            temp = temp.concat(
+                uniData.liquidityPools.map((pool) => {
+                    const uniRewards = {
+                        OP: 200,
+                        KITE: 30,
+                    }
+                    // ((kite-daily-emission * kite-price + op-daily-emission * op-price) * 365) / (hai-debt-per-collateral * hai-redemption-price)
+                    // TODO: get KITE price
+                    const opPrice = parseFloat(
+                        liquidationData?.collateralLiquidationData['OP']?.currentPrice.value || '0'
+                    )
+                    const nominal =
+                        !liquidationData?.currentRedemptionPrice || !opPrice
+                            ? Infinity
+                            : ((uniRewards.KITE * HARDCODED_KITE + uniRewards.OP * opPrice) * 365) /
+                              parseFloat(pool.totalValueLockedUSD)
+                    const apy = nominal === Infinity ? 0 : Math.pow(1 + nominal / 12, 12) - 1
+                    return {
+                        pair: pool.inputTokens.map((token) => token.symbol) as any,
+                        rewards: Object.entries(uniRewards).map(([token, emission]) => ({ token, emission })) as any,
+                        tvl: pool.totalValueLockedUSD,
+                        vol24hr: '',
+                        apy,
+                        userPosition: (pool.positions || [])
+                            .reduce((total, { cumulativeDepositUSD, cumulativeWithdrawUSD }) => {
+                                return total + (parseFloat(cumulativeDepositUSD) - parseFloat(cumulativeWithdrawUSD))
+                            }, 0)
+                            .toString(),
+                        userApy: apy,
+                        earnPlatform: 'uniswap',
+                        earnAddress: pool.id,
+                        earnLink: `https://info.uniswap.org/#/optimism/pools/${pool.id}`,
+                    } as Strategy
+                })
+            )
+        }
+
+        return temp
+    }, [data?.collateralTypes, uniData?.liquidityPools, list, liquidationData])
 
     const [filterEmpty, setFilterEmpty] = useState(false)
 
     const filteredRows = useMemo(() => {
-        if (!filterEmpty) return collateralStrategies
+        if (!filterEmpty) return strategies
 
-        return collateralStrategies.filter(({ userPosition }) => !!userPosition && userPosition !== '0')
-    }, [collateralStrategies, filterEmpty])
+        return strategies.filter(({ userPosition }) => !!userPosition && userPosition !== '0')
+    }, [strategies, filterEmpty])
 
     const [sorting, setSorting] = useState<Sorting>({
         key: 'My Position',
@@ -209,7 +281,9 @@ export function useEarnStrategies() {
     return {
         headers: sortableHeaders,
         rows: sortedRows,
-        rowsUnmodified: collateralStrategies,
+        rowsUnmodified: strategies,
+        loading: loading || uniLoading,
+        error: error?.message || uniError?.message,
         sorting,
         setSorting,
         filterEmpty,

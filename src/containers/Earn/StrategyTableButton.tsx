@@ -14,31 +14,27 @@ const platformMap: Record<
     {
         logo?: string
         size?: number
-        link: string
     }
 > = {
     uniswap: {
         logo: uniswapLogo,
         size: 28,
-        link: 'https://app.uniswap.org',
     },
     velodrome: {
         logo: velodromeLogo,
         size: 20,
-        link: 'https://velodrome.finance',
     },
     hai: {
         logo: undefined,
-        link: '/vaults',
     },
 }
 
-type Props = Pick<Strategy, 'earnPlatform'>
-export function StrategyTableButton({ earnPlatform }: Props) {
-    const { logo, size, link } = platformMap[earnPlatform || 'hai']
+type Props = Pick<Strategy, 'earnPlatform' | 'earnLink'>
+export function StrategyTableButton({ earnPlatform, earnLink = '/vaults' }: Props) {
+    const { logo, size } = platformMap[earnPlatform || 'hai']
 
     return (
-        <Link href={link} $justify="flex-start" $textDecoration="none">
+        <Link href={earnLink} $justify="flex-start" $textDecoration="none">
             <EarnButton as="div" $width="100%" $justify="space-between" $align="center">
                 <CenteredFlex $gap={4}>Earn on</CenteredFlex>
                 <Flex $justify="flex-start" $align="center" $gap={earnPlatform === 'uniswap' ? 4 : 12}>

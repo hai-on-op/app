@@ -369,3 +369,21 @@ export type QueryAuctionRestarts = {
     auctionRestartTimestamps: string[]
     auctionRestartHashes: string[]
 }
+
+export type QueryLiquidityPool = {
+    id: string // Address of pool
+    inputTokens: {
+        symbol: string
+    }[]
+    totalValueLockedUSD: string
+}
+
+export type QueryLiquidityPoolWithPositions = QueryLiquidityPool & {
+    positions: {
+        account: {
+            id: string
+        }
+        cumulativeDepositUSD: string
+        cumulativeWithdrawUSD: string
+    }[]
+}

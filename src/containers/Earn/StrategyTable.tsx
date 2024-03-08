@@ -13,18 +13,23 @@ import { ComingSoon } from '~/components/ComingSoon'
 type StrategyTableProps = {
     headers: SortableHeader[]
     rows: Strategy[]
+    loading?: boolean
+    error?: string
     sorting: Sorting
     setSorting: SetState<Sorting>
 }
-export function StrategyTable({ headers, rows, sorting, setSorting }: StrategyTableProps) {
+export function StrategyTable({ headers, rows, loading, error, sorting, setSorting }: StrategyTableProps) {
     return (
         <Table
             headers={headers}
             headerContainer={TableHeader}
+            loading={loading}
+            error={error}
+            isEmpty={!rows.length}
             sorting={sorting}
             setSorting={setSorting}
             compactQuery="upToMedium"
-            rows={rows.map(({ pair, rewards, tvl, apy, userPosition, earnPlatform }, i) => (
+            rows={rows.map(({ pair, rewards, tvl, apy, userPosition, earnPlatform, earnAddress, earnLink }, i) => (
                 <Table.Row
                     key={i}
                     container={TableRow}
@@ -85,7 +90,7 @@ export function StrategyTable({ headers, rows, sorting, setSorting }: StrategyTa
                         },
                         {
                             content: (
-                                <ComingSoon $justify="flex-start" active={!!earnPlatform}>
+                                <ComingSoon $justify="flex-start" active={!!earnPlatform && !earnAddress}>
                                     <Text $fontWeight={700}>
                                         {tvl
                                             ? formatNumberWithStyle(tvl, {
@@ -114,7 +119,7 @@ export function StrategyTable({ headers, rows, sorting, setSorting }: StrategyTa
                         // },
                         {
                             content: (
-                                <ComingSoon $justify="flex-start" active={!!earnPlatform}>
+                                <ComingSoon $justify="flex-start" active={!!earnPlatform && !earnAddress}>
                                     <Text $fontWeight={700}>
                                         {userPosition && userPosition !== '0'
                                             ? formatNumberWithStyle(userPosition, {
@@ -129,7 +134,7 @@ export function StrategyTable({ headers, rows, sorting, setSorting }: StrategyTa
                         },
                         {
                             content: (
-                                <ComingSoon $justify="flex-start" active={!!earnPlatform}>
+                                <ComingSoon $justify="flex-start" active={!!earnPlatform && !earnAddress}>
                                     <Text $fontWeight={700}>
                                         {apy
                                             ? formatNumberWithStyle(apy, {
@@ -156,7 +161,7 @@ export function StrategyTable({ headers, rows, sorting, setSorting }: StrategyTa
                         {
                             content: (
                                 <Flex $width="100%" $justify="flex-end">
-                                    <StrategyTableButton earnPlatform={earnPlatform} />
+                                    <StrategyTableButton earnPlatform={earnPlatform} earnLink={earnLink} />
                                 </Flex>
                             ),
                             unwrapped: true,

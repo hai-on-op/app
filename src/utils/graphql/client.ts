@@ -10,3 +10,8 @@ export const client = new ApolloClient({
     uri,
     cache: new InMemoryCache(),
 })
+
+export const uniClient = new ApolloClient({
+    uri: 'https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-optimism',
+    cache: new InMemoryCache(),
+})
