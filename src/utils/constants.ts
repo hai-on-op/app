@@ -103,7 +103,7 @@ export const LINK_TO_TOS =
     'https://docs.google.com/document/d/1ELpRt_xIl4YYePqsdUAlf-kUL-ZNrOuc3NnI20XUWEY/edit?usp=sharing'
 export const LINK_TO_TWITTER = 'https://twitter.com/@letsgethai'
 export const LINK_TO_TELEGRAM = 'https://t.me/+0iIhX0f9DDAxODE5'
-export const LINK_TO_DISCORD = 'https://discord.gg/5MWsWuyTBG'
+export const LINK_TO_DISCORD = 'https://discord.gg/letsgethai'
 // Auctions
 export const NUMBER_OF_AUCTIONS_TO_SHOW = 15
 export const SURPLUS_BATCH_SIZE = 5_000_000 // blocks
