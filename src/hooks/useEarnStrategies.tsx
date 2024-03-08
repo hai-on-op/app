@@ -195,9 +195,8 @@ export function useEarnStrategies() {
                         KITE: 30,
                     }
 
-                    const tvlHAI =
-                        parseFloat(formatUnits(pool.inputTokenBalances[0], 18)) *
-                        parseFloat(liquidationData?.currentRedemptionPrice || '0')
+                    const haiPrice = parseFloat(liquidationData?.currentRedemptionPrice || '0')
+                    const tvlHAI = parseFloat(formatUnits(pool.inputTokenBalances[0], 18)) * haiPrice
                     const wethPrice = parseFloat(
                         liquidationData?.collateralLiquidationData['WETH']?.currentPrice.value || '0'
                     )
@@ -220,8 +219,14 @@ export function useEarnStrategies() {
                         vol24hr: '',
                         apy,
                         userPosition: (pool.positions || [])
-                            .reduce((total, { cumulativeDepositUSD, cumulativeWithdrawUSD }) => {
-                                return total + (parseFloat(cumulativeDepositUSD) - parseFloat(cumulativeWithdrawUSD))
+                            .reduce((total, { cumulativeDepositTokenAmounts, cumulativeWithdrawTokenAmounts }) => {
+                                const posHai =
+                                    parseFloat(formatUnits(cumulativeDepositTokenAmounts[0], 18)) -
+                                    parseFloat(formatUnits(cumulativeWithdrawTokenAmounts[0], 18))
+                                const posETH =
+                                    parseFloat(formatUnits(cumulativeDepositTokenAmounts[1], 18)) -
+                                    parseFloat(formatUnits(cumulativeWithdrawTokenAmounts[1], 18))
+                                return total + (posHai * haiPrice + posETH * wethPrice)
                             }, 0)
                             .toString(),
                         userApy: apy,
