@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@apollo/client'
-import { useAccount } from 'wagmi'
+// import { useAccount } from 'wagmi'
 
 import type { SortableHeader, Sorting, Strategy } from '~/types'
 import {
@@ -12,7 +12,7 @@ import {
     arrayToSorted,
     tokenAssets,
     QueryLiquidityPoolWithPositions,
-    OPTIMISM_UNISWAP_POOL_WITH_POSITION_QUERY,
+    // OPTIMISM_UNISWAP_POOL_WITH_POSITION_QUERY,
     OPTIMISM_UNISWAP_POOL_QUERY,
     uniClient,
 } from '~/utils'
@@ -127,23 +127,33 @@ export function useEarnStrategies() {
         vaultModel: { list, liquidationData },
     } = useStoreState((state) => state)
 
-    const { address } = useAccount()
+    // const { address } = useAccount()
 
     const { data, loading, error } = useQuery<{ collateralTypes: QueryCollateralType[] }>(ALL_COLLATERAL_TYPES_QUERY)
+    // const {
+    //     data: uniData,
+    //     loading: uniLoading,
+    //     error: uniError,
+    // } = useQuery<{ liquidityPools: QueryLiquidityPoolWithPositions[] }>(
+    //     address ? OPTIMISM_UNISWAP_POOL_WITH_POSITION_QUERY : OPTIMISM_UNISWAP_POOL_QUERY,
+    //     {
+    //         client: uniClient,
+    //         variables: {
+    //             ids: ['0x146b020399769339509c98b7b353d19130c150ec'],
+    //             address,
+    //         },
+    //     }
+    // )
     const {
         data: uniData,
         loading: uniLoading,
         error: uniError,
-    } = useQuery<{ liquidityPools: QueryLiquidityPoolWithPositions[] }>(
-        address ? OPTIMISM_UNISWAP_POOL_WITH_POSITION_QUERY : OPTIMISM_UNISWAP_POOL_QUERY,
-        {
-            client: uniClient,
-            variables: {
-                ids: ['0x146b020399769339509c98b7b353d19130c150ec'],
-                address,
-            },
-        }
-    )
+    } = useQuery<{ liquidityPools: QueryLiquidityPoolWithPositions[] }>(OPTIMISM_UNISWAP_POOL_QUERY, {
+        client: uniClient,
+        variables: {
+            ids: ['0x146b020399769339509c98b7b353d19130c150ec'],
+        },
+    })
 
     const strategies: Strategy[] = useMemo(() => {
         let temp = [...dummyRows]
