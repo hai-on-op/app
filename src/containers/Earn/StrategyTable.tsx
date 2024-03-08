@@ -90,10 +90,7 @@ export function StrategyTable({ headers, rows, loading, error, sorting, setSorti
                         },
                         {
                             content: (
-                                <ComingSoon
-                                    $justify="flex-start"
-                                    // TODO: un-hardcode coming soon for uni positions once they're working
-                                    active={(!!earnPlatform && !earnAddress) || earnPlatform === 'uniswap'}>
+                                <ComingSoon $justify="flex-start" active={!!earnPlatform && !earnAddress}>
                                     <Text $fontWeight={700}>
                                         {tvl
                                             ? formatNumberWithStyle(tvl, {
@@ -137,11 +134,7 @@ export function StrategyTable({ headers, rows, loading, error, sorting, setSorti
                         },
                         {
                             content: (
-                                <ComingSoon
-                                    $justify="flex-start"
-                                    // TODO: un-hardcode coming soon for uni positions once they're working
-                                    active={(!!earnPlatform && !earnAddress) || earnPlatform === 'uniswap'}
-                                >
+                                <ComingSoon $justify="flex-start" active={!!earnPlatform && !earnAddress}>
                                     <Text $fontWeight={700}>
                                         {apy
                                             ? formatNumberWithStyle(apy, {
