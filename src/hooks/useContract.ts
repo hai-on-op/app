@@ -1,10 +1,9 @@
 import { useMemo } from 'react'
 import { Contract } from '@ethersproject/contracts'
 import { JsonRpcSigner, Web3Provider, JsonRpcProvider } from '@ethersproject/providers'
-import { useNetwork } from 'wagmi'
 
-import { EMPTY_ADDRESS, isAddress } from '~/utils'
-import { useEthersProvider, useEthersSigner } from '~/hooks'
+import { EMPTY_ADDRESS, NETWORK_ID, isAddress } from '~/utils'
+import { useEthersSigner, usePublicProvider } from '~/hooks'
 
 import ERC20_BYTES32_ABI from '~/abis/erc20_bytes32.json'
 import ERC20_ABI from '~/abis/erc20.json'
@@ -35,16 +34,14 @@ export function useContract<T extends Contract = Contract>(
     ABI: any,
     withSignerIfPossible = true
 ): T | null {
-    const { chain } = useNetwork()
-    const chainId = chain?.id
-    const provider = useEthersProvider()
+    const provider = usePublicProvider()
     const signer = useEthersSigner()
 
     return useMemo(() => {
-        if (!addressOrAddressMap || !ABI || !provider || !chainId) return null
+        if (!addressOrAddressMap || !ABI || !provider) return null
         let address: string | undefined
         if (typeof addressOrAddressMap === 'string') address = addressOrAddressMap
-        else address = addressOrAddressMap[chainId]
+        else address = addressOrAddressMap[NETWORK_ID]
         if (!address) return null
         try {
             return getContract(address, ABI, signer || (provider as JsonRpcProvider))
@@ -52,7 +49,7 @@ export function useContract<T extends Contract = Contract>(
             console.error('Failed to get contract', error)
             return null
         }
-    }, [addressOrAddressMap, ABI, provider, chainId, signer, withSignerIfPossible]) as T
+    }, [addressOrAddressMap, ABI, provider, signer, withSignerIfPossible]) as T
 }
 
 export function useTokenContract(tokenAddress?: string, withSignerIfPossible?: boolean) {
