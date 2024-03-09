@@ -6,18 +6,19 @@ import { useAccount } from 'wagmi'
 import type { SortableHeader, Sorting, Strategy } from '~/types'
 import {
     ALL_COLLATERAL_TYPES_QUERY,
-    HARDCODED_KITE,
-    NETWORK_ID,
-    ChainId,
+    OPTIMISM_UNISWAP_POOL_QUERY,
+    OPTIMISM_UNISWAP_POOL_WITH_POSITION_QUERY,
+    REWARDS,
     type QueryCollateralType,
     arrayToSorted,
     tokenAssets,
     QueryLiquidityPoolWithPositions,
-    OPTIMISM_UNISWAP_POOL_WITH_POSITION_QUERY,
-    OPTIMISM_UNISWAP_POOL_QUERY,
     uniClient,
+    stringsExistAndAreEqual,
 } from '~/utils'
 import { useStoreState } from '~/store'
+import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
+import { useVelodrome, useVelodromePositions } from './useVelodrome'
 
 const sortableHeaders: SortableHeader[] = [
     { label: 'Asset / Asset Pair' },
@@ -36,99 +37,14 @@ const sortableHeaders: SortableHeader[] = [
     },
 ]
 
-// TODO: calculate velodrome and uniswap pool values based on Kingfish doc
-const dummyRows: Strategy[] = [
-    {
-        pair: ['HAI', 'SUSD'],
-        rewards: [
-            {
-                token: 'OP',
-                emission: 100,
-            },
-            {
-                token: 'KITE',
-                emission: 30,
-            },
-        ],
-        tvl: '',
-        vol24hr: '',
-        apy: 0,
-        earnPlatform: 'velodrome',
-        earnAddress: '',
-        earnLink:
-            'https://velodrome.finance/deposit?token0=0x10398AbC267496E49106B07dd6BE13364D10dC71&token1=0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9&type=0',
-    },
-    {
-        pair: ['KITE', 'OP'],
-        rewards: [
-            {
-                token: 'OP',
-                emission: 0,
-            },
-            {
-                token: 'KITE',
-                emission: 50,
-            },
-        ],
-        tvl: '',
-        vol24hr: '',
-        apy: 0,
-        earnPlatform: 'velodrome',
-        earnAddress: '',
-        earnLink:
-            'https://velodrome.finance/deposit?token0=0x4200000000000000000000000000000000000042&token1=0xf467C7d5a4A9C4687fFc7986aC6aD5A4c81E1404&type=-1',
-    },
-]
-
-const rewards: Record<string, { OP: number; KITE: number }> =
-    NETWORK_ID === ChainId.MAINNET
-        ? {
-              WETH: {
-                  OP: 25,
-                  KITE: 20,
-              },
-              WSTETH: {
-                  OP: 25,
-                  KITE: 20,
-              },
-              OP: {
-                  OP: 50,
-                  KITE: 20,
-              },
-          }
-        : {
-              WBTC: {
-                  OP: 10,
-                  KITE: 10,
-              },
-              WETH: {
-                  OP: 20,
-                  KITE: 20,
-              },
-              STN: {
-                  OP: 30,
-                  KITE: 30,
-              },
-              TTM: {
-                  OP: 40,
-                  KITE: 40,
-              },
-              OP: {
-                  OP: 50,
-                  KITE: 50,
-              },
-          }
-const DEFAULT_REWARDS = {
-    OP: 0,
-    KITE: 0,
-}
-
 export function useEarnStrategies() {
     const {
+        connectWalletModel: { tokensData },
         vaultModel: { list, liquidationData },
     } = useStoreState((state) => state)
 
     const { address } = useAccount()
+    const { prices: veloPrices } = useVelodromePrices()
 
     const { data, loading, error } = useQuery<{ collateralTypes: QueryCollateralType[] }>(ALL_COLLATERAL_TYPES_QUERY)
     const {
@@ -140,106 +56,133 @@ export function useEarnStrategies() {
         {
             client: uniClient,
             variables: {
-                ids: ['0x146b020399769339509c98b7b353d19130c150ec'],
+                ids: Object.keys(REWARDS.uniswap),
                 address,
             },
         }
     )
+    const { data: veloData, loading: veloLoading, error: veloError } = useVelodrome()
+    const { data: veloPositions } = useVelodromePositions()
 
-    const strategies: Strategy[] = useMemo(() => {
-        let temp = [...dummyRows]
-
-        if (data?.collateralTypes.length) {
-            temp = temp.concat(
-                data.collateralTypes.map((cType) => {
-                    const { symbol } =
-                        tokenAssets[cType.id] ||
-                        Object.values(tokenAssets).find(({ name }) => name.toLowerCase() === cType.id.toLowerCase()) ||
-                        {}
-                    const cRewards = rewards[symbol] || DEFAULT_REWARDS
-                    // ((kite-daily-emission * kite-price + op-daily-emission * op-price) * 365) / (hai-debt-per-collateral * hai-redemption-price)
-                    // TODO: get KITE price
-                    const opPrice = parseFloat(
-                        liquidationData?.collateralLiquidationData['OP']?.currentPrice.value || '0'
-                    )
-                    const nominal =
-                        !liquidationData?.currentRedemptionPrice || !opPrice
-                            ? Infinity
-                            : ((cRewards.KITE * HARDCODED_KITE + cRewards.OP * opPrice) * 365) /
-                              (parseFloat(cType.debtAmount) *
-                                  parseFloat(liquidationData?.currentRedemptionPrice || '0'))
-                    const apy = nominal === Infinity ? 0 : Math.pow(1 + nominal / 12, 12) - 1
-                    return {
-                        pair: [symbol || 'HAI'],
-                        rewards: Object.entries(cRewards).map(([token, emission]) => ({ token, emission })),
-                        tvl: cType.debtAmount,
-                        vol24hr: '',
-                        apy,
-                        userPosition: list
-                            .reduce((total, { totalDebt, collateralName }) => {
-                                if (collateralName !== symbol) return total
-                                return total + parseFloat(totalDebt)
-                            }, 0)
-                            .toString(),
-                        userApy: apy,
-                    } as Strategy
-                })
-            )
+    const prices = useMemo(() => {
+        return {
+            HAI: parseFloat(liquidationData?.currentRedemptionPrice || '0'),
+            KITE: parseFloat(veloPrices?.KITE.raw || '0'),
+            VELO: parseFloat(veloPrices?.VELO.raw || '0'),
+            OP: parseFloat(liquidationData?.collateralLiquidationData['OP']?.currentPrice.value || '0'),
+            WETH: parseFloat(liquidationData?.collateralLiquidationData['WETH']?.currentPrice.value || '0'),
         }
+    }, [liquidationData?.currentRedemptionPrice, liquidationData?.collateralLiquidationData, veloPrices])
 
-        if (uniData?.liquidityPools.length) {
-            temp = temp.concat(
-                uniData.liquidityPools.map((pool) => {
-                    const uniRewards = {
-                        OP: 200,
-                        KITE: 30,
-                    }
+    const vaultStrategies = useMemo(() => {
+        return (
+            data?.collateralTypes.map((cType) => {
+                const { symbol } =
+                    tokenAssets[cType.id] ||
+                    Object.values(tokenAssets).find(({ name }) => name.toLowerCase() === cType.id.toLowerCase()) ||
+                    {}
+                const rewards = REWARDS.vaults[symbol as keyof typeof REWARDS.vaults] || REWARDS.default
+                const apy = calculateAPY(parseFloat(cType.debtAmount) * prices.HAI, prices, rewards)
+                return {
+                    pair: [symbol || 'HAI'],
+                    rewards: Object.entries(rewards).map(([token, emission]) => ({ token, emission })),
+                    tvl: cType.debtAmount,
+                    apy,
+                    userPosition: list
+                        .reduce((total, { totalDebt, collateralName }) => {
+                            if (collateralName !== symbol) return total
+                            return total + parseFloat(totalDebt)
+                        }, 0)
+                        .toString(),
+                } as Strategy
+            }) || []
+        )
+    }, [data?.collateralTypes, prices, list, tokenAssets])
 
-                    const haiPrice = parseFloat(liquidationData?.currentRedemptionPrice || '0')
-                    const tvlHAI = parseFloat(formatUnits(pool.inputTokenBalances[0], 18)) * haiPrice
-                    const wethPrice = parseFloat(
-                        liquidationData?.collateralLiquidationData['WETH']?.currentPrice.value || '0'
-                    )
-                    const tvlETH = parseFloat(formatUnits(pool.inputTokenBalances[1], 18)) * wethPrice
-                    const tvl = tvlHAI + tvlETH
-                    // ((kite-daily-emission * kite-price + op-daily-emission * op-price) * 365) / (hai-debt-per-collateral * hai-redemption-price)
-                    // TODO: get KITE price
-                    const opPrice = parseFloat(
-                        liquidationData?.collateralLiquidationData['OP']?.currentPrice.value || '0'
-                    )
-                    const nominal =
-                        !liquidationData?.currentRedemptionPrice || !opPrice
-                            ? Infinity
-                            : ((uniRewards.KITE * HARDCODED_KITE + uniRewards.OP * opPrice) * 365) / tvl
-                    const apy = nominal === Infinity ? 0 : Math.pow(1 + nominal / 12, 12) - 1
-                    return {
-                        pair: pool.inputTokens.map((token) => token.symbol) as any,
-                        rewards: Object.entries(uniRewards).map(([token, emission]) => ({ token, emission })) as any,
-                        tvl: tvl.toString(),
-                        vol24hr: '',
-                        apy,
-                        userPosition: (pool.positions || [])
-                            .reduce((total, { cumulativeDepositTokenAmounts, cumulativeWithdrawTokenAmounts }) => {
-                                const posHai =
-                                    parseFloat(formatUnits(cumulativeDepositTokenAmounts[0], 18)) -
-                                    parseFloat(formatUnits(cumulativeWithdrawTokenAmounts[0], 18))
-                                const posETH =
-                                    parseFloat(formatUnits(cumulativeDepositTokenAmounts[1], 18)) -
-                                    parseFloat(formatUnits(cumulativeWithdrawTokenAmounts[1], 18))
-                                return total + (posHai * haiPrice + posETH * wethPrice)
-                            }, 0)
-                            .toString(),
-                        userApy: apy,
-                        earnPlatform: 'uniswap',
-                        earnAddress: pool.id,
-                        earnLink: `https://info.uniswap.org/#/optimism/pools/${pool.id}`,
-                    } as Strategy
-                })
-            )
+    const uniStrategies = useMemo(() => {
+        if (!uniData?.liquidityPools.length) return []
+        const temp: Strategy[] = []
+        for (const pool of uniData.liquidityPools) {
+            const rewards = REWARDS.uniswap[pool.id.toLowerCase()]
+            if (!rewards) continue // sanity check
+
+            const tvl =
+                parseFloat(formatUnits(pool.inputTokenBalances[0], 18)) * prices.HAI +
+                parseFloat(formatUnits(pool.inputTokenBalances[1], 18)) * prices.WETH
+            const apy = calculateAPY(tvl, prices, rewards)
+            temp.push({
+                pair: pool.inputTokens.map((token) => token.symbol) as any,
+                rewards: Object.entries(rewards).map(([token, emission]) => ({ token, emission })) as any,
+                tvl: tvl.toString(),
+                apy,
+                userPosition: (pool.positions || [])
+                    .reduce((total, { cumulativeDepositTokenAmounts, cumulativeWithdrawTokenAmounts }) => {
+                        const posHai =
+                            parseFloat(formatUnits(cumulativeDepositTokenAmounts[0], 18)) -
+                            parseFloat(formatUnits(cumulativeWithdrawTokenAmounts[0], 18))
+                        const posETH =
+                            parseFloat(formatUnits(cumulativeDepositTokenAmounts[1], 18)) -
+                            parseFloat(formatUnits(cumulativeWithdrawTokenAmounts[1], 18))
+                        return total + (posHai * prices.HAI + posETH * prices.WETH)
+                    }, 0)
+                    .toString(),
+                earnPlatform: 'uniswap',
+                earnAddress: pool.id,
+                earnLink: `https://info.uniswap.org/#/optimism/pools/${pool.id}`,
+            } as Strategy)
         }
-
         return temp
-    }, [data?.collateralTypes, uniData?.liquidityPools, list, liquidationData])
+    }, [uniData?.liquidityPools, prices])
+
+    const veloStrategies = useMemo(() => {
+        if (!veloPrices || !veloData) return []
+        const temp: Strategy[] = []
+        for (const pool of veloData) {
+            const rewards = REWARDS.velodrome[pool.address.toLowerCase()]
+            if (!rewards) continue // filter out any extra pools that may be fetched
+
+            // daily_rewards = Lp. emissions * velo price * 86400
+            // tv1 =(Lp. reserve * token0 _price) + (Lp.reservel * token1 _price)
+            // staked_tvl = tvl * (Lp. gauge_total_supply / Lp.total_supply)
+            // apr = (daily_rewards / staked_tv1) * 365
+            const token0 =
+                Object.values(tokensData).find(({ address }) => stringsExistAndAreEqual(address, pool.token0))
+                    ?.symbol || pool.tokenPair[0]
+            const price0 = parseFloat((veloPrices as any)[token0]?.raw || '1')
+            const tvl0 = parseFloat(formatUnits(pool.staked0, pool.decimals)) * price0
+
+            const token1 =
+                Object.values(tokensData).find(({ address }) => stringsExistAndAreEqual(address, pool.token1))
+                    ?.symbol || pool.tokenPair[1]
+            const price1 = parseFloat((veloPrices as any)[token1]?.raw || '1')
+            const tvl1 = parseFloat(formatUnits(pool.staked1, pool.decimals)) * price1
+
+            const tvl = tvl0 + tvl1
+            const veloAPR = (365 * parseFloat(formatUnits(pool.emissions, pool.decimals)) * prices.VELO * 86400) / tvl
+            const apy = calculateAPY(tvl, prices, rewards) + veloAPR
+
+            temp.push({
+                pair: [token0, token1] as any,
+                rewards: Object.entries(rewards).map(([token, emission]) => ({ token, emission })) as any,
+                tvl: tvl.toString(),
+                apy,
+                userPosition: (veloPositions || [])
+                    .reduce((total, position) => {
+                        if (!stringsExistAndAreEqual(position.lp, pool.address)) return total
+                        return total + parseFloat(formatUnits(position.staked, pool.decimals))
+                    }, 0)
+                    .toString(),
+                earnPlatform: 'velodrome',
+                earnAddress: pool.address,
+                earnLink: `https://velodrome.finance/deposit?token0=${pool.token0}&token1=${pool.token1}&type=${pool.type}`,
+            })
+        }
+        return temp
+    }, [veloData, veloPrices, veloPositions, prices, tokensData])
+
+    const strategies = useMemo(() => {
+        return [...vaultStrategies, ...uniStrategies, ...veloStrategies]
+    }, [vaultStrategies, uniStrategies, veloStrategies])
 
     const [filterEmpty, setFilterEmpty] = useState(false)
 
@@ -296,11 +239,24 @@ export function useEarnStrategies() {
         headers: sortableHeaders,
         rows: sortedRows,
         rowsUnmodified: strategies,
-        loading: loading || uniLoading,
-        error: error?.message || uniError?.message,
+        loading: loading || uniLoading || veloLoading,
+        error: error?.message || uniError?.message || veloError,
         sorting,
         setSorting,
         filterEmpty,
         setFilterEmpty,
     }
+}
+
+const calculateAPY = (
+    tvl: number,
+    prices: { KITE: number; OP: number },
+    rewards: { KITE: number; OP: number } = REWARDS.default
+) => {
+    if (!tvl) return 0
+    if (!prices.KITE || !prices.OP) return 0
+
+    // ((kite-daily-emission * kite-price + op-daily-emission * op-price) * 365) / (hai-debt-per-collateral * hai-redemption-price)
+    const nominal = (365 * (rewards.KITE * prices.KITE + rewards.OP * prices.OP)) / tvl
+    return nominal === Infinity ? 0 : Math.pow(1 + nominal / 12, 12) - 1
 }

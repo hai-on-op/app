@@ -4,6 +4,7 @@ import { useAccount } from 'wagmi'
 
 import { LINK_TO_DISCORD, LINK_TO_DOCS, LINK_TO_TELEGRAM, LINK_TO_TWITTER, formatDataNumber } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
+import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { useMediaQuery, useOutsideClick } from '~/hooks'
 
@@ -46,6 +47,7 @@ export function Header({ tickerActive = false }: HeaderProps) {
         popupsModel: { toggleModal },
     } = useStoreActions((actions) => actions)
 
+    const { prices } = useVelodromePrices()
     const {
         data: { marketPrice, redemptionPrice, tokenAnalyticsData },
     } = useAnalytics()
@@ -68,13 +70,14 @@ export function Header({ tickerActive = false }: HeaderProps) {
         const arr = [
             ['HAI (MP)', marketPrice.formatted, '\u2022'],
             ['HAI (RP)', redemptionPrice.formatted, '\u2022'],
+            ['KITE', prices?.KITE.formatted || '$--', '\u2022'],
         ]
         tokenAnalyticsData.forEach(({ symbol, currentPrice }) => {
             const price = formatDataNumber(currentPrice.toString() || '0', 18, 2, true)
             arr.push([symbol, price, '\u2022'])
         })
         return arr.flat()
-    }, [tokenAnalyticsData, marketPrice, redemptionPrice])
+    }, [tokenAnalyticsData, marketPrice, redemptionPrice, prices?.KITE])
 
     const logoEl = useMemo(
         () =>

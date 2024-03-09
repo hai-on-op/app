@@ -3,14 +3,16 @@ import { BigNumber } from 'ethers'
 import { formatEther } from 'ethers/lib/utils'
 
 import type { IAuction } from '~/types'
-import { HARDCODED_KITE, formatNumberWithStyle, getAuctionStatus, parseRemainingTime, tokenMap } from '~/utils'
+import { formatNumberWithStyle, getAuctionStatus, parseRemainingTime, tokenMap } from '~/utils'
 import { useStoreState } from '~/store'
+import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 
 export function useAuction(auction: IAuction, timeEl?: HTMLElement | null) {
     const {
         auctionModel: { auctionsData },
         vaultModel: { liquidationData },
     } = useStoreState((state) => state)
+    const { prices } = useVelodromePrices()
 
     const [refresher, forceTimeRefresh] = useReducer((x) => x + 1, 0)
 
@@ -80,12 +82,16 @@ export function useAuction(auction: IAuction, timeEl?: HTMLElement | null) {
             case 'HAI':
                 return liquidationData?.currentRedemptionPrice || '0'
             case 'KITE':
-                // TODO: get KITE price
-                return HARDCODED_KITE.toString()
+                return prices?.KITE.raw || '0'
             default:
                 return liquidationData?.collateralLiquidationData[sellToken]?.currentPrice.value || '0'
         }
-    }, [sellToken, liquidationData?.currentRedemptionPrice, liquidationData?.collateralLiquidationData])
+    }, [
+        sellToken,
+        prices?.KITE.raw,
+        liquidationData?.currentRedemptionPrice,
+        liquidationData?.collateralLiquidationData,
+    ])
 
     const remainingToSell = useMemo(() => {
         if (auction.englishAuctionType !== 'COLLATERAL') return undefined

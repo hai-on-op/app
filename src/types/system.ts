@@ -24,10 +24,8 @@ export type Strategy = {
     pair: [TokenKey] | [TokenKey, TokenKey]
     rewards: [EarnStrategyReward] | [EarnStrategyReward, EarnStrategyReward]
     tvl: string
-    vol24hr?: string
     apy: number
     userPosition?: string
-    userApy?: number
 } & (
     | {
           earnPlatform?: undefined

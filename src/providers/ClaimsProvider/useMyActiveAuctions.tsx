@@ -11,9 +11,9 @@ import {
     formatSummaryValue,
     getAuctionStatus,
     stringExistsAndMatchesOne,
-    HARDCODED_KITE,
 } from '~/utils'
 import { useStoreState } from '~/store'
+import { useVelodromePrices } from '../VelodromePriceProvider'
 
 export type FormattedQueryAuctionBid = Omit<QueryEnglishAuctionBid, 'auction'> & {
     auction?: IAuction
@@ -27,6 +27,7 @@ export function useMyActiveAuctions() {
         vaultModel: { liquidationData },
         connectWalletModel: { proxyAddress },
     } = useStoreState((state) => state)
+    const { prices } = useVelodromePrices()
 
     const { data, loading, error, refetch } = useQuery<{ englishAuctionBids: QueryEnglishAuctionBid[] }>(
         MY_AUCTION_BIDS_QUERY,
@@ -66,14 +67,13 @@ export function useMyActiveAuctions() {
                 case 'DEBT':
                     return total + parseFloat(buyAmount) * parseFloat(currentRedemptionPrice)
                 case 'SURPLUS':
-                    // TODO: get KITE price
-                    return total + parseFloat(buyAmount) * HARDCODED_KITE
+                    return total + parseFloat(buyAmount) * parseFloat(prices?.KITE.raw || '0')
                 default:
                     return total
             }
         }, 0)
         return formatSummaryValue(value.toString(), { style: 'currency' })!
-    }, [activeBids, liquidationData])
+    }, [activeBids, liquidationData, prices?.KITE.raw])
 
     const claimableAuctions: FormattedQueryAuctionBid[] = useMemo(() => {
         return (
@@ -92,8 +92,7 @@ export function useMyActiveAuctions() {
             const { currentRedemptionPrice = '0' } = liquidationData || {}
             switch (auction.englishAuctionType) {
                 case 'DEBT':
-                    // TODO: get KITE price
-                    return total + parseFloat(sellAmount) * HARDCODED_KITE
+                    return total + parseFloat(sellAmount) * parseFloat(prices?.KITE.raw || '0')
                 case 'SURPLUS':
                     return total + parseFloat(sellAmount) * parseFloat(currentRedemptionPrice)
                 default:
@@ -101,7 +100,7 @@ export function useMyActiveAuctions() {
             }
         }, 0)
         return formatSummaryValue(winnings.toString(), { style: 'currency' })!
-    }, [claimableAuctions, liquidationData])
+    }, [claimableAuctions, liquidationData, prices?.KITE.raw])
 
     return {
         bids: formattedAuctionBids,
