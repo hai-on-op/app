@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Geb } from '@hai-on-op/sdk'
 import { useAccount } from 'wagmi'
 
-import { EMPTY_ADDRESS, getNetworkName, formatNumber } from '~/utils'
+import { EMPTY_ADDRESS, getNetworkName, formatNumber, NETWORK_ID } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { useEthersSigner, usePublicProvider } from './useEthersAdapters'
 
@@ -14,11 +14,9 @@ export function useGeb(): Geb {
     const signer = useEthersSigner()
     useEffect(() => {
         if (!signer) return
-        signer.getChainId().then((chainId) => {
-            const networkName = getNetworkName(chainId)
-            const geb = new Geb(networkName, signer)
-            setState(geb)
-        })
+        const networkName = getNetworkName(NETWORK_ID)
+        const geb = new Geb(networkName, signer)
+        setState(geb)
     }, [signer])
 
     return state as Geb
@@ -28,8 +26,7 @@ export function useGeb(): Geb {
 export function usePublicGeb(): Geb {
     const provider = usePublicProvider()
     const publicGeb = useMemo(() => {
-        const chainId = provider.network.chainId
-        const networkName = getNetworkName(chainId)
+        const networkName = getNetworkName(NETWORK_ID)
         return new Geb(networkName, provider)
     }, [provider])
     return publicGeb

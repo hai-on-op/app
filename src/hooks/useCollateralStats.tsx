@@ -116,7 +116,7 @@ export function useCollateralStats() {
     const rows: CollateralStatWithInfo[] = useMemo(() => {
         return Object.entries(collateralStats || {}).map(([token, stat]) => {
             const { stabilityFee: sfBN } = tokenAnalyticsData.find(({ symbol }) => symbol === token) || {}
-            const stabilityFee = transformToAnnualRate(sfBN?.toString() || '0', 27, true) as number
+            const stabilityFee = sfBN ? (transformToAnnualRate(sfBN.toString(), 27, true) as number) : 0
             return {
                 token,
                 ...stat,

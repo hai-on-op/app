@@ -10,7 +10,6 @@ import {
     NETWORK_ID,
     // SYSTEM_STATUS,
     ActionState,
-    ChainId,
     blockedAddresses,
     getNetworkName,
     isAddress,
@@ -40,8 +39,7 @@ export function Shared({ children }: Props) {
     const { address: account } = useAccount()
     const previousAccount = usePrevious(account)
     const { chain } = useNetwork()
-    const chainId = chain?.id || NETWORK_ID
-    const networkName = getNetworkName(chainId)
+    const networkName = getNetworkName(NETWORK_ID)
     const signer = useEthersSigner()
     const publicGeb = usePublicGeb()
     const geb = useGeb()
@@ -83,11 +81,11 @@ export function Shared({ children }: Props) {
 
         signer.getBalance().then((balance) => {
             connectWalletActions.updateEthBalance({
-                chainId: chain?.id || NETWORK_ID,
+                chainId: NETWORK_ID,
                 balance: Number(utils.formatEther(balance)),
             })
         })
-    }, [account, signer, connectWalletState, connectWalletActions, chain?.id])
+    }, [account, signer, connectWalletState, connectWalletActions])
 
     useEffect(() => {
         if (!connectWalletState) return
@@ -130,7 +128,7 @@ export function Shared({ children }: Props) {
 
     useEffect(() => {
         connectWalletActions.setTokensData(publicGeb?.tokenList)
-    }, [publicGeb?.tokenList, connectWalletActions])
+    }, [publicGeb?.tokenList, connectWalletActions, chain?.id])
 
     useEffect(() => {
         connectWalletActions.fetchFiatPrice()
@@ -162,7 +160,7 @@ export function Shared({ children }: Props) {
             if (userProxy?.proxyAddress && userProxy.proxyAddress !== EMPTY_ADDRESS) {
                 connectWalletActions.setProxyAddress(userProxy.proxyAddress)
             }
-            const txs = localStorage.getItem(`${account}-${chain.id}`)
+            const txs = localStorage.getItem(`${account}-${NETWORK_ID}`)
             if (txs) {
                 transactionsActions.setTransactions(JSON.parse(txs))
             }
@@ -182,7 +180,7 @@ export function Shared({ children }: Props) {
                     address: address ? address : (account as string),
                     geb,
                     tokensData: geb.tokenList,
-                    chainId,
+                    chainId: NETWORK_ID,
                 })
             }
         } catch (error: any) {
@@ -215,8 +213,7 @@ export function Shared({ children }: Props) {
 
     const networkChecker = useCallback(() => {
         accountChange()
-        const id: ChainId = chainId
-        if (chain?.id !== id) {
+        if (chain?.id !== NETWORK_ID) {
             popupsActions.setIsInitializing(false)
             connectWalletActions.setIsWrongNetwork(true)
         } else {
@@ -228,7 +225,7 @@ export function Shared({ children }: Props) {
                 popupsActions.setIsInitializing(false)
             }
         }
-    }, [accountChange, accountChecker, account, chainId, chain?.id, geb, connectWalletActions, popupsActions])
+    }, [accountChange, accountChecker, account, chain?.id, geb, connectWalletActions, popupsActions])
 
     useEffect(() => {
         networkChecker()
