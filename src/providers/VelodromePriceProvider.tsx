@@ -74,7 +74,7 @@ export function VelodromePriceProvider({ children }: Props) {
                     },
                     {} as VelodromePriceContext['prices']
                 )
-                console.log(formattedPrices)
+                // console.log(formattedPrices)
                 setPrices(formattedPrices)
             } catch (error: any) {
                 console.error(error)

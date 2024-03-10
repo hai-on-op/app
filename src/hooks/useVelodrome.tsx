@@ -97,7 +97,8 @@ export function useVelodrome() {
 export type VelodromeLpPosition = {
     lp: string
     liquidity: string
-    staked: string
+    staked0: string
+    staked1: string
     emissions_earned: string
 }
 
@@ -128,11 +129,11 @@ export function useVelodromePositions() {
                     // id: position[0], // - NFT ID on CL pools, 0 on v2 pools
                     lp: position[1], // - Lp address
                     liquidity: position[2].toString(), // - liquidity amount on CL, deposited LP tokens on v2
-                    staked: position[3].toString(), // - staked/unstaked liquidity amount on CL, amount of staked tokens on v2
+                    // staked: position[3].toString(), // - staked/unstaked liquidity amount on CL, amount of staked tokens on v2
                     // amount0: position[4].toString(), // - amount of unstaked token0 in the position
                     // amount1: position[5].toString(), // - amount of unstaked token1 in the position
-                    // staked0: position[6].toString(), // - amount of staked token0 in the position
-                    // staked1: position[7].toString(), // - amount of staked token1 in the position
+                    staked0: position[6].toString(), // - amount of staked token0 in the position
+                    staked1: position[7].toString(), // - amount of staked token1 in the position
                     // unstaked_earned0: position[8].toString(), // - unstaked token0 fees earned
                     // unstaked_earned1: position[9].toString(), // - unstaked token1 fees earned
                     emissions_earned: position[10].toString(), // - emissions earned from staked position

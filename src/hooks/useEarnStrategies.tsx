@@ -68,7 +68,8 @@ export function useEarnStrategies() {
         return {
             HAI: parseFloat(liquidationData?.currentRedemptionPrice || '0'),
             KITE: parseFloat(veloPrices?.KITE.raw || '0'),
-            VELO: parseFloat(veloPrices?.VELO.raw || '0'),
+            // hardcoding VELO price at $0.10 for now, TODO: update
+            VELO: parseFloat(veloPrices?.VELO.raw || '0.1'),
             OP: parseFloat(liquidationData?.collateralLiquidationData['OP']?.currentPrice.value || '0'),
             WETH: parseFloat(liquidationData?.collateralLiquidationData['WETH']?.currentPrice.value || '0'),
         }
@@ -169,7 +170,11 @@ export function useEarnStrategies() {
                 userPosition: (veloPositions || [])
                     .reduce((total, position) => {
                         if (!stringsExistAndAreEqual(position.lp, pool.address)) return total
-                        return total + parseFloat(formatUnits(position.staked, pool.decimals))
+                        return (
+                            total +
+                            parseFloat(formatUnits(position.staked0, pool.decimals)) * price0 +
+                            parseFloat(formatUnits(position.staked1, pool.decimals)) * price1
+                        )
                     }, 0)
                     .toString(),
                 earnPlatform: 'velodrome',
