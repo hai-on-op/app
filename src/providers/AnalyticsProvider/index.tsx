@@ -2,9 +2,10 @@ import { createContext, useContext } from 'react'
 
 import type { ReactChildren } from '~/types'
 import { Timeframe } from '~/utils'
-import { HistoricalStatsReturn, useHistoricalStats } from './useHistoricalStats'
-import { DEFAULT_ANALYTICS_DATA, GebAnalyticsData, useGebAnalytics } from './useGebAnalytics'
-import { SystemData, useSystemData } from './useSystemData'
+import { type HistoricalStatsReturn, useHistoricalStats } from './useHistoricalStats'
+import { DEFAULT_ANALYTICS_DATA, type GebAnalyticsData, useGebAnalytics } from './useGebAnalytics'
+import { type SystemData, useSystemData } from './useSystemData'
+import { type PoolAnalytics, usePoolAnalytics } from './usePoolAnalytics'
 
 type AnalyticsContext = {
     forceRefresh: () => void
@@ -13,6 +14,7 @@ type AnalyticsContext = {
     graphSummary?: SystemData['summary']
     haiPriceHistory: HistoricalStatsReturn
     redemptionRateHistory: HistoricalStatsReturn
+    pools: PoolAnalytics
 }
 
 const defaultState: AnalyticsContext = {
@@ -32,6 +34,12 @@ const defaultState: AnalyticsContext = {
         error: undefined,
         data: undefined,
     },
+    pools: {
+        uniPools: [],
+        veloPools: [],
+        loading: false,
+        error: '',
+    },
 }
 
 const AnalyticsContext = createContext<AnalyticsContext>(defaultState)
@@ -50,6 +58,8 @@ export function AnalyticsProvider({ children }: Props) {
 
     const redemptionRateHistory = useHistoricalStats()
 
+    const pools = usePoolAnalytics()
+
     return (
         <AnalyticsContext.Provider
             value={{
@@ -59,6 +69,7 @@ export function AnalyticsProvider({ children }: Props) {
                 graphSummary,
                 haiPriceHistory,
                 redemptionRateHistory,
+                pools,
             }}
         >
             {children}

@@ -372,6 +372,7 @@ export type QueryAuctionRestarts = {
 
 export type QueryLiquidityPool = {
     id: string // Address of pool
+    name: string // Name of pool
     inputTokens: {
         symbol: string
     }[]

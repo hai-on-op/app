@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { formatEther, formatUnits } from 'ethers/lib/utils'
 
 import { formatNumberWithStyle, getRatePercentage } from '~/utils'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
@@ -24,15 +25,13 @@ import { PieChart } from '~/components/Charts/Pie'
 import { Legend } from '~/components/Charts/Legend'
 import { ComingSoon } from '~/components/ComingSoon'
 
-const poolPieDataBase = [
-    {
-        id: 'HAI in Liquidity Pools',
-        color: 'hsl(49, 84%, 68%)',
-    },
-    {
-        id: 'UniV3 Pool',
-        color: 'hsl(115, 70%, 84%)',
-    },
+const colors = [
+    'hsl(49, 84%, 68%)', // yellowish
+    'hsl(115, 70%, 84%)', // greenish
+    'hsl(313, 100%, 88%)', // pinkish
+    'hsl(232, 64%, 84%)', // blueish
+    'hsl(16, 100%, 84%)', // orangeish
+    'hsl(0, 100%, 74%)', // reddish
 ]
 
 export function Numbers() {
@@ -41,6 +40,7 @@ export function Numbers() {
         graphSummary,
         haiPriceHistory,
         redemptionRateHistory,
+        pools,
     } = useAnalytics()
 
     const haiPriceData = useMemo(() => {
@@ -81,14 +81,47 @@ export function Numbers() {
 
     const [convertPieToUSD, setConvertPieToUSD] = useState(true)
 
-    const poolPieData = useMemo(() => {
-        return poolPieDataBase.map((pool) => ({
-            ...pool,
-            value: 1,
-        }))
-    }, [])
-
     const isUpToSmall = useMediaQuery('upToSmall')
+
+    const [poolPieData, totalHaiInPools] = useMemo(() => {
+        let total = 0
+        const data: { id: string; color: string; value: number }[] = []
+        let colorIndex = 0
+
+        const uniLabel = isUpToSmall ? 'UniV3' : 'Uniswap V3 Pool'
+        for (const pool of pools.uniPools) {
+            const indexOfToken = pool.inputTokens.findIndex(({ symbol }) => symbol === 'HAI')
+            if (indexOfToken < 0) continue // sanity check
+            const hai = parseFloat(formatEther(pool.inputTokenBalances[indexOfToken]))
+            total += hai
+            data.push({
+                id: `${uniLabel} - ${pool.inputTokens[0].symbol}/${pool.inputTokens[1].symbol} (${pool.name.slice(
+                    pool.name.lastIndexOf(' ') + 1,
+                    pool.name.length
+                )})`,
+                color: colors[colorIndex % colors.length],
+                value: hai,
+            })
+            colorIndex++
+        }
+
+        const veloLabel = isUpToSmall ? 'Velo' : 'Velodrome Pool'
+        for (const pool of pools.veloPools) {
+            if (!pool.tokenPair.includes('HAI')) continue
+            const hai = parseFloat(
+                formatUnits(pool.tokenPair[0] === 'HAI' ? pool.reserve0 : pool.reserve1, pool.decimals)
+            )
+            total += hai
+            data.push({
+                id: `${veloLabel} - ${pool.tokenPair.join('/')}`,
+                color: colors[colorIndex % colors.length],
+                value: hai,
+            })
+            colorIndex++
+        }
+
+        return [data, total]
+    }, [pools.uniPools, pools.veloPools, isUpToSmall])
 
     return (
         <Container>
@@ -250,38 +283,17 @@ export function Numbers() {
                         <SectionInnerHeader>
                             <Stat
                                 stat={{
-                                    header: (
-                                        <ComingSoon $justify="flex-start" $fontSize="1.2rem">
-                                            {convertPieToUSD
-                                                ? formatNumberWithStyle(
-                                                      poolPieData[0].value * parseFloat(redemptionPrice.raw),
-                                                      {
-                                                          maxDecimals: 2,
-                                                          style: 'currency',
-                                                      }
-                                                  )
-                                                : formatNumberWithStyle(poolPieData[0].value, { maxDecimals: 0 })}
-                                        </ComingSoon>
-                                    ),
+                                    header: convertPieToUSD
+                                        ? formatNumberWithStyle(totalHaiInPools * parseFloat(redemptionPrice.raw), {
+                                              maxDecimals: 0,
+                                              style: 'currency',
+                                          })
+                                        : formatNumberWithStyle(totalHaiInPools, { maxDecimals: 0 }),
                                     label: 'HAI in Liquidity Pools',
                                     tooltip: `Amount of HAI locked in tracked liquidity pools`,
                                 }}
                                 unbordered
                             />
-                            {/* <Stat
-                                stat={{
-                                    header: (
-                                        <ComingSoon $justify="flex-start" $fontSize="1.2rem">
-                                            {`$${dummyPieData[1].value.toLocaleString('en-US', {
-                                                maximumFractionDigits: 2,
-                                            })}`}
-                                        </ComingSoon>
-                                    ),
-                                    label: 'UNIv3 Pool',
-                                    tooltip: 'Hello world',
-                                }}
-                                unbordered
-                            /> */}
                             <Stat
                                 stat={{
                                     header: (
@@ -307,17 +319,16 @@ export function Numbers() {
                         <PieChart
                             data={poolPieData}
                             valueFormat={
-                                // convertPieToUSD
-                                //     ? (value) => {
-                                //           return formatNumberWithStyle(value * parseFloat(redemptionPrice.raw), {
-                                //               maxDecimals: 2,
-                                //               style: 'currency',
-                                //           })
-                                //       }
-                                //     : (value) => {
-                                //           return `${formatNumberWithStyle(value, { maxDecimals: 0 })} HAI`
-                                //       }
-                                convertPieToUSD ? () => '$--' : () => '-- HAI'
+                                convertPieToUSD
+                                    ? (value) => {
+                                          return formatNumberWithStyle(value * parseFloat(redemptionPrice.raw), {
+                                              maxDecimals: 2,
+                                              style: 'currency',
+                                          })
+                                      }
+                                    : (value) => {
+                                          return `${formatNumberWithStyle(value, { maxDecimals: 0 })} HAI`
+                                      }
                             }
                         />
                         <Legend $column data={poolPieData} style={{ top: 'calc(50% - 96px)' }} />

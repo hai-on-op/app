@@ -309,6 +309,7 @@ export const OPTIMISM_UNISWAP_POOL_QUERY = gql`
             }
         ) {
             id
+            name
             inputTokens {
                 symbol
             }
@@ -326,6 +327,7 @@ export const OPTIMISM_UNISWAP_POOL_WITH_POSITION_QUERY = gql`
             }
         ) {
             id
+            name
             inputTokens {
                 symbol
             }
