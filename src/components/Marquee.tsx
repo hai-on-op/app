@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 import type { ReactChildren } from '~/types'
 
@@ -28,13 +28,23 @@ export function Marquee({
 
     const [chunk, setChunk] = useState<HTMLDivElement | null>(null)
 
-    const chunkWidth: number | undefined = useMemo(() => {
-        if (staticWidth) return staticWidth + spacing
-        if (!text) return undefined
-        if (!chunk) return undefined
+    const [chunkWidth, setChunkWidth] = useState<number>()
+    useEffect(() => {
+        if (staticWidth) setChunkWidth(staticWidth + spacing)
+        if (!text) setChunkWidth(undefined)
+        if (!chunk) setChunkWidth(undefined)
 
-        const { width } = chunk.getBoundingClientRect()
-        return width + spacing
+        const onResize = () => {
+            if (!chunk) return
+            const { width } = chunk.getBoundingClientRect()
+            setChunkWidth(width + spacing)
+        }
+        onResize()
+        window.addEventListener('resize', onResize)
+
+        return () => {
+            window.removeEventListener('resize', onResize)
+        }
     }, [chunk, text, spacing, staticWidth])
 
     const [repeat, setRepeat] = useState(1)

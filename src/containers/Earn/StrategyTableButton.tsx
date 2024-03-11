@@ -8,7 +8,6 @@ import { Link } from '~/components/Link'
 import uniswapLogo from '~/assets/uniswap-icon.svg'
 import velodromeLogo from '~/assets/velodrome-img.svg'
 
-// TODO: update links
 const platformMap: Record<
     string,
     {

@@ -129,7 +129,6 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
                 .wadToFixed(sellAmountBN.mul(100).div(parseEther(bidDecrease)).mul(gebUtils.WAD).div(100))
                 .toString()
         }
-        // TODO: check those calcs
         // Auction restart (no bids and passed the dealine)
         // When doing restart we're allowed to accept more FLX, DEBT_amountSoldIncrease=1.2
         const numerator = sellAmountBN.mul(parseWadAmount(bidDecrease))
