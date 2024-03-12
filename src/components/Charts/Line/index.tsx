@@ -27,8 +27,18 @@ const formatMap: Record<Timeframe, { format: string; tickValues: number }> = {
 
 type LineChartProps = LineProps & {
     timeframe: Timeframe
+    formatY?: (value: string | number) => string
 }
-export function LineChart({ data, timeframe, axisBottom, xScale, axisRight, yScale, ...props }: LineChartProps) {
+export function LineChart({
+    data,
+    timeframe,
+    formatY,
+    axisBottom,
+    xScale,
+    axisRight,
+    yScale,
+    ...props
+}: LineChartProps) {
     const { format, tickValues } = formatMap[timeframe]
 
     return (
@@ -96,7 +106,7 @@ export function LineChart({ data, timeframe, axisBottom, xScale, axisRight, ySca
                                 const time = new Date(value).getTime() / 1000
                                 return dayjs.unix(time).format(format)
                             }}
-                            formatY={axisRight?.format as any}
+                            formatY={(formatY || axisRight?.format) as any}
                         />
                     ))
                 },

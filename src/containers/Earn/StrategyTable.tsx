@@ -71,9 +71,7 @@ export function StrategyTable({ headers, rows, loading, error, sorting, setSorti
                                                     </Flex>
                                                 ))}
                                                 {earnPlatform === 'uniswap' && (
-                                                    <Text $fontSize="0.8em">
-                                                        Incentives are for full-range only
-                                                    </Text>
+                                                    <Text $fontSize="0.8em">Incentives are for full-range only</Text>
                                                 )}
                                                 {earnPlatform === 'velodrome' && (
                                                     <Text $fontSize="0.8em">

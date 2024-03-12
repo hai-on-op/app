@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { formatEther, formatUnits } from 'ethers/lib/utils'
 
-import { formatNumberWithStyle, getRatePercentage } from '~/utils'
+import { formatNumberWithStyle, getRatePercentage, stringsExistAndAreEqual } from '~/utils'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { useMediaQuery } from '~/hooks'
 
@@ -36,33 +36,63 @@ const colors = [
 
 export function Numbers() {
     const {
-        data: { erc20Supply, marketPrice, redemptionPrice, annualRate, pRate, iRate, surplusInTreasury },
+        data: {
+            erc20Supply,
+            marketPrice,
+            redemptionPrice,
+            annualRate,
+            pRate,
+            iRate,
+            surplusInTreasury,
+            tokenAnalyticsData,
+        },
         graphSummary,
         haiPriceHistory,
         redemptionRateHistory,
         pools,
     } = useAnalytics()
 
-    const haiPriceData = useMemo(() => {
+    const haiMarketPrice = useMemo(() => {
+        if (!pools.uniPrice) return marketPrice.raw
+        const collateral = tokenAnalyticsData.find((data) =>
+            stringsExistAndAreEqual(data.tokenContract, pools.uniPrice?.token1)
+        )
+        if (!collateral) return marketPrice.raw
+        return (parseFloat(pools.uniPrice.token0Price) * parseFloat(formatEther(collateral.currentPrice))).toString()
+    }, [pools.uniPrice, tokenAnalyticsData, marketPrice.raw])
+
+    const [haiPriceData, haiPriceMin, haiPriceMax] = useMemo(() => {
         const data = haiPriceHistory.data?.dailyStats || haiPriceHistory.data?.hourlyStats || []
-        return [
+        const minAndMax = { min: Infinity, max: 0 }
+        const priceData = [
             {
                 id: 'Market Price',
                 color: 'hsl(49, 84%, 68%)',
-                data: data.map(({ timestamp, marketPriceUsd }) => ({
-                    x: new Date(Number(timestamp) * 1000),
-                    y: parseFloat(marketPriceUsd),
-                })),
+                data: data.map(({ timestamp, marketPriceUsd }) => {
+                    const val = parseFloat(marketPriceUsd)
+                    if (val < minAndMax.min) minAndMax.min = val
+                    if (val > minAndMax.max) minAndMax.max = val
+                    return {
+                        x: new Date(Number(timestamp) * 1000),
+                        y: val,
+                    }
+                }),
             },
             {
                 id: 'Redemption Price',
                 color: 'hsl(115, 70%, 84%)',
-                data: data.map(({ timestamp, redemptionPrice }) => ({
-                    x: new Date(Number(timestamp) * 1000),
-                    y: parseFloat(redemptionPrice.value),
-                })),
+                data: data.map(({ timestamp, redemptionPrice }) => {
+                    const val = parseFloat(redemptionPrice.value)
+                    if (val < minAndMax.min) minAndMax.min = val
+                    if (val > minAndMax.max) minAndMax.max = val
+                    return {
+                        x: new Date(Number(timestamp) * 1000),
+                        y: val,
+                    }
+                }),
             },
         ]
+        return [priceData, minAndMax.min, minAndMax.max]
     }, [haiPriceHistory])
 
     const redemptionRateData = useMemo(() => {
@@ -168,7 +198,26 @@ export function Numbers() {
                         <SectionInnerHeader>
                             <PriceDisplay
                                 token="HAI"
-                                price={marketPrice.formatted}
+                                // price={haiPriceData[0].data[0]?.y
+                                //     ? formatNumberWithStyle(haiPriceData[0].data[0]?.y, {
+                                //         minDecimals: 4,
+                                //         maxDecimals: 4,
+                                //         minSigFigs: 2,
+                                //         maxSigFigs: 4,
+                                //         style: 'currency',
+                                //     })
+                                //     : marketPrice.formatted}
+                                price={
+                                    haiMarketPrice
+                                        ? formatNumberWithStyle(haiMarketPrice, {
+                                              minDecimals: 4,
+                                              maxDecimals: 4,
+                                              minSigFigs: 2,
+                                              maxSigFigs: 4,
+                                              style: 'currency',
+                                          })
+                                        : marketPrice.formatted
+                                }
                                 label="$HAI Market Price"
                                 tooltip={`Time-weighted average HAI market price derived from UniV3 HAI/WETH pool and Chainlink WETH/USD feed.`}
                             />
@@ -199,9 +248,18 @@ export function Numbers() {
                             timeframe={haiPriceHistory.timeframe}
                             yScale={{
                                 type: 'linear',
-                                // min: 0.9,
-                                // max: 1.1
+                                min: Math.floor(10 * haiPriceMin) / 10,
+                                max: Math.ceil(10 * haiPriceMax) / 10,
                             }}
+                            formatY={(value: string | number) =>
+                                formatNumberWithStyle(value, {
+                                    minDecimals: 4,
+                                    maxDecimals: 4,
+                                    minSigFigs: 2,
+                                    maxSigFigs: 4,
+                                    style: 'currency',
+                                })
+                            }
                             axisRight={{
                                 format: (value) =>
                                     formatNumberWithStyle(value, {
