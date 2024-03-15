@@ -1,5 +1,7 @@
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
+import { BigNumber } from 'ethers'
 import { useAccount, useNetwork } from 'wagmi'
 
 import { NETWORK_ID, DEFAULT_VAULT_DATA, ActionState, VaultAction } from '~/utils'
@@ -11,7 +13,6 @@ import styled from 'styled-components'
 import { HaiButton, Text } from '~/styles'
 import { TransactionSummary } from '~/components/TransactionSummary'
 import { ModalBody, ModalFooter } from '../index'
-import { useMemo } from 'react'
 
 type ConfirmProps = {
     onClose?: () => void
@@ -92,11 +93,19 @@ export function Confirm({ onClose }: ConfirmProps) {
                 }
                 case VaultAction.DEPOSIT_REPAY: {
                     if (!singleVault) throw new Error('Vault marked for modification, but no vault is selected')
-                    await vaultActions.depositAndRepay({
-                        vaultData,
-                        signer,
-                        vaultId: singleVault.id,
-                    })
+                    if (BigNumber.from(vaultData.deposit).isZero()) {
+                        await vaultActions.repayAndWithdraw({
+                            vaultData,
+                            signer,
+                            vaultId: singleVault.id,
+                        })
+                    } else {
+                        await vaultActions.depositAndRepay({
+                            vaultData,
+                            signer,
+                            vaultId: singleVault.id,
+                        })
+                    }
                     break
                 }
                 case VaultAction.WITHDRAW_REPAY: {
