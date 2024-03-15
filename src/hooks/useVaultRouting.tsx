@@ -54,8 +54,6 @@ export function useVaultRouting(address?: string) {
                 vaultActions.setVaultData({
                     ...DEFAULT_VAULT_DATA,
                     collateral: symbols.includes(collateral) ? collateral : 'WETH',
-                    // TODO: remove after WSTETH is figured out
-                    // collateral: collateral === 'WSTETH' ? 'WETH' : symbols.includes(collateral) ? collateral : 'WETH',
                 })
                 break
             }
