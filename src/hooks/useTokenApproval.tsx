@@ -69,12 +69,14 @@ export function useTokenApproval(
         // Format the amount to 18 decimals
         const approvalAmount = ethers.utils.parseEther(formattedAmount).mul(tokenDecimals).div(decimals18)
 
+        // always approve a slightly higher amount just in case
+        return approvalAmount.mul(101).div(100)
         // Add 1% to the approval amount in case that the debt increses
-        if (isRepayAll) {
-            return approvalAmount.mul(101).div(100)
-        } else {
-            return approvalAmount
-        }
+        // if (isRepayAll) {
+        //     return approvalAmount.mul(101).div(100)
+        // } else {
+        //     return approvalAmount
+        // }
     }, [amount, tokenDecimals, isRepayAll])
 
     // check the current approval status
