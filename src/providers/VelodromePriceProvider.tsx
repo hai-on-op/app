@@ -8,7 +8,7 @@ import { formatUnits } from 'ethers/lib/utils'
 
 const oracleContractAddress = '0x395942c2049604a314d39f370dfb8d87aac89e16'
 const priceAddresses = {
-    VELO: '0x3c8b650257cfb5f272f799f5e2b4e65093a11a05',
+    VELO: '0x9560e827af36c94d2ac33a39bce1fe78631088db',
     HAI: '0x10398AbC267496E49106B07dd6BE13364D10dC71',
     SUSD: '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9',
     KITE: '0xf467C7d5a4A9C4687fFc7986aC6aD5A4c81E1404',

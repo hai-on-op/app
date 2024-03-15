@@ -68,8 +68,7 @@ export function useEarnStrategies() {
         return {
             HAI: parseFloat(liquidationData?.currentRedemptionPrice || '0'),
             KITE: parseFloat(veloPrices?.KITE.raw || '0'),
-            // hardcoding VELO price at $0.10 for now, TODO: update
-            VELO: parseFloat(veloPrices?.VELO.raw || '0.1'),
+            VELO: parseFloat(veloPrices?.VELO.raw || '0'),
             OP: parseFloat(liquidationData?.collateralLiquidationData['OP']?.currentPrice.value || '0'),
             WETH: parseFloat(liquidationData?.collateralLiquidationData['WETH']?.currentPrice.value || '0'),
         }
@@ -160,7 +159,7 @@ export function useEarnStrategies() {
 
             const tvl = tvl0 + tvl1
             const veloAPR = (365 * parseFloat(formatUnits(pool.emissions, pool.decimals)) * prices.VELO * 86400) / tvl
-            const apy = calculateAPY(tvl, prices, rewards) + veloAPR
+            const apy = veloAPR === Infinity ? 0 : Math.pow(1 + veloAPR / 12, 12) - 1
 
             temp.push({
                 pair: [token0, token1] as any,
