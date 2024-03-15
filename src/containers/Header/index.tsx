@@ -47,7 +47,8 @@ export function Header({ tickerActive = false }: HeaderProps) {
     } = useStoreActions((actions) => actions)
 
     const {
-        data: { marketPrice, redemptionPrice, tokenAnalyticsData },
+        data: { redemptionPrice, tokenAnalyticsData },
+        haiMarketPrice,
     } = useAnalytics()
 
     const [dropdownActive, setDropdownActive] = useState(false)
@@ -66,7 +67,7 @@ export function Header({ tickerActive = false }: HeaderProps) {
 
     const tickerText = useMemo(() => {
         const arr = [
-            ['HAI (MP)', marketPrice.formatted, '\u2022'],
+            ['HAI (MP)', haiMarketPrice.formatted, '\u2022'],
             ['HAI (RP)', redemptionPrice.formatted, '\u2022'],
         ]
         tokenAnalyticsData.forEach(({ symbol, currentPrice }) => {
@@ -74,7 +75,7 @@ export function Header({ tickerActive = false }: HeaderProps) {
             arr.push([symbol, price, '\u2022'])
         })
         return arr.flat()
-    }, [tokenAnalyticsData, marketPrice, redemptionPrice])
+    }, [tokenAnalyticsData, haiMarketPrice.formatted, redemptionPrice])
 
     const logoEl = useMemo(
         () =>

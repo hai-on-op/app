@@ -18,8 +18,9 @@ export function HaiAlert({ active, setActive }: HaiAlertProps) {
     const isUpToSmall = useMediaQuery('upToSmall')
 
     const {
-        data: { marketPrice, redemptionPrice, priceDiff },
+        data: { redemptionPrice, priceDiff },
         graphSummary,
+        haiMarketPrice,
     } = useAnalytics()
 
     return (
@@ -35,7 +36,7 @@ export function HaiAlert({ active, setActive }: HaiAlertProps) {
             <CenteredFlex $width="100%">
                 <Text>
                     {isUpToSmall ? `MP ` : `MARKET PRICE `}
-                    <strong>{marketPrice.formatted}</strong>
+                    <strong>{haiMarketPrice.formatted}</strong>
                     {` • `}
                     {isUpToSmall ? `RP ` : `REDEMPTION PRICE `}
                     <strong>{redemptionPrice.formatted}</strong>

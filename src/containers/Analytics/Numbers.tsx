@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { formatEther, formatUnits } from 'ethers/lib/utils'
 
-import { formatNumberWithStyle, getRatePercentage, stringsExistAndAreEqual } from '~/utils'
+import { formatNumberWithStyle, getRatePercentage } from '~/utils'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { useMediaQuery } from '~/hooks'
 
@@ -36,30 +36,13 @@ const colors = [
 
 export function Numbers() {
     const {
-        data: {
-            erc20Supply,
-            marketPrice,
-            redemptionPrice,
-            annualRate,
-            pRate,
-            iRate,
-            surplusInTreasury,
-            tokenAnalyticsData,
-        },
+        data: { erc20Supply, redemptionPrice, annualRate, pRate, iRate, surplusInTreasury },
         graphSummary,
         haiPriceHistory,
         redemptionRateHistory,
         pools,
+        haiMarketPrice,
     } = useAnalytics()
-
-    const haiMarketPrice = useMemo(() => {
-        if (!pools.uniPrice) return marketPrice.raw
-        const collateral = tokenAnalyticsData.find((data) =>
-            stringsExistAndAreEqual(data.tokenContract, pools.uniPrice?.token1)
-        )
-        if (!collateral) return marketPrice.raw
-        return (parseFloat(pools.uniPrice.token0Price) * parseFloat(formatEther(collateral.currentPrice))).toString()
-    }, [pools.uniPrice, tokenAnalyticsData, marketPrice.raw])
 
     const [haiPriceData, haiPriceMin, haiPriceMax] = useMemo(() => {
         const data = haiPriceHistory.data?.dailyStats || haiPriceHistory.data?.hourlyStats || []
@@ -198,26 +181,7 @@ export function Numbers() {
                         <SectionInnerHeader>
                             <PriceDisplay
                                 token="HAI"
-                                // price={haiPriceData[0].data[0]?.y
-                                //     ? formatNumberWithStyle(haiPriceData[0].data[0]?.y, {
-                                //         minDecimals: 4,
-                                //         maxDecimals: 4,
-                                //         minSigFigs: 2,
-                                //         maxSigFigs: 4,
-                                //         style: 'currency',
-                                //     })
-                                //     : marketPrice.formatted}
-                                price={
-                                    haiMarketPrice
-                                        ? formatNumberWithStyle(haiMarketPrice, {
-                                              minDecimals: 4,
-                                              maxDecimals: 4,
-                                              minSigFigs: 2,
-                                              maxSigFigs: 4,
-                                              style: 'currency',
-                                          })
-                                        : marketPrice.formatted
-                                }
+                                price={haiMarketPrice.formatted}
                                 label="$HAI Market Price"
                                 tooltip={`Time-weighted average HAI market price derived from UniV3 HAI/WETH pool and Chainlink WETH/USD feed.`}
                             />
