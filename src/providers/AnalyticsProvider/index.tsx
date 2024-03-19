@@ -76,7 +76,7 @@ export function AnalyticsProvider({ children }: Props) {
         return formatSummaryValue(price.toString(), {
             minDecimals: 4,
             maxDecimals: 4,
-            minSigFigs: 2,
+            minSigFigs: 4,
             maxSigFigs: 4,
             style: 'currency',
         })!

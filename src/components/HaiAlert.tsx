@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+
 import type { SetState } from '~/types'
 import { Status } from '~/utils'
 import { useMediaQuery } from '~/hooks'
@@ -18,10 +20,14 @@ export function HaiAlert({ active, setActive }: HaiAlertProps) {
     const isUpToSmall = useMediaQuery('upToSmall')
 
     const {
-        data: { redemptionPrice, priceDiff },
+        data: { redemptionPrice },
         graphSummary,
         haiMarketPrice,
     } = useAnalytics()
+
+    const priceDiff = useMemo(() => {
+        return 100 * Math.abs(1 - parseFloat(haiMarketPrice.raw) / parseFloat(redemptionPrice.raw))
+    }, [redemptionPrice.raw, haiMarketPrice.raw])
 
     return (
         <Container $active={active}>
