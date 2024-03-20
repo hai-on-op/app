@@ -10,12 +10,16 @@ export default async function handler(request: VercelRequest, response: VercelRe
     const totalSupply = ethers.utils.formatUnits(await erc20.totalSupply())
     const vesting = new ethers.Contract(vestingAddress, VESTING_ABI, provider);
     let totalLockedTokens = 0;
-    for (let i = 1; i < 17; i++) {
+    const vestingSupply = await vesting.totalSupply();
+    for (let i = 1; i <= vestingSupply; i++) {
         let plan = await vesting.plans(i);
         if (plan.token.toLowerCase() == address.toLowerCase()) {
             totalLockedTokens += plan.amount;
         }
     }
     response.setHeader('Content-Type', 'text/plain')
-    return response.send(totalSupply)
+    return {
+        response.send(totalSupply)
+        response.send(totalLockedTokens)
+  }
 }
