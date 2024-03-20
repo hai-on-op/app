@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { ethers } from 'ethers'
 import ERC20_ABI from '../src/abis/erc20.json'
+import VESTING_ABI from '../src/abis/vesting.json'
 
 export default async function handler(request: VercelRequest, response: VercelResponse) {
     const provider = new ethers.providers.JsonRpcProvider(process.env.VITE_MAINNET_PUBLIC_RPC)
