@@ -9,16 +9,6 @@ export default defineConfig(() => ({
         dedupe: ['buffer', 'bn.js', 'keccak', 'ethers'],
     },
     plugins: [react(), vercel(), tsConfigPaths()],
-    vercel: {
-        expiration: 25,
-        additionalEndpoints: [
-            {
-                source: './src/endpoints/edge.ts',
-                destination: `edge`,
-                addRoute: true,
-            },
-        ],
-    },
     optimizeDeps: {
         esbuildOptions: {
             // Node.js global to browser globalThis
