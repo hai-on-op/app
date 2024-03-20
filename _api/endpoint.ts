@@ -19,7 +19,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
     }
     response.setHeader('Content-Type', 'text/plain')
     return {
-        response.send(totalSupply)
+        response.send(totalSupply),
         response.send(totalLockedTokens)
   }
 }
