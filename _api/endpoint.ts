@@ -17,9 +17,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
             totalLockedTokens += plan.amount;
         }
     }
+    const vestingTokens = ethers.utils.formatUnits(totalLockedTokens);
     response.setHeader('Content-Type', 'text/plain')
-    return {
-        totalSupply: response.send(totalSupply),
-        vestingTokens: response.send(totalLockedTokens)
-  }
+    return return response.send({totalSupply, vestingTokens});
 }
