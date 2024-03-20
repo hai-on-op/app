@@ -9,6 +9,21 @@ export default defineConfig(() => ({
         dedupe: ['buffer', 'bn.js', 'keccak', 'ethers'],
     },
     plugins: [react(), vercel(), tsConfigPaths()],
+    vercel: {
+        expiration: 25,
+        additionalEndpoints: [
+            {
+                source: './src/api/total-supply.ts',
+                destination: `/api/total-supply`,
+                addRoute: true,
+            },
+            {
+                source: './src/api/circulating-supply.ts',
+                destination: `/api/circulating-supply`,
+                addRoute: true,
+            },
+        ],
+    },
     optimizeDeps: {
         esbuildOptions: {
             // Node.js global to browser globalThis

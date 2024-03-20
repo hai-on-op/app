@@ -155,6 +155,12 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                             >
                                                 Discord
                                             </BrandedDropdown.Item>
+                                            <BrandedDropdown.Item
+                                                href={LINK_TO_DISCORD}
+                                                icon={<Discord size={19} stroke="black" strokeWidth={2} />}
+                                            >
+                                                Discord
+                                            </BrandedDropdown.Item>
                                         </CommunityDropdown>
                                     </CommunityDropdownContainer>
                                 </>
