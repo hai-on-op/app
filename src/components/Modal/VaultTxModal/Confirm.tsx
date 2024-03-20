@@ -93,7 +93,7 @@ export function Confirm({ onClose }: ConfirmProps) {
                 }
                 case VaultAction.DEPOSIT_REPAY: {
                     if (!singleVault) throw new Error('Vault marked for modification, but no vault is selected')
-                    if (BigNumber.from(vaultData.deposit).isZero()) {
+                    if (BigNumber.from(vaultData.deposit || '0').isZero()) {
                         await vaultActions.repayAndWithdraw({
                             vaultData,
                             signer,
