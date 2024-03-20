@@ -1,4 +1,5 @@
 // import { get } from '@vercel/edge-config'
+import crypto from 'crypto'
 import { ethers } from 'ethers'
 import ERC20_ABI from '~/abis/erc20.json'
 
