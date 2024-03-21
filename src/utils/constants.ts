@@ -92,6 +92,11 @@ export const floatsTypes = {
     RAD: 45,
 }
 
+export const KITE_ADDRESS = '0xf467C7d5a4A9C4687fFc7986aC6aD5A4c81E1404'
+export const VESTING_ADDRESS = '0x1bb64AF7FE05fc69c740609267d2AbE3e119Ef82'
+export const INCENTIVES_MSIG_ADDRESS = '0x21a1Ec8c62bbdad4680742B88695F06f55a51bda'
+export const FLX_ALIGNMENTS_MSIG_ADDRESS = '0x638d5CcAF57446363e8Ca5BD09b220EE7A87e8C6'
+
 export const network_name = VITE_NETWORK_ID === '1' ? 'mainnet' : 'optimism-sepolia'
 
 export const LINK_TO_DOCS = 'https://docs.letsgethai.com/'
@@ -104,6 +109,7 @@ export const LINK_TO_TOS =
 export const LINK_TO_TWITTER = 'https://twitter.com/@letsgethai'
 export const LINK_TO_TELEGRAM = 'https://t.me/+0iIhX0f9DDAxODE5'
 export const LINK_TO_DISCORD = 'https://discord.gg/letsgethai'
+export const LINK_TO_FORUM = 'https://commonwealth.im/lets-get-hai'
 // Auctions
 export const NUMBER_OF_AUCTIONS_TO_SHOW = 15
 export const SURPLUS_BATCH_SIZE = 5_000_000 // blocks
