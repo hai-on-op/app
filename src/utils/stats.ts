@@ -2,7 +2,10 @@ import { ethers, BigNumber } from 'ethers'
 import ERC20_ABI from '../abis/erc20.json'
 import VESTING_ABI from '../abis/vesting.json'
 
-import { KITE_ADDRESS, VESTING_ADDRESS, INCENTIVES_MSIG_ADDRESS, FLX_ALIGNMENTS_MSIG_ADDRESS } from './constants'
+const KITE_ADDRESS = '0xf467C7d5a4A9C4687fFc7986aC6aD5A4c81E1404'
+const VESTING_ADDRESS = '0x1bb64AF7FE05fc69c740609267d2AbE3e119Ef82'
+const INCENTIVES_MSIG_ADDRESS = '0x21a1Ec8c62bbdad4680742B88695F06f55a51bda'
+const FLX_ALIGNMENTS_MSIG_ADDRESS = '0x638d5CcAF57446363e8Ca5BD09b220EE7A87e8C6'
 
 const formatStat = (stat: BigNumber) => parseInt(ethers.utils.formatUnits(stat))
 
