@@ -23,7 +23,7 @@ export const kiteTokenStats = async () => {
     const vestingPlans = (await vesting.totalSupply()).toNumber()
 
     for (let i = 1; i <= vestingPlans; i++) {
-        let plan = await vesting.plans(i)
+        const plan = await vesting.plans(i)
         if (plan.token.toLowerCase() == KITE_ADDRESS.toLowerCase()) {
             totalLockedVesting = totalLockedVesting.add(plan.amount)
         }
