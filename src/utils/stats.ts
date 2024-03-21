@@ -3,6 +3,7 @@ import ERC20_ABI from '../abis/erc20.json'
 import VESTING_ABI from '../abis/vesting.json'
 
 const KITE_ADDRESS = '0xf467C7d5a4A9C4687fFc7986aC6aD5A4c81E1404'
+const HAI_ADDRESS = '0x10398AbC267496E49106B07dd6BE13364D10dC71'
 const VESTING_ADDRESS = '0x1bb64AF7FE05fc69c740609267d2AbE3e119Ef82'
 const INCENTIVES_MSIG_ADDRESS = '0x21a1Ec8c62bbdad4680742B88695F06f55a51bda'
 const FLX_ALIGNMENTS_MSIG_ADDRESS = '0x638d5CcAF57446363e8Ca5BD09b220EE7A87e8C6'
@@ -36,5 +37,14 @@ export const kiteTokenStats = async () => {
         totalLockedVesting: formatStat(totalLockedVesting),
         incentivesBal: formatStat(incentivesBal),
         flxAlignmentBal: formatStat(flxAlignmentBal),
+    }
+}
+
+export const haiTokenStats = async () => {
+    const provider = new ethers.providers.JsonRpcProvider(process.env.VITE_MAINNET_PUBLIC_RPC)
+    const kiteERC20 = new ethers.Contract(KITE_ADDRESS, ERC20_ABI, provider)
+    const totalSupply = await kiteERC20.totalSupply()
+    return {
+        totalSupply: formatStat(totalSupply),
     }
 }
