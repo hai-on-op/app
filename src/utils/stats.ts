@@ -42,8 +42,8 @@ export const kiteTokenStats = async () => {
 
 export const haiTokenStats = async () => {
     const provider = new ethers.providers.JsonRpcProvider(process.env.VITE_MAINNET_PUBLIC_RPC)
-    const kiteERC20 = new ethers.Contract(KITE_ADDRESS, ERC20_ABI, provider)
-    const totalSupply = await kiteERC20.totalSupply()
+    const haiERC20 = new ethers.Contract(HAI_ADDRESS, ERC20_ABI, provider)
+    const totalSupply = await haiERC20.totalSupply()
     return {
         totalSupply: formatStat(totalSupply),
     }
