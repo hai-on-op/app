@@ -2,7 +2,14 @@ import { useEffect, useMemo, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useAccount } from 'wagmi'
 
-import { LINK_TO_DISCORD, LINK_TO_DOCS, LINK_TO_TELEGRAM, LINK_TO_TWITTER, formatDataNumber } from '~/utils'
+import {
+    LINK_TO_DISCORD,
+    LINK_TO_FORUM,
+    LINK_TO_DOCS,
+    LINK_TO_TELEGRAM,
+    LINK_TO_TWITTER,
+    formatDataNumber,
+} from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { useMediaQuery, useOutsideClick } from '~/hooks'
@@ -154,6 +161,12 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                                 icon={<Discord size={19} stroke="black" strokeWidth={2} />}
                                             >
                                                 Discord
+                                            </BrandedDropdown.Item>
+                                            <BrandedDropdown.Item
+                                                href={LINK_TO_FORUM}
+                                                icon={<HaiFace size={19} stroke="black" strokeWidth={2} />}
+                                            >
+                                                Forum
                                             </BrandedDropdown.Item>
                                         </CommunityDropdown>
                                     </CommunityDropdownContainer>

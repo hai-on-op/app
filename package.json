@@ -31,6 +31,7 @@
         "@nivo/pie": "0.84.0",
         "@rainbow-me/rainbowkit": "1.0.9",
         "@vercel/analytics": "1.1.2",
+        "@vercel/node": "^3.0.24",
         "axios": "0.27.2",
         "dayjs": "1.9.4",
         "easy-peasy": "3.3.1",
@@ -84,6 +85,7 @@
         "lodash.merge": "4.6.2",
         "prettier": "3.0.3",
         "typescript": "5.1.6",
+        "vite-plugin-vercel": "^5.0.2",
         "vite-tsconfig-paths": "4.2.0",
         "vitest": "0.34.3"
     },
