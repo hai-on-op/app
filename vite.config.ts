@@ -13,13 +13,23 @@ export default defineConfig(() => ({
         expiration: 25,
         additionalEndpoints: [
             {
-                source: './src/api/total-supply.ts',
-                destination: `/api/total-supply`,
+                source: './src/api/hai/total-supply.ts',
+                destination: `/api/hai/total-supply`,
                 addRoute: true,
             },
             {
-                source: './src/api/circulating-supply.ts',
-                destination: `/api/circulating-supply`,
+                source: './src/api/hai/circulating-supply.ts',
+                destination: `/api/hai/circulating-supply`,
+                addRoute: true,
+            },
+            {
+                source: './src/api/kite/total-supply.ts',
+                destination: `/api/kite/total-supply`,
+                addRoute: true,
+            },
+            {
+                source: './src/api/kite/circulating-supply.ts',
+                destination: `/api/kite/circulating-supply`,
                 addRoute: true,
             },
         ],
