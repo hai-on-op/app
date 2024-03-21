@@ -15,16 +15,27 @@ type StrategyTableProps = {
     rows: Strategy[]
     loading?: boolean
     error?: string
+    uniError?: string
+    veloError?: string
     sorting: Sorting
     setSorting: SetState<Sorting>
 }
-export function StrategyTable({ headers, rows, loading, error, sorting, setSorting }: StrategyTableProps) {
+export function StrategyTable({
+    headers,
+    rows,
+    loading,
+    error,
+    uniError,
+    veloError,
+    sorting,
+    setSorting,
+}: StrategyTableProps) {
     return (
         <Table
             headers={headers}
             headerContainer={TableHeader}
             loading={loading}
-            error={error}
+            error={error && uniError && veloError}
             isEmpty={!rows.length}
             sorting={sorting}
             setSorting={setSorting}

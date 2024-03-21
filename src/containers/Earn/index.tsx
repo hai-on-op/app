@@ -6,7 +6,8 @@ import { CheckboxButton } from '~/components/CheckboxButton'
 import { SortByDropdown } from '~/components/SortByDropdown'
 
 export function Earn() {
-    const { headers, rows, loading, error, sorting, setSorting, filterEmpty, setFilterEmpty } = useEarnStrategies()
+    const { headers, rows, loading, error, uniError, veloError, sorting, setSorting, filterEmpty, setFilterEmpty } =
+        useEarnStrategies()
 
     const isUpToMedium = useMediaQuery('upToMedium')
 
@@ -30,6 +31,8 @@ export function Earn() {
                 rows={rows}
                 loading={loading}
                 error={error}
+                uniError={uniError}
+                veloError={veloError}
                 sorting={sorting}
                 setSorting={setSorting}
             />
