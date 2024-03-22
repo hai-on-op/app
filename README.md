@@ -53,3 +53,36 @@ yarn test:e2e
 ```bash
 yarn test
 ```
+
+## Docker
+
+### Build the image locally
+
+For OP Mainnet:
+
+```bash
+docker build \
+  --build-arg VITE_TESTNET_PUBLIC_RPC= \
+  --build-arg VITE_MAINNET_PUBLIC_RPC=https://optimism.blockpi.network/v1/rpc/public \
+  --build-arg VITE_ALCHEMY_KEY=<your-alchemy-key> \
+  --build-arg VITE_WALLETCONNECT_ID=<your-walletconnect-id> \
+  -t hai-on-op/app:mainnet .
+```
+
+For OP Sepolia:
+
+```bash
+docker build \
+  --build-arg VITE_TESTNET_PUBLIC_RPC=https://optimism-sepolia.blockpi.network/v1/rpc/public \
+  --build-arg VITE_MAINNET_PUBLIC_RPC= \
+  --build-arg VITE_ALCHEMY_KEY=<your-alchemy-key> \
+  --build-arg VITE_WALLETCONNECT_ID=<your-walletconnect-id> \
+  -t hai-on-op/app:testnet .
+```
+
+### Run the image locally
+
+```bash
+docker run -d -p 8080:80 hai-on-op/app:testnet
+```
+
