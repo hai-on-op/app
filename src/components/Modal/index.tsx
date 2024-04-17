@@ -106,7 +106,10 @@ export const ModalContainer = styled(CenteredFlex)<{ $width?: string; $maxWidth?
     transform-style: preserve-3d;
     transform: translateZ(-1000px);
 
-    transition: width 0.5s ease-out, height 0.5s ease-out, transform 1s cubic-bezier(0.33, 1, 0.68, 1);
+    transition:
+        width 0.5s ease-out,
+        height 0.5s ease-out,
+        transform 1s cubic-bezier(0.33, 1, 0.68, 1);
 
     ${({ theme }) => theme.mediaWidth.upToExtraSmall`
         max-height: calc(100vh - 200px);
