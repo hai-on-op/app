@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 import type { IAuction } from '~/types'
-import { ActionState, formatNumberWithStyle, tokenMap, wait, isFormattedAddress } from '~/utils'
+import { ActionState, formatNumberWithStyle, tokenMap, wait, isFormattedAddress, slugify } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { useClaims } from '~/providers/ClaimsProvider'
 import { useAccount } from 'wagmi'
@@ -61,8 +61,8 @@ export function ClaimModal(props: ModalProps) {
                     token === 'HAI'
                         ? parseFloat(currentRedemptionPrice || '1')
                         : token === 'KITE'
-                        ? kitePrice
-                        : parseFloat(collateralLiquidationData?.[token]?.currentPrice.value || '0')
+                            ? kitePrice
+                            : parseFloat(collateralLiquidationData?.[token]?.currentPrice.value || '0')
                 acc.prices[token] = price
                 acc.total += parseFloat(sellAmount) * price
                 return acc
@@ -78,14 +78,26 @@ export function ClaimModal(props: ModalProps) {
 
     const kiteIncentivesContent = kiteIncentivesData?.hasClaimableDistros
         ? kiteIncentivesData.claims.map((claim) => (
-              <ClaimableIncentive asset="KITE" claim={claim} price={kitePrice} onSuccess={refetchIncentives} />
-          ))
+            <ClaimableIncentive
+                key={slugify(claim.description)}
+                asset="KITE"
+                claim={claim}
+                price={kitePrice}
+                onSuccess={refetchIncentives}
+            />
+        ))
         : []
 
     const opIncentivesContent = opIncentivesData?.hasClaimableDistros
         ? opIncentivesData.claims.map((claim) => (
-              <ClaimableIncentive asset="OP" claim={claim} price={opPrice} onSuccess={refetchIncentives} />
-          ))
+            <ClaimableIncentive
+                key={slugify(claim.description)}
+                asset="OP"
+                claim={claim}
+                price={opPrice}
+                onSuccess={refetchIncentives}
+            />
+        ))
         : []
 
     const tokenIncentiveValue = (claims, price) =>
@@ -130,27 +142,27 @@ export function ClaimModal(props: ModalProps) {
         }),
         ...(parseFloat(internalBalances.HAI?.raw || '0') > 0
             ? [
-                  <ClaimableAsset
-                      key="internalHai"
-                      asset="COIN"
-                      amount={internalBalances.HAI?.raw || '0'}
-                      price={parseFloat(liquidationData?.currentRedemptionPrice || '1')}
-                      internal
-                      onSuccess={internalBalances.refetch}
-                  />,
-              ]
+                <ClaimableAsset
+                    key="internalHai"
+                    asset="COIN"
+                    amount={internalBalances.HAI?.raw || '0'}
+                    price={parseFloat(liquidationData?.currentRedemptionPrice || '1')}
+                    internal
+                    onSuccess={internalBalances.refetch}
+                />,
+            ]
             : []),
         ...(parseFloat(internalBalances.KITE?.raw || '0') > 0
             ? [
-                  <ClaimableAsset
-                      key="internalKITE"
-                      asset="PROTOCOL_TOKEN"
-                      amount={internalBalances.KITE?.raw || '0'}
-                      price={10}
-                      internal
-                      onSuccess={internalBalances.refetch}
-                  />,
-              ]
+                <ClaimableAsset
+                    key="internalKITE"
+                    asset="PROTOCOL_TOKEN"
+                    amount={internalBalances.KITE?.raw || '0'}
+                    price={10}
+                    internal
+                    onSuccess={internalBalances.refetch}
+                />,
+            ]
             : []),
     ]
 
@@ -217,7 +229,7 @@ const ClaimableAssetContainer = styled(Flex).attrs((props) => ({
     border: 2px solid rgba(0, 0, 0, 0.1);
 `
 
-type Claim = {}
+type Claim = object
 
 type ClaimableAssetProps = {
     asset: string

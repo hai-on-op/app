@@ -51,11 +51,11 @@ export function BorrowStats() {
             {
                 header: totalCollateralInUSD
                     ? formatNumberWithStyle(totalCollateralInUSD.toString(), {
-                          style: 'currency',
-                          minDecimals: 1,
-                          maxDecimals: 1,
-                          suffixed: true,
-                      })
+                        style: 'currency',
+                        minDecimals: 1,
+                        maxDecimals: 1,
+                        suffixed: true,
+                    })
                     : '$0',
                 label: 'My Locked Collateral',
                 tooltip:
@@ -64,11 +64,11 @@ export function BorrowStats() {
             {
                 header: totalDebtInUSD
                     ? formatNumberWithStyle(totalDebtInUSD.toString(), {
-                          style: 'currency',
-                          minDecimals: 1,
-                          maxDecimals: 1,
-                          suffixed: true,
-                      })
+                        style: 'currency',
+                        minDecimals: 1,
+                        maxDecimals: 1,
+                        suffixed: true,
+                    })
                     : '$0',
                 label: 'My Total Debt',
                 tooltip: 'The total amount of minted debt tokens multiplied by the protocol redemption price of debt.',
@@ -106,12 +106,12 @@ export function BorrowStats() {
                 label: 'My Vault Rewards',
                 tooltip: 'Rewards currently voted upon and distributed by DAO approximately once per month.',
                 button: (
-                    // <HaiButton $variant="yellowish" onClick={() => popupsActions.setIsClaimPopupOpen(true)}>
-                    //     Claim
-                    // </HaiButton>
-                    <HaiButton title="Claim window is closed" $variant="yellowish" disabled>
+                    <HaiButton $variant="yellowish" onClick={() => popupsActions.setIsClaimPopupOpen(true)}>
                         Claim
                     </HaiButton>
+                    // <HaiButton title="Claim window is closed" $variant="yellowish" disabled>
+                    //     Claim
+                    // </HaiButton>
                 ),
             },
         ]

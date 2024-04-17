@@ -87,11 +87,11 @@ const StatContainer = styled(Flex).attrs((props: FlexProps) => ({
         flex-direction: column;
         align-items: flex-start;
         ${
-            $fullWidth &&
+    $fullWidth &&
             css`
                 grid-column: 1 / -1;
             `
-        }
+}
     `}
 `
 const Container = styled(Grid)<DashedContainerProps & { $fun: boolean }>`

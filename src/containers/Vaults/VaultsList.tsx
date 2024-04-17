@@ -127,10 +127,10 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
                     onCreateVault={
                         !vaultState.list.length
                             ? () =>
-                                  setActiveVault({
-                                      create: true,
-                                      collateralName: 'WETH',
-                                  })
+                                setActiveVault({
+                                    create: true,
+                                    collateralName: 'WETH',
+                                })
                             : undefined
                     }
                 >
