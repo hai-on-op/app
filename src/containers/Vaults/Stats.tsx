@@ -106,12 +106,12 @@ export function BorrowStats() {
                 label: 'My Vault Rewards',
                 tooltip: 'Rewards currently voted upon and distributed by DAO approximately once per month.',
                 button: (
-                    <HaiButton $variant="yellowish" onClick={() => popupsActions.setIsClaimPopupOpen(true)}>
-                        Claim
-                    </HaiButton>
-                    // <HaiButton title="Claim window is closed" $variant="yellowish" disabled>
+                    // <HaiButton $variant="yellowish" onClick={() => popupsActions.setIsClaimPopupOpen(true)}>
                     //     Claim
                     // </HaiButton>
+                    <HaiButton title="Claim window is closed" $variant="yellowish" disabled>
+                        Claim
+                    </HaiButton>
                 ),
             },
         ]
