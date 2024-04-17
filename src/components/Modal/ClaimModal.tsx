@@ -1,16 +1,31 @@
 import { useMemo, useState } from 'react'
-
+import dayjs from 'dayjs'
 import type { IAuction } from '~/types'
-import { ActionState, formatNumberWithStyle, tokenMap, wait } from '~/utils'
+import { ActionState, formatNumberWithStyle, tokenMap, wait, isFormattedAddress } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { useClaims } from '~/providers/ClaimsProvider'
+import { useAccount } from 'wagmi'
+import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { handleTransactionError, useEthersSigner, useGeb } from '~/hooks'
+import { BigNumberish, utils } from 'ethers'
+import { useDistributorContract } from '~/hooks/useContract'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
 import { Modal, type ModalProps } from './index'
 import { TokenArray } from '../TokenArray'
 import { ContentWithStatus } from '../ContentWithStatus'
+
+const returnDaysLeftToClaim = (date: number) => {
+    const deploymentTime = dayjs(date * 1000)
+    const dayDiff = dayjs().diff(deploymentTime, 'day')
+    if (dayDiff > 90) {
+        return 0
+    }
+    return 90 - dayjs().diff(deploymentTime, 'day')
+}
+
+const returnAmount = (value: BigNumberish) => utils.formatEther(value)
 
 export function ClaimModal(props: ModalProps) {
     const {
@@ -22,9 +37,14 @@ export function ClaimModal(props: ModalProps) {
         popupsModel: { setIsClaimPopupOpen },
     } = useStoreActions((actions) => actions)
 
+    const { prices: veloPrices } = useVelodromePrices()
+
+    const kitePrice = veloPrices?.KITE.raw
+    const opPrice = liquidationData?.collateralLiquidationData?.OP?.currentPrice.value
+
     const geb = useGeb()
 
-    const { activeAuctions, internalBalances } = useClaims()
+    const { activeAuctions, internalBalances, incentivesData, refetchIncentives } = useClaims()
 
     const { prices, total } = useMemo(() => {
         if (!liquidationData)
@@ -41,7 +61,7 @@ export function ClaimModal(props: ModalProps) {
                     token === 'HAI'
                         ? parseFloat(currentRedemptionPrice || '1')
                         : token === 'KITE'
-                        ? 10
+                        ? kitePrice
                         : parseFloat(collateralLiquidationData?.[token]?.currentPrice.value || '0')
                 acc.prices[token] = price
                 acc.total += parseFloat(sellAmount) * price
@@ -53,7 +73,37 @@ export function ClaimModal(props: ModalProps) {
 
     if (!isClaimPopupOpen) return null
 
+    const kiteIncentivesData = incentivesData['KITE']
+    const opIncentivesData = incentivesData['OP']
+
+    const kiteIncentivesContent = kiteIncentivesData?.hasClaimableDistros
+        ? kiteIncentivesData.claims.map((claim) => (
+              <ClaimableIncentive asset="KITE" claim={claim} price={kitePrice} onSuccess={refetchIncentives} />
+          ))
+        : []
+
+    const opIncentivesContent = opIncentivesData?.hasClaimableDistros
+        ? opIncentivesData.claims.map((claim) => (
+              <ClaimableIncentive asset="OP" claim={claim} price={opPrice} onSuccess={refetchIncentives} />
+          ))
+        : []
+
+    const tokenIncentiveValue = (claims, price) =>
+        claims?.reduce((acc, claim) => {
+            const value = claim.isClaimed ? 0 : parseFloat(returnAmount(claim.amount))
+            return acc + value
+        }, 0) * price
+
+    const kiteIncentiveValue = tokenIncentiveValue(kiteIncentivesData?.claims, kitePrice)
+    const opIncentiveValue = tokenIncentiveValue(opIncentivesData?.claims, opPrice)
+    const totalIncentiveValue = kiteIncentiveValue + opIncentiveValue
+
+    const incentivesContent = [...kiteIncentivesContent, ...opIncentivesContent]
+
+    const totalClaimableValue = total + totalIncentiveValue
+
     const content = [
+        ...incentivesContent,
         ...activeAuctions.claimableAuctions.map(({ sellAmount, auction }) => {
             if (!auction) return null
             const asset = tokenMap[auction.sellToken] || auction.sellToken
@@ -115,7 +165,7 @@ export function ClaimModal(props: ModalProps) {
                     <Text>
                         <strong>Total Estimated Value:</strong>
                         &nbsp;
-                        {formatNumberWithStyle(total, { style: 'currency' })}
+                        {formatNumberWithStyle(totalClaimableValue, { style: 'currency' })}
                     </Text>
                 </Flex>
             }
@@ -167,75 +217,150 @@ const ClaimableAssetContainer = styled(Flex).attrs((props) => ({
     border: 2px solid rgba(0, 0, 0, 0.1);
 `
 
+type Claim = {}
+
 type ClaimableAssetProps = {
     asset: string
     amount: string
     price?: number
+    claim?: Claim
+    distributor?: any
     onSuccess?: () => void
 } & (
     | {
           asset: string
           auction: IAuction
           internal?: undefined
+          incentive: boolean
       }
     | {
           asset: 'COIN' | 'PROTOCOL_TOKEN'
           auction?: undefined
           internal: boolean
+          incentive: boolean
       }
 )
-function ClaimableAsset({ asset, amount, price = 0, auction, internal, onSuccess }: ClaimableAssetProps) {
-    const signer = useEthersSigner()
 
-    const { auctionModel: auctionActions, popupsModel: popupsActions } = useStoreActions((actions) => actions)
+const ClaimableIncentive = ({ asset, claim, price, onSuccess }) => {
+    if (claim.isClaimed) return null
+    const distributor = useDistributorContract(claim.distributorAddress)
+    return (
+        <ClaimableAsset
+            key={`distributor-${claim.distributorAddress}`}
+            asset={asset}
+            claim={claim}
+            amount={returnAmount(claim.amount)}
+            price={price}
+            distributor={distributor}
+            incentive
+            onSuccess={onSuccess}
+        />
+    )
+}
+
+function ClaimableAsset({
+    asset,
+    amount,
+    price = 0,
+    auction,
+    internal,
+    incentive,
+    claim,
+    distributor,
+    onSuccess,
+}: ClaimableAssetProps) {
+    const signer = useEthersSigner()
+    const { address: account } = useAccount()
+
+    const {
+        auctionModel: auctionActions,
+        popupsModel: popupsActions,
+        transactionsModel: transactionsActions,
+    } = useStoreActions((actions) => actions)
 
     const [status, setStatus] = useState(ActionState.NONE)
 
     const onClaim = async () => {
-        if (status === ActionState.LOADING || !signer) return
+        if (incentive) {
+            const formatted = isFormattedAddress(account)
+            if (!formatted) {
+                console.debug('wrong address')
+                return false
+            }
+            const { index, amount, proof } = claim
+            try {
+                const txResponse = await distributor.claim(index, formatted, amount, proof)
+                if (txResponse) {
+                    transactionsActions.addTransaction({
+                        chainId: txResponse?.chainId,
+                        hash: txResponse?.hash,
+                        from: txResponse.from,
+                        summary: `Claiming ${asset}`,
+                        addedTime: new Date().getTime(),
+                        originalTx: txResponse,
+                    })
+                    popupsActions.setIsWaitingModalOpen(true)
+                    popupsActions.setWaitingPayload({
+                        title: 'Transaction Submitted',
+                        hash: txResponse?.hash,
+                        status: 'success',
+                    })
+                    await txResponse.wait()
+                    onSuccess?.()
+                    popupsActions.setIsWaitingModalOpen(false)
+                    popupsActions.setWaitingPayload({ status: ActionState.NONE })
+                } else {
+                    throw new Error('No transaction request!')
+                }
+            } catch (e) {
+                console.error(e)
+            }
+        } else {
+            if (status === ActionState.LOADING || !signer) return
 
-        setStatus(ActionState.LOADING)
-        popupsActions.setIsWaitingModalOpen(true)
-        popupsActions.setWaitingPayload({
-            status: ActionState.LOADING,
-            title: 'Claiming Assets',
-        })
-        try {
-            if (internal) {
-                await auctionActions.auctionClaimInternalBalance({
-                    signer,
-                    auctionId: '1',
-                    auctionType: 'COLLATERAL',
-                    bid: amount,
-                    token: asset,
-                    title: `Claim ${tokenMap[asset]}`,
+            setStatus(ActionState.LOADING)
+            popupsActions.setIsWaitingModalOpen(true)
+            popupsActions.setWaitingPayload({
+                status: ActionState.LOADING,
+                title: 'Claiming Assets',
+            })
+            try {
+                if (internal) {
+                    await auctionActions.auctionClaimInternalBalance({
+                        signer,
+                        auctionId: '1',
+                        auctionType: 'COLLATERAL',
+                        bid: amount,
+                        token: asset,
+                        title: `Claim ${tokenMap[asset]}`,
+                    })
+                } else if (auction) {
+                    await auctionActions.auctionClaim({
+                        signer,
+                        auctionId: auction.auctionId,
+                        title: 'Claim Assets',
+                        auctionType: auction.englishAuctionType,
+                        bid: amount,
+                    })
+                }
+                setStatus(ActionState.SUCCESS)
+                popupsActions.setWaitingPayload({
+                    status: ActionState.SUCCESS,
+                    title: 'Claiming Assets',
                 })
-            } else if (auction) {
-                await auctionActions.auctionClaim({
-                    signer,
-                    auctionId: auction.auctionId,
-                    title: 'Claim Assets',
-                    auctionType: auction.englishAuctionType,
-                    bid: amount,
+                onSuccess?.()
+                await wait(3000)
+                popupsActions.setIsWaitingModalOpen(false)
+                popupsActions.setWaitingPayload({ status: ActionState.NONE })
+            } catch (e: any) {
+                handleTransactionError(e)
+                setStatus(ActionState.ERROR)
+                popupsActions.setWaitingPayload({
+                    status: ActionState.ERROR,
+                    title: 'Claiming Assets',
+                    hint: 'An error occurred',
                 })
             }
-            setStatus(ActionState.SUCCESS)
-            popupsActions.setWaitingPayload({
-                status: ActionState.SUCCESS,
-                title: 'Claiming Assets',
-            })
-            onSuccess?.()
-            await wait(3000)
-            popupsActions.setIsWaitingModalOpen(false)
-            popupsActions.setWaitingPayload({ status: ActionState.NONE })
-        } catch (e: any) {
-            handleTransactionError(e)
-            setStatus(ActionState.ERROR)
-            popupsActions.setWaitingPayload({
-                status: ActionState.ERROR,
-                title: 'Claiming Assets',
-                hint: 'An error occurred',
-            })
         }
     }
 
@@ -244,11 +369,23 @@ function ClaimableAsset({ asset, amount, price = 0, auction, internal, onSuccess
             <CenteredFlex $gap={12}>
                 <TokenArray size={48} tokens={[(tokenMap[asset] || asset) as any]} hideLabel />
                 <Flex $width="100%" $column $justify="center" $align="flex-start" $gap={4}>
-                    <Text $fontSize="0.7em">
-                        {auction
-                            ? `Auction: #${auction.auctionId} (${auction.englishAuctionType})`
-                            : `Unsuccessful Bid(s)`}
-                    </Text>
+                    {incentive ? (
+                        <>
+                            <Text $fontSize="1em" $fontWeight={700}>
+                                {claim.description}
+                            </Text>
+                        </>
+                    ) : (
+                        <Text $fontSize="0.7em">
+                            {auction
+                                ? `Auction: #${auction.auctionId} (${auction.englishAuctionType})`
+                                : `Unsuccessful Bid(s)`}
+                        </Text>
+                    )}
+                    {incentive && (
+                        <Text $fontSize="0.8em">{returnDaysLeftToClaim(claim.createdAt)} days left to claim</Text>
+                    )}
+
                     <Text $fontSize="1em" $fontWeight={700}>
                         {formatNumberWithStyle(amount, { maxDecimals: 4 })} {tokenMap[asset] || asset}
                     </Text>

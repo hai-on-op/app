@@ -18,6 +18,14 @@ export const isAddress = (value: any): boolean => {
     }
 }
 
+export function isFormattedAddress(value: any): string | false {
+    try {
+        return getAddress(value)
+    } catch {
+        return false
+    }
+}
+
 export const stringsExistAndAreEqual = (a: string | null | undefined, b: string | null | undefined) => {
     return !!a && !!b && a.toLowerCase() === b.toLowerCase()
 }
