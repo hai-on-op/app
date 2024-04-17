@@ -108,10 +108,10 @@ export function StrategyTable({
                                     <Text $fontWeight={700}>
                                         {tvl
                                             ? formatNumberWithStyle(tvl, {
-                                                style: 'currency',
-                                                maxDecimals: 1,
-                                                suffixed: true,
-                                            })
+                                                  style: 'currency',
+                                                  maxDecimals: 1,
+                                                  suffixed: true,
+                                              })
                                             : '-'}
                                     </Text>
                                 </ComingSoon>
@@ -137,10 +137,10 @@ export function StrategyTable({
                                     <Text $fontWeight={700}>
                                         {userPosition && userPosition !== '0'
                                             ? formatNumberWithStyle(userPosition, {
-                                                style: 'currency',
-                                                maxDecimals: 1,
-                                                suffixed: true,
-                                            })
+                                                  style: 'currency',
+                                                  maxDecimals: 1,
+                                                  suffixed: true,
+                                              })
                                             : '-'}
                                     </Text>
                                 </ComingSoon>
@@ -152,11 +152,11 @@ export function StrategyTable({
                                     <Text $fontWeight={700}>
                                         {apy
                                             ? formatNumberWithStyle(apy, {
-                                                style: 'percent',
-                                                scalingFactor: 100,
-                                                maxDecimals: 1,
-                                                suffixed: true,
-                                            })
+                                                  style: 'percent',
+                                                  scalingFactor: 100,
+                                                  maxDecimals: 1,
+                                                  suffixed: true,
+                                              })
                                             : '-'}
                                     </Text>
                                 </ComingSoon>
