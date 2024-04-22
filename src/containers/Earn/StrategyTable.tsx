@@ -7,7 +7,6 @@ import { RewardsTokenArray, TokenArray } from '~/components/TokenArray'
 import { StrategyTableButton } from './StrategyTableButton'
 import { Table } from '~/components/Table'
 import { Link } from '~/components/Link'
-import { ArrowUpRight } from 'react-feather'
 import { ComingSoon } from '~/components/ComingSoon'
 
 type StrategyTableProps = {
@@ -55,44 +54,15 @@ export function StrategyTable({
                                         <Text $fontWeight={700}>{pair.join('/')}</Text>
                                     </Flex>
                                     <RewardsTokenArray
-                                        tokens={rewards.map(({ token }) => token)}
+                                        tokens={
+                                            earnPlatform === 'velodrome' ? ['VELO'] : rewards.map(({ token }) => token)
+                                        }
                                         tooltip={
-                                            <Flex
-                                                $width="140px"
-                                                $column
-                                                $justify="flex-end"
-                                                $align="flex-start"
-                                                $gap={4}
-                                            >
-                                                <Text $fontWeight={700} $whiteSpace="nowrap">
-                                                    Daily Emissions
-                                                </Text>
-                                                {rewards.map(({ token, emission }) => (
-                                                    <Flex
-                                                        key={token}
-                                                        $width="100%"
-                                                        $justify="space-between"
-                                                        $align="center"
-                                                        $gap={12}
-                                                    >
-                                                        <Text>{token}:</Text>
-                                                        <Text>
-                                                            {formatNumberWithStyle(emission, { maxDecimals: 1 })}
-                                                        </Text>
-                                                    </Flex>
-                                                ))}
-                                                {earnPlatform === 'uniswap' && (
-                                                    <Text $fontSize="0.8em">Incentives are for full-range only</Text>
-                                                )}
-                                                {earnPlatform === 'velodrome' && (
-                                                    <Text $fontSize="0.8em">
-                                                        APY is claimed on&nbsp;
-                                                        <Link href="https://velodrome.finance">
-                                                            Velodrome <ArrowUpRight size={8} />
-                                                        </Link>
-                                                    </Text>
-                                                )}
-                                            </Flex>
+                                            <EarnEmissionTooltip
+                                                rewards={rewards}
+                                                earnPlatform={earnPlatform}
+                                                earnLink={earnLink}
+                                            />
                                         }
                                     />
                                 </Grid>
@@ -117,20 +87,6 @@ export function StrategyTable({
                                 </ComingSoon>
                             ),
                         },
-                        // {
-                        //     content: (
-                        //         <Text $fontWeight={700}>
-                        //             {vol24hr
-                        //                 ? formatNumberWithStyle(vol24hr, {
-                        //                     style: 'currency',
-                        //                     maxDecimals: 1,
-                        //                     suffixed: true,
-                        //                 })
-                        //                 : '-'
-                        //             }
-                        //         </Text>
-                        //     ),
-                        // },
                         {
                             content: (
                                 <ComingSoon $justify="flex-start" active={!!earnPlatform && !earnAddress}>
@@ -162,16 +118,6 @@ export function StrategyTable({
                                 </ComingSoon>
                             ),
                         },
-                        // {
-                        //     content: (
-                        //         <Text $fontWeight={700}>
-                        //             {userApy
-                        //                 ? formatNumberWithStyle(userApy, { style: 'percent' })
-                        //                 : '-'
-                        //             }
-                        //         </Text>
-                        //     ),
-                        // },
                         {
                             content: (
                                 <Flex $width="100%" $justify="flex-end">
@@ -230,3 +176,38 @@ const TableRow = styled(TableHeader)`
         }
     `}
 `
+
+type EarnEmissionTooltipProps = {
+    rewards: Strategy['rewards']
+    earnPlatform: Strategy['earnPlatform']
+    earnLink: Strategy['earnLink']
+}
+function EarnEmissionTooltip({ rewards, earnPlatform, earnLink }: EarnEmissionTooltipProps) {
+    if (earnPlatform === 'velodrome')
+        return (
+            <Flex $width="140px" $column $justify="flex-end" $align="flex-start" $gap={4}>
+                <Text>
+                    {`After depositing tokens into pool, LP tokens must be staked on Velodrome to receive rewards from`}
+                    &nbsp;
+                    <Link href={earnLink || 'https://velodrome.finance'} $align="center">
+                        Velodrome.
+                    </Link>
+                </Text>
+            </Flex>
+        )
+
+    return (
+        <Flex $width="140px" $column $justify="flex-end" $align="flex-start" $gap={4}>
+            <Text $fontWeight={700} $whiteSpace="nowrap">
+                Daily Emissions
+            </Text>
+            {rewards.map(({ token, emission }) => (
+                <Flex key={token} $width="100%" $justify="space-between" $align="center" $gap={12}>
+                    <Text>{token}:</Text>
+                    <Text>{formatNumberWithStyle(emission, { maxDecimals: 1 })}</Text>
+                </Flex>
+            ))}
+            {earnPlatform === 'uniswap' && <Text $fontSize="0.8em">Incentives are for full-range only</Text>}
+        </Flex>
+    )
+}
