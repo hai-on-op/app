@@ -11,7 +11,7 @@ const projectId = VITE_WALLETCONNECT_ID!
 
 const { chains, publicClient } = configureChains(
     [NETWORK_ID === 10 ? optimism : NETWORK_ID === 420 ? optimismGoerli : optimismSepolia],
-    [alchemyProvider({ apiKey: VITE_ALCHEMY_KEY! }), publicProvider()]
+    [alchemyProvider({ apiKey: 'Fnl2R8wQYAthBTNGQRHLKPOAtU4yNNBL' }), publicProvider()]
 )
 
 const connectors = connectorsForWallets([
