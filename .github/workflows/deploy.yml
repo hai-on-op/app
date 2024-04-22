@@ -44,7 +44,7 @@ jobs:
                   scope: ${{ secrets.ORG_ID}} #Required
                   vercel-args: ${{ github.ref_name == 'main' && '--prod' || '' }}
                   vercel-project-id: ${{ secrets.PROJECT_ID}} #Required
-                  working-directory: ./build
+                  # working-directory: ./build
 
             - name: Comment PR
               if: github.event_name == 'pull_request'
