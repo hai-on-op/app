@@ -4,8 +4,16 @@ import { BigNumber } from 'ethers'
 import sugarAbi from '~/abis/velo_sugar.abi.json'
 import { useContract } from './useContract'
 import { useAccount } from 'wagmi'
+import { getAddress } from 'viem'
 
-const contractAddress = '0x3e532BC1998584fe18e357B5187897ad0110ED3A'
+import {
+    CL50_HAI_LUSD_ADDRESS,
+    HAI_ADDRESS,
+    KITE_ADDRESS,
+    VELO_SUGAR_ADDRESS,
+    CL50_HAI_LUSD_SYMBOL,
+    HAI_KITE_SYMBOL,
+} from '~/utils'
 
 export type VelodromeLpData = {
     tokenPair: [string, string]
@@ -25,7 +33,7 @@ export type VelodromeLpData = {
 }
 
 export function useVelodrome() {
-    const velodromeSugarContract = useContract(contractAddress, sugarAbi)
+    const velodromeSugarContract = useContract(VELO_SUGAR_ADDRESS, sugarAbi)
 
     const [data, setData] = useState<VelodromeLpData[]>()
     const [loading, setLoading] = useState(false)
@@ -39,14 +47,22 @@ export function useVelodrome() {
         const fetchData = async () => {
             try {
                 setLoading(true)
-                const lps = (await velodromeSugarContract.all(BigNumber.from(2), BigNumber.from(674))) as any[]
+                const lps = (await velodromeSugarContract.all(BigNumber.from(89), BigNumber.from(672))) as any[]
+                const targetTokens = [getAddress(HAI_ADDRESS), getAddress(KITE_ADDRESS)]
+                const flteredLps = lps.filter(
+                    (lp) => (targetTokens.includes(lp[7]) || targetTokens.includes(lp[10])) && lp[1] != HAI_KITE_SYMBOL
+                )
+
                 if (isStale) return
-                const lpData = lps.map((lp) => ({
-                    tokenPair: lp[1]
-                        .split('/')
-                        .map((token: string) => token.replace(/^[v|s]AMMV2-/gi, '').toUpperCase()),
+                const lpData = flteredLps.map((lp) => ({
+                    tokenPair:
+                        lp[0] == CL50_HAI_LUSD_ADDRESS
+                            ? ['HAI', 'LUSD']
+                            : lp[1]
+                                  .split('/')
+                                  .map((token: string) => token.replace(/^[v|s]AMMV2-/gi, '').toUpperCase()),
                     address: lp[0],
-                    symbol: lp[1],
+                    symbol: lp[0] == CL50_HAI_LUSD_ADDRESS ? CL50_HAI_LUSD_SYMBOL : lp[1],
                     decimals: lp[2],
                     liquidity: lp[3].toString(),
                     type: lp[4].toString(), // - tick spacing on CL pools, 0/-1 for stable/volatile on v2 pools
@@ -104,7 +120,7 @@ export type VelodromeLpPosition = {
 
 export function useVelodromePositions() {
     const { address } = useAccount()
-    const velodromeSugarContract = useContract(contractAddress, sugarAbi)
+    const velodromeSugarContract = useContract(VELO_SUGAR_ADDRESS, sugarAbi)
 
     const [data, setData] = useState<VelodromeLpPosition[]>()
     const [loading, setLoading] = useState(false)
@@ -118,11 +134,13 @@ export function useVelodromePositions() {
         const fetchData = async () => {
             try {
                 setLoading(true)
+
                 const positions = (await velodromeSugarContract.positions(
-                    BigNumber.from(2),
-                    BigNumber.from(674),
+                    BigNumber.from(170),
+                    BigNumber.from(600),
                     address
                 )) as any[]
+
                 if (isStale) return
 
                 const positionData = positions.map((position) => ({

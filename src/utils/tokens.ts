@@ -10,6 +10,7 @@ import velodromeImg from '~/assets/velodrome-img.svg'
 import wbtcImg from '~/assets/wbtc-img.svg'
 import wethImg from '~/assets/weth-img.svg'
 import wstethImg from '~/assets/wsteth-img.svg'
+import lusdImg from '~/assets/lusd-img.svg'
 
 export type Tokens = {
     [key: string]: {
@@ -34,6 +35,7 @@ export const TOKEN_LOGOS = {
     WBTC: wbtcImg,
     WETH: wethImg,
     WSTETH: wstethImg,
+    LUSD: lusdImg,
 }
 
 export const tokenMap: Record<string, string> = {
