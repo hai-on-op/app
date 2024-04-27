@@ -5,7 +5,7 @@ import sugarAbi from '~/abis/velo_sugar.abi.json'
 import { useContract } from './useContract'
 import { useAccount } from 'wagmi'
 import { getAddress } from 'viem'
-import { get } from 'http'
+
 import {
     CL50_HAI_LUSD_ADDRESS,
     HAI_ADDRESS,
