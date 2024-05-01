@@ -7,6 +7,7 @@ import { useEthersSigner, usePublicProvider } from '~/hooks'
 
 import ERC20_BYTES32_ABI from '~/abis/erc20_bytes32.json'
 import ERC20_ABI from '~/abis/erc20.json'
+import MERKLE_DISTRIBUTOR_ABI from '~/abis/MerkleDistributor.json'
 import { Erc20 } from '~/abis/Erc20'
 
 // account is not optional
@@ -54,6 +55,10 @@ export function useContract<T extends Contract = Contract>(
 
 export function useTokenContract(tokenAddress?: string, withSignerIfPossible?: boolean) {
     return useContract<Erc20>(tokenAddress, ERC20_ABI, withSignerIfPossible)
+}
+
+export function useDistributorContract(tokenAddress?: string, withSignerIfPossible?: boolean) {
+    return useContract(tokenAddress, MERKLE_DISTRIBUTOR_ABI, withSignerIfPossible)
 }
 
 export function useBytes32TokenContract(tokenAddress?: string, withSignerIfPossible?: boolean): Contract | null {
