@@ -6,9 +6,11 @@ import snxImg from '~/assets/snx-img.png'
 import stnImg from '~/assets/stn-img.png'
 import susdImg from '~/assets/susd-img.svg'
 import ttmImg from '~/assets/ttm-img.png'
+import velodromeImg from '~/assets/velodrome-img.svg'
 import wbtcImg from '~/assets/wbtc-img.svg'
 import wethImg from '~/assets/weth-img.svg'
 import wstethImg from '~/assets/wsteth-img.svg'
+import lusdImg from '~/assets/lusd-img.svg'
 
 export type Tokens = {
     [key: string]: {
@@ -29,9 +31,11 @@ export const TOKEN_LOGOS = {
     STN: stnImg,
     SUSD: susdImg,
     TTM: ttmImg,
+    VELO: velodromeImg,
     WBTC: wbtcImg,
     WETH: wethImg,
     WSTETH: wstethImg,
+    LUSD: lusdImg,
 }
 
 export const tokenMap: Record<string, string> = {
@@ -85,6 +89,11 @@ export const tokenAssets: Record<string, Token> = {
         symbol: 'TTM',
         name: 'TOTEM',
         icon: ttmImg,
+    },
+    VELO: {
+        symbol: 'VELO',
+        name: 'VELO',
+        icon: velodromeImg,
     },
     WBTC: {
         symbol: 'WBTC',

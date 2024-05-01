@@ -148,13 +148,13 @@ export function useEarnStrategies() {
             const token0 =
                 Object.values(tokensData).find(({ address }) => stringsExistAndAreEqual(address, pool.token0))
                     ?.symbol || pool.tokenPair[0]
-            const price0 = parseFloat((veloPrices as any)[token0]?.raw || '1')
+            const price0 = parseFloat((veloPrices as any)[token0]?.raw || (prices as any)[token0]?.toString() || '1')
             const tvl0 = parseFloat(formatUnits(pool.staked0, pool.decimals)) * price0
 
             const token1 =
                 Object.values(tokensData).find(({ address }) => stringsExistAndAreEqual(address, pool.token1))
                     ?.symbol || pool.tokenPair[1]
-            const price1 = parseFloat((veloPrices as any)[token1]?.raw || '1')
+            const price1 = parseFloat((veloPrices as any)[token1]?.raw || (prices as any)[token1]?.toString() || '1')
             const tvl1 = parseFloat(formatUnits(pool.staked1, pool.decimals)) * price1
 
             const tvl = tvl0 + tvl1

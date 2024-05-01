@@ -21,21 +21,55 @@ export enum ApprovalState {
 }
 // checks for token allowance
 export function useTokenAllowance(tokenAddress?: string, owner?: string, spender?: string) {
-    const [allowance, setAllowance] = useState<BigNumber | undefined>()
-    const [loading, setLoading] = useState<boolean>(false)
+    const [allowance, setAllowance] = useState<BigNumber>()
+    const [loading, setLoading] = useState(false)
     const contract = useTokenContract(tokenAddress, false)
 
-    const updateAllowance = useCallback(async () => {
-        if (owner && spender) {
-            setLoading(true)
-            setAllowance(await contract?.allowance(owner, spender))
+    useEffect(() => {
+        if (!owner || !spender || !contract) {
+            setAllowance(undefined)
             setLoading(false)
+            return
+        }
+
+        let isStale = false
+        const fetchAllowance = async () => {
+            setLoading(true)
+            try {
+                const a = await contract.allowance(owner, spender)
+                if (isStale) return
+                setAllowance(a)
+            } catch (error: any) {
+                if (isStale) return
+                console.error(`An error occurred while fetching allowance:`, error)
+            } finally {
+                if (!isStale) setLoading(false)
+            }
+        }
+        fetchAllowance()
+
+        return () => {
+            isStale = true
         }
     }, [contract, owner, spender])
 
-    useEffect(() => {
-        updateAllowance()
-    }, [updateAllowance])
+    const updateAllowance = useCallback(async () => {
+        if (!owner || !spender || !contract) {
+            setAllowance(undefined)
+            setLoading(false)
+            return
+        }
+
+        setLoading(true)
+        try {
+            const a = await contract.allowance(owner, spender)
+            setAllowance(a)
+        } catch (error: any) {
+            console.error(`An error occurred while fetching allowance:`, error)
+        } finally {
+            setLoading(false)
+        }
+    }, [contract, owner, spender])
 
     return { allowance, updateAllowance, loading }
 }
