@@ -99,7 +99,6 @@ export const ModalContainer = styled(CenteredFlex)<{ $width?: string; $maxWidth?
     position: absolute;
     width: ${({ $width = '100%' }) => $width};
     max-width: min(${({ $maxWidth = '720px' }) => $maxWidth}, calc(100vw - 48px));
-    max-height: calc(100vh - 320px);
     z-index: 999;
     background-color: ${({ theme }) => theme.colors.background};
     border: ${({ theme }) => theme.border.medium};

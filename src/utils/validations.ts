@@ -18,6 +18,25 @@ export const isAddress = (value: any): boolean => {
     }
 }
 
+export function isFormattedAddress(value: any): string | false {
+    try {
+        return getAddress(value)
+    } catch {
+        return false
+    }
+}
+
+export function slugify(text: string) {
+    return text
+        .toString()
+        .toLowerCase()
+        .replace(/\s+/g, '-') // Replace spaces with -
+        .replace(/[^\w-]+/g, '') // Remove all non-word chars
+        .replace(/--+/g, '-') // Replace multiple - with single -
+        .replace(/^-+/, '') // Trim - from start of text
+        .replace(/-+$/, '') // Trim - from end of text
+}
+
 export const stringsExistAndAreEqual = (a: string | null | undefined, b: string | null | undefined) => {
     return !!a && !!b && a.toLowerCase() === b.toLowerCase()
 }

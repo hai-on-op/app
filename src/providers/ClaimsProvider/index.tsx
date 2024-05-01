@@ -1,15 +1,23 @@
-import { createContext, useContext } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
+import { useAccount, useNetwork } from 'wagmi'
 import { ApolloError } from '@apollo/client'
+import { useGeb } from '~/hooks'
 
 import { ReactChildren, SummaryCurrency, SummaryItemValue } from '~/types'
 import { formatSummaryValue } from '~/utils'
 import { useInternalBalances } from './useInternalBalances'
 import { type FormattedQueryAuctionBid, useMyActiveAuctions } from './useMyActiveAuctions'
+import { fetchIncentivesData } from './useMyIncentives'
 
 type ClaimsContext = {
     internalBalances: {
         HAI?: SummaryItemValue<SummaryCurrency>
         KITE?: SummaryItemValue<SummaryCurrency>
+        refetch?: () => void
+    }
+    incentivesData: {
+        KITE?: SummaryItemValue<SummaryCurrency>
+        OP?: SummaryItemValue<SummaryCurrency>
         refetch?: () => void
     }
     activeAuctions: {
@@ -25,21 +33,23 @@ type ClaimsContext = {
     totalUSD: SummaryItemValue
 }
 
+const defaultTokenMetadata = {
+    raw: '0',
+    formatted: '0',
+    usdRaw: '0',
+    usdFormatted: '$--',
+}
+
 const defaultState: ClaimsContext = {
     internalBalances: {
-        HAI: {
-            raw: '0',
-            formatted: '0',
-            usdRaw: '0',
-            usdFormatted: '$--',
-        },
-        KITE: {
-            raw: '0',
-            formatted: '0',
-            usdRaw: '0',
-            usdFormatted: '$--',
-        },
+        HAI: defaultTokenMetadata,
+        KITE: defaultTokenMetadata,
     },
+    incentivesData: {
+        KITE: defaultTokenMetadata,
+        OP: defaultTokenMetadata,
+    },
+    refetchIncentives: () => undefined,
     activeAuctions: {
         bids: [],
         activeBids: [],
@@ -69,12 +79,26 @@ type Props = {
     children: ReactChildren
 }
 export function ClaimsProvider({ children }: Props) {
+    const geb = useGeb()
+
+    const { address: account } = useAccount()
+    const { chain } = useNetwork()
+    const chainId = chain?.id
+
     const internalBalances = useInternalBalances()
 
     const activeAuctions = useMyActiveAuctions()
 
-    // TODO: incentive program claimable rewards
+    const [incentivesData, setIncentivesData] = useState({})
 
+    useEffect(() => {
+        const fetchIncentives = async () => {
+            if (!account || !chainId || !geb) return
+            const incentives = await fetchIncentivesData(geb, account, chainId)
+            setIncentivesData(incentives)
+        }
+        fetchIncentives()
+    }, [geb])
     const totalUSD = formatSummaryValue(
         (
             parseFloat(internalBalances.HAI?.usdRaw || '0') +
@@ -88,6 +112,11 @@ export function ClaimsProvider({ children }: Props) {
         <ClaimsContext.Provider
             value={{
                 internalBalances,
+                incentivesData,
+                refetchIncentives: async () => {
+                    const updatedData = await fetchIncentivesData(geb, account, chainId)
+                    setIncentivesData(updatedData)
+                },
                 activeAuctions,
                 totalUSD,
             }}
