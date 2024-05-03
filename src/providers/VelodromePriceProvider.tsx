@@ -58,22 +58,20 @@ export function VelodromePriceProvider({ children }: Props) {
                     '0x4200000000000000000000000000000000000006', // connector WETH
                     '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9', // connector sUSD
                     '0x1F32b1c2345538c0c6f582fCB022739c4A194Ebb', // connector wstETH
+                    '0x8700dAec35aF8Ff88c16BdF0418774CB3D7599B4', // connector SNX
                     '0x0b2c639c533813f4aa9d7837caf62653d097ff85', // denomination USDC
                 ])) as string[] // actually BigNumber[] but don't need to import
                 if (isStale) return
 
-                const formattedPrices = prices.reduce(
-                    (obj, price, i) => {
-                        ;(obj as any)[Object.keys(priceAddresses)[i]] = formatSummaryValue(formatUnits(price, 18), {
-                            style: 'currency',
-                            minDecimals: 2,
-                            maxDecimals: 2,
-                            minSigFigs: 2,
-                        })
-                        return obj
-                    },
-                    {} as VelodromePriceContext['prices']
-                )
+                const formattedPrices = prices.reduce((obj, price, i) => {
+                    ;(obj as any)[Object.keys(priceAddresses)[i]] = formatSummaryValue(formatUnits(price, 18), {
+                        style: 'currency',
+                        minDecimals: 2,
+                        maxDecimals: 2,
+                        minSigFigs: 2,
+                    })
+                    return obj
+                }, {} as VelodromePriceContext['prices'])
                 // console.log(formattedPrices)
                 setPrices(formattedPrices)
             } catch (error: any) {
