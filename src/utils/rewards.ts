@@ -12,6 +12,10 @@ export const REWARDS = {
             OP: 50,
             KITE: 20,
         },
+        SNX: {
+            OP: 0,
+            KITE: 0,
+        },
         // Testnet
         WBTC: {
             OP: 10,
