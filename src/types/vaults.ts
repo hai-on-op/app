@@ -124,7 +124,7 @@ export type IVaultQuery = ILiquidationResponse & {
             coinAllowance: {
                 amount: string
             } | null
-        }
+        },
     ]
 }
 

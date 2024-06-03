@@ -18,7 +18,6 @@ import uniImg from '~/assets/uniswap-icon.svg'
 import frxethImg from '~/assets/frxeth-img.svg'
 import sfrxethImg from '~/assets/sfrxeth-img.svg'
 import pendleImg from '~/assets/pendle-img.png'
-import { LINK } from '@hai-on-op/sdk'
 
 export type Tokens = {
     [key: string]: {
