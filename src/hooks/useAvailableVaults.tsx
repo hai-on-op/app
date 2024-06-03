@@ -32,12 +32,23 @@ export function useAvailableVaults() {
         [tokensData]
     )
 
+    const collaterals = useMemo(
+        () =>
+            Object.values(tokensData || {})
+                .filter(({ isCollateral }) => isCollateral)
+                .map((collateral) => collateral),
+        [tokensData]
+    )
+
     const availableVaults: AvailableVaultPair[] = useMemo(() => {
-        return symbols.map((symbol) => {
+        return collaterals.map((collateral) => {
+            const symbol = collateral.symbol
             const { liquidationCRatio, totalAnnualizedStabilityFee } =
                 vaultState.liquidationData?.collateralLiquidationData[symbol] || {}
             return {
                 collateralName: symbol,
+                collateralLabel: collateral.label,
+                hasRewards: collateral.hasRewards,
                 collateralizationFactor: liquidationCRatio || '',
                 stabilityFee: (1 - parseFloat(totalAnnualizedStabilityFee || '1')).toString(),
                 apy: totalAnnualizedStabilityFee || '',
