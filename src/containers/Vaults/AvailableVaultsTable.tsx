@@ -22,6 +22,7 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
     const { setActiveVault } = useVault()
 
     const isUpToSmall = useMediaQuery('upToSmall')
+
     return (
         <Table
             container={StyledTableContainer}
