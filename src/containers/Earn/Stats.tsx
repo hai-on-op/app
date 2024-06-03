@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useAccount } from 'wagmi'
 
 import { formatNumberWithStyle } from '~/utils'
-// import { useStoreActions } from '~/store'
+import { useStoreActions } from '~/store'
 import { useEarnStrategies } from '~/hooks'
 
 import { HaiButton } from '~/styles'
@@ -15,7 +15,7 @@ export function EarnStats() {
     const { address } = useAccount()
 
     const { rows } = useEarnStrategies()
-    // const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
+    const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
 
     const { value, apy } = useMemo(() => {
         return rows.reduce(
@@ -56,9 +56,12 @@ export function EarnStats() {
             label: 'My Campaign Rewards',
             tooltip: 'Rewards currently voted upon and distributed by DAO approximately once per month.',
             button: (
-                <HaiButton title="Claim window is closed" $variant="yellowish" disabled>
+                <HaiButton $variant="yellowish" onClick={() => popupsActions.setIsClaimPopupOpen(true)}>
                     Claim
                 </HaiButton>
+                // <HaiButton title="Claim window is closed" $variant="yellowish" disabled>
+                //     Claim
+                // </HaiButton>
             ),
         },
         // {
