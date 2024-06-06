@@ -155,6 +155,8 @@ export type IManageVault = {
 
 export type AvailableVaultPair = {
     collateralName: string
+    collateralLabel: string
+    hasRewards: boolean
     collateralizationFactor: string
     stabilityFee: string
     apy: string
