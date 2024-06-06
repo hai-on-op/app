@@ -11,6 +11,13 @@ import wbtcImg from '~/assets/wbtc-img.svg'
 import wethImg from '~/assets/weth-img.svg'
 import wstethImg from '~/assets/wsteth-img.svg'
 import lusdImg from '~/assets/lusd-img.svg'
+import rethImg from '~/assets/reth-img.png'
+import linkImg from '~/assets/link-img.png'
+import ldoImg from '~/assets/ldo-img.png'
+import uniImg from '~/assets/uniswap-icon.svg'
+import frxethImg from '~/assets/frxeth-img.svg'
+import sfrxethImg from '~/assets/sfrxeth-img.svg'
+import pendleImg from '~/assets/pendle-img.png'
 
 export type Tokens = {
     [key: string]: {
@@ -36,6 +43,13 @@ export const TOKEN_LOGOS = {
     WETH: wethImg,
     WSTETH: wstethImg,
     LUSD: lusdImg,
+    RETH: rethImg,
+    LINK: linkImg,
+    LDO: ldoImg,
+    UNI: uniImg,
+    FRXETH: frxethImg,
+    SFRXETH: sfrxethImg,
+    PENDLE: pendleImg,
 }
 
 export const tokenMap: Record<string, string> = {
@@ -109,6 +123,41 @@ export const tokenAssets: Record<string, Token> = {
         symbol: 'WSTETH',
         name: 'Wrapped Staked Ethereum',
         icon: wstethImg,
+    },
+    RETH: {
+        symbol: 'RTETH',
+        name: 'Rocket Pool ETH',
+        icon: rethImg,
+    },
+    LINK: {
+        symbol: 'LINK',
+        name: 'Chainlink',
+        icon: linkImg,
+    },
+    LDO: {
+        symbol: 'LDO',
+        name: 'Lido DAO',
+        icon: ldoImg,
+    },
+    UNI: {
+        symbol: 'UNI',
+        name: 'Uniswap',
+        icon: uniImg,
+    },
+    FRXETH: {
+        symbol: 'FRXETH',
+        name: 'Frax Ether',
+        icon: frxethImg,
+    },
+    SFRXETH: {
+        symbol: 'SFRXETH',
+        name: 'Frax Staked Ether',
+        icon: sfrxethImg,
+    },
+    PENDLE: {
+        symbol: 'PENDLE',
+        name: 'Pendle',
+        icon: pendleImg,
     },
 }
 
