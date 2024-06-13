@@ -12,6 +12,7 @@ const pairs: [string, string][] = [
     ['WETH', TOKEN_LOGOS.WETH],
     ['WSTETH', TOKEN_LOGOS.WSTETH],
     ['SNX', TOKEN_LOGOS.SNX],
+    ['RETH', TOKEN_LOGOS.RETH],
 ]
 
 export function PairsBanner() {
