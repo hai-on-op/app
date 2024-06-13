@@ -76,26 +76,30 @@ export function useEarnStrategies() {
 
     const vaultStrategies = useMemo(() => {
         return (
-            data?.collateralTypes.map((cType) => {
-                const { symbol } =
-                    tokenAssets[cType.id] ||
-                    Object.values(tokenAssets).find(({ name }) => name.toLowerCase() === cType.id.toLowerCase()) ||
-                    {}
-                const rewards = REWARDS.vaults[symbol as keyof typeof REWARDS.vaults] || REWARDS.default
-                const apy = calculateAPY(parseFloat(cType.debtAmount) * prices.HAI, prices, rewards)
-                return {
-                    pair: [symbol || 'HAI'],
-                    rewards: Object.entries(rewards).map(([token, emission]) => ({ token, emission })),
-                    tvl: cType.debtAmount,
-                    apy,
-                    userPosition: list
-                        .reduce((total, { totalDebt, collateralName }) => {
-                            if (collateralName !== symbol) return total
-                            return total + parseFloat(totalDebt)
-                        }, 0)
-                        .toString(),
-                } as Strategy
-            }) || []
+            data?.collateralTypes
+                .filter((cType) =>
+                    Object.values(REWARDS.vaults[cType.id as keyof typeof REWARDS.vaults] || {}).some((a) => a != 0)
+                )
+                .map((cType) => {
+                    const { symbol } =
+                        tokenAssets[cType.id] ||
+                        Object.values(tokenAssets).find(({ name }) => name.toLowerCase() === cType.id.toLowerCase()) ||
+                        {}
+                    const rewards = REWARDS.vaults[symbol as keyof typeof REWARDS.vaults] || REWARDS.default
+                    const apy = calculateAPY(parseFloat(cType.debtAmount) * prices.HAI, prices, rewards)
+                    return {
+                        pair: [symbol || 'HAI'],
+                        rewards: Object.entries(rewards).map(([token, emission]) => ({ token, emission })),
+                        tvl: cType.debtAmount,
+                        apy,
+                        userPosition: list
+                            .reduce((total, { totalDebt, collateralName }) => {
+                                if (collateralName !== symbol) return total
+                                return total + parseFloat(totalDebt)
+                            }, 0)
+                            .toString(),
+                    } as Strategy
+                }) || []
         )
     }, [data?.collateralTypes, prices, list, tokenAssets])
 

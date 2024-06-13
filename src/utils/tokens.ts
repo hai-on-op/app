@@ -125,7 +125,7 @@ export const tokenAssets: Record<string, Token> = {
         icon: wstethImg,
     },
     RETH: {
-        symbol: 'RTETH',
+        symbol: 'RETH',
         name: 'Rocket Pool ETH',
         icon: rethImg,
     },
