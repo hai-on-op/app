@@ -66,37 +66,7 @@ export function AnalyticsProvider({ children }: Props) {
 
     const pools = usePoolAnalytics()
 
-    // const haiMarketPrice = useMemo(() => {
-    //     if (!pools.uniPrice) return data.marketPrice
-    //     const collateral = data.tokenAnalyticsData.find((data) =>
-    //         stringsExistAndAreEqual(data.tokenContract, pools.uniPrice?.token1)
-    //     )
-    //     if (!collateral) return data.marketPrice
-    //     const price = parseFloat(pools.uniPrice.token0Price) * parseFloat(formatEther(collateral.currentPrice))
-    //     return formatSummaryValue(price.toString(), {
-    //         minDecimals: 4,
-    //         maxDecimals: 4,
-    //         minSigFigs: 4,
-    //         maxSigFigs: 4,
-    //         style: 'currency',
-    //     })!
-    // }, [pools.uniPrice, data.tokenAnalyticsData, data.marketPrice])
-
-    const haiMarketPrice = useMemo(() => {
-        return data.marketPrice
-        // const collateral = data.tokenAnalyticsData.find((data) =>
-        //     stringsExistAndAreEqual(data.tokenContract, pools.uniPrice?.token1)
-        // )
-        // if (!collateral) return data.marketPrice
-        // const price = parseFloat(pools.uniPrice.token0Price) * parseFloat(formatEther(collateral.currentPrice))
-        // return formatSummaryValue(price.toString(), {
-        //     minDecimals: 4,
-        //     maxDecimals: 4,
-        //     minSigFigs: 4,
-        //     maxSigFigs: 4,
-        //     style: 'currency',
-        // })!
-    }, [data.marketPrice])
+    const haiMarketPrice = useMemo(() => data.marketPrice, [data.marketPrice])
 
     return (
         <AnalyticsContext.Provider
