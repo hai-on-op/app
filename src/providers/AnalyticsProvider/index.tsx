@@ -1,8 +1,7 @@
 import { createContext, useContext, useMemo } from 'react'
-import { formatEther } from 'ethers/lib/utils'
 
 import type { ReactChildren, SummaryItemValue } from '~/types'
-import { Timeframe, formatSummaryValue, stringsExistAndAreEqual } from '~/utils'
+import { Timeframe } from '~/utils'
 import { type HistoricalStatsReturn, useHistoricalStats } from './useHistoricalStats'
 import { DEFAULT_ANALYTICS_DATA, type GebAnalyticsData, useGebAnalytics } from './useGebAnalytics'
 import { type SystemData, useSystemData } from './useSystemData'
@@ -66,21 +65,7 @@ export function AnalyticsProvider({ children }: Props) {
 
     const pools = usePoolAnalytics()
 
-    const haiMarketPrice = useMemo(() => {
-        if (!pools.uniPrice) return data.marketPrice
-        const collateral = data.tokenAnalyticsData.find((data) =>
-            stringsExistAndAreEqual(data.tokenContract, pools.uniPrice?.token1)
-        )
-        if (!collateral) return data.marketPrice
-        const price = parseFloat(pools.uniPrice.token0Price) * parseFloat(formatEther(collateral.currentPrice))
-        return formatSummaryValue(price.toString(), {
-            minDecimals: 4,
-            maxDecimals: 4,
-            minSigFigs: 4,
-            maxSigFigs: 4,
-            style: 'currency',
-        })!
-    }, [pools.uniPrice, data.tokenAnalyticsData, data.marketPrice])
+    const haiMarketPrice = useMemo(() => data.marketPrice, [data.marketPrice])
 
     return (
         <AnalyticsContext.Provider
