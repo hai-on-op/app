@@ -1,8 +1,7 @@
 import { createContext, useContext, useMemo } from 'react'
-import { formatEther } from 'ethers/lib/utils'
 
 import type { ReactChildren, SummaryItemValue } from '~/types'
-import { Timeframe, formatSummaryValue, stringsExistAndAreEqual } from '~/utils'
+import { Timeframe } from '~/utils'
 import { type HistoricalStatsReturn, useHistoricalStats } from './useHistoricalStats'
 import { DEFAULT_ANALYTICS_DATA, type GebAnalyticsData, useGebAnalytics } from './useGebAnalytics'
 import { type SystemData, useSystemData } from './useSystemData'
