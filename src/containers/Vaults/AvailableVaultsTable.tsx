@@ -4,7 +4,7 @@ import type { AvailableVaultPair, SetState, SortableHeader, Sorting } from '~/ty
 import { formatNumberWithStyle } from '~/utils'
 import { useVault } from '~/providers/VaultProvider'
 import { useMediaQuery } from '~/hooks'
-
+import { formatCollateralLabel } from '~/utils/formatting'
 import styled from 'styled-components'
 import { CenteredFlex, Flex, Grid, HaiButton, TableButton, Text } from '~/styles'
 import { RewardsTokenArray, TokenArray } from '~/components/TokenArray'
@@ -108,7 +108,7 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                                         : '-'}
                                                 </Text>
                                                 {!!eligibleBalance && eligibleBalance !== '0' && (
-                                                    <Text>{collateralName}</Text>
+                                                    <Text>{formatCollateralLabel(collateralName)}</Text>
                                                 )}
                                             </Flex>
                                         ),

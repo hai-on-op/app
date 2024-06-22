@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-
+import { formatCollateralLabel } from '~/utils'
 import { Status, VaultAction, formatNumberWithStyle } from '~/utils'
 import { useStoreState } from '~/store'
 import { useVault } from '~/providers/VaultProvider'
@@ -152,7 +152,7 @@ export function Overview() {
                 </StatusLabel>
                 <Flex $justify="flex-end" $align="center" $gap={12} $fontSize="0.8em">
                     <Text>
-                        {collateral.name}:&nbsp;
+                        {formatCollateralLabel(collateral.name)}:&nbsp;
                         <strong>
                             {collateral.priceInUSD
                                 ? formatNumberWithStyle(collateral.priceInUSD.toString(), {
@@ -181,6 +181,7 @@ export function Overview() {
                 <OverviewStat
                     value={summary.collateral.current?.formatted || summary.collateral.after.formatted}
                     token={collateral.name as any}
+                    tokenLabel={formatCollateralLabel(collateral.name)}
                     label="Locked Collateral"
                     convertedValue={summary.collateral.current?.usdFormatted || summary.collateral.after.usdFormatted}
                     simulatedValue={vault && simulation?.collateral ? summary.collateral.after.formatted : ''}

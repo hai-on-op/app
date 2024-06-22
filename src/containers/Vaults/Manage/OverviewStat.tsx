@@ -12,6 +12,7 @@ import { ProgressIndicator, ProgressIndicatorProps } from '~/components/Progress
 type OverviewStatProps = {
     token?: TokenKey
     value: string | number
+    tokenLabel?: string
     label: string
     labelOnTop?: boolean
     tooltip?: string
@@ -25,6 +26,7 @@ type OverviewStatProps = {
 }
 export function OverviewStat({
     token,
+    tokenLabel,
     value,
     label,
     labelOnTop = false,
@@ -49,7 +51,7 @@ export function OverviewStat({
                 <Flex $column $justify="center" $align="flex-start" $gap={4}>
                     <ValueContainer>
                         <Text $fontSize="1.5em" $fontWeight={700}>
-                            {value || '--'} {token}
+                            {value || '--'} {tokenLabel}
                         </Text>
                         <Text $fontSize="1.2em" $color="rgba(0,0,0,0.6)">
                             {convertedValue}

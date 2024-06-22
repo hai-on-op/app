@@ -13,7 +13,7 @@ import {
 import { useStoreActions, useStoreState } from '~/store'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { useMediaQuery, useOutsideClick } from '~/hooks'
-
+import { formatCollateralLabel } from '~/utils'
 import styled, { css } from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Popout, Title } from '~/styles'
 import { Twitter } from '~/components/Icons/Twitter'
@@ -79,7 +79,7 @@ export function Header({ tickerActive = false }: HeaderProps) {
         ]
         tokenAnalyticsData.forEach(({ symbol, currentPrice }) => {
             const price = formatDataNumber(currentPrice.toString() || '0', 18, 2, true)
-            arr.push([symbol, price, '\u2022'])
+            arr.push([formatCollateralLabel(symbol), price, '\u2022'])
         })
         return arr.flat()
     }, [tokenAnalyticsData, haiMarketPrice.formatted, redemptionPrice])
