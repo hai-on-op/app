@@ -18,6 +18,7 @@ import uniImg from '~/assets/uniswap-icon.svg'
 import frxethImg from '~/assets/frxeth-img.svg'
 import sfrxethImg from '~/assets/sfrxeth-img.svg'
 import pendleImg from '~/assets/pendle-img.png'
+import { LUSD_A } from '@hai-on-op/sdk'
 
 export type Tokens = {
     [key: string]: {
@@ -42,7 +43,7 @@ export const TOKEN_LOGOS = {
     WBTC: wbtcImg,
     WETH: wethImg,
     WSTETH: wstethImg,
-    LUSD: lusdImg,
+    'LUSD-A': lusdImg,
     RETH: rethImg,
     LINK: linkImg,
     LDO: ldoImg,
@@ -98,6 +99,11 @@ export const tokenAssets: Record<string, Token> = {
         symbol: 'SUSD',
         name: 'sUSD',
         icon: susdImg,
+    },
+    'LUSD-A': {
+        symbol: 'LUSD-A',
+        name: 'LUSD-A',
+        icon: lusdImg,
     },
     TTM: {
         symbol: 'TTM',

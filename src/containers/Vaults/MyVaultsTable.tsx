@@ -45,7 +45,7 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                     totalAnnualizedStabilityFee,
                 } = vault
 
-                const hasNoRewards = ['SNX', 'RETH']
+                const hasNoRewards = ['SNX', 'RETH', 'LUSD-A']
                 return (
                     <Table.Row
                         key={id}
