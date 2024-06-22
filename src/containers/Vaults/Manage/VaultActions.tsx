@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { ActionState, VaultAction, formatNumberWithStyle } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { useVault } from '~/providers/VaultProvider'
-
+import { formatCollateralLabel } from '~/utils'
 import styled from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
 import { NumberInput } from '~/components/NumberInput'
@@ -135,9 +135,9 @@ export function VaultActions() {
                                 <Text>Deposit</Text>
                             </CenteredFlex>
                         }
-                        subLabel={`Max ${collateral.balance.formatted} ${collateral.name}`}
+                        subLabel={`Max ${collateral.balance.formatted} ${formatCollateralLabel(collateral.name)}`}
                         placeholder="Deposit Amount"
-                        unitLabel={collateral.name}
+                        unitLabel={formatCollateralLabel(collateral.name)}
                         onChange={(value: string) => updateForm({ deposit: value || undefined })}
                         value={formState.deposit}
                         onMax={() => updateForm({ deposit: collateral.balance.raw })}
@@ -176,9 +176,11 @@ export function VaultActions() {
                                 <Text>Withdraw</Text>
                             </CenteredFlex>
                         }
-                        subLabel={`Max ${summary.availableCollateral?.formatted || '0'} ${collateral.name}`}
+                        subLabel={`Max ${summary.availableCollateral?.formatted || '0'} ${formatCollateralLabel(
+                            collateral.name
+                        )}`}
                         placeholder="Withdraw Amount"
-                        unitLabel={collateral.name}
+                        unitLabel={formatCollateralLabel(collateral.name)}
                         onChange={(value: string) => updateForm({ withdraw: value || undefined })}
                         value={formState.withdraw}
                         disabled={action === VaultAction.CREATE}

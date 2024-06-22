@@ -1,7 +1,7 @@
 import type { IVault, SetState, SortableHeader, Sorting } from '~/types'
 import { Status, formatNumberWithStyle, riskStateToStatus, getRatePercentage } from '~/utils'
 import { useVault } from '~/providers/VaultProvider'
-
+import { formatCollateralLabel } from '~/utils/formatting'
 import styled from 'styled-components'
 import { CenteredFlex, Flex, Grid, HaiButton, TableButton, Text } from '~/styles'
 import { RewardsTokenArray, TokenArray } from '~/components/TokenArray'
@@ -46,6 +46,8 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                 } = vault
 
                 const hasNoRewards = ['SNX', 'RETH', 'LUSD-A']
+                const collateralLabel = formatCollateralLabel(collateralName)
+
                 return (
                     <Table.Row
                         key={id}
@@ -97,7 +99,7 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                                         <Text $textAlign="right">
                                             {formatNumberWithStyle(collateral, { maxDecimals: 4 })}
                                         </Text>
-                                        <Text>{collateralName.toUpperCase()}</Text>
+                                        <Text>{collateralLabel.toUpperCase()}</Text>
                                     </Table.ItemGrid>
                                 ),
                             },
