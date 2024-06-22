@@ -9,7 +9,7 @@ import {
     type QueryModifySAFECollateralization,
 } from '~/utils'
 import { useStoreState } from '~/store'
-
+import { formatCollateralLabel } from '~/utils/formatting'
 import styled, { css } from 'styled-components'
 import { CenteredFlex, Flex, Grid, Text } from '~/styles'
 import { AddressLink } from '~/components/AddressLink'
@@ -101,7 +101,7 @@ const getActionLabelAndIcon = (
     }
     switch (Math.sign(collateral)) {
         case 1:
-            label.push(`Deposit ${collateralToken}`)
+            label.push(`Deposit ${formatCollateralLabel(collateralToken)}`)
             icons.push(
                 <ActionIconContainer key={icons.length + 1}>
                     <TokenArray tokens={[collateralToken as any]} hideLabel size={28} />
@@ -229,7 +229,7 @@ export function ActivityTable({ vault }: ActivityTableProps) {
                                                         {collateral > 0 ? '+' : ''}
                                                         {formatNumberWithStyle(deltaCollateral)}
                                                         &nbsp;
-                                                        {vault!.collateralToken}
+                                                        {formatCollateralLabel(vault!.collateralToken)}
                                                     </Text>
                                                     <Text $fontSize="0.8em">
                                                         {collateralPrice
