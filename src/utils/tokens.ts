@@ -42,7 +42,7 @@ export const TOKEN_LOGOS = {
     WBTC: wbtcImg,
     WETH: wethImg,
     WSTETH: wstethImg,
-    LUSD: lusdImg,
+    'LUSD-A': lusdImg,
     RETH: rethImg,
     LINK: linkImg,
     LDO: ldoImg,
@@ -98,6 +98,11 @@ export const tokenAssets: Record<string, Token> = {
         symbol: 'SUSD',
         name: 'sUSD',
         icon: susdImg,
+    },
+    'LUSD-A': {
+        symbol: 'LUSD-A',
+        name: 'LUSD-A',
+        icon: lusdImg,
     },
     TTM: {
         symbol: 'TTM',
