@@ -26,6 +26,7 @@ import { ConnectButton } from '~/components/ConnectButton'
 import { BrandedDropdown } from '~/components/BrandedDropdown'
 import { WrapETHModal } from '~/components/Modal/WrapETHModal'
 // import { Notifications } from './Notifications'
+import { HaiFace } from '~/components/Icons/HaiFace'
 import { MobileMenu } from './MobileMenu'
 import { MusicButton } from './MusicButton'
 
