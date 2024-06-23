@@ -6,6 +6,7 @@ import {
     ChainId,
     LINK_TO_DISCORD,
     LINK_TO_DOCS,
+    LINK_TO_FORUM,
     LINK_TO_GOVERNANCE,
     LINK_TO_PRIVACY_POLICY,
     LINK_TO_TELEGRAM,
@@ -40,6 +41,7 @@ import {
 import { Twitter } from '~/components/Icons/Twitter'
 import { Telegram } from '~/components/Icons/Telegram'
 import { Discord } from '~/components/Icons/Discord'
+import { HaiFace } from '~/components/Icons/HaiFace'
 import { Caret } from '~/components/Icons/Caret'
 
 type MobileMenuProps = {
@@ -181,6 +183,12 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
                             icon={<Discord size={19} stroke="black" strokeWidth={2} />}
                         >
                             Discord
+                        </BrandedDropdown.Item>
+                        <BrandedDropdown.Item
+                            href={LINK_TO_FORUM}
+                            icon={<HaiFace size={19} stroke="black" strokeWidth={2} />}
+                        >
+                            Forum
                         </BrandedDropdown.Item>
                         <BrandedDropdown.Item onClick={() => toggleScreensaver(true)} icon={<Tv size={18} />}>
                             Screensaver
