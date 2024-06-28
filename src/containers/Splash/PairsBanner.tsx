@@ -14,6 +14,7 @@ const pairs: [string, string][] = [
     ['SNX', TOKEN_LOGOS.SNX],
     ['RETH', TOKEN_LOGOS.RETH],
     ['LUSD', TOKEN_LOGOS['LUSD-A']],
+    ['LINK', TOKEN_LOGOS['LINK']],
 ]
 
 export function PairsBanner() {
