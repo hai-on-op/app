@@ -120,12 +120,12 @@ const Nav = styled(CenteredFlex)<{ $active?: boolean; $compactQuery: MediaWidth 
             border-left: 1px solid black;
         }
         ${
-            $active &&
+    $active &&
             css`
                 color: black;
                 border-bottom: none;
             `
-        }
+}
     `}
 
     cursor: pointer;

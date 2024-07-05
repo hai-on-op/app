@@ -91,25 +91,25 @@ export function Overview() {
                 label: crIsInfinite
                     ? 'No Debt'
                     : formatNumberWithStyle(collateralRatio, {
-                          maxDecimals: 1,
-                          scalingFactor: 0.01,
-                          style: 'percent',
-                      }),
+                        maxDecimals: 1,
+                        scalingFactor: 0.01,
+                        style: 'percent',
+                    }),
             },
             simulatedProgress:
                 action !== VaultAction.CREATE && simulation?.collateralRatio
                     ? {
-                          progress: simulatedCrIsInfinite
-                              ? 1
-                              : Math.min(parseFloat(simulation.collateralRatio), max) / max,
-                          label: simulatedCrIsInfinite
-                              ? 'No Debt'
-                              : formatNumberWithStyle(simulation.collateralRatio, {
-                                    maxDecimals: 1,
-                                    scalingFactor: 0.01,
-                                    style: 'percent',
-                                }),
-                      }
+                        progress: simulatedCrIsInfinite
+                            ? 1
+                            : Math.min(parseFloat(simulation.collateralRatio), max) / max,
+                        label: simulatedCrIsInfinite
+                            ? 'No Debt'
+                            : formatNumberWithStyle(simulation.collateralRatio, {
+                                maxDecimals: 1,
+                                scalingFactor: 0.01,
+                                style: 'percent',
+                            }),
+                    }
                     : undefined,
             labels,
             colorLimits: labels.map(({ progress }) => progress) as [number, number, number],
@@ -141,12 +141,12 @@ export function Overview() {
                 <StatusLabel status={Status.NEGATIVE}>
                     {apy
                         ? formatNumberWithStyle(apy, {
-                              minDecimals: 1,
-                              maxDecimals: 1,
-                              style: 'percent',
-                              scalingFactor: 100,
-                              suffixed: true,
-                          })
+                            minDecimals: 1,
+                            maxDecimals: 1,
+                            style: 'percent',
+                            scalingFactor: 100,
+                            suffixed: true,
+                        })
                         : '--%'}{' '}
                     Rewards APY
                 </StatusLabel>
@@ -156,10 +156,10 @@ export function Overview() {
                         <strong>
                             {collateral.priceInUSD
                                 ? formatNumberWithStyle(collateral.priceInUSD.toString(), {
-                                      minDecimals: 2,
-                                      maxDecimals: 2,
-                                      style: 'currency',
-                                  })
+                                    minDecimals: 2,
+                                    maxDecimals: 2,
+                                    style: 'currency',
+                                })
                                 : '--'}
                         </strong>
                     </Text>
@@ -168,10 +168,10 @@ export function Overview() {
                         <strong>
                             {liquidationData?.currentRedemptionPrice
                                 ? formatNumberWithStyle(liquidationData.currentRedemptionPrice, {
-                                      minDecimals: 2,
-                                      maxDecimals: 2,
-                                      style: 'currency',
-                                  })
+                                    minDecimals: 2,
+                                    maxDecimals: 2,
+                                    style: 'currency',
+                                })
                                 : '--'}
                         </strong>
                     </Text>
@@ -208,10 +208,10 @@ export function Overview() {
                         value={
                             safetyRatio
                                 ? formatNumberWithStyle(safetyRatio, {
-                                      style: 'percent',
-                                      maxDecimals: 1,
-                                      scalingFactor: 0.01,
-                                  })
+                                    style: 'percent',
+                                    maxDecimals: 1,
+                                    scalingFactor: 0.01,
+                                })
                                 : '--'
                         }
                         label="Min. Coll. Ratio"
@@ -222,9 +222,9 @@ export function Overview() {
                         value={
                             collateral.liquidationData?.liquidationCRatio
                                 ? formatNumberWithStyle(collateral.liquidationData.liquidationCRatio, {
-                                      style: 'percent',
-                                      maxDecimals: 1,
-                                  })
+                                    style: 'percent',
+                                    maxDecimals: 1,
+                                })
                                 : '--'
                         }
                         label="Liq. Coll. Ratio"
@@ -242,8 +242,8 @@ export function Overview() {
                     simulatedValue={
                         vault && simulation?.riskStatus
                             ? `${simulation.collateralRatio ? summary.collateralRatio.after.formatted : '--%'} (${
-                                  simulation.riskStatus
-                              })`
+                                simulation.riskStatus
+                            })`
                             : undefined
                     }
                     alert={riskStatus ? { status: riskStatus } : undefined}

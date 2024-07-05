@@ -114,8 +114,8 @@ export function Overview({ vault }: OverviewProps) {
                     convertedValue={
                         vault && collateralPrice
                             ? formatNumberWithStyle(parseFloat(vault.collateral) * collateralPrice, {
-                                  style: 'currency',
-                              })
+                                style: 'currency',
+                            })
                             : '$--'
                     }
                     labelOnTop
@@ -135,9 +135,9 @@ export function Overview({ vault }: OverviewProps) {
                     value={
                         vault
                             ? formatNumberWithStyle(vault.collateralRatio, {
-                                  scalingFactor: 0.01,
-                                  style: 'percent',
-                              })
+                                scalingFactor: 0.01,
+                                style: 'percent',
+                            })
                             : '--%'
                     }
                     label="Collateral Ratio:"
@@ -149,13 +149,13 @@ export function Overview({ vault }: OverviewProps) {
                     value={
                         vault
                             ? formatNumberWithStyle(
-                                  getRatePercentage(
-                                      vault.liquidationData.totalAnnualizedStabilityFee || '0',
-                                      4,
-                                      true
-                                  ).toString(),
-                                  { scalingFactor: -1, style: 'percent' }
-                              )
+                                getRatePercentage(
+                                    vault.liquidationData.totalAnnualizedStabilityFee || '0',
+                                    4,
+                                    true
+                                ).toString(),
+                                { scalingFactor: -1, style: 'percent' }
+                            )
                             : '--%'
                     }
                     label="Stability Fee"
