@@ -8,6 +8,7 @@ import susdImg from '~/assets/susd-img.svg'
 import ttmImg from '~/assets/ttm-img.png'
 import velodromeImg from '~/assets/velodrome-img.svg'
 import wbtcImg from '~/assets/wbtc-img.svg'
+import tbtcImg from '~/assets/tbtc-img.svg'
 import wethImg from '~/assets/weth-img.svg'
 import wstethImg from '~/assets/wsteth-img.svg'
 import lusdImg from '~/assets/lusd-img.svg'
@@ -18,6 +19,7 @@ import uniImg from '~/assets/uniswap-icon.svg'
 import frxethImg from '~/assets/frxeth-img.svg'
 import sfrxethImg from '~/assets/sfrxeth-img.svg'
 import pendleImg from '~/assets/pendle-img.png'
+import { TBTC } from '@hai-on-op/sdk'
 
 export type Tokens = {
     [key: string]: {
@@ -40,6 +42,7 @@ export const TOKEN_LOGOS = {
     TTM: ttmImg,
     VELO: velodromeImg,
     WBTC: wbtcImg,
+    TBTC: tbtcImg,
     WETH: wethImg,
     WSTETH: wstethImg,
     'LUSD-A': lusdImg,
@@ -118,6 +121,11 @@ export const tokenAssets: Record<string, Token> = {
         symbol: 'WBTC',
         name: 'Wrapped Bitcoin',
         icon: wbtcImg,
+    },
+    TBTC: {
+        symbol: 'TBTC',
+        name: 'Threshold Bitcoin',
+        icon: tbtcImg,
     },
     WETH: {
         symbol: 'WETH',
