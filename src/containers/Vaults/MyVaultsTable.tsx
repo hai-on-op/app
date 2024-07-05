@@ -45,7 +45,7 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                     totalAnnualizedStabilityFee,
                 } = vault
 
-                const hasNoRewards = ['SNX', 'RETH', 'LUSD-A', 'LINK']
+                const hasNoRewards = ['SNX', 'RETH', 'LUSD-A', 'LINK', 'TBTC']
                 const collateralLabel = formatCollateralLabel(collateralName)
 
                 return (
