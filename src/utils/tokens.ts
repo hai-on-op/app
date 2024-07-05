@@ -8,6 +8,7 @@ import susdImg from '~/assets/susd-img.svg'
 import ttmImg from '~/assets/ttm-img.png'
 import velodromeImg from '~/assets/velodrome-img.svg'
 import wbtcImg from '~/assets/wbtc-img.svg'
+import tbtcImg from '~/assets/tbtc-img.svg'
 import wethImg from '~/assets/weth-img.svg'
 import wstethImg from '~/assets/wsteth-img.svg'
 import lusdImg from '~/assets/lusd-img.svg'
@@ -40,6 +41,7 @@ export const TOKEN_LOGOS = {
     TTM: ttmImg,
     VELO: velodromeImg,
     WBTC: wbtcImg,
+    TBTC: tbtcImg,
     WETH: wethImg,
     WSTETH: wstethImg,
     'LUSD-A': lusdImg,
@@ -118,6 +120,11 @@ export const tokenAssets: Record<string, Token> = {
         symbol: 'WBTC',
         name: 'Wrapped Bitcoin',
         icon: wbtcImg,
+    },
+    TBTC: {
+        symbol: 'TBTC',
+        name: 'Threshold Bitcoin',
+        icon: tbtcImg,
     },
     WETH: {
         symbol: 'WETH',
