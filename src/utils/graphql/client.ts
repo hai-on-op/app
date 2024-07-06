@@ -1,4 +1,4 @@
-import { NETWORK_ID } from '../constants'
+import { NETWORK_ID, VITE_GRAPH_API_KEY } from '../constants'
 import { ApolloClient, InMemoryCache } from '@apollo/client'
 
 const uri =
@@ -12,6 +12,6 @@ export const client = new ApolloClient({
 })
 
 export const uniClient = new ApolloClient({
-    uri: 'https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-optimism',
+    uri: `https://gateway-arbitrum.network.thegraph.com/api/${VITE_GRAPH_API_KEY}/subgraphs/id/EgnS9YE1avupkvCNj9fHnJxppfEmNNywYJtghqiu2pd9`,
     cache: new InMemoryCache(),
 })
