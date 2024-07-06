@@ -6,6 +6,7 @@ export const {
     VITE_NETWORK_ID,
     VITE_WALLETCONNECT_ID,
     VITE_ALCHEMY_KEY,
+    VITE_GRAPH_API_KEY,
     VITE_MAINNET_PUBLIC_RPC,
     VITE_TESTNET_PUBLIC_RPC,
 } = import.meta.env
