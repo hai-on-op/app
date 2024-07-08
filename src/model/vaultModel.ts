@@ -20,7 +20,6 @@ import type {
 import { type WrapEtherProps, handleUnwrapEther, handleWrapEther } from '~/utils/wrapEther'
 import { timeout } from '~/utils/time'
 import { ActionState } from '~/utils/constants'
-import { useVaultById } from '~/hooks'
 
 export interface VaultModel {
     list: Array<IVault>
@@ -201,7 +200,6 @@ export const vaultModel: VaultModel = {
         const txResponse = await handleClaimFreeCollateral(payload.signer, payload.vault)
         if (txResponse) {
             const { hash, chainId } = txResponse
-            //@ts-ignore
             storeActions.transactionsModel.addTransaction({
                 chainId,
                 hash,
@@ -210,9 +208,7 @@ export const vaultModel: VaultModel = {
                 addedTime: new Date().getTime(),
                 originalTx: txResponse,
             })
-            //@ts-ignore
             storeActions.popupsModel.setIsWaitingModalOpen(true)
-            //@ts-ignore
             storeActions.popupsModel.setWaitingPayload({
                 title: 'Transaction Submitted',
                 hash: txResponse.hash,
