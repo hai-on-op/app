@@ -15,6 +15,7 @@ export type IVault = {
     availableDebt: string
     accumulatedRate: string
     collateralRatio: string
+    freeCollateral: string
     currentRedemptionPrice: string
     currentLiquidationPrice: string
     internalCollateralBalance: string

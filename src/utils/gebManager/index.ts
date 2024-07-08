@@ -87,6 +87,7 @@ const getUserVaultsRpc = async (config: UserListConfig): Promise<IUserVaultList>
 
     const vaults = vaultsData.map((vault) => ({
         collateral: parseWad(vault.lockedCollateral),
+        freeCollateral: parseWad(vault.freeCollateral),
         debt: parseWad(vault.generatedDebt),
         createdAt: null,
         vaultHandler: vault.addy,

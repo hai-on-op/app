@@ -2,6 +2,7 @@ import { type Action, type Thunk, action, thunk } from 'easy-peasy'
 
 import { type StoreModel } from './index'
 import {
+    handleClaimFreeCollateral,
     handleDepositAndBorrow,
     handleDepositAndRepay,
     handleRepayAndWithdraw,
@@ -63,6 +64,7 @@ export interface VaultModel {
     // stage: number
     // setStage: Action<VaultModel, number>
 
+    claimFreeCollateral: Thunk<VaultModel, IVaultPayload & any, StoreModel>
     depositAndBorrow: Thunk<VaultModel, IVaultPayload & { vaultId?: string }, any, StoreModel>
     repayAndWithdraw: Thunk<VaultModel, IVaultPayload & { vaultId: string }, any, StoreModel>
     depositAndRepay: Thunk<VaultModel, IVaultPayload & { vaultId: string }, any, StoreModel>
@@ -193,7 +195,28 @@ export const vaultModel: VaultModel = {
     // setStage: action((state, payload) => {
     //     state.stage = payload
     // }),
-
+    claimFreeCollateral: thunk(async (actions, payload, { getStoreActions }) => {
+        const storeActions = getStoreActions()
+        const txResponse = await handleClaimFreeCollateral(payload.signer, payload.vault)
+        if (txResponse) {
+            const { hash, chainId } = txResponse
+            storeActions.transactionsModel.addTransaction({
+                chainId,
+                hash,
+                from: txResponse.from,
+                summary: 'Claiming Free Collateral',
+                addedTime: new Date().getTime(),
+                originalTx: txResponse,
+            })
+            storeActions.popupsModel.setIsWaitingModalOpen(true)
+            storeActions.popupsModel.setWaitingPayload({
+                title: 'Transaction Submitted',
+                hash: txResponse.hash,
+                status: ActionState.SUCCESS,
+            })
+            await txResponse.wait()
+        }
+    }),
     depositAndBorrow: thunk(async (actions, payload, { getStoreActions }) => {
         const storeActions = getStoreActions()
         const txResponse = await handleDepositAndBorrow(payload.signer, payload.vaultData, payload.vaultId)
