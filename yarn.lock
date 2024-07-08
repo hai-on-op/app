@@ -2286,29 +2286,30 @@
   resolved "https://registry.yarnpkg.com/@graphql-typed-document-node/core/-/core-3.2.0.tgz#5f3d96ec6b2354ad6d8a28bf216a1d97b5426861"
   integrity sha512-mB9oAsNCm9aM3/SOv4YtBMqZbYj10R7dkq8byBqxGY/ncFwhf2oQzMV+LCRlWoDSEBJ3COiR1yeDvMtsoOsuFQ==
 
-"@hai-on-op/abis@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@hai-on-op/abis/-/abis-1.0.0.tgz#8bf08b1d2319e3126c4e488aad3460d907bbb4f4"
-  integrity sha512-LJ0u+mneJhtU5RTmkIox7P4AewSsL4iKWWghrp+9K1EO99aD+uNAI3rAEVjwhBw7YatRpxdm6B2E0kkWPWC5Jg==
+"@hai-on-op/abis@0.0.0-785e0b4c":
+  version "0.0.0-785e0b4c"
+  resolved "https://registry.yarnpkg.com/@hai-on-op/abis/-/abis-0.0.0-785e0b4c.tgz#4cf67055c6237a41c0eb04e4a9fd804a3d2251df"
+  integrity sha512-CO4jbahHz/AXo2v84UPN/qoXNLlqly5kbJ+nHP27Mw/2jAg5Tky20TmJk93EuMAWdH3wZgKi2uxP9hDH+kKPpw==
   dependencies:
     "@defi-wonderland/solidity-utils" "0.0.0-4298c6c6"
     "@ethersproject/abi" "5.7.0"
     "@ethersproject/providers" "5.7.2"
-    "@openzeppelin/contracts" "5.0.0"
+    "@openzeppelin/contracts" "5.0.1"
     "@typechain/ethers-v6" "^0.5.1"
     "@typechain/web3-v1" "^6.0.7"
     "@uniswap/v3-periphery" "https://github.com/Uniswap/v3-periphery.git#0.8"
     bn.js "5.2.1"
+    ds-test "https://github.com/dapphub/ds-test.git#e282159d5170298eb2455a6c05280ab5a73a4ef0"
     ethers "6.0.3"
-    forge-std "https://github.com/foundry-rs/forge-std.git#f73c73d2018eb6a111f35e4dae7b4f27401e9421"
+    forge-std "https://github.com/foundry-rs/forge-std.git#155d547c449afa8715f538d69454b83944117811"
     typechain "^8.3.2"
 
-"@hai-on-op/sdk@1.2.10":
-  version "1.2.10"
-  resolved "https://registry.yarnpkg.com/@hai-on-op/sdk/-/sdk-1.2.10.tgz#5ed52c7e174c75c413cdd5755d4d0d294b076963"
-  integrity sha512-iN0ML6N/jqfti70fylMDfEEZjTNl7akEn4tc/4JzjHDudzhnCIaOpuB8mOQ/XprgR/lu0R79ZgxEUwhAVRnfKw==
+"@hai-on-op/sdk@1.2.11":
+  version "1.2.11"
+  resolved "https://registry.yarnpkg.com/@hai-on-op/sdk/-/sdk-1.2.11.tgz#06b43a5715838c180de32762560508984269e853"
+  integrity sha512-mJAFBHFLfWtVQ865BejECSlHrendcf1UY/gduAp1MgA3aXh96Zy3lINCTPG5Gd4rDnGUri8SPu0nk72MnoRqzQ==
   dependencies:
-    "@hai-on-op/abis" "1.0.0"
+    "@hai-on-op/abis" "0.0.0-785e0b4c"
     ethers "5.4.7"
 
 "@hapi/hoek@^9.0.0", "@hapi/hoek@^9.3.0":
@@ -2838,10 +2839,10 @@
   resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-4.8.1.tgz#709cfc4bbb3ca9f4460d60101f15dac6b7a2d5e4"
   integrity sha512-xQ6eUZl+RDyb/FiZe1h+U7qr/f4p/SrTSQcTPH2bjur3C5DbuW/zFgCU/b1P/xcIaEqJep+9ju4xDRi3rmChdQ==
 
-"@openzeppelin/contracts@5.0.0":
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-5.0.0.tgz#ee0e4b4564f101a5c4ee398cd4d73c0bd92b289c"
-  integrity sha512-bv2sdS6LKqVVMLI5+zqnNrNU/CA+6z6CmwFXm/MzmOPBRSO5reEJN7z0Gbzvs0/bv/MZZXNklubpwy3v2+azsw==
+"@openzeppelin/contracts@5.0.1":
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-5.0.1.tgz#93da90fc209a0a4ff09c1deb037fbb35e4020890"
+  integrity sha512-yQJaT5HDp9hYOOp4jTYxMsR02gdFZFXhewX5HW9Jo4fsqSVqqyIO/xTHdWDaKX5a3pv1txmf076Lziz+sO7L1w==
 
 "@parcel/watcher-android-arm64@2.4.1":
   version "2.4.1"
@@ -6491,6 +6492,11 @@ domexception@^4.0.0:
   version "1.0.0"
   resolved "https://github.com/dapphub/ds-test#e282159d5170298eb2455a6c05280ab5a73a4ef0"
 
+"ds-test@https://github.com/dapphub/ds-test.git#e282159d5170298eb2455a6c05280ab5a73a4ef0":
+  version "1.0.0"
+  uid e282159d5170298eb2455a6c05280ab5a73a4ef0
+  resolved "https://github.com/dapphub/ds-test.git#e282159d5170298eb2455a6c05280ab5a73a4ef0"
+
 duplexify@^4.1.2:
   version "4.1.3"
   resolved "https://registry.yarnpkg.com/duplexify/-/duplexify-4.1.3.tgz#a07e1c0d0a2c001158563d32592ba58bddb0236f"
@@ -7683,9 +7689,9 @@ for-each@^0.3.3:
   version "1.7.6"
   resolved "https://github.com/foundry-rs/forge-std#5475f852e3f530d7e25dfb4596aa1f9baa8ffdfc"
 
-"forge-std@https://github.com/foundry-rs/forge-std.git#f73c73d2018eb6a111f35e4dae7b4f27401e9421":
-  version "1.7.1"
-  resolved "https://github.com/foundry-rs/forge-std.git#f73c73d2018eb6a111f35e4dae7b4f27401e9421"
+"forge-std@https://github.com/foundry-rs/forge-std.git#155d547c449afa8715f538d69454b83944117811":
+  version "1.7.4"
+  resolved "https://github.com/foundry-rs/forge-std.git#155d547c449afa8715f538d69454b83944117811"
 
 form-data@^4.0.0:
   version "4.0.0"

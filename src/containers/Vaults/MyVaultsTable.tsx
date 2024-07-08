@@ -7,6 +7,7 @@ import { CenteredFlex, Flex, Grid, HaiButton, TableButton, Text } from '~/styles
 import { RewardsTokenArray, TokenArray } from '~/components/TokenArray'
 import { StatusLabel } from '~/components/StatusLabel'
 import { Table } from '~/components/Table'
+import { ClaimableFreeCollateral } from './ClaimableFreeCollateral'
 
 type MyVaultsTableProps = {
     headers: SortableHeader[]
@@ -40,14 +41,15 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                     collateralName,
                     collateralRatio,
                     riskState,
+                    freeCollateral,
                     collateral,
                     totalDebt,
                     totalAnnualizedStabilityFee,
                 } = vault
 
-                const hasNoRewards = ['SNX', 'RETH', 'LUSD-A', 'LINK', 'TBTC']
+                const hasFreeCollateral = freeCollateral !== '0.0'
+                const hasNoRewards = ['SNX', 'RETH', 'LUSD-A', 'LINK', 'TBTC', 'VELO']
                 const collateralLabel = formatCollateralLabel(collateralName)
-
                 return (
                     <Table.Row
                         key={id}
@@ -69,6 +71,7 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                                                 tooltip={`Earn OP/KITE tokens by minting HAI and providing liquidity`}
                                             />
                                         )}
+                                        {hasFreeCollateral && <ClaimableFreeCollateral vault={vault} />}
                                     </Grid>
                                 ),
                                 props: { $fontSize: 'inherit' },
