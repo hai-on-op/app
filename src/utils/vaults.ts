@@ -115,6 +115,7 @@ export const formatUserVault = (
                 totalDebt,
                 availableDebt,
                 accumulatedRate,
+                freeCollateral: s.freeCollateral,
                 collateralRatio,
                 currentRedemptionPrice,
                 internalCollateralBalance: s.internalCollateralBalance?.balance || '0',

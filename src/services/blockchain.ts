@@ -3,7 +3,7 @@ import { Geb, TransactionRequest } from '@hai-on-op/sdk'
 import { BigNumber, ethers } from 'ethers'
 import { parseEther } from 'ethers/lib/utils'
 
-import type { IVaultData } from '~/types/vaults'
+import type { IVaultData, IVault } from '~/types/vaults'
 import { getNetworkName } from '~/utils/constants'
 import { handlePreTxGasEstimate } from '~/hooks'
 import { TransactionResponse } from '@ethersproject/providers'
@@ -47,6 +47,18 @@ export const liquidateVault = async (geb: Geb, vaultId: string) => {
 
     const txResponse = await signer.sendTransaction(tx)
 
+    return txResponse
+}
+
+export const handleClaimFreeCollateral = async (signer: JsonRpcSigner, vault: IVault) => {
+    const freeCollateralBN = parseEther(vault.freeCollateral || '0')
+    const chainId = await signer.getChainId()
+    const networkName = getNetworkName(chainId)
+    const geb = new Geb(networkName, signer)
+    const proxy = await geb.getProxyAction(signer._address)
+    let txData: TransactionRequest = {}
+    txData = await proxy.collectTokenCollateral(vault.collateralName, vault.id, freeCollateralBN)
+    const txResponse = await signer.sendTransaction(txData)
     return txResponse
 }
 
