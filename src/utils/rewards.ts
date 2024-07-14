@@ -22,8 +22,8 @@ export const REWARDS = {
         },
         // Testnet
         WBTC: {
-            OP: 10,
-            KITE: 10,
+            OP: 0,
+            KITE: 0,
         },
         STN: {
             OP: 20,
