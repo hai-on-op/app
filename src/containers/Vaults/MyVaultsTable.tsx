@@ -48,7 +48,7 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                 } = vault
 
                 const hasFreeCollateral = freeCollateral !== '0.0'
-                const hasNoRewards = ['SNX', 'RETH', 'LUSD-A', 'LINK', 'TBTC', 'VELO', 'WBTC']
+                const hasNoRewards = ['SNX', 'RETH', 'LUSD-A', 'LINK', 'TBTC', 'VELO', 'WBTC', 'APXETH']
                 const collateralLabel = formatCollateralLabel(collateralName)
                 return (
                     <Table.Row
