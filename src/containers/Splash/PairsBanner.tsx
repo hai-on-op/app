@@ -18,6 +18,8 @@ const pairs: [string, string][] = [
     ['TBTC', TOKEN_LOGOS['TBTC']],
     ['VELO', TOKEN_LOGOS['VELO']],
     ['WBTC', TOKEN_LOGOS['WBTC']],
+    ['WBTC', TOKEN_LOGOS['WBTC']],
+    ['APXETH', TOKEN_LOGOS['APXETH']],
 ]
 
 export function PairsBanner() {
