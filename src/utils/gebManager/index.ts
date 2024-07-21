@@ -22,8 +22,9 @@ const getLiquidationDataRpc = async (
     geb: Geb,
     tokensData: Record<string, TokenData>
 ): Promise<ILiquidationResponse> => {
+    debugger
     const liquidationData = await fetchLiquidationData(geb, tokensData)
-
+    console.log('liquidationData', liquidationData)
     const systemState = {
         currentRedemptionPrice: {
             value: parseRay(liquidationData.redemptionPrice),
@@ -84,7 +85,6 @@ function parseTokenLiquidationData(redemptionPrice: BigNumber, tokenLiquidationD
 // Returns list of user vaults
 const getUserVaultsRpc = async (config: UserListConfig): Promise<IUserVaultList> => {
     const [userCoinBalance, vaultsData] = await fetchUserSafes(config.geb, config.address)
-
     const vaults = vaultsData.map((vault) => ({
         collateral: parseWad(vault.lockedCollateral),
         freeCollateral: parseWad(vault.freeCollateral),

@@ -20,6 +20,10 @@ export const REWARDS = {
             OP: 0,
             KITE: 0,
         },
+        APXETH: {
+            OP: 0,
+            KITE: 0,
+        },
         // Testnet
         WBTC: {
             OP: 0,

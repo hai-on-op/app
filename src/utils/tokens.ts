@@ -19,6 +19,7 @@ import uniImg from '~/assets/uniswap-icon.svg'
 import frxethImg from '~/assets/frxeth-img.svg'
 import sfrxethImg from '~/assets/sfrxeth-img.svg'
 import pendleImg from '~/assets/pendle-img.png'
+import apxethImg from '~/assets/apxeth-img.png'
 
 export type Tokens = {
     [key: string]: {
@@ -40,6 +41,7 @@ export const TOKEN_LOGOS = {
     SUSD: susdImg,
     TTM: ttmImg,
     VELO: velodromeImg,
+    APXETH: apxethImg,
     WBTC: wbtcImg,
     TBTC: tbtcImg,
     WETH: wethImg,
@@ -115,6 +117,11 @@ export const tokenAssets: Record<string, Token> = {
         symbol: 'VELO',
         name: 'VELO',
         icon: velodromeImg,
+    },
+    APXETH: {
+        symbol: 'APXETH',
+        name: 'APXETH',
+        icon: apxethImg,
     },
     WBTC: {
         symbol: 'WBTC',
