@@ -38,20 +38,15 @@ export const fetchUserVaultsRaw = async (config: IFetchVaultsPayload) => {
 }
 
 export const fetchLiquidationData = async (config: IFetchLiquidationDataPayload) => {
-    // debugger
-    try {
-        const response = await gebManager.getLiquidationDataRpc(config.geb, config.tokensData)
+    const response = await gebManager.getLiquidationDataRpc(config.geb, config.tokensData)
 
-        const liquidationData = {
-            collateralLiquidationData: response.collateralLiquidationData,
-            currentRedemptionPrice: response.systemState.currentRedemptionPrice.value,
-            currentRedemptionRate: response.systemState.currentRedemptionRate.annualizedRate,
-            globalDebt: response.systemState.globalDebt,
-            globalDebtCeiling: response.systemState.globalDebtCeiling,
-            perVaultDebtCeiling: response.systemState.perSafeDebtCeiling,
-        }
-        return liquidationData
-    } catch (error) {
-        console.log('error', error)
+    const liquidationData = {
+        collateralLiquidationData: response.collateralLiquidationData,
+        currentRedemptionPrice: response.systemState.currentRedemptionPrice.value,
+        currentRedemptionRate: response.systemState.currentRedemptionRate.annualizedRate,
+        globalDebt: response.systemState.globalDebt,
+        globalDebtCeiling: response.systemState.globalDebtCeiling,
+        perVaultDebtCeiling: response.systemState.perSafeDebtCeiling,
     }
+    return liquidationData
 }
