@@ -49,9 +49,8 @@ export function useVelodrome() {
                 setLoading(true)
                 const lps = (await velodromeSugarContract.all(BigNumber.from(150), BigNumber.from(650))) as any[]
                 const targetTokens = [getAddress(HAI_ADDRESS), getAddress(KITE_ADDRESS)]
-                const flteredLps = lps.filter(
-                    (lp) => (targetTokens.includes(lp[7]) || targetTokens.includes(lp[10])) && lp[1] != HAI_KITE_SYMBOL
-                )
+
+                const flteredLps = lps.filter((lp) => targetTokens.includes(lp[7]) || targetTokens.includes(lp[10]))
 
                 if (isStale) return
                 const lpData = flteredLps.map((lp) => ({

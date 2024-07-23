@@ -65,6 +65,11 @@ export const REWARDS = {
             OP: 0,
             KITE: 0,
         },
+        // vAMMV2-HAI/KITE
+        ['0xf2d3941b6E1cbD3616061E556Eb06986147715d1'.toLowerCase()]: {
+            OP: 0,
+            KITE: 0,
+        },
     },
     default: {
         OP: 0,
