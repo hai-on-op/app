@@ -6,14 +6,7 @@ import { useContract } from './useContract'
 import { useAccount } from 'wagmi'
 import { getAddress } from 'viem'
 
-import {
-    CL50_HAI_LUSD_ADDRESS,
-    HAI_ADDRESS,
-    KITE_ADDRESS,
-    VELO_SUGAR_ADDRESS,
-    CL50_HAI_LUSD_SYMBOL,
-    HAI_KITE_SYMBOL,
-} from '~/utils'
+import { CL50_HAI_LUSD_ADDRESS, HAI_ADDRESS, KITE_ADDRESS, VELO_SUGAR_ADDRESS, CL50_HAI_LUSD_SYMBOL } from '~/utils'
 
 export type VelodromeLpData = {
     tokenPair: [string, string]
