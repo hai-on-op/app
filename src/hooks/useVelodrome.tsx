@@ -133,13 +133,11 @@ export function useVelodromePositions() {
         const fetchData = async () => {
             try {
                 setLoading(true)
-
                 const positions = (await velodromeSugarContract.positions(
-                    BigNumber.from(170),
-                    BigNumber.from(600),
+                    BigNumber.from(500),
+                    BigNumber.from(300),
                     address
                 )) as any[]
-
                 if (isStale) return
 
                 const positionData = positions.map((position) => ({
