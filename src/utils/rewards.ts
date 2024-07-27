@@ -70,6 +70,11 @@ export const REWARDS = {
             OP: 0,
             KITE: 0,
         },
+        // vAMMV2-SAIL/KITE
+        ['0xB5cD4bD4bdB5C97020FBE192258e6F08333990E2'.toLowerCase()]: {
+            OP: 0,
+            KITE: 0,
+        },
     },
     default: {
         OP: 0,

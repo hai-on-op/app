@@ -6,14 +6,7 @@ import { useContract } from './useContract'
 import { useAccount } from 'wagmi'
 import { getAddress } from 'viem'
 
-import {
-    CL50_HAI_LUSD_ADDRESS,
-    HAI_ADDRESS,
-    KITE_ADDRESS,
-    VELO_SUGAR_ADDRESS,
-    CL50_HAI_LUSD_SYMBOL,
-    HAI_KITE_SYMBOL,
-} from '~/utils'
+import { CL50_HAI_LUSD_ADDRESS, HAI_ADDRESS, KITE_ADDRESS, VELO_SUGAR_ADDRESS, CL50_HAI_LUSD_SYMBOL } from '~/utils'
 
 export type VelodromeLpData = {
     tokenPair: [string, string]
@@ -133,13 +126,11 @@ export function useVelodromePositions() {
         const fetchData = async () => {
             try {
                 setLoading(true)
-
                 const positions = (await velodromeSugarContract.positions(
-                    BigNumber.from(170),
-                    BigNumber.from(600),
+                    BigNumber.from(500),
+                    BigNumber.from(300),
                     address
                 )) as any[]
-
                 if (isStale) return
 
                 const positionData = positions.map((position) => ({
