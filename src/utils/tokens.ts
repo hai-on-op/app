@@ -14,6 +14,7 @@ import wstethImg from '~/assets/wsteth-img.svg'
 import lusdImg from '~/assets/lusd-img.svg'
 import rethImg from '~/assets/reth-img.png'
 import linkImg from '~/assets/link-img.png'
+import sailImg from '~/assets/sail-img.png'
 import ldoImg from '~/assets/ldo-img.png'
 import uniImg from '~/assets/uniswap-icon.svg'
 import frxethImg from '~/assets/frxeth-img.svg'
@@ -49,6 +50,7 @@ export const TOKEN_LOGOS = {
     'LUSD-A': lusdImg,
     RETH: rethImg,
     LINK: linkImg,
+    SAIL: sailImg,
     LDO: ldoImg,
     UNI: uniImg,
     FRXETH: frxethImg,
@@ -152,6 +154,11 @@ export const tokenAssets: Record<string, Token> = {
         symbol: 'LINK',
         name: 'Chainlink',
         icon: linkImg,
+    },
+    SAIL: {
+        symbol: 'SAIL',
+        name: 'SAIL',
+        icon: sailImg,
     },
     LDO: {
         symbol: 'LDO',
