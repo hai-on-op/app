@@ -21,6 +21,7 @@ import frxethImg from '~/assets/frxeth-img.svg'
 import sfrxethImg from '~/assets/sfrxeth-img.svg'
 import pendleImg from '~/assets/pendle-img.png'
 import apxethImg from '~/assets/apxeth-img.png'
+import beefyImg from '~/assets/beefy-img.svg'
 
 export type Tokens = {
     [key: string]: {
@@ -56,6 +57,8 @@ export const TOKEN_LOGOS = {
     FRXETH: frxethImg,
     SFRXETH: sfrxethImg,
     PENDLE: pendleImg,
+    'MOO-VELO-V2-OP-VELO': beefyImg,
+    MOO: beefyImg,
 }
 
 export const tokenMap: Record<string, string> = {
@@ -124,6 +127,11 @@ export const tokenAssets: Record<string, Token> = {
         symbol: 'APXETH',
         name: 'APXETH',
         icon: apxethImg,
+    },
+    MOO: {
+        symbol: 'MOO',
+        name: 'MOO',
+        icon: beefyImg,
     },
     WBTC: {
         symbol: 'WBTC',
