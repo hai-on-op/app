@@ -13,13 +13,47 @@ type TokenArrayProps = {
     label?: string
     hideLabel?: boolean
 }
+
 export function TokenArray({ tokens, size = 32, label, hideLabel = false }: TokenArrayProps) {
+    const tokenBg = (token: string) => {
+        switch (token) {
+            case 'MOO-VELO-V2-OP-VELO':
+                return 'white'
+            case 'VELO':
+                return 'white'
+            case 'APXETH':
+                return 'white'
+            default:
+                return 'greenish'
+        }
+    }
+
     return (
         <Flex $align="center" $gap={12} $grow={0}>
             <IconContainer $size={size}>
                 {tokens.map((token, i) => {
                     switch (token) {
                         case 'All':
+                        case 'MOO-VELO-V2-OP-VELO':
+                            return (
+                                <>
+                                    <img
+                                        key={i}
+                                        src={TOKEN_LOGOS['MOO']}
+                                        alt={token}
+                                        className={`token-${token}`}
+                                        style={{ backgroundColor: 'white' }}
+                                    />
+                                    <img
+                                        key={i}
+                                        src={TOKEN_LOGOS['VELO']}
+                                        alt={token}
+                                        className={`token-${token}`}
+                                        style={{ backgroundColor: 'white' }}
+                                    />
+                                    <img key={i} src={TOKEN_LOGOS['OP']} alt={token} className={`token-${token}`} />
+                                </>
+                            )
                         case 'Collateral':
                             return <CyclingTokenArray key={i} size={size} includeProtocolTokens={token === 'All'} />
                         default:
@@ -31,6 +65,7 @@ export function TokenArray({ tokens, size = 32, label, hideLabel = false }: Toke
                                     width={48}
                                     height={48}
                                     className={`token-${token}`}
+                                    style={{ backgroundColor: tokenBg(token) }}
                                 />
                             )
                     }
