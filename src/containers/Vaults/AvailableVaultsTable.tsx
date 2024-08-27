@@ -36,6 +36,7 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                 .sort((a, b) => {
                     return Number(b.hasRewards) - Number(a.hasRewards)
                 })
+                .filter((row) => row.collateralName !== 'WBTC')
                 .map(
                     ({
                         collateralName,
