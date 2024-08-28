@@ -319,11 +319,9 @@ export function Numbers() {
                             <Stat
                                 stat={{
                                     header: (
-                                        <>
-                                            <BlockBanner text="COMING SOON" $justify="flex-start" $fontSize="1.2rem">
-                                                --
-                                            </BlockBanner>
-                                        </>
+                                        <BlockBanner text="COMING SOON" $justify="flex-start" $fontSize="1.2rem">
+                                            --
+                                        </BlockBanner>
                                     ),
                                     label: 'Depth to Equilibrium',
                                     tooltip: `Amount of HAI required to be bought (positive) or sold (negative) for the Market Price to approximately equal the Redemption Price. This is an estimate based on the tracked liquidity pools and their current locked liquidity.`,
