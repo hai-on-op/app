@@ -23,7 +23,7 @@ import { LineChart } from '~/components/Charts/Line'
 import { PriceDisplay } from './PriceDisplay'
 import { PieChart } from '~/components/Charts/Pie'
 import { Legend } from '~/components/Charts/Legend'
-import { ComingSoon } from '~/components/ComingSoon'
+import { BlockBanner } from '~/components/BlockBanner'
 
 const colors = [
     'hsl(49, 84%, 68%)', // yellowish
@@ -319,9 +319,11 @@ export function Numbers() {
                             <Stat
                                 stat={{
                                     header: (
-                                        <ComingSoon $justify="flex-start" $fontSize="1.2rem">
-                                            --
-                                        </ComingSoon>
+                                        <>
+                                            <BlockBanner text="COMING SOON" $justify="flex-start" $fontSize="1.2rem">
+                                                --
+                                            </BlockBanner>
+                                        </>
                                     ),
                                     label: 'Depth to Equilibrium',
                                     tooltip: `Amount of HAI required to be bought (positive) or sold (negative) for the Market Price to approximately equal the Redemption Price. This is an estimate based on the tracked liquidity pools and their current locked liquidity.`,

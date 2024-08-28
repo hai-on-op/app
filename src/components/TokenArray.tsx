@@ -6,6 +6,7 @@ import styled, { css } from 'styled-components'
 import { CenteredFlex, Flex, Text } from '~/styles'
 import { Tooltip } from './Tooltip'
 import { IconCycler } from './Icons/IconCycler'
+import { BlockBanner } from '~/components/BlockBanner'
 
 type TokenArrayProps = {
     tokens: (TokenKey | 'All' | 'Collateral')[]
@@ -30,6 +31,15 @@ export function TokenArray({ tokens, size = 32, label, hideLabel = false }: Toke
 
     return (
         <Flex $align="center" $gap={12} $grow={0}>
+            {tokens[0] == 'MOO-VELO-V2-OP-VELO' && (
+                <div style={{ position: 'absolute' }}>
+                    <div style={{ position: 'absolute', top: -20, left: -10 }}>
+                        <BlockBanner text="EXPERIMENTAL" $justify="flex-start" $fontSize=".5rem">
+                            --
+                        </BlockBanner>
+                    </div>
+                </div>
+            )}
             <IconContainer $size={size}>
                 {tokens.map((token, i) => {
                     switch (token) {
