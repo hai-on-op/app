@@ -94,7 +94,7 @@ const DEFAULT_VAULT_DATA: IVaultData = {
     collateral: '',
 }
 
-const DEPRECATED_COLLATERALS: Array<String> = ['WBTC']
+const DEPRECATED_COLLATERALS: Array<string> = ['WBTC']
 
 export const vaultModel: VaultModel = {
     list: [],
