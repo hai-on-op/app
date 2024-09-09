@@ -94,10 +94,14 @@ const DEFAULT_VAULT_DATA: IVaultData = {
     collateral: '',
 }
 
+const DEPRECATED_COLLATERALS: Array<String> = ['WBTC']
+
 export const vaultModel: VaultModel = {
     list: [],
     setList: action((state, payload) => {
-        state.list = payload
+        state.list = payload.filter(
+            ({ collateralName }) => !DEPRECATED_COLLATERALS.includes(collateralName.toUpperCase())
+        )
     }),
     fetchLiquidationData: thunk(async (actions, payload) => {
         const data = await fetchLiquidationData(payload)
