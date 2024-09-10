@@ -81,8 +81,6 @@ export function useSystemData(): SystemData {
             ? total / (parseFloat(globalDebt) * parseFloat(currentRedemptionPrice.value || '1'))
             : 0
 
-        console.log(collateralStats)
-
         return {
             totalCollateralLocked: formatSummaryValue(total.toString(), {
                 maxDecimals: 0,
