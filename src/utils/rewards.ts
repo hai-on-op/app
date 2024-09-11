@@ -1,79 +1,89 @@
 export const REWARDS = {
     vaults: {
         WETH: {
-            OP: 25,
-            KITE: 20,
+            KITE: 10,
+            OP: 0,
         },
         WSTETH: {
-            OP: 25,
-            KITE: 20,
-        },
-        OP: {
-            OP: 50,
-            KITE: 20,
-        },
-        SNX: {
-            OP: 0,
-            KITE: 0,
-        },
-        RETH: {
-            OP: 0,
-            KITE: 0,
+            KITE: 10,
+            OP: 10,
         },
         APXETH: {
-            OP: 0,
-            KITE: 0,
+            KITE: 25,
+            OP: 50,
         },
+        RETH: {
+            KITE: 10,
+            OP: 10,
+        },
+        OP: {
+            KITE: 10,
+            OP: 0,
+        },
+        TBTC: {
+            KITE: 10,
+            OP: 0,
+        },
+        SNX: {
+            KITE: 0,
+            OP: 0,
+        },
+
         // Testnet
         WBTC: {
-            OP: 0,
             KITE: 0,
+            OP: 0,
         },
         STN: {
-            OP: 20,
             KITE: 20,
+            OP: 20,
         },
         TTM: {
-            OP: 30,
             KITE: 30,
+            OP: 30,
         },
     },
     uniswap: {
         ['0x146b020399769339509c98b7b353d19130c150ec'.toLowerCase()]: {
-            OP: 200,
-            KITE: 30,
+            KITE: 25,
+            OP: 75,
         },
     },
     velodrome: {
         // sAMMV2-HAI/sUSD
         ['0xbdED651C03E2bC332AA49C1ffCa391eAA3ea6B86'.toLowerCase()]: {
-            OP: 100,
-            KITE: 30,
-        },
-        // vAMMV2-OP/KITE
-        ['0xf4638dC488F9C826DC40250515592E678E447238'.toLowerCase()]: {
-            OP: 0,
-            KITE: 50,
+            KITE: 15,
+            OP: 50,
         },
         // sAMMV2-HAI/LUSD
         ['0x588f26d5BefE74dC61694a7B36227C0e0C52C0f9'.toLowerCase()]: {
-            OP: 0,
-            KITE: 0,
+            KITE: 30,
+            OP: 120,
         },
         // CL50-HAI/LUSD
         ['0xA61FBA486e2d04C4D865183A47fc1C9F6F4Cec1f'.toLowerCase()]: {
-            OP: 0,
             KITE: 0,
+            OP: 0,
         },
-        // vAMMV2-HAI/KITE
+        // vAMMV2-KITE/HAI
         ['0xf2d3941b6E1cbD3616061E556Eb06986147715d1'.toLowerCase()]: {
-            OP: 0,
+            KITE: 75,
+            OP: 25,
+        },
+        // vAMMV2-KITE/OP
+        ['0xf4638dC488F9C826DC40250515592E678E447238'.toLowerCase()]: {
             KITE: 0,
+            OP: 0,
+        },
+        // vAMMV2-pxETH/HAI
+        ['0xD5fE49a4c0Fc482Ee757DF703A3a332DB209aC2e'.toLowerCase()]: {
+            KITE: 25,
+            OP: 75,
         },
         // vAMMV2-SAIL/KITE
         ['0xB5cD4bD4bdB5C97020FBE192258e6F08333990E2'.toLowerCase()]: {
-            OP: 0,
             KITE: 0,
+            OP: 0,
         },
     },
     default: {
@@ -82,7 +92,7 @@ export const REWARDS = {
     },
 }
 
-export const VELO_SUGAR_ADDRESS = '0x39F850019b85c59BCa2fa0E437fBA8cEfc84528D'
+export const VELO_SUGAR_ADDRESS = '0xba3d1A960dC10bFBAAA7106C2Cd4FFB291160Bad'
 
 export const KITE_ADDRESS = '0xf467C7d5a4A9C4687fFc7986aC6aD5A4c81E1404'
 export const HAI_ADDRESS = '0x10398AbC267496E49106B07dd6BE13364D10dC71'
