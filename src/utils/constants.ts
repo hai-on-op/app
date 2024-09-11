@@ -114,3 +114,5 @@ export const DEBT_BATCH_SIZE = 5_000_000 // blocks
 export const COLLATERAL_BATCH_SIZE = 5_000_000 // blocks
 
 export const HARDCODED_KITE = 8
+
+export const DEPRECATED_COLLATERALS = ['WBTC']
