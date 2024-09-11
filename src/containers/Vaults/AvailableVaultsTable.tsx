@@ -47,7 +47,6 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                         eligibleBalance,
                         myVaults: existingVaults,
                     }) => {
-                        const rewardTokens = collateralName === 'APXETH' ? ['OP', 'KITE', 'DINERO'] : ['OP', 'KITE']
                         return (
                             <Table.Row
                                 key={collateralName}
@@ -70,7 +69,9 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                                                 : ['OP', 'KITE']
                                                         }
                                                         label="EARN"
-                                                        tooltip={`Earn OP/KITE tokens by minting HAI and providing liquidity`}
+                                                        tooltip={`Earn OP/KITE${
+                                                            collateralName === 'APXETH' ? '/DINERO' : ''
+                                                        } tokens by minting HAI and providing liquidity`}
                                                     />
                                                 )}
                                             </Grid>

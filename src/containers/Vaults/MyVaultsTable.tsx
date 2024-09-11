@@ -66,9 +66,15 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                                         </CenteredFlex>
                                         {hasNoRewards.includes(collateralName) ? null : (
                                             <RewardsTokenArray
-                                                tokens={['OP', 'KITE']}
+                                                tokens={
+                                                    collateralName === 'APXETH'
+                                                        ? ['OP', 'KITE', 'DINERO']
+                                                        : ['OP', 'KITE']
+                                                }
                                                 label="EARN"
-                                                tooltip={`Earn OP/KITE tokens by minting HAI and providing liquidity`}
+                                                tooltip={`Earn OP/KITE${
+                                                    collateralName === 'APXETH' ? '/DINERO' : ''
+                                                } tokens by minting HAI and providing liquidity`}
                                             />
                                         )}
                                         {hasFreeCollateral && <ClaimableFreeCollateral vault={vault} />}

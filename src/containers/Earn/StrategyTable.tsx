@@ -2,8 +2,7 @@ import type { SetState, SortableHeader, Sorting, Strategy, TokenKey } from '~/ty
 import { formatNumberWithStyle } from '~/utils'
 
 import styled from 'styled-components'
-import { Flex, Grid, Text, HaiButton, CenteredFlex } from '~/styles'
-import { HaiFace } from '~/components/Icons/HaiFace'
+import { Flex, Grid, Text, HaiButton } from '~/styles'
 import dineroLogo from '~/assets/dinero-img.svg'
 import { Tooltip } from '~/components/Tooltip'
 import { RewardsTokenArray, TokenArray } from '~/components/TokenArray'
@@ -155,7 +154,7 @@ export function StrategyTable({
                                                 <Text $fontSize="0.8em" style={{ marginLeft: '-7px', display: 'flex' }}>
                                                     +10% Boost&nbsp;
                                                     <Tooltip width="200px">
-                                                        Redacted Cartel is adding <br />
+                                                        Dinero is adding <br />
                                                         +10% APY Boost
                                                     </Tooltip>
                                                 </Text>
