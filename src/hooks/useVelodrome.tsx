@@ -40,7 +40,7 @@ export function useVelodrome() {
         const fetchData = async () => {
             try {
                 setLoading(true)
-                const lps = (await velodromeSugarContract.all(BigNumber.from(150), BigNumber.from(650))) as any[]
+                const lps = (await velodromeSugarContract.all(BigNumber.from(300), BigNumber.from(650))) as any[]
                 const targetTokens = [getAddress(HAI_ADDRESS), getAddress(KITE_ADDRESS)]
 
                 const flteredLps = lps.filter((lp) => targetTokens.includes(lp[7]) || targetTokens.includes(lp[10]))
@@ -53,26 +53,27 @@ export function useVelodrome() {
                             : lp[1]
                                   .split('/')
                                   .map((token: string) => token.replace(/^[v|s]AMMV2-/gi, '').toUpperCase()),
-                    address: lp[0],
-                    symbol: lp[0] == CL50_HAI_LUSD_ADDRESS ? CL50_HAI_LUSD_SYMBOL : lp[1],
-                    decimals: lp[2],
-                    liquidity: lp[3].toString(),
-                    type: lp[4].toString(), // - tick spacing on CL pools, 0/-1 for stable/volatile on v2 pools
+                    address: lp.lp,
+                    // symbol: lp[0] == CL50_HAI_LUSD_ADDRESS ? CL50_HAI_LUSD_SYMBOL : lp[1],
+                    symbol: lp.symbol,
+                    decimals: lp.decimals,
+                    liquidity: lp.liquidity,
+                    type: lp.type, // - tick spacing on CL pools, 0/-1 for stable/volatile on v2 pools
                     // tick: lp[5], // - current tick on CL pools, 0 on v2 pools
                     // sqrt_ratio: lp[6].toString(), // - pool sqrt ratio X96 on CL pools, 0 on v2 pools
-                    token0: lp[7], // - pool 1st token address
-                    reserve0: lp[8].toString(), // - pool 1st token reserves (nr. of tokens in the contract)
-                    staked0: lp[9].toString(), // - pool 1st token staked amount
-                    token1: lp[10], // - pool 2nd token address
-                    reserve1: lp[11].toString(), // - pool 2nd token reserves (nr. of tokens in the contract)
-                    staked1: lp[12].toString(), // - pool 2nd token staked amount
+                    token0: lp.token0, // - pool 1st token address
+                    reserve0: lp.reserve0, // - pool 1st token reserves (nr. of tokens in the contract)
+                    staked0: lp.staked0, // - pool 1st token staked amount
+                    token1: lp.token1, // - pool 2nd token address
+                    reserve1: lp.reserve1, // - pool 2nd token reserves (nr. of tokens in the contract)
+                    staked1: lp.staked1, // - pool 2nd token staked amount (nr. of tokens in the contract), // - pool 2nd token staked amount
                     // gauge: lp[13], // - pool gauge address
-                    gauge_liquidity: lp[14].toString(), // - pool staked tokens (less/eq than/to pool total supply)
+                    gauge_liquidity: lp.gauge_liquidity, // - pool staked tokens (less/eq than/to pool total supply)
                     // gauge_alive: lp[15], // - indicates if the gauge is still active
                     // fee: lp[16], // - pool gauge fees contract address, CL pools use hundredths of a bip (i.e. 1e-6)
                     // bribe: lp[17], // - pool gauge bribes contract address
                     // factory: lp[18], // - pool factory address
-                    emissions: lp[19].toString(), // - pool emissions (per second)
+                    emissions: lp.emissions, // - pool emissions (per second)
                     // emissions_token: lp[20], // - pool emissions token address
                     // pool_fee: lp[21], // - pool swap fee (percentage)
                     // unstaked_fee: lp[22], // - unstaked fee percentage on CL pools, 0 on v2 pools
@@ -127,7 +128,7 @@ export function useVelodromePositions() {
             try {
                 setLoading(true)
                 const positions = (await velodromeSugarContract.positions(
-                    BigNumber.from(500),
+                    BigNumber.from(700),
                     BigNumber.from(300),
                     address
                 )) as any[]
@@ -135,21 +136,22 @@ export function useVelodromePositions() {
 
                 const positionData = positions.map((position) => ({
                     // id: position[0], // - NFT ID on CL pools, 0 on v2 pools
-                    lp: position[1], // - Lp address
-                    liquidity: position[2].toString(), // - liquidity amount on CL, deposited LP tokens on v2
+                    lp: position.lp, // - Lp address
+                    liquidity: position.liquidity.toString(), // - liquidity amount on CL, deposited LP tokens on v2
                     // staked: position[3].toString(), // - staked/unstaked liquidity amount on CL, amount of staked tokens on v2
                     // amount0: position[4].toString(), // - amount of unstaked token0 in the position
                     // amount1: position[5].toString(), // - amount of unstaked token1 in the position
-                    staked0: position[6].toString(), // - amount of staked token0 in the position
-                    staked1: position[7].toString(), // - amount of staked token1 in the position
+                    staked0: position.staked0.toString(), // - amount of staked token0 in the position
+                    staked1: position.staked1.toString(), // - amount of staked token1 in the position
                     // unstaked_earned0: position[8].toString(), // - unstaked token0 fees earned
                     // unstaked_earned1: position[9].toString(), // - unstaked token1 fees earned
-                    emissions_earned: position[10].toString(), // - emissions earned from staked position
+                    emissions_earned: position.emissions_earned.toString(), // - emissions earned from staked position
                     // tick_lower: position[11], // - lower tick of position on CL, 0 on v2
                     // tick_upper: position[12], // - upper tick of position on CL, 0 on v2
                     // sqrt_ratio_lower: position[13].toString(), // - sqrt ratio X96 at lower tick on CL, 0 on v2
                     // sqrt_ratio_upper: position[14].toString(), // - sqrt ratio X96 at upper tick on CL, 0 on v2
                 }))
+
                 setData(positionData)
             } catch (error: any) {
                 console.error(error)
