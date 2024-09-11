@@ -63,9 +63,15 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                                 />
                                                 {hasRewards && (
                                                     <RewardsTokenArray
-                                                        tokens={['OP', 'KITE']}
+                                                        tokens={
+                                                            collateralName === 'APXETH'
+                                                                ? ['OP', 'KITE', 'DINERO']
+                                                                : ['OP', 'KITE']
+                                                        }
                                                         label="EARN"
-                                                        tooltip={`Earn OP/KITE tokens by minting HAI and providing liquidity`}
+                                                        tooltip={`Earn OP/KITE${
+                                                            collateralName === 'APXETH' ? '/DINERO' : ''
+                                                        } tokens by minting HAI and providing liquidity`}
                                                     />
                                                 )}
                                             </Grid>

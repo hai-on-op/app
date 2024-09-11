@@ -21,7 +21,7 @@ export function HaiCoin({ variant = 'HAI', width, animated, thickness, rotateOnA
         <HaiCoinImage {...props} $width={width}>
             <Inner $variant={variant} $animated={animated} $animDur={animDuration} $rotateOnAxis={rotateOnAxis}>
                 <Face $thickness={thickness}>
-                    <img src={TOKEN_LOGOS[variant]} alt="" />
+                    <img src={TOKEN_LOGOS[variant]} alt="" style={{ width: '100%', height: '100%' }} />
                 </Face>
                 <InsidePiece $thickness={thickness} />
                 <BackFace $thickness={thickness} />
@@ -100,6 +100,11 @@ const Inner = styled(CenteredFlex)<{
             case 'OP': {
                 frontColor = '#FF0000'
                 backColor = '#DD0000'
+                break
+            }
+            case 'DINERO': {
+                frontColor = '#232b2b'
+                backColor = '#232b2b'
                 break
             }
             case 'HAI':
