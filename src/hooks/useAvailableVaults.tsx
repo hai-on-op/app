@@ -40,6 +40,8 @@ export function useAvailableVaults() {
         [tokensData]
     )
 
+    const HAS_REWARDS = ['APXETH', 'WETH', 'WSTETH', 'RETH', 'OP', 'TBTC']
+
     const availableVaults: AvailableVaultPair[] = useMemo(() => {
         return collaterals.map((collateral) => {
             const symbol = collateral.symbol
@@ -48,7 +50,8 @@ export function useAvailableVaults() {
             return {
                 collateralName: symbol,
                 collateralLabel: collateral.label,
-                hasRewards: collateral.hasRewards,
+                // hasRewards: collateral.hasRewards,
+                hasRewards: HAS_REWARDS.includes(symbol),
                 collateralizationFactor: liquidationCRatio || '',
                 stabilityFee: (1 - parseFloat(totalAnnualizedStabilityFee || '1')).toString(),
                 apy: totalAnnualizedStabilityFee || '',

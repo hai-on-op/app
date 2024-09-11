@@ -22,8 +22,9 @@ export function BorrowStats() {
     const { value, apy } = useMemo(() => {
         return rows.reduce(
             (obj, { userPosition = '0', apy }) => {
+                const apyToUse = apy ? apy : 0
                 obj.value += parseFloat(userPosition)
-                obj.apy += parseFloat(userPosition) * apy
+                obj.apy += parseFloat(userPosition) * apyToUse
                 return obj
             },
             { value: 0, apy: 0 }

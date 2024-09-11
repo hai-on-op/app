@@ -23,7 +23,13 @@ export function TokenArray({ tokens, size = 32, label, hideLabel = false }: Toke
             case 'VELO':
                 return 'white'
             case 'APXETH':
-                return 'white'
+                return 'black'
+            case 'PXETH':
+                return 'black'
+            case 'TBTC':
+                return 'black'
+            case 'LINK':
+                return '#335DD2'
             default:
                 return 'greenish'
         }
