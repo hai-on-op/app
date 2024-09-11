@@ -9,6 +9,7 @@ import {
     formatSummaryCurrency,
     formatSummaryPercentage,
     tokenAssets,
+    DEPRECATED_COLLATERALS,
 } from '~/utils'
 
 export type SystemData = {
@@ -48,7 +49,13 @@ export function useSystemData(): SystemData {
                 },
             ],
         } = data
-        const { total, collateralStats } = collateralTypes.reduce(
+
+        // Filtering out deprecated collaterals
+        const activeCollateralTypes = collateralTypes.filter(
+            ({ id }) => !DEPRECATED_COLLATERALS.includes(id.toUpperCase())
+        )
+
+        const { total, collateralStats } = activeCollateralTypes.reduce(
             (stats, { id, totalCollateralLockedInSafes, debtAmount, currentPrice }) => {
                 if (currentPrice) {
                     const totalCollateral = formatSummaryCurrency(totalCollateralLockedInSafes, currentPrice.value)
