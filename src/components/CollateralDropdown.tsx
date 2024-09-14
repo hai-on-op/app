@@ -4,6 +4,7 @@ import styled, { css } from 'styled-components'
 import { Text } from '~/styles'
 import { BrandedDropdown, DropdownOption } from './BrandedDropdown'
 import { TokenArray } from './TokenArray'
+import { DEPRECATED_COLLATERALS } from '~/utils'
 
 type CollateralDropdownProps = {
     label: string
@@ -18,6 +19,7 @@ export function CollateralDropdown({ label, selectedAsset, onSelect, excludeAll 
 
     const symbols = Object.values(tokensData || {})
         .filter(({ isCollateral }) => isCollateral)
+        .filter(({ symbol }) => !DEPRECATED_COLLATERALS.includes(symbol))
         .map(({ symbol }) => symbol)
 
     return (
