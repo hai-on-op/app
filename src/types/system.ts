@@ -45,8 +45,15 @@ export type TokenAnalyticsData = AnalyticsData['tokenAnalyticsData'][string] & {
     collateralJoin?: string
 }
 
+export type CollateralDebt = {
+    debtAmount: string
+    debtCeiling: string
+    ceilingPercent: number
+}
+
 export type CollateralStat = {
     totalCollateral?: SummaryItemValue<SummaryCurrency>
     totalDebt?: SummaryItemValue<SummaryCurrency>
     ratio?: SummaryItemValue
+    debt?: CollateralDebt
 }

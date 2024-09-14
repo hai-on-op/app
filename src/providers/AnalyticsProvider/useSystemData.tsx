@@ -48,8 +48,9 @@ export function useSystemData(): SystemData {
                 },
             ],
         } = data
+
         const { total, collateralStats } = collateralTypes.reduce(
-            (stats, { id, totalCollateralLockedInSafes, debtAmount, currentPrice }) => {
+            (stats, { id, totalCollateralLockedInSafes, debtAmount, debtCeiling, currentPrice }) => {
                 if (currentPrice) {
                     const totalCollateral = formatSummaryCurrency(totalCollateralLockedInSafes, currentPrice.value)
                     const totalDebt = formatSummaryCurrency(debtAmount, currentRedemptionPrice.value || '1')
@@ -58,7 +59,17 @@ export function useSystemData(): SystemData {
                     const key = tokenAssets[id]
                         ? id
                         : Object.values(tokenAssets).find(({ name }) => id === name)?.symbol || id
+
+                    const debtCeilingPercent = (parseFloat(debtAmount || '0') * 100) / parseFloat(debtCeiling || '0')
+
+                    const debt = {
+                        debtAmount,
+                        debtCeiling,
+                        ceilingPercent: debtCeilingPercent,
+                    }
+
                     stats.collateralStats[key] = {
+                        debt,
                         totalCollateral,
                         totalDebt,
                         ratio,
