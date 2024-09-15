@@ -16,6 +16,14 @@ import { CollateralDropdown } from '~/components/CollateralDropdown'
 
 const strategies: StrategyAdProps[] = [
     {
+        heading: 'DINERO REWARDS',
+        status: 'NOW LIVE',
+        description: 'Earn DINERO tokens by borrowing HAI & providing liquidity',
+        cta: 'Learn More',
+        ctaLink: '/earn',
+        tokenImages: ['DINERO'],
+    },
+    {
         heading: 'OP REWARDS',
         status: 'NOW LIVE',
         description: 'Earn OP tokens by borrowing HAI & providing liquidity',
