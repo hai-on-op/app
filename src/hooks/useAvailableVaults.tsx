@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { BigNumber } from 'ethers'
 
 import type { AvailableVaultPair, SortableHeader, Sorting } from '~/types'
-import { arrayToSorted } from '~/utils'
+import { arrayToSorted, DEPRECATED_COLLATERALS } from '~/utils'
 import { useStoreState } from '~/store'
 
 const sortableHeaders: SortableHeader[] = [
@@ -43,22 +43,24 @@ export function useAvailableVaults() {
     const HAS_REWARDS = ['APXETH', 'WETH', 'WSTETH', 'RETH', 'OP', 'TBTC']
 
     const availableVaults: AvailableVaultPair[] = useMemo(() => {
-        return collaterals.map((collateral) => {
-            const symbol = collateral.symbol
-            const { liquidationCRatio, totalAnnualizedStabilityFee } =
-                vaultState.liquidationData?.collateralLiquidationData[symbol] || {}
-            return {
-                collateralName: symbol,
-                collateralLabel: collateral.label,
-                // hasRewards: collateral.hasRewards,
-                hasRewards: HAS_REWARDS.includes(symbol),
-                collateralizationFactor: liquidationCRatio || '',
-                stabilityFee: (1 - parseFloat(totalAnnualizedStabilityFee || '1')).toString(),
-                apy: totalAnnualizedStabilityFee || '',
-                eligibleBalance: tokensFetchedData[symbol]?.balanceE18,
-                myVaults: vaultState.list.filter(({ collateralName }) => collateralName === symbol),
-            }
-        })
+        return collaterals
+            .filter(({ symbol }) => !DEPRECATED_COLLATERALS.includes(symbol))
+            .map((collateral) => {
+                const symbol = collateral.symbol
+                const { liquidationCRatio, totalAnnualizedStabilityFee } =
+                    vaultState.liquidationData?.collateralLiquidationData[symbol] || {}
+                return {
+                    collateralName: symbol,
+                    collateralLabel: collateral.label,
+                    // hasRewards: collateral.hasRewards,
+                    hasRewards: HAS_REWARDS.includes(symbol),
+                    collateralizationFactor: liquidationCRatio || '',
+                    stabilityFee: (1 - parseFloat(totalAnnualizedStabilityFee || '1')).toString(),
+                    apy: totalAnnualizedStabilityFee || '',
+                    eligibleBalance: tokensFetchedData[symbol]?.balanceE18,
+                    myVaults: vaultState.list.filter(({ collateralName }) => collateralName === symbol),
+                }
+            })
     }, [symbols, tokensFetchedData, vaultState.list, vaultState.liquidationData])
 
     const [eligibleOnly, setEligibleOnly] = useState(false)
