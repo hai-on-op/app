@@ -9,6 +9,7 @@ import { CenteredFlex, Flex, type FlexProps, HaiButton, Text } from '~/styles'
 import { BrandedDropdown, DropdownOption } from '~/components/BrandedDropdown'
 import { TokenArray } from '~/components/TokenArray'
 import { Plus } from 'react-feather'
+import { DEPRECATED_COLLATERALS } from '~/utils'
 
 export function ManageDropdown(props: FlexProps) {
     const {
@@ -21,6 +22,7 @@ export function ManageDropdown(props: FlexProps) {
     const { label, options } = useMemo(() => {
         const symbols = Object.values(tokensData || {})
             .filter(({ isCollateral }) => isCollateral)
+            .filter(({ symbol }) => !DEPRECATED_COLLATERALS.includes(symbol))
             .map(({ symbol }) => symbol)
 
         const sortedVaults = symbols.reduce(
