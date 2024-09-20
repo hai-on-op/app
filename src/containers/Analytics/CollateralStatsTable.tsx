@@ -8,6 +8,7 @@ import styled from 'styled-components'
 import { Flex, Grid, Text } from '~/styles'
 import { TokenArray } from '~/components/TokenArray'
 import { Table } from '~/components/Table'
+import { ProgressBar } from '~/components/ProgressBar'
 
 type CollateralStatsTableProps = {
     headers: SortableHeader[]
@@ -23,7 +24,7 @@ export function CollateralStatsTable({ headers, rows, sorting, setSorting }: Col
             sorting={sorting}
             setSorting={setSorting}
             rows={rows
-                .map(({ token, stabilityFee, annualEarnings, totalCollateral, totalDebt, ratio }) => (
+                .map(({ token, stabilityFee, annualEarnings, totalCollateral, totalDebt, ratio, debt }) => (
                     <Table.Row
                         key={token}
                         container={TableRow}
@@ -65,13 +66,28 @@ export function CollateralStatsTable({ headers, rows, sorting, setSorting }: Col
                                 ),
                             },
                             {
+                                content: (
+                                    <DebtCeilingContainer>
+                                        <DebtCeilingText style={{ marginRight: '0.2em' }}>
+                                            {debt?.ceilingPercent?.toFixed(2)}%
+                                        </DebtCeilingText>
+                                        <DebtCeilingProgressContainer>
+                                            <ProgressBar progress={(debt?.ceilingPercent || 0) / 100} />
+                                        </DebtCeilingProgressContainer>
+                                    </DebtCeilingContainer>
+                                ),
+                            },
+                            {
                                 content: <Text>{ratio?.formatted || '--%'}</Text>,
                             },
                             {
                                 content: (
                                     <Text>
                                         {stabilityFee
-                                            ? formatNumberWithStyle(-stabilityFee, { maxDecimals: 1, style: 'percent' })
+                                            ? formatNumberWithStyle(-stabilityFee, {
+                                                  maxDecimals: 1,
+                                                  style: 'percent',
+                                              })
                                             : '--%'}
                                     </Text>
                                 ),
@@ -97,8 +113,21 @@ export function CollateralStatsTable({ headers, rows, sorting, setSorting }: Col
     )
 }
 
+const DebtCeilingContainer = styled.div`
+    margin-right: 1em;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+`
+
+const DebtCeilingText = styled(Text)`
+    margin-right: 0.25em;
+`
+
+const DebtCeilingProgressContainer = styled.div``
+
 const TableHeader = styled(Grid)`
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(7, 1fr);
     align-items: center;
     padding: 4px;
     font-size: 0.8rem;
@@ -151,15 +180,19 @@ type GlobalRowProps = Pick<CollateralStatsTableProps, 'rows' | 'headers'>
 function GlobalRow({ rows, headers }: GlobalRowProps) {
     const stats = useMemo(() => {
         return rows.reduce(
-            (obj, { stabilityFee = 0, totalCollateral, totalDebt }) => {
+            (obj, { stabilityFee = 0, totalCollateral, totalDebt, debt }) => {
                 obj.totalCollateral += parseFloat(totalCollateral?.usdRaw || '0')
                 obj.totalDebt += parseFloat(totalDebt?.usdRaw || '0')
                 obj.fee += stabilityFee * parseFloat(totalDebt?.usdRaw || '0')
+                obj.totalDebtCeilingRaw += parseFloat(debt?.debtCeiling || '0')
+                obj.totalDebtRaw += parseFloat(debt?.debtAmount || '0')
                 return obj
             },
-            { totalCollateral: 0, totalDebt: 0, fee: 0 }
+            { totalCollateral: 0, totalDebt: 0, fee: 0, totalDebtCeilingRaw: 0, totalDebtRaw: 0 }
         )
     }, [rows])
+
+    const calculateDebtCeilingPercent = (debtAmount: number, debtCeiling: number) => (debtAmount * 100) / debtCeiling
 
     return (
         <Table.Row
@@ -193,6 +226,31 @@ function GlobalRow({ rows, headers }: GlobalRowProps) {
                                       suffixed: true,
                                   })
                                 : '$--'}
+                        </Text>
+                    ),
+                },
+                {
+                    content: (
+                        <Text $fontWeight={700}>
+                            {' '}
+                            <DebtCeilingContainer>
+                                <DebtCeilingText style={{ marginRight: '0.2em' }}>
+                                    {calculateDebtCeilingPercent(stats.totalDebtRaw, stats.totalDebtCeilingRaw).toFixed(
+                                        2
+                                    )}
+                                    %
+                                </DebtCeilingText>
+                                <DebtCeilingProgressContainer>
+                                    <ProgressBar
+                                        progress={
+                                            (calculateDebtCeilingPercent(
+                                                stats.totalDebtRaw,
+                                                stats.totalDebtCeilingRaw
+                                            ) || 0) / 100
+                                        }
+                                    />
+                                </DebtCeilingProgressContainer>
+                            </DebtCeilingContainer>
                         </Text>
                     ),
                 },
