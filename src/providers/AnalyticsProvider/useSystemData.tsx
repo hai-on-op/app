@@ -65,7 +65,17 @@ export function useSystemData(): SystemData {
                     const key = tokenAssets[id]
                         ? id
                         : Object.values(tokenAssets).find(({ name }) => id === name)?.symbol || id
+
+                    const debtCeilingPercent = (parseFloat(debtAmount || '0') * 100) / parseFloat(debtCeiling || '0')
+
+                    const debt = {
+                        debtAmount,
+                        debtCeiling,
+                        ceilingPercent: debtCeilingPercent,
+                    }
+
                     stats.collateralStats[key] = {
+                        debt,
                         totalCollateral,
                         totalDebt,
                         ratio,

@@ -84,6 +84,10 @@ const collateralStatHeaders: SortableHeader[] = [
         tooltip: `Debt Issued - value of all HAI debt issued in vaults of a given collateral asset`,
     },
     {
+        label: 'Debt Ceiling %',
+        tooltip: `Percentage of the collateral's debt ceiling that has been used`,
+    },
+    {
         label: 'Collateral Ratio',
         tooltip: `System-wide ratio of TVL to TVI for a given collateral asset`,
     },
@@ -117,9 +121,11 @@ export function useCollateralStats() {
         return Object.entries(collateralStats || {}).map(([token, stat]) => {
             const { stabilityFee: sfBN } = tokenAnalyticsData.find(({ symbol }) => symbol === token) || {}
             const stabilityFee = sfBN ? (transformToAnnualRate(sfBN.toString(), 27, true) as number) : 0
+
             return {
                 token,
                 ...stat,
+                debtCeilingPercent: stat.debt?.ceilingPercent,
                 stabilityFee,
                 annualEarnings: parseFloat(stat.totalDebt?.raw || '0') * stabilityFee,
             }
