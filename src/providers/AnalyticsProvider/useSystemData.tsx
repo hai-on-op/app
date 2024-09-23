@@ -56,7 +56,7 @@ export function useSystemData(): SystemData {
         )
 
         const { total, collateralStats } = activeCollateralTypes.reduce(
-            (stats, { id, totalCollateralLockedInSafes, debtAmount, currentPrice }) => {
+            (stats, { id, totalCollateralLockedInSafes, debtAmount, debtCeiling, currentPrice }) => {
                 if (currentPrice) {
                     const totalCollateral = formatSummaryCurrency(totalCollateralLockedInSafes, currentPrice.value)
                     const totalDebt = formatSummaryCurrency(debtAmount, currentRedemptionPrice.value || '1')
