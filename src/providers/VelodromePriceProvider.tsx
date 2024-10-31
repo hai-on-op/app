@@ -14,6 +14,7 @@ const priceAddresses = {
     KITE: '0xf467C7d5a4A9C4687fFc7986aC6aD5A4c81E1404',
     PXETH: '0x300d2c875C6fb8Ce4bf5480B4d34b7c9ea8a33A4',
     SAIL: '0x7a1263eC3Bf0a19e25C553B8A2C312e903262C5E',
+    DINERO: '0x09D9420332bff75522a45FcFf4855F82a0a3ff50',
 }
 
 type VelodromePriceContext = {
@@ -63,6 +64,7 @@ export function VelodromePriceProvider({ children }: Props) {
                     '0x8700dAec35aF8Ff88c16BdF0418774CB3D7599B4', // connector SNX
                     '0x7a1263eC3Bf0a19e25C553B8A2C312e903262C5E', // connector SAIL
                     '0x300d2c875C6fb8Ce4bf5480B4d34b7c9ea8a33A4', // connector pxETH
+                    '0x09D9420332bff75522a45FcFf4855F82a0a3ff50', // connector DINERO
                     '0x0b2c639c533813f4aa9d7837caf62653d097ff85', // denomination USDC
                 ])) as string[] // actually BigNumber[] but don't need to import
                 if (isStale) return
