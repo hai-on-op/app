@@ -40,6 +40,7 @@ export function ClaimModal(props: ModalProps) {
     const { prices: veloPrices } = useVelodromePrices()
 
     const kitePrice = veloPrices?.KITE.raw
+    const dineroPrice = veloPrices?.DINERO.raw
     const opPrice = liquidationData?.collateralLiquidationData?.OP?.currentPrice.value
 
     const geb = useGeb()
@@ -75,6 +76,7 @@ export function ClaimModal(props: ModalProps) {
 
     const kiteIncentivesData = incentivesData['KITE']
     const opIncentivesData = incentivesData['OP']
+    const dineroIncentivesData = incentivesData['DINERO']
 
     const kiteIncentivesContent = kiteIncentivesData?.hasClaimableDistros
         ? kiteIncentivesData.claims.map((claim) => (
@@ -100,6 +102,18 @@ export function ClaimModal(props: ModalProps) {
           ))
         : []
 
+    const dineroIncentivesContent = dineroIncentivesData?.hasClaimableDistros
+        ? dineroIncentivesData.claims.map((claim) => (
+              <ClaimableIncentive
+                  key={slugify(claim.description)}
+                  asset="DINERO"
+                  claim={claim}
+                  price={dineroPrice}
+                  onSuccess={refetchIncentives}
+              />
+          ))
+        : []
+
     const tokenIncentiveValue = (claims, price) =>
         claims?.reduce((acc, claim) => {
             const value = claim.isClaimed ? 0 : parseFloat(returnAmount(claim.amount))
@@ -108,9 +122,11 @@ export function ClaimModal(props: ModalProps) {
 
     const kiteIncentiveValue = tokenIncentiveValue(kiteIncentivesData?.claims, kitePrice)
     const opIncentiveValue = tokenIncentiveValue(opIncentivesData?.claims, opPrice)
-    const totalIncentiveValue = kiteIncentiveValue + opIncentiveValue
+    const dineroIncentiveValue = tokenIncentiveValue(dineroIncentivesData?.claims, dineroPrice)
 
-    const incentivesContent = [...kiteIncentivesContent, ...opIncentivesContent]
+    const totalIncentiveValue = kiteIncentiveValue + opIncentiveValue + dineroIncentiveValue
+
+    const incentivesContent = [...kiteIncentivesContent, ...opIncentivesContent, ...dineroIncentivesContent]
 
     const totalClaimableValue = total + totalIncentiveValue
 
