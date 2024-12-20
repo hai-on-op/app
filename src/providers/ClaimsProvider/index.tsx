@@ -18,6 +18,7 @@ type ClaimsContext = {
     incentivesData: {
         KITE?: SummaryItemValue<SummaryCurrency>
         OP?: SummaryItemValue<SummaryCurrency>
+        DINERO?: SummaryItemValue<SummaryCurrency>
         refetch?: () => void
     }
     activeAuctions: {
@@ -95,6 +96,8 @@ export function ClaimsProvider({ children }: Props) {
         const fetchIncentives = async () => {
             if (!account || !chainId || !geb) return
             const incentives = await fetchIncentivesData(geb, account, chainId)
+
+            console.log('incentives', incentives)
             setIncentivesData(incentives)
         }
         fetchIncentives()

@@ -73,31 +73,46 @@ export function ClaimModal(props: ModalProps) {
 
     if (!isClaimPopupOpen) return null
 
+    console.log('incentivesData', incentivesData)
+
     const kiteIncentivesData = incentivesData['KITE']
     const opIncentivesData = incentivesData['OP']
+    const dineroIncentivesData = incentivesData['DINERO']
 
     const kiteIncentivesContent = kiteIncentivesData?.hasClaimableDistros
-        ? kiteIncentivesData.claims.map((claim) => (
+        ? [
               <ClaimableIncentive
-                  key={slugify(claim.description)}
+                  key={'KITE-Daily-rewards'}
                   asset="KITE"
-                  claim={claim}
+                  claim={{ ...kiteIncentivesData }}
                   price={kitePrice}
                   onSuccess={refetchIncentives}
-              />
-          ))
+              />,
+          ]
         : []
 
     const opIncentivesContent = opIncentivesData?.hasClaimableDistros
-        ? opIncentivesData.claims.map((claim) => (
+        ? [
               <ClaimableIncentive
-                  key={slugify(claim.description)}
+                  key={'OP-Daily-rewards'}
                   asset="OP"
-                  claim={claim}
+                  claim={{ ...opIncentivesData }}
                   price={opPrice}
                   onSuccess={refetchIncentives}
-              />
-          ))
+              />,
+          ]
+        : []
+
+    const dineroIncentivesContent = dineroIncentivesData?.hasClaimableDistros
+        ? [
+              <ClaimableIncentive
+                  key={'DINERO-Daily-rewards'}
+                  asset="DINERO"
+                  claim={{ ...kiteIncentivesData }}
+                  price={kitePrice}
+                  onSuccess={refetchIncentives}
+              />,
+          ]
         : []
 
     const tokenIncentiveValue = (claims, price) =>
@@ -110,7 +125,7 @@ export function ClaimModal(props: ModalProps) {
     const opIncentiveValue = tokenIncentiveValue(opIncentivesData?.claims, opPrice)
     const totalIncentiveValue = kiteIncentiveValue + opIncentiveValue
 
-    const incentivesContent = [...kiteIncentivesContent, ...opIncentivesContent]
+    const incentivesContent = [...kiteIncentivesContent, ...opIncentivesContent, ...dineroIncentivesContent]
 
     const totalClaimableValue = total + totalIncentiveValue
 
@@ -179,10 +194,25 @@ export function ClaimModal(props: ModalProps) {
                         &nbsp;
                         {formatNumberWithStyle(totalClaimableValue, { style: 'currency' })}
                     </Text>
+                    <Text>
+                        Next distribution in{' '}
+                        <span
+                            style={{
+                                backgroundColor: '#f8f8f8',
+                                padding: '0.2em 0.5em',
+                                borderRadius: '1em',
+                                fontWeight: 600,
+                            }}
+                        >
+                            24 hours
+                        </span>
+                    </Text>
                 </Flex>
             }
         >
-            <Text>Claim incentive rewards, assets purchased in auctions, and reclaim unsuccessful auction bids</Text>
+            <Text>
+                Incentive rewards are distributed every 24 hours. Unclaimed rewards will accure below and do not expire.
+            </Text>
             <ScrollableBody>
                 <ContentWithStatus
                     loading={false}
@@ -393,9 +423,6 @@ function ClaimableAsset({
                                 ? `Auction: #${auction.auctionId} (${auction.englishAuctionType})`
                                 : `Unsuccessful Bid(s)`}
                         </Text>
-                    )}
-                    {incentive && (
-                        <Text $fontSize="0.8em">{returnDaysLeftToClaim(claim.createdAt)} days left to claim</Text>
                     )}
 
                     <Text $fontSize="1em" $fontWeight={700}>
