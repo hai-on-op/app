@@ -41,6 +41,7 @@ export function ClaimModal(props: ModalProps) {
 
     const kitePrice = veloPrices?.KITE.raw
     const opPrice = liquidationData?.collateralLiquidationData?.OP?.currentPrice.value
+    const dineroPrice = 0
 
     const geb = useGeb()
 
@@ -72,8 +73,6 @@ export function ClaimModal(props: ModalProps) {
     }, [liquidationData, activeAuctions.claimableAuctions])
 
     if (!isClaimPopupOpen) return null
-
-    console.log('incentivesData', incentivesData)
 
     const kiteIncentivesData = incentivesData['KITE']
     const opIncentivesData = incentivesData['OP']
@@ -108,8 +107,8 @@ export function ClaimModal(props: ModalProps) {
               <ClaimableIncentive
                   key={'DINERO-Daily-rewards'}
                   asset="DINERO"
-                  claim={{ ...kiteIncentivesData }}
-                  price={kitePrice}
+                  claim={{ ...dineroIncentivesData }}
+                  price={dineroPrice}
                   onSuccess={refetchIncentives}
               />,
           ]
@@ -204,7 +203,7 @@ export function ClaimModal(props: ModalProps) {
                                 fontWeight: 600,
                             }}
                         >
-                            24 hours
+                            {kiteIncentivesData?.nextDistribution}
                         </span>
                     </Text>
                 </Flex>
@@ -331,7 +330,7 @@ function ClaimableAsset({
             }
             const { index, amount, proof } = claim
             try {
-                const txResponse = await distributor.claim(index, formatted, amount, proof)
+                const txResponse = await claim.claimIt()
                 if (txResponse) {
                     transactionsActions.addTransaction({
                         chainId: txResponse?.chainId,

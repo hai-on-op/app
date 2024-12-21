@@ -50,13 +50,8 @@ export function useSystemData(): SystemData {
             ],
         } = data
 
-        // Filtering out deprecated collaterals
-        const activeCollateralTypes = collateralTypes.filter(
-            ({ id }) => !DEPRECATED_COLLATERALS.includes(id.toUpperCase())
-        )
-
-        const { total, collateralStats } = activeCollateralTypes.reduce(
-            (stats, { id, totalCollateralLockedInSafes, debtAmount, currentPrice }) => {
+        const { total, collateralStats } = collateralTypes.reduce(
+            (stats, { id, totalCollateralLockedInSafes, debtAmount, debtCeiling, currentPrice }) => {
                 if (currentPrice) {
                     const totalCollateral = formatSummaryCurrency(totalCollateralLockedInSafes, currentPrice.value)
                     const totalDebt = formatSummaryCurrency(debtAmount, currentRedemptionPrice.value || '1')
