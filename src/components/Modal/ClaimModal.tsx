@@ -42,7 +42,6 @@ export function ClaimModal(props: ModalProps) {
     const kitePrice = veloPrices?.KITE.raw
     const dineroPrice = veloPrices?.DINERO.raw
     const opPrice = liquidationData?.collateralLiquidationData?.OP?.currentPrice.value
-    const dineroPrice = 0
 
     const geb = useGeb()
 
@@ -115,17 +114,6 @@ export function ClaimModal(props: ModalProps) {
           ]
         : []
 
-    const dineroIncentivesContent = dineroIncentivesData?.hasClaimableDistros
-        ? dineroIncentivesData.claims.map((claim) => (
-              <ClaimableIncentive
-                  key={slugify(claim.description)}
-                  asset="DINERO"
-                  claim={claim}
-                  price={dineroPrice}
-                  onSuccess={refetchIncentives}
-              />
-          ))
-        : []
 
     const tokenIncentiveValue = (claims, price) =>
         claims?.reduce((acc, claim) => {
