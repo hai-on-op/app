@@ -79,40 +79,41 @@ export function ClaimModal(props: ModalProps) {
     const dineroIncentivesData = incentivesData['DINERO']
 
     const kiteIncentivesContent = kiteIncentivesData?.hasClaimableDistros
-        ? kiteIncentivesData.claims.map((claim) => (
+        ? [
               <ClaimableIncentive
-                  key={slugify(claim.description)}
+                  key={'KITE-Daily-rewards'}
                   asset="KITE"
-                  claim={claim}
+                  claim={{ ...kiteIncentivesData }}
                   price={kitePrice}
                   onSuccess={refetchIncentives}
-              />
-          ))
+              />,
+          ]
         : []
 
     const opIncentivesContent = opIncentivesData?.hasClaimableDistros
-        ? opIncentivesData.claims.map((claim) => (
+        ? [
               <ClaimableIncentive
-                  key={slugify(claim.description)}
+                  key={'OP-Daily-rewards'}
                   asset="OP"
-                  claim={claim}
+                  claim={{ ...opIncentivesData }}
                   price={opPrice}
                   onSuccess={refetchIncentives}
-              />
-          ))
+              />,
+          ]
         : []
 
     const dineroIncentivesContent = dineroIncentivesData?.hasClaimableDistros
-        ? dineroIncentivesData.claims.map((claim) => (
+        ? [
               <ClaimableIncentive
-                  key={slugify(claim.description)}
+                  key={'DINERO-Daily-rewards'}
                   asset="DINERO"
-                  claim={claim}
+                  claim={{ ...dineroIncentivesData }}
                   price={dineroPrice}
                   onSuccess={refetchIncentives}
-              />
-          ))
+              />,
+          ]
         : []
+
 
     const tokenIncentiveValue = (claims, price) =>
         claims?.reduce((acc, claim) => {
@@ -195,10 +196,25 @@ export function ClaimModal(props: ModalProps) {
                         &nbsp;
                         {formatNumberWithStyle(totalClaimableValue, { style: 'currency' })}
                     </Text>
+                    <Text>
+                        Next distribution in{' '}
+                        <span
+                            style={{
+                                backgroundColor: '#f8f8f8',
+                                padding: '0.2em 0.5em',
+                                borderRadius: '1em',
+                                fontWeight: 600,
+                            }}
+                        >
+                            {kiteIncentivesData?.nextDistribution}
+                        </span>
+                    </Text>
                 </Flex>
             }
         >
-            <Text>Claim incentive rewards, assets purchased in auctions, and reclaim unsuccessful auction bids</Text>
+            <Text>
+                Incentive rewards are distributed every 24 hours. Unclaimed rewards will accure below and do not expire.
+            </Text>
             <ScrollableBody>
                 <ContentWithStatus
                     loading={false}
@@ -317,7 +333,7 @@ function ClaimableAsset({
             }
             const { index, amount, proof } = claim
             try {
-                const txResponse = await distributor.claim(index, formatted, amount, proof)
+                const txResponse = await claim.claimIt()
                 if (txResponse) {
                     transactionsActions.addTransaction({
                         chainId: txResponse?.chainId,
@@ -409,9 +425,6 @@ function ClaimableAsset({
                                 ? `Auction: #${auction.auctionId} (${auction.englishAuctionType})`
                                 : `Unsuccessful Bid(s)`}
                         </Text>
-                    )}
-                    {incentive && (
-                        <Text $fontSize="0.8em">{returnDaysLeftToClaim(claim.createdAt)} days left to claim</Text>
                     )}
 
                     <Text $fontSize="1em" $fontWeight={700}>

@@ -11,6 +11,7 @@ export const {
     VITE_TESTNET_PUBLIC_RPC,
 } = import.meta.env
 
+
 export enum ChainId {
     MAINNET = 10,
     OPTIMISM_GOERLI = 420,
