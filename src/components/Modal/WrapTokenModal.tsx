@@ -2,12 +2,11 @@ import { useEffect, useMemo, useState } from 'react'
 import { useAccount, useNetwork } from 'wagmi'
 
 import { ActionState, formatNumberWithStyle } from '~/utils'
-import { useStoreActions, useStoreState } from '~/store'
-import type { ITokenBalance } from '~/types/wallet'
+import { useStoreActions } from '~/store'
 import { handleTransactionError, useBalance, useEthersSigner, useGeb, useTokenApproval, ApprovalState } from '~/hooks'
 
 import styled from 'styled-components'
-import { Flex, HaiButton, Text } from '~/styles'
+import { Flex, HaiButton } from '~/styles'
 import { Modal, type ModalProps } from './index'
 import { NumberInput } from '../NumberInput'
 import { TransactionSummary } from '../TransactionSummary'
@@ -23,9 +22,7 @@ export function WrapTokenModal(props: ModalProps) {
     const signer = useEthersSigner()
     const geb = useGeb()
 
-    console.log('geb', geb)
-
-    const [action, setAction] = useState(Action.WRAP)
+    const [action] = useState(Action.WRAP)
 
     const {
         connectWalletModel: connectWalletActions,
@@ -33,7 +30,6 @@ export function WrapTokenModal(props: ModalProps) {
         vaultModel: vaultActions,
     } = useStoreActions((actions) => actions)
 
-    const wethBalance = useBalance('WETH')
     const veloBalance = useBalance('VELO')
     const haiVeloBalance = useBalance('HAIVELO')
 
@@ -189,17 +185,6 @@ export function WrapTokenModal(props: ModalProps) {
         </Modal>
     )
 }
-
-const SwitchText = styled(Text).attrs((props) => ({
-    $textAlign: 'left',
-    $color: 'rgba(0,0,0,0.5)',
-    $fontSize: '0.8em',
-    $textDecoration: 'underline',
-    ...props,
-}))`
-    width: 100%;
-    cursor: pointer;
-`
 
 const Footer = styled(Flex).attrs((props) => ({
     $width: '100%',

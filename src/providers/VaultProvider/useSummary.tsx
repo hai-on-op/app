@@ -58,9 +58,9 @@ export function useSummary({ vault, collateral, debt, simulatedCR, liquidationPr
         stabilityFee: stabilityFee
             ? formatSummaryPercentage(getRatePercentage(stabilityFee, 4, true).toString(), -1)!
             : {
-                  raw: '',
-                  formatted: '--%',
-              },
+                raw: '',
+                formatted: '--%',
+            },
         liquidationPrice: {
             current: formatSummaryValue(vault?.liquidationPrice, {
                 maxDecimals: 3,

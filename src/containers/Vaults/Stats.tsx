@@ -52,11 +52,11 @@ export function BorrowStats() {
             {
                 header: totalCollateralInUSD
                     ? formatNumberWithStyle(totalCollateralInUSD.toString(), {
-                          style: 'currency',
-                          minDecimals: 1,
-                          maxDecimals: 1,
-                          suffixed: true,
-                      })
+                        style: 'currency',
+                        minDecimals: 1,
+                        maxDecimals: 1,
+                        suffixed: true,
+                    })
                     : '$0',
                 label: 'My Locked Collateral',
                 tooltip:
@@ -65,11 +65,11 @@ export function BorrowStats() {
             {
                 header: totalDebtInUSD
                     ? formatNumberWithStyle(totalDebtInUSD.toString(), {
-                          style: 'currency',
-                          minDecimals: 1,
-                          maxDecimals: 1,
-                          suffixed: true,
-                      })
+                        style: 'currency',
+                        minDecimals: 1,
+                        maxDecimals: 1,
+                        suffixed: true,
+                    })
                     : '$0',
                 label: 'My Total Debt',
                 tooltip: 'The total amount of minted debt tokens multiplied by the protocol redemption price of debt.',
