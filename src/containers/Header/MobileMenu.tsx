@@ -148,6 +148,15 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
                                 Claim Test Tokens
                             </BrandedDropdown.Item>
                         )}
+                        {NETWORK_ID === ChainId.OPTIMISM_SEPOLIA && (
+                            <BrandedDropdown.Item
+                                href="/test/claim-velo"
+                                icon={<Download size={18} />}
+                                active={location.pathname === '/test/claim-velo'}
+                            >
+                                Claim Test Velo
+                            </BrandedDropdown.Item>
+                        )}
                         <BrandedDropdown.Item onClick={showWrapEth} icon={<Repeat size={18} />}>
                             Wrap ETH
                         </BrandedDropdown.Item>

@@ -15,6 +15,7 @@ import { EarnStats } from '~/containers/Earn/Stats'
 import { AuctionStats } from '~/containers/Auctions/Stats'
 
 import uniswapLogo from '~/assets/uniswap-icon.svg'
+import { WrapperAd, WrapperAdProps } from './WrapperAd'
 
 enum Intention {
     AUCTION = 'auctions',
@@ -72,6 +73,17 @@ const typeOptions: BrandedSelectOption[] = [
         value: Intention.AUCTION,
         icon: 'ALL_TOKENS',
         description: 'Buy your favorite assets from auctions at a potential discount',
+    },
+]
+
+const wrappers: WrapperAdProps[] = [
+    {
+        heading: 'haiVELO',
+        status: 'NOW LIVE',
+        description: 'Lock your VELO for haiVELO that can be used as collateral while earning veVELO rewards.',
+        cta: 'Swap Now',
+        ctaLink: '/earn',
+        tokenImages: ['VELO'],
     },
 ]
 
@@ -133,12 +145,16 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
                 </Flex>
                 <Text>
                     {subtitle}
+
                     <Link href={ctaLink} $fontWeight={700}>
                         {cta}
                     </Link>
                 </Text>
                 {stats}
                 {children}
+                {wrappers.map((wrapper, i) => (
+                    <WrapperAd key={i} bgVariant={i} {...wrapper} />
+                ))}
             </Inner>
         </Container>
     )
