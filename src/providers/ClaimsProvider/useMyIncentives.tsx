@@ -455,6 +455,47 @@ export const fetchIncentivesData = async (geb: any, account: string, chainId: Ch
             return await rewardDistributor.connect(geb.signer).claim(tokensAddresses[token], claimableAmount, proof)
         }
 
+        const claimAll = async () => {
+            console.log(tokensAddresses)
+
+            const targetTokensAddresses: string[] = []
+            const claimableAmounts: ethers.BigNumber[] = []
+            const allProofs: string[][] = []
+
+            for (let i = 0; i < tokens.length; i++) {
+                const token = tokens[i]
+                const tokenDistroClaims = await fetchTokenDistroClaims(account, chainId, token)
+                const tokenTree = StandardMerkleTree.load(tokenDistroClaims[token.toLowerCase()])
+                const distroClaim = tokenDistroClaims[token.toLowerCase()]
+                const distroClaimValues = distroClaim.values
+                const isClaimed = await rewardDistributor.isClaimed(tokenTree.root, account)
+
+                const accountClaim = distroClaimValues.find(
+                    (claim) => claim.value[0].toLowerCase() === account.toLowerCase()
+                ).value
+
+                const hasClaimableDistros = ethers.BigNumber.from(accountClaim[1]).gt(0) && !isClaimed
+
+                if (hasClaimableDistros) {
+                    const claimableAmount = ethers.BigNumber.from(accountClaim[1])
+                    const claimingData = [account, claimableAmount]
+                    const proof = tokenTree.getProof(claimingData)
+
+                    targetTokensAddresses.push(tokensAddresses[token])
+                    claimableAmounts.push(claimableAmount)
+                    allProofs.push(proof)
+                }
+            }
+
+            console.log('claiming all', tokensAddresses, claimableAmounts, allProofs)
+
+            if (targetTokensAddresses.length > 0) {
+                return await rewardDistributor
+                    .connect(geb.signer)
+                    .multiClaim(targetTokensAddresses, claimableAmounts, allProofs)
+            }
+        }
+
         // @ts-ignore
         claimData[token] = {
             distroClaim,
@@ -472,9 +513,11 @@ export const fetchIncentivesData = async (geb: any, account: string, chainId: Ch
             claims: [],
             proof,
             claimIt,
+            endTime: Number(lastSettedMerkleRoot) + Number(distributionDuration),
             nextDistribution: formatTime(
                 Number(String(distributionDuration)) - (currentTime - Number(String(lastSettedMerkleRoot)))
             ),
+            claimAll,
         }
 
         //console.log('claimData', claimData)

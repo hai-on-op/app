@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 import type { IAuction } from '~/types'
 import { ActionState, formatNumberWithStyle, tokenMap, wait, isFormattedAddress, slugify } from '~/utils'
@@ -15,6 +15,7 @@ import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
 import { Modal, type ModalProps } from './index'
 import { TokenArray } from '../TokenArray'
 import { ContentWithStatus } from '../ContentWithStatus'
+import { Box } from 'react-feather'
 
 const returnDaysLeftToClaim = (date: number) => {
     const deploymentTime = dayjs(date * 1000)
@@ -25,9 +26,53 @@ const returnDaysLeftToClaim = (date: number) => {
     return 90 - dayjs().diff(deploymentTime, 'day')
 }
 
+function formatTime(seconds: number) {
+    // Handle zero or negative values
+    if (seconds <= 0) {
+        return 'now'
+    }
+
+    // Convert seconds to hours
+    const hours = Math.floor(seconds / 3600)
+
+    // If it's more than or equal to 1 hour, return just the hours
+    if (hours >= 1) {
+        return `${hours} hour${hours > 1 ? 's' : ''}`
+    }
+
+    // If less than an hour, convert to minutes
+    const minutes = Math.floor(seconds / 60)
+    return `${minutes} minute${minutes !== 1 ? 's' : ''}`
+}
+
 const returnAmount = (value: BigNumberish) => utils.formatEther(value)
 
+export function RemainingTime({ endTimestamp }: { endTimestamp?: number }) {
+    const [formattedTimeRemaining, setFormattedTimeRemaining] = useState<string>('')
+
+    useEffect(() => {
+        if (endTimestamp) {
+            const updateTime = () => {
+                const currentTime = Math.floor(Date.now() / 1000)
+                const remainingSeconds = endTimestamp - currentTime
+
+                setFormattedTimeRemaining(formatTime(remainingSeconds))
+            }
+
+            updateTime()
+            const intervalId = setInterval(updateTime, 1000)
+            return () => clearInterval(intervalId)
+        }
+    }, [endTimestamp])
+
+    return <span>{formattedTimeRemaining}</span>
+}
+
 export function ClaimModal(props: ModalProps) {
+    const { address: account } = useAccount()
+
+    const { popupsModel: popupsActions, transactionsModel: transactionsActions } = useStoreActions((actions) => actions)
+
     const {
         vaultModel: { liquidationData },
         popupsModel: { isClaimPopupOpen },
@@ -114,7 +159,6 @@ export function ClaimModal(props: ModalProps) {
           ]
         : []
 
-
     const tokenIncentiveValue = (claims, price) =>
         claims?.reduce((acc, claim) => {
             const value = claim.isClaimed ? 0 : parseFloat(returnAmount(claim.amount))
@@ -183,6 +227,46 @@ export function ClaimModal(props: ModalProps) {
             : []),
     ]
 
+    const onClaimAll = async () => {
+        const formatted = isFormattedAddress(account)
+        if (!formatted) {
+            console.debug('wrong address')
+            return false
+        }
+        try {
+            const txResponse = await kiteIncentivesData.claimAll()
+            if (txResponse) {
+                transactionsActions.addTransaction({
+                    chainId: txResponse?.chainId,
+                    hash: txResponse?.hash,
+                    from: txResponse.from,
+                    summary: `Claiming all rewards`,
+                    addedTime: new Date().getTime(),
+                    originalTx: txResponse,
+                })
+                popupsActions.setIsWaitingModalOpen(true)
+                popupsActions.setWaitingPayload({
+                    title: 'Transaction Submitted',
+                    hash: txResponse?.hash,
+                    status: 'success',
+                })
+                await txResponse.wait()
+                onSuccess?.()
+                popupsActions.setIsWaitingModalOpen(false)
+                popupsActions.setWaitingPayload({ status: ActionState.NONE })
+            } else {
+                throw new Error('No transaction request!')
+            }
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
+    const isClaimAllDisabled =
+        !kiteIncentivesData?.hasClaimableDistros &&
+        !opIncentivesData?.hasClaimableDistros &&
+        !dineroIncentivesData?.hasClaimableDistros
+
     return (
         <Modal
             heading="CLAIM"
@@ -191,24 +275,29 @@ export function ClaimModal(props: ModalProps) {
             onClose={() => setIsClaimPopupOpen(false)}
             footerContent={
                 <Flex $width="100%" $justify="space-between" $align="center">
-                    <Text>
-                        <strong>Total Estimated Value:</strong>
-                        &nbsp;
-                        {formatNumberWithStyle(totalClaimableValue, { style: 'currency' })}
-                    </Text>
-                    <Text>
-                        Next distribution in{' '}
-                        <span
-                            style={{
-                                backgroundColor: '#f8f8f8',
-                                padding: '0.2em 0.5em',
-                                borderRadius: '1em',
-                                fontWeight: 600,
-                            }}
-                        >
-                            {kiteIncentivesData?.nextDistribution}
-                        </span>
-                    </Text>
+                    <div>
+                        <Text>
+                            <strong>Total Estimated Value:</strong>
+                            &nbsp;
+                            {formatNumberWithStyle(totalClaimableValue, { style: 'currency' })}
+                        </Text>
+                        <Text style={{ marginTop: '1em' }}>
+                            Next distribution in{' '}
+                            <span
+                                style={{
+                                    backgroundColor: '#f8f8f8',
+                                    padding: '0.2em 0.5em',
+                                    borderRadius: '1em',
+                                    fontWeight: 600,
+                                }}
+                            >
+                                <RemainingTime endTimestamp={kiteIncentivesData?.endTime} />
+                            </span>
+                        </Text>
+                    </div>
+                    <HaiButton $variant="yellowish" onClick={onClaimAll} disabled={isClaimAllDisabled}>
+                        Claim All
+                    </HaiButton>
                 </Flex>
             }
         >
