@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 import type { IAuction } from '~/types'
 import { ActionState, formatNumberWithStyle, tokenMap, wait, isFormattedAddress, slugify } from '~/utils'
@@ -15,6 +15,7 @@ import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
 import { Modal, type ModalProps } from './index'
 import { TokenArray } from '../TokenArray'
 import { ContentWithStatus } from '../ContentWithStatus'
+import { Box } from 'react-feather'
 
 const returnDaysLeftToClaim = (date: number) => {
     const deploymentTime = dayjs(date * 1000)
@@ -25,9 +26,53 @@ const returnDaysLeftToClaim = (date: number) => {
     return 90 - dayjs().diff(deploymentTime, 'day')
 }
 
+function formatTime(seconds: number) {
+    // Handle zero or negative values
+    if (seconds <= 0) {
+        return 'now'
+    }
+
+    // Convert seconds to hours
+    const hours = Math.floor(seconds / 3600)
+
+    // If it's more than or equal to 1 hour, return just the hours
+    if (hours >= 1) {
+        return `${hours} hour${hours > 1 ? 's' : ''}`
+    }
+
+    // If less than an hour, convert to minutes
+    const minutes = Math.floor(seconds / 60)
+    return `${minutes} minute${minutes !== 1 ? 's' : ''}`
+}
+
 const returnAmount = (value: BigNumberish) => utils.formatEther(value)
 
+export function RemainingTime({ endTimestamp }: { endTimestamp?: number }) {
+    const [formattedTimeRemaining, setFormattedTimeRemaining] = useState<string>('')
+
+    useEffect(() => {
+        if (endTimestamp) {
+            const updateTime = () => {
+                const currentTime = Math.floor(Date.now() / 1000)
+                const remainingSeconds = endTimestamp - currentTime
+
+                setFormattedTimeRemaining(formatTime(remainingSeconds))
+            }
+
+            updateTime()
+            const intervalId = setInterval(updateTime, 1000)
+            return () => clearInterval(intervalId)
+        }
+    }, [endTimestamp])
+
+    return <span>{formattedTimeRemaining}</span>
+}
+
 export function ClaimModal(props: ModalProps) {
+    const { address: account } = useAccount()
+
+    const { popupsModel: popupsActions, transactionsModel: transactionsActions } = useStoreActions((actions) => actions)
+
     const {
         vaultModel: { liquidationData },
         popupsModel: { isClaimPopupOpen },
@@ -79,39 +124,39 @@ export function ClaimModal(props: ModalProps) {
     const dineroIncentivesData = incentivesData['DINERO']
 
     const kiteIncentivesContent = kiteIncentivesData?.hasClaimableDistros
-        ? kiteIncentivesData.claims.map((claim) => (
+        ? [
               <ClaimableIncentive
-                  key={slugify(claim.description)}
+                  key={'KITE-Daily-rewards'}
                   asset="KITE"
-                  claim={claim}
+                  claim={{ ...kiteIncentivesData }}
                   price={kitePrice}
                   onSuccess={refetchIncentives}
-              />
-          ))
+              />,
+          ]
         : []
 
     const opIncentivesContent = opIncentivesData?.hasClaimableDistros
-        ? opIncentivesData.claims.map((claim) => (
+        ? [
               <ClaimableIncentive
-                  key={slugify(claim.description)}
+                  key={'OP-Daily-rewards'}
                   asset="OP"
-                  claim={claim}
+                  claim={{ ...opIncentivesData }}
                   price={opPrice}
                   onSuccess={refetchIncentives}
-              />
-          ))
+              />,
+          ]
         : []
 
     const dineroIncentivesContent = dineroIncentivesData?.hasClaimableDistros
-        ? dineroIncentivesData.claims.map((claim) => (
+        ? [
               <ClaimableIncentive
-                  key={slugify(claim.description)}
+                  key={'DINERO-Daily-rewards'}
                   asset="DINERO"
-                  claim={claim}
+                  claim={{ ...dineroIncentivesData }}
                   price={dineroPrice}
                   onSuccess={refetchIncentives}
-              />
-          ))
+              />,
+          ]
         : []
 
     const tokenIncentiveValue = (claims, price) =>
@@ -182,6 +227,48 @@ export function ClaimModal(props: ModalProps) {
             : []),
     ]
 
+    const onClaimAll = async () => {
+        const formatted = isFormattedAddress(account)
+        if (!formatted) {
+            console.debug('wrong address')
+            return false
+        }
+        try {
+            const txResponse = await kiteIncentivesData.claimAll()
+            if (txResponse) {
+                transactionsActions.addTransaction({
+                    chainId: txResponse?.chainId,
+                    hash: txResponse?.hash,
+                    from: txResponse.from,
+                    summary: `Claiming all rewards`,
+                    addedTime: new Date().getTime(),
+                    originalTx: txResponse,
+                })
+                popupsActions.setIsWaitingModalOpen(true)
+                popupsActions.setWaitingPayload({
+                    title: 'Transaction Submitted',
+                    hash: txResponse?.hash,
+                    status: 'success',
+                })
+                await txResponse.wait()
+                await refetchIncentives()
+                onSuccess?.()
+                popupsActions.setIsWaitingModalOpen(false)
+                popupsActions.setWaitingPayload({ status: ActionState.NONE })
+            } else {
+                await refetchIncentives()
+                throw new Error('No transaction request!')
+            }
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
+    const isClaimAllDisabled =
+        !kiteIncentivesData?.hasClaimableDistros &&
+        !opIncentivesData?.hasClaimableDistros &&
+        !dineroIncentivesData?.hasClaimableDistros
+
     return (
         <Modal
             heading="CLAIM"
@@ -190,15 +277,35 @@ export function ClaimModal(props: ModalProps) {
             onClose={() => setIsClaimPopupOpen(false)}
             footerContent={
                 <Flex $width="100%" $justify="space-between" $align="center">
-                    <Text>
-                        <strong>Total Estimated Value:</strong>
-                        &nbsp;
-                        {formatNumberWithStyle(totalClaimableValue, { style: 'currency' })}
-                    </Text>
+                    <div>
+                        <Text>
+                            <strong>Total Estimated Value:</strong>
+                            &nbsp;
+                            {formatNumberWithStyle(totalClaimableValue, { style: 'currency' })}
+                        </Text>
+                        <Text style={{ marginTop: '1em' }}>
+                            Next distribution in{' '}
+                            <span
+                                style={{
+                                    backgroundColor: '#f8f8f8',
+                                    padding: '0.2em 0.5em',
+                                    borderRadius: '1em',
+                                    fontWeight: 600,
+                                }}
+                            >
+                                <RemainingTime endTimestamp={kiteIncentivesData?.endTime} />
+                            </span>
+                        </Text>
+                    </div>
+                    <HaiButton $variant="yellowish" onClick={onClaimAll} disabled={isClaimAllDisabled}>
+                        Claim All
+                    </HaiButton>
                 </Flex>
             }
         >
-            <Text>Claim incentive rewards, assets purchased in auctions, and reclaim unsuccessful auction bids</Text>
+            <Text>
+                Incentive rewards are distributed every 24 hours. Unclaimed rewards will accure below and do not expire.
+            </Text>
             <ScrollableBody>
                 <ContentWithStatus
                     loading={false}
@@ -317,7 +424,7 @@ function ClaimableAsset({
             }
             const { index, amount, proof } = claim
             try {
-                const txResponse = await distributor.claim(index, formatted, amount, proof)
+                const txResponse = await claim.claimIt()
                 if (txResponse) {
                     transactionsActions.addTransaction({
                         chainId: txResponse?.chainId,
@@ -334,10 +441,12 @@ function ClaimableAsset({
                         status: 'success',
                     })
                     await txResponse.wait()
+                    await refetchIncentives()
                     onSuccess?.()
                     popupsActions.setIsWaitingModalOpen(false)
                     popupsActions.setWaitingPayload({ status: ActionState.NONE })
                 } else {
+                    await refetchIncentives()
                     throw new Error('No transaction request!')
                 }
             } catch (e) {
@@ -409,9 +518,6 @@ function ClaimableAsset({
                                 ? `Auction: #${auction.auctionId} (${auction.englishAuctionType})`
                                 : `Unsuccessful Bid(s)`}
                         </Text>
-                    )}
-                    {incentive && (
-                        <Text $fontSize="0.8em">{returnDaysLeftToClaim(claim.createdAt)} days left to claim</Text>
                     )}
 
                     <Text $fontSize="1em" $fontWeight={700}>
