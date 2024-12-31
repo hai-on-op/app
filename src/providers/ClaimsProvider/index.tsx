@@ -97,7 +97,6 @@ export function ClaimsProvider({ children }: Props) {
             if (!account || !chainId || !geb) return
             const incentives = await fetchIncentivesData(geb, account, chainId)
 
-            console.log('incentives', incentives)
             setIncentivesData(incentives)
         }
         fetchIncentives()

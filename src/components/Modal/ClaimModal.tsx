@@ -251,10 +251,12 @@ export function ClaimModal(props: ModalProps) {
                     status: 'success',
                 })
                 await txResponse.wait()
+                await refetchIncentives()
                 onSuccess?.()
                 popupsActions.setIsWaitingModalOpen(false)
                 popupsActions.setWaitingPayload({ status: ActionState.NONE })
             } else {
+                await refetchIncentives()
                 throw new Error('No transaction request!')
             }
         } catch (e) {
@@ -439,10 +441,12 @@ function ClaimableAsset({
                         status: 'success',
                     })
                     await txResponse.wait()
+                    await refetchIncentives()
                     onSuccess?.()
                     popupsActions.setIsWaitingModalOpen(false)
                     popupsActions.setWaitingPayload({ status: ActionState.NONE })
                 } else {
+                    await refetchIncentives()
                     throw new Error('No transaction request!')
                 }
             } catch (e) {
