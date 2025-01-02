@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import { useEarnStrategies, useMediaQuery } from '~/hooks'
 
 import { NavContainer } from '~/components/NavContainer'
@@ -5,27 +7,17 @@ import { CheckboxButton } from '~/components/CheckboxButton'
 import { SortByDropdown } from '~/components/SortByDropdown'
 
 export function Stake() {
-    const { headers, rows, loading, error, uniError, veloError, sorting, setSorting, filterEmpty, setFilterEmpty } =
-        useEarnStrategies()
-
-    const isUpToMedium = useMediaQuery('upToMedium')
+    const [navIndex, setNavIndex] = useState(0)
 
     return (
         <NavContainer
-            navItems={[`All Strategies (${rows.length})`]}
-            selected={0}
-            onSelect={() => 0}
+            navItems={[`Manage`, 'Activity']}
+            selected={navIndex}
+            onSelect={(i: number) => setNavIndex(i)}
             compactQuery="upToMedium"
-            headerContent={
-                <>
-                    <CheckboxButton checked={filterEmpty} toggle={() => setFilterEmpty((e) => !e)}>
-                        Only Show My Positions
-                    </CheckboxButton>
-                    {isUpToMedium && <SortByDropdown headers={headers} sorting={sorting} setSorting={setSorting} />}
-                </>
-            }
+            headerContent={<></>}
         >
-            This is Staking Page
+            {navIndex === 0 ? <div>Manage Staking</div> : <div>Staking Activities</div>}
         </NavContainer>
     )
 }
