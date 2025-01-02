@@ -15,11 +15,13 @@ import { EarnStats } from '~/containers/Earn/Stats'
 import { AuctionStats } from '~/containers/Auctions/Stats'
 
 import uniswapLogo from '~/assets/uniswap-icon.svg'
+import { StakeStats } from '~/containers/Stake/Stats'
 
 enum Intention {
     AUCTION = 'auctions',
     BORROW = 'vaults',
     EARN = 'earn',
+    STAKE = 'stake',
 }
 
 const copy: Record<
@@ -45,6 +47,11 @@ const copy: Record<
         cta: 'Read more about earning opportunities →',
         ctaLink: `${LINK_TO_DOCS}detailed/intro/hai.html`,
     },
+    [Intention.STAKE]: {
+        subtitle: 'Stake KITE to earn protocol revenue and boost your HAI minting incentives. ',
+        cta: 'Read more about staking →',
+        ctaLink: `${LINK_TO_DOCS}detailed/intro/hai.html`,
+    },
 }
 
 const typeOptions: BrandedSelectOption[] = [
@@ -53,6 +60,12 @@ const typeOptions: BrandedSelectOption[] = [
         value: Intention.BORROW,
         icon: ['HAI'],
         description: 'Mint & borrow $HAI stablecoin against your preferred collateral',
+    },
+    {
+        label: 'STAKE $HAI',
+        value: Intention.STAKE,
+        icon: ['HAI'],
+        description: 'Stake KITE to earn revenue share and boost your HAI minting incentives.',
     },
     {
         label: 'Buy $HAI',
@@ -95,6 +108,12 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
             return {
                 type: Intention.EARN,
                 stats: <EarnStats />,
+            }
+        }
+        if (location.pathname.startsWith('/stake')) {
+            return {
+                type: Intention.STAKE,
+                stats: <StakeStats />,
             }
         }
         if (location.pathname.startsWith('/vaults')) {

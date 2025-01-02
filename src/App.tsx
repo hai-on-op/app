@@ -23,6 +23,7 @@ import { Contracts } from '~/containers/Contracts'
 import { Learn } from './containers/Learn'
 import { VaultExplorer } from './containers/Vaults/Explore'
 import { TestClaim } from './containers/TestClaim'
+import { Stake } from './containers/Stake'
 
 declare module 'styled-components' {
     export interface DefaultTheme extends Theme {}
@@ -56,6 +57,7 @@ const App = () => {
                                                     <Route exact strict component={Analytics} path={'/analytics'} />
                                                     <Route exact strict component={Contracts} path={'/contracts'} />
                                                     <Route exact strict component={Learn} path={'/learn'} />
+                                                    <Route exact strict component={Stake} path={'/stake'} />
                                                     <Route exact strict component={Earn} path={'/earn'} />
                                                     <Route
                                                         exact

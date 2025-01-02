@@ -37,6 +37,7 @@ import {
     TrendingUp,
     Tv,
     User,
+    Lock
 } from 'react-feather'
 import { Twitter } from '~/components/Icons/Twitter'
 import { Telegram } from '~/components/Icons/Telegram'
@@ -101,6 +102,13 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
                                     active={location.pathname === '/earn'}
                                 >
                                     Earn
+                                </BrandedDropdown.Item>
+                                <BrandedDropdown.Item
+                                    href="/earn"
+                                    icon={<Lock size={18} />}
+                                    active={location.pathname === '/earn'}
+                                >
+                                    Stake
                                 </BrandedDropdown.Item>
                                 <BrandedDropdown.Item
                                     href="/learn"
