@@ -5,6 +5,9 @@ import { useEarnStrategies, useMediaQuery } from '~/hooks'
 import { NavContainer } from '~/components/NavContainer'
 import { CheckboxButton } from '~/components/CheckboxButton'
 import { SortByDropdown } from '~/components/SortByDropdown'
+import { Grid } from '~/styles'
+import styled from 'styled-components'
+import { Overview } from './Manage/Overview'
 
 export function Stake() {
     const [navIndex, setNavIndex] = useState(0)
@@ -17,7 +20,25 @@ export function Stake() {
             compactQuery="upToMedium"
             headerContent={<></>}
         >
-            {navIndex === 0 ? <div>Manage Staking</div> : <div>Staking Activities</div>}
+            {navIndex === 0 ? (
+                <BodyGrid>
+                    <Overview />
+                </BodyGrid>
+            ) : (
+                <div>Staking Activities</div>
+            )}
         </NavContainer>
     )
 }
+
+const BodyGrid = styled(Grid)`
+    width: 100%;
+    grid-template-columns: 5fr 3fr;
+    grid-gap: 48px;
+
+    ${({ theme }) => theme.mediaWidth.upToMedium`
+        grid-template-columns: 1fr;
+        grid-gap: 24px;
+        padding: 24px;
+    `}
+`
