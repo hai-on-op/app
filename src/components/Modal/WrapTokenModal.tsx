@@ -70,8 +70,8 @@ export function WrapTokenModal(props: ModalProps) {
 
     const details = useMemo(() => {
         return {
-            action: 'Wrap',
-            symbol: 'VELO',
+            action: 'Mint',
+            symbol: 'haiVELO',
             balance,
             balanceMinusCushion,
         }
@@ -144,6 +144,7 @@ export function WrapTokenModal(props: ModalProps) {
                 </Footer>
             }
         >
+            Convert your VELO into haiVELO to use as collateral while earning veVELO rewards.
             <NumberInput
                 label={`${details.symbol} to ${details.action}`}
                 value={amount}

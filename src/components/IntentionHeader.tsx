@@ -80,10 +80,10 @@ const wrappers: WrapperAdProps[] = [
     {
         heading: 'haiVELO',
         status: 'NOW LIVE',
-        description: 'Lock your VELO for haiVELO that can be used as collateral while earning veVELO rewards.',
-        cta: 'Swap Now',
+        description: 'Convert your VELO into haiVELO to use as collateral while earning veVELO rewards.',
+        cta: 'Mint haiVELO',
         ctaLink: '/earn',
-        tokenImages: ['VELO'],
+        tokenImages: ['HAI-VELO'],
     },
 ]
 
