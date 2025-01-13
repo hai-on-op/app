@@ -66,7 +66,7 @@ export function StakeStats() {
                 label: 'My Staking Rewards',
                 tooltip: 'Rewards currently voted upon and distributed by DAO approximately once per month.',
                 button: (
-                    <HaiButton $variant="yellowish" onClick={() => popupsActions.setIsClaimPopupOpen(true)}>
+                    <HaiButton $variant="yellowish" onClick={() => popupsActions.setIsStakeClaimPopupOpen(true)}>
                         Claim
                     </HaiButton>
                     // <HaiButton title="Claim window is closed" $variant="yellowish" disabled>

@@ -8,6 +8,7 @@ import { SortByDropdown } from '~/components/SortByDropdown'
 import { Grid } from '~/styles'
 import styled from 'styled-components'
 import { Overview } from './Manage/Overview'
+import { ManageStaking } from './Manage/ManageStaking'
 
 export function Stake() {
     const [navIndex, setNavIndex] = useState(0)
@@ -23,6 +24,7 @@ export function Stake() {
             {navIndex === 0 ? (
                 <BodyGrid>
                     <Overview />
+                    <ManageStaking />
                 </BodyGrid>
             ) : (
                 <div>Staking Activities</div>
