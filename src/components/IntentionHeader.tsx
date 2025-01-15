@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
+import { useFlags } from 'flagsmith/react'
 
 import type { ReactChildren } from '~/types'
 import { LINK_TO_DOCS } from '~/utils'
@@ -91,6 +92,9 @@ type IntentionHeaderProps = {
     children?: ReactChildren
 }
 export function IntentionHeader({ children }: IntentionHeaderProps) {
+    const flags = useFlags(['hai_velo'])
+    const haiVeloEnabled = flags.hai_velo?.enabled
+
     const location = useLocation()
     const history = useHistory()
 
@@ -152,9 +156,13 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
                 </Text>
                 {stats}
                 {children}
-                {wrappers.map((wrapper, i) => (
-                    <WrapperAd key={i} bgVariant={i} {...wrapper} />
-                ))}
+                {haiVeloEnabled && (
+                    <>
+                        {wrappers.map((wrapper, i) => (
+                            <WrapperAd key={i} bgVariant={i} {...wrapper} />
+                        ))}
+                    </>
+                )}
             </Inner>
         </Container>
     )
