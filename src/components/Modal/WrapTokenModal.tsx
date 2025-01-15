@@ -1,20 +1,34 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useAccount, useNetwork } from 'wagmi'
-
 import { ActionState, formatNumberWithStyle } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import type { ITokenBalance } from '~/types/wallet'
 import { handleTransactionError, useBalance, useEthersSigner, useGeb, useTokenApproval, ApprovalState } from '~/hooks'
 
-import styled from 'styled-components'
-import { Flex, HaiButton, Text } from '~/styles'
+import styled, { css } from 'styled-components'
+import { Flex, HaiButton, Text, CenteredFlex } from '~/styles'
 import { Modal, type ModalProps } from './index'
-import { NumberInput } from '../NumberInput'
+// import { NumberInput } from '../NumberInput'
+import { WrapNumberInput } from '../WrapNumberInput'
 import { TransactionSummary } from '../TransactionSummary'
+
+import { Link } from '../Link'
 
 enum Action {
     WRAP,
     UNWRAP,
+}
+
+// Add interface for the component props
+interface FlashMessageContainerProps {
+    $variant?: string
+    $pad?: boolean
+    $gap?: number
+    $grow?: number
+}
+
+interface FlashMessageTextProps {
+    $variant?: string
 }
 
 export function WrapTokenModal(props: ModalProps) {
@@ -22,8 +36,6 @@ export function WrapTokenModal(props: ModalProps) {
     const { chain } = useNetwork()
     const signer = useEthersSigner()
     const geb = useGeb()
-
-    console.log('geb', geb)
 
     const [action, setAction] = useState(Action.WRAP)
 
@@ -70,7 +82,7 @@ export function WrapTokenModal(props: ModalProps) {
 
     const details = useMemo(() => {
         return {
-            action: 'Mint',
+            action: 'MINT',
             symbol: 'haiVELO',
             balance,
             balanceMinusCushion,
@@ -84,7 +96,7 @@ export function WrapTokenModal(props: ModalProps) {
     const onWrap = async () => {
         if (!signer || !isNonZero || insufficientFunds) return
 
-        const title = `${details.action}ping ${details.symbol}`
+        const title = `Minting ${details.symbol}`
         try {
             popupsActions.setIsWaitingModalOpen(true)
 
@@ -131,7 +143,7 @@ export function WrapTokenModal(props: ModalProps) {
     return (
         <Modal
             {...props}
-            heading={`${details.action} ${details.symbol}`.toUpperCase()}
+            heading={`${details.action} ${details.symbol}`}
             footerContent={
                 <Footer>
                     <HaiButton
@@ -139,22 +151,34 @@ export function WrapTokenModal(props: ModalProps) {
                         disabled={!signer || !isNonZero || insufficientFunds}
                         onClick={onWrap}
                     >
-                        {approvalState === ApprovalState.NOT_APPROVED ? 'Approve' : details.action}
+                        {approvalState === ApprovalState.NOT_APPROVED ? 'Approve' : 'Mint haiVELO'}
                     </HaiButton>
                 </Footer>
             }
         >
             Convert your VELO into haiVELO to use as collateral while earning veVELO rewards.
-            <NumberInput
-                label={`${details.symbol} to ${details.action}`}
+            <WrapNumberInput
+                label={'VELO to convert'}
                 value={amount}
+                placeholder="0.00"
+                unitLabel={'VELO'}
+                onChange={(value: string) => setAmount(value)}
+                subLabel={`Max ${details.balanceMinusCushion?.formatted || '0'} VELO`}
+                onMax={() => setAmount(details.balanceMinusCushion?.raw || '0')}
+                whiteBackground={true}
+            />
+            <WrapNumberInput
+                label={'haiVELO recieved'}
+                value={amount}
+                disabled={true}
                 placeholder="0.00"
                 unitLabel={details.symbol}
                 onChange={(value: string) => setAmount(value)}
                 subLabel={`Max ${details.balanceMinusCushion?.formatted || '0'} ${details.symbol}`}
                 onMax={() => setAmount(details.balanceMinusCushion?.raw || '0')}
+                opacity={0.5}
             />
-            <TransactionSummary
+            {/* <TransactionSummary
                 items={[
                     {
                         label: 'VELO',
@@ -186,25 +210,60 @@ export function WrapTokenModal(props: ModalProps) {
                         },
                     },
                 ]}
-            />
+            /> */}
+            <FlashMessageContainer $variant="warningBackground" $pad={true} $gap={8} $grow={0}>
+                <FlashMessageText $fontWeight={700} $variant="warningColor">
+                    ⚠️ VELO is permanantly max locked into veVELO with haiVELO issued at a 1:1 ratio.
+                </FlashMessageText>
+            </FlashMessageContainer>
+            <FlashMessageContainer
+                $variant="successBackground"
+                $pad={true}
+                $gap={8}
+                $grow={0}
+                style={{ marginTop: -10 }}
+            >
+                <FlashMessageText $fontWeight={700} $variant="successColor">
+                    Get an estimated 20% more haiVELO by swapping on Velodrome&nbsp;
+                    <Link
+                        style={{ display: 'inline' }}
+                        href={'https://velodrome.finance/'}
+                        $fontWeight={700}
+                        $width="100%"
+                        $textDecoration="underline"
+                    >
+                        here.
+                    </Link>
+                </FlashMessageText>
+            </FlashMessageContainer>
         </Modal>
     )
 }
 
-const SwitchText = styled(Text).attrs((props) => ({
+const FlashMessageText = styled(Text).attrs((props: FlashMessageTextProps) => ({
     $textAlign: 'left',
-    $color: 'rgba(0,0,0,0.5)',
+    $color: 'rgba(0,0,0,1)',
     $fontSize: '0.8em',
-    $textDecoration: 'underline',
     ...props,
 }))`
     width: 100%;
-    cursor: pointer;
+    color: ${({ theme, $variant = 'default' }) => (theme.colors as any)[$variant]};
 `
 
+export const FlashMessageContainer = styled(CenteredFlex)<FlashMessageContainerProps>`
+    height: 36px;
+    background-color: ${({ theme, $variant = 'default' }) => (theme.colors as any)[$variant]};
+    border: 1px solid ${({ theme }) => theme.colors.dimmedBackground};
+    text-align: left;
+    padding: 6px 10px;
+    width: 100%;
+    border-radius: 8px;
+    color: ${({ theme, $variant = 'default' }) => (theme.colors as any)[$variant]};
+`
 const Footer = styled(Flex).attrs((props) => ({
     $width: '100%',
-    $justify: 'space-between',
+    $gap: 10,
+    $justify: 'start',
     $align: 'center',
     ...props,
 }))``

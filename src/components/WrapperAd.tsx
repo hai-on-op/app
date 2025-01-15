@@ -6,7 +6,9 @@ import { HaiArrow } from '~/components/Icons/HaiArrow'
 import { FloatingElements, type FloatingElementsProps } from '~/components/BrandElements/FloatingElements'
 // import { WrapETHModal } from '~/components/Modal/WrapETHModal'
 import { WrapTokenModal } from '~/components/Modal/WrapTokenModal'
+import { CreateAccountModal } from '~/components/Modal/CreateAccount'
 import { Link } from './Link'
+import { useStoreActions, useStoreState } from '~/store'
 import { useState } from 'react'
 
 export type WrapperAdProps = {
@@ -18,6 +20,13 @@ export type WrapperAdProps = {
     tokenImages: TokenKey[]
     bgVariant?: number
 }
+
+enum PromptStep {
+    CONNECT_WALLET,
+    CREATE_PROXY,
+    CREATE_VAULT,
+}
+
 export function WrapperAd({
     heading,
     status = 'NOW LIVE',
@@ -30,6 +39,17 @@ export function WrapperAd({
     const { clouds = [], coins = [] } = backgroundElementTransforms[bgVariant % backgroundElementTransforms.length]
 
     const [wrapTokenActive, setWrapTokenActive] = useState(false)
+    const [accountModalActive, setAccountModalActive] = useState(false)
+
+    const { connectWalletModel: connectWalletState } = useStoreState((state) => state)
+
+    const handleBannerClick = () => {
+        if (connectWalletState.step === PromptStep.CREATE_PROXY) {
+            setAccountModalActive(true)
+        } else {
+            setWrapTokenActive(true)
+        }
+    }
 
     return (
         <Container>
@@ -49,10 +69,18 @@ export function WrapperAd({
                 </Header>
                 <Text $fontSize="0.8rem">{description}</Text>
             </Flex>
-            <HaiButton $variant="yellowish" $gap={8} onClick={() => setWrapTokenActive(true)}>
+            <HaiButton $variant="yellowish" $gap={8} onClick={handleBannerClick}>
                 <Text>{cta}</Text>
             </HaiButton>
-            {wrapTokenActive && <WrapTokenModal onClose={() => setWrapTokenActive(false)} />}
+            {accountModalActive && !wrapTokenActive && (
+                <CreateAccountModal
+                    onClose={() => {
+                        setAccountModalActive(false)
+                        setWrapTokenActive(true)
+                    }}
+                />
+            )}
+            {wrapTokenActive && !accountModalActive && <WrapTokenModal onClose={() => setWrapTokenActive(false)} />}
         </Container>
     )
 }
