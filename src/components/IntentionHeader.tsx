@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
-import { useFlags } from 'flagsmith/react'
 
 import type { ReactChildren } from '~/types'
 import { LINK_TO_DOCS } from '~/utils'
@@ -14,6 +13,8 @@ import { Link } from './Link'
 import { BorrowStats } from '~/containers/Vaults/Stats'
 import { EarnStats } from '~/containers/Earn/Stats'
 import { AuctionStats } from '~/containers/Auctions/Stats'
+
+import { useFlags } from 'flagsmith/react'
 
 import uniswapLogo from '~/assets/uniswap-icon.svg'
 import { WrapperAd, WrapperAdProps } from './WrapperAd'
@@ -137,6 +138,7 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
     return (
         <Container>
             <Inner>
+                {testFlagEnabled && <h1>Test Flag Enabled</h1>}
                 <Flex $justify="flex-start" $align="center" $gap={12} $flexWrap>
                     <BrandedTitle textContent="I WANT TO" $fontSize={isUpToExtraSmall ? '2.5em' : '3.2em'} />
                     <BrandedSelect
