@@ -96,7 +96,7 @@ export function TokenArray({ tokens, size = 32, label, hideLabel = false }: Toke
     )
 }
 
-const IconContainer = styled(CenteredFlex)<{ $size: number; $isKite?: boolean }>`
+export const IconContainer = styled(CenteredFlex)<{ $size: number; $isKite?: boolean }>`
     width: fit-content;
 
     & > * {
