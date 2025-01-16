@@ -5,15 +5,15 @@ export const REWARDS = {
             OP: 0,
         },
         WSTETH: {
-            KITE: 10,
+            KITE: 20,
             OP: 10,
         },
         APXETH: {
-            KITE: 25,
+            KITE: 50,
             OP: 50,
         },
         RETH: {
-            KITE: 10,
+            KITE: 20,
             OP: 10,
         },
         OP: {
