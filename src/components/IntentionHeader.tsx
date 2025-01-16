@@ -138,7 +138,6 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
     return (
         <Container>
             <Inner>
-                {testFlagEnabled && <h1>Test Flag Enabled</h1>}
                 <Flex $justify="flex-start" $align="center" $gap={12} $flexWrap>
                     <BrandedTitle textContent="I WANT TO" $fontSize={isUpToExtraSmall ? '2.5em' : '3.2em'} />
                     <BrandedSelect
