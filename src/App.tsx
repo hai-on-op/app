@@ -60,18 +60,6 @@ const App = () => {
                                                                 path={'/test/claim'}
                                                             />
                                                         )}
-                                                        <Route exact strict component={Splash} path={'/'} />
-                                                        <Route exact strict component={Auctions} path={'/auctions'} />
-                                                        <Route exact strict component={Analytics} path={'/analytics'} />
-                                                        <Route exact strict component={Contracts} path={'/contracts'} />
-                                                        <Route exact strict component={Learn} path={'/learn'} />
-                                                        <Route exact strict component={Earn} path={'/earn'} />
-                                                        <Route
-                                                            exact
-                                                            strict
-                                                            component={VaultExplorer}
-                                                            path={'/vaults/explore'}
-                                                        />
                                                         {NETWORK_ID === ChainId.OPTIMISM_SEPOLIA && (
                                                             <Route
                                                                 exact
