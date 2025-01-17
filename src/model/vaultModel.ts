@@ -18,6 +18,7 @@ import type {
     IVaultPayload,
 } from '~/types/vaults'
 import { type WrapEtherProps, handleUnwrapEther, handleWrapEther } from '~/utils/wrapEther'
+import { type WrapTokenProps, handleWrapToken } from '~/utils/wrapToken'
 import { timeout } from '~/utils/time'
 import { ActionState } from '~/utils/constants'
 
@@ -75,6 +76,7 @@ export interface VaultModel {
     //     any,
     //     StoreModel
     // >
+    wrapToken: Thunk<VaultModel, WrapTokenProps & { title: string }, any, StoreModel>
     wrapEther: Thunk<VaultModel, WrapEtherProps & { title: string }, any, StoreModel>
     unwrapEther: Thunk<VaultModel, WrapEtherProps & { title: string }, any, StoreModel>
 
@@ -373,7 +375,28 @@ export const vaultModel: VaultModel = {
     //         await txResponse.wait()
     //     }
     // }),
-
+    wrapToken: thunk(async (actions, payload, { getStoreActions }) => {
+        const storeActions = getStoreActions()
+        const txResponse = await handleWrapToken(payload)
+        if (txResponse) {
+            const { hash, chainId } = txResponse
+            storeActions.transactionsModel.addTransaction({
+                chainId,
+                hash,
+                from: txResponse.from,
+                summary: payload.title,
+                addedTime: new Date().getTime(),
+                originalTx: txResponse,
+            })
+            storeActions.popupsModel.setIsWaitingModalOpen(true)
+            storeActions.popupsModel.setWaitingPayload({
+                title: 'Transaction Submitted',
+                hash: txResponse.hash,
+                status: ActionState.SUCCESS,
+            })
+            await txResponse.wait()
+        }
+    }),
     wrapEther: thunk(async (actions, payload, { getStoreActions }) => {
         const storeActions = getStoreActions()
         const txResponse = await handleWrapEther(payload)

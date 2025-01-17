@@ -44,10 +44,10 @@ export function CollateralStatsTable({ headers, rows, sorting, setSorting }: Col
                                     <Text>
                                         {totalCollateral?.usdRaw
                                             ? formatNumberWithStyle(totalCollateral.usdRaw, {
-                                                  style: 'currency',
-                                                  maxDecimals: 2,
-                                                  suffixed: true,
-                                              })
+                                                style: 'currency',
+                                                maxDecimals: 2,
+                                                suffixed: true,
+                                            })
                                             : '$--'}
                                     </Text>
                                 ),
@@ -57,10 +57,10 @@ export function CollateralStatsTable({ headers, rows, sorting, setSorting }: Col
                                     <Text>
                                         {totalDebt?.usdRaw
                                             ? formatNumberWithStyle(totalDebt.usdRaw, {
-                                                  style: 'currency',
-                                                  maxDecimals: 2,
-                                                  suffixed: true,
-                                              })
+                                                style: 'currency',
+                                                maxDecimals: 2,
+                                                suffixed: true,
+                                            })
                                             : '$--'}
                                     </Text>
                                 ),
@@ -85,9 +85,9 @@ export function CollateralStatsTable({ headers, rows, sorting, setSorting }: Col
                                     <Text>
                                         {stabilityFee
                                             ? formatNumberWithStyle(-stabilityFee, {
-                                                  maxDecimals: 1,
-                                                  style: 'percent',
-                                              })
+                                                maxDecimals: 1,
+                                                style: 'percent',
+                                            })
                                             : '--%'}
                                     </Text>
                                 ),
@@ -97,10 +97,10 @@ export function CollateralStatsTable({ headers, rows, sorting, setSorting }: Col
                                     <Text>
                                         {annualEarnings
                                             ? formatNumberWithStyle(annualEarnings, {
-                                                  maxDecimals: 1,
-                                                  suffixed: true,
-                                                  style: 'currency',
-                                              })
+                                                maxDecimals: 1,
+                                                suffixed: true,
+                                                style: 'currency',
+                                            })
                                             : '$--'}
                                     </Text>
                                 ),
@@ -208,10 +208,10 @@ function GlobalRow({ rows, headers }: GlobalRowProps) {
                         <Text $fontWeight={700}>
                             {stats.totalCollateral
                                 ? formatNumberWithStyle(stats.totalCollateral, {
-                                      style: 'currency',
-                                      maxDecimals: 2,
-                                      suffixed: true,
-                                  })
+                                    style: 'currency',
+                                    maxDecimals: 2,
+                                    suffixed: true,
+                                })
                                 : '$--'}
                         </Text>
                     ),
@@ -221,10 +221,10 @@ function GlobalRow({ rows, headers }: GlobalRowProps) {
                         <Text $fontWeight={700}>
                             {stats.totalDebt
                                 ? formatNumberWithStyle(stats.totalDebt, {
-                                      style: 'currency',
-                                      maxDecimals: 2,
-                                      suffixed: true,
-                                  })
+                                    style: 'currency',
+                                    maxDecimals: 2,
+                                    suffixed: true,
+                                })
                                 : '$--'}
                         </Text>
                     ),
@@ -259,9 +259,9 @@ function GlobalRow({ rows, headers }: GlobalRowProps) {
                         <Text $fontWeight={700}>
                             {stats.totalDebt
                                 ? formatNumberWithStyle(stats.totalCollateral / stats.totalDebt, {
-                                      maxDecimals: 1,
-                                      style: 'percent',
-                                  })
+                                    maxDecimals: 1,
+                                    style: 'percent',
+                                })
                                 : '--%'}
                         </Text>
                     ),
@@ -271,9 +271,9 @@ function GlobalRow({ rows, headers }: GlobalRowProps) {
                         <Text $fontWeight={700}>
                             {stats.totalDebt
                                 ? formatNumberWithStyle(stats.fee / stats.totalDebt, {
-                                      maxDecimals: 2,
-                                      style: 'percent',
-                                  })
+                                    maxDecimals: 2,
+                                    style: 'percent',
+                                })
                                 : '--%'}
                         </Text>
                     ),
@@ -283,10 +283,10 @@ function GlobalRow({ rows, headers }: GlobalRowProps) {
                         <Text>
                             {stats.totalDebt
                                 ? formatNumberWithStyle(stats.fee, {
-                                      maxDecimals: 1,
-                                      suffixed: true,
-                                      style: 'currency',
-                                  })
+                                    maxDecimals: 1,
+                                    suffixed: true,
+                                    style: 'currency',
+                                })
                                 : '$--'}
                         </Text>
                     ),

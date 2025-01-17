@@ -40,7 +40,7 @@ const Container = styled(Flex)`
         width: auto;
         height: 16px;
         ${({ onClick }) =>
-            !onClick &&
+        !onClick &&
             css`
                 cursor: pointer;
                 &:active {

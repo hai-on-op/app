@@ -23,6 +23,7 @@ import { Contracts } from '~/containers/Contracts'
 import { Learn } from './containers/Learn'
 import { VaultExplorer } from './containers/Vaults/Explore'
 import { TestClaim } from './containers/TestClaim'
+import { TestClaimVelo } from './containers/TestClaimVelo'
 import flagsmith from 'flagsmith'
 import { FlagsmithProvider } from 'flagsmith/react'
 
@@ -57,6 +58,14 @@ const App = () => {
                                                                 strict
                                                                 component={TestClaim}
                                                                 path={'/test/claim'}
+                                                            />
+                                                        )}
+                                                        {NETWORK_ID === ChainId.OPTIMISM_SEPOLIA && (
+                                                            <Route
+                                                                exact
+                                                                strict
+                                                                component={TestClaimVelo}
+                                                                path={'/test/claim-velo'}
                                                             />
                                                         )}
                                                         <Route exact strict component={Splash} path={'/'} />

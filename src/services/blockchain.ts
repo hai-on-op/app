@@ -34,6 +34,30 @@ export const claimAirdrop = async (signer: JsonRpcSigner) => {
     return txResponse
 }
 
+export const claimAirdropVelo = async (signer: JsonRpcSigner) => {
+    if (!signer) return
+
+    let airdropContract: ethers.Contract
+    const chainId = await signer.getChainId()
+
+    switch (chainId) {
+        case 420: // op goerli
+            airdropContract = new ethers.Contract('0x8211298C7f8cdb4DF48B9E6B5F6C2059c975BBFD', abi, signer)
+            break
+        case 11155420: // op sepolia
+            airdropContract = new ethers.Contract('0x8211298C7f8cdb4DF48B9E6B5F6C2059c975BBFD', abi, signer)
+            break
+    }
+
+    const txData = await airdropContract!.populateTransaction.drop()
+
+    const tx = await handlePreTxGasEstimate(signer, txData)
+
+    const txResponse = await signer.sendTransaction(tx)
+
+    return txResponse
+}
+
 export const liquidateVault = async (geb: Geb, vaultId: string) => {
     // Only a signer will be able to execute the tx. Not a provider.
     const signerIsValid = geb.signer && ethers.providers.JsonRpcSigner.isSigner(geb.signer)

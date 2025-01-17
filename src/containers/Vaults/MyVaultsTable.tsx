@@ -88,9 +88,9 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                                         <Text $textAlign="right">
                                             {collateralRatio
                                                 ? formatNumberWithStyle(collateralRatio, {
-                                                      scalingFactor: 0.01,
-                                                      style: 'percent',
-                                                  })
+                                                    scalingFactor: 0.01,
+                                                    style: 'percent',
+                                                })
                                                 : '--%'}
                                         </Text>
                                         <Flex $justify="flex-start" $align="center">

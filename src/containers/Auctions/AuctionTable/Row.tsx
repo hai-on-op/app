@@ -157,15 +157,15 @@ export function AuctionTableRow({ headers, auction, container, expanded, onSelec
                                     <Text $fontSize="0.6rem">
                                         {auction.englishAuctionType === 'COLLATERAL'
                                             ? `Start: ${formatNumberWithStyle(auction.sellInitialAmount, {
-                                                  maxDecimals: 3,
-                                              })}`
+                                                maxDecimals: 3,
+                                            })}`
                                             : formatNumberWithStyle(
-                                                  parseFloat(auction.sellInitialAmount) * parseFloat(sellUsdPrice),
-                                                  {
-                                                      maxDecimals: 2,
-                                                      style: 'currency',
-                                                  }
-                                              )}
+                                                parseFloat(auction.sellInitialAmount) * parseFloat(sellUsdPrice),
+                                                {
+                                                    maxDecimals: 2,
+                                                    style: 'currency',
+                                                }
+                                            )}
                                     </Text>
                                 </Flex>
                             </Flex>
@@ -185,9 +185,9 @@ export function AuctionTableRow({ headers, auction, container, expanded, onSelec
                                         {auction.englishAuctionType === 'COLLATERAL'
                                             ? `Start: ${initialToRaise || '--'}`
                                             : `Bid: ${formatNumberWithStyle(
-                                                  biddersList[0].buyAmount || buyInitialAmount,
-                                                  { maxDecimals: 3 }
-                                              )}`}
+                                                biddersList[0].buyAmount || buyInitialAmount,
+                                                { maxDecimals: 3 }
+                                            )}`}
                                     </Text>
                                 </Flex>
                             </Flex>

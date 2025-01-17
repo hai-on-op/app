@@ -85,11 +85,11 @@ const Header = styled(Flex).attrs((props) => ({
             width: 100%;
         }
         ${
-            $removePadding &&
+    $removePadding &&
             css`
                 padding-bottom: 0px;
             `
-        }}
+}}
     `}
 
     z-index: 1;

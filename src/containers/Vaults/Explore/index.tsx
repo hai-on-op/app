@@ -155,9 +155,9 @@ export function VaultExplorer() {
                                                             {collateralRatio === Infinity.toString()
                                                                 ? '--'
                                                                 : formatNumberWithStyle(collateralRatio, {
-                                                                      style: 'percent',
-                                                                      scalingFactor: 0.01,
-                                                                  })}
+                                                                    style: 'percent',
+                                                                    scalingFactor: 0.01,
+                                                                })}
                                                         </Text>
                                                     </Flex>
                                                     <Flex $justify="flex-start" $align="center">
