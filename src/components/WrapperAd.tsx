@@ -2,13 +2,10 @@ import type { TokenKey } from '~/types'
 
 import styled from 'styled-components'
 import { DashedContainerStyle, Flex, HaiButton, Text } from '~/styles'
-import { HaiArrow } from '~/components/Icons/HaiArrow'
 import { FloatingElements, type FloatingElementsProps } from '~/components/BrandElements/FloatingElements'
-// import { WrapETHModal } from '~/components/Modal/WrapETHModal'
 import { WrapTokenModal } from '~/components/Modal/WrapTokenModal'
 import { CreateAccountModal } from '~/components/Modal/CreateAccount'
-import { Link } from './Link'
-import { useStoreActions, useStoreState } from '~/store'
+import { useStoreState } from '~/store'
 import { useState } from 'react'
 
 export type WrapperAdProps = {
@@ -32,7 +29,6 @@ export function WrapperAd({
     status = 'NOW LIVE',
     description,
     cta = 'Get HAI to Earn',
-    ctaLink,
     tokenImages,
     bgVariant = 0,
 }: WrapperAdProps) {

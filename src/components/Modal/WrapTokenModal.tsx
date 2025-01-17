@@ -1,16 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useAccount, useNetwork } from 'wagmi'
 import { ActionState, formatNumberWithStyle } from '~/utils'
-import { useStoreActions, useStoreState } from '~/store'
-import type { ITokenBalance } from '~/types/wallet'
+import { useStoreActions } from '~/store'
 import { handleTransactionError, useBalance, useEthersSigner, useGeb, useTokenApproval, ApprovalState } from '~/hooks'
 
-import styled, { css } from 'styled-components'
+import styled from 'styled-components'
 import { Flex, HaiButton, Text, CenteredFlex } from '~/styles'
 import { Modal, type ModalProps } from './index'
-// import { NumberInput } from '../NumberInput'
 import { WrapNumberInput } from '../WrapNumberInput'
-import { TransactionSummary } from '../TransactionSummary'
 
 import { Link } from '../Link'
 
@@ -37,7 +34,7 @@ export function WrapTokenModal(props: ModalProps) {
     const signer = useEthersSigner()
     const geb = useGeb()
 
-    const [action, setAction] = useState(Action.WRAP)
+    const [action] = useState(Action.WRAP)
 
     const {
         connectWalletModel: connectWalletActions,
@@ -45,9 +42,7 @@ export function WrapTokenModal(props: ModalProps) {
         vaultModel: vaultActions,
     } = useStoreActions((actions) => actions)
 
-    const wethBalance = useBalance('WETH')
     const veloBalance = useBalance('VELO')
-    const haiVeloBalance = useBalance('HAIVELO')
 
     const [amount, setAmount] = useState('')
 
