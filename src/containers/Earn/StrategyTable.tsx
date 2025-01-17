@@ -1,9 +1,10 @@
 import type { SetState, SortableHeader, Sorting, Strategy, TokenKey } from '~/types'
 import { formatNumberWithStyle } from '~/utils'
-
+import { IconContainer } from '~/components/TokenArray'
 import styled from 'styled-components'
 import { Flex, Grid, Text, HaiButton } from '~/styles'
 import dineroLogo from '~/assets/dinero-img.svg'
+import kiteImg from '~/assets/kite-img.svg'
 import { Tooltip } from '~/components/Tooltip'
 import { RewardsTokenArray, TokenArray } from '~/components/TokenArray'
 import { StrategyTableButton } from './StrategyTableButton'
@@ -63,6 +64,8 @@ export function StrategyTable({
             setSorting={setSorting}
             compactQuery="upToMedium"
             rows={rows.map(({ pair, rewards, tvl, apy, userPosition, earnPlatform, earnAddress, earnLink }, i) => {
+                const LSTS = ['RETH', 'APXETH', 'WSTETH']
+                const isLST = LSTS.includes(pair[0])
                 const isAPXETH = pair.includes('APXETH')
                 const isPXETH = pair.includes('PXETH')
                 const baseTokens = rewards.map(({ token }) => token)
@@ -156,6 +159,29 @@ export function StrategyTable({
                                                     <Tooltip width="200px">
                                                         Dinero is adding <br />
                                                         +10% APY Boost
+                                                    </Tooltip>
+                                                </Text>
+                                            </BoostBadge>
+                                        )}
+                                        {isLST && (
+                                            <BoostBadge>
+                                                <IconContainer $size={18}>
+                                                    <img
+                                                        key={i}
+                                                        src={kiteImg}
+                                                        alt={'kite'}
+                                                        width={48}
+                                                        height={48}
+                                                        className={`token-KITE`}
+                                                    />
+                                                </IconContainer>
+                                                <Text $fontSize="0.8em" style={{ marginLeft: '-7px', display: 'flex' }}>
+                                                    2x KITE Boost&nbsp;
+                                                    <Tooltip width="200px">
+                                                        HAI DAO is adding <br />
+                                                        2x KITE Boost for 2 months
+                                                        <br />
+                                                        1/15/25 - 3/15/25
                                                     </Tooltip>
                                                 </Text>
                                             </BoostBadge>
