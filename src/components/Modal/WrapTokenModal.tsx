@@ -173,39 +173,6 @@ export function WrapTokenModal(props: ModalProps) {
                 onMax={() => setAmount(details.balanceMinusCushion?.raw || '0')}
                 opacity={0.5}
             />
-            {/* <TransactionSummary
-                items={[
-                    {
-                        label: 'VELO',
-                        value: {
-                            current: isNonZero ? balance?.formatted || '0' : undefined,
-                            after: formatNumberWithStyle(
-                                action === Action.WRAP
-                                    ? parseFloat(balance?.raw || '0') - parseFloat(amount || '0')
-                                    : parseFloat(balance?.raw || '0') + parseFloat(amount || '0'),
-                                { maxDecimals: 4 }
-                            ),
-                            label: 'VELO',
-                            tooltip: isNonZero
-                                ? `This estimate does not include any fees associated with the ${details.action.toLowerCase()} transaction`
-                                : undefined,
-                        },
-                    },
-                    {
-                        label: 'haiVELO',
-                        value: {
-                            current: isNonZero ? haiVeloBalance?.formatted || '0' : undefined,
-                            after: formatNumberWithStyle(
-                                action === Action.WRAP
-                                    ? parseFloat(haiVeloBalance?.raw || '0') + parseFloat(amount || '0')
-                                    : parseFloat(haiVeloBalance?.raw || '0') - parseFloat(amount || '0'),
-                                { maxDecimals: 4 }
-                            ),
-                            label: 'haiVELO',
-                        },
-                    },
-                ]}
-            /> */}
             <FlashMessageContainer $variant="warningBackground" $pad={true} $gap={8} $grow={0}>
                 <FlashMessageText $fontWeight={700} $variant="warningColor">
                     ⚠️ VELO is permanantly max locked into veVELO with haiVELO issued at a 1:1 ratio.

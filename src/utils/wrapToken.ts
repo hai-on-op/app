@@ -17,14 +17,6 @@ export const handleWrapToken = async ({ signer, amount }: WrapTokenProps) => {
     const geb = new Geb(networkName, signer)
 
     const amountBN = ethers.utils.parseEther(amount)
-    // const tx = await geb.contracts.wrappedTokenHaiVelo.populateTransaction.deposit({
-    //     _account: signer._address,
-    //     _wad: amountBN,
-    // })
-
-    console.log('signer: ', signer)
-    console.log('signer._address: ', signer._address)
-
     const tx = await geb.contracts.wrappedTokenHaiVelo.populateTransaction.deposit(signer._address, amountBN)
 
     if (!tx) throw new Error('No transaction request!')

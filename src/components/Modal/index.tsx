@@ -55,12 +55,7 @@ export function Modal({
                     {overrideContent || (
                         <>
                             <ModalHeader>
-                                {typeof heading === 'string' ? (
-                                    <BrandedTitle textContent={heading} />
-                                ) : (
-                                    // <BrandedTitle textContent={heading.toUpperCase()} />
-                                    heading
-                                )}
+                                {typeof heading === 'string' ? <BrandedTitle textContent={heading} /> : heading}
                                 {onClose && (
                                     <CloseContainer onClick={onClose}>
                                         <X size={14} />

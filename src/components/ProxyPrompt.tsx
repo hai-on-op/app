@@ -74,17 +74,14 @@ export function ProxyPrompt({
                 hash: txResponse.hash,
                 status: ActionState.SUCCESS,
             })
-            // debugger
             // wait some blocks before continue to the next step
             await txResponse.wait(5)
 
-            // debugger
             popupsActions.setIsWaitingModalOpen(false)
             popupsActions.setWaitingPayload({ status: ActionState.NONE })
             connectWalletActions.setIsStepLoading(false)
             connectWalletActions.setStep(2)
             localStorage.removeItem('ctHash')
-            // debugger
         } catch (e) {
             connectWalletActions.setIsStepLoading(false)
             handleTransactionError(e)
@@ -96,7 +93,6 @@ export function ProxyPrompt({
         if (onSuccess) {
             onSuccess()
         }
-        // debugger
         popupsActions.setIsWaitingModalOpen(false)
         connectWalletActions.setIsStepLoading(false)
         connectWalletActions.setStep(2)
