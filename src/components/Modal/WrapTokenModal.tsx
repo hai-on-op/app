@@ -9,7 +9,7 @@ import { Flex, HaiButton, Text, CenteredFlex } from '~/styles'
 import { Modal, type ModalProps } from './index'
 import { WrapNumberInput } from '../WrapNumberInput'
 
-import { Link } from '../Link'
+// import { Link } from '../Link'
 
 enum Action {
     WRAP,
