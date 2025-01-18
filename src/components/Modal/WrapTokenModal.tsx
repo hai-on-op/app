@@ -169,16 +169,16 @@ export function WrapTokenModal(props: ModalProps) {
                 placeholder="0.00"
                 unitLabel={details.symbol}
                 onChange={(value: string) => setAmount(value)}
-                subLabel={`Max ${details.balanceMinusCushion?.formatted || '0'} ${details.symbol}`}
+                subLabel=""
                 onMax={() => setAmount(details.balanceMinusCushion?.raw || '0')}
                 opacity={0.5}
             />
             <FlashMessageContainer $variant="warningBackground" $pad={true} $gap={8} $grow={0}>
                 <FlashMessageText $fontWeight={700} $variant="warningColor">
-                    ⚠️ VELO is permanantly max locked into veVELO with haiVELO issued at a 1:1 ratio.
+                    ⚠️ VELO is permanently max locked into veVELO with haiVELO issued at a 1:1 ratio.
                 </FlashMessageText>
             </FlashMessageContainer>
-            <FlashMessageContainer
+            {/* <FlashMessageContainer
                 $variant="successBackground"
                 $pad={true}
                 $gap={8}
@@ -197,7 +197,7 @@ export function WrapTokenModal(props: ModalProps) {
                         here.
                     </Link>
                 </FlashMessageText>
-            </FlashMessageContainer>
+            </FlashMessageContainer> */}
         </Modal>
     )
 }
