@@ -17,6 +17,7 @@ import { AuctionStats } from '~/containers/Auctions/Stats'
 import { useFlags } from 'flagsmith/react'
 
 import uniswapLogo from '~/assets/uniswap-icon.svg'
+import { WrapperAd, WrapperAdProps } from './WrapperAd'
 
 enum Intention {
     AUCTION = 'auctions',
@@ -77,12 +78,23 @@ const typeOptions: BrandedSelectOption[] = [
     },
 ]
 
+const wrappers: WrapperAdProps[] = [
+    {
+        heading: 'haiVELO',
+        status: 'NOW LIVE',
+        description: 'Convert your VELO into haiVELO to use as collateral while earning veVELO rewards.',
+        cta: 'Mint haiVELO',
+        ctaLink: '/earn',
+        tokenImages: ['HAI-VELO'],
+    },
+]
+
 type IntentionHeaderProps = {
     children?: ReactChildren
 }
 export function IntentionHeader({ children }: IntentionHeaderProps) {
-    const flags = useFlags(['test_flag']) // only causes re-render if specified flag values / traits change
-    const testFlagEnabled = flags.test_flag?.enabled
+    const flags = useFlags(['hai_velo'])
+    const haiVeloEnabled = flags.hai_velo?.enabled
 
     const location = useLocation()
     const history = useHistory()
@@ -126,7 +138,6 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
     return (
         <Container>
             <Inner>
-                {testFlagEnabled && <h1>Test Flag Enabled</h1>}
                 <Flex $justify="flex-start" $align="center" $gap={12} $flexWrap>
                     <BrandedTitle textContent="I WANT TO" $fontSize={isUpToExtraSmall ? '2.5em' : '3.2em'} />
                     <BrandedSelect
@@ -139,12 +150,20 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
                 </Flex>
                 <Text>
                     {subtitle}
+
                     <Link href={ctaLink} $fontWeight={700}>
                         {cta}
                     </Link>
                 </Text>
                 {stats}
                 {children}
+                {haiVeloEnabled && (
+                    <>
+                        {wrappers.map((wrapper, i) => (
+                            <WrapperAd key={i} bgVariant={i} {...wrapper} />
+                        ))}
+                    </>
+                )}
             </Inner>
         </Container>
     )
