@@ -3,6 +3,7 @@ import { useAccount, useNetwork } from 'wagmi'
 import { ActionState, formatNumberWithStyle } from '~/utils'
 import { useStoreActions } from '~/store'
 import { handleTransactionError, useBalance, useEthersSigner, useGeb, useTokenApproval, ApprovalState } from '~/hooks'
+import { useAddTokens } from '~/hooks'
 
 import styled from 'styled-components'
 import { Flex, HaiButton, Text, CenteredFlex } from '~/styles'
@@ -33,6 +34,8 @@ export function WrapTokenModal(props: ModalProps) {
     const { chain } = useNetwork()
     const signer = useEthersSigner()
     const geb = useGeb()
+
+    const { addTokens } = useAddTokens({ isHaiVelo: true })
 
     const [action] = useState(Action.WRAP)
 
@@ -147,6 +150,9 @@ export function WrapTokenModal(props: ModalProps) {
                         onClick={onWrap}
                     >
                         {approvalState === ApprovalState.NOT_APPROVED ? 'Approve' : 'Mint haiVELO'}
+                    </HaiButton>
+                    <HaiButton $variant="greenish" onClick={addTokens}>
+                        Add haiVELO
                     </HaiButton>
                 </Footer>
             }
