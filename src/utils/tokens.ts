@@ -64,7 +64,7 @@ export const TOKEN_LOGOS = {
     MOO: beefyImg,
     DINERO: dineroImg,
     PXETH: pxethImg,
-    'HAI-VELO': haiVeloImg,
+    HAIVELO: haiVeloImg,
 }
 
 export const tokenMap: Record<string, string> = {
