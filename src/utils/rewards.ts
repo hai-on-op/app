@@ -28,6 +28,10 @@ export const REWARDS = {
             KITE: 0,
             OP: 0,
         },
+        HAIVELO: {
+            KITE: 0,
+            OP: 0,
+        },
 
         // Testnet
         WBTC: {
