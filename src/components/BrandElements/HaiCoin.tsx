@@ -97,7 +97,7 @@ const Inner = styled(CenteredFlex)<{
                 backColor = '#D6B5A8'
                 break
             }
-            case 'HAI-VELO': {
+            case 'HAIVELO': {
                 frontColor = '#FFFFFF'
                 backColor = '#c9c8c7'
                 break

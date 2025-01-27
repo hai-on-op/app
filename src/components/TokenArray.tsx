@@ -37,9 +37,9 @@ export function TokenArray({ tokens, size = 32, label, hideLabel = false }: Toke
 
     return (
         <Flex $align="center" $gap={12} $grow={0}>
-            {tokens[0] == 'MOO-VELO-V2-OP-VELO' && (
+            {(tokens[0] == 'MOO-VELO-V2-OP-VELO' || tokens[0] == 'HAIVELO') && (
                 <div style={{ position: 'absolute' }}>
-                    <div style={{ position: 'absolute', top: -20, left: -10 }}>
+                    <div style={{ position: 'absolute', top: -20, left: -10, opacity: 0.65 }}>
                         <BlockBanner text="EXPERIMENTAL" $justify="flex-start" $fontSize=".5rem">
                             --
                         </BlockBanner>
