@@ -40,7 +40,7 @@ export function useVelodrome() {
         const fetchData = async () => {
             try {
                 setLoading(true)
-                const lps = (await velodromeSugarContract.all(BigNumber.from(300), BigNumber.from(650))) as any[]
+                const lps = (await velodromeSugarContract.all(BigNumber.from(500), BigNumber.from(650))) as any[]
                 const targetTokens = [getAddress(HAI_ADDRESS), getAddress(KITE_ADDRESS)]
 
                 const flteredLps = lps.filter((lp) => targetTokens.includes(lp[7]) || targetTokens.includes(lp[10]))
