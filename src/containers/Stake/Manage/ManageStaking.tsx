@@ -11,30 +11,51 @@ import { WrapETHModal } from '~/components/Modal/WrapETHModal'
 import { ManageStakingError } from './ManageStakingError'
 import { CheckBox } from '~/components/CheckBox'
 import { VaultTxModal } from '~/components/Modal/VaultTxModal'
+import { StakingTxModal } from '~/components/Modal/StakingTxModal'
 
 import { Info } from '~/components/Icons/Info'
+import { useBalances } from '~/hooks'
+import { useStakingData } from '~/hooks/useStakingData'
+import { Loader } from '~/components/Loader'
 
 export function ManageStaking() {
+    const [haiBalance, kiteBalance] = useBalances(['HAI', 'KITE'])
+    const { stakingData, loading: stakingDataLoading } = useStakingData()
+
     const [stakingAmount, setStakingAmount] = useState('')
     const [unstakingAmount, setUnstakingAmount] = useState('')
 
-    const availableKite = 726.12
-    const stakedKite = 4828.42
+    const availableKite = formatNumberWithStyle(kiteBalance.raw, {
+        maxDecimals: 0,
+    })
 
-    const pendingUnstakes = [
-        {
-            amount: 101,
-            availableIn: '19 days',
-        },
-        {
-            amount: 1037,
-            availableIn: 'now',
-        },
-    ]
+    const stakedKite = useMemo(() => {
+        if (stakingDataLoading) return null
+        return formatNumberWithStyle(stakingData.stakedBalance, {
+            maxDecimals: 2,
+            minDecimals: 2,
+        })
+    }, [stakingData.stakedBalance, stakingDataLoading])
 
-    const isUnStaking = Number(unstakingAmount) > 0 ? true : false
+    const pendingWithdrawal = useMemo(() => {
+        if (!stakingData.pendingWithdrawal) return null
+        return {
+            amount: formatNumberWithStyle(stakingData.pendingWithdrawal.amount, {
+                maxDecimals: 2,
+                minDecimals: 2,
+            }),
+            availableIn:
+                stakingData.pendingWithdrawal.status === 'COMPLETED'
+                    ? 'now'
+                    : `${Math.ceil(
+                          (Number(stakingData.pendingWithdrawal.timestamp) + 21 * 24 * 60 * 60 - Date.now() / 1000) /
+                              (24 * 60 * 60)
+                      )} days`,
+        }
+    }, [stakingData.pendingWithdrawal])
 
-    const { vaultModel: vaultState } = useStoreState((state) => state)
+    const isUnStaking = Number(unstakingAmount) > 0
+
     const {
         vaultModel: vaultActions,
         popupsModel: { toggleModal },
@@ -60,72 +81,27 @@ export function ManageStaking() {
         })
     }, [wrapEthActive, toggleModal])
 
-    const [buttonActive, buttonLabel] = useMemo(() => {
-        let label = ''
-        switch (action) {
-            case VaultAction.CREATE: {
-                const { deposit = '0', borrow = '0' } = formState
-                if (Number(deposit) <= 0 || Number(borrow) <= 0) {
-                    return [false, 'Open Vault']
-                }
-                label = 'Open Vault'
-                break
-            }
-            case VaultAction.DEPOSIT_BORROW: {
-                const { deposit = '0', borrow = '0' } = formState
-                if (Number(deposit) <= 0 && Number(borrow) <= 0) {
-                    return [false, 'Deposit']
-                }
-                if (Number(borrow) <= 0) label = 'Deposit'
-                else if (Number(deposit) <= 0) label = 'Borrow'
-                else label = 'Deposit & Borrow'
-                break
-            }
-            case VaultAction.DEPOSIT_REPAY: {
-                const { deposit = '0', repay = '0' } = formState
-                if (Number(deposit) <= 0 && Number(repay) <= 0) {
-                    return [false, 'Deposit']
-                }
-                if (Number(repay) <= 0) label = 'Deposit'
-                else if (Number(deposit) <= 0) label = 'Pay Back'
-                else label = 'Deposit & Pay Back'
-                break
-            }
-            case VaultAction.WITHDRAW_REPAY: {
-                const { withdraw = '0', repay = '0' } = formState
-                if (Number(withdraw) <= 0 && Number(repay) <= 0) {
-                    return [false, 'Withdraw']
-                }
-                if (Number(repay) <= 0) label = 'Withdraw'
-                else if (Number(withdraw) <= 0) label = 'Pay Back'
-                else label = 'Withdraw & Pay Back'
-                break
-            }
-            case VaultAction.WITHDRAW_BORROW: {
-                const { withdraw = '0', borrow = '0' } = formState
-                if (Number(withdraw) <= 0 && Number(borrow) <= 0) {
-                    return [false, 'Withdraw']
-                }
-                if (Number(borrow) <= 0) label = 'Withdraw'
-                else if (Number(withdraw) <= 0) label = 'Borrow'
-                else label = 'Withdraw & Borrow'
-                break
-            }
-            default:
-                return [false, 'Deposit']
-        }
-        return [!error, label]
-    }, [action, formState, error])
-
-    const maxRepay = Number(debt.balance.raw) < Number(debt.total.current?.raw || 0) ? debt.balance : debt.total.current
+    if (stakingDataLoading) {
+        return (
+            <Container>
+                <Header>
+                    <Flex $width="100%" $justify="center" $align="center">
+                        <Loader size={32} />
+                    </Flex>
+                </Header>
+            </Container>
+        )
+    }
 
     return (
         <>
             {reviewActive && (
-                <VaultTxModal
+                <StakingTxModal
+                    isStaking={!isUnStaking}
+                    amount={isUnStaking ? unstakingAmount : stakingAmount}
+                    stakedAmount={stakingData.stakedBalance}
                     onClose={() => {
                         setReviewActive(false)
-                        vaultActions.setTransactionState(ActionState.NONE)
                     }}
                 />
             )}
@@ -133,12 +109,15 @@ export function ManageStaking() {
                 <Header>
                     <Flex $width="100%" $justify="space-between" $align="center">
                         <Text $fontWeight={700}>Manage KITE Staking</Text>
-                        {Object.values(formState).some((value) => Number(value || '0') > 0) && (
+                        {(Number(stakingAmount) > 0 || Number(unstakingAmount) > 0) && (
                             <Text
                                 $color="rgba(0,0,0,0.5)"
                                 $fontSize="0.8em"
                                 $textDecoration="underline"
-                                onClick={() => updateForm('clear')}
+                                onClick={() => {
+                                    setStakingAmount('')
+                                    setUnstakingAmount('')
+                                }}
                                 style={{ cursor: 'pointer' }}
                             >
                                 Clear All
@@ -164,12 +143,12 @@ export function ManageStaking() {
                         value={stakingAmount}
                         onMax={() => {
                             setUnstakingAmount('0')
-                            setStakingAmount(availableKite.toString())
+                            setStakingAmount(kiteBalance.raw.toString())
                         }}
                         conversion={
-                            formState.deposit && Number(formState.deposit) > 0
+                            stakingAmount && Number(stakingAmount) > 0
                                 ? `~${formatNumberWithStyle(
-                                      parseFloat(collateral.priceInUSD || '0') * parseFloat(formState.deposit),
+                                      parseFloat(collateral.priceInUSD || '0') * parseFloat(stakingAmount),
                                       { style: 'currency' }
                                   )}`
                                 : ''
@@ -180,7 +159,7 @@ export function ManageStaking() {
                         label={
                             <CenteredFlex $gap={8}>
                                 <CheckBox checked={!isWithdraw} size={14} />
-                                <Text>Stake</Text>
+                                <Text>Unstake</Text>
                             </CenteredFlex>
                         }
                         subLabel={`Max ${stakedKite} KITE`}
@@ -193,7 +172,7 @@ export function ManageStaking() {
                         value={unstakingAmount}
                         onMax={() => {
                             setStakingAmount('0')
-                            setUnstakingAmount(stakedKite.toString())
+                            setUnstakingAmount(stakingData.stakedBalance)
                         }}
                         conversion={
                             formState.deposit && Number(formState.deposit) > 0
@@ -208,26 +187,18 @@ export function ManageStaking() {
                     <Text $fontSize="0.85em" $color="rgba(0,0,0,0.85)">
                         sKITE has a 21 day cooldown period after unstaking.
                     </Text>
-                    {pendingUnstakes.map((unstake) =>
-                        unstake.availableIn === 'now' ? (
-                            <div
-                                style={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    width: '100%',
-                                }}
-                            >
-                                <Text $fontSize="0.85em">{`${unstake.amount} KITE available`}</Text>
-                                <HaiButton  $variant="yellowish">
-                                    Claim
-                                </HaiButton>
-                            </div>
-                        ) : (
-                            <Text $fontSize="0.85em">
-                                {`${unstake.amount} KITE available to claim in ${unstake.availableIn}`}
-                            </Text>
-                        )
+                    {pendingWithdrawal && (
+                        <div
+                            style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                width: '100%',
+                            }}
+                        >
+                            <Text $fontSize="0.85em">{`${pendingWithdrawal.amount} KITE available to claim in ${pendingWithdrawal.availableIn}`}</Text>
+                            <HaiButton $variant="yellowish" disabled>Claim</HaiButton>
+                        </div>
                     )}
                 </Body>
                 <Footer>

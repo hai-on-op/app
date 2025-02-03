@@ -9,6 +9,7 @@ import { Grid } from '~/styles'
 import styled from 'styled-components'
 import { Overview } from './Manage/Overview'
 import { ManageStaking } from './Manage/ManageStaking'
+import { StakeActivity } from './Activity'
 
 export function Stake() {
     const [navIndex, setNavIndex] = useState(0)
@@ -27,7 +28,7 @@ export function Stake() {
                     <ManageStaking />
                 </BodyGrid>
             ) : (
-                <div>Staking Activities</div>
+                <StakeActivity />
             )}
         </NavContainer>
     )
