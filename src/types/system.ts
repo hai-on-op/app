@@ -26,6 +26,7 @@ export type Strategy = {
     tvl: string
     apy: number
     userPosition?: string
+    strategyType?: 'farm' | 'borrow' | 'hold'
 } & (
     | {
           earnPlatform?: undefined
