@@ -129,6 +129,11 @@ export const tokenAssets: Record<string, Token> = {
         name: 'VELO',
         icon: velodromeImg,
     },
+    HAIVELO: {
+        symbol: 'HAIVELO',
+        name: 'HAIVELO',
+        icon: haiVeloImg,
+    },
     APXETH: {
         symbol: 'APXETH',
         name: 'APXETH',
