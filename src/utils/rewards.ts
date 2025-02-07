@@ -29,7 +29,7 @@ export const REWARDS = {
             OP: 0,
         },
         HAIVELO: {
-            KITE: 10,
+            KITE: 0,
             OP: 0,
         },
 
