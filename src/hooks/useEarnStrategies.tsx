@@ -141,7 +141,8 @@ export function useEarnStrategies() {
     const veloStrategies = useMemo(() => {
         if (!veloPrices || !veloData) return []
         const temp: Strategy[] = []
-        for (const pool of veloData) {
+        // Filter out SAIL
+        for (const pool of veloData.filter((p) => p.address != '0xB5cD4bD4bdB5C97020FBE192258e6F08333990E2')) {
             const rewards = REWARDS.velodrome[pool.address.toLowerCase()]
             if (!rewards) continue // filter out any extra pools that may be fetched
 
