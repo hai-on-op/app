@@ -283,9 +283,13 @@ function EarnEmissionTooltip({ rewards, earnPlatform, earnLink, strategyType }: 
         return (
             <Flex $width="140px" $column $justify="flex-end" $align="flex-start" $gap={4}>
                 <Text $fontWeight={700}>
-                    Market participants can buy and hold HAI in order to speculate on the redemption rate. When the
-                    redemption rate is positive it increases the value at which HAI can be redeemed for collateral,
-                    incentivizing the market price to follow. The redemption rate is expressed here as rewards APY.
+                    Market participants can buy and hold HAI in order to speculate on the redemption rate. The
+                    redemption rate is expressed here as rewards APY.
+                    <br />
+                    <br />
+                    <Link href={'https://docs.letsgethai.com/detailed/intro/protocol.html'} $align="center">
+                        Learn more.
+                    </Link>
                 </Text>
             </Flex>
         )
