@@ -63,154 +63,145 @@ export function StrategyTable({
             sorting={sorting}
             setSorting={setSorting}
             compactQuery="upToMedium"
-            rows={rows.map(
-                ({ pair, rewards, tvl, apy, userPosition, earnPlatform, earnAddress, earnLink, strategyType }, i) => {
-                    const LSTS = ['RETH', 'APXETH', 'WSTETH']
-                    const isLST = LSTS.includes(pair[0])
-                    const isAPXETH = pair.includes('APXETH')
-                    const isPXETH = pair.includes('PXETH')
-                    const baseTokens = rewards.map(({ token }) => token)
-                    const tokens: TokenKey[] =
-                        earnPlatform === 'velodrome' ? ['VELO'] : isAPXETH ? [...baseTokens, 'APXETH'] : baseTokens
-                    return (
-                        <Table.Row
-                            key={i}
-                            container={TableRow}
-                            headers={headers}
-                            compactQuery="upToMedium"
-                            items={[
-                                {
-                                    content: (
-                                        <Grid $columns="1fr min-content 12px" $align="center" $gap={12}>
-                                            <Flex $justify="flex-start" $align="center" $gap={8}>
-                                                <TokenArray tokens={pair} hideLabel />
-                                                <Text $fontWeight={700}>
-                                                    {`${
-                                                        earnAddress == CL50_HAI_LUSD_ADDRESS ? 'CL-50' : ''
-                                                    }  ${pair.join('/')}`}
-                                                </Text>
-                                            </Flex>
-                                            <RewardsTokenArray
-                                                tokens={strategyType == 'hold' ? ['HAI'] : tokens}
-                                                tooltip={
-                                                    <EarnEmissionTooltip
-                                                        rewards={rewards}
-                                                        earnPlatform={earnPlatform}
-                                                        earnLink={earnLink}
-                                                        strategyType={strategyType}
-                                                    />
-                                                }
-                                            />
-                                        </Grid>
-                                    ),
-                                    props: { $fontSize: 'inherit' },
-                                },
-                                {
-                                    content: <Text $fontWeight={700}>{strategyType?.toUpperCase()}</Text>,
-                                },
-                                {
-                                    content: (
-                                        <ComingSoon $justify="flex-start" active={!!earnPlatform && !earnAddress}>
+            rows={rows.map(({ pair, rewards, tvl, apy, userPosition, earnPlatform, earnAddress, earnLink }, i) => {
+                const LSTS = ['RETH', 'APXETH', 'WSTETH']
+                const isLST = LSTS.includes(pair[0])
+                const isAPXETH = pair.includes('APXETH')
+                const isPXETH = pair.includes('PXETH')
+                const baseTokens = rewards.map(({ token }) => token)
+                const tokens: TokenKey[] =
+                    earnPlatform === 'velodrome' ? ['VELO'] : isAPXETH ? [...baseTokens, 'APXETH'] : baseTokens
+                return (
+                    <Table.Row
+                        key={i}
+                        container={TableRow}
+                        headers={headers}
+                        compactQuery="upToMedium"
+                        items={[
+                            {
+                                content: (
+                                    <Grid $columns="1fr min-content 12px" $align="center" $gap={12}>
+                                        <Flex $justify="flex-start" $align="center" $gap={8}>
+                                            <TokenArray tokens={pair} hideLabel />
                                             <Text $fontWeight={700}>
-                                                {tvl
-                                                    ? formatNumberWithStyle(tvl, {
-                                                          style: 'currency',
-                                                          maxDecimals: 1,
-                                                          suffixed: true,
-                                                      })
-                                                    : '-'}
+                                                {`${earnAddress == CL50_HAI_LUSD_ADDRESS ? 'CL-50' : ''}  ${pair.join(
+                                                    '/'
+                                                )}`}
                                             </Text>
-                                        </ComingSoon>
-                                    ),
-                                },
-                                {
-                                    content: (
-                                        <ComingSoon $justify="flex-start" active={!!earnPlatform && !earnAddress}>
-                                            <Text $fontWeight={700}>
-                                                {userPosition && userPosition !== '0'
-                                                    ? formatNumberWithStyle(userPosition, {
-                                                          style: 'currency',
-                                                          maxDecimals: 1,
-                                                          suffixed: true,
-                                                      })
-                                                    : '-'}
-                                            </Text>
-                                        </ComingSoon>
-                                    ),
-                                },
-                                {
-                                    content: (
-                                        <div style={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
-                                            <Text $fontWeight={700}>
-                                                {apy
-                                                    ? formatNumberWithStyle(apy, {
-                                                          style: 'percent',
-                                                          scalingFactor: 100,
-                                                          maxDecimals: 1,
-                                                          suffixed: true,
-                                                      })
-                                                    : '-'}
-                                            </Text>
-                                            {(isAPXETH || isPXETH) && (
-                                                <BoostBadge>
-                                                    <Flex $justify="flex-start" $align="center">
-                                                        <img src={dineroLogo} alt="" width={18} height={18} />
-                                                    </Flex>
-                                                    <Text
-                                                        $fontSize="0.8em"
-                                                        style={{ marginLeft: '-7px', display: 'flex' }}
-                                                    >
-                                                        +10% Boost&nbsp;
-                                                        <Tooltip width="200px">
-                                                            Dinero is adding <br />
-                                                            +10% APY Boost
-                                                        </Tooltip>
-                                                    </Text>
-                                                </BoostBadge>
-                                            )}
-                                            {isLST && (
-                                                <BoostBadge>
-                                                    <IconContainer $size={18}>
-                                                        <img
-                                                            key={i}
-                                                            src={kiteImg}
-                                                            alt={'kite'}
-                                                            width={48}
-                                                            height={48}
-                                                            className={`token-KITE`}
-                                                        />
-                                                    </IconContainer>
-                                                    <Text
-                                                        $fontSize="0.8em"
-                                                        style={{ marginLeft: '-7px', display: 'flex' }}
-                                                    >
-                                                        2x KITE Boost&nbsp;
-                                                        <Tooltip width="200px">
-                                                            HAI DAO is adding <br />
-                                                            2x KITE Boost for 2 months
-                                                            <br />
-                                                            1/15/25 - 3/15/25
-                                                        </Tooltip>
-                                                    </Text>
-                                                </BoostBadge>
-                                            )}
-                                        </div>
-                                    ),
-                                },
-
-                                {
-                                    content: (
-                                        <Flex $width="100%" $justify="flex-end">
-                                            <StrategyTableButton earnPlatform={earnPlatform} earnLink={earnLink} />
                                         </Flex>
-                                    ),
-                                    unwrapped: true,
-                                },
-                            ]}
-                        />
-                    )
-                }
-            )}
+                                        <RewardsTokenArray
+                                            tokens={tokens}
+                                            tooltip={
+                                                <EarnEmissionTooltip
+                                                    rewards={rewards}
+                                                    earnPlatform={earnPlatform}
+                                                    earnLink={earnLink}
+                                                />
+                                            }
+                                        />
+                                    </Grid>
+                                ),
+                                props: { $fontSize: 'inherit' },
+                            },
+                            {
+                                content: <Text $fontWeight={700}>{earnPlatform ? 'FARM' : 'BORROW'}</Text>,
+                            },
+                            {
+                                content: (
+                                    <ComingSoon $justify="flex-start" active={!!earnPlatform && !earnAddress}>
+                                        <Text $fontWeight={700}>
+                                            {tvl
+                                                ? formatNumberWithStyle(tvl, {
+                                                      style: 'currency',
+                                                      maxDecimals: 1,
+                                                      suffixed: true,
+                                                  })
+                                                : '-'}
+                                        </Text>
+                                    </ComingSoon>
+                                ),
+                            },
+                            {
+                                content: (
+                                    <ComingSoon $justify="flex-start" active={!!earnPlatform && !earnAddress}>
+                                        <Text $fontWeight={700}>
+                                            {userPosition && userPosition !== '0'
+                                                ? formatNumberWithStyle(userPosition, {
+                                                      style: 'currency',
+                                                      maxDecimals: 1,
+                                                      suffixed: true,
+                                                  })
+                                                : '-'}
+                                        </Text>
+                                    </ComingSoon>
+                                ),
+                            },
+                            {
+                                content: (
+                                    <div style={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
+                                        <Text $fontWeight={700}>
+                                            {apy
+                                                ? formatNumberWithStyle(apy, {
+                                                      style: 'percent',
+                                                      scalingFactor: 100,
+                                                      maxDecimals: 1,
+                                                      suffixed: true,
+                                                  })
+                                                : '-'}
+                                        </Text>
+                                        {(isAPXETH || isPXETH) && (
+                                            <BoostBadge>
+                                                <Flex $justify="flex-start" $align="center">
+                                                    <img src={dineroLogo} alt="" width={18} height={18} />
+                                                </Flex>
+                                                <Text $fontSize="0.8em" style={{ marginLeft: '-7px', display: 'flex' }}>
+                                                    +10% Boost&nbsp;
+                                                    <Tooltip width="200px">
+                                                        Dinero is adding <br />
+                                                        +10% APY Boost
+                                                    </Tooltip>
+                                                </Text>
+                                            </BoostBadge>
+                                        )}
+                                        {isLST && (
+                                            <BoostBadge>
+                                                <IconContainer $size={18}>
+                                                    <img
+                                                        key={i}
+                                                        src={kiteImg}
+                                                        alt={'kite'}
+                                                        width={48}
+                                                        height={48}
+                                                        className={`token-KITE`}
+                                                    />
+                                                </IconContainer>
+                                                <Text $fontSize="0.8em" style={{ marginLeft: '-7px', display: 'flex' }}>
+                                                    2x KITE Boost&nbsp;
+                                                    <Tooltip width="200px">
+                                                        HAI DAO is adding <br />
+                                                        2x KITE Boost for 2 months
+                                                        <br />
+                                                        1/15/25 - 3/15/25
+                                                    </Tooltip>
+                                                </Text>
+                                            </BoostBadge>
+                                        )}
+                                    </div>
+                                ),
+                            },
+
+                            {
+                                content: (
+                                    <Flex $width="100%" $justify="flex-end">
+                                        <StrategyTableButton earnPlatform={earnPlatform} earnLink={earnLink} />
+                                    </Flex>
+                                ),
+                                unwrapped: true,
+                            },
+                        ]}
+                    />
+                )
+            })}
         />
     )
 }
@@ -263,9 +254,8 @@ type EarnEmissionTooltipProps = {
     rewards: Strategy['rewards']
     earnPlatform: Strategy['earnPlatform']
     earnLink: Strategy['earnLink']
-    strategyType: Strategy['strategyType']
 }
-function EarnEmissionTooltip({ rewards, earnPlatform, earnLink, strategyType }: EarnEmissionTooltipProps) {
+function EarnEmissionTooltip({ rewards, earnPlatform, earnLink }: EarnEmissionTooltipProps) {
     if (earnPlatform === 'velodrome')
         return (
             <Flex $width="140px" $column $justify="flex-end" $align="flex-start" $gap={4}>
@@ -278,18 +268,6 @@ function EarnEmissionTooltip({ rewards, earnPlatform, earnLink, strategyType }: 
                 </Text>
             </Flex>
         )
-
-    if (strategyType == 'hold') {
-        return (
-            <Flex $width="140px" $column $justify="flex-end" $align="flex-start" $gap={4}>
-                <Text $fontWeight={700}>
-                    Market participants can buy and hold HAI in order to speculate on the redemption rate. When the
-                    redemption rate is positive it increases the value at which HAI can be redeemed for collateral,
-                    incentivizing the market price to follow. The redemption rate is expressed here as rewards APY.
-                </Text>
-            </Flex>
-        )
-    }
 
     return (
         <Flex $width="140px" $column $justify="flex-end" $align="flex-start" $gap={4}>
