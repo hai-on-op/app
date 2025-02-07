@@ -1,7 +1,7 @@
 import { type DispatchWithoutAction, createContext, useContext, useEffect, useReducer, useState } from 'react'
 
 import type { ReactChildren, SummaryItemValue } from '~/types'
-import oracleAbi from '~/abis/velo_oracle.abi.json'
+// import oracleAbi from '~/abis/velo_oracle.abi.json'
 import veloSpotOracleAbi from '~/abis/velo_spot_price_oracle.abi.json'
 import { useContract } from '~/hooks'
 import { formatSummaryValue } from '~/utils'
