@@ -22,9 +22,21 @@ export interface StakingModel {
     unstake: Thunk<StakingModel, { signer: JsonRpcSigner; amount: string }, any, StoreModel>
     withdraw: Thunk<StakingModel, { signer: JsonRpcSigner }, any, StoreModel>
     getReward: Thunk<StakingModel, { signer: JsonRpcSigner }, any, StoreModel>
+    cancelWithdrawal: Thunk<StakingModel, { signer: JsonRpcSigner }, any, StoreModel>
 
     transactionState: ActionState
     setTransactionState: Action<StakingModel, ActionState>
+
+    cooldownPeriod: string
+    setCooldownPeriod: Action<StakingModel, string>
+    fetchCooldownPeriod: Thunk<StakingModel, { signer: JsonRpcSigner }, any, StoreModel>
+
+    userRewards: Array<{
+        id: number
+        amount: string
+    }>
+    setUserRewards: Action<StakingModel, Array<{ id: number; amount: string }>>
+    fetchUserRewards: Thunk<StakingModel, { signer: JsonRpcSigner }, any, StoreModel>
 }
 
 export const stakingModel: StakingModel = {
@@ -165,6 +177,7 @@ export const stakingModel: StakingModel = {
             })
 
             await txResponse.wait()
+            actions.fetchUserRewards({ signer }) // Refresh rewards after claim
             return txResponse
         } catch (error) {
             console.error('Reward claim error:', error)
@@ -172,8 +185,89 @@ export const stakingModel: StakingModel = {
         }
     }),
 
+    cancelWithdrawal: thunk(async (actions, { signer }, { getStoreActions }) => {
+        const storeActions = getStoreActions()
+        try {
+            const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
+
+            const txData = await stakingManager.populateTransaction.cancelWithdrawal()
+
+            const tx = await handlePreTxGasEstimate(signer, txData)
+            const txResponse = await signer.sendTransaction(tx)
+
+            storeActions.transactionsModel.addTransaction({
+                chainId: await signer.getChainId(),
+                hash: txResponse.hash,
+                from: txResponse.from,
+                summary: 'Cancel Withdrawal',
+                addedTime: new Date().getTime(),
+                originalTx: txResponse,
+            })
+
+            storeActions.popupsModel.setWaitingPayload({
+                title: 'Transaction Submitted',
+                hash: txResponse.hash,
+                status: ActionState.SUCCESS,
+            })
+
+            await txResponse.wait()
+            return txResponse
+        } catch (error) {
+            console.error('Cancel withdrawal error:', error)
+            throw error
+        }
+    }),
+
     transactionState: ActionState.NONE,
     setTransactionState: action((state, payload) => {
         state.transactionState = payload
+    }),
+
+    cooldownPeriod: '1814400', // Default 21 days in seconds
+    setCooldownPeriod: action((state, payload) => {
+        state.cooldownPeriod = payload
+    }),
+
+    fetchCooldownPeriod: thunk(async (actions, { signer }) => {
+        try {
+            const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
+            const params = await stakingManager._params()
+            actions.setCooldownPeriod(params.toString())
+        } catch (error) {
+            console.error('Error fetching cooldown period:', error)
+        }
+    }),
+
+    userRewards: [],
+    setUserRewards: action((state, payload) => {
+        state.userRewards = payload
+    }),
+
+    fetchUserRewards: thunk(async (actions, { signer }) => {
+        try {
+            const stakingManager = new Contract(
+                import.meta.env.VITE_STAKING_MANAGER,
+                StakingManagerABI,
+                signer
+            )
+            
+            const address = await signer.getAddress()
+            const rewardsCount = await stakingManager.rewards()
+            
+            const rewards = []
+            for (let i = 0; i < rewardsCount.toNumber(); i++) {
+                const amount = await stakingManager.claimableReward(i, address)
+                if (amount.gt(0)) {
+                    rewards.push({
+                        id: i,
+                        amount: amount.toString()
+                    })
+                }
+            }
+            
+            actions.setUserRewards(rewards)
+        } catch (error) {
+            console.error('Error fetching user rewards:', error)
+        }
     }),
 }

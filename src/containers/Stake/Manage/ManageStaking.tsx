@@ -14,16 +14,27 @@ import { VaultTxModal } from '~/components/Modal/VaultTxModal'
 import { StakingTxModal } from '~/components/Modal/StakingTxModal'
 
 import { Info } from '~/components/Icons/Info'
-import { useBalances } from '~/hooks'
+import { useBalances, useEthersSigner } from '~/hooks'
 import { useStakingData } from '~/hooks/useStakingData'
 import { Loader } from '~/components/Loader'
+import { AvailabilityBadge } from '~/components/AvailabilityBadge'
 
-export function ManageStaking() {
+type StakingSimulation = {
+    stakingAmount: string
+    unstakingAmount: string
+    setStakingAmount: (amount: string) => void
+    setUnstakingAmount: (amount: string) => void
+}
+
+type ManageStakingProps = {
+    simulation: StakingSimulation
+}
+
+export function ManageStaking({ simulation }: ManageStakingProps) {
+    const { stakingAmount, unstakingAmount, setStakingAmount, setUnstakingAmount } = simulation
     const [haiBalance, kiteBalance] = useBalances(['HAI', 'KITE'])
-    const { stakingData, loading: stakingDataLoading } = useStakingData()
-
-    const [stakingAmount, setStakingAmount] = useState('')
-    const [unstakingAmount, setUnstakingAmount] = useState('')
+    const { stakingData, cooldownPeriod, loading: stakingDataLoading, refetchAll } = useStakingData()
+    const signer = useEthersSigner()
 
     const availableKite = formatNumberWithStyle(kiteBalance.raw, {
         maxDecimals: 0,
@@ -39,26 +50,39 @@ export function ManageStaking() {
 
     const pendingWithdrawal = useMemo(() => {
         if (!stakingData.pendingWithdrawal) return null
+
+        const remainingTime =
+            Number(stakingData.pendingWithdrawal.timestamp) + Number(cooldownPeriod) - Date.now() / 1000
+
+        let availableIn
+        if (remainingTime <= 0) {
+            availableIn = 'now'
+        } else if (remainingTime < 3600) {
+            // less than 1 hour
+            availableIn = `${Math.ceil(remainingTime / 60)} mins `
+        } else if (remainingTime < 86400) {
+            // less than 1 day
+            availableIn = `${Math.ceil(remainingTime / 3600)} hours`
+        } else {
+            availableIn = `${Math.ceil(remainingTime / 86400)} days`
+        }
+
         return {
             amount: formatNumberWithStyle(stakingData.pendingWithdrawal.amount, {
                 maxDecimals: 2,
                 minDecimals: 2,
             }),
-            availableIn:
-                stakingData.pendingWithdrawal.status === 'COMPLETED'
-                    ? 'now'
-                    : `${Math.ceil(
-                          (Number(stakingData.pendingWithdrawal.timestamp) + 21 * 24 * 60 * 60 - Date.now() / 1000) /
-                              (24 * 60 * 60)
-                      )} days`,
+            availableIn,
         }
-    }, [stakingData.pendingWithdrawal])
+    }, [stakingData.pendingWithdrawal, cooldownPeriod])
 
     const isUnStaking = Number(unstakingAmount) > 0
 
     const {
         vaultModel: vaultActions,
         popupsModel: { toggleModal },
+        stakingModel: stakingActions,
+        popupsModel: popupsActions,
     } = useStoreActions((actions) => actions)
 
     const { vault, action, setAction, formState, updateForm, collateral, debt, summary, error } = useVault()
@@ -67,7 +91,7 @@ export function ManageStaking() {
     const isRepay = action === VaultAction.WITHDRAW_REPAY || action === VaultAction.DEPOSIT_REPAY
 
     const [reviewActive, setReviewActive] = useState(false)
-    const [wrapEthActive, setWrapEthActive] = useState(false)
+    const [withdrawActive, setWithdrawActive] = useState(false)
     useEffect(() => {
         toggleModal({
             modal: 'reviewTx',
@@ -76,10 +100,10 @@ export function ManageStaking() {
     }, [reviewActive, toggleModal])
     useEffect(() => {
         toggleModal({
-            modal: 'wrapETH',
-            isOpen: wrapEthActive,
+            modal: 'withdraw',
+            isOpen: withdrawActive,
         })
-    }, [wrapEthActive, toggleModal])
+    }, [withdrawActive, toggleModal])
 
     if (stakingDataLoading) {
         return (
@@ -95,14 +119,38 @@ export function ManageStaking() {
 
     return (
         <>
+            {withdrawActive && (
+                <StakingTxModal
+                    isStaking={false}
+                    amount={
+                        isUnStaking ? unstakingAmount : pendingWithdrawal ? pendingWithdrawal.amount : stakingAmount
+                    }
+                    stakedAmount={stakingData.stakedBalance}
+                    onClose={() => {
+                        setWithdrawActive(false)
+                        toggleModal({
+                            modal: 'withdraw',
+                            isOpen: false,
+                        })
+                    }}
+                    isWithdraw={true}
+                />
+            )}
             {reviewActive && (
                 <StakingTxModal
                     isStaking={!isUnStaking}
-                    amount={isUnStaking ? unstakingAmount : stakingAmount}
+                    amount={
+                        isUnStaking ? unstakingAmount : pendingWithdrawal ? pendingWithdrawal.amount : stakingAmount
+                    }
                     stakedAmount={stakingData.stakedBalance}
                     onClose={() => {
                         setReviewActive(false)
+                        toggleModal({
+                            modal: 'reviewTx',
+                            isOpen: false,
+                        })
                     }}
+                    isWithdraw={false}
                 />
             )}
             <Container>
@@ -196,8 +244,42 @@ export function ManageStaking() {
                                 width: '100%',
                             }}
                         >
-                            <Text $fontSize="0.85em">{`${pendingWithdrawal.amount} KITE available to claim in ${pendingWithdrawal.availableIn}`}</Text>
-                            <HaiButton $variant="yellowish" disabled>Claim</HaiButton>
+                            <Text $fontSize="0.85em">{`${pendingWithdrawal.amount} KITE available to claim in`}</Text>
+                            <AvailabilityBadge>{`${pendingWithdrawal.availableIn}`}</AvailabilityBadge>
+                            <HaiButton
+                                $variant="yellowish"
+                                $size="small"
+                                onClick={async () => {
+                                    if (pendingWithdrawal.availableIn === 'now') {
+                                        setWithdrawActive(true)
+                                        toggleModal({
+                                            modal: 'withdraw',
+                                            isOpen: true,
+                                        })
+                                    } else {
+                                        if (!signer) return
+                                        try {
+                                            popupsActions.setIsWaitingModalOpen(true)
+                                            popupsActions.setWaitingPayload({
+                                                title: 'Waiting For Confirmation',
+                                                text: 'Cancel Withdrawal',
+                                                hint: 'Confirm this transaction in your wallet',
+                                                status: ActionState.LOADING,
+                                            })
+
+                                            await stakingActions.cancelWithdrawal({ signer })
+
+                                            await refetchAll()
+                                            popupsActions.setIsWaitingModalOpen(false)
+                                            popupsActions.setWaitingPayload({ status: ActionState.NONE })
+                                        } catch (error) {
+                                            console.error('Failed to cancel withdrawal:', error)
+                                        }
+                                    }
+                                }}
+                            >
+                                {pendingWithdrawal.availableIn === 'now' ? 'Claim' : 'Cancel'}
+                            </HaiButton>
                         </div>
                     )}
                 </Body>

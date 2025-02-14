@@ -22,14 +22,14 @@ export function Approvals({ onNext, isStaking, amount }: ApprovalsProps) {
 
     const [kiteApproval, approveKite] = useTokenApproval(
         amount,
-        import.meta.env.VITE_KITE_ADDRESS, // Replace with actual KITE token address
+        isStaking ? import.meta.env.VITE_KITE_ADDRESS : import.meta.env.VITE_STAKING_TOKEN_ADDRESS,
         import.meta.env.VITE_STAKING_MANAGER,
         '18',
         true
     )
 
     const { isApproved, button } = useMemo(() => {
-        if (!isStaking) {
+        if (!isStaking && !amount) {
             return { isApproved: true, button: null }
         }
 
@@ -47,7 +47,9 @@ export function Approvals({ onNext, isStaking, amount }: ApprovalsProps) {
                             disabled={kiteApproval === ApprovalState.PENDING}
                             onClick={approveKite}
                         >
-                            {kiteApproval === ApprovalState.PENDING ? 'Pending Approval..' : 'Approve KITE'}
+                            {kiteApproval === ApprovalState.PENDING 
+                                ? 'Pending Approval..' 
+                                : `Approve ${isStaking ? 'KITE' : 'sKITE'}`}
                         </HaiButton>
                     ),
                 }
@@ -58,7 +60,7 @@ export function Approvals({ onNext, isStaking, amount }: ApprovalsProps) {
                     button: null,
                 }
         }
-    }, [kiteApproval, approveKite, isStaking])
+    }, [kiteApproval, approveKite, isStaking, amount])
 
     useEffect(() => {
         if (isApproved) onNext()
@@ -79,7 +81,7 @@ export function Approvals({ onNext, isStaking, amount }: ApprovalsProps) {
             <ModalBody>
                 <ImageContainer>{statusIcon}</ImageContainer>
                 <Text $fontWeight={700}>Token Approvals</Text>
-                <Text>Allow your account to manage your KITE tokens</Text>
+                <Text>Allow Staking Manager to manage your {isStaking ? 'KITE' : 'sKITE'} tokens</Text>
             </ModalBody>
             <ModalFooter $gap={24}>{button}</ModalFooter>
         </>

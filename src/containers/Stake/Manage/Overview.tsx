@@ -15,7 +15,19 @@ import { StatusLabel } from '~/components/StatusLabel'
 import { OverviewProgressStat, OverviewStat } from './OverviewStat'
 import { AlertTriangle, ArrowLeft, ArrowRight } from 'react-feather'
 
-export function Overview() {
+type StakingSimulation = {
+    stakingAmount: string
+    unstakingAmount: string
+    setStakingAmount: (amount: string) => void
+    setUnstakingAmount: (amount: string) => void
+}
+
+type OverviewProps = {
+    simulation: StakingSimulation
+}
+
+export function Overview({ simulation }: OverviewProps) {
+    const { stakingAmount, unstakingAmount } = simulation
     const { t } = useTranslation()
     const { stakingData, stakingStats, loading } = useStakingData()
 
@@ -30,17 +42,30 @@ export function Overview() {
             ? (Number(stakingData.stakedBalance) / Number(stakingStats.totalStaked)) * 100 
             : 0
 
+        // Calculate simulated values
+        const simulatedStakedBalance = Number(stakingData.stakedBalance) + 
+            (Number(stakingAmount) || 0) - 
+            (Number(unstakingAmount) || 0)
+        
+        const simulatedTotalStaked = Number(stakingStats.totalStaked) + 
+            (Number(stakingAmount) || 0) - 
+            (Number(unstakingAmount) || 0)
+
+        const simulatedShare = simulatedTotalStaked !== 0 
+            ? (simulatedStakedBalance / simulatedTotalStaked) * 100 
+            : 0
+
         return {
             // Static data / meta
             kitePrice,
-            simulationMode: false,
+            simulationMode: Boolean(stakingAmount || unstakingAmount),
 
             // Totals section
             totalStaked: {
                 title: 'Total Staked KITE',
                 skiteAmount: Number(stakingStats.totalStaked),
                 usdValue: totalStakedUSD,
-                afterTx: Number(stakingStats.totalStaked), // Will be different in simulation mode
+                afterTx: simulatedTotalStaked,
             },
 
             // My stake section
@@ -48,13 +73,13 @@ export function Overview() {
                 title: 'My Staked KITE',
                 skiteAmount: Number(stakingData.stakedBalance),
                 usdValue: myStakedUSD,
-                afterTx: Number(stakingData.stakedBalance), // Will be different in simulation mode
+                afterTx: simulatedStakedBalance,
             },
 
             // Additional details
             mySkiteShare: myShare,
-            mySkiteShareAfterTx: myShare, // Will be different in simulation mode
-            myStakingAPY: 6.9, // TODO: Calculate real APY
+            mySkiteShareAfterTx: simulatedShare,
+            myStakingAPY: 'N/A', // TODO: Calculate real APY
             myBoostedVaults: 4, // TODO: Get real boosted vaults count
 
             // Boost section
@@ -66,7 +91,7 @@ export function Overview() {
                 current: 1.69,
             },
         }
-    }, [stakingData, stakingStats, loading, kitePrice])
+    }, [stakingData, stakingStats, loading, kitePrice, stakingAmount, unstakingAmount])
 
     if (loading || !stakingSummary) {
         return (
@@ -161,26 +186,26 @@ export function Overview() {
                     })}%`}
                 />
                 <OverviewStat
-                    value={`${formatNumberWithStyle(stakingSummary.myStakingAPY, {
+                    value={'N/A'/*`${formatNumberWithStyle(stakingSummary.myStakingAPY, {
                         minDecimals: 2,
                         maxDecimals: 2,
-                    })}%`}
+                    })}%`*/}
                     label="My Staking APY"
                     tooltip={`Minimum collateral ratio required for opening a new vault. Vaults opened at this ratio will likely be at high risk of liquidation.`}
                 />
 
                 <OverviewStat
-                    value={stakingSummary.myBoostedVaults}
+                    value={'N/A'}//stakingSummary.myBoostedVaults}
                     label="My Boosted Vaults"
                     tooltip={t('stability_fee_tip')}
                 />
                 <OverviewProgressStat
-                    value={stakingSummary.myNetHaiBoost}
+                    value={'N/A'}//stakingSummary.myNetHaiBoost}
                     label="My Net HAI Boost:"
-                    simulatedValue={`${formatNumberWithStyle(stakingSummary.myNetHaiBoostAfterTx, {
+                    simulatedValue={/*`${formatNumberWithStyle(stakingSummary.myNetHaiBoostAfterTx, {
                         minDecimals: 2,
                         maxDecimals: 2,
-                    })}x`}
+                    })}x`*/'N/A'}
                     alert={{ value: 'BOOST', status: Status.POSITIVE }}
                     fullWidth
                     progress={{

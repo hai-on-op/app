@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { ActionState } from '~/utils'
 import { useStoreActions } from '~/store'
 import { handleTransactionError, useEthersSigner } from '~/hooks'
+import { useStakingData } from '~/hooks/useStakingData'
 
 import styled from 'styled-components'
 import { HaiButton, Text } from '~/styles'
@@ -13,14 +14,16 @@ type ConfirmProps = {
     isStaking: boolean
     amount: string
     stakedAmount: string
+    isWithdraw?: boolean
 }
 
-export function Confirm({ onClose, isStaking, amount, stakedAmount }: ConfirmProps) {
+export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw }: ConfirmProps) {
     const signer = useEthersSigner()
     const { 
         popupsModel: popupsActions,
         stakingModel: stakingActions 
     } = useStoreActions((actions) => actions)
+    const { refetchAll } = useStakingData()
 
     const handleConfirm = async () => {
         if (!signer) return
@@ -28,7 +31,7 @@ export function Confirm({ onClose, isStaking, amount, stakedAmount }: ConfirmPro
         popupsActions.setIsWaitingModalOpen(true)
         popupsActions.setWaitingPayload({
             title: 'Waiting For Confirmation',
-            text: isStaking ? 'Stake KITE' : 'Unstake KITE',
+            text: isStaking ? 'Stake KITE' : isWithdraw ? 'Withdraw KITE' : 'Unstake KITE',
             hint: 'Confirm this transaction in your wallet',
             status: ActionState.LOADING,
         })
@@ -36,12 +39,14 @@ export function Confirm({ onClose, isStaking, amount, stakedAmount }: ConfirmPro
         try {
             stakingActions.setTransactionState(ActionState.LOADING)
 
-            console.log('isStaking', isStaking, 'amount', amount)
-
             if (isStaking) {
                 await stakingActions.stake({
                     signer,
                     amount,
+                })
+            } else if (isWithdraw) {
+                await stakingActions.withdraw({
+                    signer
                 })
             } else {
                 await stakingActions.unstake({
@@ -53,6 +58,10 @@ export function Confirm({ onClose, isStaking, amount, stakedAmount }: ConfirmPro
             stakingActions.setTransactionState(ActionState.SUCCESS)
             popupsActions.setIsWaitingModalOpen(false)
             popupsActions.setWaitingPayload({ status: ActionState.NONE })
+            
+            // Refetch all data after successful transaction
+            await refetchAll()
+            
             onClose?.()
         } catch (e: any) {
             stakingActions.setTransactionState(ActionState.ERROR)

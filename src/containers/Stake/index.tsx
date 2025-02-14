@@ -11,8 +11,24 @@ import { Overview } from './Manage/Overview'
 import { ManageStaking } from './Manage/ManageStaking'
 import { StakeActivity } from './Activity'
 
+export type StakingSimulation = {
+    stakingAmount: string
+    unstakingAmount: string
+    setStakingAmount: (amount: string) => void
+    setUnstakingAmount: (amount: string) => void
+}
+
 export function Stake() {
     const [navIndex, setNavIndex] = useState(0)
+    const [stakingAmount, setStakingAmount] = useState('')
+    const [unstakingAmount, setUnstakingAmount] = useState('')
+
+    const simulation: StakingSimulation = {
+        stakingAmount,
+        unstakingAmount,
+        setStakingAmount,
+        setUnstakingAmount
+    }
 
     return (
         <NavContainer
@@ -24,8 +40,8 @@ export function Stake() {
         >
             {navIndex === 0 ? (
                 <BodyGrid>
-                    <Overview />
-                    <ManageStaking />
+                    <Overview simulation={simulation} />
+                    <ManageStaking simulation={simulation} />
                 </BodyGrid>
             ) : (
                 <StakeActivity />

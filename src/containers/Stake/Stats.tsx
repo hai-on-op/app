@@ -74,10 +74,10 @@ export function StakeStats() {
                 ),
             },
             {
-                header: `${formatNumberWithStyle(myBoost, {
+                header: /*`${formatNumberWithStyle(myBoost, {
                     minDecimals: 2,
                     maxDecimals: 2,
-                })}x`,
+                })}x`,*/'N/A',
                 label: 'My Net HAI Boost',
                 tooltip: (
                     <Text>
@@ -102,7 +102,6 @@ export function StakeStats() {
                     <HaiButton 
                         $variant="yellowish" 
                         onClick={() => popupsActions.setIsStakeClaimPopupOpen(true)}
-                        disabled={!stakingData.pendingWithdrawal || stakingData.pendingWithdrawal.status !== 'COMPLETED'}
                     >
                         Claim
                     </HaiButton>

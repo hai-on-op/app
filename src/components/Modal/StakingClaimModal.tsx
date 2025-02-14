@@ -10,33 +10,46 @@ import { useAccount } from 'wagmi'
 import { useState } from 'react'
 import { TokenArray } from '../TokenArray'
 import dayjs from 'dayjs'
+import { useStakingData } from '~/hooks/useStakingData'
+import { ethers } from 'ethers'
 
 export function StakingClaimModal() {
+    const signer = useEthersSigner()
     const {
         popupsModel: { isStakeClaimPopupOpen },
     } = useStoreState((state) => state)
     const {
         popupsModel: { setIsStakeClaimPopupOpen },
+        stakingModel: stakingActions,
     } = useStoreActions((actions) => actions)
+
+    const { userRewards } = useStakingData()
+    const [claiming, setClaiming] = useState(false)
+
+    const onClaim = async () => {
+        if (!signer || claiming) return
+        try {
+            setClaiming(true)
+            await stakingActions.getReward({ signer })
+            setIsStakeClaimPopupOpen(false)
+        } catch (error) {
+            console.error('Failed to claim rewards:', error)
+        } finally {
+            setClaiming(false)
+        }
+    }
 
     if (!isStakeClaimPopupOpen) return null
 
-    const content = [
+    const content = userRewards.map((reward) => (
         <ClaimableAsset
-            key="claimable-asset"
+            key={`reward-${reward.id}`}
             asset="KITE"
-            amount="11052"
-            price={0.321475}
-            claim={{ description: '', createdAt: 1 }}
-        />,
-        <ClaimableAsset
-            key="claimable-asset"
-            asset="OP"
-            amount="11"
-            price={1.2}
-            claim={{ description: '', createdAt: 1 }}
-        />,
-    ]
+            amount={ethers.utils.formatEther(reward.amount)}
+            price={0.321475} // This should come from somewhere else
+            claim={{ description: `Reward Type ${reward.id}`, createdAt: Date.now() }}
+        />
+    ))
 
     return (
         <Modal
@@ -48,8 +61,21 @@ export function StakingClaimModal() {
                     <Text>
                         <strong>Total Estimated Value:</strong>
                         &nbsp;
-                        {formatNumberWithStyle(15.63, { style: 'currency' })}
+                        {formatNumberWithStyle(
+                            userRewards.reduce(
+                                (acc, reward) => acc + parseFloat(ethers.utils.formatEther(reward.amount)) * 0.321475,
+                                0
+                            ),
+                            { style: 'currency' }
+                        )}
                     </Text>
+                    <HaiButton
+                        $variant="yellowish"
+                        onClick={onClaim}
+                        disabled={claiming || !userRewards.length}
+                    >
+                        {claiming ? 'Claiming...' : 'Claim All'}
+                    </HaiButton>
                 </Flex>
             }
         >
@@ -224,7 +250,6 @@ function ClaimableAsset({ asset, amount, price = 0, claim }: ClaimableAssetProps
                             {claim.description}
                         </Text>
                     </>
-                 
 
                     <Text $fontSize="1em" $fontWeight={700}>
                         {formatNumberWithStyle(amount, { maxDecimals: 4 })} {tokenMap[asset] || asset}
@@ -238,15 +263,7 @@ function ClaimableAsset({ asset, amount, price = 0, claim }: ClaimableAssetProps
                     </Text>
                 </Flex>
             </CenteredFlex>
-            <CenteredFlex $column $gap={12}>
-                <HaiButton
-                    $variant="yellowish"
-                    disabled={!signer || status === ActionState.LOADING || status === ActionState.SUCCESS}
-                    onClick={onClaim}
-                >
-                    {status === ActionState.SUCCESS ? 'Claimed' : 'Claim'}
-                </HaiButton>
-            </CenteredFlex>
+            <CenteredFlex $column $gap={12}></CenteredFlex>
         </ClaimableAssetContainer>
     )
 }

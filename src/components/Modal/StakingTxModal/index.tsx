@@ -15,9 +15,10 @@ type StakingTxModalProps = ModalProps & {
     isStaking: boolean
     amount: string
     stakedAmount: string
+    isWithdraw?: boolean
 }
 
-export function StakingTxModal({ isStaking, amount, stakedAmount, ...props }: StakingTxModalProps) {
+export function StakingTxModal({ isStaking, amount, stakedAmount, isWithdraw = false, ...props }: StakingTxModalProps) {
     const [step, setStep] = useState(StakingTxStep.APPROVE)
 
     const content = useMemo(() => {
@@ -25,7 +26,7 @@ export function StakingTxModal({ isStaking, amount, stakedAmount, ...props }: St
             case StakingTxStep.APPROVE:
                 return <Approvals onNext={() => setStep(StakingTxStep.CONFIRM)} isStaking={isStaking} amount={amount} />
             case StakingTxStep.CONFIRM:
-                return <Confirm onClose={props.onClose} isStaking={isStaking} amount={amount} stakedAmount={stakedAmount} />
+                return <Confirm onClose={props.onClose} isStaking={isStaking} amount={amount} stakedAmount={stakedAmount} isWithdraw={isWithdraw} />
         }
     }, [step, props.onClose, isStaking, amount, stakedAmount])
 

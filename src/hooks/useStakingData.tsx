@@ -1,11 +1,12 @@
-import { useMemo } from 'react'
+import { useMemo, useEffect } from 'react'
 import { useAccount } from 'wagmi'
 import { useQuery } from '@apollo/client'
 import { gql } from '@apollo/client'
 import { BigNumber } from 'ethers'
 import { formatEther } from 'ethers/lib/utils'
 
-import { useStoreState } from '~/store'
+import { useStoreState, useStoreActions } from '~/store'
+import { useEthersSigner } from './'
 
 const STAKING_USER_QUERY = gql`
     query GetStakingUser($id: ID!) {
@@ -112,13 +113,35 @@ function formatBigNumber(value: string): string {
 
 export function useStakingData() {
     const { address } = useAccount()
+    const signer = useEthersSigner()
+    const { stakingModel: stakingActions } = useStoreActions((actions) => actions)
+    const cooldownPeriod = useStoreState((state) => state.stakingModel.cooldownPeriod)
+    const userRewards = useStoreState((state) => state.stakingModel.userRewards)
 
-    const { data: userData, loading: userLoading } = useQuery(STAKING_USER_QUERY, {
+    const { data: userData, loading: userLoading, refetch: refetchUser } = useQuery(STAKING_USER_QUERY, {
         variables: { id: address?.toLowerCase() },
         skip: !address,
     })
 
-    const { data: statsData, loading: statsLoading } = useQuery(STAKING_STATS_QUERY)
+    const { data: statsData, loading: statsLoading, refetch: refetchStats } = useQuery(STAKING_STATS_QUERY)
+
+    const refetchAll = async () => {
+        if (signer) {
+            await Promise.all([
+                refetchUser(),
+                refetchStats(),
+                stakingActions.fetchCooldownPeriod({ signer }),
+                stakingActions.fetchUserRewards({ signer })
+            ])
+        }
+    }
+
+    useEffect(() => {
+        if (signer) {
+            stakingActions.fetchCooldownPeriod({ signer })
+            stakingActions.fetchUserRewards({ signer })
+        }
+    }, [signer, stakingActions])
 
     const stakingData = useMemo((): StakingData => {
         if (!userData?.stakingUser) return defaultStakingData
@@ -159,9 +182,14 @@ export function useStakingData() {
         }
     }, [statsData])
 
+    const loading = userLoading || statsLoading
+
     return {
         stakingData,
         stakingStats,
-        loading: userLoading || statsLoading,
+        loading,
+        cooldownPeriod,
+        userRewards,
+        refetchAll
     }
 } 
