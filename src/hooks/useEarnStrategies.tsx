@@ -19,7 +19,7 @@ import {
 import { useStoreState } from '~/store'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { useVelodrome, useVelodromePositions } from './useVelodrome'
-import { useBalance, useMyVaults, useCollateralInfo, useCollateralStats } from '~/hooks'
+import { useBalance, useMyVaults, useCollateralStats } from '~/hooks'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 
 const sortableHeaders: SortableHeader[] = [
