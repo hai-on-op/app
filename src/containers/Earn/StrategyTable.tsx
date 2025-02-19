@@ -72,6 +72,7 @@ export function StrategyTable({
                     const baseTokens = rewards.map(({ token }) => token)
                     const tokens: TokenKey[] =
                         earnPlatform === 'velodrome' ? ['VELO'] : isAPXETH ? [...baseTokens, 'APXETH'] : baseTokens
+
                     return (
                         <Table.Row
                             key={i}
@@ -91,7 +92,11 @@ export function StrategyTable({
                                                 </Text>
                                             </Flex>
                                             <RewardsTokenArray
-                                                tokens={strategyType == 'hold' ? ['HAI'] : tokens}
+                                                tokens={
+                                                    strategyType == 'hold' || strategyType == 'deposit'
+                                                        ? ['HAI']
+                                                        : tokens
+                                                }
                                                 tooltip={
                                                     <EarnEmissionTooltip
                                                         rewards={rewards}
@@ -142,7 +147,9 @@ export function StrategyTable({
                                     content: (
                                         <div style={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
                                             <Text $fontWeight={700}>
-                                                {apy
+                                                {strategyType === 'deposit'
+                                                    ? '40% - 50%'
+                                                    : apy
                                                     ? formatNumberWithStyle(apy, {
                                                           style: 'percent',
                                                           scalingFactor: 100,
@@ -290,6 +297,20 @@ function EarnEmissionTooltip({ rewards, earnPlatform, earnLink, strategyType }: 
                     <Link href={'https://docs.letsgethai.com/detailed/intro/protocol.html'} $align="center">
                         Learn more.
                     </Link>
+                </Text>
+            </Flex>
+        )
+    }
+
+    if (strategyType == 'deposit') {
+        return (
+            <Flex $width="140px" $column $justify="flex-end" $align="flex-start" $gap={4}>
+                <Text $fontWeight={700}>
+                    haiVELO depositors receive rewards in HAI based off the rewards the protocol receives from voting on
+                    Velodrome propotional to their amount of haiVELO deposited.
+                    <br />
+                    <br />
+                    Current APY (40% - 50%) is a rough estimate based on the current Velodrome voting rewards.
                 </Text>
             </Flex>
         )
