@@ -19,7 +19,7 @@ import {
 import { useStoreState } from '~/store'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { useVelodrome, useVelodromePositions } from './useVelodrome'
-import { useBalance } from '~/hooks'
+import { useBalance, useMyVaults, useCollateralInfo, useCollateralStats } from '~/hooks'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 
 const sortableHeaders: SortableHeader[] = [
@@ -49,6 +49,9 @@ export function useEarnStrategies() {
     const { prices: veloPrices } = useVelodromePrices()
 
     const { data, loading, error } = useQuery<{ collateralTypes: QueryCollateralType[] }>(ALL_COLLATERAL_TYPES_QUERY)
+
+    const { rows: myVaults } = useMyVaults()
+
     const {
         data: uniData,
         loading: uniLoading,
@@ -197,10 +200,26 @@ export function useEarnStrategies() {
     const haiBalance = useBalance('HAI')
     const analytics = useAnalytics()
     const {
-        data: { erc20Supply, annualRate },
+        data: { erc20Supply, annualRate, tokenAnalyticsData },
     } = analytics
     const rRateApr = Number(annualRate.raw)
     const rRateApy = Math.pow(1 + rRateApr / 365, 365) - 1
+
+    const collateralStats = useCollateralStats()
+
+    const haiVeloTVL = collateralStats.rows.find((row) => row.token === 'HAIVELO')?.totalCollateral?.usdRaw ?? '0'
+
+    const myHaiVeloParticipation = useMemo(() => {
+        return (
+            (myVaults
+                .filter((vault) => vault.collateralName === 'HAIVELO')
+                .reduce((acc, vault) => {
+                    return acc + parseFloat(vault.collateral)
+                }, 0) *
+                Number(tokenAnalyticsData?.find((token) => token.symbol === 'HAIVELO')?.currentPrice || 0)) /
+            10 ** 18
+        )
+    }, [myVaults])
 
     const specialStrategies = [
         {
@@ -210,6 +229,14 @@ export function useEarnStrategies() {
             apy: rRateApy,
             userPosition: haiBalance?.raw,
             strategyType: 'hold',
+        },
+        {
+            pair: ['HAIVELO'],
+            rewards: [],
+            tvl: haiVeloTVL,
+            apy: '0',
+            userPosition: myHaiVeloParticipation,
+            strategyType: 'deposit',
         },
     ]
 
