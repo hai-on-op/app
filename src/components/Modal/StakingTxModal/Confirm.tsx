@@ -82,7 +82,7 @@ export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw }
                         {
                             label: 'Amount',
                             value: {
-                                current: stakedAmount,
+                                current: Number(stakedAmount).toString(),
                                 after: isStaking
                                     ? (Number(stakedAmount) + Number(amount)).toString()
                                     : (Number(stakedAmount) - Number(amount)).toString(),

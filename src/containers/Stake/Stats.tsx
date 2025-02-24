@@ -97,7 +97,7 @@ export function StakeStats() {
                 ),
                 headerStatus: <RewardsTokenArray tokens={['OP', 'KITE']} hideLabel />,
                 label: 'My Staking Rewards',
-                tooltip: 'Rewards currently voted upon and distributed by DAO approximately once per month.',
+                tooltip: 'Claim your staking rewards. Unclaimed rewards will accure bellow and do not expire.',
                 button: (
                     <HaiButton 
                         $variant="yellowish" 

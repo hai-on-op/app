@@ -190,9 +190,9 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                         <Link href="/stake" $textDecoration="none">
                                             <HeaderLink $active={location.pathname === '/stake'}>STAKE</HeaderLink>
                                         </Link>
-                                        <Link href="/learn" $textDecoration="none">
+                                        {/* <Link href="/learn" $textDecoration="none">
                                             <HeaderLink $active={location.pathname === '/learn'}>LEARN</HeaderLink>
-                                        </Link>
+                                        </Link> */}
                                     </>
                                 )
                             ))}

@@ -105,6 +105,13 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
         })
     }, [withdrawActive, toggleModal])
 
+    console.log(
+        'CHecking this: ',
+        Number(unstakingAmount),
+        Number(stakingData.stakedBalance),
+        Number(stakingAmount) > Number(kiteBalance.raw)
+    )
+
     if (stakingDataLoading) {
         return (
             <Container>
@@ -177,7 +184,7 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                     <NumberInput
                         label={
                             <CenteredFlex $gap={8}>
-                                <CheckBox checked={!isWithdraw} size={14} />
+                                <CheckBox checked={!!stakingAmount && Number(stakingAmount) > 0} size={14} />
                                 <Text>Stake</Text>
                             </CenteredFlex>
                         }
@@ -206,7 +213,7 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                     <NumberInput
                         label={
                             <CenteredFlex $gap={8}>
-                                <CheckBox checked={!isWithdraw} size={14} />
+                                <CheckBox checked={!!unstakingAmount && Number(unstakingAmount) > 0} size={14} />
                                 <Text>Unstake</Text>
                             </CenteredFlex>
                         }
@@ -289,7 +296,11 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                         $variant="yellowish"
                         $width="100%"
                         $justify="center"
-                        disabled={Number(stakingAmount) <= 0 && Number(unstakingAmount) <= 0}
+                        disabled={
+                            (Number(stakingAmount) <= 0 && Number(unstakingAmount) <= 0) ||
+                            Number(stakingAmount) > Number(kiteBalance.raw) ||
+                            Number(unstakingAmount) > Number(stakingData.stakedBalance)
+                        }
                         onClick={() => setReviewActive(true)}
                     >
                         {isUnStaking ? 'Unstake' : 'Stake'}

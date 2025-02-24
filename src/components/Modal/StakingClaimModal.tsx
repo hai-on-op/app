@@ -5,7 +5,7 @@ import { ActionState, formatNumberWithStyle, tokenMap, wait, isFormattedAddress,
 import styled from 'styled-components'
 import { ContentWithStatus } from '../ContentWithStatus'
 import type { IAuction } from '~/types'
-import { useEthersSigner } from '~/hooks'
+import { handleTransactionError, useEthersSigner } from '~/hooks'
 import { useAccount } from 'wagmi'
 import { useState } from 'react'
 import { TokenArray } from '../TokenArray'
@@ -19,21 +19,41 @@ export function StakingClaimModal() {
         popupsModel: { isStakeClaimPopupOpen },
     } = useStoreState((state) => state)
     const {
-        popupsModel: { setIsStakeClaimPopupOpen },
+        popupsModel: { setIsStakeClaimPopupOpen, setIsWaitingModalOpen, setWaitingPayload },
         stakingModel: stakingActions,
     } = useStoreActions((actions) => actions)
 
-    const { userRewards } = useStakingData()
+    const { userRewards, refetchAll } = useStakingData()
     const [claiming, setClaiming] = useState(false)
 
     const onClaim = async () => {
         if (!signer || claiming) return
         try {
             setClaiming(true)
+            
+            setIsWaitingModalOpen(true)
+            setWaitingPayload({
+                title: 'Waiting For Confirmation',
+                text: 'Claim Rewards',
+                hint: 'Confirm this transaction in your wallet',
+                status: ActionState.LOADING,
+            })
+
+            stakingActions.setTransactionState(ActionState.LOADING)
             await stakingActions.getReward({ signer })
+            
+            stakingActions.setTransactionState(ActionState.SUCCESS)
+            setIsWaitingModalOpen(false)
+            setWaitingPayload({ status: ActionState.NONE })
+            
+            // Refetch all data after successful claim
+            await refetchAll()
+            
             setIsStakeClaimPopupOpen(false)
         } catch (error) {
             console.error('Failed to claim rewards:', error)
+            stakingActions.setTransactionState(ActionState.ERROR)
+            handleTransactionError(error)
         } finally {
             setClaiming(false)
         }
