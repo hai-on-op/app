@@ -115,6 +115,5 @@
     "lint-staged": {
         "src/**/*.{js,jsx,ts,tsx}": "eslint --cache --fix",
         "src/**/*.{js,jsx,ts,tsx,css,scss,md,html}": "prettier --write --ignore-unknown"
-    },
-    "packageManager": "yarn@1.22.19"
+    }
 }
