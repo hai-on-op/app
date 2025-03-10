@@ -18,24 +18,30 @@ export function Slider({ min, max, step = 1, value, onChange, disabled }: Slider
 
     const progress = (value - min) / (max - min)
 
-    const updateValue = useCallback((clientX: number) => {
-        if (!containerRef.current) return
+    const updateValue = useCallback(
+        (clientX: number) => {
+            if (!containerRef.current) return
 
-        const rect = containerRef.current.getBoundingClientRect()
-        const x = clientX - rect.left
-        const percentage = clamp(x / rect.width, 0, 1)
-        const rawValue = min + (max - min) * percentage
-        const steppedValue = Math.round(rawValue / step) * step
-        const clampedValue = clamp(steppedValue, min, max)
-        
-        onChange(clampedValue)
-    }, [min, max, step, onChange])
+            const rect = containerRef.current.getBoundingClientRect()
+            const x = clientX - rect.left
+            const percentage = clamp(x / rect.width, 0, 1)
+            const rawValue = min + (max - min) * percentage
+            const steppedValue = Math.round(rawValue / step) * step
+            const clampedValue = clamp(steppedValue, min, max)
 
-    const handleMouseDown = useCallback((e: React.MouseEvent) => {
-        if (disabled) return
-        setIsDragging(true)
-        updateValue(e.clientX)
-    }, [disabled, updateValue])
+            onChange(clampedValue)
+        },
+        [min, max, step, onChange]
+    )
+
+    const handleMouseDown = useCallback(
+        (e: React.MouseEvent) => {
+            if (disabled) return
+            setIsDragging(true)
+            updateValue(e.clientX)
+        },
+        [disabled, updateValue]
+    )
 
     useEffect(() => {
         if (!isDragging) return
@@ -58,11 +64,7 @@ export function Slider({ min, max, step = 1, value, onChange, disabled }: Slider
     }, [isDragging, updateValue])
 
     return (
-        <Container
-            ref={containerRef}
-            onMouseDown={handleMouseDown}
-            $disabled={disabled}
-        >
+        <Container ref={containerRef} onMouseDown={handleMouseDown} $disabled={disabled}>
             <Inner>
                 <Bar $progress={progress} />
                 <Handle $progress={progress} $active={isDragging} />
@@ -124,4 +126,4 @@ const Handle = styled.div<{ $progress: number; $active: boolean }>`
     &:hover {
         transform: translate(-50%, -50%) scale(1.2);
     }
-` 
+`

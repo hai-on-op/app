@@ -5,8 +5,8 @@ import { CollateralList } from './CollateralList'
 export function Analytics() {
     return (
         <>
-            <HaiPerformance />
             <Numbers />
+            <HaiPerformance />
             <CollateralList />
         </>
     )

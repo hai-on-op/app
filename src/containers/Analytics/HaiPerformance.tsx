@@ -3,7 +3,7 @@ import { formatNumberWithStyle } from '~/utils'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 
 import styled from 'styled-components'
-import { BlurContainer, CenteredFlex, DashedContainerStyle, Flex, Grid, Text, type FlexProps, FlexStyle } from '~/styles'
+import { BlurContainer, CenteredFlex, Flex, Grid, Text, type FlexProps, FlexStyle } from '~/styles'
 import { BrandedTitle } from '~/components/BrandedTitle'
 import { Stat, Stats } from '~/components/Stats'
 import { LineChart } from '~/components/Charts/Line'
@@ -16,7 +16,7 @@ import { Slider } from '~/components/Slider'
 
 export function HaiPerformance() {
     const { haiPricePerformance, haiMarketPrice } = useAnalytics()
-    const { day30, day60, day90, priceHistory, loading } = haiPricePerformance
+    const { day30, day60, day90, priceHistory } = haiPricePerformance
 
     // Calculator state
     const [calculatorAmount, setCalculatorAmount] = useState<string>('1000')
@@ -31,23 +31,25 @@ export function HaiPerformance() {
         const prices = validPrices.map(({ price }) => price)
         const min = Math.min(...prices)
         const max = Math.max(...prices)
-        
+
         // Add some padding to the bounds (10%)
         const padding = (max - min) * 0.1
         const yMin = Math.max(0, Math.floor((min - padding) * 100) / 100)
         const yMax = Math.ceil((max + padding) * 100) / 100
 
         return [
-            [{
-                id: 'HAI Price (USD)',
-                color: 'hsl(49, 84%, 68%)',
-                data: validPrices.map(({ timestamp, price }) => ({
-                    x: new Date(timestamp * 1000),
-                    y: price,
-                })),
-            }],
+            [
+                {
+                    id: 'HAI Price (USD)',
+                    color: 'hsl(49, 84%, 68%)',
+                    data: validPrices.map(({ timestamp, price }) => ({
+                        x: new Date(timestamp * 1000),
+                        y: price,
+                    })),
+                },
+            ],
             yMin,
-            yMax
+            yMax,
         ]
     }, [priceHistory])
 
@@ -77,7 +79,7 @@ export function HaiPerformance() {
     }, [priceHistory, calculatorAmount, calculatorDays, haiMarketPrice])
 
     return (
-        <Container>
+        <Container id="hai-performance">
             <Section>
                 <BrandedTitle textContent="HAI PERFORMANCE" $fontSize="3rem" />
                 <SectionHeader>PRICE TRENDS</SectionHeader>
@@ -134,18 +136,13 @@ export function HaiPerformance() {
 
                         <FormGroup>
                             <FormLabel>Time Period: {calculatorDays} days ago</FormLabel>
-                            <Slider 
-                                min={7} 
-                                max={90} 
-                                step={1} 
-                                value={calculatorDays} 
-                                onChange={setCalculatorDays}
-                            />
+                            <Slider min={7} max={90} step={1} value={calculatorDays} onChange={setCalculatorDays} />
                         </FormGroup>
-
-                        <HaiButton $variant="yellowish" onClick={() => setCalculatorDays(30)}>
-                            Reset
-                        </HaiButton>
+                        <div style={{ maxWidth: '100px' }}>
+                            <HaiButton $variant="yellowish" onClick={() => setCalculatorDays(30)}>
+                                Reset
+                            </HaiButton>
+                        </div>
                     </CalculatorInputs>
 
                     <CalculatorResults>
@@ -226,6 +223,7 @@ const Container = styled(BlurContainer).attrs((props) => ({
     ...props,
 }))`
     padding: 48px;
+    scroll-margin-top: 150px;
     & > * {
         padding: 0px;
     }
@@ -276,7 +274,7 @@ const CalculatorContainer = styled(Grid)`
     background-color: ${({ theme }) => theme.colors.background};
     border-radius: 24px;
     border: ${({ theme }) => theme.border.medium};
-    
+
     ${({ theme }) => theme.mediaWidth.upToMedium`
         grid-template-columns: 1fr;
     `}

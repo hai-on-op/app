@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState } from 'react'
+import { createContext, useContext, useMemo } from 'react'
 import { useQuery } from '@apollo/client'
 import { gql } from '@apollo/client'
 
@@ -11,13 +11,13 @@ import { type PoolAnalytics, usePoolAnalytics } from './usePoolAnalytics'
 
 // Add this query to fetch historical price data
 const HAI_PRICE_HISTORY_QUERY = gql`
-  query GetHaiPriceHistory {
-    dailyStats(orderBy: timestamp, orderDirection: desc, first: 1000) {
-      id
-      timestamp
-      marketPriceUsd
+    query GetHaiPriceHistory {
+        dailyStats(orderBy: timestamp, orderDirection: desc, first: 1000) {
+            id
+            timestamp
+            marketPriceUsd
+        }
     }
-  }
 `
 
 type AnalyticsContext = {
@@ -33,7 +33,7 @@ type AnalyticsContext = {
         day30: number
         day60: number
         day90: number
-        priceHistory: Array<{ timestamp: number, price: number }>
+        priceHistory: Array<{ timestamp: number; price: number }>
         loading: boolean
     }
 }
@@ -70,8 +70,8 @@ const defaultState: AnalyticsContext = {
         day60: 0,
         day90: 0,
         priceHistory: [],
-        loading: true
-    }
+        loading: true,
+    },
 }
 
 const AnalyticsContext = createContext<AnalyticsContext>(defaultState)
@@ -96,11 +96,11 @@ export function AnalyticsProvider({ children }: Props) {
 
     // Add the price history query
     const { data: priceHistoryData, loading: priceHistoryLoading } = useQuery(HAI_PRICE_HISTORY_QUERY)
-    
+
     // Fix type error and improve price finding logic
     type PricePoint = {
-        timestamp: number;
-        price: number;
+        timestamp: number
+        price: number
     }
 
     const findNearestPrice = (priceHistory: PricePoint[], targetTimestamp: number) => {
@@ -113,37 +113,37 @@ export function AnalyticsProvider({ children }: Props) {
         if (!priceHistoryData?.dailyStats) {
             return defaultState.haiPricePerformance
         }
-        
+
         const priceHistory = priceHistoryData.dailyStats
             .map((stat: any) => ({
                 timestamp: Number(stat.timestamp),
-                price: Number(stat.marketPriceUsd)
+                price: Number(stat.marketPriceUsd),
             }))
             .filter((point: PricePoint) => point.price > 0)
             .sort((a: PricePoint, b: PricePoint) => a.timestamp - b.timestamp)
-        
+
         const currentPrice = priceHistory[priceHistory.length - 1]?.price || 0
         const now = Math.floor(Date.now() / 1000)
-        
+
         // Find prices nearest to 30, 60, and 90 days ago
         const day30ago = now - 30 * 24 * 60 * 60
         const day60ago = now - 60 * 24 * 60 * 60
         const day90ago = now - 90 * 24 * 60 * 60
-        
+
         const price30DaysAgo = findNearestPrice(priceHistory, day30ago)
         const price60DaysAgo = findNearestPrice(priceHistory, day60ago)
         const price90DaysAgo = findNearestPrice(priceHistory, day90ago)
-        
+
         const calcPercentChange = (oldPrice: number, newPrice: number) => {
             return oldPrice ? ((newPrice - oldPrice) / oldPrice) * 100 : 0
         }
-        
+
         return {
             day30: calcPercentChange(price30DaysAgo, currentPrice),
             day60: calcPercentChange(price60DaysAgo, currentPrice),
             day90: calcPercentChange(price90DaysAgo, currentPrice),
             priceHistory,
-            loading: priceHistoryLoading
+            loading: priceHistoryLoading,
         }
     }, [priceHistoryData, priceHistoryLoading])
 
@@ -158,7 +158,7 @@ export function AnalyticsProvider({ children }: Props) {
                 redemptionRateHistory,
                 pools,
                 haiMarketPrice,
-                haiPricePerformance
+                haiPricePerformance,
             }}
         >
             {children}
