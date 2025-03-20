@@ -65,13 +65,11 @@ export function StrategyTable({
             compactQuery="upToMedium"
             rows={rows.map(
                 ({ pair, rewards, tvl, apy, userPosition, earnPlatform, earnAddress, earnLink, strategyType }, i) => {
-                    const LSTS = ['RETH', 'APXETH', 'WSTETH']
-                    const isLST = LSTS.includes(pair[0])
-                    const isAPXETH = pair.includes('APXETH')
-                    const isPXETH = pair.includes('PXETH')
-                    const baseTokens = rewards.map(({ token }) => token)
-                    const tokens: TokenKey[] =
-                        earnPlatform === 'velodrome' ? ['VELO'] : isAPXETH ? [...baseTokens, 'APXETH'] : baseTokens
+                    // const LSTS = ['RETH', 'APXETH', 'WSTETH']
+                    // const isLST = LSTS.includes(pair[0])
+                    // const isAPXETH = pair.includes('APXETH')
+                    // const baseTokens = rewards.map(({ token }) => token)
+                    const tokens: TokenKey[] = earnPlatform === 'velodrome' ? ['VELO'] : ['OP']
 
                     return (
                         <Table.Row
@@ -158,7 +156,7 @@ export function StrategyTable({
                                                       })
                                                     : '-'}
                                             </Text>
-                                            {(isAPXETH || isPXETH) && (
+                                            {/* {(isAPXETH || isPXETH) && (
                                                 <BoostBadge>
                                                     <Flex $justify="flex-start" $align="center">
                                                         <img src={dineroLogo} alt="" width={18} height={18} />
@@ -174,8 +172,8 @@ export function StrategyTable({
                                                         </Tooltip>
                                                     </Text>
                                                 </BoostBadge>
-                                            )}
-                                            {isLST && (
+                                            )} */}
+                                            {/* {isLST && (
                                                 <BoostBadge>
                                                     <IconContainer $size={18}>
                                                         <img
@@ -200,7 +198,7 @@ export function StrategyTable({
                                                         </Tooltip>
                                                     </Text>
                                                 </BoostBadge>
-                                            )}
+                                            )} */}
                                         </div>
                                     ),
                                 },
