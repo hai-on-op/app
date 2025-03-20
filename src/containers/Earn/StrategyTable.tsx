@@ -1,7 +1,7 @@
 import type { SetState, SortableHeader, Sorting, Strategy, TokenKey } from '~/types'
 import { formatNumberWithStyle } from '~/utils'
 import styled from 'styled-components'
-import { Flex, Grid, Text, HaiButton } from '~/styles'
+import { Flex, Grid, Text } from '~/styles'
 import { RewardsTokenArray, TokenArray } from '~/components/TokenArray'
 import { StrategyTableButton } from './StrategyTableButton'
 import { Table } from '~/components/Table'
