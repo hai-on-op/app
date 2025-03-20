@@ -23,6 +23,8 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
 
     const isUpToSmall = useMediaQuery('upToSmall')
 
+    const pausedRewards = ['APXETH', 'PXETH', 'RETH', 'WSTETH', 'OP', 'TBTC']
+
     return (
         <Table
             container={StyledTableContainer}
@@ -47,6 +49,14 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                         eligibleBalance,
                         myVaults: existingVaults,
                     }) => {
+                        console.log('collateralName', collateralName)
+                        console.log('hasRewards', hasRewards)
+                        const rewardOverride = collateralName == 'HAIVELO'
+
+                        const tooltip =
+                            collateralName == 'HAIVELO'
+                                ? 'haiVELO depositors receive rewards in HAI based off the rewards the protocol receives from voting on Velodrome propotional to their amount of haiVELO deposited.'
+                                : 'Earn OP by providing Liquitity'
                         return (
                             <Table.Row
                                 key={collateralName}
@@ -61,17 +71,12 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                                     label={collateralLabel}
                                                     tokens={[collateralName.toUpperCase() as any]}
                                                 />
-                                                {hasRewards && (
+                                                {((hasRewards && !pausedRewards.includes(collateralName)) ||
+                                                    rewardOverride) && (
                                                     <RewardsTokenArray
-                                                        tokens={
-                                                            collateralName === 'APXETH'
-                                                                ? ['OP', 'KITE', 'DINERO']
-                                                                : ['OP', 'KITE']
-                                                        }
+                                                        tokens={collateralName === 'HAIVELO' ? ['HAI'] : ['OP']}
                                                         label="EARN"
-                                                        tooltip={`Earn OP/KITE${
-                                                            collateralName === 'APXETH' ? '/DINERO' : ''
-                                                        } tokens by minting HAI and providing liquidity`}
+                                                        tooltip={tooltip}
                                                     />
                                                 )}
                                             </Grid>

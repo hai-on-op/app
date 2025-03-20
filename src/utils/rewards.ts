@@ -1,27 +1,27 @@
 export const REWARDS = {
     vaults: {
         WETH: {
-            KITE: 10,
+            KITE: 0,
             OP: 0,
         },
         WSTETH: {
-            KITE: 20,
-            OP: 10,
+            KITE: 0,
+            OP: 0,
         },
         APXETH: {
-            KITE: 50,
-            OP: 50,
+            KITE: 0,
+            OP: 0,
         },
         RETH: {
-            KITE: 20,
-            OP: 10,
+            KITE: 0,
+            OP: 0,
         },
         OP: {
-            KITE: 10,
+            KITE: 0,
             OP: 0,
         },
         TBTC: {
-            KITE: 10,
+            KITE: 0,
             OP: 0,
         },
         SNX: {
@@ -29,7 +29,7 @@ export const REWARDS = {
             OP: 0,
         },
         HAIVELO: {
-            KITE: 10,
+            KITE: 0,
             OP: 0,
         },
 
@@ -39,54 +39,54 @@ export const REWARDS = {
             OP: 0,
         },
         STN: {
-            KITE: 20,
-            OP: 20,
+            KITE: 0,
+            OP: 0,
         },
         TTM: {
-            KITE: 30,
-            OP: 30,
+            KITE: 0,
+            OP: 0,
         },
     },
     uniswap: {
         ['0x146b020399769339509c98b7b353d19130c150ec'.toLowerCase()]: {
-            KITE: 25,
-            OP: 75,
+            KITE: 0,
+            OP: 100,
         },
     },
     velodrome: {
         // sAMMV2-HAI/sUSD
         ['0xbdED651C03E2bC332AA49C1ffCa391eAA3ea6B86'.toLowerCase()]: {
-            KITE: 15,
-            OP: 35,
+            KITE: 0,
+            OP: 0,
         },
         // sAMMV2-HAI/LUSD
         ['0x588f26d5BefE74dC61694a7B36227C0e0C52C0f9'.toLowerCase()]: {
-            KITE: 15,
-            OP: 50,
+            KITE: 0,
+            OP: 0,
         },
         // CL50-HAI/LUSD
         ['0xA61FBA486e2d04C4D865183A47fc1C9F6F4Cec1f'.toLowerCase()]: {
-            KITE: 15,
-            OP: 50,
+            KITE: 0,
+            OP: 0,
         },
         // vAMMV2-KITE/HAI
         ['0xf2d3941b6E1cbD3616061E556Eb06986147715d1'.toLowerCase()]: {
-            KITE: 25,
-            OP: 25,
+            KITE: 0,
+            OP: 100,
         },
         // vAMMV2-KITE/OP
         ['0xf4638dC488F9C826DC40250515592E678E447238'.toLowerCase()]: {
-            KITE: 25,
+            KITE: 0,
             OP: 0,
         },
         // vAMMV2-pxETH/HAI
         ['0xD5fE49a4c0Fc482Ee757DF703A3a332DB209aC2e'.toLowerCase()]: {
-            KITE: 25,
-            OP: 75,
+            KITE: 0,
+            OP: 0,
         },
         // vAMM-HAI/rETH
         ['0x4cE1d27d824062B159D000e3212B2F5106792C34'.toLowerCase()]: {
-            KITE: 35,
+            KITE: 0,
             OP: 0,
         },
         // vAMMV2-SAIL/KITE

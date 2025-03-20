@@ -1,11 +1,7 @@
 import type { SetState, SortableHeader, Sorting, Strategy, TokenKey } from '~/types'
 import { formatNumberWithStyle } from '~/utils'
-import { IconContainer } from '~/components/TokenArray'
 import styled from 'styled-components'
-import { Flex, Grid, Text, HaiButton } from '~/styles'
-import dineroLogo from '~/assets/dinero-img.svg'
-import kiteImg from '~/assets/kite-img.svg'
-import { Tooltip } from '~/components/Tooltip'
+import { Flex, Grid, Text } from '~/styles'
 import { RewardsTokenArray, TokenArray } from '~/components/TokenArray'
 import { StrategyTableButton } from './StrategyTableButton'
 import { Table } from '~/components/Table'
@@ -24,24 +20,24 @@ type StrategyTableProps = {
     setSorting: SetState<Sorting>
 }
 
-const BoostBadge = styled(HaiButton)`
-    height: 48px;
-    border: 2px solid rgba(0, 0, 0, 0.1);
-    margin-left: 8px;
-    padding: 2px 8px;
-    font-size: 0.8rem;
-    background-color: white;
-    border-radius: 999px;
-    height: 26px;
-    cursor: default;
+// const BoostBadge = styled(HaiButton)`
+//     height: 48px;
+//     border: 2px solid rgba(0, 0, 0, 0.1);
+//     margin-left: 8px;
+//     padding: 2px 8px;
+//     font-size: 0.8rem;
+//     background-color: white;
+//     border-radius: 999px;
+//     height: 26px;
+//     cursor: default;
 
-    & > *:nth-child(2) {
-    }
+//     & > *:nth-child(2) {
+//     }
 
-    ${({ theme }) => theme.mediaWidth.upToSmall`
-        width: fit-content;
-    `}
-`
+//     ${({ theme }) => theme.mediaWidth.upToSmall`
+//         width: fit-content;
+//     `}
+// `
 
 export function StrategyTable({
     headers,
@@ -65,13 +61,11 @@ export function StrategyTable({
             compactQuery="upToMedium"
             rows={rows.map(
                 ({ pair, rewards, tvl, apy, userPosition, earnPlatform, earnAddress, earnLink, strategyType }, i) => {
-                    const LSTS = ['RETH', 'APXETH', 'WSTETH']
-                    const isLST = LSTS.includes(pair[0])
-                    const isAPXETH = pair.includes('APXETH')
-                    const isPXETH = pair.includes('PXETH')
-                    const baseTokens = rewards.map(({ token }) => token)
-                    const tokens: TokenKey[] =
-                        earnPlatform === 'velodrome' ? ['VELO'] : isAPXETH ? [...baseTokens, 'APXETH'] : baseTokens
+                    // const LSTS = ['RETH', 'APXETH', 'WSTETH']
+                    // const isLST = LSTS.includes(pair[0])
+                    // const isAPXETH = pair.includes('APXETH')
+                    // const baseTokens = rewards.map(({ token }) => token)
+                    const tokens: TokenKey[] = earnPlatform === 'velodrome' ? ['VELO'] : ['OP']
 
                     return (
                         <Table.Row
@@ -158,7 +152,7 @@ export function StrategyTable({
                                                       })
                                                     : '-'}
                                             </Text>
-                                            {(isAPXETH || isPXETH) && (
+                                            {/* {(isAPXETH || isPXETH) && (
                                                 <BoostBadge>
                                                     <Flex $justify="flex-start" $align="center">
                                                         <img src={dineroLogo} alt="" width={18} height={18} />
@@ -174,8 +168,8 @@ export function StrategyTable({
                                                         </Tooltip>
                                                     </Text>
                                                 </BoostBadge>
-                                            )}
-                                            {isLST && (
+                                            )} */}
+                                            {/* {isLST && (
                                                 <BoostBadge>
                                                     <IconContainer $size={18}>
                                                         <img
@@ -200,7 +194,7 @@ export function StrategyTable({
                                                         </Tooltip>
                                                     </Text>
                                                 </BoostBadge>
-                                            )}
+                                            )} */}
                                         </div>
                                     ),
                                 },
