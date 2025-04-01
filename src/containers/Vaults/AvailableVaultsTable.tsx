@@ -11,7 +11,7 @@ import { RewardsTokenArray, TokenArray } from '~/components/TokenArray'
 import { Tooltip } from '~/components/Tooltip'
 import { HaiArrow } from '~/components/Icons/HaiArrow'
 import { Table, TableContainer } from '~/components/Table'
-
+import { DEPRECATED_COLLATERALS } from '~/utils/constants'
 type AvailableVaultsTableProps = {
     rows: AvailableVaultPair[]
     headers: SortableHeader[]
@@ -38,7 +38,7 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                 .sort((a, b) => {
                     return Number(b.hasRewards) - Number(a.hasRewards)
                 })
-                .filter((row) => row.collateralName !== 'WBTC')
+                .filter((row) => !DEPRECATED_COLLATERALS.includes(row.collateralName))
                 .map(
                     ({
                         collateralName,
@@ -49,8 +49,6 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                         eligibleBalance,
                         myVaults: existingVaults,
                     }) => {
-                        console.log('collateralName', collateralName)
-                        console.log('hasRewards', hasRewards)
                         const rewardOverride = collateralName == 'HAIVELO'
 
                         const tooltip =

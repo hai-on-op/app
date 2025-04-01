@@ -2304,10 +2304,10 @@
     forge-std "https://github.com/foundry-rs/forge-std.git#155d547c449afa8715f538d69454b83944117811"
     typechain "^8.3.2"
 
-"@hai-on-op/sdk@1.2.24":
-  version "1.2.24"
-  resolved "https://registry.yarnpkg.com/@hai-on-op/sdk/-/sdk-1.2.24.tgz#5ffbdcbf9e91d66fc298e15b1653bed2f83ac933"
-  integrity sha512-Zm94I25wVfYM1SiNeI7BtCPlhvA5bDQsM4plxfd0ywTwG2Hrwx40EBuxY5VMchYy8+LjQLIjUsOtwqu2LtJKMw==
+"@hai-on-op/sdk@1.2.25":
+  version "1.2.25"
+  resolved "https://registry.yarnpkg.com/@hai-on-op/sdk/-/sdk-1.2.25.tgz#897275c82e0943fc549cb48f996e30c639897612"
+  integrity sha512-0g36DPQutNZX+M4Igf0Yo1AMkFMTABSLAdWt9BOG26BJdRan/LNib5s5i7i9YBUJ/ZdVcFcrW1yVx5rCOvqSsA==
   dependencies:
     "@hai-on-op/abis" "1.0.7"
     ethers "5.4.7"

@@ -13,6 +13,7 @@ import { AvailableVaultsTable } from './AvailableVaultsTable'
 import { MyVaultsTable } from './MyVaultsTable'
 import { SortByDropdown } from '~/components/SortByDropdown'
 import { CollateralDropdown } from '~/components/CollateralDropdown'
+import { DEPRECATED_COLLATERALS } from '~/utils/constants'
 
 const strategies: StrategyAdProps[] = [
     // {
