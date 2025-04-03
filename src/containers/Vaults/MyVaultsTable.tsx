@@ -48,8 +48,24 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                 } = vault
 
                 const hasFreeCollateral = freeCollateral !== '0.0'
-                const hasNoRewards = ['SNX', 'LUSD-A', 'LINK', 'VELO', 'WBTC', 'MOO-VELO-V2-OP-VELO']
+                const hasNoRewards = [
+                    'SNX',
+                    'LUSD-A',
+                    'LINK',
+                    'VELO',
+                    'WBTC',
+                    'MOO-VELO-V2-OP-VELO',
+                    'RETH',
+                    'WSTETH',
+                    'APXETH',
+                    'TBTC',
+                    'OP',
+                ]
                 const collateralLabel = formatCollateralLabel(collateralName)
+                const tooltip =
+                    collateralName == 'HAIVELO'
+                        ? 'haiVELO depositors receive rewards in HAI based off the rewards the protocol receives from voting on Velodrome propotional to their amount of haiVELO deposited.'
+                        : 'Earn OP by providing Liquitity'
                 return (
                     <Table.Row
                         key={id}
@@ -66,15 +82,9 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                                         </CenteredFlex>
                                         {hasNoRewards.includes(collateralName) ? null : (
                                             <RewardsTokenArray
-                                                tokens={
-                                                    collateralName === 'APXETH'
-                                                        ? ['OP', 'KITE', 'DINERO']
-                                                        : ['OP', 'KITE']
-                                                }
+                                                tokens={collateralName === 'WETH' ? ['OP'] : ['HAI']}
                                                 label="EARN"
-                                                tooltip={`Earn OP/KITE${
-                                                    collateralName === 'APXETH' ? '/DINERO' : ''
-                                                } tokens by minting HAI and providing liquidity`}
+                                                tooltip={tooltip}
                                             />
                                         )}
                                         {hasFreeCollateral && <ClaimableFreeCollateral vault={vault} />}

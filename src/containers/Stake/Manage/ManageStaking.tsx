@@ -240,7 +240,7 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                         style={!isWithdraw ? undefined : { opacity: 0.4 }}
                     />
                     <Text $fontSize="0.85em" $color="rgba(0,0,0,0.85)">
-                        sKITE has a 21 day cooldown period after unstaking.
+                        stKITE has a 7 day cooldown period after unstaking.
                     </Text>
                     {pendingWithdrawal && (
                         <div

@@ -5,8 +5,10 @@ import { Status, VaultAction, formatNumberWithStyle } from '~/utils'
 import { useStoreState } from '~/store'
 import { useVault } from '~/providers/VaultProvider'
 import { useEarnStrategies } from '~/hooks'
+import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { useStakingData } from '~/hooks/useStakingData'
 import { Loader } from '~/components/Loader'
+import { ComingSoon } from '~/components/ComingSoon'
 
 import styled from 'styled-components'
 import { type DashedContainerProps, DashedContainerStyle, Flex, Grid, Text, CenteredFlex } from '~/styles'
@@ -31,29 +33,33 @@ export function Overview({ simulation }: OverviewProps) {
     const { t } = useTranslation()
     const { stakingData, stakingStats, loading } = useStakingData()
 
-    const kitePrice = 10.0 // TODO: Get real KITE price from somewhere
+    const { prices: veloPrices } = useVelodromePrices()
+
+    const kitePrice = veloPrices?.KITE.raw
+
+    // const kitePrice = 10.0 // TODO: Get real KITE price from somewhere
+
+    console.log('stakingData', stakingData)
+    console.log('stakingStats', stakingStats)
 
     const stakingSummary = useMemo(() => {
         if (loading) return null
 
         const totalStakedUSD = Number(stakingStats.totalStaked) * kitePrice
         const myStakedUSD = Number(stakingData.stakedBalance) * kitePrice
-        const myShare = stakingStats.totalStaked !== '0' 
-            ? (Number(stakingData.stakedBalance) / Number(stakingStats.totalStaked)) * 100 
-            : 0
+        const myShare =
+            stakingStats.totalStaked !== '0'
+                ? (Number(stakingData.stakedBalance) / Number(stakingStats.totalStaked)) * 100
+                : 0
 
         // Calculate simulated values
-        const simulatedStakedBalance = Number(stakingData.stakedBalance) + 
-            (Number(stakingAmount) || 0) - 
-            (Number(unstakingAmount) || 0)
-        
-        const simulatedTotalStaked = Number(stakingStats.totalStaked) + 
-            (Number(stakingAmount) || 0) - 
-            (Number(unstakingAmount) || 0)
+        const simulatedStakedBalance =
+            Number(stakingData.stakedBalance) + (Number(stakingAmount) || 0) - (Number(unstakingAmount) || 0)
 
-        const simulatedShare = simulatedTotalStaked !== 0 
-            ? (simulatedStakedBalance / simulatedTotalStaked) * 100 
-            : 0
+        const simulatedTotalStaked =
+            Number(stakingStats.totalStaked) + (Number(stakingAmount) || 0) - (Number(unstakingAmount) || 0)
+
+        const simulatedShare = simulatedTotalStaked !== 0 ? (simulatedStakedBalance / simulatedTotalStaked) * 100 : 0
 
         return {
             // Static data / meta
@@ -63,7 +69,7 @@ export function Overview({ simulation }: OverviewProps) {
             // Totals section
             totalStaked: {
                 title: 'Total Staked KITE',
-                skiteAmount: Number(stakingStats.totalStaked),
+                stKiteAmount: Number(stakingStats.totalStaked),
                 usdValue: totalStakedUSD,
                 afterTx: simulatedTotalStaked,
             },
@@ -71,14 +77,14 @@ export function Overview({ simulation }: OverviewProps) {
             // My stake section
             myStaked: {
                 title: 'My Staked KITE',
-                skiteAmount: Number(stakingData.stakedBalance),
+                stKiteAmount: Number(stakingData.stakedBalance),
                 usdValue: myStakedUSD,
                 afterTx: simulatedStakedBalance,
             },
 
             // Additional details
-            mySkiteShare: myShare,
-            mySkiteShareAfterTx: simulatedShare,
+            myStKiteShare: myShare,
+            myStKiteShareAfterTx: simulatedShare,
             myStakingAPY: 'N/A', // TODO: Calculate real APY
             myBoostedVaults: 4, // TODO: Get real boosted vaults count
 
@@ -137,12 +143,12 @@ export function Overview({ simulation }: OverviewProps) {
             </Header>
             <Inner $borderOpacity={0.2}>
                 <OverviewStat
-                    value={formatNumberWithStyle(stakingSummary.totalStaked.skiteAmount, {
+                    value={formatNumberWithStyle(stakingSummary.totalStaked.stKiteAmount, {
                         minDecimals: 0,
                         maxDecimals: 0,
                     })}
                     token="KITE"
-                    tokenLabel={'sKITE'}
+                    tokenLabel={'stKITE'}
                     label="Total Staked KITE"
                     convertedValue={formatNumberWithStyle(stakingSummary.totalStaked.usdValue, {
                         minDecimals: 0,
@@ -156,12 +162,12 @@ export function Overview({ simulation }: OverviewProps) {
                     labelOnTop
                 />
                 <OverviewStat
-                    value={formatNumberWithStyle(stakingSummary.myStaked.skiteAmount, {
+                    value={formatNumberWithStyle(stakingSummary.myStaked.stKiteAmount, {
                         minDecimals: 2,
                         maxDecimals: 2,
                     })}
                     token="KITE"
-                    tokenLabel={'sKITE'}
+                    tokenLabel={'stKITE'}
                     label="My Staked KITE"
                     convertedValue={formatNumberWithStyle(stakingSummary.myStaked.usdValue, {
                         minDecimals: 2,
@@ -175,37 +181,44 @@ export function Overview({ simulation }: OverviewProps) {
                     labelOnTop
                 />
                 <OverviewStat
-                    value={`${formatNumberWithStyle(stakingSummary.mySkiteShare, {
+                    value={`${formatNumberWithStyle(stakingSummary.myStKiteShare, {
                         minDecimals: 2,
                         maxDecimals: 2,
                     })}%`}
-                    label="My sKITE Share"
-                    simulatedValue={`${formatNumberWithStyle(stakingSummary.mySkiteShareAfterTx, {
+                    label="My stKITE Share"
+                    simulatedValue={`${formatNumberWithStyle(stakingSummary.myStKiteShareAfterTx, {
                         minDecimals: 2,
                         maxDecimals: 2,
                     })}%`}
                 />
                 <OverviewStat
-                    value={'N/A'/*`${formatNumberWithStyle(stakingSummary.myStakingAPY, {
+                    isComingSoon={true}
+                    value={
+                        'N/A' /*`${formatNumberWithStyle(stakingSummary.myStakingAPY, {
                         minDecimals: 2,
                         maxDecimals: 2,
-                    })}%`*/}
+                    })}%`*/
+                    }
                     label="My Staking APY"
                     tooltip={`Minimum collateral ratio required for opening a new vault. Vaults opened at this ratio will likely be at high risk of liquidation.`}
                 />
 
                 <OverviewStat
-                    value={'N/A'}//stakingSummary.myBoostedVaults}
+                    isComingSoon={true}
+                    value={'N/A'} //stakingSummary.myBoostedVaults}
                     label="My Boosted Vaults"
                     tooltip={t('stability_fee_tip')}
                 />
                 <OverviewProgressStat
-                    value={'N/A'}//stakingSummary.myNetHaiBoost}
+                    isComingSoon={true}
+                    value={'N/A'} //stakingSummary.myNetHaiBoost}
                     label="My Net HAI Boost:"
-                    simulatedValue={/*`${formatNumberWithStyle(stakingSummary.myNetHaiBoostAfterTx, {
+                    simulatedValue={
+                        /*`${formatNumberWithStyle(stakingSummary.myNetHaiBoostAfterTx, {
                         minDecimals: 2,
                         maxDecimals: 2,
-                    })}x`*/'N/A'}
+                    })}x`*/ 'N/A'
+                    }
                     alert={{ value: 'BOOST', status: Status.POSITIVE }}
                     fullWidth
                     progress={{

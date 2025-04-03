@@ -8,11 +8,12 @@ import { StatusLabel } from '~/components/StatusLabel'
 import { TokenArray } from '~/components/TokenArray'
 import { Tooltip } from '~/components/Tooltip'
 import { ProgressIndicator, ProgressIndicatorProps } from '~/components/ProgressIndicator'
-
+import { ComingSoon } from '~/components/ComingSoon'
 type OverviewStatProps = {
     token?: TokenKey
     value: string | number
     tokenLabel?: string
+    isComingSoon?: boolean
     label: string
     labelOnTop?: boolean
     tooltip?: string
@@ -27,6 +28,7 @@ type OverviewStatProps = {
 export function OverviewStat({
     token,
     tokenLabel,
+    isComingSoon = false,
     value,
     label,
     labelOnTop = false,
@@ -38,52 +40,70 @@ export function OverviewStat({
 }: OverviewStatProps) {
     return (
         <StatContainer $fullWidth={fullWidth}>
-            {labelOnTop && (
-                <Flex $justify="flex-start" $align="center" $gap={4}>
-                    <Text $fontSize="0.8em" $whiteSpace="nowrap">
-                        {label}
-                    </Text>
-                    {!!tooltip && <Tooltip width="200px">{tooltip}</Tooltip>}
-                </Flex>
+            {isComingSoon ? (
+                <>
+                    <div style={{ width: '100%', marginTop: '20px' }}>
+                        <ComingSoon active={true} width="100%" />
+                    </div>
+                    <div style={{ width: '100%', marginTop: '20px' }}>
+                        <Flex $justify="flex-start" $align="center" $gap={4}>
+                            <Text $fontSize="0.8em" $whiteSpace="nowrap">
+                                {label}
+                            </Text>
+                            {!!tooltip && <Tooltip width="200px">{tooltip}</Tooltip>}
+                        </Flex>
+                    </div>
+                </>
+            ) : (
+                <>
+                    {labelOnTop && (
+                        <Flex $justify="flex-start" $align="center" $gap={4}>
+                            <Text $fontSize="0.8em" $whiteSpace="nowrap">
+                                {label}
+                            </Text>
+                            {!!tooltip && <Tooltip width="200px">{tooltip}</Tooltip>}
+                        </Flex>
+                    )}
+                    <Flex $align="center" $gap={12}>
+                        {!!token && <TokenArray size={48} tokens={[token]} hideLabel />}
+                        <Flex $column $justify="center" $align="flex-start" $gap={4}>
+                            <ValueContainer>
+                                <Text $fontSize="1.5em" $fontWeight={700}>
+                                    {value || '--'} {tokenLabel}
+                                </Text>
+                                <Text $fontSize="1.2em" $color="rgba(0,0,0,0.6)">
+                                    {convertedValue}
+                                </Text>
+                            </ValueContainer>
+                        </Flex>
+                    </Flex>
+                    {!labelOnTop && (
+                        <Flex $justify="flex-start" $align="center" $gap={4}>
+                            <Text $fontSize="0.8em" $whiteSpace="nowrap">
+                                {label}
+                            </Text>
+                            {!!tooltip && <Tooltip width="200px">{tooltip}</Tooltip>}
+                        </Flex>
+                    )}
+                    <StatusContainer hidden={!simulatedValue && !alert}>
+                        {!!alert && (
+                            <StatusLabel status={alert.status} size={0.8}>
+                                {alert.value || alert.status}
+                            </StatusLabel>
+                        )}
+                        {!!simulatedValue && (
+                            <StatusLabel status={Status.CUSTOM} background="gradient" size={0.8}>
+                                <Text $fontSize="0.67rem" $fontWeight={700}>
+                                    {simulatedValue || '--'} {token}
+                                </Text>
+                                <Text $fontSize="0.67rem" $fontWeight={400} $whiteSpace="nowrap">
+                                    After Tx
+                                </Text>
+                            </StatusLabel>
+                        )}
+                    </StatusContainer>
+                </>
             )}
-            <Flex $align="center" $gap={12}>
-                {!!token && <TokenArray size={48} tokens={[token]} hideLabel />}
-                <Flex $column $justify="center" $align="flex-start" $gap={4}>
-                    <ValueContainer>
-                        <Text $fontSize="1.5em" $fontWeight={700}>
-                            {value || '--'} {tokenLabel}
-                        </Text>
-                        <Text $fontSize="1.2em" $color="rgba(0,0,0,0.6)">
-                            {convertedValue}
-                        </Text>
-                    </ValueContainer>
-                </Flex>
-            </Flex>
-            {!labelOnTop && (
-                <Flex $justify="flex-start" $align="center" $gap={4}>
-                    <Text $fontSize="0.8em" $whiteSpace="nowrap">
-                        {label}
-                    </Text>
-                    {!!tooltip && <Tooltip width="200px">{tooltip}</Tooltip>}
-                </Flex>
-            )}
-            <StatusContainer hidden={!simulatedValue && !alert}>
-                {!!alert && (
-                    <StatusLabel status={alert.status} size={0.8}>
-                        {alert.value || alert.status}
-                    </StatusLabel>
-                )}
-                {!!simulatedValue && (
-                    <StatusLabel status={Status.CUSTOM} background="gradient" size={0.8}>
-                        <Text $fontSize="0.67rem" $fontWeight={700}>
-                            {simulatedValue || '--'} {token}
-                        </Text>
-                        <Text $fontSize="0.67rem" $fontWeight={400} $whiteSpace="nowrap">
-                            After Tx
-                        </Text>
-                    </StatusLabel>
-                )}
-            </StatusContainer>
         </StatContainer>
     )
 }
@@ -93,6 +113,7 @@ export function OverviewProgressStat({
     value,
     label,
     tooltip,
+    isComingSoon = false,
     alert,
     simulatedValue,
     fullWidth = false,
@@ -126,18 +147,23 @@ export function OverviewProgressStat({
             <Flex $width="100%" $justify="space-between" $align="center">
                 <CenteredFlex $gap={4}>
                     <Text>{label}</Text>
-                    <Text $fontWeight={700} $fontSize="1.25em">
-                        {value}x
-                    </Text>
+                    {!isComingSoon && (
+                        <Text $fontWeight={700} $fontSize="1.25em">
+                            {value}x
+                        </Text>
+                    )}
+
                     {!!tooltip && <Tooltip width="200px">{tooltip}</Tooltip>}
                 </CenteredFlex>
+                {isComingSoon && <ComingSoon active={true} width="100%" />}
                 <StatusContainer hidden={!(simulatedValue && !isUpToSmall) && !alert}>
-                    {!!alert && (
+                    {!isComingSoon && !!alert && (
                         <StatusLabel status={alert.status} size={0.8}>
                             {alert.value || alert.status}
                         </StatusLabel>
                     )}
-                    {simulatedValue && !isUpToSmall && (
+
+                    {!isComingSoon && simulatedValue && !isUpToSmall && (
                         <StatusLabel status={Status.CUSTOM} background="gradient" size={0.8}>
                             <Text $fontSize="0.67rem" $fontWeight={700}>
                                 {simulatedValue}
@@ -150,6 +176,7 @@ export function OverviewProgressStat({
                 </StatusContainer>
             </Flex>
             <ProgressIndicator
+                isComingSoon={true}
                 progress={{ progress: Number(value) - 1, label: `${value}x` }}
                 colorLimits={[0.25, 0.5, 0.75]}
                 labels={[

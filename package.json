@@ -25,7 +25,7 @@
         "@apollo/client": "3.8.8",
         "@ethersproject/experimental": "5.4.0",
         "@ethersproject/providers": "5.4.5",
-        "@hai-on-op/sdk": "1.2.18",
+        "@hai-on-op/sdk": "1.2.25",
         "@nivo/core": "0.84.0",
         "@nivo/line": "0.84.0",
         "@nivo/pie": "0.84.0",
@@ -36,6 +36,7 @@
         "dayjs": "1.9.4",
         "easy-peasy": "3.3.1",
         "ethers": "5.4.7",
+        "flagsmith": "^8.0.2",
         "graphql": "16.8.1",
         "i18next": "19.7.0",
         "numeral": "2.0.6",
@@ -114,5 +115,6 @@
     "lint-staged": {
         "src/**/*.{js,jsx,ts,tsx}": "eslint --cache --fix",
         "src/**/*.{js,jsx,ts,tsx,css,scss,md,html}": "prettier --write --ignore-unknown"
-    }
+    },
+    "packageManager": "yarn@1.22.19"
 }

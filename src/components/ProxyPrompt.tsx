@@ -21,12 +21,14 @@ enum PromptStep {
 type ProxyPromptProps = {
     continueText?: string
     onCreateVault?: () => void
+    onSuccess?: () => void
     connectWalletOnly?: boolean
     children: ReactChildren
 }
 export function ProxyPrompt({
     continueText = 'continue',
     onCreateVault,
+    onSuccess,
     connectWalletOnly,
     children,
 }: ProxyPromptProps) {
@@ -88,7 +90,9 @@ export function ProxyPrompt({
 
     useEffect(() => {
         if (!connectWalletState.ctHash) return
-
+        if (onSuccess) {
+            onSuccess()
+        }
         popupsActions.setIsWaitingModalOpen(false)
         connectWalletActions.setIsStepLoading(false)
         connectWalletActions.setStep(2)

@@ -14,8 +14,11 @@ import { BorrowStats } from '~/containers/Vaults/Stats'
 import { EarnStats } from '~/containers/Earn/Stats'
 import { AuctionStats } from '~/containers/Auctions/Stats'
 
+import { useFlags } from 'flagsmith/react'
+
 import uniswapLogo from '~/assets/uniswap-icon.svg'
 import { StakeStats } from '~/containers/Stake/Stats'
+import { WrapperAd, WrapperAdProps } from './WrapperAd'
 
 enum Intention {
     AUCTION = 'auctions',
@@ -62,9 +65,9 @@ const typeOptions: BrandedSelectOption[] = [
         description: 'Mint & borrow $HAI stablecoin against your preferred collateral',
     },
     {
-        label: 'STAKE $HAI',
+        label: 'STAKE $KITE',
         value: Intention.STAKE,
-        icon: ['HAI'],
+        icon: ['KITE'],
         description: 'Stake KITE to earn revenue share and boost your HAI minting incentives.',
     },
     {
@@ -77,7 +80,7 @@ const typeOptions: BrandedSelectOption[] = [
     {
         label: 'Earn Rewards',
         value: Intention.EARN,
-        icon: ['OP', 'KITE'],
+        icon: ['HAI', 'OP'],
         description: 'Earn long term yields by staking a growing list of crypto assets',
     },
     {
@@ -88,10 +91,24 @@ const typeOptions: BrandedSelectOption[] = [
     },
 ]
 
+const wrappers: WrapperAdProps[] = [
+    {
+        heading: 'haiVELO',
+        status: 'NOW LIVE',
+        description: 'Convert your VELO into haiVELO to use as collateral while earning veVELO rewards.',
+        cta: 'Mint haiVELO',
+        ctaLink: '/earn',
+        tokenImages: ['HAIVELO'],
+    },
+]
+
 type IntentionHeaderProps = {
     children?: ReactChildren
 }
 export function IntentionHeader({ children }: IntentionHeaderProps) {
+    const flags = useFlags(['hai_velo'])
+    const haiVeloEnabled = flags.hai_velo?.enabled
+
     const location = useLocation()
     const history = useHistory()
 
@@ -152,12 +169,20 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
                 </Flex>
                 <Text>
                     {subtitle}
+
                     <Link href={ctaLink} $fontWeight={700}>
                         {cta}
                     </Link>
                 </Text>
                 {stats}
                 {children}
+                {haiVeloEnabled && (
+                    <>
+                        {wrappers.map((wrapper, i) => (
+                            <WrapperAd key={i} bgVariant={i} {...wrapper} />
+                        ))}
+                    </>
+                )}
             </Inner>
         </Container>
     )

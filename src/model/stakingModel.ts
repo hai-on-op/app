@@ -245,26 +245,23 @@ export const stakingModel: StakingModel = {
 
     fetchUserRewards: thunk(async (actions, { signer }) => {
         try {
-            const stakingManager = new Contract(
-                import.meta.env.VITE_STAKING_MANAGER,
-                StakingManagerABI,
-                signer
-            )
-            
+            const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
+
             const address = await signer.getAddress()
             const rewardsCount = await stakingManager.rewards()
-            
+
             const rewards = []
             for (let i = 0; i < rewardsCount.toNumber(); i++) {
                 const amount = await stakingManager.claimableReward(i, address)
                 if (amount.gt(0)) {
                     rewards.push({
                         id: i,
-                        amount: amount.toString()
+                        amount: amount.toString(),
+                        name: 'LUKE',
                     })
                 }
             }
-            
+
             actions.setUserRewards(rewards)
         } catch (error) {
             console.error('Error fetching user rewards:', error)

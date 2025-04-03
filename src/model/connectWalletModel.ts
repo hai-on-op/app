@@ -38,6 +38,7 @@ export interface ConnectWalletModel {
     updateEthBalance: Action<ConnectWalletModel, { chainId: number; balance: number }>
     haiBalance: ITokenBalance
     updateHaiBalance: Action<ConnectWalletModel, { chainId: number; balance: string }>
+    veloBalance: ITokenBalance
     uniswapPoolBalance: ITokenBalance
     updateUniswapPoolBalance: Action<ConnectWalletModel, { chainId: number; balance: string }>
 

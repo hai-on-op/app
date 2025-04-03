@@ -1,9 +1,10 @@
 import { useStoreActions, useStoreState } from '~/store'
 import { Modal } from '.'
 import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
-import { ActionState, formatNumberWithStyle, tokenMap, wait, isFormattedAddress, slugify } from '~/utils'
+import { ActionState, formatNumberWithStyle, tokenMap, wait, isFormattedAddress, slugify, TOKEN_LOGOS } from '~/utils'
 import styled from 'styled-components'
 import { ContentWithStatus } from '../ContentWithStatus'
+import { tokenAssets } from '~/utils'
 import type { IAuction } from '~/types'
 import { handleTransactionError, useEthersSigner } from '~/hooks'
 import { useAccount } from 'wagmi'
@@ -11,11 +12,13 @@ import { useState } from 'react'
 import { TokenArray } from '../TokenArray'
 import dayjs from 'dayjs'
 import { useStakingData } from '~/hooks/useStakingData'
+import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { ethers } from 'ethers'
 
 export function StakingClaimModal() {
     const signer = useEthersSigner()
     const {
+        vaultModel: { liquidationData },
         popupsModel: { isStakeClaimPopupOpen },
     } = useStoreState((state) => state)
     const {
@@ -26,11 +29,38 @@ export function StakingClaimModal() {
     const { userRewards, refetchAll } = useStakingData()
     const [claiming, setClaiming] = useState(false)
 
+    const { prices: veloPrices } = useVelodromePrices()
+
+    const haiPrice = parseFloat(liquidationData?.currentRedemptionPrice || '1')
+    const kitePrice = veloPrices?.KITE.raw
+    const opPrice = liquidationData?.collateralLiquidationData?.OP?.currentPrice.value
+
+    const rewardsMetadata = [
+        {
+            id: 0,
+            name: tokenAssets.HAI.symbol,
+            tokenImg: tokenAssets.HAI.icon,
+            price: haiPrice,
+        },
+        {
+            id: 1,
+            name: tokenAssets.KITE.symbol,
+            tokenImg: tokenAssets.KITE.icon,
+            price: kitePrice,
+        },
+        {
+            id: 2,
+            name: tokenAssets.OP.symbol,
+            tokenImg: tokenAssets.OP.icon,
+            price: opPrice,
+        },
+    ]
+
     const onClaim = async () => {
         if (!signer || claiming) return
         try {
             setClaiming(true)
-            
+
             setIsWaitingModalOpen(true)
             setWaitingPayload({
                 title: 'Waiting For Confirmation',
@@ -41,14 +71,14 @@ export function StakingClaimModal() {
 
             stakingActions.setTransactionState(ActionState.LOADING)
             await stakingActions.getReward({ signer })
-            
+
             stakingActions.setTransactionState(ActionState.SUCCESS)
             setIsWaitingModalOpen(false)
             setWaitingPayload({ status: ActionState.NONE })
-            
+
             // Refetch all data after successful claim
             await refetchAll()
-            
+
             setIsStakeClaimPopupOpen(false)
         } catch (error) {
             console.error('Failed to claim rewards:', error)
@@ -61,15 +91,19 @@ export function StakingClaimModal() {
 
     if (!isStakeClaimPopupOpen) return null
 
-    const content = userRewards.map((reward) => (
-        <ClaimableAsset
-            key={`reward-${reward.id}`}
-            asset="KITE"
-            amount={ethers.utils.formatEther(reward.amount)}
-            price={0.321475} // This should come from somewhere else
-            claim={{ description: `Reward Type ${reward.id}`, createdAt: Date.now() }}
-        />
-    ))
+    console.log('userRewards', userRewards)
+
+    const content = userRewards.map((reward) => {
+        return (
+            <ClaimableAsset
+                key={`reward-${reward.id}`}
+                asset={rewardsMetadata[reward.id].name}
+                amount={ethers.utils.formatEther(reward.amount)}
+                price={rewardsMetadata[reward.id].price as number}
+                claim={{ description: `Reward Pool ${reward.id + 1}`, createdAt: Date.now() }}
+            />
+        )
+    })
 
     return (
         <Modal
@@ -82,18 +116,15 @@ export function StakingClaimModal() {
                         <strong>Total Estimated Value:</strong>
                         &nbsp;
                         {formatNumberWithStyle(
-                            userRewards.reduce(
-                                (acc, reward) => acc + parseFloat(ethers.utils.formatEther(reward.amount)) * 0.321475,
-                                0
-                            ),
+                            userRewards.reduce((acc, reward) => {
+                                const amount = parseFloat(ethers.utils.formatEther(reward.amount))
+                                const price = rewardsMetadata[reward.id].price as number
+                                return acc + amount * price
+                            }, 0),
                             { style: 'currency' }
                         )}
                     </Text>
-                    <HaiButton
-                        $variant="yellowish"
-                        onClick={onClaim}
-                        disabled={claiming || !userRewards.length}
-                    >
+                    <HaiButton $variant="yellowish" onClick={onClaim} disabled={claiming || !userRewards.length}>
                         {claiming ? 'Claiming...' : 'Claim All'}
                     </HaiButton>
                 </Flex>

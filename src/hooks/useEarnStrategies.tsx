@@ -19,6 +19,8 @@ import {
 import { useStoreState } from '~/store'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { useVelodrome, useVelodromePositions } from './useVelodrome'
+import { useBalance, useMyVaults, useCollateralStats } from '~/hooks'
+import { useAnalytics } from '~/providers/AnalyticsProvider'
 
 const sortableHeaders: SortableHeader[] = [
     { label: 'Asset / Asset Pair' },
@@ -47,6 +49,9 @@ export function useEarnStrategies() {
     const { prices: veloPrices } = useVelodromePrices()
 
     const { data, loading, error } = useQuery<{ collateralTypes: QueryCollateralType[] }>(ALL_COLLATERAL_TYPES_QUERY)
+
+    const { rows: myVaults } = useMyVaults()
+
     const {
         data: uniData,
         loading: uniLoading,
@@ -91,6 +96,7 @@ export function useEarnStrategies() {
                         pair: [symbol || 'HAI'],
                         rewards: Object.entries(rewards).map(([token, emission]) => ({ token, emission })),
                         tvl: cType.debtAmount,
+                        strategyType: 'borrow',
                         apy,
                         userPosition: list
                             .reduce((total, { totalDebt, collateralName }) => {
@@ -132,6 +138,7 @@ export function useEarnStrategies() {
                     .toString(),
                 earnPlatform: 'uniswap',
                 earnAddress: pool.id,
+                strategyType: 'farm',
                 earnLink: `https://info.uniswap.org/#/optimism/pools/${pool.id}`,
             } as Strategy)
         }
@@ -141,7 +148,8 @@ export function useEarnStrategies() {
     const veloStrategies = useMemo(() => {
         if (!veloPrices || !veloData) return []
         const temp: Strategy[] = []
-        for (const pool of veloData) {
+        // Filter out SAIL
+        for (const pool of veloData.filter((p) => p.address != '0xB5cD4bD4bdB5C97020FBE192258e6F08333990E2')) {
             const rewards = REWARDS.velodrome[pool.address.toLowerCase()]
             if (!rewards) continue // filter out any extra pools that may be fetched
 
@@ -183,14 +191,58 @@ export function useEarnStrategies() {
                 earnPlatform: 'velodrome',
                 earnAddress: pool.address,
                 earnLink: `https://velodrome.finance/deposit?token0=${pool.token0}&token1=${pool.token1}&type=${pool.type}`,
+                strategyType: 'farm',
             })
         }
         return temp
     }, [veloData, veloPrices, veloPositions, prices, tokensData])
 
+    const haiBalance = useBalance('HAI')
+    const analytics = useAnalytics()
+    const {
+        data: { erc20Supply, annualRate, tokenAnalyticsData },
+    } = analytics
+    const rRateApr = Number(annualRate.raw)
+    const rRateApy = Math.pow(1 + rRateApr / 365, 365) - 1
+
+    const collateralStats = useCollateralStats()
+
+    const haiVeloTVL = collateralStats.rows.find((row) => row.token === 'HAIVELO')?.totalCollateral?.usdRaw ?? '0'
+
+    const myHaiVeloParticipation = useMemo(() => {
+        return (
+            (myVaults
+                .filter((vault) => vault.collateralName === 'HAIVELO')
+                .reduce((acc, vault) => {
+                    return acc + parseFloat(vault.collateral)
+                }, 0) *
+                Number(tokenAnalyticsData?.find((token) => token.symbol === 'HAIVELO')?.currentPrice || 0)) /
+            10 ** 18
+        )
+    }, [myVaults])
+
+    const specialStrategies = [
+        {
+            pair: ['HAI'],
+            rewards: [],
+            tvl: erc20Supply.raw,
+            apy: rRateApy,
+            userPosition: haiBalance?.raw,
+            strategyType: 'hold',
+        },
+        {
+            pair: ['HAIVELO'],
+            rewards: [],
+            tvl: haiVeloTVL,
+            apy: '0',
+            userPosition: myHaiVeloParticipation,
+            strategyType: 'deposit',
+        },
+    ]
+
     const strategies = useMemo(() => {
-        return [...vaultStrategies, ...uniStrategies, ...veloStrategies]
-    }, [vaultStrategies, uniStrategies, veloStrategies])
+        return [...specialStrategies, ...vaultStrategies, ...uniStrategies, ...veloStrategies]
+    }, [specialStrategies, vaultStrategies, uniStrategies, veloStrategies])
 
     const [filterEmpty, setFilterEmpty] = useState(false)
 
@@ -215,7 +267,7 @@ export function useEarnStrategies() {
                 })
             case 'Strategy':
                 return arrayToSorted(filteredRows, {
-                    getProperty: (row) => (row.earnPlatform ? 'farm' : 'borrow'),
+                    getProperty: (row) => row.strategyType,
                     dir: sorting.dir,
                     type: 'alphabetical',
                 })
