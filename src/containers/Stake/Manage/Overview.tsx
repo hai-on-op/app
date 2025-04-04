@@ -16,6 +16,7 @@ import { Swirl } from '~/components/Icons/Swirl'
 import { StatusLabel } from '~/components/StatusLabel'
 import { OverviewProgressStat, OverviewStat } from './OverviewStat'
 import { AlertTriangle, ArrowLeft, ArrowRight } from 'react-feather'
+import { useBoost } from '~/hooks/useBoost'
 
 type StakingSimulation = {
     stakingAmount: string
@@ -32,18 +33,40 @@ export function Overview({ simulation }: OverviewProps) {
     const { stakingAmount, unstakingAmount } = simulation
     const { t } = useTranslation()
     const { stakingData, stakingStats, loading } = useStakingData()
+    const {
+        userHaiVELODeposited,
+        totalHaiVELODeposited,
+        userKITEStaked,
+        totalKITEStaked,
+        userLPPosition,
+        totalPoolLiquidity,
+        userLPPositionValue,
+        haiWethLpBoost,
+        formattedValues,
+        userSharePercentage,
+        boostFactor,
+        maxBoostFactor,
+        boostProgress,
+        boostedVaultsCount,
+        loading: boostLoading,
+        
+    } = useBoost()
+
+    // Log HAI/WETH LP boost and LP value
+    console.log('Overview - HAI/WETH LP Boost:', haiWethLpBoost)
+    console.log('Overview - HAI/WETH LP Value (USD):', userLPPositionValue)
+    console.log('Overview - HAI/WETH LP Formatted Boost:', formattedValues.haiWethLpBoost)
+    console.log('Overview - HAI/WETH LP Formatted Value:', formattedValues.positionValue)
 
     const { prices: veloPrices } = useVelodromePrices()
 
-    const kitePrice = veloPrices?.KITE.raw
-
-    // const kitePrice = 10.0 // TODO: Get real KITE price from somewhere
+    const kitePrice = Number(veloPrices?.KITE?.raw || 0)
 
     console.log('stakingData', stakingData)
     console.log('stakingStats', stakingStats)
 
     const stakingSummary = useMemo(() => {
-        if (loading) return null
+        if (loading || boostLoading) return null
 
         const totalStakedUSD = Number(stakingStats.totalStaked) * kitePrice
         const myStakedUSD = Number(stakingData.stakedBalance) * kitePrice
@@ -99,7 +122,7 @@ export function Overview({ simulation }: OverviewProps) {
         }
     }, [stakingData, stakingStats, loading, kitePrice, stakingAmount, unstakingAmount])
 
-    if (loading || !stakingSummary) {
+    if (loading || boostLoading || !stakingSummary) {
         return (
             <Container>
                 <Header>
