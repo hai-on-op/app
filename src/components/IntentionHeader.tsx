@@ -17,12 +17,14 @@ import { AuctionStats } from '~/containers/Auctions/Stats'
 import { useFlags } from 'flagsmith/react'
 
 import uniswapLogo from '~/assets/uniswap-icon.svg'
+import { StakeStats } from '~/containers/Stake/Stats'
 import { WrapperAd, WrapperAdProps } from './WrapperAd'
 
 enum Intention {
     AUCTION = 'auctions',
     BORROW = 'vaults',
     EARN = 'earn',
+    STAKE = 'stake',
 }
 
 const copy: Record<
@@ -48,6 +50,11 @@ const copy: Record<
         cta: 'Read more about earning opportunities →',
         ctaLink: `${LINK_TO_DOCS}detailed/intro/hai.html`,
     },
+    [Intention.STAKE]: {
+        subtitle: 'Stake KITE to earn protocol revenue and boost your HAI minting incentives. ',
+        cta: 'Read more about staking →',
+        ctaLink: `${LINK_TO_DOCS}detailed/intro/hai.html`,
+    },
 }
 
 const typeOptions: BrandedSelectOption[] = [
@@ -56,6 +63,12 @@ const typeOptions: BrandedSelectOption[] = [
         value: Intention.BORROW,
         icon: ['HAI'],
         description: 'Mint & borrow $HAI stablecoin against your preferred collateral',
+    },
+    {
+        label: 'STAKE $KITE',
+        value: Intention.STAKE,
+        icon: ['KITE'],
+        description: 'Stake KITE to earn revenue share and boost your HAI minting incentives.',
     },
     {
         label: 'Buy $HAI',
@@ -67,7 +80,7 @@ const typeOptions: BrandedSelectOption[] = [
     {
         label: 'Earn Rewards',
         value: Intention.EARN,
-        icon: ['OP', 'KITE'],
+        icon: ['HAI', 'OP'],
         description: 'Earn long term yields by staking a growing list of crypto assets',
     },
     {
@@ -112,6 +125,12 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
             return {
                 type: Intention.EARN,
                 stats: <EarnStats />,
+            }
+        }
+        if (location.pathname.startsWith('/stake')) {
+            return {
+                type: Intention.STAKE,
+                stats: <StakeStats />,
             }
         }
         if (location.pathname.startsWith('/vaults')) {

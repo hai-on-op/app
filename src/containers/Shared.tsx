@@ -31,6 +31,7 @@ import { ClaimModal } from '~/components/Modal/ClaimModal'
 import { IntentionHeader } from '~/components/IntentionHeader'
 import { HaiAlert } from '~/components/HaiAlert'
 import { StartAuction } from './Auctions/StartAuction'
+import { StakingClaimModal } from '~/components/Modal/StakingClaimModal'
 
 type Props = {
     children: ReactChildren
@@ -260,6 +261,7 @@ export function Shared({ children }: Props) {
             {!isSplash && <ParallaxBackground />}
             <Header tickerActive={!isSplash} />
             <ClaimModal />
+            <StakingClaimModal />
             {!isSplash && <WaitingModal />}
 
             {/* {SYSTEM_STATUS && SYSTEM_STATUS.toLowerCase() === 'shutdown' && (

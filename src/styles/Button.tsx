@@ -32,11 +32,14 @@ export type HaiButtonProps = FlexProps & {
     disabled?: boolean
     $variant?: 'default' | 'unblurred' | 'blueish' | 'greenish' | 'pinkish' | 'yellowish' | 'orangeish'
     $unbordered?: boolean
+    $size?: 'default' | 'small'
 }
+
 export const HaiButton = styled.button.attrs((props: HaiButtonProps) => ({
     $justify: 'space-between',
     $align: 'center',
     $gap: 12,
+    $size: 'default',
     ...props,
 }))<HaiButtonProps>`
     ${FlexStyle}
@@ -49,6 +52,19 @@ export const HaiButton = styled.button.attrs((props: HaiButtonProps) => ({
     white-space: nowrap;
     padding: 8px 20px;
     color: black;
+    border-radius: 999px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+
+    ${({ $size }) => $size === 'small' && css`
+        height: 30px;
+        font-size: 11px;
+        padding: 0 12px;
+        font-weight: 500;
+        line-height: 13px;
+        border-width: 0.5px;
+    `}
+
     ${({ theme, $variant = 'default' }) =>
         $variant === 'default'
             ? css`
@@ -58,9 +74,6 @@ export const HaiButton = styled.button.attrs((props: HaiButtonProps) => ({
             : css`
                   background: ${(theme.colors as any)[$variant] || 'transparent'};
               `}
-    border-radius: 999px;
-    transition: all 0.3s ease;
-    cursor: pointer;
 
     &:disabled {
         opacity: 0.7;

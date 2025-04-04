@@ -1,0 +1,453 @@
+[
+    {
+        "inputs": [
+            { "internalType": "address", "name": "_protocolToken", "type": "address" },
+            { "internalType": "address", "name": "_stakingToken", "type": "address" },
+            { "internalType": "uint256", "name": "_cooldownPeriod", "type": "uint256" }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
+        "inputs": [{ "internalType": "address", "name": "target", "type": "address" }],
+        "name": "AddressEmptyCode",
+        "type": "error"
+    },
+    {
+        "inputs": [{ "internalType": "address", "name": "account", "type": "address" }],
+        "name": "AddressInsufficientBalance",
+        "type": "error"
+    },
+    { "inputs": [], "name": "AlreadyAuthorized", "type": "error" },
+    { "inputs": [], "name": "FailedInnerCall", "type": "error" },
+    {
+        "inputs": [{ "internalType": "address", "name": "_contract", "type": "address" }],
+        "name": "NoCode",
+        "type": "error"
+    },
+    { "inputs": [], "name": "NotAuthorized", "type": "error" },
+    {
+        "inputs": [
+            { "internalType": "uint256", "name": "_x", "type": "uint256" },
+            { "internalType": "uint256", "name": "_y", "type": "uint256" }
+        ],
+        "name": "NotGreaterThan",
+        "type": "error"
+    },
+    { "inputs": [], "name": "NullAmount", "type": "error" },
+    {
+        "inputs": [{ "internalType": "address", "name": "token", "type": "address" }],
+        "name": "SafeERC20FailedOperation",
+        "type": "error"
+    },
+    { "inputs": [], "name": "StakingManager_CooldownPeriodNotElapsed", "type": "error" },
+    { "inputs": [], "name": "StakingManager_ForwardingOnly", "type": "error" },
+    { "inputs": [], "name": "StakingManager_InactiveRewardType", "type": "error" },
+    { "inputs": [], "name": "StakingManager_InvalidRewardType", "type": "error" },
+    { "inputs": [], "name": "StakingManager_NoPendingWithdrawal", "type": "error" },
+    { "inputs": [], "name": "StakingManager_NullRewardPool", "type": "error" },
+    { "inputs": [], "name": "StakingManager_NullRewardToken", "type": "error" },
+    { "inputs": [], "name": "StakingManager_StakeNullAmount", "type": "error" },
+    { "inputs": [], "name": "StakingManager_StakeNullReceiver", "type": "error" },
+    { "inputs": [], "name": "StakingManager_WithdrawNegativeAmount", "type": "error" },
+    { "inputs": [], "name": "StakingManager_WithdrawNullAmount", "type": "error" },
+    { "inputs": [], "name": "Unauthorized", "type": "error" },
+    { "inputs": [], "name": "UnrecognizedCType", "type": "error" },
+    { "inputs": [], "name": "UnrecognizedParam", "type": "error" },
+    {
+        "anonymous": false,
+        "inputs": [{ "indexed": false, "internalType": "address", "name": "_account", "type": "address" }],
+        "name": "AddAuthorization",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            { "indexed": true, "internalType": "bytes32", "name": "_param", "type": "bytes32" },
+            { "indexed": true, "internalType": "bytes32", "name": "_cType", "type": "bytes32" },
+            { "indexed": false, "internalType": "bytes", "name": "_data", "type": "bytes" }
+        ],
+        "name": "ModifyParameters",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [{ "indexed": false, "internalType": "address", "name": "_account", "type": "address" }],
+        "name": "RemoveAuthorization",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [{ "indexed": true, "internalType": "uint256", "name": "_id", "type": "uint256" }],
+        "name": "StakingManagerActivateRewardType",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            { "indexed": true, "internalType": "uint256", "name": "_id", "type": "uint256" },
+            { "indexed": true, "internalType": "address", "name": "_rewardToken", "type": "address" },
+            { "indexed": true, "internalType": "address", "name": "_rewardPool", "type": "address" }
+        ],
+        "name": "StakingManagerAddRewardType",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [{ "indexed": true, "internalType": "uint256", "name": "_id", "type": "uint256" }],
+        "name": "StakingManagerDeactivateRewardType",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            { "indexed": true, "internalType": "address", "name": "_account", "type": "address" },
+            { "indexed": true, "internalType": "address", "name": "_rewardToken", "type": "address" },
+            { "indexed": false, "internalType": "uint256", "name": "_wad", "type": "uint256" }
+        ],
+        "name": "StakingManagerEmergencyRewardWithdrawal",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            { "indexed": true, "internalType": "address", "name": "_account", "type": "address" },
+            { "indexed": false, "internalType": "uint256", "name": "_wad", "type": "uint256" }
+        ],
+        "name": "StakingManagerEmergencyWithdrawal",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            { "indexed": true, "internalType": "address", "name": "_account", "type": "address" },
+            { "indexed": true, "internalType": "address", "name": "_rewardToken", "type": "address" },
+            { "indexed": false, "internalType": "uint256", "name": "_wad", "type": "uint256" },
+            { "indexed": true, "internalType": "address", "name": "_destination", "type": "address" }
+        ],
+        "name": "StakingManagerRewardPaid",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            { "indexed": true, "internalType": "address", "name": "_account", "type": "address" },
+            { "indexed": false, "internalType": "uint256", "name": "_wad", "type": "uint256" }
+        ],
+        "name": "StakingManagerStaked",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            { "indexed": true, "internalType": "address", "name": "_account", "type": "address" },
+            { "indexed": false, "internalType": "uint256", "name": "_wad", "type": "uint256" }
+        ],
+        "name": "StakingManagerWithdrawalCancelled",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            { "indexed": true, "internalType": "address", "name": "_account", "type": "address" },
+            { "indexed": false, "internalType": "uint256", "name": "_wad", "type": "uint256" }
+        ],
+        "name": "StakingManagerWithdrawalInitiated",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            { "indexed": true, "internalType": "address", "name": "_account", "type": "address" },
+            { "indexed": false, "internalType": "uint256", "name": "_wad", "type": "uint256" }
+        ],
+        "name": "StakingManagerWithdrawn",
+        "type": "event"
+    },
+    {
+        "inputs": [],
+        "name": "_params",
+        "outputs": [{ "internalType": "uint256", "name": "cooldownPeriod", "type": "uint256" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [{ "internalType": "address", "name": "_account", "type": "address" }],
+        "name": "_pendingWithdrawals",
+        "outputs": [
+            { "internalType": "uint256", "name": "amount", "type": "uint256" },
+            { "internalType": "uint256", "name": "timestamp", "type": "uint256" }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [{ "internalType": "uint256", "name": "_id", "type": "uint256" }],
+        "name": "_rewardTypes",
+        "outputs": [
+            { "internalType": "address", "name": "rewardToken", "type": "address" },
+            { "internalType": "address", "name": "rewardPool", "type": "address" },
+            { "internalType": "bool", "name": "isActive", "type": "bool" },
+            { "internalType": "uint256", "name": "rewardIntegral", "type": "uint256" },
+            { "internalType": "uint256", "name": "rewardRemaining", "type": "uint256" }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [{ "internalType": "uint256", "name": "_id", "type": "uint256" }],
+        "name": "activateRewardType",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [{ "internalType": "address", "name": "_account", "type": "address" }],
+        "name": "addAuthorization",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "address", "name": "_rewardToken", "type": "address" },
+            { "internalType": "address", "name": "_rewardPool", "type": "address" }
+        ],
+        "name": "addRewardType",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [{ "internalType": "address", "name": "_account", "type": "address" }],
+        "name": "authorizedAccounts",
+        "outputs": [{ "internalType": "bool", "name": "_authorized", "type": "bool" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "authorizedAccounts",
+        "outputs": [{ "internalType": "address[]", "name": "_accounts", "type": "address[]" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    { "inputs": [], "name": "cancelWithdrawal", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
+    {
+        "inputs": [{ "internalType": "address[2]", "name": "_accounts", "type": "address[2]" }],
+        "name": "checkpoint",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "uint256", "name": "_id", "type": "uint256" },
+            { "internalType": "address", "name": "_user", "type": "address" }
+        ],
+        "name": "claimableReward",
+        "outputs": [{ "internalType": "uint256", "name": "_claimableReward", "type": "uint256" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [{ "internalType": "uint256", "name": "_id", "type": "uint256" }],
+        "name": "deactivateRewardType",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [{ "internalType": "address", "name": "_account", "type": "address" }],
+        "name": "earned",
+        "outputs": [
+            {
+                "components": [
+                    { "internalType": "address", "name": "rewardToken", "type": "address" },
+                    { "internalType": "uint256", "name": "rewardAmount", "type": "uint256" }
+                ],
+                "internalType": "struct IStakingManager.EarnedData[]",
+                "name": "_claimable",
+                "type": "tuple[]"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "address", "name": "_rescueReceiver", "type": "address" },
+            { "internalType": "uint256", "name": "_wad", "type": "uint256" }
+        ],
+        "name": "emergencyWithdraw",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "uint256", "name": "_id", "type": "uint256" },
+            { "internalType": "address", "name": "_rescueReceiver", "type": "address" },
+            { "internalType": "uint256", "name": "_wad", "type": "uint256" }
+        ],
+        "name": "emergencyWithdrawReward",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [{ "internalType": "address", "name": "_account", "type": "address" }],
+        "name": "getReward",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "address", "name": "_account", "type": "address" },
+            { "internalType": "address", "name": "_forwardTo", "type": "address" }
+        ],
+        "name": "getRewardAndForward",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [{ "internalType": "uint256", "name": "_wad", "type": "uint256" }],
+        "name": "initiateWithdrawal",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "bytes32", "name": "_param", "type": "bytes32" },
+            { "internalType": "bytes", "name": "_data", "type": "bytes" }
+        ],
+        "name": "modifyParameters",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "params",
+        "outputs": [
+            {
+                "components": [{ "internalType": "uint256", "name": "cooldownPeriod", "type": "uint256" }],
+                "internalType": "struct IStakingManager.StakingManagerParams",
+                "name": "_stakingManagerParams",
+                "type": "tuple"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [{ "internalType": "address", "name": "_account", "type": "address" }],
+        "name": "pendingWithdrawals",
+        "outputs": [
+            {
+                "components": [
+                    { "internalType": "uint256", "name": "amount", "type": "uint256" },
+                    { "internalType": "uint256", "name": "timestamp", "type": "uint256" }
+                ],
+                "internalType": "struct IStakingManager.PendingWithdrawal",
+                "name": "_pendingWithdrawal",
+                "type": "tuple"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "protocolToken",
+        "outputs": [{ "internalType": "contract IProtocolToken", "name": "", "type": "address" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [{ "internalType": "address", "name": "_account", "type": "address" }],
+        "name": "removeAuthorization",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "uint256", "name": "_id", "type": "uint256" },
+            { "internalType": "address", "name": "_user", "type": "address" }
+        ],
+        "name": "rewardIntegralFor",
+        "outputs": [{ "internalType": "uint256", "name": "_rewardIntegral", "type": "uint256" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [{ "internalType": "uint256", "name": "_id", "type": "uint256" }],
+        "name": "rewardTypes",
+        "outputs": [
+            {
+                "components": [
+                    { "internalType": "address", "name": "rewardToken", "type": "address" },
+                    { "internalType": "address", "name": "rewardPool", "type": "address" },
+                    { "internalType": "bool", "name": "isActive", "type": "bool" },
+                    { "internalType": "uint256", "name": "rewardIntegral", "type": "uint256" },
+                    { "internalType": "uint256", "name": "rewardRemaining", "type": "uint256" }
+                ],
+                "internalType": "struct IStakingManager.RewardTypeInfo",
+                "name": "_rewardTypeInfo",
+                "type": "tuple"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "rewards",
+        "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "address", "name": "_account", "type": "address" },
+            { "internalType": "uint256", "name": "_wad", "type": "uint256" }
+        ],
+        "name": "stake",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
+        "name": "stakedBalances",
+        "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "stakedSupply",
+        "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "stakingToken",
+        "outputs": [{ "internalType": "contract IStakingToken", "name": "", "type": "address" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [{ "internalType": "address", "name": "_account", "type": "address" }],
+        "name": "userCheckpoint",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    { "inputs": [], "name": "withdraw", "outputs": [], "stateMutability": "nonpayable", "type": "function" }
+]
