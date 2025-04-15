@@ -48,8 +48,12 @@ export function Overview({ simulation }: OverviewProps) {
         maxBoostFactor,
         boostProgress,
         boostedVaultsCount,
+        haiVeloBoost,
         loading: boostLoading,
     } = useBoost()
+
+
+    console.log('haiVeloBoost', haiVeloBoost)
 
     // Log HAI/WETH LP boost and LP value
     console.log('Overview - HAI/WETH LP Boost:', haiWethLpBoost)
