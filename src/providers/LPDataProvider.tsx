@@ -40,10 +40,7 @@ const POOL_DATA_QUERY = gql`
 // Query for user positions
 const USER_POSITIONS_QUERY = gql`
     query GetUserPositions($poolId: String!, $owner: String!) {
-        positions(where: { 
-            pool: $poolId, 
-            owner: $owner
-        }) {
+        positions(where: { pool: $poolId, owner: $owner }) {
             id
             liquidity
             depositedToken0
@@ -114,16 +111,12 @@ const LPDataContext = createContext<LPDataContextType>({
     userPositions: null,
     loading: false,
     error: null,
-    account: undefined
+    account: undefined,
 })
 
 // Provider component
 export function LPDataProvider({ children }: { children: React.ReactNode }) {
-    //const { address: account } = useAccount()
-    
-    const account = "0xda27d2bdf91a8919b91bdf71f8fd1d2638f9421c"
-
-    console.log('account', account)
+    const { address: account } = useAccount()
 
     const [pool, setPool] = useState<PoolData | null>(null)
     const [userPositions, setUserPositions] = useState<UserPosition[] | null>(null)
@@ -170,12 +163,12 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
                 setLoading(true)
                 const { data } = await lpClient.query({
                     query: USER_POSITIONS_QUERY,
-                    variables: { 
+                    variables: {
                         poolId: POOL_ID,
-                        owner: account.toLowerCase()
+                        owner: account.toLowerCase(),
                     },
                 })
-                
+
                 if (data && data.positions) {
                     setUserPositions(data.positions)
                     console.log('User positions:', data.positions)
@@ -191,17 +184,23 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
         fetchUserPositions()
         // Set up polling every 5 minutes
         const intervalId = setInterval(fetchUserPositions, 5 * 60 * 1000)
-        
+
         return () => clearInterval(intervalId)
     }, [account])
 
-    return <LPDataContext.Provider value={{ 
-        pool, 
-        userPositions, 
-        loading, 
-        error,
-        account
-    }}>{children}</LPDataContext.Provider>
+    return (
+        <LPDataContext.Provider
+            value={{
+                pool,
+                userPositions,
+                loading,
+                error,
+                account,
+            }}
+        >
+            {children}
+        </LPDataContext.Provider>
+    )
 }
 
 // Hook to use the LP data
