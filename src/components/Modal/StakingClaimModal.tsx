@@ -27,6 +27,7 @@ export function StakingClaimModal() {
     } = useStoreActions((actions) => actions)
 
     const { userRewards, refetchAll } = useStakingData()
+
     const [claiming, setClaiming] = useState(false)
 
     const { prices: veloPrices } = useVelodromePrices()
@@ -35,26 +36,30 @@ export function StakingClaimModal() {
     const kitePrice = veloPrices?.KITE.raw
     const opPrice = liquidationData?.collateralLiquidationData?.OP?.currentPrice.value
 
-    const rewardsMetadata = [
-        {
+    const HAI_ADDRESS = import.meta.env.VITE_HAI_ADDRESS
+    const KITE_ADDRESS = import.meta.env.VITE_KITE_ADDRESS
+    const OP_ADDRESS = import.meta.env.VITE_OP_ADDRESS
+
+    const rewardsDataMap = {
+        [HAI_ADDRESS]: {
             id: 0,
             name: tokenAssets.HAI.symbol,
             tokenImg: tokenAssets.HAI.icon,
             price: haiPrice,
         },
-        {
+        [KITE_ADDRESS]: {
             id: 1,
             name: tokenAssets.KITE.symbol,
             tokenImg: tokenAssets.KITE.icon,
             price: kitePrice,
         },
-        {
+        [OP_ADDRESS]: {
             id: 2,
             name: tokenAssets.OP.symbol,
             tokenImg: tokenAssets.OP.icon,
             price: opPrice,
         },
-    ]
+    }
 
     const onClaim = async () => {
         if (!signer || claiming) return
@@ -90,17 +95,17 @@ export function StakingClaimModal() {
     }
 
     if (!isStakeClaimPopupOpen) return null
-
-    console.log('userRewards', userRewards)
-
     const content = userRewards.map((reward) => {
         return (
             <ClaimableAsset
                 key={`reward-${reward.id}`}
-                asset={rewardsMetadata[reward.id].name}
+                asset={rewardsDataMap[reward.tokenAddress as any].name}
                 amount={ethers.utils.formatEther(reward.amount)}
-                price={rewardsMetadata[reward.id].price as number}
-                claim={{ description: `Reward Pool ${reward.id + 1}`, createdAt: Date.now() }}
+                price={rewardsDataMap[reward.tokenAddress as any].price as number}
+                claim={{
+                    description: `${rewardsDataMap[reward.tokenAddress as any].name} Rewards`,
+                    createdAt: Date.now(),
+                }}
             />
         )
     })
@@ -118,7 +123,7 @@ export function StakingClaimModal() {
                         {formatNumberWithStyle(
                             userRewards.reduce((acc, reward) => {
                                 const amount = parseFloat(ethers.utils.formatEther(reward.amount))
-                                const price = rewardsMetadata[reward.id].price as number
+                                const price = rewardsDataMap[reward.tokenAddress as any].price as number
                                 return acc + amount * price
                             }, 0),
                             { style: 'currency' }

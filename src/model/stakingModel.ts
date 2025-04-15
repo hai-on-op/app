@@ -1,7 +1,8 @@
 import { type Action, type Thunk, action, thunk } from 'easy-peasy'
 import { JsonRpcSigner, TransactionResponse } from '@ethersproject/providers'
-import { Contract } from 'ethers'
+import { BigNumber, Contract } from 'ethers'
 import { parseEther } from 'ethers/lib/utils'
+import * as ethers from 'ethers'
 
 import { type StoreModel } from './index'
 import { ActionState } from '~/utils'
@@ -33,9 +34,10 @@ export interface StakingModel {
 
     userRewards: Array<{
         id: number
-        amount: string
+        amount: BigNumber
+        tokenAddress: string
     }>
-    setUserRewards: Action<StakingModel, Array<{ id: number; amount: string }>>
+    setUserRewards: Action<StakingModel, Array<{ id: number; amount: BigNumber; tokenAddress: string }>>
     fetchUserRewards: Thunk<StakingModel, { signer: JsonRpcSigner }, any, StoreModel>
 }
 
@@ -51,6 +53,7 @@ export const stakingModel: StakingModel = {
     }),
 
     stake: thunk(async (actions, { signer, amount }, { getStoreActions }) => {
+        // debugger
         const storeActions = getStoreActions()
         try {
             console.log('stake', import.meta.env.VITE_STAKING_MANAGER, signer, amount)
@@ -246,25 +249,46 @@ export const stakingModel: StakingModel = {
     fetchUserRewards: thunk(async (actions, { signer }) => {
         try {
             const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
-
             const address = await signer.getAddress()
-            const rewardsCount = await stakingManager.rewards()
+            const rewardsCountBigNum = await stakingManager.rewards()
+            const rewardsCount = rewardsCountBigNum.toNumber()
 
-            const rewards = []
-            for (let i = 0; i < rewardsCount.toNumber(); i++) {
-                const amount = await stakingManager.claimableReward(i, address)
-                if (amount.gt(0)) {
-                    rewards.push({
-                        id: i,
-                        amount: amount.toString(),
-                        name: 'LUKE',
-                    })
+            const activePoolIndexes: number[] = []
+            for (let i = 0; i < rewardsCount; i++) {
+                const { isActive } = await stakingManager.rewardTypes(i)
+                if (isActive) {
+                    activePoolIndexes.push(i)
                 }
             }
 
-            actions.setUserRewards(rewards)
+            const rewardPools = await stakingManager.callStatic.earned(address)
+            const aggregatedRewards: Record<string, ethers.BigNumber> = {}
+            for (let i = 0; i < activePoolIndexes.length; i++) {
+                const poolIndex = activePoolIndexes[i]
+                const { rewardToken, rewardAmount } = rewardPools[poolIndex]
+                if (rewardAmount && rewardAmount.gt(0)) {
+                    if (aggregatedRewards[rewardToken]) {
+                        aggregatedRewards[rewardToken] = aggregatedRewards[rewardToken].add(rewardAmount)
+                    } else {
+                        aggregatedRewards[rewardToken] = rewardAmount
+                    }
+                }
+            }
+            const finalRewardsState: Array<{ id: number; amount: BigNumber; tokenAddress: string }> = Object.entries(
+                aggregatedRewards
+            ).map(([tokenAddress, totalAmountBigNum], index) => {
+                return {
+                    id: index,
+                    amount: totalAmountBigNum,
+                    tokenAddress: tokenAddress,
+                }
+            })
+
+            actions.setUserRewards(finalRewardsState)
         } catch (error) {
-            console.error('Error fetching user rewards:', error)
+            console.error('Error fetching user rewards via earned():', error)
+            // Clear rewards on error
+            actions.setUserRewards([])
         }
     }),
 }

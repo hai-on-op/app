@@ -38,7 +38,6 @@ export function Stake() {
             compactQuery="upToMedium"
             headerContent={<></>}
         >
-            <h1>Stake</h1>
             {navIndex === 0 ? (
                 <BodyGrid>
                     <Overview simulation={simulation} />

@@ -42,14 +42,13 @@
     },
     { "inputs": [], "name": "StakingManager_CooldownPeriodNotElapsed", "type": "error" },
     { "inputs": [], "name": "StakingManager_ForwardingOnly", "type": "error" },
-    { "inputs": [], "name": "StakingManager_InactiveRewardType", "type": "error" },
     { "inputs": [], "name": "StakingManager_InvalidRewardType", "type": "error" },
     { "inputs": [], "name": "StakingManager_NoPendingWithdrawal", "type": "error" },
     { "inputs": [], "name": "StakingManager_NullRewardPool", "type": "error" },
     { "inputs": [], "name": "StakingManager_NullRewardToken", "type": "error" },
     { "inputs": [], "name": "StakingManager_StakeNullAmount", "type": "error" },
     { "inputs": [], "name": "StakingManager_StakeNullReceiver", "type": "error" },
-    { "inputs": [], "name": "StakingManager_WithdrawNegativeAmount", "type": "error" },
+    { "inputs": [], "name": "StakingManager_WithdrawAmountExceedsBalance", "type": "error" },
     { "inputs": [], "name": "StakingManager_WithdrawNullAmount", "type": "error" },
     { "inputs": [], "name": "Unauthorized", "type": "error" },
     { "inputs": [], "name": "UnrecognizedCType", "type": "error" },
@@ -126,6 +125,17 @@
             { "indexed": true, "internalType": "address", "name": "_destination", "type": "address" }
         ],
         "name": "StakingManagerRewardPaid",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            { "indexed": true, "internalType": "address", "name": "_account", "type": "address" },
+            { "indexed": true, "internalType": "uint256", "name": "_id", "type": "uint256" },
+            { "indexed": true, "internalType": "address", "name": "_rewardPool", "type": "address" },
+            { "indexed": false, "internalType": "uint256", "name": "_wad", "type": "uint256" }
+        ],
+        "name": "StakingManagerRewardPoolStaked",
         "type": "event"
     },
     {
@@ -430,15 +440,22 @@
     },
     {
         "inputs": [],
-        "name": "stakedSupply",
+        "name": "stakingToken",
+        "outputs": [{ "internalType": "contract IStakingToken", "name": "", "type": "address" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "totalStaked",
         "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [],
-        "name": "stakingToken",
-        "outputs": [{ "internalType": "contract IStakingToken", "name": "", "type": "address" }],
+        "name": "totalStakedRaw",
+        "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
         "stateMutability": "view",
         "type": "function"
     },

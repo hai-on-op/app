@@ -24,6 +24,7 @@ type OverviewStatProps = {
     }
     simulatedValue?: string
     fullWidth?: boolean
+    simulationMode?: boolean
 }
 export function OverviewStat({
     token,
@@ -36,8 +37,10 @@ export function OverviewStat({
     convertedValue,
     alert,
     simulatedValue,
+    simulationMode = false,
     fullWidth = false,
 }: OverviewStatProps) {
+    console.log('simulatedValue', simulatedValue)
     return (
         <StatContainer $fullWidth={fullWidth}>
             {isComingSoon ? (
@@ -101,6 +104,16 @@ export function OverviewStat({
                                 </Text>
                             </StatusLabel>
                         )}
+                        {/* {simulationMode && (
+                            <StatusLabel status={Status.CUSTOM} background="gradient" size={0.8}>
+                                <Text $fontSize="0.67rem" $fontWeight={700}>
+                                    {simulatedValue || '--'} {token}
+                                </Text>
+                                <Text $fontSize="0.67rem" $fontWeight={400} $whiteSpace="nowrap">
+                                    After Tx
+                                </Text>
+                            </StatusLabel>
+                        )} */}
                     </StatusContainer>
                 </>
             )}

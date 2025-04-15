@@ -49,7 +49,6 @@ export function Overview({ simulation }: OverviewProps) {
         boostProgress,
         boostedVaultsCount,
         loading: boostLoading,
-        
     } = useBoost()
 
     // Log HAI/WETH LP boost and LP value
@@ -134,6 +133,12 @@ export function Overview({ simulation }: OverviewProps) {
         )
     }
 
+    const myBoostedValueToolTip = (
+        <div>
+            <h1>Boosted Value</h1>
+        </div>
+    )
+
     return (
         <Container>
             <Header>
@@ -215,7 +220,7 @@ export function Overview({ simulation }: OverviewProps) {
                     })}%`}
                 />
                 <OverviewStat
-                    isComingSoon={true}
+                    isComingSoon={false}
                     value={
                         'N/A' /*`${formatNumberWithStyle(stakingSummary.myStakingAPY, {
                         minDecimals: 2,
@@ -227,15 +232,16 @@ export function Overview({ simulation }: OverviewProps) {
                 />
 
                 <OverviewStat
-                    isComingSoon={true}
+                    isComingSoon={false}
                     value={'N/A'} //stakingSummary.myBoostedVaults}
-                    label="My Boosted Vaults"
-                    tooltip={t('stability_fee_tip')}
+                    label="My Boosted Value"
+                    // tooltip={t('stability_fee_tip')}
+                    tooltip={myBoostedValueToolTip as any}
                 />
                 <OverviewProgressStat
-                    isComingSoon={true}
+                    isComingSoon={false}
                     value={'N/A'} //stakingSummary.myNetHaiBoost}
-                    label="My Net HAI Boost:"
+                    label="My Net Boost:"
                     simulatedValue={
                         /*`${formatNumberWithStyle(stakingSummary.myNetHaiBoostAfterTx, {
                         minDecimals: 2,

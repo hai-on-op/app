@@ -105,12 +105,12 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
         })
     }, [withdrawActive, toggleModal])
 
-    console.log(
-        'CHecking this: ',
-        Number(unstakingAmount),
-        Number(stakingData.stakedBalance),
-        Number(stakingAmount) > Number(kiteBalance.raw)
-    )
+    // console.log(
+    //     'CHecking this: ',
+    //     Number(unstakingAmount),
+    //     Number(stakingData.stakedBalance),
+    //     Number(stakingAmount) > Number(kiteBalance.raw)
+    // )
 
     if (stakingDataLoading) {
         return (
