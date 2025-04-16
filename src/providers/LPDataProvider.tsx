@@ -2,6 +2,10 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import { ApolloClient, InMemoryCache, gql, useQuery } from '@apollo/client'
 import { NETWORK_ID, VITE_GRAPH_API_KEY } from '~/utils'
 import { useAccount } from 'wagmi'
+import { Position, FeeAmount, Pool, computePoolAddress } from '@uniswap/v3-sdk'
+import { CurrencyAmount, Token, Fraction, Price } from '@uniswap/sdk-core'
+import { TickMath, SqrtPriceMath } from '@uniswap/v3-sdk'
+import JSBI from 'jsbi'
 
 // Pool ID from the subgraph
 const POOL_ID = '0x146b020399769339509c98b7b353d19130c150ec'
@@ -75,10 +79,26 @@ type UserPosition = {
     owner: string
 }
 
+// Define current user position type
+type CurrentUserPosition = {
+    id: string
+    liquidity: string
+    currentToken0: string // Current amount of token0 in the position
+    currentToken1: string // Current amount of token1 in the position
+    tickLower: {
+        tickIdx: string
+    }
+    tickUpper: {
+        tickIdx: string
+    }
+    owner: string
+}
+
 // Define the context type
 type LPDataContextType = {
     pool: PoolData | null
     userPositions: UserPosition[] | null
+    userCurrentPositionComposition: CurrentUserPosition[] | null
     loading: boolean
     error: any
     account: string | undefined
@@ -109,17 +129,171 @@ type PoolData = {
 const LPDataContext = createContext<LPDataContextType>({
     pool: null,
     userPositions: null,
+    userCurrentPositionComposition: null,
     loading: false,
     error: null,
     account: undefined,
 })
 
+/**
+ * Transforms the initial position data from subgraph to current position composition
+ * @param position The position data from subgraph
+ * @param currentTick The current tick of the pool
+ * @param sqrtPrice The current sqrtPrice of the pool
+ * @param token0Decimals Decimals of token0
+ * @param token1Decimals Decimals of token1
+ * @returns CurrentUserPosition with updated token amounts
+ */
+export function initialPositionToCurrent(
+    position: UserPosition,
+    currentTick: number,
+    sqrtPrice: string,
+    token0Decimals: number,
+    token1Decimals: number
+): CurrentUserPosition {
+    // Convert position data to numbers
+    const liquidity = position.liquidity
+    const tickLower = parseInt(position.tickLower.tickIdx)
+    const tickUpper = parseInt(position.tickUpper.tickIdx)
+
+    // Calculate current token amounts based on current tick and sqrtPrice
+    const { amount0, amount1 } = calculateCurrentAmounts(
+        liquidity,
+        tickLower,
+        tickUpper,
+        currentTick,
+        sqrtPrice,
+        token0Decimals,
+        token1Decimals
+    )
+
+    // Return the new position with current token amounts
+    return {
+        id: position.id,
+        liquidity: position.liquidity,
+        currentToken0: amount0,
+        currentToken1: amount1,
+        tickLower: position.tickLower,
+        tickUpper: position.tickUpper,
+        owner: position.owner,
+    }
+}
+
+/**
+ * Calculates the current amounts of token0 and token1 in a position using Uniswap SDK
+ */
+function calculateCurrentAmounts(
+    liquidity: string,
+    tickLower: number,
+    tickUpper: number,
+    currentTick: number,
+    sqrtPriceX96: string,
+    token0Decimals: number,
+    token1Decimals: number
+): { amount0: string; amount1: string } {
+    try {
+        console.log(
+            'Inputs are here',
+            NETWORK_ID,
+            liquidity,
+            tickLower,
+            tickUpper,
+            currentTick,
+            sqrtPriceX96,
+            token0Decimals,
+            token1Decimals
+        )
+
+        // Ensure decimals are valid numbers between 0-18
+        const validToken0Decimals =
+            typeof token0Decimals === 'number' && !isNaN(token0Decimals)
+                ? Math.min(Math.max(0, Math.floor(token0Decimals)), 18)
+                : 18
+        const validToken1Decimals =
+            typeof token1Decimals === 'number' && !isNaN(token1Decimals)
+                ? Math.min(Math.max(0, Math.floor(token1Decimals)), 18)
+                : 18
+
+        console.log('Using decimals:', validToken0Decimals, validToken1Decimals)
+
+        // Create placeholder tokens - we only need decimals
+        const token0 = new Token(NETWORK_ID, '0x10398abc267496e49106b07dd6be13364d10dc71', validToken0Decimals)
+        const token1 = new Token(NETWORK_ID, '0x4200000000000000000000000000000000000006', validToken1Decimals)
+
+        console.log('token0', token0)
+        console.log('token1', token1)
+
+        // Convert liquidity to JSBI (JavaScript BigInt implementation used by Uniswap SDK)
+        const jsbiLiquidity = JSBI.BigInt(liquidity)
+
+        // Convert sqrtPriceX96 to JSBI
+        const sqrtPriceX96JSBI = JSBI.BigInt(sqrtPriceX96)
+
+        // Create a Pool instance
+        const pool = new Pool(
+            token0,
+            token1,
+            FeeAmount.MEDIUM,
+            sqrtPriceX96JSBI,
+            JSBI.BigInt(0), // Liquidity - not important for our calculation
+            currentTick
+        )
+
+        // Create Position instance using the pool
+        const position = new Position({
+            pool,
+            tickLower,
+            tickUpper,
+            liquidity: jsbiLiquidity,
+        })
+
+        console.log('position', position)
+
+        // Get amounts
+        const amount0Raw = position.amount0
+        const amount1Raw = position.amount1
+
+        console.log('amount0Raw', amount0Raw)
+        console.log('amount1Raw', amount1Raw)
+
+        // Format amounts as human readable with commas
+        const formatWithCommas = (value: string): string => {
+            const parts = value.split('.')
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+            return parts.join('.')
+        }
+
+        // Get human readable values with proper decimals and commas
+        const amount0Human = formatWithCommas(amount0Raw.toSignificant(6))
+        const amount1Human = formatWithCommas(amount1Raw.toSignificant(6))
+
+        console.log('Human readable amounts:')
+        console.log(`- Token0: ${amount0Human} ${token0.symbol}`)
+        console.log(`- Token1: ${amount1Human} ${token1.symbol}`)
+
+        return {
+            amount0: amount0Raw.toFixed(validToken0Decimals),
+            amount1: amount1Raw.toFixed(validToken1Decimals),
+        }
+    } catch (error) {
+        console.error('Error calculating position amounts:', error)
+        return {
+            amount0: '0',
+            amount1: '0',
+        }
+    }
+}
+
 // Provider component
 export function LPDataProvider({ children }: { children: React.ReactNode }) {
     const { address: account } = useAccount()
 
+    //const account = '0x328cace41eadf6df6e693b8e4810bf97aac4f5ee'
     const [pool, setPool] = useState<PoolData | null>(null)
     const [userPositions, setUserPositions] = useState<UserPosition[] | null>(null)
+    const [userCurrentPositionComposition, setUserCurrentPositionComposition] = useState<CurrentUserPosition[] | null>(
+        null
+    )
     const [loading, setLoading] = useState<boolean>(true)
     const [error, setError] = useState<any>(null)
 
@@ -171,7 +345,6 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
 
                 if (data && data.positions) {
                     setUserPositions(data.positions)
-                    console.log('User positions:', data.positions)
                 }
                 setLoading(false)
             } catch (err) {
@@ -188,11 +361,38 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
         return () => clearInterval(intervalId)
     }, [account])
 
+    // Calculate current position composition when pool or positions change
+    useEffect(() => {
+        if (!userPositions || !pool || userPositions.length === 0) {
+            setUserCurrentPositionComposition(null)
+            return
+        }
+
+        try {
+            const currentTick = parseInt(pool.tick)
+            const currentPositions = userPositions.map((position) =>
+                initialPositionToCurrent(
+                    position,
+                    currentTick,
+                    pool.sqrtPrice,
+                    pool.token0.decimals,
+                    pool.token1.decimals
+                )
+            )
+
+            setUserCurrentPositionComposition(currentPositions)
+        } catch (err) {
+            console.error('Error calculating current positions:', err)
+            setError(err)
+        }
+    }, [userPositions, pool])
+
     return (
         <LPDataContext.Provider
             value={{
                 pool,
                 userPositions,
+                userCurrentPositionComposition,
                 loading,
                 error,
                 account,

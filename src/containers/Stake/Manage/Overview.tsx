@@ -54,20 +54,20 @@ export function Overview({ simulation }: OverviewProps) {
     } = useBoost()
 
 
-    console.log('haiVeloBoost', haiVeloBoost)
-
-    // Log HAI/WETH LP boost and LP value
-    console.log('Overview - HAI/WETH LP Boost:', haiWethLpBoost)
+    //console.log('haiVeloBoost', haiVeloBoost)
+//
+    //// Log HAI/WETH LP boost and LP value
+    //console.log('Overview - HAI/WETH LP Boost:', haiWethLpBoost)
     console.log('Overview - HAI/WETH LP Value (USD):', userLPPositionValue)
-    console.log('Overview - HAI/WETH LP Formatted Boost:', formattedValues.haiWethLpBoost)
-    console.log('Overview - HAI/WETH LP Formatted Value:', formattedValues.positionValue)
+    //console.log('Overview - HAI/WETH LP Formatted Boost:', formattedValues.haiWethLpBoost)
+    //console.log('Overview - HAI/WETH LP Formatted Value:', formattedValues.positionValue)
 
     const { prices: veloPrices } = useVelodromePrices()
 
     const kitePrice = Number(veloPrices?.KITE?.raw || 0)
 
-    console.log('stakingData', stakingData)
-    console.log('stakingStats', stakingStats)
+    //console.log('stakingData', stakingData)
+    //console.log('stakingStats', stakingStats)
 
     const stakingSummary = useMemo(() => {
         if (loading || boostLoading) return null
