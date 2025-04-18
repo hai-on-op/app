@@ -40,7 +40,6 @@ export function OverviewStat({
     simulationMode = false,
     fullWidth = false,
 }: OverviewStatProps) {
-    console.log('simulatedValue', simulatedValue)
     return (
         <StatContainer $fullWidth={fullWidth}>
             {isComingSoon ? (
@@ -189,7 +188,7 @@ export function OverviewProgressStat({
                 </StatusContainer>
             </Flex>
             <ProgressIndicator
-                isComingSoon={true}
+                // progress={{ progress: Number(value) - 1, label: `${value}x` }}
                 progress={{ progress: Number(value) - 1, label: `${value}x` }}
                 colorLimits={[0.25, 0.5, 0.75]}
                 labels={[

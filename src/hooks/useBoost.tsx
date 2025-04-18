@@ -129,16 +129,10 @@ export function useBoost() {
         // Capped at maximum of 2
         const cappedBoost = Math.min(boost, 2)
 
-        console.log('haiVELO Boost calculation:', {
-            kiteRatio,
-            haiVeloRatio,
-            boost,
-            cappedBoost,
-        })
-
         return cappedBoost
     }, [userKITEStaked, totalKITEStaked, userHaiVELODeposited, totalHaiVELODeposited])
 
+    // Formatted values for display
     // Formatted values for display
     const formattedValues = useMemo(() => {
         return {
@@ -213,7 +207,6 @@ export function useBoost() {
         haiVeloBoost,
     ])
 
-
     // LP Position data
     const userLPPosition = userTotalLiquidity
     const totalPoolLiquidity = pool?.liquidity || '0'
@@ -263,6 +256,28 @@ export function useBoost() {
     // Boosted vaults count
     const boostedVaultsCount = 0
 
+    const userKiteRatio = Number(userKITEStaked) / Number(totalKITEStaked)
+    const haiVeloRatio = Number(userHaiVELODeposited) / Number(totalHaiVELODeposited)
+    const boostValue = userKiteRatio / haiVeloRatio + 1
+
+    const hvBoost = Math.min(boostValue, 2)
+
+    const lpRatio = Number(userLPPosition) / Number(totalPoolLiquidity)
+
+    const rawLpBoostValue = userKiteRatio / lpRatio + 1
+
+    const lpBoostValue = Math.min(rawLpBoostValue, 2)
+
+    const userTotalValue = Number(userLPPositionValue) + Number(haiVeloPositionValue)
+
+    const hvValueRatio = Number(haiVeloPositionValue) / userTotalValue
+    const lpValueRatio = Number(userLPPositionValue) / userTotalValue
+
+    const hvWeightedBoost = hvBoost * hvValueRatio
+    const lpWeightedBoost = lpBoostValue * lpValueRatio
+
+    const netBoostValue = hvWeightedBoost + lpWeightedBoost
+
     return {
         // HaiVELO data
         userHaiVELODeposited,
@@ -285,8 +300,12 @@ export function useBoost() {
         // haiVELO boost data
         haiVeloBoost,
 
+        hvBoost,
+        lpBoostValue,
+        userTotalValue,
+
         // Net boost data
-        netBoost,
+        netBoostValue,
 
         // Formatted values for display
         formattedValues,

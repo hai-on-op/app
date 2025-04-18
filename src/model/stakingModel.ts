@@ -8,7 +8,7 @@ import { type StoreModel } from './index'
 import { ActionState } from '~/utils'
 import { handlePreTxGasEstimate } from '~/hooks'
 import StakingManagerABI from '~/abis/StakingManager.json'
-
+import RewardPoolABI from '~/abis/RewardPool.json'
 export interface StakingModel {
     stakedAmount: string
     setStakedAmount: Action<StakingModel, string>
@@ -37,6 +37,12 @@ export interface StakingModel {
         amount: BigNumber
         tokenAddress: string
     }>
+    totalStaked: string
+    setTotalStaked: Action<StakingModel, string>
+    fetchTotalStaked: Thunk<StakingModel, { signer: JsonRpcSigner }, any, StoreModel>
+    stakingApyData: Array<{ id: number; rpRate: BigNumber; rpToken: string }>
+    setStakingApyData: Action<StakingModel, Array<{ id: number; rpRate: BigNumber; rpToken: string }>>
+    fetchStakingApyData: Thunk<StakingModel, { signer: JsonRpcSigner }, any, StoreModel>
     setUserRewards: Action<StakingModel, Array<{ id: number; amount: BigNumber; tokenAddress: string }>>
     fetchUserRewards: Thunk<StakingModel, { signer: JsonRpcSigner }, any, StoreModel>
 }
@@ -56,8 +62,6 @@ export const stakingModel: StakingModel = {
         // debugger
         const storeActions = getStoreActions()
         try {
-            console.log('stake', import.meta.env.VITE_STAKING_MANAGER, signer, amount)
-
             const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
 
             const txData = await stakingManager.populateTransaction.stake(await signer.getAddress(), parseEther(amount))
@@ -242,26 +246,87 @@ export const stakingModel: StakingModel = {
     }),
 
     userRewards: [],
+    stakingApyData: [],
     setUserRewards: action((state, payload) => {
         state.userRewards = payload
+    }),
+    setStakingApyData: action((state, payload) => {
+        state.stakingApyData = payload
+    }),
+    fetchTotalStaked: thunk(async (actions, { signer }) => {
+        const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
+        const totalStaked = await stakingManager.totalStaked()
+        actions.setTotalStaked(totalStaked.toString())
+    }),
+    setTotalStaked: action((state, payload) => {
+        state.totalStaked = payload
+    }),
+    fetchStakingApyData: thunk(async (actions, { signer }) => {
+        const apyData = []
+        try {
+            const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
+            const stakingManagerTotalStaked = await stakingManager.totalStaked()
+            const rewardsCountBigNum = await stakingManager.rewards()
+            const rewardsCount = rewardsCountBigNum.toNumber()
+            for (let i = 0; i < rewardsCount; i++) {
+                const poolData = await stakingManager.rewardTypes(i)
+                const { isActive } = poolData
+                if (isActive) {
+                    const rpContract = new Contract(poolData.rewardPool, RewardPoolABI, signer)
+                    const rpRate = await rpContract.rewardRate()
+                    apyData.push({
+                        id: i,
+                        rpRate: rpRate,
+                        rpToken: poolData.rewardToken,
+                    })
+                }
+            }
+            actions.setStakingApyData(apyData)
+            // console.log('rewardPools', rewardPools)
+        } catch (error) {
+            console.error('Error fetching reward pools:', error)
+            actions.setStakingApyData([])
+        }
     }),
 
     fetchUserRewards: thunk(async (actions, { signer }) => {
         try {
             const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
             const address = await signer.getAddress()
+            const stakingManagerTotalStaked = await stakingManager.totalStaked()
             const rewardsCountBigNum = await stakingManager.rewards()
             const rewardsCount = rewardsCountBigNum.toNumber()
 
+            const activePools = []
+
             const activePoolIndexes: number[] = []
             for (let i = 0; i < rewardsCount; i++) {
-                const { isActive } = await stakingManager.rewardTypes(i)
+                // const { isActive } = await stakingManager.rewardTypes(i)
+                const poolData = await stakingManager.rewardTypes(i)
+
+                const { isActive } = poolData
                 if (isActive) {
+                    const rpContract = new Contract(poolData.rewardPool, RewardPoolABI, signer)
+                    const rpRate = await rpContract.rewardRate()
+                    const rpTotalStaked = await rpContract.totalStaked()
+                    const ratePerStakedToken = rpRate.div(stakingManagerTotalStaked)
+                    // console.log('ratePerStakedToken', ratePerStakedToken)
+                    // console.log('rpRate', rpRate)
+                    // console.log('rpTotalStaked', rpTotalStaked)
+                    // console.log('rpContract', rpContract)
+
+                    activePools.push({ ...poolData, index: i })
                     activePoolIndexes.push(i)
                 }
             }
 
             const rewardPools = await stakingManager.callStatic.earned(address)
+
+            // for (let i = 0; i < activePoolIndexes.length; i++) {
+            //     // const poolData = rewardPools[activePoolIndexes[i]]
+
+            // }
+
             const aggregatedRewards: Record<string, ethers.BigNumber> = {}
             for (let i = 0; i < activePoolIndexes.length; i++) {
                 const poolIndex = activePoolIndexes[i]

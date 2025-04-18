@@ -13,29 +13,21 @@ type Progress = {
 export type ProgressIndicatorProps = {
     progress: Progress
     simulatedProgress?: Progress
-    isComingSoon?: boolean
     colorLimits: [number, number, number]
     labels?: Progress[]
 }
-export function ProgressIndicator({
-    progress,
-    simulatedProgress,
-    isComingSoon = false,
-    colorLimits,
-    labels,
-}: ProgressIndicatorProps) {
+export function ProgressIndicator({ progress, simulatedProgress, colorLimits, labels }: ProgressIndicatorProps) {
+    const data = progressToPercentage(progress.progress)
+    const item = colorLimits.map(progressToPercentage)
     return (
         <Container>
             <Inner $limits={colorLimits.map(progressToPercentage) as any} />
-            {!isComingSoon && (
-                <Indicator
-                    $left={progressToPercentage(progress.progress)}
-                    style={simulatedProgress ? { opacity: 0.6 } : undefined}
-                >
-                    <Text $whiteSpace="nowrap">{progress.label}</Text>
-                </Indicator>
-            )}
-
+            <Indicator
+                $left={progressToPercentage(progress.progress)}
+                style={simulatedProgress ? { opacity: 0.6 } : undefined}
+            >
+                <Text $whiteSpace="nowrap">{progress.label}</Text>
+            </Indicator>
             {simulatedProgress !== undefined && (
                 <Indicator $left={progressToPercentage(simulatedProgress.progress)}>
                     <Text $whiteSpace="nowrap">{simulatedProgress.label}</Text>

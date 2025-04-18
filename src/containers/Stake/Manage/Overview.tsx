@@ -17,7 +17,7 @@ import { StatusLabel } from '~/components/StatusLabel'
 import { OverviewProgressStat, OverviewStat } from './OverviewStat'
 import { AlertTriangle, ArrowLeft, ArrowRight } from 'react-feather'
 import { useBoost } from '~/hooks/useBoost'
-
+import { BigNumber, utils } from 'ethers'
 type StakingSimulation = {
     stakingAmount: string
     unstakingAmount: string
@@ -32,7 +32,14 @@ type OverviewProps = {
 export function Overview({ simulation }: OverviewProps) {
     const { stakingAmount, unstakingAmount } = simulation
     const { t } = useTranslation()
-    const { stakingData, stakingStats, loading } = useStakingData()
+    const { stakingData, stakingStats, loading, stakingApyData, totalStaked } = useStakingData()
+    const boostData = useBoost()
+    const { prices: veloPrices } = useVelodromePrices()
+
+    const {
+        vaultModel: { liquidationData },
+    } = useStoreState((state) => state)
+
     const {
         userHaiVELODeposited,
         totalHaiVELODeposited,
@@ -42,6 +49,8 @@ export function Overview({ simulation }: OverviewProps) {
         totalPoolLiquidity,
         userLPPositionValue,
         haiWethLpBoost,
+        lpBoostValue,
+        userTotalValue,
         formattedValues,
         userSharePercentage,
         boostFactor,
@@ -49,29 +58,84 @@ export function Overview({ simulation }: OverviewProps) {
         boostProgress,
         boostedVaultsCount,
         haiVeloBoost,
+        hvBoost,
+        netBoostValue,
+        haiVeloPositionValue,
         loading: boostLoading,
-    } = useBoost()
+    } = boostData
 
+    // --------------------------------
+    // Staking APY Calculation Example
+    // --------------------------------
+    //
+    // pool A:
+    // rate = .000165343915343915
+    // price = 1.18688975069085
 
-    //console.log('haiVeloBoost', haiVeloBoost)
-//
-    //// Log HAI/WETH LP boost and LP value
-    //console.log('Overview - HAI/WETH LP Boost:', haiWethLpBoost)
-    console.log('Overview - HAI/WETH LP Value (USD):', userLPPositionValue)
-    //console.log('Overview - HAI/WETH LP Formatted Boost:', formattedValues.haiWethLpBoost)
-    //console.log('Overview - HAI/WETH LP Formatted Value:', formattedValues.positionValue)
+    // pool B:
+    // rate = .000165343915343915
+    // price = 1.159339
 
-    const { prices: veloPrices } = useVelodromePrices()
+    // pool C:
+    // rate = .000165343915343915
+    // price = 0.6634020531829766
 
+    // Total Staked = 20
+    // Staked asset price = 1.159339
+
+    // totalRewardValuePerSecond = (.000165343915343915 * 1.18688975069085) + (.000165343915343915 * 1.159339) + (.000165343915343915 * 0.6634020531829766)
+    // totalRewardValuePerSecond = 0.000497624140852152833989406075139
+
+    // totalRewardValuePerYear = totalRewardValuePerSecond * 31,536,000
+    // totalRewardValuePerYear = 0.000497624140852152833989406075139 * 31536000
+    // totalRewardValuePerYear = 15693.074905913491772689909985583504
+
+    // totalStakedValue = 20 * 1.159339
+    // totalStakedValue = 23.18678
+
+    // APR = totalRewardValuePerYear / totalStakedValue
+    // APR = 15693 / 23.18678
+
+    // APR = 676
+    //
+    // --------------------------------
+
+    const haiPrice = parseFloat(liquidationData?.currentRedemptionPrice || '1')
     const kitePrice = Number(veloPrices?.KITE?.raw || 0)
+    const opPrice = Number(liquidationData?.collateralLiquidationData?.OP?.currentPrice.value || 0)
 
-    //console.log('stakingData', stakingData)
-    //console.log('stakingStats', stakingStats)
+    const HAI_ADDRESS = import.meta.env.VITE_HAI_ADDRESS
+    const KITE_ADDRESS = import.meta.env.VITE_KITE_ADDRESS
+    const OP_ADDRESS = import.meta.env.VITE_OP_ADDRESS
+
+    const rewardsDataMap = {
+        [HAI_ADDRESS]: haiPrice,
+        [KITE_ADDRESS]: kitePrice,
+        [OP_ADDRESS]: opPrice,
+    }
+    const stakingApyRewardsTotal = stakingApyData.reduce((acc, item) => {
+        const price = rewardsDataMap[item.rpToken as any]
+        const scaledPrice = utils.parseUnits(price.toString(), 18)
+        const amount = item.rpRate.mul(scaledPrice)
+        const nextAcc = acc.add(amount)
+        return nextAcc
+    }, BigNumber.from(0))
+    // const totalStaked = totalStaked
+
+    let stakingApy = 0
+    if (totalStaked != 0 && kitePrice != 0) {
+        const stakingApyRewardsTotalYearly = stakingApyRewardsTotal.mul(31536000)
+        const scaledKitePrice = utils.parseUnits(kitePrice.toString(), 18)
+        const scaledTotalStaked = utils.parseUnits(totalStaked.toString(), 18)
+        const scaledTotalStakedUSD = scaledTotalStaked.mul(scaledKitePrice)
+        stakingApy = Number(stakingApyRewardsTotalYearly.div(scaledTotalStakedUSD).toString())
+    }
 
     const stakingSummary = useMemo(() => {
         if (loading || boostLoading) return null
+        const totalStakedValue = Number(totalStaked) / 10 ** 18
 
-        const totalStakedUSD = Number(stakingStats.totalStaked) * kitePrice
+        const totalStakedUSD = Number(totalStakedValue) * kitePrice
         const myStakedUSD = Number(stakingData.stakedBalance) * kitePrice
         const myShare =
             stakingStats.totalStaked !== '0'
@@ -95,7 +159,7 @@ export function Overview({ simulation }: OverviewProps) {
             // Totals section
             totalStaked: {
                 title: 'Total Staked KITE',
-                stKiteAmount: Number(stakingStats.totalStaked),
+                stKiteAmount: Number(totalStakedValue),
                 usdValue: totalStakedUSD,
                 afterTx: simulatedTotalStaked,
             },
@@ -111,7 +175,7 @@ export function Overview({ simulation }: OverviewProps) {
             // Additional details
             myStKiteShare: myShare,
             myStKiteShareAfterTx: simulatedShare,
-            myStakingAPY: 'N/A', // TODO: Calculate real APY
+            myStakingAPY: stakingApy, // TODO: Calculate real APY
             myBoostedVaults: 4, // TODO: Get real boosted vaults count
 
             // Boost section
@@ -138,8 +202,43 @@ export function Overview({ simulation }: OverviewProps) {
     }
 
     const myBoostedValueToolTip = (
-        <div>
-            <h1>Boosted Value</h1>
+        <div style={{ width: '100%' }}>
+            <div style={{ marginBottom: '10px' }}>
+                <Text $fontSize=".9rem" $fontWeight={700}>
+                    haiVELO
+                </Text>
+                <Text $fontSize=".9rem">
+                    {formatNumberWithStyle(Number(haiVeloPositionValue), {
+                        minDecimals: 2,
+                        maxDecimals: 2,
+                        style: 'currency',
+                    })}{' '}
+                    +{' '}
+                    {formatNumberWithStyle(Number(hvBoost), {
+                        minDecimals: 0,
+                        maxDecimals: 1,
+                    })}
+                    x Boost
+                </Text>
+            </div>
+            <div>
+                <Text $fontSize=".9rem" $fontWeight={700}>
+                    HAI/WETH LP
+                </Text>
+                <Text $fontSize=".9rem">
+                    {formatNumberWithStyle(userLPPositionValue, {
+                        minDecimals: 2,
+                        maxDecimals: 2,
+                        style: 'currency',
+                    })}{' '}
+                    +{' '}
+                    {formatNumberWithStyle(Number(lpBoostValue), {
+                        minDecimals: 0,
+                        maxDecimals: 1,
+                    })}
+                    x Boost
+                </Text>
+            </div>
         </div>
     )
 
@@ -225,26 +324,30 @@ export function Overview({ simulation }: OverviewProps) {
                 />
                 <OverviewStat
                     isComingSoon={false}
-                    value={
-                        'N/A' /*`${formatNumberWithStyle(stakingSummary.myStakingAPY, {
-                        minDecimals: 2,
+                    value={`${formatNumberWithStyle(stakingApy, {
+                        minDecimals: 0,
                         maxDecimals: 2,
-                    })}%`*/
-                    }
+                    })}%`}
                     label="My Staking APY"
                     tooltip={`Minimum collateral ratio required for opening a new vault. Vaults opened at this ratio will likely be at high risk of liquidation.`}
                 />
 
                 <OverviewStat
                     isComingSoon={false}
-                    value={'N/A'} //stakingSummary.myBoostedVaults}
+                    value={formatNumberWithStyle(userTotalValue, {
+                        minDecimals: 2,
+                        maxDecimals: 2,
+                        style: 'currency',
+                    })}
                     label="My Boosted Value"
-                    // tooltip={t('stability_fee_tip')}
                     tooltip={myBoostedValueToolTip as any}
                 />
                 <OverviewProgressStat
                     isComingSoon={false}
-                    value={'N/A'} //stakingSummary.myNetHaiBoost}
+                    value={`${formatNumberWithStyle(netBoostValue, {
+                        minDecimals: 2,
+                        maxDecimals: 2,
+                    })}`}
                     label="My Net Boost:"
                     simulatedValue={
                         /*`${formatNumberWithStyle(stakingSummary.myNetHaiBoostAfterTx, {

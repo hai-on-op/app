@@ -9,8 +9,6 @@ export function useBalance(token: string): FormattedBalance {
         connectWalletModel: { tokensFetchedData },
     } = useStoreState((state) => state)
 
-    console.log(tokensFetchedData)
-
     return useMemo(() => {
         return formatBalance(tokensFetchedData[token]?.balanceE18 || '0')
     }, [token, tokensFetchedData])

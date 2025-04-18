@@ -116,9 +116,15 @@ export function useStakingData() {
     const signer = useEthersSigner()
     const { stakingModel: stakingActions } = useStoreActions((actions) => actions)
     const cooldownPeriod = useStoreState((state) => state.stakingModel.cooldownPeriod)
+    const totalStaked = useStoreState((state) => state.stakingModel.totalStaked)
     const userRewards = useStoreState((state) => state.stakingModel.userRewards)
+    const stakingApyData = useStoreState((state) => state.stakingModel.stakingApyData)
 
-    const { data: userData, loading: userLoading, refetch: refetchUser } = useQuery(STAKING_USER_QUERY, {
+    const {
+        data: userData,
+        loading: userLoading,
+        refetch: refetchUser,
+    } = useQuery(STAKING_USER_QUERY, {
         variables: { id: address?.toLowerCase() },
         skip: !address,
     })
@@ -131,7 +137,9 @@ export function useStakingData() {
                 refetchUser(),
                 refetchStats(),
                 stakingActions.fetchCooldownPeriod({ signer }),
-                stakingActions.fetchUserRewards({ signer })
+                stakingActions.fetchUserRewards({ signer }),
+                stakingActions.fetchStakingApyData({ signer }),
+                stakingActions.fetchTotalStaked({ signer }),
             ])
         }
     }
@@ -140,6 +148,8 @@ export function useStakingData() {
         if (signer) {
             stakingActions.fetchCooldownPeriod({ signer })
             stakingActions.fetchUserRewards({ signer })
+            stakingActions.fetchStakingApyData({ signer })
+            stakingActions.fetchTotalStaked({ signer })
         }
     }, [signer, stakingActions])
 
@@ -149,7 +159,8 @@ export function useStakingData() {
         const user = userData.stakingUser
         return {
             stakedBalance: formatBigNumber(user.stakedBalance),
-            totalStaked: formatBigNumber(user.totalStaked),
+            // totalStaked: formatBigNumber(user.totalStaked),
+            totalStaked: formatBigNumber(totalStaked),
             totalWithdrawn: formatBigNumber(user.totalWithdrawn),
             stakingPositions: user.stakingPositions.map((pos: any) => ({
                 ...pos,
@@ -187,9 +198,11 @@ export function useStakingData() {
     return {
         stakingData,
         stakingStats,
+        totalStaked,
         loading,
         cooldownPeriod,
         userRewards,
-        refetchAll
+        stakingApyData,
+        refetchAll,
     }
-} 
+}
