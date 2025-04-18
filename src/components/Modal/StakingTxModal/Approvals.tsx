@@ -28,8 +28,6 @@ export function Approvals({ onNext, isStaking, amount }: ApprovalsProps) {
         true
     )
 
-    console.log('import.meta.env', import.meta.env)
-
     // debugger
 
     const { isApproved, button } = useMemo(() => {
