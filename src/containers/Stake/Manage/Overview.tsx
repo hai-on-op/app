@@ -36,6 +36,8 @@ export function Overview({ simulation }: OverviewProps) {
     const boostData = useBoost()
     const { prices: veloPrices } = useVelodromePrices()
 
+    console.log(stakingData, stakingStats, totalStaked)
+
     const {
         vaultModel: { liquidationData },
     } = useStoreState((state) => state)
@@ -122,17 +124,21 @@ export function Overview({ simulation }: OverviewProps) {
     }, BigNumber.from(0))
     // const totalStaked = totalStaked
 
+    // Ensure totalStaked is a number
+    const totalStakedNumber = Number(stakingStats.totalStaked) || 0
+
     let stakingApy = 0
-    if (totalStaked != 0 && kitePrice != 0) {
+    if (!isNaN(totalStakedNumber) && totalStakedNumber !== 0 && kitePrice !== 0) {
         const stakingApyRewardsTotalYearly = stakingApyRewardsTotal.mul(31536000)
         const scaledKitePrice = utils.parseUnits(kitePrice.toString(), 18)
-        const scaledTotalStaked = utils.parseUnits(totalStaked.toString(), 18)
+        const scaledTotalStaked = utils.parseUnits(totalStakedNumber.toString(), 18)
         const scaledTotalStakedUSD = scaledTotalStaked.mul(scaledKitePrice)
         stakingApy = Number(stakingApyRewardsTotalYearly.div(scaledTotalStakedUSD).toString())
     }
 
     const stakingSummary = useMemo(() => {
         if (loading || boostLoading) return null
+
         const totalStakedValue = Number(totalStaked) / 10 ** 18
 
         const totalStakedUSD = Number(totalStakedValue) * kitePrice

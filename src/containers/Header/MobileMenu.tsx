@@ -104,7 +104,7 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
                                     Earn
                                 </BrandedDropdown.Item>
                                 <BrandedDropdown.Item
-                                    href="/earn"
+                                    href="/stake"
                                     icon={<Lock size={18} />}
                                     active={location.pathname === '/earn'}
                                 >
