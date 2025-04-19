@@ -282,7 +282,7 @@ export function Overview({ simulation }: OverviewProps) {
                 <OverviewStat
                     value={formatNumberWithStyle(stakingSummary.totalStaked.stKiteAmount, {
                         minDecimals: 0,
-                        maxDecimals: 0,
+                        maxDecimals: 2,
                     })}
                     token="KITE"
                     tokenLabel={'stKITE'}
@@ -290,14 +290,14 @@ export function Overview({ simulation }: OverviewProps) {
                     label="Total Staked KITE"
                     convertedValue={formatNumberWithStyle(stakingSummary.totalStaked.usdValue, {
                         minDecimals: 0,
-                        maxDecimals: 0,
+                        maxDecimals: 2,
                         style: 'currency',
                     })}
                     simulatedValue={
                         stakingSummary.totalStaked.afterTx !== stakingSummary.totalStaked.stKiteAmount
                             ? formatNumberWithStyle(stakingSummary.totalStaked.afterTx, {
                                   minDecimals: 0,
-                                  maxDecimals: 0,
+                                  maxDecimals: 2,
                               })
                             : undefined
                     }
@@ -305,7 +305,7 @@ export function Overview({ simulation }: OverviewProps) {
                 />
                 <OverviewStat
                     value={formatNumberWithStyle(stakingSummary.myStaked.stKiteAmount, {
-                        minDecimals: 2,
+                        minDecimals:0,
                         maxDecimals: 2,
                     })}
                     token="KITE"
@@ -313,14 +313,14 @@ export function Overview({ simulation }: OverviewProps) {
                     simulatedToken="sKITE"
                     label="My Staked KITE"
                     convertedValue={formatNumberWithStyle(stakingSummary.myStaked.usdValue, {
-                        minDecimals: 2,
+                        minDecimals: 0,
                         maxDecimals: 2,
                         style: 'currency',
                     })}
                     simulatedValue={
                         stakingSummary.myStaked.afterTx !== stakingSummary.myStaked.stKiteAmount
                             ? formatNumberWithStyle(stakingSummary.myStaked.afterTx, {
-                                  minDecimals: 2,
+                                  minDecimals: 0,
                                   maxDecimals: 2,
                               })
                             : undefined
@@ -336,7 +336,7 @@ export function Overview({ simulation }: OverviewProps) {
                     simulatedValue={
                         stakingSummary.myStKiteShareAfterTx !== stakingSummary.myStKiteShare
                             ? `${formatNumberWithStyle(stakingSummary.myStKiteShareAfterTx, {
-                                  minDecimals: 2,
+                                  minDecimals: 0,
                                   maxDecimals: 2,
                               })}%`
                             : undefined
@@ -355,7 +355,7 @@ export function Overview({ simulation }: OverviewProps) {
                 <OverviewStat
                     isComingSoon={false}
                     value={formatNumberWithStyle(userTotalValue, {
-                        minDecimals: 2,
+                        minDecimals: 0,
                         maxDecimals: 2,
                         style: 'currency',
                     })}
@@ -365,7 +365,7 @@ export function Overview({ simulation }: OverviewProps) {
                 <OverviewProgressStat
                     isComingSoon={false}
                     value={`${formatNumberWithStyle(netBoostValue, {
-                        minDecimals: 2,
+                        minDecimals: 0,
                         maxDecimals: 2,
                     })}`}
                     label="My Net Boost:"
