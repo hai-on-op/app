@@ -195,6 +195,8 @@ export function Overview({ simulation }: OverviewProps) {
         }
     }, [stakingData, stakingStats, loading, kitePrice, stakingAmount, unstakingAmount])
 
+   
+
     if (loading || boostLoading || !stakingSummary) {
         return (
             <Container>

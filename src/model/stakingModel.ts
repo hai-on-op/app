@@ -9,9 +9,12 @@ import { ActionState } from '~/utils'
 import { handlePreTxGasEstimate } from '~/hooks'
 import StakingManagerABI from '~/abis/StakingManager.json'
 import RewardPoolABI from '~/abis/RewardPool.json'
+
 export interface StakingModel {
     stakedAmount: string
-    setStakedAmount: Action<StakingModel, string>
+    totalStaked: string
+    setTotalStaked: Action<StakingModel, string>
+    fetchTotalStaked: Thunk<StakingModel, { signer: JsonRpcSigner }, any, StoreModel>
 
     pendingWithdrawals: Array<{
         amount: number
@@ -37,20 +40,35 @@ export interface StakingModel {
         amount: BigNumber
         tokenAddress: string
     }>
-    totalStaked: string
-    setTotalStaked: Action<StakingModel, string>
-    fetchTotalStaked: Thunk<StakingModel, { signer: JsonRpcSigner }, any, StoreModel>
+    setUserRewards: Action<StakingModel, Array<{ id: number; amount: BigNumber; tokenAddress: string }>>
+    fetchUserRewards: Thunk<StakingModel, { signer: JsonRpcSigner }, any, StoreModel>
+
     stakingApyData: Array<{ id: number; rpRate: BigNumber; rpToken: string }>
     setStakingApyData: Action<StakingModel, Array<{ id: number; rpRate: BigNumber; rpToken: string }>>
     fetchStakingApyData: Thunk<StakingModel, { signer: JsonRpcSigner }, any, StoreModel>
-    setUserRewards: Action<StakingModel, Array<{ id: number; amount: BigNumber; tokenAddress: string }>>
-    fetchUserRewards: Thunk<StakingModel, { signer: JsonRpcSigner }, any, StoreModel>
+}
+
+// Helper function for retrying async operations
+async function retryAsync<T>(fn: () => Promise<T>, retries = 5, delayMs = 30000): Promise<T> {
+    let lastError: any
+    for (let attempt = 0; attempt < retries; attempt++) {
+        try {
+            return await fn()
+        } catch (err) {
+            lastError = err
+            if (attempt < retries - 1) {
+                await new Promise(res => setTimeout(res, delayMs))
+            }
+        }
+    }
+    throw lastError
 }
 
 export const stakingModel: StakingModel = {
     stakedAmount: '0',
-    setStakedAmount: action((state, payload) => {
-        state.stakedAmount = payload
+    totalStaked: '0',
+    setTotalStaked: action((state, payload) => {
+        state.totalStaked = payload
     }),
 
     pendingWithdrawals: [],
@@ -236,13 +254,11 @@ export const stakingModel: StakingModel = {
     }),
 
     fetchCooldownPeriod: thunk(async (actions, { signer }) => {
-        try {
+        await retryAsync(async () => {
             const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
             const params = await stakingManager._params()
             actions.setCooldownPeriod(params.toString())
-        } catch (error) {
-            console.error('Error fetching cooldown period:', error)
-        }
+        })
     }),
 
     userRewards: [],
@@ -254,18 +270,15 @@ export const stakingModel: StakingModel = {
         state.stakingApyData = payload
     }),
     fetchTotalStaked: thunk(async (actions, { signer }) => {
-        const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
-
-        const totalStaked = await stakingManager.totalStaked()
-        console.log('fetching total staked', import.meta.env.VITE_STAKING_MANAGER, totalStaked)
-        actions.setTotalStaked(totalStaked.toString())
-    }),
-    setTotalStaked: action((state, payload) => {
-        state.totalStaked = payload
+        await retryAsync(async () => {
+            const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
+            const totalStaked = await stakingManager.totalStaked()
+            actions.setTotalStaked(totalStaked.toString())
+        })
     }),
     fetchStakingApyData: thunk(async (actions, { signer }) => {
-        const apyData = []
-        try {
+        await retryAsync(async () => {
+            const apyData = []
             const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
             const stakingManagerTotalStaked = await stakingManager.totalStaked()
             const rewardsCountBigNum = await stakingManager.rewards()
@@ -284,15 +297,11 @@ export const stakingModel: StakingModel = {
                 }
             }
             actions.setStakingApyData(apyData)
-            // console.log('rewardPools', rewardPools)
-        } catch (error) {
-            console.error('Error fetching reward pools:', error)
-            actions.setStakingApyData([])
-        }
+        })
     }),
 
     fetchUserRewards: thunk(async (actions, { signer }) => {
-        try {
+        await retryAsync(async () => {
             const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
             const address = await signer.getAddress()
             const stakingManagerTotalStaked = await stakingManager.totalStaked()
@@ -300,35 +309,20 @@ export const stakingModel: StakingModel = {
             const rewardsCount = rewardsCountBigNum.toNumber()
 
             const activePools = []
-
             const activePoolIndexes: number[] = []
             for (let i = 0; i < rewardsCount; i++) {
-                // const { isActive } = await stakingManager.rewardTypes(i)
                 const poolData = await stakingManager.rewardTypes(i)
-
                 const { isActive } = poolData
                 if (isActive) {
                     const rpContract = new Contract(poolData.rewardPool, RewardPoolABI, signer)
                     const rpRate = await rpContract.rewardRate()
                     const rpTotalStaked = await rpContract.totalStaked()
                     const ratePerStakedToken = rpRate.div(stakingManagerTotalStaked)
-                    // console.log('ratePerStakedToken', ratePerStakedToken)
-                    // console.log('rpRate', rpRate)
-                    // console.log('rpTotalStaked', rpTotalStaked)
-                    // console.log('rpContract', rpContract)
-
                     activePools.push({ ...poolData, index: i })
                     activePoolIndexes.push(i)
                 }
             }
-
             const rewardPools = await stakingManager.callStatic.earned(address)
-
-            // for (let i = 0; i < activePoolIndexes.length; i++) {
-            //     // const poolData = rewardPools[activePoolIndexes[i]]
-
-            // }
-
             const aggregatedRewards: Record<string, ethers.BigNumber> = {}
             for (let i = 0; i < activePoolIndexes.length; i++) {
                 const poolIndex = activePoolIndexes[i]
@@ -350,12 +344,7 @@ export const stakingModel: StakingModel = {
                     tokenAddress: tokenAddress,
                 }
             })
-
             actions.setUserRewards(finalRewardsState)
-        } catch (error) {
-            console.error('Error fetching user rewards via earned():', error)
-            // Clear rewards on error
-            actions.setUserRewards([])
-        }
+        })
     }),
 }
