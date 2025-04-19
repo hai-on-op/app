@@ -11,6 +11,7 @@ import { ProgressIndicator, ProgressIndicatorProps } from '~/components/Progress
 import { ComingSoon } from '~/components/ComingSoon'
 type OverviewStatProps = {
     token?: TokenKey
+    simulatedToken?: string
     value: string | number
     tokenLabel?: string
     isComingSoon?: boolean
@@ -28,6 +29,7 @@ type OverviewStatProps = {
 }
 export function OverviewStat({
     token,
+    simulatedToken,
     tokenLabel,
     isComingSoon = false,
     value,
@@ -96,7 +98,7 @@ export function OverviewStat({
                         {!!simulatedValue && (
                             <StatusLabel status={Status.CUSTOM} background="gradient" size={0.8}>
                                 <Text $fontSize="0.67rem" $fontWeight={700}>
-                                    {simulatedValue || '--'} {token}
+                                    {simulatedValue || '--'} {simulatedToken ? simulatedToken : token}
                                 </Text>
                                 <Text $fontSize="0.67rem" $fontWeight={400} $whiteSpace="nowrap">
                                     After Tx

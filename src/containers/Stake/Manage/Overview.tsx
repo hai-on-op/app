@@ -286,6 +286,7 @@ export function Overview({ simulation }: OverviewProps) {
                     })}
                     token="KITE"
                     tokenLabel={'stKITE'}
+                    simulatedToken="sKITE"
                     label="Total Staked KITE"
                     convertedValue={formatNumberWithStyle(stakingSummary.totalStaked.usdValue, {
                         minDecimals: 0,
@@ -309,6 +310,7 @@ export function Overview({ simulation }: OverviewProps) {
                     })}
                     token="KITE"
                     tokenLabel={'stKITE'}
+                    simulatedToken="sKITE"
                     label="My Staked KITE"
                     convertedValue={formatNumberWithStyle(stakingSummary.myStaked.usdValue, {
                         minDecimals: 2,
