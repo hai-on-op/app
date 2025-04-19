@@ -255,7 +255,9 @@ export const stakingModel: StakingModel = {
     }),
     fetchTotalStaked: thunk(async (actions, { signer }) => {
         const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
+
         const totalStaked = await stakingManager.totalStaked()
+        console.log('fetching total staked', import.meta.env.VITE_STAKING_MANAGER, totalStaked)
         actions.setTotalStaked(totalStaked.toString())
     }),
     setTotalStaked: action((state, payload) => {

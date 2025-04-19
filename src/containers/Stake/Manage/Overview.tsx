@@ -36,8 +36,6 @@ export function Overview({ simulation }: OverviewProps) {
     const boostData = useBoost()
     const { prices: veloPrices } = useVelodromePrices()
 
-    console.log(stakingData, stakingStats, totalStaked)
-
     const {
         vaultModel: { liquidationData },
     } = useStoreState((state) => state)
@@ -65,6 +63,8 @@ export function Overview({ simulation }: OverviewProps) {
         haiVeloPositionValue,
         loading: boostLoading,
     } = boostData
+
+    //const totalStaked = stakingTotalStaked ? stakingTotalStaked : stakingStats ? stakingStats.totalStaked : 0
 
     // --------------------------------
     // Staking APY Calculation Example

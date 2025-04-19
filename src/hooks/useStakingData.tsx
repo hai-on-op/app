@@ -120,6 +120,8 @@ export function useStakingData() {
     const userRewards = useStoreState((state) => state.stakingModel.userRewards)
     const stakingApyData = useStoreState((state) => state.stakingModel.stakingApyData)
 
+    const stakingStat = useStoreState((state) => state.stakingModel.stakingApyData)
+
     const {
         data: userData,
         loading: userLoading,
