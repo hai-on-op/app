@@ -192,18 +192,6 @@ function calculateCurrentAmounts(
     token1Decimals: number
 ): { amount0: string; amount1: string } {
     try {
-        console.log(
-            'Inputs are here',
-            NETWORK_ID,
-            liquidity,
-            tickLower,
-            tickUpper,
-            currentTick,
-            sqrtPriceX96,
-            token0Decimals,
-            token1Decimals
-        )
-
         // Ensure decimals are valid numbers between 0-18
         const validToken0Decimals =
             typeof token0Decimals === 'number' && !isNaN(token0Decimals)
@@ -214,14 +202,9 @@ function calculateCurrentAmounts(
                 ? Math.min(Math.max(0, Math.floor(token1Decimals)), 18)
                 : 18
 
-        console.log('Using decimals:', validToken0Decimals, validToken1Decimals)
-
         // Create placeholder tokens - we only need decimals
         const token0 = new Token(NETWORK_ID, '0x10398abc267496e49106b07dd6be13364d10dc71', validToken0Decimals)
         const token1 = new Token(NETWORK_ID, '0x4200000000000000000000000000000000000006', validToken1Decimals)
-
-        console.log('token0', token0)
-        console.log('token1', token1)
 
         // Convert liquidity to JSBI (JavaScript BigInt implementation used by Uniswap SDK)
         const jsbiLiquidity = JSBI.BigInt(liquidity)
@@ -247,14 +230,9 @@ function calculateCurrentAmounts(
             liquidity: jsbiLiquidity,
         })
 
-        console.log('position', position)
-
         // Get amounts
         const amount0Raw = position.amount0
         const amount1Raw = position.amount1
-
-        console.log('amount0Raw', amount0Raw)
-        console.log('amount1Raw', amount1Raw)
 
         // Format amounts as human readable with commas
         const formatWithCommas = (value: string): string => {
@@ -266,10 +244,6 @@ function calculateCurrentAmounts(
         // Get human readable values with proper decimals and commas
         const amount0Human = formatWithCommas(amount0Raw.toSignificant(6))
         const amount1Human = formatWithCommas(amount1Raw.toSignificant(6))
-
-        console.log('Human readable amounts:')
-        console.log(`- Token0: ${amount0Human} ${token0.symbol}`)
-        console.log(`- Token1: ${amount1Human} ${token1.symbol}`)
 
         return {
             amount0: amount0Raw.toFixed(validToken0Decimals),

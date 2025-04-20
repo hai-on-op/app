@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { ActionState } from '~/utils'
+import { ActionState, secondsToDays } from '~/utils'
 import { useStoreActions } from '~/store'
 import { handleTransactionError, useEthersSigner } from '~/hooks'
 import { useStakingData } from '~/hooks/useStakingData'
@@ -8,6 +8,7 @@ import styled from 'styled-components'
 import { HaiButton, Text } from '~/styles'
 import { TransactionSummary } from '~/components/TransactionSummary'
 import { ModalBody, ModalFooter } from '../index'
+import { stakingModel } from '~/model/stakingModel'
 
 type ConfirmProps = {
     onClose?: () => void
@@ -19,10 +20,7 @@ type ConfirmProps = {
 
 export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw }: ConfirmProps) {
     const signer = useEthersSigner()
-    const { 
-        popupsModel: popupsActions,
-        stakingModel: stakingActions 
-    } = useStoreActions((actions) => actions)
+    const { popupsModel: popupsActions, stakingModel: stakingActions } = useStoreActions((actions) => actions)
     const { refetchAll } = useStakingData()
 
     const handleConfirm = async () => {
@@ -46,7 +44,7 @@ export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw }
                 })
             } else if (isWithdraw) {
                 await stakingActions.withdraw({
-                    signer
+                    signer,
                 })
             } else {
                 await stakingActions.unstake({
@@ -58,10 +56,10 @@ export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw }
             stakingActions.setTransactionState(ActionState.SUCCESS)
             popupsActions.setIsWaitingModalOpen(false)
             popupsActions.setWaitingPayload({ status: ActionState.NONE })
-            
+
             // Refetch all data after successful transaction
             await refetchAll()
-            
+
             onClose?.()
         } catch (e: any) {
             stakingActions.setTransactionState(ActionState.ERROR)
@@ -93,7 +91,8 @@ export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw }
                 />
                 {!isStaking && (
                     <Text $fontSize="0.8em" $color="rgba(0,0,0,0.4)">
-                        Note: Unstaked KITE has a 21-day cooldown period before it can be claimed
+                        Note: Unstaked KITE has a {secondsToDays(stakingModel.cooldownPeriod)}-day cooldown period
+                        before it can be claimed
                     </Text>
                 )}
             </ModalBody>

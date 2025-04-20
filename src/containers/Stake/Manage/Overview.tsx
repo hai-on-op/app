@@ -59,6 +59,8 @@ export function Overview({ simulation }: OverviewProps) {
         boostedVaultsCount,
         haiVeloBoost,
         hvBoost,
+        netBoost,
+        simulateNetBoost,
         netBoostValue,
         haiVeloPositionValue,
         loading: boostLoading,
@@ -160,14 +162,16 @@ export function Overview({ simulation }: OverviewProps) {
         return {
             // Static data / meta
             kitePrice,
-            simulationMode: Boolean(stakingAmount || unstakingAmount),
+            simulationMode: Boolean(
+                (stakingAmount || unstakingAmount) && (Number(stakingAmount) > 0 || Number(unstakingAmount) > 0)
+            ),
 
             // Totals section
             totalStaked: {
                 title: 'Total Staked KITE',
                 stKiteAmount: Number(totalStakedValue),
                 usdValue: totalStakedUSD,
-                afterTx: simulatedTotalStaked,
+                afterTx: Number(totalStakedValue) + (Number(stakingAmount) || 0) - (Number(unstakingAmount) || 0),
             },
 
             // My stake section
@@ -185,7 +189,7 @@ export function Overview({ simulation }: OverviewProps) {
             myBoostedVaults: 4, // TODO: Get real boosted vaults count
 
             // Boost section
-            myNetHaiBoost: 1.69, // TODO: Calculate real boost
+            myNetHaiBoost: netBoostValue, // TODO: Calculate real boost
             myNetHaiBoostAfterTx: 1.69, // Will be different in simulation mode
             boostSlider: {
                 min: 1.0,
@@ -193,7 +197,12 @@ export function Overview({ simulation }: OverviewProps) {
                 current: 1.69,
             },
         }
-    }, [stakingData, stakingStats, loading, kitePrice, stakingAmount, unstakingAmount])
+    }, [stakingData, stakingStats, boostLoading, loading, kitePrice, stakingAmount, unstakingAmount])
+
+    const simulateNetBoostValue = useMemo(() => {
+        if (!stakingSummary) return 1
+        return simulateNetBoost(stakingSummary?.myStaked.afterTx, stakingSummary?.totalStaked.afterTx)
+    }, [stakingSummary, stakingSummary?.myStaked.afterTx, stakingSummary?.totalStaked.afterTx])
 
     if (loading || boostLoading || !stakingSummary) {
         return (
@@ -305,7 +314,7 @@ export function Overview({ simulation }: OverviewProps) {
                 />
                 <OverviewStat
                     value={formatNumberWithStyle(stakingSummary.myStaked.stKiteAmount, {
-                        minDecimals:0,
+                        minDecimals: 0,
                         maxDecimals: 2,
                     })}
                     token="KITE"
@@ -370,10 +379,12 @@ export function Overview({ simulation }: OverviewProps) {
                     })}`}
                     label="My Net Boost:"
                     simulatedValue={
-                        /*`${formatNumberWithStyle(stakingSummary.myNetHaiBoostAfterTx, {
-                        minDecimals: 2,
-                        maxDecimals: 2,
-                    })}x`*/ 'N/A'
+                        stakingSummary.myStKiteShareAfterTx !== stakingSummary.myStKiteShare
+                            ? `${formatNumberWithStyle(simulateNetBoostValue, {
+                                  minDecimals: 2,
+                                  maxDecimals: 2,
+                              })}x`
+                            : undefined
                     }
                     alert={{ value: 'BOOST', status: Status.POSITIVE }}
                     fullWidth

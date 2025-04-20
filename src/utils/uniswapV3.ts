@@ -71,18 +71,6 @@ function calculateCurrentAmounts(
     token1Decimals: number
 ): { amount0: CurrencyAmount<Token> | string; amount1: CurrencyAmount<Token> | string } {
     try {
-        console.log(
-            'Inputs are here',
-            NETWORK_ID,
-            liquidity,
-            tickLower,
-            tickUpper,
-            currentTick,
-            sqrtPriceX96,
-            token0Decimals,
-            token1Decimals
-        )
-
         // Ensure decimals are valid numbers between 0-18
         const validToken0Decimals =
             typeof token0Decimals === 'number' && !isNaN(token0Decimals)
@@ -136,10 +124,6 @@ function calculateCurrentAmounts(
         const amount0Human = formatWithCommas(amount0Raw.toSignificant(6))
         const amount1Human = formatWithCommas(amount1Raw.toSignificant(6))
 
-        console.log('Human readable amounts:')
-        console.log(`- Token0: ${amount0Human} ${token0.symbol}`)
-        console.log(`- Token1: ${amount1Human} ${token1.symbol}`)
-
         return {
             amount0: amount0Raw,
             amount1: amount1Raw,
@@ -177,16 +161,6 @@ export function calculatePositionValue(
     const currentTick = parseInt(pool.tick)
     const sqrtPrice = pool.sqrtPrice
 
-    console.log('Position calculation inputs:', {
-        liquidity,
-        tickLower,
-        tickUpper,
-        currentTick,
-        sqrtPrice,
-        token0UsdPrice,
-        token1UsdPrice,
-    })
-
     if (parseFloat(liquidity) === 0) return 0
 
     try {
@@ -217,8 +191,6 @@ export function calculatePositionValue(
         } else {
             amount1 = parseFloat(amount1Raw.toFixed(6))
         }
-
-        console.log('Calculated amounts:', { amount0, amount1 }, 'token prices', token0UsdPrice, token1UsdPrice)
 
         // Calculate USD value
         const value = calculateUSDValue(amount0, amount1, token0UsdPrice, token1UsdPrice)

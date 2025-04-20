@@ -76,6 +76,8 @@ export type HaiVeloData = {
 
 export function useHaiVeloData(): HaiVeloData {
     const { address } = useAccount()
+    //const address = '0x328cace41eadf6df6e693b8e4810bf97aac4f5ee'
+
 
     // Query the GraphQL API for HAIVELO collateral data
     const { data, loading, error } = useQuery<HaiVeloCollateralData>(HAIVELO_COLLATERAL_QUERY, {

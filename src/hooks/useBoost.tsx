@@ -236,15 +236,6 @@ export function useBoost() {
         // Calculate combined boost
         const combined = lpBoostComponent + haiVeloBoostComponent
 
-        console.log('Net Boost calculation:', {
-            lpValue,
-            haiVeloValue,
-            totalValue,
-            lpBoostComponent,
-            haiVeloBoostComponent,
-            combined,
-        })
-
         return combined
     }, [userLPPositionValue, haiVeloPositionValue, haiWethLpBoost, haiVeloBoost])
 
@@ -260,13 +251,15 @@ export function useBoost() {
     const haiVeloRatio = Number(userHaiVELODeposited) / Number(totalHaiVELODeposited)
     const boostValue = userKiteRatio / haiVeloRatio + 1
 
-    const hvBoost = Math.min(boostValue, 2)
+    const reduceFactor = 0.4
+
+    const hvBoost = Math.min(boostValue * reduceFactor, 2)
 
     const lpRatio = Number(userLPPosition) / Number(totalPoolLiquidity)
 
     const rawLpBoostValue = userKiteRatio / lpRatio + 1
 
-    const lpBoostValue = Math.min(rawLpBoostValue, 2)
+    const lpBoostValue = Math.min(rawLpBoostValue * reduceFactor, 2)
 
     const userTotalValue = Number(userLPPositionValue) + Number(haiVeloPositionValue)
 
@@ -277,6 +270,32 @@ export function useBoost() {
     const lpWeightedBoost = lpBoostValue * lpValueRatio
 
     const netBoostValue = hvWeightedBoost + lpWeightedBoost
+
+    const simulateNetBoost = (userAfterStakingAmount: number, totalAfterStakingAmount: number) => {
+        const userKiteRatio = userAfterStakingAmount / totalAfterStakingAmount
+        const haiVeloRatio = Number(userHaiVELODeposited) / Number(totalHaiVELODeposited)
+        const boostValue = userKiteRatio / haiVeloRatio + 1
+
+        const hvBoost = Math.min(boostValue * reduceFactor, 2)
+
+        const lpRatio = Number(userLPPosition) / Number(totalPoolLiquidity)
+
+        const rawLpBoostValue = userKiteRatio / lpRatio + 1
+
+        const lpBoostValue = Math.min(rawLpBoostValue * reduceFactor, 2)
+
+        const userTotalValue = Number(userLPPositionValue) + Number(haiVeloPositionValue)
+
+        const hvValueRatio = Number(haiVeloPositionValue) / userTotalValue
+        const lpValueRatio = Number(userLPPositionValue) / userTotalValue
+
+        const hvWeightedBoost = hvBoost * hvValueRatio
+        const lpWeightedBoost = lpBoostValue * lpValueRatio
+
+        const netBoostValue = hvWeightedBoost + lpWeightedBoost
+
+        return netBoostValue
+    }
 
     return {
         // HaiVELO data
@@ -305,6 +324,7 @@ export function useBoost() {
         userTotalValue,
 
         // Net boost data
+        netBoost,
         netBoostValue,
 
         // Formatted values for display
@@ -318,6 +338,8 @@ export function useBoost() {
 
         // Boosted vaults
         boostedVaultsCount,
+
+        simulateNetBoost,
 
         // Loading state
         loading: lpDataLoading || positionsLoading || stakingLoading,

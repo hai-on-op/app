@@ -10,12 +10,15 @@ import { Loader } from '~/components/Loader'
 import { RefreshCw } from 'react-feather'
 import { useStakingData } from '~/hooks/useStakingData'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
+import { useBoost } from '~/hooks/useBoost'
 
 export function StakeStats() {
     const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
     const { stakingData, stakingStats, loading } = useStakingData()
 
     const { prices: veloPrices } = useVelodromePrices()
+
+    const { netBoostValue } = useBoost()
 
     const kitePrice = veloPrices?.KITE.raw
 
@@ -53,7 +56,7 @@ export function StakeStats() {
             },
             {
                 header: formatNumberWithStyle(Number(stakingData.stakedBalance), {
-                    minDecimals: 2,
+                    minDecimals: 0,
                     maxDecimals: 2,
                 }),
                 label: 'My KITE Staked',
@@ -66,7 +69,7 @@ export function StakeStats() {
             },
             {
                 header: formatNumberWithStyle(myShare, {
-                    minDecimals: 2,
+                    minDecimals: 0,
                     maxDecimals: 2,
                     style: 'percent',
                     scalingFactor: 0.01,
@@ -80,10 +83,12 @@ export function StakeStats() {
                 ),
             },
             {
-                header: /*`${formatNumberWithStyle(myBoost, {
+                header: formatNumberWithStyle(netBoostValue, {
                     minDecimals: 2,
                     maxDecimals: 2,
-                })}x`,*/ 'N/A',
+                    style: 'percent',
+                    scalingFactor: 0.01,
+                }),
                 label: 'My Net Boost',
                 tooltip: (
                     <Text>
@@ -95,7 +100,7 @@ export function StakeStats() {
             {
                 header: stakingData.pendingWithdrawal ? (
                     formatNumberWithStyle(Number(stakingData.pendingWithdrawal.amount), {
-                        minDecimals: 2,
+                        minDecimals: 0,
                         maxDecimals: 2,
                     })
                 ) : (
