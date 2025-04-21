@@ -83,10 +83,12 @@ export function StakeStats() {
                 ),
             },
             {
-                header: `${formatNumberWithStyle(netBoostValue, {
-                    minDecimals: 0,
-                    maxDecimals: 2,
-                })}x`,
+                header: isNaN(netBoostValue)
+                    ? '...'
+                    : `${formatNumberWithStyle(netBoostValue, {
+                          minDecimals: 0,
+                          maxDecimals: 2,
+                      })}x`,
                 label: 'My Net Boost',
                 tooltip: (
                     <Text>
@@ -114,7 +116,7 @@ export function StakeStats() {
                 ),
             },
         ]
-    }, [stakingData, stakingStats, loading, kitePrice, popupsActions])
+    }, [stakingData, stakingStats, loading, kitePrice, popupsActions, netBoostValue])
 
     return <Stats stats={stats} columns="repeat(4, 1fr) 1.6fr" fun />
 }
