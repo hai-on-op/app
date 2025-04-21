@@ -83,12 +83,10 @@ export function StakeStats() {
                 ),
             },
             {
-                header: formatNumberWithStyle(netBoostValue, {
-                    minDecimals: 2,
+                header: `${formatNumberWithStyle(netBoostValue, {
+                    minDecimals: 0,
                     maxDecimals: 2,
-                    style: 'percent',
-                    scalingFactor: 0.01,
-                }),
+                })}x`,
                 label: 'My Net Boost',
                 tooltip: (
                     <Text>

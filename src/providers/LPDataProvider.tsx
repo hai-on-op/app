@@ -276,10 +276,14 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
         const fetchPoolData = async () => {
             try {
                 setLoading(true)
-                const { data } = await lpClient.query({
+                const result = await lpClient.query({
                     query: POOL_DATA_QUERY,
                     variables: { id: POOL_ID },
                 })
+
+                console.log('Result from fetching pool data', result, lpClient.link)
+
+                const { data } = result
 
                 if (data && data.pool) {
                     setPool(data.pool)
@@ -317,7 +321,7 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
                     },
                 })
 
-                console.log(result)
+                console.log('Result from user position query', result, lpClient.link, POOL_ID, account.toLowerCase())
 
                 const { data } = result
 
