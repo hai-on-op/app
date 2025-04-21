@@ -281,7 +281,12 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
                     variables: { id: POOL_ID },
                 })
 
-                console.log('Result from fetching pool data', result, lpClient.link)
+                console.log(
+                    'Result from fetching pool data',
+                    result,
+                    lpClient.link,
+                    import.meta.env.VITE_LP_SUBGRAPH_URL
+                )
 
                 const { data } = result
 
@@ -321,7 +326,14 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
                     },
                 })
 
-                console.log('Result from user position query', result, lpClient.link, POOL_ID, account.toLowerCase())
+                console.log(
+                    'Result from user position query',
+                    result,
+                    lpClient.link,
+                    POOL_ID,
+                    account.toLowerCase(),
+                    import.meta.env.VITE_LP_SUBGRAPH_URL
+                )
 
                 const { data } = result
 
