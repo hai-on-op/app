@@ -1,4 +1,4 @@
-import { useMemo, useEffect } from 'react'
+import { useMemo, useEffect, useState } from 'react'
 import { useAccount } from 'wagmi'
 import { useQuery } from '@apollo/client'
 import { gql } from '@apollo/client'
@@ -115,6 +115,8 @@ export function useStakingData() {
     const { address } = useAccount()
     //const address = '0x328cace41eadf6df6e693b8e4810bf97aac4f5ee'
 
+    const [refetchCounter, setRefetchCounter] = useState(0)
+
     const signer = useEthersSigner()
     const { stakingModel: stakingActions } = useStoreActions((actions) => actions)
     const cooldownPeriod = useStoreState((state) => state.stakingModel.cooldownPeriod)
@@ -137,6 +139,7 @@ export function useStakingData() {
 
     const refetchAll = async () => {
         if (signer) {
+            setRefetchCounter((prev) => prev + 1)
             await Promise.all([
                 refetchUser(),
                 refetchStats(),
@@ -184,7 +187,7 @@ export function useStakingData() {
                   }
                 : undefined,
         }
-    }, [userData])
+    }, [userData, refetchCounter])
 
     const stakingStats = useMemo((): StakingStats => {
         if (!statsData?.stakingStatistic) return defaultStakingStats

@@ -11,7 +11,7 @@ import { Sorting } from '~/types'
 
 dayjs.extend(relativeTime)
 
-const BLOCK_EXPLORER = 'https://sepolia-optimism.etherscan.io'
+const BLOCK_EXPLORER = 'https://optimistic.etherscan.io'
 
 function shortenTxHash(hash: string): string {
     return `${hash.slice(0, 6)}...${hash.slice(-4)}`
