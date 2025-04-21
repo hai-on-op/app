@@ -48,3 +48,17 @@ export enum Timeframe {
     ONE_MONTH,
     ONE_YEAR,
 }
+
+export function formatTimeFromSeconds(seconds: number): string {
+    const days = Math.floor(seconds / 86400)
+    const hours = Math.floor((seconds % 86400) / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
+
+    if (days > 0) {
+        return `${days} ${days === 1 ? 'day' : 'days'}`
+    } else if (hours > 0) {
+        return `${hours} ${hours === 1 ? 'hour' : 'hours'}`
+    } else {
+        return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`
+    }
+}

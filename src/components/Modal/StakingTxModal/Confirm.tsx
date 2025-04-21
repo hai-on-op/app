@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
-import { ActionState, secondsToDays } from '~/utils'
-import { useStoreActions } from '~/store'
+import { ActionState, formatTimeFromSeconds, secondsToDays } from '~/utils'
+import { useStoreActions, useStoreState } from '~/store'
 import { handleTransactionError, useEthersSigner } from '~/hooks'
 import { useStakingData } from '~/hooks/useStakingData'
 
@@ -21,7 +21,10 @@ type ConfirmProps = {
 export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw }: ConfirmProps) {
     const signer = useEthersSigner()
     const { popupsModel: popupsActions, stakingModel: stakingActions } = useStoreActions((actions) => actions)
+    const { stakingModel: stakingStates } = useStoreState((state) => state)
     const { refetchAll } = useStakingData()
+
+    console.log('Coool down params:::', stakingStates.cooldownPeriod)
 
     const handleConfirm = async () => {
         if (!signer) return
@@ -91,8 +94,8 @@ export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw }
                 />
                 {!isStaking && (
                     <Text $fontSize="0.8em" $color="rgba(0,0,0,0.4)">
-                        Note: Unstaked KITE has a {secondsToDays(stakingModel.cooldownPeriod)}-day cooldown period
-                        before it can be claimed
+                        Note: Unstaked KITE has a {formatTimeFromSeconds(Number(stakingStates.cooldownPeriod))}-day
+                        cooldown period before it can be claimed
                     </Text>
                 )}
             </ModalBody>

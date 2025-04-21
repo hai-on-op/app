@@ -57,7 +57,7 @@ async function retryAsync<T>(fn: () => Promise<T>, retries = 5, delayMs = 30000)
         } catch (err) {
             lastError = err
             if (attempt < retries - 1) {
-                await new Promise(res => setTimeout(res, delayMs))
+                await new Promise((res) => setTimeout(res, delayMs))
             }
         }
     }
@@ -257,6 +257,8 @@ export const stakingModel: StakingModel = {
         await retryAsync(async () => {
             const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
             const params = await stakingManager._params()
+
+            console.log('Coool down params:::', params.toString())
             actions.setCooldownPeriod(params.toString())
         })
     }),
@@ -348,4 +350,3 @@ export const stakingModel: StakingModel = {
         })
     }),
 }
-

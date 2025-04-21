@@ -19,7 +19,7 @@ import { useStakingData } from '~/hooks/useStakingData'
 import { Loader } from '~/components/Loader'
 import { AvailabilityBadge } from '~/components/AvailabilityBadge'
 import { stakingModel } from '~/model/stakingModel'
-import { secondsToDays } from '~/utils/time'
+import { formatTimeFromSeconds, secondsToDays } from '~/utils/time'
 
 type StakingSimulation = {
     stakingAmount: string
@@ -86,6 +86,7 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
         stakingModel: stakingActions,
         popupsModel: popupsActions,
     } = useStoreActions((actions) => actions)
+    const { stakingModel: stakingStates } = useStoreState((state) => state)
 
     const { vault, action, setAction, formState, updateForm, collateral, debt, summary, error } = useVault()
 
@@ -242,7 +243,8 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                         style={!isWithdraw ? undefined : { opacity: 0.4 }}
                     />
                     <Text $fontSize="0.85em" $color="rgba(0,0,0,0.85)">
-                        stKITE has a {secondsToDays(stakingModel.cooldownPeriod)} day cooldown period after unstaking.
+                        stKITE has a {formatTimeFromSeconds(Number(stakingStates.cooldownPeriod))} cooldown period after
+                        unstaking.
                     </Text>
                     {pendingWithdrawal && (
                         <div
