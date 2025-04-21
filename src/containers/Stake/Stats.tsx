@@ -63,7 +63,7 @@ export function StakeStats() {
                 tooltip: (
                     <span>
                         The amount of KITE tokens you have staked in the protocol. Staked KITE (stKITE) provides boosted
-                        rewards and governance rights.
+                        rewards.
                     </span>
                 ),
             },
@@ -78,7 +78,7 @@ export function StakeStats() {
                 tooltip: (
                     <span>
                         Your percentage share of the total staked KITE supply. This determines your proportional share
-                        of staking rewards and voting power.
+                        of staking rewards.
                     </span>
                 ),
             },
