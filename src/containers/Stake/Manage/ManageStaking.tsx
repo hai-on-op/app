@@ -220,7 +220,7 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                             </CenteredFlex>
                         }
                         subLabel={`Max ${stakedKite} KITE`}
-                        placeholder="Untaking Amount"
+                        placeholder="Unstaking Amount"
                         unitLabel={'sKITE'}
                         onChange={(value: string) => {
                             setStakingAmount('0')
