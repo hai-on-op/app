@@ -357,7 +357,7 @@ export function Overview({ simulation }: OverviewProps) {
                         minDecimals: 0,
                         maxDecimals: 2,
                     })}%`}
-                    label="My Staking APY"
+                    label="Staking APR"
                     tooltip={`Minimum collateral ratio required for opening a new vault. Vaults opened at this ratio will likely be at high risk of liquidation.`}
                 />
 
