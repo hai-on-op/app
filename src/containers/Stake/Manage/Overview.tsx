@@ -358,7 +358,7 @@ export function Overview({ simulation }: OverviewProps) {
                         maxDecimals: 2,
                     })}%`}
                     label="Staking APR"
-                    tooltip={`Minimum collateral ratio required for opening a new vault. Vaults opened at this ratio will likely be at high risk of liquidation.`}
+                    tooltip={`The base staking APR is determined by protocol fees accrued in system surplus and the stream rate set by the DAO.`}
                 />
 
                 <OverviewStat
