@@ -71,7 +71,7 @@ export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw }
         <>
             <ModalBody>
                 <Description>
-                    Stake KITE for a boosted HAI and revenue share. sKITE can be claimed 21 days after unstaking.
+                    Stake KITE for a boosted HAI and revenue share. stKITE can be claimed 21 days after unstaking.
                     Additional unstaking requests are combined with the previous request and the cooldown period is
                     reset.
                 </Description>

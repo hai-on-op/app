@@ -221,7 +221,7 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                         }
                         subLabel={`Max ${stakedKite} KITE`}
                         placeholder="Unstaking Amount"
-                        unitLabel={'sKITE'}
+                        unitLabel={'stKITE'}
                         onChange={(value: string) => {
                             setStakingAmount('0')
                             setUnstakingAmount(value)

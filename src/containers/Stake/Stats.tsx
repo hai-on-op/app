@@ -62,7 +62,7 @@ export function StakeStats() {
                 label: 'My KITE Staked',
                 tooltip: (
                     <span>
-                        The amount of KITE tokens you have staked in the protocol. Staked KITE (sKITE) provides boosted
+                        The amount of KITE tokens you have staked in the protocol. Staked KITE (stKITE) provides boosted
                         rewards and governance rights.
                     </span>
                 ),
