@@ -21,6 +21,8 @@ type StakingTxModalProps = ModalProps & {
 export function StakingTxModal({ isStaking, amount, stakedAmount, isWithdraw = false, ...props }: StakingTxModalProps) {
     const [step, setStep] = useState(StakingTxStep.APPROVE)
 
+    console.log(props.maxWidth)
+
     const content = useMemo(() => {
         switch (step) {
             case StakingTxStep.APPROVE:
@@ -34,7 +36,7 @@ export function StakingTxModal({ isStaking, amount, stakedAmount, isWithdraw = f
         <Modal
             onClose={props.onClose}
             {...props}
-            maxWidth={step === StakingTxStep.APPROVE ? '480px' : props.maxWidth}
+            maxWidth={step === StakingTxStep.APPROVE ? '500px' : '500px'}
             overrideContent={
                 <>
                     <Modal.Header>
