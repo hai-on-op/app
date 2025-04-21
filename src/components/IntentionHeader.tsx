@@ -51,7 +51,7 @@ const copy: Record<
         ctaLink: `${LINK_TO_DOCS}detailed/intro/hai.html`,
     },
     [Intention.STAKE]: {
-        subtitle: 'Stake KITE to earn protocol revenue and boost your incentives.',
+        subtitle: 'Stake KITE to earn protocol revenue and boost your incentives. ',
         cta: 'Read more about staking →',
         ctaLink: `${LINK_TO_DOCS}detailed/intro/hai.html`,
     },
