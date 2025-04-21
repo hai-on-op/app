@@ -10,9 +10,12 @@ import JSBI from 'jsbi'
 // Pool ID from the subgraph
 const POOL_ID = '0x146b020399769339509c98b7b353d19130c150ec'
 
+const subgraphDefaultUrl =
+    'https://gateway-arbitrum.network.thegraph.com/api/617040e8f75ef522349d70c034f124f2/subgraphs/id/7SVwgBfXoWmiK6x1NF1VEo1szkeWLniqWN1oYsX3UMb5'
+
 // Create the LP client based on env variable
 const lpClient = new ApolloClient({
-    uri: import.meta.env.VITE_LP_SUBGRAPH_URL,
+    uri: import.meta.env.VITE_LP_SUBGRAPH_URL ? import.meta.env.VITE_LP_SUBGRAPH_URL : subgraphDefaultUrl,
     cache: new InMemoryCache(),
 })
 
@@ -281,13 +284,6 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
                     variables: { id: POOL_ID },
                 })
 
-                console.log(
-                    'Result from fetching pool data',
-                    result,
-                    lpClient.link,
-                    import.meta.env.VITE_LP_SUBGRAPH_URL
-                )
-
                 const { data } = result
 
                 if (data && data.pool) {
@@ -325,15 +321,6 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
                         owner: account.toLowerCase(),
                     },
                 })
-
-                console.log(
-                    'Result from user position query',
-                    result,
-                    lpClient.link,
-                    POOL_ID,
-                    account.toLowerCase(),
-                    import.meta.env.VITE_LP_SUBGRAPH_URL
-                )
 
                 const { data } = result
 
