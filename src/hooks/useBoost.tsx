@@ -247,24 +247,27 @@ export function useBoost() {
     // Boosted vaults count
     const boostedVaultsCount = 0
 
-    const userKiteRatio = Number(userKITEStaked) / Number(totalKITEStaked)
+    const userKiteRatio =
+        isNaN(Number(totalKITEStaked)) || Number(totalKITEStaked) === 0
+            ? 0
+            : Number(userKITEStaked) / Number(totalKITEStaked)
     const haiVeloRatio = Number(userHaiVELODeposited) / Number(totalHaiVELODeposited)
-    const boostValue = userKiteRatio / haiVeloRatio + 1
+    const boostValue = Number(haiVeloRatio) === 0 ? 1 : userKiteRatio / haiVeloRatio + 1
 
-    const reduceFactor = 0.4
+    const reduceFactor = 1
 
     const hvBoost = Math.min(boostValue * reduceFactor, 2)
 
-    const lpRatio = Number(userLPPosition) / Number(totalPoolLiquidity)
+    const lpRatio = Number(totalPoolLiquidity) === 0 ? 0 : Number(userLPPosition) / Number(totalPoolLiquidity)
 
-    const rawLpBoostValue = userKiteRatio / lpRatio + 1
+    const rawLpBoostValue = Number(lpRatio) === 0 ? 1 : userKiteRatio / lpRatio + 1
 
     const lpBoostValue = Math.min(rawLpBoostValue * reduceFactor, 2)
 
     const userTotalValue = Number(userLPPositionValue) + Number(haiVeloPositionValue)
 
-    const hvValueRatio = Number(haiVeloPositionValue) / userTotalValue
-    const lpValueRatio = Number(userLPPositionValue) / userTotalValue
+    const hvValueRatio = userTotalValue === 0 ? 0.5 : Number(haiVeloPositionValue) / userTotalValue
+    const lpValueRatio = userTotalValue === 0 ? 0.5 : Number(userLPPositionValue) / userTotalValue
 
     const hvWeightedBoost = hvBoost * hvValueRatio
     const lpWeightedBoost = lpBoostValue * lpValueRatio
@@ -272,27 +275,27 @@ export function useBoost() {
     const netBoostValue = hvWeightedBoost + lpWeightedBoost
 
     const simulateNetBoost = (userAfterStakingAmount: number, totalAfterStakingAmount: number) => {
-        const userKiteRatio = userAfterStakingAmount / totalAfterStakingAmount
+        const userKiteRatio =
+            isNaN(Number(totalAfterStakingAmount)) || Number(totalAfterStakingAmount) === 0
+                ? 0
+                : Number(userAfterStakingAmount) / Number(totalAfterStakingAmount)
         const haiVeloRatio = Number(userHaiVELODeposited) / Number(totalHaiVELODeposited)
-        const boostValue = userKiteRatio / haiVeloRatio + 1
+        const boostValue = Number(haiVeloRatio) === 0 ? 1 : userKiteRatio / haiVeloRatio + 1
+
+        const reduceFactor = 1
 
         const hvBoost = Math.min(boostValue * reduceFactor, 2)
 
-        const lpRatio = Number(userLPPosition) / Number(totalPoolLiquidity)
+        const lpRatio = Number(totalPoolLiquidity) === 0 ? 0 : Number(userLPPosition) / Number(totalPoolLiquidity)
 
-        const rawLpBoostValue = userKiteRatio / lpRatio + 1
+        const rawLpBoostValue = Number(lpRatio) === 0 ? 1 : userKiteRatio / lpRatio + 1
 
         const lpBoostValue = Math.min(rawLpBoostValue * reduceFactor, 2)
 
         const userTotalValue = Number(userLPPositionValue) + Number(haiVeloPositionValue)
 
-        const hvValueRatio = Number(haiVeloPositionValue) / userTotalValue
-        const lpValueRatio = Number(userLPPositionValue) / userTotalValue
-
-        const hvWeightedBoost = hvBoost * hvValueRatio
-        const lpWeightedBoost = lpBoostValue * lpValueRatio
-
-        const netBoostValue = hvWeightedBoost + lpWeightedBoost
+        const hvValueRatio = userTotalValue === 0 ? 0.5 : Number(haiVeloPositionValue) / userTotalValue
+        const lpValueRatio = userTotalValue === 0 ? 0.5 : Number(userLPPositionValue) / userTotalValue
 
         return netBoostValue
     }

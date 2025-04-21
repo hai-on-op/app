@@ -112,6 +112,8 @@ export function Overview({ simulation }: OverviewProps) {
     const KITE_ADDRESS = import.meta.env.VITE_KITE_ADDRESS
     const OP_ADDRESS = import.meta.env.VITE_OP_ADDRESS
 
+    console.log(netBoostValue)
+
     const rewardsDataMap = {
         [HAI_ADDRESS]: haiPrice,
         [KITE_ADDRESS]: kitePrice,
