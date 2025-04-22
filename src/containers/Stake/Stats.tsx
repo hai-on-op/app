@@ -44,7 +44,7 @@ export function StakeStats() {
             {
                 header: formatNumberWithStyle(totalStakedUSD, {
                     minDecimals: 0,
-                    maxDecimals: 0,
+                    maxDecimals: 2,
                     style: 'currency',
                 }),
                 label: 'Staking TVL',
