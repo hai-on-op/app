@@ -8,8 +8,19 @@ import { type StoreModel } from './index'
 import { ActionState } from '~/utils'
 import { handlePreTxGasEstimate } from '~/hooks'
 import StakingManagerABI from '~/abis/StakingManager.json'
-import ERC20ABI from '~/abis/ERC20.json'
 import RewardPoolABI from '~/abis/RewardPool.json'
+
+const ERC20ABI = [
+    {
+        constant: true,
+        inputs: [{ name: '_owner', type: 'address' }],
+        name: 'balanceOf',
+        outputs: [{ name: 'balance', type: 'uint256' }],
+        payable: false,
+        stateMutability: 'view',
+        type: 'function',
+    },
+]
 
 export interface StakingModel {
     stakedAmount: string
