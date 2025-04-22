@@ -269,7 +269,6 @@ export const stakingModel: StakingModel = {
             const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
             const params = await stakingManager._params()
 
-            console.log('Coool down params:::', params.toString())
             actions.setCooldownPeriod(params.toString())
         })
     }),
@@ -362,12 +361,10 @@ export const stakingModel: StakingModel = {
     }),
 
     fetchUserStakedBalance: thunk(async (actions, { signer }) => {
-        console.log('Fetching user staked balance')
         await retryAsync(async () => {
             const stakingManager = new Contract(import.meta.env.VITE_STAKING_TOKEN_ADDRESS, ERC20ABI, signer)
             const balance = await stakingManager.balanceOf(await signer.getAddress())
 
-            console.log('User staked balance:::', balance.toString())
             actions.setStakedBalance(ethers.utils.formatEther(balance))
             return balance
         })

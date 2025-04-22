@@ -14,7 +14,7 @@ import { useBoost } from '~/hooks/useBoost'
 
 export function StakeStats() {
     const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
-    const { stakingData, stakingStats, loading } = useStakingData()
+    const { stakingData, stakingStats, loading, totalStaked } = useStakingData()
 
     const { prices: veloPrices } = useVelodromePrices()
 
@@ -116,7 +116,7 @@ export function StakeStats() {
                 ),
             },
         ]
-    }, [stakingData, stakingStats, loading, kitePrice, popupsActions, netBoostValue])
+    }, [stakingData, stakingStats, loading, kitePrice, popupsActions, netBoostValue, totalStaked])
 
     return <Stats stats={stats} columns="repeat(4, 1fr) 1.6fr" fun />
 }
