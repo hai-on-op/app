@@ -399,6 +399,7 @@ export function Overview({ simulation }: OverviewProps) {
                     }}
                     labels={[]}
                     colorLimits={[0.25, 0.5, 0.75]}
+                    tooltip={`Max Net Boost is achieved when your KITE staking share is equal to or greater than the weighted average proportions of your incentivized positions.`}
                 />
             </Inner>
         </Container>
