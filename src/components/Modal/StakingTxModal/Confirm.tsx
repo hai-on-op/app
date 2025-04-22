@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useRef } from 'react'
 import { ActionState, formatTimeFromSeconds, secondsToDays } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { handleTransactionError, useEthersSigner } from '~/hooks'
@@ -16,13 +16,17 @@ type ConfirmProps = {
     amount: string
     stakedAmount: string
     isWithdraw?: boolean
+    onSuccess?: () => void
 }
 
-export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw }: ConfirmProps) {
+export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw, onSuccess }: ConfirmProps) {
     const signer = useEthersSigner()
     const { popupsModel: popupsActions, stakingModel: stakingActions } = useStoreActions((actions) => actions)
     const { stakingModel: stakingStates } = useStoreState((state) => state)
     const { refetchAll } = useStakingData()
+    
+    // Use ref to prevent reopening modal after completion
+    const hasCompletedRef = useRef(false)
 
     console.log('Coool down params:::', stakingStates.cooldownPeriod)
 
@@ -59,11 +63,21 @@ export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw }
             stakingActions.setTransactionState(ActionState.SUCCESS)
             popupsActions.setIsWaitingModalOpen(false)
             popupsActions.setWaitingPayload({ status: ActionState.NONE })
+            
+            // Mark as completed to prevent reopening
+            hasCompletedRef.current = true
 
-            // Refetch all data after successful transaction
-            await refetchAll()
-
+            // First close the modal to prevent any race conditions
             onClose?.()
+            
+            // Wait to ensure modal is fully closed before updating state
+            setTimeout(() => {
+                // Run the success callback to reset input values if provided
+                onSuccess?.()
+                
+                // Refetch all data after successful transaction
+                refetchAll()
+            }, 500)
         } catch (e: any) {
             stakingActions.setTransactionState(ActionState.ERROR)
             handleTransactionError(e)

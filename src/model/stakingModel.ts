@@ -8,6 +8,7 @@ import { type StoreModel } from './index'
 import { ActionState } from '~/utils'
 import { handlePreTxGasEstimate } from '~/hooks'
 import StakingManagerABI from '~/abis/StakingManager.json'
+import ERC20ABI from '~/abis/ERC20.json'
 import RewardPoolABI from '~/abis/RewardPool.json'
 
 export interface StakingModel {
@@ -15,6 +16,11 @@ export interface StakingModel {
     totalStaked: string
     setTotalStaked: Action<StakingModel, string>
     fetchTotalStaked: Thunk<StakingModel, { signer: JsonRpcSigner }, any, StoreModel>
+
+    // Add stakedBalance to track user's staked amount
+    stakedBalance: string
+    setStakedBalance: Action<StakingModel, string>
+    fetchUserStakedBalance: Thunk<StakingModel, { signer: JsonRpcSigner }, BigNumber, StoreModel>
 
     pendingWithdrawals: Array<{
         amount: number
@@ -69,6 +75,11 @@ export const stakingModel: StakingModel = {
     totalStaked: '0',
     setTotalStaked: action((state, payload) => {
         state.totalStaked = payload
+    }),
+
+    stakedBalance: '0',
+    setStakedBalance: action((state, payload) => {
+        state.stakedBalance = payload
     }),
 
     pendingWithdrawals: [],
@@ -347,6 +358,18 @@ export const stakingModel: StakingModel = {
                 }
             })
             actions.setUserRewards(finalRewardsState)
+        })
+    }),
+
+    fetchUserStakedBalance: thunk(async (actions, { signer }) => {
+        console.log('Fetching user staked balance')
+        await retryAsync(async () => {
+            const stakingManager = new Contract(import.meta.env.VITE_STAKING_TOKEN_ADDRESS, ERC20ABI, signer)
+            const balance = await stakingManager.balanceOf(await signer.getAddress())
+
+            console.log('User staked balance:::', balance.toString())
+            actions.setStakedBalance(ethers.utils.formatEther(balance))
+            return balance
         })
     }),
 }

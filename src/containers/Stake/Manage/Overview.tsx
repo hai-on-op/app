@@ -32,7 +32,7 @@ type OverviewProps = {
 export function Overview({ simulation }: OverviewProps) {
     const { stakingAmount, unstakingAmount } = simulation
     const { t } = useTranslation()
-    const { stakingData, stakingStats, loading, stakingApyData, totalStaked } = useStakingData()
+    const { stakingData, stakingStats, loading, stakingApyData, totalStaked, stakedBalance } = useStakingData()
     const boostData = useBoost()
     const { prices: veloPrices } = useVelodromePrices()
 
@@ -146,18 +146,21 @@ export function Overview({ simulation }: OverviewProps) {
         const totalStakedUSD = Number(totalStakedValue) * kitePrice
         const myStakedUSD = Number(stakingData.stakedBalance) * kitePrice
         const myShare =
-            stakingStats.totalStaked !== '0'
-                ? (Number(stakingData.stakedBalance) / Number(stakingStats.totalStaked)) * 100
-                : 0
+            Number(totalStakedValue) !== 0 ? (Number(stakingData.stakedBalance) / Number(totalStakedValue)) * 100 : 0
+
+        const effectiveStakedBalance =
+            Number(stakedBalance) - Number(stakingData.pendingWithdrawal ? stakingData.pendingWithdrawal.amount : 0)
 
         // Calculate simulated values
         const simulatedStakedBalance =
-            Number(stakingData.stakedBalance) + (Number(stakingAmount) || 0) - (Number(unstakingAmount) || 0)
+            Number(effectiveStakedBalance) + (Number(stakingAmount) || 0) - (Number(unstakingAmount) || 0)
 
         const simulatedTotalStaked =
-            Number(stakingStats.totalStaked) + (Number(stakingAmount) || 0) - (Number(unstakingAmount) || 0)
+            Number(effectiveStakedBalance) + (Number(stakingAmount) || 0) - (Number(unstakingAmount) || 0)
 
         const simulatedShare = simulatedTotalStaked !== 0 ? (simulatedStakedBalance / simulatedTotalStaked) * 100 : 0
+
+        console.log('stakingData', Number(stakingData.pendingWithdrawal ? stakingData.pendingWithdrawal.amount : 0))
 
         return {
             // Static data / meta
@@ -177,7 +180,7 @@ export function Overview({ simulation }: OverviewProps) {
             // My stake section
             myStaked: {
                 title: 'My Staked KITE',
-                stKiteAmount: Number(stakingData.stakedBalance),
+                stKiteAmount: Number(effectiveStakedBalance),
                 usdValue: myStakedUSD,
                 afterTx: simulatedStakedBalance,
             },

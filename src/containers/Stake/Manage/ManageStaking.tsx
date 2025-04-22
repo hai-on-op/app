@@ -95,6 +95,13 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
 
     const [reviewActive, setReviewActive] = useState(false)
     const [withdrawActive, setWithdrawActive] = useState(false)
+    
+    // Reset input values after a successful transaction
+    const clearInputs = () => {
+        setStakingAmount('')
+        setUnstakingAmount('')
+    }
+    
     useEffect(() => {
         toggleModal({
             modal: 'reviewTx',
@@ -107,13 +114,6 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
             isOpen: withdrawActive,
         })
     }, [withdrawActive, toggleModal])
-
-    // console.log(
-    //     'CHecking this: ',
-    //     Number(unstakingAmount),
-    //     Number(stakingData.stakedBalance),
-    //     Number(stakingAmount) > Number(kiteBalance.raw)
-    // )
 
     if (stakingDataLoading) {
         return (
@@ -143,6 +143,7 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                             isOpen: false,
                         })
                     }}
+                    onSuccess={clearInputs}
                     isWithdraw={true}
                 />
             )}
@@ -160,6 +161,7 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                             isOpen: false,
                         })
                     }}
+                    onSuccess={clearInputs}
                     isWithdraw={false}
                 />
             )}
@@ -172,10 +174,7 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                                 $color="rgba(0,0,0,0.5)"
                                 $fontSize="0.8em"
                                 $textDecoration="underline"
-                                onClick={() => {
-                                    setStakingAmount('')
-                                    setUnstakingAmount('')
-                                }}
+                                onClick={clearInputs}
                                 style={{ cursor: 'pointer' }}
                             >
                                 Clear All
