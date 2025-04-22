@@ -66,7 +66,7 @@ export function Overview({ simulation }: OverviewProps) {
         loading: boostLoading,
     } = boostData
 
-    //const totalStaked = stakingTotalStaked ? stakingTotalStaked : stakingStats ? stakingStats.totalStaked : 0
+    //const totalStaked = totalStaked
 
     // --------------------------------
     // Staking APY Calculation Example
@@ -390,15 +390,31 @@ export function Overview({ simulation }: OverviewProps) {
                     alert={{ value: 'BOOST', status: Status.POSITIVE }}
                     fullWidth
                     progress={{
-                        progress: 0.23,
-                        label: 'something',
+                        progress: netBoostValue - 1,
+                        label: `${formatNumberWithStyle(netBoostValue, {
+                            minDecimals: 2,
+                            maxDecimals: 2,
+                        })}x`
                     }}
-                    simulatedProgress={{
-                        progress: 0.76,
-                        label: 'another thing',
-                    }}
-                    labels={[]}
+                    simulatedProgress={
+                        netBoostValue !== simulateNetBoostValue
+                            ? {
+                                  progress: simulateNetBoostValue - 1,
+                                  label: `${formatNumberWithStyle(simulateNetBoostValue, {
+                                      minDecimals: 2,
+                                      maxDecimals: 2,
+                                  })}x`
+                              }
+                            : undefined
+                    }
                     colorLimits={[0.25, 0.5, 0.75]}
+                    labels={[
+                        { progress: 0, label: '1x' },
+                        { progress: 0.25, label: '1.25x' },
+                        { progress: 0.5, label: '1.5x' },
+                        { progress: 0.75, label: '1.75x' },
+                        { progress: 1, label: '2x' },
+                    ]}
                     tooltip={`Max Net Boost is achieved when your KITE staking share is equal to or greater than the weighted average proportions of your incentivized positions.`}
                 />
             </Inner>

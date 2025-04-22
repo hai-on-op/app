@@ -190,8 +190,11 @@ export function OverviewProgressStat({
                 </StatusContainer>
             </Flex>
             <ProgressIndicator
-                // progress={{ progress: Number(value) - 1, label: `${value}x` }}
                 progress={{ progress: Number(value) - 1, label: `${value}x` }}
+                simulatedProgress={simulatedValue ? { 
+                    progress: Number(simulatedValue.replace('x', '')) - 1,
+                    label: simulatedValue
+                } : undefined}
                 colorLimits={[0.25, 0.5, 0.75]}
                 labels={[
                     { progress: 0, label: '1x' },
