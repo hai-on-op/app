@@ -156,7 +156,7 @@ export function Overview({ simulation }: OverviewProps) {
             Number(effectiveStakedBalance) + (Number(stakingAmount) || 0) - (Number(unstakingAmount) || 0)
 
         const simulatedTotalStaked =
-            Number(effectiveStakedBalance) + (Number(stakingAmount) || 0) - (Number(unstakingAmount) || 0)
+            Number(totalStakedValue) + (Number(stakingAmount) || 0) - (Number(unstakingAmount) || 0)
 
         const simulatedShare = simulatedTotalStaked !== 0 ? (simulatedStakedBalance / simulatedTotalStaked) * 100 : 0
 
@@ -380,7 +380,7 @@ export function Overview({ simulation }: OverviewProps) {
                     })}`}
                     label="My Net Boost:"
                     simulatedValue={
-                        stakingSummary.myStKiteShareAfterTx !== stakingSummary.myStKiteShare
+                        netBoostValue !== simulateNetBoostValue
                             ? `${formatNumberWithStyle(simulateNetBoostValue, {
                                   minDecimals: 2,
                                   maxDecimals: 2,

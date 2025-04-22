@@ -275,6 +275,8 @@ export function useBoost() {
     const netBoostValue = hvWeightedBoost + lpWeightedBoost
 
     const simulateNetBoost = (userAfterStakingAmount: number, totalAfterStakingAmount: number) => {
+        if (userAfterStakingAmount <= 0) return 1
+
         const userKiteRatio =
             isNaN(Number(totalAfterStakingAmount)) || Number(totalAfterStakingAmount) === 0
                 ? 0
@@ -296,6 +298,11 @@ export function useBoost() {
 
         const hvValueRatio = userTotalValue === 0 ? 0.5 : Number(haiVeloPositionValue) / userTotalValue
         const lpValueRatio = userTotalValue === 0 ? 0.5 : Number(userLPPositionValue) / userTotalValue
+
+        const hvWeightedBoost = hvBoost * hvValueRatio
+        const lpWeightedBoost = lpBoostValue * lpValueRatio
+
+        const netBoostValue = hvWeightedBoost + lpWeightedBoost
 
         return netBoostValue
     }
