@@ -82,7 +82,7 @@ export function StakingClaimModal() {
             setWaitingPayload({ status: ActionState.NONE })
 
             // Refetch all data after successful claim
-            await refetchAll()
+            await refetchAll({})
 
             setIsStakeClaimPopupOpen(false)
         } catch (error) {

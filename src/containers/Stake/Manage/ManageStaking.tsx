@@ -79,6 +79,7 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
     }, [stakingData.pendingWithdrawal, cooldownPeriod])
 
     const isUnStaking = Number(unstakingAmount) > 0
+    const isStaking = Number(stakingAmount) > 0
 
     const {
         vaultModel: vaultActions,
@@ -95,13 +96,13 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
 
     const [reviewActive, setReviewActive] = useState(false)
     const [withdrawActive, setWithdrawActive] = useState(false)
-    
+
     // Reset input values after a successful transaction
     const clearInputs = () => {
         setStakingAmount('')
         setUnstakingAmount('')
     }
-    
+
     useEffect(() => {
         toggleModal({
             modal: 'reviewTx',
@@ -133,7 +134,13 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                 <StakingTxModal
                     isStaking={false}
                     amount={
-                        isUnStaking ? unstakingAmount : pendingWithdrawal ? pendingWithdrawal.amount : stakingAmount
+                        isUnStaking
+                            ? unstakingAmount
+                            : isStaking
+                            ? stakingAmount
+                            : pendingWithdrawal
+                            ? pendingWithdrawal.amount
+                            : ''
                     }
                     stakedAmount={stakingData.stakedBalance}
                     onClose={() => {
@@ -151,7 +158,13 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                 <StakingTxModal
                     isStaking={!isUnStaking}
                     amount={
-                        isUnStaking ? unstakingAmount : pendingWithdrawal ? pendingWithdrawal.amount : stakingAmount
+                        isUnStaking
+                            ? unstakingAmount
+                            : isStaking
+                            ? stakingAmount
+                            : pendingWithdrawal
+                            ? pendingWithdrawal.amount
+                            : ''
                     }
                     stakedAmount={stakingData.stakedBalance}
                     onClose={() => {
@@ -279,7 +292,7 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
 
                                             await stakingActions.cancelWithdrawal({ signer })
 
-                                            await refetchAll()
+                                            await refetchAll({ cancelWithdrawalAmount: pendingWithdrawal.amount })
                                             popupsActions.setIsWaitingModalOpen(false)
                                             popupsActions.setWaitingPayload({ status: ActionState.NONE })
                                         } catch (error) {

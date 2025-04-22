@@ -140,16 +140,58 @@ export function useStakingData() {
         fetchPolicy: 'network-only', // Don't cache this data, always fetch fresh
     })
 
-    const { data: statsData, loading: statsLoading, refetch: refetchStats } = useQuery(STAKING_STATS_QUERY, {
+    const {
+        data: statsData,
+        loading: statsLoading,
+        refetch: refetchStats,
+    } = useQuery(STAKING_STATS_QUERY, {
         fetchPolicy: 'network-only', // Don't cache this data, always fetch fresh
     })
 
     // Handles both immediate updates after transactions and scheduled refetches
-    const refetchAll = async () => {
+    const refetchAll = async ({
+        stakingAmount,
+        unstakingAmount,
+        widthdrawAmount,
+        cancelWithdrawalAmount,
+    }: {
+        stakingAmount?: string
+        unstakingAmount?: string
+        widthdrawAmount?: string
+        cancelWithdrawalAmount?: string
+    }) => {
         if (signer) {
+            console.log('Refetching all staking data', {
+                stakingAmount,
+                unstakingAmount,
+                widthdrawAmount,
+                cancelWithdrawalAmount,
+            })
+            if (stakingAmount) {
+                stakingActions.setTotalStaked(String(Number(totalStaked) + Number(stakingAmount)))
+                stakingActions.setStakedBalance(String(Number(stakedBalance) + Number(stakingAmount)))
+            }
+            if (unstakingAmount) {
+                stakingActions.setTotalStaked(String(Number(totalStaked) - Number(unstakingAmount)))
+                stakingActions.setStakedBalance(String(Number(stakedBalance) - Number(unstakingAmount)))
+                stakingActions.setPendingWithdrawals([
+                    {
+                        amount: Number(unstakingAmount),
+                        timestamp: Math.floor(Date.now() / 1000),
+                    },
+                ])
+            }
+            if (widthdrawAmount) {
+                stakingActions.setPendingWithdrawals([])
+            }
+            if (cancelWithdrawalAmount) {
+                stakingActions.setTotalStaked(String(Number(totalStaked) + Number(cancelWithdrawalAmount)))
+                stakingActions.setStakedBalance(String(Number(stakedBalance) + Number(cancelWithdrawalAmount)))
+            }
+
             console.log('Refetching all staking data', statsData)
             pendingTransactionRef.current = true
-            
+
             // Cancel any pending refetch timeout
             if (refetchTimeoutRef.current) {
                 clearTimeout(refetchTimeoutRef.current)
@@ -158,19 +200,19 @@ export function useStakingData() {
 
             // Immediate refresh of on-chain data
             setRefetchCounter((prev) => prev + 1)
-            
+
             try {
                 // First get direct contract data which is immediately available
                 const [userStakedBalance, totalStakedAmount] = await Promise.all([
                     stakingActions.fetchUserStakedBalance({ signer }),
                     stakingActions.fetchTotalStaked({ signer }),
                 ])
-                
+
                 // Update our local state immediately with contract data
                 if (userStakedBalance) {
                     setLocalStakedBalance(formatEther(userStakedBalance))
                 }
-                
+
                 // Run all the other data fetches including GraphQL
                 await Promise.all([
                     refetchUser(),
@@ -179,7 +221,7 @@ export function useStakingData() {
                     stakingActions.fetchUserRewards({ signer }),
                     stakingActions.fetchStakingApyData({ signer }),
                 ])
-                
+
                 // Schedule another refetch after a delay to ensure subgraph is updated
                 refetchTimeoutRef.current = window.setTimeout(async () => {
                     console.log('Delayed refetch to ensure GraphQL data is updated')
@@ -222,32 +264,34 @@ export function useStakingData() {
             return {
                 stakedBalance: localStakedBalance,
                 totalStaked: formatBigNumber(totalStaked),
-                totalWithdrawn: userData?.stakingUser?.totalWithdrawn ? formatBigNumber(userData.stakingUser.totalWithdrawn) : '0',
-                stakingPositions: userData?.stakingUser?.stakingPositions 
+                totalWithdrawn: userData?.stakingUser?.totalWithdrawn
+                    ? formatBigNumber(userData.stakingUser.totalWithdrawn)
+                    : '0',
+                stakingPositions: userData?.stakingUser?.stakingPositions
                     ? userData.stakingUser.stakingPositions.map((pos: any) => ({
-                        ...pos,
-                        amount: formatBigNumber(pos.amount),
-                        timestamp: Number(pos.timestamp),
-                    }))
+                          ...pos,
+                          amount: formatBigNumber(pos.amount),
+                          timestamp: Number(pos.timestamp),
+                      }))
                     : [],
-                rewards: userData?.stakingUser?.rewards 
+                rewards: userData?.stakingUser?.rewards
                     ? userData.stakingUser.rewards.map((reward: any) => ({
-                        ...reward,
-                        amount: formatBigNumber(reward.amount),
-                        timestamp: Number(reward.timestamp),
-                    }))
+                          ...reward,
+                          amount: formatBigNumber(reward.amount),
+                          timestamp: Number(reward.timestamp),
+                      }))
                     : [],
                 pendingWithdrawal: userData?.stakingUser?.pendingWithdrawal
                     ? {
-                        ...userData.stakingUser.pendingWithdrawal,
-                        amount: formatBigNumber(userData.stakingUser.pendingWithdrawal.amount),
-                        timestamp: Number(userData.stakingUser.pendingWithdrawal.timestamp),
-                    }
+                          ...userData.stakingUser.pendingWithdrawal,
+                          amount: formatBigNumber(userData.stakingUser.pendingWithdrawal.amount),
+                          timestamp: Number(userData.stakingUser.pendingWithdrawal.timestamp),
+                      }
                     : undefined,
             }
         }
 
-        if (!userData?.stakingUser) return defaultStakingData;
+        if (!userData?.stakingUser) return defaultStakingData
 
         const user = userData.stakingUser
         return {

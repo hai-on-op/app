@@ -160,8 +160,6 @@ export function Overview({ simulation }: OverviewProps) {
 
         const simulatedShare = simulatedTotalStaked !== 0 ? (simulatedStakedBalance / simulatedTotalStaked) * 100 : 0
 
-        console.log('stakingData', Number(stakingData.pendingWithdrawal ? stakingData.pendingWithdrawal.amount : 0))
-
         return {
             // Static data / meta
             kitePrice,

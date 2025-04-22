@@ -24,7 +24,7 @@ export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw, 
     const { popupsModel: popupsActions, stakingModel: stakingActions } = useStoreActions((actions) => actions)
     const { stakingModel: stakingStates } = useStoreState((state) => state)
     const { refetchAll } = useStakingData()
-    
+
     // Use ref to prevent reopening modal after completion
     const hasCompletedRef = useRef(false)
 
@@ -41,8 +41,12 @@ export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw, 
             status: ActionState.LOADING,
         })
 
+        console.log('Confirming', isStaking, isWithdraw, amount)
+
         try {
             stakingActions.setTransactionState(ActionState.LOADING)
+
+            console.log('setTransactionState')
 
             if (isStaking) {
                 await stakingActions.stake({
@@ -60,24 +64,27 @@ export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw, 
                 })
             }
 
+            console.log('setTransactionState success')
+
             stakingActions.setTransactionState(ActionState.SUCCESS)
             popupsActions.setIsWaitingModalOpen(false)
             popupsActions.setWaitingPayload({ status: ActionState.NONE })
-            
+
+            console.log('setWaitingPayload success')
+
             // Mark as completed to prevent reopening
             hasCompletedRef.current = true
 
             // First close the modal to prevent any race conditions
             onClose?.()
-            
-            // Wait to ensure modal is fully closed before updating state
-            setTimeout(() => {
-                // Run the success callback to reset input values if provided
-                onSuccess?.()
-                
-                // Refetch all data after successful transaction
-                refetchAll()
-            }, 500)
+
+            if (isStaking) {
+                refetchAll({ stakingAmount: amount })
+            } else if (isWithdraw) {
+                refetchAll({ widthdrawAmount: amount })
+            } else {
+                refetchAll({ unstakingAmount: amount })
+            }
         } catch (e: any) {
             stakingActions.setTransactionState(ActionState.ERROR)
             handleTransactionError(e)
@@ -97,9 +104,13 @@ export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw, 
                         {
                             label: 'Amount',
                             value: {
-                                current: Number(stakedAmount).toString(),
+                                current: isWithdraw
+                                    ? (Number(stakedAmount) + Number(amount)).toString()
+                                    : Number(stakedAmount).toString(),
                                 after: isStaking
                                     ? (Number(stakedAmount) + Number(amount)).toString()
+                                    : isWithdraw
+                                    ? stakedAmount
                                     : (Number(stakedAmount) - Number(amount)).toString(),
                                 label: 'KITE',
                             },
