@@ -48,18 +48,10 @@ export function Overview({ simulation }: OverviewProps) {
         userLPPosition,
         totalPoolLiquidity,
         userLPPositionValue,
-        haiWethLpBoost,
         lpBoostValue,
         userTotalValue,
-        formattedValues,
         userSharePercentage,
-        boostFactor,
-        maxBoostFactor,
-        boostProgress,
-        boostedVaultsCount,
-        haiVeloBoost,
         hvBoost,
-        netBoost,
         simulateNetBoost,
         netBoostValue,
         haiVeloPositionValue,
@@ -394,7 +386,7 @@ export function Overview({ simulation }: OverviewProps) {
                         label: `${formatNumberWithStyle(netBoostValue, {
                             minDecimals: 2,
                             maxDecimals: 2,
-                        })}x`
+                        })}x`,
                     }}
                     simulatedProgress={
                         netBoostValue !== simulateNetBoostValue
@@ -403,7 +395,7 @@ export function Overview({ simulation }: OverviewProps) {
                                   label: `${formatNumberWithStyle(simulateNetBoostValue, {
                                       minDecimals: 2,
                                       maxDecimals: 2,
-                                  })}x`
+                                  })}x`,
                               }
                             : undefined
                     }
