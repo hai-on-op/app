@@ -5,17 +5,40 @@ import { formatNumberWithStyle } from '~/utils'
 import { useStoreActions } from '~/store'
 import { useEarnStrategies } from '~/hooks'
 
-import { HaiButton } from '~/styles'
+import { HaiButton, Text } from '~/styles'
 import { RewardsTokenArray } from '~/components/TokenArray'
 import { Stats, type StatProps } from '~/components/Stats'
 import { Loader } from '~/components/Loader'
 import { RefreshCw } from 'react-feather'
+import { useBoost } from '~/hooks/useBoost'
+import styled from 'styled-components'
+
+const StyledRewardsAPYContainer = styled.div`
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+`
+
+const StyledRewardsAPY = styled.div`
+    font-size: 2.2em;
+    font-weight: 700;
+    text-decoration: line-through;
+`
+
+const StyledRewardsAPYWithBoost = styled.div`
+    color: #00ac11;
+    font-size: 2.2em;
+    font-weight: 700;
+    margin-left: 8px;
+`
 
 export function EarnStats() {
     const { address } = useAccount()
 
     const { rows } = useEarnStrategies()
     const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
+
+    const { netBoostValue } = useBoost()
 
     const { value, apy } = useMemo(() => {
         return rows.reduce(
@@ -29,6 +52,13 @@ export function EarnStats() {
         )
     }, [rows])
 
+    const formattedAPY = formatNumberWithStyle(value ? apy / value : 0, {
+        maxDecimals: 1,
+        scalingFactor: 100,
+        suffixed: true,
+        style: 'percent',
+    })
+
     const dummyStats: StatProps[] = [
         {
             header: formatNumberWithStyle(value, {
@@ -40,12 +70,23 @@ export function EarnStats() {
             tooltip: 'Total eligible value participating in DAO rewards campaign activities',
         },
         {
-            header: formatNumberWithStyle(value ? apy / value : 0, {
-                maxDecimals: 1,
-                scalingFactor: 100,
-                suffixed: true,
-                style: 'percent',
-            }),
+            header: isNaN(netBoostValue)
+                ? '...'
+                : `${formatNumberWithStyle(netBoostValue, {
+                      minDecimals: 0,
+                      maxDecimals: 2,
+                  })}x`,
+            label: 'My Net HAI Boost',
+            badge: 'BOOST',
+            tooltip: 'Your current boost multiplier based on your staked KITE.',
+        },
+        {
+            header: (
+                <StyledRewardsAPYContainer>
+                    <StyledRewardsAPY>{formattedAPY} </StyledRewardsAPY>
+                    <StyledRewardsAPYWithBoost>150</StyledRewardsAPYWithBoost>
+                </StyledRewardsAPYContainer>
+            ),
             label: 'My Est. Rewards APY',
             tooltip:
                 'Current estimated APY of campaign rewards based on current value participating and value of rewards tokens',
