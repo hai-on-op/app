@@ -63,6 +63,30 @@ const USER_POSITIONS_QUERY = gql`
     }
 `
 
+// Query for all active positions
+const ALL_ACTIVE_POSITIONS_QUERY = gql`
+    query GetAllActivePositions($poolId: String!) {
+        positions(
+            first: 1000, 
+            where: { pool: $poolId, liquidity_gt: "0" }
+        ) {
+            id
+            liquidity
+            depositedToken0
+            depositedToken1
+            withdrawnToken0
+            withdrawnToken1
+            tickLower {
+                tickIdx
+            }
+            tickUpper {
+                tickIdx
+            }
+            owner
+        }
+    }
+`
+
 /**
  * Calculates the current amounts of token0 and token1 in a position using Uniswap SDK
  */
@@ -193,6 +217,7 @@ export async function fetchPoolData(): Promise<PoolData | null> {
 
 /**
  * Fetches user positions from the subgraph
+ * @deprecated Use fetchAllActivePositions and filter by user instead
  */
 export async function fetchUserPositions(account: string): Promise<UserPosition[] | null> {
     if (!account) {
@@ -216,6 +241,30 @@ export async function fetchUserPositions(account: string): Promise<UserPosition[
         return null
     } catch (err) {
         console.error('Error fetching user positions:', err)
+        throw err
+    }
+}
+
+/**
+ * Fetches all active positions from the subgraph (with liquidity > 0)
+ */
+export async function fetchAllActivePositions(): Promise<UserPosition[] | null> {
+    try {
+        const result = await lpClient.query({
+            query: ALL_ACTIVE_POSITIONS_QUERY,
+            variables: {
+                poolId: POOL_ID,
+            },
+        })
+
+        const { data } = result
+
+        if (data && data.positions) {
+            return data.positions
+        }
+        return null
+    } catch (err) {
+        console.error('Error fetching all active positions:', err)
         throw err
     }
 }
@@ -246,4 +295,27 @@ export function calculateCurrentPositionComposition(
         console.error('Error calculating current positions:', err)
         throw err
     }
+}
+
+/**
+ * Groups positions by user address
+ */
+export function groupPositionsByUser(positions: UserPosition[]): Record<string, UserPosition[]> {
+    return positions.reduce((grouped, position) => {
+        const owner = position.owner.toLowerCase()
+        if (!grouped[owner]) {
+            grouped[owner] = []
+        }
+        grouped[owner].push(position)
+        return grouped
+    }, {} as Record<string, UserPosition[]>)
+}
+
+/**
+ * Gets positions for a specific user from all positions
+ */
+export function getUserPositionsFromAll(allPositions: UserPosition[], userAddress: string): UserPosition[] {
+    if (!userAddress) return []
+    const address = userAddress.toLowerCase()
+    return allPositions.filter(position => position.owner.toLowerCase() === address)
 } 
