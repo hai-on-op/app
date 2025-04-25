@@ -137,11 +137,12 @@ export function Overview({ simulation }: OverviewProps) {
 
         const totalStakedUSD = Number(totalStakedValue) * kitePrice
         const myStakedUSD = Number(stakingData.stakedBalance) * kitePrice
-        const myShare =
-            Number(totalStakedValue) !== 0 ? (Number(stakingData.stakedBalance) / Number(totalStakedValue)) * 100 : 0
 
         const effectiveStakedBalance =
             Number(stakedBalance) - Number(stakingData.pendingWithdrawal ? stakingData.pendingWithdrawal.amount : 0)
+
+        const myShare =
+            Number(totalStakedValue) !== 0 ? (Number(effectiveStakedBalance) / Number(totalStakedValue)) * 100 : 0
 
         // Calculate simulated values
         const simulatedStakedBalance =
@@ -150,7 +151,7 @@ export function Overview({ simulation }: OverviewProps) {
         const simulatedTotalStaked =
             Number(totalStakedValue) + (Number(stakingAmount) || 0) - (Number(unstakingAmount) || 0)
 
-        console.log(simulatedStakedBalance, simulatedTotalStaked)
+        console.log(simulatedStakedBalance, effectiveStakedBalance, simulatedTotalStaked, totalStakedValue)
 
         const simulatedShare = simulatedTotalStaked !== 0 ? (simulatedStakedBalance / simulatedTotalStaked) * 100 : 0
 

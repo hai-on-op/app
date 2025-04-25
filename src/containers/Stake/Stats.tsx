@@ -22,6 +22,9 @@ export function StakeStats() {
 
     const kitePrice = veloPrices?.KITE.raw
 
+    const effectiveStakedBalance =
+        Number(stakingData.stakedBalance) - Number(stakingData.pendingWithdrawal ? stakingData.pendingWithdrawal.amount : 0)
+
     // const kitePrice = 10.0 // TODO: Get real KITE price from somewhere
 
     const stats: StatProps[] = useMemo(() => {
@@ -55,7 +58,7 @@ export function StakeStats() {
                 ),
             },
             {
-                header: formatNumberWithStyle(Number(stakingData.stakedBalance), {
+                header: formatNumberWithStyle(Number(effectiveStakedBalance), {
                     minDecimals: 0,
                     maxDecimals: 2,
                 }),
