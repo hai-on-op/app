@@ -4,6 +4,7 @@ import { Position, FeeAmount, Pool } from '@uniswap/v3-sdk'
 import { Token } from '@uniswap/sdk-core'
 import JSBI from 'jsbi'
 import type { PoolData, UserPosition, CurrentUserPosition } from '~/model/lpDataModel'
+import { calculatePositionValue } from '~/utils/uniswapV3'
 
 // Pool ID from the subgraph
 export const POOL_ID = '0x146b020399769339509c98b7b353d19130c150ec'
@@ -318,4 +319,84 @@ export function getUserPositionsFromAll(allPositions: UserPosition[], userAddres
     if (!userAddress) return []
     const address = userAddress.toLowerCase()
     return allPositions.filter(position => position.owner.toLowerCase() === address)
+}
+
+/**
+ * Calculates the USD value of a position
+ */
+export function calculatePositionValueInUSD(
+    position: UserPosition | CurrentUserPosition,
+    pool: PoolData,
+    token0UsdPrice: number,
+    token1UsdPrice: number
+): number {
+    try {
+        return calculatePositionValue(position, pool, token0UsdPrice, token1UsdPrice)
+    } catch (error) {
+        console.error('Error calculating position value:', error)
+        return 0
+    }
+}
+
+/**
+ * Calculates the total USD value of all positions for a user
+ */
+export function calculateUserPositionsValue(
+    positions: (UserPosition | CurrentUserPosition)[],
+    pool: PoolData,
+    token0UsdPrice: number,
+    token1UsdPrice: number
+): number {
+    if (!positions || positions.length === 0 || !pool) return 0
+
+    return positions.reduce((total, position) => {
+        const positionValue = calculatePositionValueInUSD(position, pool, token0UsdPrice, token1UsdPrice)
+        return total + positionValue
+    }, 0)
+}
+
+/**
+ * Calculate position values for all users
+ */
+export function calculateAllUserPositionValues(
+    userPositionsMap: Record<string, UserPosition[]>,
+    pool: PoolData,
+    token0UsdPrice: number,
+    token1UsdPrice: number
+): Record<string, number> {
+    const result: Record<string, number> = {}
+    
+    for (const [userAddress, positions] of Object.entries(userPositionsMap)) {
+        result[userAddress] = calculateUserPositionsValue(positions, pool, token0UsdPrice, token1UsdPrice)
+    }
+    
+    return result
+}
+
+/**
+ * Calculate total liquidity provided by a user
+ */
+export function calculateUserTotalLiquidity(positions: UserPosition[]): string {
+    if (!positions || positions.length === 0) return '0'
+    
+    return positions
+        .reduce((sum, position) => {
+            return sum + Number(position.liquidity)
+        }, 0)
+        .toString()
+}
+
+/**
+ * Calculate total liquidity for all users
+ */
+export function calculateAllUserTotalLiquidity(
+    userPositionsMap: Record<string, UserPosition[]>
+): Record<string, string> {
+    const result: Record<string, string> = {}
+    
+    for (const [userAddress, positions] of Object.entries(userPositionsMap)) {
+        result[userAddress] = calculateUserTotalLiquidity(positions)
+    }
+    
+    return result
 } 

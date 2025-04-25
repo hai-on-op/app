@@ -61,6 +61,12 @@ export type UserPositionsMap = Record<string, UserPosition[]>
 // Type for user current position mappings
 export type UserCurrentPositionsMap = Record<string, CurrentUserPosition[]>
 
+// Type for user position value mappings
+export type UserPositionValuesMap = Record<string, number>
+
+// Type for user total liquidity mappings
+export type UserTotalLiquidityMap = Record<string, string>
+
 export interface LPDataModel {
     // Original state for backward compatibility
     pool: PoolData | null
@@ -84,6 +90,22 @@ export interface LPDataModel {
     userCurrentPositionsMap: UserCurrentPositionsMap
     setUserCurrentPositionsMap: Action<LPDataModel, UserCurrentPositionsMap>
     
+    // Position values and liquidity tracking
+    token0UsdPrice: number
+    setToken0UsdPrice: Action<LPDataModel, number>
+    token1UsdPrice: number
+    setToken1UsdPrice: Action<LPDataModel, number>
+    userPositionValuesMap: UserPositionValuesMap
+    setUserPositionValuesMap: Action<LPDataModel, UserPositionValuesMap>
+    userTotalLiquidityMap: UserTotalLiquidityMap
+    setUserTotalLiquidityMap: Action<LPDataModel, UserTotalLiquidityMap>
+    
+    // For backward compatibility with useBoost
+    userLPPositionValue: string
+    setUserLPPositionValue: Action<LPDataModel, string>
+    userTotalLiquidity: string
+    setUserTotalLiquidity: Action<LPDataModel, string>
+    
     // Actions and thunks
     fetchPoolData: Thunk<LPDataModel>
     fetchUserPositions: Thunk<LPDataModel, string | undefined>
@@ -94,6 +116,11 @@ export interface LPDataModel {
     buildUserPositionsMap: Thunk<LPDataModel>
     calculateAllCurrentPositions: Thunk<LPDataModel>
     updateUserData: Thunk<LPDataModel, string | undefined>
+    
+    // Token prices and position values
+    updateTokenPrices: Thunk<LPDataModel, { token0UsdPrice: number; token1UsdPrice: number }>
+    calculateAllPositionValues: Thunk<LPDataModel>
+    calculateAllUserLiquidity: Thunk<LPDataModel>
 }
 
 export const lpDataModel: LPDataModel = {
@@ -135,6 +162,34 @@ export const lpDataModel: LPDataModel = {
     userCurrentPositionsMap: {},
     setUserCurrentPositionsMap: action((state, payload) => {
         state.userCurrentPositionsMap = payload
+    }),
+    
+    // Position values and liquidity tracking
+    token0UsdPrice: 0,
+    setToken0UsdPrice: action((state, payload) => {
+        state.token0UsdPrice = payload
+    }),
+    token1UsdPrice: 0,
+    setToken1UsdPrice: action((state, payload) => {
+        state.token1UsdPrice = payload
+    }),
+    userPositionValuesMap: {},
+    setUserPositionValuesMap: action((state, payload) => {
+        state.userPositionValuesMap = payload
+    }),
+    userTotalLiquidityMap: {},
+    setUserTotalLiquidityMap: action((state, payload) => {
+        state.userTotalLiquidityMap = payload
+    }),
+    
+    // For backward compatibility
+    userLPPositionValue: '0',
+    setUserLPPositionValue: action((state, payload) => {
+        state.userLPPositionValue = payload
+    }),
+    userTotalLiquidity: '0',
+    setUserTotalLiquidity: action((state, payload) => {
+        state.userTotalLiquidity = payload
     }),
     
     // Original thunks
@@ -267,7 +322,7 @@ export const lpDataModel: LPDataModel = {
     updateUserData: thunk(async (actions, account, { getState, getStoreActions }) => {
         if (!account) return
         
-        const { allPositions, pool } = getState()
+        const { allPositions, pool, userPositionValuesMap, userTotalLiquidityMap } = getState()
         // Get actions directly - we'll use a workaround for typing
         const storeActions = getStoreActions() as any
         
@@ -296,6 +351,70 @@ export const lpDataModel: LPDataModel = {
                 // Otherwise calculate it directly (should be rare with the new flow)
                 await storeActions.lpDataModel.calculateCurrentPositions()
             }
+            
+            // Update backward compatibility values for the user
+            if (userPositionValuesMap && userPositionValuesMap[normalizedAddress]) {
+                actions.setUserLPPositionValue(userPositionValuesMap[normalizedAddress].toString())
+            }
+            
+            if (userTotalLiquidityMap && userTotalLiquidityMap[normalizedAddress]) {
+                actions.setUserTotalLiquidity(userTotalLiquidityMap[normalizedAddress])
+            }
         }
     }),
+    
+    // Token prices and position values
+    updateTokenPrices: thunk(async (actions, { token0UsdPrice, token1UsdPrice }) => {
+        actions.setToken0UsdPrice(token0UsdPrice)
+        actions.setToken1UsdPrice(token1UsdPrice)
+    }),
+    
+    calculateAllPositionValues: thunk(async (actions, _, { getState, getStoreActions }) => {
+        const { userPositionsMap, pool, token0UsdPrice, token1UsdPrice, account } = getState()
+        
+        if (!userPositionsMap || !pool || Object.keys(userPositionsMap).length === 0 || token0UsdPrice === 0 || token1UsdPrice === 0) {
+            return
+        }
+        
+        try {
+            const userPositionValuesMap = lpDataService.calculateAllUserPositionValues(
+                userPositionsMap,
+                pool,
+                token0UsdPrice,
+                token1UsdPrice
+            )
+            
+            actions.setUserPositionValuesMap(userPositionValuesMap)
+            
+            // Update for backward compatibility if there's a current account
+            if (account && userPositionValuesMap[account.toLowerCase()]) {
+                actions.setUserLPPositionValue(userPositionValuesMap[account.toLowerCase()].toString())
+            }
+        } catch (err) {
+            console.error('Error calculating position values:', err)
+            actions.setError(err)
+        }
+    }),
+    
+    calculateAllUserLiquidity: thunk(async (actions, _, { getState }) => {
+        const { userPositionsMap, account } = getState()
+        
+        if (!userPositionsMap || Object.keys(userPositionsMap).length === 0) {
+            return
+        }
+        
+        try {
+            const userTotalLiquidityMap = lpDataService.calculateAllUserTotalLiquidity(userPositionsMap)
+            
+            actions.setUserTotalLiquidityMap(userTotalLiquidityMap)
+            
+            // Update for backward compatibility if there's a current account
+            if (account && userTotalLiquidityMap[account.toLowerCase()]) {
+                actions.setUserTotalLiquidity(userTotalLiquidityMap[account.toLowerCase()])
+            }
+        } catch (err) {
+            console.error('Error calculating user total liquidity:', err)
+            actions.setError(err)
+        }
+    })
 } 

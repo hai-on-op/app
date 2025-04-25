@@ -11,6 +11,10 @@ type LPDataContextType = {
     loading: boolean
     error: any
     account: string | undefined
+    userLPPositionValue: string
+    userTotalLiquidity: string
+    allPositions: UserPosition[] | null
+    userPositionsMap: Record<string, UserPosition[]>
 }
 
 // Create context
@@ -21,6 +25,10 @@ const LPDataContext = createContext<LPDataContextType>({
     loading: false,
     error: null,
     account: undefined,
+    userLPPositionValue: '0',
+    userTotalLiquidity: '0',
+    allPositions: null,
+    userPositionsMap: {},
 })
 
 // Provider component
@@ -28,14 +36,20 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
     const { address: account } = useAccount()
 
     // Get model state and actions
-    const { pool, userPositions, userCurrentPositionComposition, loading, error, allPositions, userPositionsMap } =
-        useStoreState((state) => state.lpDataModel)
-
-    console.log(
-        'allPositions',
+    const {
+        pool,
+        userPositions,
+        userCurrentPositionComposition,
+        loading,
+        error,
         allPositions,
         userPositionsMap,
-    )
+        userLPPositionValue,
+        userPositionValuesMap,
+        userTotalLiquidity,
+    } = useStoreState((state) => state.lpDataModel)
+
+    console.log('allPositions', allPositions, userPositionValuesMap)
 
     const {
         setAccount,
@@ -104,6 +118,10 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
                 loading,
                 error,
                 account,
+                userLPPositionValue,
+                userTotalLiquidity,
+                allPositions,
+                userPositionsMap,
             }}
         >
             {children}

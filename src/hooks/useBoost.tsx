@@ -1,12 +1,11 @@
-import { useMemo, useCallback } from 'react'
-import { useStoreState } from '~/store'
+import { useMemo, useCallback, useEffect } from 'react'
+import { useStoreState, useStoreActions } from '~/store'
 import { useVault } from '~/providers/VaultProvider'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { useAccount } from 'wagmi'
 import { formatUnits } from 'ethers/lib/utils'
 import { useLPData } from '~/providers/LPDataProvider'
 import { useVelodromePositions } from './useVelodrome'
-import { calculatePositionValue } from '~/utils/uniswapV3'
 import { formatNumberWithStyle } from '~/utils'
 import { useStakingData } from './useStakingData'
 import { useHaiVeloData } from './useHaiVeloData'
@@ -14,7 +13,14 @@ import { useAnalytics } from '~/providers/AnalyticsProvider'
 
 export function useBoost() {
     const { address } = useAccount()
-    const { pool, userPositions, loading: lpDataLoading } = useLPData()
+    // Use LP data from our enhanced model
+    const { 
+        pool, 
+        userPositions, 
+        userLPPositionValue, 
+        userTotalLiquidity, 
+        loading: lpDataLoading 
+    } = useLPData()
     const { data: veloPositions, loading: positionsLoading } = useVelodromePositions()
     const { prices: veloPrices } = useVelodromePrices()
     const { stakingData, stakingStats, loading: stakingLoading } = useStakingData()
@@ -24,6 +30,11 @@ export function useBoost() {
         haiMarketPrice,
         data: { tokenAnalyticsData },
     } = useAnalytics()
+
+    // Get token price actions for updating the LP data model
+    const { updateTokenPrices, calculateAllPositionValues, calculateAllUserLiquidity } = useStoreActions(
+        (actions) => actions.lpDataModel
+    )
 
     // Get HAI and WETH prices from analytics provider
     const haiPrice = useMemo(() => parseFloat(haiMarketPrice.raw || '0'), [haiMarketPrice])
@@ -35,35 +46,21 @@ export function useBoost() {
         return wethData ? parseFloat(formatUnits(wethData.currentPrice.toString(), 18)) : 0
     }, [tokenAnalyticsData])
 
-    // Get token prices (ideally would come from a price oracle)
-    // For now using token0Price and token1Price from the pool as approximate USD values
-    // In a real implementation, you would need to convert to actual USD prices
-    const token0UsdPrice = haiPrice
-    const token1UsdPrice = wethPrice
-
-    // Calculate total user LP position value using V3 formulas
-    const calculatedUserLPPositionValue = useMemo(() => {
-        if (!userPositions || !pool || userPositions.length === 0) return '0'
-
-        // Calculate value for each position and sum them
-        const totalValue = userPositions.reduce((sum, position) => {
-            const positionValue = calculatePositionValue(position, pool, token0UsdPrice, token1UsdPrice)
-            return sum + positionValue
-        }, 0)
-
-        return totalValue.toString()
-    }, [userPositions, pool, token0UsdPrice, token1UsdPrice])
-
-    // Calculate user's total liquidity (for boost calculation)
-    const userTotalLiquidity = useMemo(() => {
-        if (!userPositions || userPositions.length === 0) return '0'
-
-        return userPositions
-            .reduce((sum, position) => {
-                return sum + Number(position.liquidity)
-            }, 0)
-            .toString()
-    }, [userPositions])
+    // Update token prices in the model when they change
+    useEffect(() => {
+        if (haiPrice && wethPrice) {
+            updateTokenPrices({
+                token0UsdPrice: haiPrice,
+                token1UsdPrice: wethPrice
+            })
+            
+            // Calculate position values for all users once prices are set
+            calculateAllPositionValues()
+            
+            // Also calculate total liquidity (this doesn't need prices, but we can run it here)
+            calculateAllUserLiquidity()
+        }
+    }, [haiPrice, wethPrice, updateTokenPrices, calculateAllPositionValues, calculateAllUserLiquidity])
 
     // KITE staking data
     const userKITEStaked = useMemo(() => {
@@ -74,10 +71,10 @@ export function useBoost() {
         return stakingLoading ? '0' : stakingStats.totalStaked
     }, [stakingStats, stakingLoading])
 
-    // LP Position data
+    // LP Position data - now using values from the model
     const userLPPosition = userTotalLiquidity
     const totalPoolLiquidity = pool?.liquidity || '0'
-    const userLPPositionValue = calculatedUserLPPositionValue
+    const calculatedUserLPPositionValue = userLPPositionValue
 
     // Calculate haiVELO position value in USD using VELO price
     const haiVeloPositionValue = useMemo(() => {
@@ -109,9 +106,9 @@ export function useBoost() {
             const lpBoost = Math.min(lpBoostRaw, 2)
 
             // Calculate weighted average boost
-            const totalValue = Number(userLPPositionValue) + Number(haiVeloPositionValue)
+            const totalValue = Number(calculatedUserLPPositionValue) + Number(haiVeloPositionValue)
             const haiVeloValueRatio = totalValue === 0 ? 0.5 : Number(haiVeloPositionValue) / totalValue
-            const lpValueRatio = totalValue === 0 ? 0.5 : Number(userLPPositionValue) / totalValue
+            const lpValueRatio = totalValue === 0 ? 0.5 : Number(calculatedUserLPPositionValue) / totalValue
 
             const weightedHaiVeloBoost = haiVeloBoost * haiVeloValueRatio
             const weightedLpBoost = lpBoost * lpValueRatio
@@ -132,7 +129,7 @@ export function useBoost() {
             totalHaiVELODeposited,
             totalPoolLiquidity,
             userLPPosition,
-            userLPPositionValue,
+            calculatedUserLPPositionValue,
             haiVeloPositionValue,
         ]
     )
@@ -153,9 +150,9 @@ export function useBoost() {
 
     const totalDailyRewardsInUSD = 0.1
     const baseAPR = useMemo(() => {
-        if (Number(haiVeloPositionValue) + Number(userLPPositionValue) === 0) return 0
-        return (totalDailyRewardsInUSD / (Number(haiVeloPositionValue) + Number(userLPPositionValue))) * 365 * 100
-    }, [totalDailyRewardsInUSD, haiVeloPositionValue, userLPPositionValue])
+        if (Number(haiVeloPositionValue) + Number(calculatedUserLPPositionValue) === 0) return 0
+        return (totalDailyRewardsInUSD / (Number(haiVeloPositionValue) + Number(calculatedUserLPPositionValue))) * 365 * 100
+    }, [totalDailyRewardsInUSD, haiVeloPositionValue, calculatedUserLPPositionValue])
 
     return {
         // HaiVELO data
@@ -170,12 +167,12 @@ export function useBoost() {
         // LP Position data
         userLPPosition,
         totalPoolLiquidity,
-        userLPPositionValue,
+        userLPPositionValue: calculatedUserLPPositionValue,
 
         // Boost data - take from calculated values
         hvBoost: currentBoostValues.haiVeloBoost,
         lpBoostValue: currentBoostValues.lpBoost,
-        userTotalValue: Number(userLPPositionValue) + Number(haiVeloPositionValue),
+        userTotalValue: Number(calculatedUserLPPositionValue) + Number(haiVeloPositionValue),
         netBoostValue: currentBoostValues.netBoost,
 
         simulateNetBoost,
