@@ -1,13 +1,13 @@
 /**
  * Boost Service
- * 
+ *
  * Provides stateless functions for calculating boost values based on staking data
  * and LP positions.
  */
 
 /**
  * Calculate LP boost value for a user
- * 
+ *
  * @param userStakingAmount User's staked amount (KITE)
  * @param totalStakingAmount Total staked amount (KITE)
  * @param userLPPosition User's LP position amount
@@ -20,32 +20,33 @@ export function calculateLPBoost({
     userLPPosition,
     totalPoolLiquidity,
 }: {
-    userStakingAmount: number;
-    totalStakingAmount: number;
-    userLPPosition: string | number;
-    totalPoolLiquidity: string | number;
+    userStakingAmount: number
+    totalStakingAmount: number
+    userLPPosition: string | number
+    totalPoolLiquidity: string | number
 }) {
+    console.log('calculateLPBoost', userStakingAmount, totalStakingAmount, userLPPosition, totalPoolLiquidity)
     // Skip calculation if user has no stake
-    if (userStakingAmount <= 0) return { lpBoost: 1 };
+    if (userStakingAmount <= 0) return { lpBoost: 1 }
 
     // Calculate KITE ratio
     const calculatedKiteRatio =
-        isNaN(totalStakingAmount) || totalStakingAmount === 0 ? 0 : userStakingAmount / totalStakingAmount;
+        isNaN(totalStakingAmount) || totalStakingAmount === 0 ? 0 : userStakingAmount / totalStakingAmount
 
     // Calculate LP boost
-    const lpRatio = Number(totalPoolLiquidity) === 0 ? 0 : Number(userLPPosition) / Number(totalPoolLiquidity);
-    const lpBoostRaw = lpRatio === 0 ? 1 : calculatedKiteRatio / lpRatio + 1;
-    const lpBoost = Math.min(lpBoostRaw, 2);
+    const lpRatio = Number(totalPoolLiquidity) === 0 ? 0 : Number(userLPPosition) / Number(totalPoolLiquidity)
+    const lpBoostRaw = lpRatio === 0 ? 1 : calculatedKiteRatio / lpRatio + 1
+    const lpBoost = Math.min(lpBoostRaw, 2)
 
     return {
         kiteRatio: calculatedKiteRatio,
         lpBoost,
-    };
+    }
 }
 
 /**
  * Calculate haiVELO boost value for a user
- * 
+ *
  * @param userStakingAmount User's staked amount (KITE)
  * @param totalStakingAmount Total staked amount (KITE)
  * @param userHaiVELODeposited User's haiVELO deposited amount
@@ -58,32 +59,32 @@ export function calculateHaiVeloBoost({
     userHaiVELODeposited,
     totalHaiVELODeposited,
 }: {
-    userStakingAmount: number;
-    totalStakingAmount: number;
-    userHaiVELODeposited: string | number;
-    totalHaiVELODeposited: string | number;
+    userStakingAmount: number
+    totalStakingAmount: number
+    userHaiVELODeposited: string | number
+    totalHaiVELODeposited: string | number
 }) {
     // Skip calculation if user has no stake
-    if (userStakingAmount <= 0) return { haiVeloBoost: 1 };
+    if (userStakingAmount <= 0) return { haiVeloBoost: 1 }
 
     // Calculate KITE ratio
     const calculatedKiteRatio =
-        isNaN(totalStakingAmount) || totalStakingAmount === 0 ? 0 : userStakingAmount / totalStakingAmount;
+        isNaN(totalStakingAmount) || totalStakingAmount === 0 ? 0 : userStakingAmount / totalStakingAmount
 
     // Calculate haiVELO boost
-    const haiVeloRatio = Number(userHaiVELODeposited) / Number(totalHaiVELODeposited);
-    const haiVeloBoostRaw = haiVeloRatio === 0 ? 1 : calculatedKiteRatio / haiVeloRatio + 1;
-    const haiVeloBoost = Math.min(haiVeloBoostRaw, 2);
+    const haiVeloRatio = Number(userHaiVELODeposited) / Number(totalHaiVELODeposited)
+    const haiVeloBoostRaw = haiVeloRatio === 0 ? 1 : calculatedKiteRatio / haiVeloRatio + 1
+    const haiVeloBoost = Math.min(haiVeloBoostRaw, 2)
 
     return {
         kiteRatio: calculatedKiteRatio,
         haiVeloBoost,
-    };
+    }
 }
 
 /**
  * Combine LP and haiVELO boost values into a net boost value
- * 
+ *
  * @param lpBoost LP boost value
  * @param haiVeloBoost haiVELO boost value
  * @param userLPPositionValue Value of user's LP position in USD
@@ -96,20 +97,20 @@ export function combineBoostValues({
     userLPPositionValue,
     haiVeloPositionValue,
 }: {
-    lpBoost: number;
-    haiVeloBoost: number;
-    userLPPositionValue: string | number;
-    haiVeloPositionValue: string | number;
+    lpBoost: number
+    haiVeloBoost: number
+    userLPPositionValue: string | number
+    haiVeloPositionValue: string | number
 }) {
     // Calculate weighted average boost
-    const totalValue = Number(userLPPositionValue) + Number(haiVeloPositionValue);
-    const haiVeloValueRatio = totalValue === 0 ? 0.5 : Number(haiVeloPositionValue) / totalValue;
-    const lpValueRatio = totalValue === 0 ? 0.5 : Number(userLPPositionValue) / totalValue;
+    const totalValue = Number(userLPPositionValue) + Number(haiVeloPositionValue)
+    const haiVeloValueRatio = totalValue === 0 ? 0.5 : Number(haiVeloPositionValue) / totalValue
+    const lpValueRatio = totalValue === 0 ? 0.5 : Number(userLPPositionValue) / totalValue
 
-    const weightedHaiVeloBoost = haiVeloBoost * haiVeloValueRatio;
-    const weightedLpBoost = lpBoost * lpValueRatio;
+    const weightedHaiVeloBoost = haiVeloBoost * haiVeloValueRatio
+    const weightedLpBoost = lpBoost * lpValueRatio
 
-    const netBoost = weightedHaiVeloBoost + weightedLpBoost;
+    const netBoost = weightedHaiVeloBoost + weightedLpBoost
 
     return {
         haiVeloBoost,
@@ -117,12 +118,12 @@ export function combineBoostValues({
         haiVeloValueRatio,
         lpValueRatio,
         netBoost,
-    };
+    }
 }
 
 /**
  * Calculate all boost values for a user
- * 
+ *
  * @param userStakingAmount User's staked amount (KITE)
  * @param totalStakingAmount Total staked amount (KITE)
  * @param userLPPosition User's LP position amount
@@ -143,17 +144,17 @@ export function calculateBoostValues({
     totalHaiVELODeposited,
     haiVeloPositionValue,
 }: {
-    userStakingAmount: number;
-    totalStakingAmount: number;
-    userLPPosition: string | number;
-    totalPoolLiquidity: string | number;
-    userLPPositionValue: string | number;
-    userHaiVELODeposited: string | number;
-    totalHaiVELODeposited: string | number;
-    haiVeloPositionValue: string | number;
+    userStakingAmount: number
+    totalStakingAmount: number
+    userLPPosition: string | number
+    totalPoolLiquidity: string | number
+    userLPPositionValue: string | number
+    userHaiVELODeposited: string | number
+    totalHaiVELODeposited: string | number
+    haiVeloPositionValue: string | number
 }) {
     // Skip calculation if user has no stake
-    if (userStakingAmount <= 0) return { netBoost: 1 };
+    if (userStakingAmount <= 0) return { netBoost: 1 }
 
     // Calculate LP boost using the new function
     const lpBoostResult = calculateLPBoost({
@@ -161,7 +162,7 @@ export function calculateBoostValues({
         totalStakingAmount,
         userLPPosition,
         totalPoolLiquidity,
-    });
+    })
 
     // Calculate haiVELO boost using the new function
     const haiVeloBoostResult = calculateHaiVeloBoost({
@@ -169,7 +170,7 @@ export function calculateBoostValues({
         totalStakingAmount,
         userHaiVELODeposited,
         totalHaiVELODeposited,
-    });
+    })
 
     // Combine the results using the new function
     const combinedResult = combineBoostValues({
@@ -177,17 +178,17 @@ export function calculateBoostValues({
         haiVeloBoost: haiVeloBoostResult.haiVeloBoost,
         userLPPositionValue,
         haiVeloPositionValue,
-    });
+    })
 
     return {
         kiteRatio: lpBoostResult.kiteRatio, // Both functions calculate the same kiteRatio
         ...combinedResult,
-    };
+    }
 }
 
 /**
  * Simulate net boost for a hypothetical staking amount
- * 
+ *
  * @param userAfterStakingAmount User's staking amount after hypothetical action
  * @param totalAfterStakingAmount Total staking amount after hypothetical action
  * @param userLPPosition User's LP position amount
@@ -208,14 +209,14 @@ export function simulateNetBoost({
     totalHaiVELODeposited,
     haiVeloPositionValue,
 }: {
-    userAfterStakingAmount: number;
-    totalAfterStakingAmount: number;
-    userLPPosition: string | number;
-    totalPoolLiquidity: string | number;
-    userLPPositionValue: string | number;
-    userHaiVELODeposited: string | number;
-    totalHaiVELODeposited: string | number;
-    haiVeloPositionValue: string | number;
+    userAfterStakingAmount: number
+    totalAfterStakingAmount: number
+    userLPPosition: string | number
+    totalPoolLiquidity: string | number
+    userLPPositionValue: string | number
+    userHaiVELODeposited: string | number
+    totalHaiVELODeposited: string | number
+    haiVeloPositionValue: string | number
 }) {
     // Calculate LP boost with simulated staking amounts
     const lpBoostResult = calculateLPBoost({
@@ -223,7 +224,7 @@ export function simulateNetBoost({
         totalStakingAmount: totalAfterStakingAmount,
         userLPPosition,
         totalPoolLiquidity,
-    });
+    })
 
     // Calculate haiVELO boost with simulated staking amounts
     const haiVeloBoostResult = calculateHaiVeloBoost({
@@ -231,7 +232,7 @@ export function simulateNetBoost({
         totalStakingAmount: totalAfterStakingAmount,
         userHaiVELODeposited,
         totalHaiVELODeposited,
-    });
+    })
 
     // Combine the boost values
     const combinedResult = combineBoostValues({
@@ -239,14 +240,14 @@ export function simulateNetBoost({
         haiVeloBoost: haiVeloBoostResult.haiVeloBoost,
         userLPPositionValue,
         haiVeloPositionValue,
-    });
+    })
 
-    return combinedResult.netBoost;
+    return combinedResult.netBoost
 }
 
 /**
  * Calculate base APR based on daily rewards and position values
- * 
+ *
  * @param totalDailyRewardsInUSD Total daily rewards in USD
  * @param haiVeloPositionValue Value of user's haiVELO position in USD
  * @param userLPPositionValue Value of user's LP position in USD
@@ -257,10 +258,10 @@ export function calculateBaseAPR({
     haiVeloPositionValue,
     userLPPositionValue,
 }: {
-    totalDailyRewardsInUSD: number;
-    haiVeloPositionValue: string | number;
-    userLPPositionValue: string | number;
+    totalDailyRewardsInUSD: number
+    haiVeloPositionValue: string | number
+    userLPPositionValue: string | number
 }) {
-    if (Number(haiVeloPositionValue) + Number(userLPPositionValue) === 0) return 0;
-    return (totalDailyRewardsInUSD / (Number(haiVeloPositionValue) + Number(userLPPositionValue))) * 365 * 100;
-} 
+    if (Number(haiVeloPositionValue) + Number(userLPPositionValue) === 0) return 0
+    return (totalDailyRewardsInUSD / (Number(haiVeloPositionValue) + Number(userLPPositionValue))) * 365 * 100
+}

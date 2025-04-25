@@ -21,7 +21,16 @@ import {
 export function useBoost() {
     const { address } = useAccount()
     // Use LP data from our enhanced model
-    const { pool, userPositions, userLPPositionValue, userTotalLiquidity, loading: lpDataLoading } = useLPData()
+    const { 
+        pool, 
+        userPositions, 
+        userLPPositionValue, 
+        userTotalLiquidity, 
+        loading: lpDataLoading,
+        // NEW - Get boost data from LP data model
+        userLPBoostMap,
+        userKiteRatioMap,
+    } = useLPData()
     const { data: veloPositions, loading: positionsLoading } = useVelodromePositions()
     const { prices: veloPrices } = useVelodromePrices()
     const { stakingData, stakingStats, loading: stakingLoading } = useStaking()
@@ -86,17 +95,36 @@ export function useBoost() {
         return (haiVeloAmount * veloPrice).toString()
     }, [userHaiVELODeposited, veloPrices])
 
-    // Calculate LP boost values
-    const lpBoostResult = useMemo(
-        () =>
-            calculateLPBoost({
-                userStakingAmount: Number(userKITEStaked),
-                totalStakingAmount: Number(totalKITEStaked),
-                userLPPosition,
-                totalPoolLiquidity,
-            }),
-        [userKITEStaked, totalKITEStaked, userLPPosition, totalPoolLiquidity]
-    )
+    // Get LP boost from the model if available, or calculate it using boostService
+    const lpBoostValue = useMemo(() => {
+        if (address && userLPBoostMap[address.toLowerCase()]) {
+            return userLPBoostMap[address.toLowerCase()]
+        }
+        
+        // Fallback to direct calculation if not available in the model
+        // Use the exact boostService function for consistency
+        const result = calculateLPBoost({
+            userStakingAmount: Number(userKITEStaked),
+            totalStakingAmount: Number(totalKITEStaked),
+            userLPPosition,
+            totalPoolLiquidity,
+        })
+        
+        return result.lpBoost
+    }, [address, userLPBoostMap, userKITEStaked, totalKITEStaked, userLPPosition, totalPoolLiquidity])
+
+    // Get KITE ratio from the model if available, or calculate it
+    const kiteRatio = useMemo(() => {
+        if (address && userKiteRatioMap[address.toLowerCase()]) {
+            return userKiteRatioMap[address.toLowerCase()]
+        }
+        
+        // Fallback to same calculation as in boostService
+        const totalStakingAmount = Number(totalKITEStaked)
+        return isNaN(totalStakingAmount) || totalStakingAmount === 0 
+            ? 0 
+            : Number(userKITEStaked) / totalStakingAmount
+    }, [address, userKiteRatioMap, userKITEStaked, totalKITEStaked])
 
     // Calculate haiVELO boost values
     const haiVeloBoostResult = useMemo(
@@ -114,12 +142,12 @@ export function useBoost() {
     const combinedBoostResult = useMemo(
         () =>
             combineBoostValues({
-                lpBoost: lpBoostResult.lpBoost,
+                lpBoost: lpBoostValue,
                 haiVeloBoost: haiVeloBoostResult.haiVeloBoost,
                 userLPPositionValue: calculatedUserLPPositionValue,
                 haiVeloPositionValue,
             }),
-        [lpBoostResult.lpBoost, haiVeloBoostResult.haiVeloBoost, calculatedUserLPPositionValue, haiVeloPositionValue]
+        [lpBoostValue, haiVeloBoostResult.haiVeloBoost, calculatedUserLPPositionValue, haiVeloPositionValue]
     )
 
     // Reuse the simulation function from the service
@@ -172,10 +200,10 @@ export function useBoost() {
         totalPoolLiquidity,
         userLPPositionValue: calculatedUserLPPositionValue,
 
-        // Boost data from the separated calculations
-        kiteRatio: lpBoostResult.kiteRatio,
+        // Boost data from the LP data model
+        kiteRatio,
         hvBoost: haiVeloBoostResult.haiVeloBoost,
-        lpBoostValue: lpBoostResult.lpBoost,
+        lpBoostValue,
         userTotalValue: Number(calculatedUserLPPositionValue) + Number(haiVeloPositionValue),
         netBoostValue: combinedBoostResult.netBoost,
 

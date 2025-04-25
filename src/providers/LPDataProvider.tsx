@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect } from 'react'
 import { useAccount } from 'wagmi'
 import { useStoreActions, useStoreState } from '~/store'
-import type { CurrentUserPosition, PoolData, UserPosition } from '~/model/lpDataModel'
+import type { CurrentUserPosition, PoolData, UserPosition, UserLPBoostMap, UserKiteRatioMap } from '~/model/lpDataModel'
 
 // Define the context type
 type LPDataContextType = {
@@ -15,6 +15,11 @@ type LPDataContextType = {
     userTotalLiquidity: string
     allPositions: UserPosition[] | null
     userPositionsMap: Record<string, UserPosition[]>
+    // LP boost data
+    /** Maps user addresses to their calculated LP boost values (1-2x range) */
+    userLPBoostMap: UserLPBoostMap
+    /** Maps user addresses to their KITE staking ratio compared to total staked KITE */
+    userKiteRatioMap: UserKiteRatioMap
 }
 
 // Create context
@@ -29,6 +34,8 @@ const LPDataContext = createContext<LPDataContextType>({
     userTotalLiquidity: '0',
     allPositions: null,
     userPositionsMap: {},
+    userLPBoostMap: {},
+    userKiteRatioMap: {},
 })
 
 // Provider component
@@ -47,9 +54,23 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
         userLPPositionValue,
         userPositionValuesMap,
         userTotalLiquidity,
+        userLPBoostMap,
+        userKiteRatioMap,
     } = useStoreState((state) => state.lpDataModel)
+    
+    // Get staking data from staking model
+    const {
+        usersStakingData,
+        totalStaked,
+    } = useStoreState((state) => state.stakingModel)
 
-    console.log('allPositions', allPositions, userPositionValuesMap)
+    console.log('LP Data:', { 
+        positionsCount: allPositions?.length || 0, 
+        usersWithValues: Object.keys(userPositionValuesMap).length,
+        usersWithBoosts: Object.keys(userLPBoostMap).length,
+        totalStaked,
+        userLPBoostMap
+    })
 
     const {
         setAccount,
@@ -58,6 +79,7 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
         buildUserPositionsMap,
         calculateAllCurrentPositions,
         updateUserData,
+        calculateAllUserLPBoosts,
     } = useStoreActions((actions) => actions.lpDataModel)
 
     // Set account in model when it changes
@@ -69,6 +91,14 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
             updateUserData(account)
         }
     }, [account, setAccount, updateUserData])
+
+    // Calculate LP boosts whenever staking data or LP data changes
+    useEffect(() => {
+        if (usersStakingData && Object.keys(usersStakingData).length > 0 && totalStaked) {
+            console.log('calculateAllUserLPBoosts', usersStakingData, totalStaked)
+            calculateAllUserLPBoosts({ usersStakingData, totalStaked })
+        }
+    }, [usersStakingData, totalStaked, calculateAllUserLPBoosts])
 
     // Initial data fetch - fetch all data once at startup
     useEffect(() => {
@@ -82,6 +112,11 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
             // Update the current user's data if available
             if (account) {
                 updateUserData(account)
+            }
+            
+            // Calculate LP boosts for all users
+            if (usersStakingData && Object.keys(usersStakingData).length > 0 && totalStaked) {
+                calculateAllUserLPBoosts({ usersStakingData, totalStaked })
             }
         }
 
@@ -99,6 +134,11 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
                 if (account) {
                     updateUserData(account)
                 }
+                
+                // Also recalculate boosts
+                if (usersStakingData && Object.keys(usersStakingData).length > 0 && totalStaked) {
+                    calculateAllUserLPBoosts({ usersStakingData, totalStaked })
+                }
             },
             5 * 60 * 1000
         )
@@ -107,7 +147,17 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
             clearInterval(poolDataInterval)
             clearInterval(allPositionsInterval)
         }
-    }, [fetchPoolData, fetchAllPositions, buildUserPositionsMap, calculateAllCurrentPositions, updateUserData, account])
+    }, [
+        fetchPoolData, 
+        fetchAllPositions, 
+        buildUserPositionsMap, 
+        calculateAllCurrentPositions, 
+        updateUserData, 
+        account, 
+        usersStakingData, 
+        totalStaked, 
+        calculateAllUserLPBoosts
+    ])
 
     return (
         <LPDataContext.Provider
@@ -122,6 +172,8 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
                 userTotalLiquidity,
                 allPositions,
                 userPositionsMap,
+                userLPBoostMap,
+                userKiteRatioMap,
             }}
         >
             {children}

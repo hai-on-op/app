@@ -404,6 +404,9 @@ export const stakingModel: StakingModel = {
             const userAddress = await signer.getAddress()
             const balance = await stakingManager.balanceOf(userAddress)
 
+
+            console.log('fetchUserStakedBalance', String(balance))
+
             // Update both the single user state and the mapping
             actions.setStakedBalance(ethers.utils.formatEther(balance))
             actions.updateUserStakingData({
