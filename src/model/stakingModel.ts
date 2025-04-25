@@ -22,6 +22,16 @@ const ERC20ABI = [
     },
 ]
 
+// User staking data interface
+export interface UserStakingData {
+    id: string
+    stakedBalance: string
+    pendingWithdrawal?: {
+        amount: number
+        timestamp: number
+    }
+}
+
 export interface StakingModel {
     stakedAmount: string
     totalStaked: string
@@ -32,6 +42,11 @@ export interface StakingModel {
     stakedBalance: string
     setStakedBalance: Action<StakingModel, string>
     fetchUserStakedBalance: Thunk<StakingModel, { signer: JsonRpcSigner }, BigNumber, StoreModel>
+    
+    // Users mapping to store all users' staking data
+    usersStakingData: Record<string, UserStakingData>
+    setUsersStakingData: Action<StakingModel, Record<string, UserStakingData>>
+    updateUserStakingData: Action<StakingModel, { userId: string, data: Partial<UserStakingData> }>
 
     pendingWithdrawals: Array<{
         amount: number
@@ -91,6 +106,18 @@ export const stakingModel: StakingModel = {
     stakedBalance: '0',
     setStakedBalance: action((state, payload) => {
         state.stakedBalance = payload
+    }),
+    
+    // Initialize empty users mapping
+    usersStakingData: {},
+    setUsersStakingData: action((state, payload) => {
+        state.usersStakingData = payload
+    }),
+    updateUserStakingData: action((state, { userId, data }) => {
+        state.usersStakingData[userId] = {
+            ...state.usersStakingData[userId] || { id: userId, stakedBalance: '0' },
+            ...data
+        }
     }),
 
     pendingWithdrawals: [],
@@ -374,9 +401,18 @@ export const stakingModel: StakingModel = {
     fetchUserStakedBalance: thunk(async (actions, { signer }) => {
         await retryAsync(async () => {
             const stakingManager = new Contract(import.meta.env.VITE_STAKING_TOKEN_ADDRESS, ERC20ABI, signer)
-            const balance = await stakingManager.balanceOf(await signer.getAddress())
+            const userAddress = await signer.getAddress()
+            const balance = await stakingManager.balanceOf(userAddress)
 
+            // Update both the single user state and the mapping
             actions.setStakedBalance(ethers.utils.formatEther(balance))
+            actions.updateUserStakingData({
+                userId: userAddress.toLowerCase(),
+                data: {
+                    stakedBalance: ethers.utils.formatEther(balance)
+                }
+            })
+
             return balance
         })
     }),

@@ -7,6 +7,7 @@ import { formatEther } from 'ethers/lib/utils'
 
 import { useStoreState, useStoreActions } from '~/store'
 import { useEthersSigner } from '~/hooks'
+import { UserStakingData as ModelUserStakingData } from '~/model/stakingModel'
 
 // GraphQL queries
 const STAKING_USER_QUERY = gql`
@@ -31,6 +32,24 @@ const STAKING_USER_QUERY = gql`
                 timestamp
                 transactionHash
             }
+            pendingWithdrawal {
+                id
+                amount
+                timestamp
+                status
+            }
+        }
+    }
+`
+
+// New query to fetch all staking users
+const ALL_STAKING_USERS_QUERY = gql`
+    query GetAllStakingUsers {
+        stakingUsers(first: 1000) {
+            id
+            stakedBalance
+            totalStaked
+            totalWithdrawn
             pendingWithdrawal {
                 id
                 amount
@@ -142,7 +161,7 @@ const StakingContext = createContext<StakingContextType | undefined>(undefined)
 // Provider component
 export function StakingProvider({ children }: { children: React.ReactNode }) {
     const { address } = useAccount()
-    
+
     const [refetchCounter, setRefetchCounter] = useState(0)
     const [localStakedBalance, setLocalStakedBalance] = useState<string | null>(null)
     const refetchTimeoutRef = useRef<number | null>(null)
@@ -155,7 +174,9 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
     const userRewards = useStoreState((state) => state.stakingModel.userRewards)
     const stakingApyData = useStoreState((state) => state.stakingModel.stakingApyData)
     const stakedBalance = useStoreState((state) => state.stakingModel.stakedBalance)
+    const usersStakingData = useStoreState((state) => state.stakingModel.usersStakingData)
 
+    console.log(usersStakingData)
     const {
         data: userData,
         loading: userLoading,
@@ -167,12 +188,46 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
     })
 
     const {
+        data: allUsersData,
+        loading: allUsersLoading,
+        refetch: refetchAllUsers,
+    } = useQuery(ALL_STAKING_USERS_QUERY, {
+        fetchPolicy: 'network-only', // Don't cache this data, always fetch fresh
+    })
+
+    const {
         data: statsData,
         loading: statsLoading,
         refetch: refetchStats,
     } = useQuery(STAKING_STATS_QUERY, {
         fetchPolicy: 'network-only', // Don't cache this data, always fetch fresh
     })
+
+    // Process all users data and update the model
+    useEffect(() => {
+        if (allUsersData?.stakingUsers) {
+            const modelUsersMap: Record<string, ModelUserStakingData> = {}
+
+            allUsersData.stakingUsers.forEach((user: any) => {
+                const formattedBalance = formatBigNumber(user.stakedBalance)
+
+                // Create a compatible model user entry
+                modelUsersMap[user.id] = {
+                    id: user.id,
+                    stakedBalance: formattedBalance,
+                    pendingWithdrawal: user.pendingWithdrawal
+                        ? {
+                              amount: Number(formatBigNumber(user.pendingWithdrawal.amount)),
+                              timestamp: Number(user.pendingWithdrawal.timestamp),
+                          }
+                        : undefined,
+                }
+            })
+
+            // Update the staking model with this data
+            stakingActions.setUsersStakingData(modelUsersMap)
+        }
+    }, [allUsersData, stakingActions])
 
     // Handles both immediate updates after transactions and scheduled refetches
     const refetchAll = async ({
@@ -186,16 +241,31 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
         widthdrawAmount?: string
         cancelWithdrawalAmount?: string
     } = {}) => {
-        if (signer) {
+        if (signer && address) {
             console.log('Refetching all staking data', {
                 stakingAmount,
                 unstakingAmount,
                 widthdrawAmount,
                 cancelWithdrawalAmount,
             })
+            const userAddressLower = address.toLowerCase()
+
             if (stakingAmount) {
                 stakingActions.setTotalStaked(String(Number(totalStaked) + Number(stakingAmount)))
                 stakingActions.setStakedBalance(String(Number(stakedBalance) + Number(stakingAmount)))
+
+                // Update user in the model
+                if (usersStakingData[userAddressLower]) {
+                    const newBalance = String(
+                        Number(usersStakingData[userAddressLower].stakedBalance) + Number(stakingAmount)
+                    )
+                    stakingActions.updateUserStakingData({
+                        userId: userAddressLower,
+                        data: {
+                            stakedBalance: newBalance,
+                        },
+                    })
+                }
             }
             if (unstakingAmount) {
                 stakingActions.setTotalStaked(String(Number(totalStaked) - Number(unstakingAmount)))
@@ -206,13 +276,54 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
                         timestamp: Math.floor(Date.now() / 1000),
                     },
                 ])
+
+                // Update user in the model
+                if (usersStakingData[userAddressLower]) {
+                    const newBalance = String(
+                        Number(usersStakingData[userAddressLower].stakedBalance) - Number(unstakingAmount)
+                    )
+                    stakingActions.updateUserStakingData({
+                        userId: userAddressLower,
+                        data: {
+                            stakedBalance: newBalance,
+                            pendingWithdrawal: {
+                                amount: Number(unstakingAmount),
+                                timestamp: Math.floor(Date.now() / 1000),
+                            },
+                        },
+                    })
+                }
             }
             if (widthdrawAmount) {
                 stakingActions.setPendingWithdrawals([])
+
+                // Update user in the model
+                if (usersStakingData[userAddressLower]) {
+                    stakingActions.updateUserStakingData({
+                        userId: userAddressLower,
+                        data: {
+                            pendingWithdrawal: undefined,
+                        },
+                    })
+                }
             }
             if (cancelWithdrawalAmount) {
                 stakingActions.setTotalStaked(String(Number(totalStaked) + Number(cancelWithdrawalAmount)))
                 stakingActions.setStakedBalance(String(Number(stakedBalance) + Number(cancelWithdrawalAmount)))
+
+                // Update user in the model
+                if (usersStakingData[userAddressLower]) {
+                    const newBalance = String(
+                        Number(usersStakingData[userAddressLower].stakedBalance) + Number(cancelWithdrawalAmount)
+                    )
+                    stakingActions.updateUserStakingData({
+                        userId: userAddressLower,
+                        data: {
+                            stakedBalance: newBalance,
+                            pendingWithdrawal: undefined,
+                        },
+                    })
+                }
             }
 
             pendingTransactionRef.current = true
@@ -241,6 +352,7 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
                 // Run all the other data fetches including GraphQL
                 await Promise.all([
                     refetchUser(),
+                    refetchAllUsers(),
                     refetchStats(),
                     stakingActions.fetchCooldownPeriod({ signer }),
                     stakingActions.fetchUserRewards({ signer }),
@@ -250,7 +362,7 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
                 // Schedule another refetch after a delay to ensure subgraph is updated
                 refetchTimeoutRef.current = window.setTimeout(async () => {
                     console.log('Delayed refetch to ensure GraphQL data is updated')
-                    await Promise.all([refetchUser(), refetchStats()])
+                    await Promise.all([refetchUser(), refetchAllUsers(), refetchStats()])
                     pendingTransactionRef.current = false
                     setLocalStakedBalance(null) // Clear local override after GraphQL is updated
                 }, 15000) // 15 second delay for subgraph indexing
@@ -281,7 +393,44 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
         }
     }, [])
 
+    // Use the current user's data from the model's users mapping if available,
+    // otherwise fall back to the individual query data
     const stakingData = useMemo((): StakingData => {
+        if (address && usersStakingData[address.toLowerCase()] && !pendingTransactionRef.current) {
+            const userDataFromModel = usersStakingData[address.toLowerCase()]
+
+            return {
+                stakedBalance: userDataFromModel.stakedBalance,
+                totalStaked: formatBigNumber(totalStaked),
+                totalWithdrawn: userData?.stakingUser?.totalWithdrawn
+                    ? formatBigNumber(userData.stakingUser.totalWithdrawn)
+                    : '0',
+                stakingPositions: userData?.stakingUser?.stakingPositions
+                    ? userData.stakingUser.stakingPositions.map((pos: any) => ({
+                          ...pos,
+                          amount: formatBigNumber(pos.amount),
+                          timestamp: Number(pos.timestamp),
+                      }))
+                    : [],
+                rewards: userData?.stakingUser?.rewards
+                    ? userData.stakingUser.rewards.map((reward: any) => ({
+                          ...reward,
+                          amount: formatBigNumber(reward.amount),
+                          timestamp: Number(reward.timestamp),
+                      }))
+                    : [],
+                pendingWithdrawal: userDataFromModel.pendingWithdrawal
+                    ? {
+                          id: 'pending-' + address.toLowerCase(),
+                          amount: String(userDataFromModel.pendingWithdrawal.amount),
+                          timestamp: userDataFromModel.pendingWithdrawal.timestamp,
+                          status: 'PENDING',
+                      }
+                    : undefined,
+            }
+        }
+
+        // Fall back to original logic
         if (!userData?.stakingUser && !localStakedBalance) return defaultStakingData
 
         // If we have a local staked balance from a recent transaction, use it
@@ -343,7 +492,15 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
                   }
                 : undefined,
         }
-    }, [userData, refetchCounter, localStakedBalance, pendingTransactionRef.current, totalStaked])
+    }, [
+        userData,
+        refetchCounter,
+        localStakedBalance,
+        pendingTransactionRef.current,
+        totalStaked,
+        usersStakingData,
+        address,
+    ])
 
     const stakingStats = useMemo((): StakingStats => {
         if (!statsData?.stakingStatistic) return defaultStakingStats
@@ -356,7 +513,7 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
         }
     }, [statsData])
 
-    const loading = userLoading || statsLoading
+    const loading = userLoading || statsLoading || allUsersLoading
 
     return (
         <StakingContext.Provider
@@ -384,4 +541,4 @@ export function useStaking() {
         throw new Error('useStaking must be used within a StakingProvider')
     }
     return context
-} 
+}
