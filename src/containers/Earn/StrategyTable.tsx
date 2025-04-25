@@ -60,7 +60,10 @@ export function StrategyTable({
             setSorting={setSorting}
             compactQuery="upToMedium"
             rows={rows.map(
-                ({ pair, rewards, tvl, apy, userPosition, earnPlatform, earnAddress, earnLink, strategyType }, i) => {
+                (
+                    { pair, rewards, tvl, apy, userPosition, earnPlatform, earnAddress, earnLink, strategyType, apr },
+                    i
+                ) => {
                     // const LSTS = ['RETH', 'APXETH', 'WSTETH']
                     // const isLST = LSTS.includes(pair[0])
                     // const isAPXETH = pair.includes('APXETH')
@@ -143,6 +146,13 @@ export function StrategyTable({
                                             <Text $fontWeight={700}>
                                                 {strategyType === 'deposit'
                                                     ? '40% - 50%'
+                                                    : apr
+                                                    ? formatNumberWithStyle(apr, {
+                                                          style: 'percent',
+                                                          scalingFactor: 100,
+                                                          maxDecimals: 1,
+                                                          suffixed: true,
+                                                      })
                                                     : apy
                                                     ? formatNumberWithStyle(apy, {
                                                           style: 'percent',

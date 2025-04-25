@@ -120,11 +120,13 @@ export function useEarnStrategies() {
                 parseFloat(formatUnits(pool.inputTokenBalances[0], 18)) * prices.HAI +
                 parseFloat(formatUnits(pool.inputTokenBalances[1], 18)) * prices.WETH
             const apy = calculateAPY(tvl, prices, rewards)
+            const apr = calculateAPR(tvl, prices, rewards)
             temp.push({
                 pair: pool.inputTokens.map((token) => token.symbol) as any,
                 rewards: Object.entries(rewards).map(([token, emission]) => ({ token, emission })) as any,
                 tvl: tvl.toString(),
                 apy,
+                apr,
                 userPosition: (pool.positions || [])
                     .reduce((total, { cumulativeDepositTokenAmounts, cumulativeWithdrawTokenAmounts }) => {
                         const posHai =
@@ -139,7 +141,7 @@ export function useEarnStrategies() {
                 earnPlatform: 'uniswap',
                 earnAddress: pool.id,
                 strategyType: 'farm',
-                earnLink: `https://info.uniswap.org/#/optimism/pools/${pool.id}`,
+                earnLink: `https://info.uniswap.org/explore/pools/optimism/${pool.id}`,
             } as Strategy)
         }
         return temp
@@ -149,7 +151,7 @@ export function useEarnStrategies() {
         if (!veloPrices || !veloData) return []
         const temp: Strategy[] = []
         // Filter out SAIL
-        for (const pool of veloData.filter((p) => p.address != '0xB5cD4bD4bdB5C97020FBE192258e6F08333990E2')) {
+        for (const pool of veloData.filter((p) => p.address === '0xf2d3941b6E1cbD3616061E556Eb06986147715d1')) {
             const rewards = REWARDS.velodrome[pool.address.toLowerCase()]
             if (!rewards) continue // filter out any extra pools that may be fetched
 
@@ -171,12 +173,14 @@ export function useEarnStrategies() {
 
             const tvl = tvl0 + tvl1
             const veloAPR = (365 * parseFloat(formatUnits(pool.emissions, pool.decimals)) * prices.VELO * 86400) / tvl
+
             const apy = veloAPR === Infinity ? 0 : Math.pow(1 + veloAPR / 12, 12) - 1
 
             temp.push({
                 pair: [token0, token1] as any,
                 rewards: Object.entries(rewards).map(([token, emission]) => ({ token, emission })) as any,
                 tvl: tvl.toString(),
+                apr: veloAPR,
                 apy,
                 userPosition: (veloPositions || [])
                     .reduce((total, position) => {
@@ -278,7 +282,7 @@ export function useEarnStrategies() {
                     type: 'parseFloat',
                     checkValueExists: true,
                 })
-            case 'Rewards APY':
+            case 'Rewards APR':
                 return arrayToSorted(filteredRows, {
                     getProperty: (row) => row.apy,
                     dir: sorting.dir,
@@ -308,6 +312,19 @@ export function useEarnStrategies() {
         filterEmpty,
         setFilterEmpty,
     }
+}
+
+const calculateAPR = (
+    tvl: number,
+    prices: { KITE: number; OP: number },
+    rewards: { KITE: number; OP: number } = REWARDS.default
+) => {
+    if (!tvl) return 0
+    if (!prices.KITE || !prices.OP) return 0
+
+    // ((kite-daily-emission * kite-price + op-daily-emission * op-price) * 365) / (hai-debt-per-collateral * hai-redemption-price)
+    const nominal = (365 * (rewards.KITE * prices.KITE + rewards.OP * prices.OP)) / tvl
+    return nominal
 }
 
 const calculateAPY = (

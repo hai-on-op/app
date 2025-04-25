@@ -9,6 +9,8 @@ export function Earn() {
     const { headers, rows, loading, error, uniError, veloError, sorting, setSorting, filterEmpty, setFilterEmpty } =
         useEarnStrategies()
 
+    console.log(rows)
+
     const isUpToMedium = useMediaQuery('upToMedium')
 
     return (

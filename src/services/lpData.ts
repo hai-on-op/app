@@ -1,0 +1,249 @@
+import { ApolloClient, InMemoryCache, gql } from '@apollo/client'
+import { NETWORK_ID } from '~/utils'
+import { Position, FeeAmount, Pool } from '@uniswap/v3-sdk'
+import { Token } from '@uniswap/sdk-core'
+import JSBI from 'jsbi'
+import type { PoolData, UserPosition, CurrentUserPosition } from '~/model/lpDataModel'
+
+// Pool ID from the subgraph
+export const POOL_ID = '0x146b020399769339509c98b7b353d19130c150ec'
+
+const subgraphDefaultUrl =
+    'https://gateway-arbitrum.network.thegraph.com/api/617040e8f75ef522349d70c034f124f2/subgraphs/id/7SVwgBfXoWmiK6x1NF1VEo1szkeWLniqWN1oYsX3UMb5'
+
+// Create the LP client based on env variable
+const lpClient = new ApolloClient({
+    uri: import.meta.env.VITE_LP_SUBGRAPH_URL ? import.meta.env.VITE_LP_SUBGRAPH_URL : subgraphDefaultUrl,
+    cache: new InMemoryCache(),
+})
+
+// Query for pool data
+const POOL_DATA_QUERY = gql`
+    query GetPoolData($id: String!) {
+        pool(id: $id) {
+            id
+            liquidity
+            totalValueLockedToken0
+            totalValueLockedToken1
+            totalValueLockedUSD
+            token0 {
+                symbol
+                decimals
+            }
+            token1 {
+                symbol
+                decimals
+            }
+            token0Price
+            token1Price
+            tick
+            sqrtPrice
+        }
+    }
+`
+
+// Query for user positions
+const USER_POSITIONS_QUERY = gql`
+    query GetUserPositions($poolId: String!, $owner: String!) {
+        positions(where: { pool: $poolId, owner: $owner }) {
+            id
+            liquidity
+            depositedToken0
+            depositedToken1
+            withdrawnToken0
+            withdrawnToken1
+            tickLower {
+                tickIdx
+            }
+            tickUpper {
+                tickIdx
+            }
+            owner
+        }
+    }
+`
+
+/**
+ * Calculates the current amounts of token0 and token1 in a position using Uniswap SDK
+ */
+function calculateCurrentAmounts(
+    liquidity: string,
+    tickLower: number,
+    tickUpper: number,
+    currentTick: number,
+    sqrtPriceX96: string,
+    token0Decimals: number,
+    token1Decimals: number
+): { amount0: string; amount1: string } {
+    try {
+        // Ensure decimals are valid numbers between 0-18
+        const validToken0Decimals =
+            typeof token0Decimals === 'number' && !isNaN(token0Decimals)
+                ? Math.min(Math.max(0, Math.floor(token0Decimals)), 18)
+                : 18
+        const validToken1Decimals =
+            typeof token1Decimals === 'number' && !isNaN(token1Decimals)
+                ? Math.min(Math.max(0, Math.floor(token1Decimals)), 18)
+                : 18
+
+        // Create placeholder tokens - we only need decimals
+        const token0 = new Token(NETWORK_ID, '0x10398abc267496e49106b07dd6be13364d10dc71', validToken0Decimals)
+        const token1 = new Token(NETWORK_ID, '0x4200000000000000000000000000000000000006', validToken1Decimals)
+
+        // Convert liquidity to JSBI (JavaScript BigInt implementation used by Uniswap SDK)
+        const jsbiLiquidity = JSBI.BigInt(liquidity)
+
+        // Convert sqrtPriceX96 to JSBI
+        const sqrtPriceX96JSBI = JSBI.BigInt(sqrtPriceX96)
+
+        // Create a Pool instance
+        const pool = new Pool(
+            token0,
+            token1,
+            FeeAmount.MEDIUM,
+            sqrtPriceX96JSBI,
+            JSBI.BigInt(0), // Liquidity - not important for our calculation
+            currentTick
+        )
+
+        // Create Position instance using the pool
+        const position = new Position({
+            pool,
+            tickLower,
+            tickUpper,
+            liquidity: jsbiLiquidity,
+        })
+
+        // Get amounts
+        const amount0Raw = position.amount0
+        const amount1Raw = position.amount1
+
+        return {
+            amount0: amount0Raw.toFixed(validToken0Decimals),
+            amount1: amount1Raw.toFixed(validToken1Decimals),
+        }
+    } catch (error) {
+        console.error('Error calculating position amounts:', error)
+        return {
+            amount0: '0',
+            amount1: '0',
+        }
+    }
+}
+
+/**
+ * Transforms the initial position data from subgraph to current position composition
+ */
+export function initialPositionToCurrent(
+    position: UserPosition,
+    currentTick: number,
+    sqrtPrice: string,
+    token0Decimals: number,
+    token1Decimals: number
+): CurrentUserPosition {
+    // Convert position data to numbers
+    const liquidity = position.liquidity
+    const tickLower = parseInt(position.tickLower.tickIdx)
+    const tickUpper = parseInt(position.tickUpper.tickIdx)
+
+    // Calculate current token amounts based on current tick and sqrtPrice
+    const { amount0, amount1 } = calculateCurrentAmounts(
+        liquidity,
+        tickLower,
+        tickUpper,
+        currentTick,
+        sqrtPrice,
+        token0Decimals,
+        token1Decimals
+    )
+
+    // Return the new position with current token amounts
+    return {
+        id: position.id,
+        liquidity: position.liquidity,
+        currentToken0: amount0,
+        currentToken1: amount1,
+        tickLower: position.tickLower,
+        tickUpper: position.tickUpper,
+        owner: position.owner,
+    }
+}
+
+/**
+ * Fetches pool data from the subgraph
+ */
+export async function fetchPoolData(): Promise<PoolData | null> {
+    try {
+        const result = await lpClient.query({
+            query: POOL_DATA_QUERY,
+            variables: { id: POOL_ID },
+        })
+
+        const { data } = result
+
+        if (data && data.pool) {
+            return data.pool
+        }
+        return null
+    } catch (err) {
+        console.error('Error fetching LP data:', err)
+        throw err
+    }
+}
+
+/**
+ * Fetches user positions from the subgraph
+ */
+export async function fetchUserPositions(account: string): Promise<UserPosition[] | null> {
+    if (!account) {
+        return null
+    }
+
+    try {
+        const result = await lpClient.query({
+            query: USER_POSITIONS_QUERY,
+            variables: {
+                poolId: POOL_ID,
+                owner: account.toLowerCase(),
+            },
+        })
+
+        const { data } = result
+
+        if (data && data.positions) {
+            return data.positions
+        }
+        return null
+    } catch (err) {
+        console.error('Error fetching user positions:', err)
+        throw err
+    }
+}
+
+/**
+ * Calculates current position compositions based on pool and user positions
+ */
+export function calculateCurrentPositionComposition(
+    userPositions: UserPosition[],
+    pool: PoolData
+): CurrentUserPosition[] | null {
+    if (!userPositions || !pool || userPositions.length === 0) {
+        return null
+    }
+
+    try {
+        const currentTick = parseInt(pool.tick)
+        return userPositions.map((position) =>
+            initialPositionToCurrent(
+                position,
+                currentTick,
+                pool.sqrtPrice,
+                pool.token0.decimals,
+                pool.token1.decimals
+            )
+        )
+    } catch (err) {
+        console.error('Error calculating current positions:', err)
+        throw err
+    }
+} 

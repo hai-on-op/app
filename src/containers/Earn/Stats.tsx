@@ -38,7 +38,9 @@ export function EarnStats() {
     const { rows } = useEarnStrategies()
     const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
 
-    const { netBoostValue } = useBoost()
+    const { netBoostValue, baseAPR } = useBoost()
+
+    console.log('baseAPR', netBoostValue, baseAPR)
 
     const { value, apy } = useMemo(() => {
         return rows.reduce(
