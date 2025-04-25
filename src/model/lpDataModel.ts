@@ -458,9 +458,6 @@ export const lpDataModel: LPDataModel = {
     calculateAllUserLPBoosts: thunk(async (actions, { usersStakingData, totalStaked }, { getState }) => {
         const { userTotalLiquidityMap, pool } = getState()
 
-
-        console.log('??????', userTotalLiquidityMap, pool)
-
         if (!userTotalLiquidityMap || !pool || Object.keys(userTotalLiquidityMap).length === 0) {
             return
         }
@@ -480,15 +477,6 @@ export const lpDataModel: LPDataModel = {
                 const totalStakingAmount = Number(totalStaked) / 10 ** 18
                 const calculatedKiteRatio =
                     isNaN(totalStakingAmount) || totalStakingAmount === 0 ? 0 : userStakingAmount / totalStakingAmount
-
-                console.log(
-                    'userLiquidity',
-                    userLiquidity,
-                    address,
-                    userStakingAmount,
-                    totalStakingAmount,
-                    calculatedKiteRatio
-                )
 
                 userKiteRatioMap[address] = calculatedKiteRatio
 

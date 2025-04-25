@@ -57,20 +57,9 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
         userLPBoostMap,
         userKiteRatioMap,
     } = useStoreState((state) => state.lpDataModel)
-    
-    // Get staking data from staking model
-    const {
-        usersStakingData,
-        totalStaked,
-    } = useStoreState((state) => state.stakingModel)
 
-    console.log('LP Data:', { 
-        positionsCount: allPositions?.length || 0, 
-        usersWithValues: Object.keys(userPositionValuesMap).length,
-        usersWithBoosts: Object.keys(userLPBoostMap).length,
-        totalStaked,
-        userLPBoostMap
-    })
+    // Get staking data from staking model
+    const { usersStakingData, totalStaked } = useStoreState((state) => state.stakingModel)
 
     const {
         setAccount,
@@ -113,7 +102,7 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
             if (account) {
                 updateUserData(account)
             }
-            
+
             // Calculate LP boosts for all users
             if (usersStakingData && Object.keys(usersStakingData).length > 0 && totalStaked) {
                 calculateAllUserLPBoosts({ usersStakingData, totalStaked })
@@ -134,7 +123,7 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
                 if (account) {
                     updateUserData(account)
                 }
-                
+
                 // Also recalculate boosts
                 if (usersStakingData && Object.keys(usersStakingData).length > 0 && totalStaked) {
                     calculateAllUserLPBoosts({ usersStakingData, totalStaked })
@@ -148,15 +137,15 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
             clearInterval(allPositionsInterval)
         }
     }, [
-        fetchPoolData, 
-        fetchAllPositions, 
-        buildUserPositionsMap, 
-        calculateAllCurrentPositions, 
-        updateUserData, 
-        account, 
-        usersStakingData, 
-        totalStaked, 
-        calculateAllUserLPBoosts
+        fetchPoolData,
+        fetchAllPositions,
+        buildUserPositionsMap,
+        calculateAllCurrentPositions,
+        updateUserData,
+        account,
+        usersStakingData,
+        totalStaked,
+        calculateAllUserLPBoosts,
     ])
 
     return (

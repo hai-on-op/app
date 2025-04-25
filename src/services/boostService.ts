@@ -25,7 +25,6 @@ export function calculateLPBoost({
     userLPPosition: string | number
     totalPoolLiquidity: string | number
 }) {
-    console.log('calculateLPBoost', userStakingAmount, totalStakingAmount, userLPPosition, totalPoolLiquidity)
     // Skip calculation if user has no stake
     if (userStakingAmount <= 0) return { lpBoost: 1 }
 

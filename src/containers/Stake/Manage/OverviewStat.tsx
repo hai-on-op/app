@@ -9,6 +9,7 @@ import { TokenArray } from '~/components/TokenArray'
 import { Tooltip } from '~/components/Tooltip'
 import { ProgressIndicator, ProgressIndicatorProps } from '~/components/ProgressIndicator'
 import { ComingSoon } from '~/components/ComingSoon'
+import { Loader } from '~/components/Loader'
 type OverviewStatProps = {
     token?: TokenKey
     simulatedToken?: string
@@ -26,6 +27,7 @@ type OverviewStatProps = {
     simulatedValue?: string
     fullWidth?: boolean
     simulationMode?: boolean
+    loading?: boolean
 }
 export function OverviewStat({
     token,
@@ -41,6 +43,7 @@ export function OverviewStat({
     simulatedValue,
     simulationMode = false,
     fullWidth = false,
+    loading = false,
 }: OverviewStatProps) {
     return (
         <StatContainer $fullWidth={fullWidth}>
@@ -72,12 +75,18 @@ export function OverviewStat({
                         {!!token && <TokenArray size={48} tokens={[token]} hideLabel />}
                         <Flex $column $justify="center" $align="flex-start" $gap={4}>
                             <ValueContainer>
-                                <Text $fontSize="1.5em" $fontWeight={700}>
-                                    {value || '--'} {tokenLabel}
-                                </Text>
-                                <Text $fontSize="1.2em" $color="rgba(0,0,0,0.6)">
-                                    {convertedValue}
-                                </Text>
+                                {loading ? (
+                                    <Loader size={32} hideSpinner={false} color="#FFD641"></Loader>
+                                ) : (
+                                    <>
+                                        <Text $fontSize="1.5em" $fontWeight={700}>
+                                            {value || '--'} {tokenLabel}
+                                        </Text>
+                                        <Text $fontSize="1.2em" $color="rgba(0,0,0,0.6)">
+                                            {convertedValue}
+                                        </Text>
+                                    </>
+                                )}
                             </ValueContainer>
                         </Flex>
                     </Flex>
@@ -95,7 +104,7 @@ export function OverviewStat({
                                 {alert.value || alert.status}
                             </StatusLabel>
                         )}
-                        {!!simulatedValue && (
+                        {!!simulatedValue && !loading && (
                             <StatusLabel status={Status.CUSTOM} background="gradient" size={0.8}>
                                 <Text $fontSize="0.67rem" $fontWeight={700}>
                                     {simulatedValue || '--'} {simulatedToken ? simulatedToken : token}
@@ -131,6 +140,7 @@ export function OverviewProgressStat({
     alert,
     simulatedValue,
     fullWidth = false,
+    loading = false,
     ...props
 }: OverviewProgressStatProps) {
     const isUpToSmall = useMediaQuery('upToSmall')
@@ -161,10 +171,13 @@ export function OverviewProgressStat({
             <Flex $width="100%" $justify="space-between" $align="center">
                 <CenteredFlex $gap={4}>
                     <Text>{label}</Text>
-                    {!isComingSoon && (
+                    {!isComingSoon && !loading && (
                         <Text $fontWeight={700} $fontSize="1.25em">
                             {value}x
                         </Text>
+                    )}
+                    {!isComingSoon && loading && (
+                        <Loader size={24} hideSpinner={false} color="#FFD641" />
                     )}
 
                     {!!tooltip && <Tooltip width="200px">{tooltip}</Tooltip>}
@@ -177,7 +190,7 @@ export function OverviewProgressStat({
                         </StatusLabel>
                     )}
 
-                    {!isComingSoon && simulatedValue && !isUpToSmall && (
+                    {!isComingSoon && simulatedValue && !isUpToSmall && !loading && (
                         <StatusLabel status={Status.CUSTOM} background="gradient" size={0.8}>
                             <Text $fontSize="0.67rem" $fontWeight={700}>
                                 {simulatedValue}
@@ -189,22 +202,32 @@ export function OverviewProgressStat({
                     )}
                 </StatusContainer>
             </Flex>
-            <ProgressIndicator
-                progress={{ progress: Number(value) - 1, label: `${value}x` }}
-                simulatedProgress={simulatedValue ? { 
-                    progress: Number(simulatedValue.replace('x', '')) - 1,
-                    label: simulatedValue
-                } : undefined}
-                colorLimits={[0.25, 0.5, 0.75]}
-                labels={[
-                    { progress: 0, label: '1x' },
-                    { progress: 0.25, label: '1.25x' },
-                    { progress: 0.5, label: '1.5x' },
-                    { progress: 0.75, label: '1.75x' },
-                    { progress: 1, label: '2x' },
-                ]}
-            />
-            {simulatedValue && isUpToSmall && (
+            {!loading ? (
+                <ProgressIndicator
+                    progress={{ progress: Number(value) - 1, label: `${value}x` }}
+                    simulatedProgress={
+                        simulatedValue
+                            ? {
+                                  progress: Number(simulatedValue.replace('x', '')) - 1,
+                                  label: simulatedValue,
+                              }
+                            : undefined
+                    }
+                    colorLimits={[0.25, 0.5, 0.75]}
+                    labels={[
+                        { progress: 0, label: '1x' },
+                        { progress: 0.25, label: '1.25x' },
+                        { progress: 0.5, label: '1.5x' },
+                        { progress: 0.75, label: '1.75x' },
+                        { progress: 1, label: '2x' },
+                    ]}
+                />
+            ) : (
+                <Flex $width="100%" $justify="center" $align="center" $padding="12px 0">
+                    <Loader size={32} hideSpinner={false} color="#FFD641" />
+                </Flex>
+            )}
+            {simulatedValue && isUpToSmall && !loading && (
                 <Flex $width="100%" $justify="flex-end" $align="center">
                     <StatusLabel status={Status.CUSTOM} background="gradient" size={0.8}>
                         <Text $fontSize="0.67rem" $fontWeight={700}>
