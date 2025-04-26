@@ -198,6 +198,16 @@ export const stakingModel: StakingModel = {
             Number(state.usersStakingData[lowerCaseAddress]?.stakedBalance || '0') - numAmount
         )
 
+        console.log(
+            'Applying optimistic unstake',
+            amount,
+            userAddress,
+            state.totalStaked,
+            newTotalStaked,
+            state.usersStakingData[lowerCaseAddress]?.stakedBalance,
+            newUserBalance
+        )
+
         // Set optimistic flag and data
         state.isOptimistic = true
         state.optimisticData = {
@@ -243,12 +253,25 @@ export const stakingModel: StakingModel = {
             Number(state.usersStakingData[lowerCaseAddress]?.stakedBalance || '0') + numAmount
         )
 
+        console.log(
+            'Applying optimistic cancel withdrawal',
+            amount,
+            userAddress,
+            state.totalStaked,
+            newTotalStaked,
+            state.usersStakingData[lowerCaseAddress]?.stakedBalance,
+            newUserBalance,
+            state.usersStakingData[lowerCaseAddress]?.pendingWithdrawal
+        )
+
         // Set optimistic flag and data
         state.isOptimistic = true
         state.optimisticData = {
             ...state.optimisticData,
             totalStaked: newTotalStaked,
             stakedBalance: newUserBalance,
+            // Clear the pending withdrawal in optimistic data
+            pendingWithdrawal: undefined
         }
 
         // Apply changes immediately to state
@@ -319,15 +342,14 @@ export const stakingModel: StakingModel = {
         const storeActions = getStoreActions()
         try {
             const userAddress = await signer.getAddress()
-
-            // Apply optimistic update immediately after user confirms
-            actions.applyOptimisticUnstake({ amount, userAddress })
-
             const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
-
             const txData = await stakingManager.populateTransaction.initiateWithdrawal(parseEther(amount))
-
             const tx = await handlePreTxGasEstimate(signer, txData)
+            
+            // Apply optimistic update immediately after user confirms but before sending transaction
+            console.log('Applying optimistic unstake', amount, userAddress)
+            actions.applyOptimisticUnstake({ amount, userAddress })
+            
             const txResponse = await signer.sendTransaction(tx)
 
             storeActions.transactionsModel.addTransaction({
@@ -372,15 +394,14 @@ export const stakingModel: StakingModel = {
         const storeActions = getStoreActions()
         try {
             const userAddress = await signer.getAddress()
-
-            // Apply optimistic update immediately after user confirms
-            actions.applyOptimisticWithdraw({ userAddress })
-
             const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
-
             const txData = await stakingManager.populateTransaction.withdraw()
-
             const tx = await handlePreTxGasEstimate(signer, txData)
+            
+            // Apply optimistic update immediately after user confirms but before sending transaction
+            console.log('Applying optimistic withdraw', userAddress)
+            actions.applyOptimisticWithdraw({ userAddress })
+            
             const txResponse = await signer.sendTransaction(tx)
 
             storeActions.transactionsModel.addTransaction({
@@ -435,12 +456,13 @@ export const stakingModel: StakingModel = {
                 pendingAmount = String(userData.pendingWithdrawal.amount)
             }
 
-            // Apply optimistic update immediately after user confirms
-            actions.applyOptimisticCancelWithdrawal({ amount: pendingAmount, userAddress })
-
             const txData = await stakingManager.populateTransaction.cancelWithdrawal()
-
             const tx = await handlePreTxGasEstimate(signer, txData)
+            
+            // Apply optimistic update immediately after user confirms but before sending transaction
+            console.log('Applying optimistic cancel withdrawal', pendingAmount, userAddress)
+            actions.applyOptimisticCancelWithdrawal({ amount: pendingAmount, userAddress })
+            
             const txResponse = await signer.sendTransaction(tx)
 
             storeActions.transactionsModel.addTransaction({
