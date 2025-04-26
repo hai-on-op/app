@@ -42,11 +42,11 @@ export interface StakingModel {
     stakedBalance: string
     setStakedBalance: Action<StakingModel, string>
     fetchUserStakedBalance: Thunk<StakingModel, { signer: JsonRpcSigner }, BigNumber, StoreModel>
-    
+
     // Users mapping to store all users' staking data
     usersStakingData: Record<string, UserStakingData>
     setUsersStakingData: Action<StakingModel, Record<string, UserStakingData>>
-    updateUserStakingData: Action<StakingModel, { userId: string, data: Partial<UserStakingData> }>
+    updateUserStakingData: Action<StakingModel, { userId: string; data: Partial<UserStakingData> }>
 
     pendingWithdrawals: Array<{
         amount: number
@@ -67,7 +67,7 @@ export interface StakingModel {
     setOptimisticState: Action<StakingModel, boolean>
     setOptimisticData: Action<StakingModel, Partial<StakingModel['optimisticData']>>
     clearOptimisticData: Action<StakingModel>
-    
+
     // Enhanced existing functions
     applyOptimisticStake: Action<StakingModel, { amount: string; userAddress: string }>
     applyOptimisticUnstake: Action<StakingModel, { amount: string; userAddress: string }>
@@ -127,7 +127,7 @@ export const stakingModel: StakingModel = {
     setStakedBalance: action((state, payload) => {
         state.stakedBalance = payload
     }),
-    
+
     // Initialize empty users mapping
     usersStakingData: {},
     setUsersStakingData: action((state, payload) => {
@@ -135,8 +135,8 @@ export const stakingModel: StakingModel = {
     }),
     updateUserStakingData: action((state, { userId, data }) => {
         state.usersStakingData[userId] = {
-            ...state.usersStakingData[userId] || { id: userId, stakedBalance: '0' },
-            ...data
+            ...(state.usersStakingData[userId] || { id: userId, stakedBalance: '0' }),
+            ...data,
         }
     }),
 
@@ -148,56 +148,56 @@ export const stakingModel: StakingModel = {
     // Initialize optimistic state
     isOptimistic: false,
     optimisticData: {},
-    
+
     setOptimisticState: action((state, payload) => {
         state.isOptimistic = payload
     }),
-    
+
     setOptimisticData: action((state, payload) => {
-        state.optimisticData = {...state.optimisticData, ...payload}
+        state.optimisticData = { ...state.optimisticData, ...payload }
     }),
-    
+
     clearOptimisticData: action((state) => {
         state.optimisticData = {}
         state.isOptimistic = false
     }),
-    
+
     // Apply optimistic updates immediately
     applyOptimisticStake: action((state, { amount, userAddress }) => {
         const numAmount = Number(amount)
         const lowerCaseAddress = userAddress.toLowerCase()
-        
+
         // Calculate new values
         const newTotalStaked = String(Number(state.totalStaked) + numAmount)
         const newUserBalance = String(
             Number(state.usersStakingData[lowerCaseAddress]?.stakedBalance || '0') + numAmount
         )
-        
+
         // Set optimistic flag and data
         state.isOptimistic = true
         state.optimisticData = {
             ...state.optimisticData,
             totalStaked: newTotalStaked,
-            stakedBalance: newUserBalance
+            stakedBalance: newUserBalance,
         }
-        
+
         // Apply changes immediately to state
         state.totalStaked = newTotalStaked
         if (state.usersStakingData[lowerCaseAddress]) {
             state.usersStakingData[lowerCaseAddress].stakedBalance = newUserBalance
         }
     }),
-    
+
     applyOptimisticUnstake: action((state, { amount, userAddress }) => {
         const numAmount = Number(amount)
         const lowerCaseAddress = userAddress.toLowerCase()
-        
+
         // Calculate new values
         const newTotalStaked = String(Number(state.totalStaked) - numAmount)
         const newUserBalance = String(
             Number(state.usersStakingData[lowerCaseAddress]?.stakedBalance || '0') - numAmount
         )
-        
+
         // Set optimistic flag and data
         state.isOptimistic = true
         state.optimisticData = {
@@ -206,51 +206,51 @@ export const stakingModel: StakingModel = {
             stakedBalance: newUserBalance,
             pendingWithdrawal: {
                 amount: numAmount,
-                timestamp: Math.floor(Date.now() / 1000)
-            }
+                timestamp: Math.floor(Date.now() / 1000),
+            },
         }
-        
+
         // Apply changes immediately to state
         state.totalStaked = newTotalStaked
         if (state.usersStakingData[lowerCaseAddress]) {
             state.usersStakingData[lowerCaseAddress].stakedBalance = newUserBalance
             state.usersStakingData[lowerCaseAddress].pendingWithdrawal = {
                 amount: numAmount,
-                timestamp: Math.floor(Date.now() / 1000)
+                timestamp: Math.floor(Date.now() / 1000),
             }
         }
     }),
-    
+
     applyOptimisticWithdraw: action((state, { userAddress }) => {
         const lowerCaseAddress = userAddress.toLowerCase()
-        
+
         // Set optimistic flag
         state.isOptimistic = true
-        
+
         // Apply changes immediately to state
         if (state.usersStakingData[lowerCaseAddress]) {
             state.usersStakingData[lowerCaseAddress].pendingWithdrawal = undefined
         }
     }),
-    
+
     applyOptimisticCancelWithdrawal: action((state, { amount, userAddress }) => {
         const numAmount = Number(amount)
         const lowerCaseAddress = userAddress.toLowerCase()
-        
+
         // Calculate new values
         const newTotalStaked = String(Number(state.totalStaked) + numAmount)
         const newUserBalance = String(
             Number(state.usersStakingData[lowerCaseAddress]?.stakedBalance || '0') + numAmount
         )
-        
+
         // Set optimistic flag and data
         state.isOptimistic = true
         state.optimisticData = {
             ...state.optimisticData,
             totalStaked: newTotalStaked,
-            stakedBalance: newUserBalance
+            stakedBalance: newUserBalance,
         }
-        
+
         // Apply changes immediately to state
         state.totalStaked = newTotalStaked
         if (state.usersStakingData[lowerCaseAddress]) {
@@ -264,16 +264,18 @@ export const stakingModel: StakingModel = {
         const storeActions = getStoreActions()
         try {
             const userAddress = await signer.getAddress()
-            
-            // Apply optimistic update immediately after user confirms
-            actions.applyOptimisticStake({ amount, userAddress })
-            
+
             const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
 
             const txData = await stakingManager.populateTransaction.stake(await signer.getAddress(), parseEther(amount))
 
             const tx = await handlePreTxGasEstimate(signer, txData)
             const txResponse = await signer.sendTransaction(tx)
+
+            // Apply optimistic update immediately after user confirms
+
+            console.log('Applying optimistic stake', amount, userAddress)
+            actions.applyOptimisticStake({ amount, userAddress })
 
             storeActions.transactionsModel.addTransaction({
                 chainId: await signer.getChainId(),
@@ -291,16 +293,16 @@ export const stakingModel: StakingModel = {
             })
 
             await txResponse.wait()
-            
+
             // Transaction successful, now get real data
             await actions.fetchTotalStaked({ signer })
             await actions.fetchUserStakedBalance({ signer })
-            
+
             // Keep optimistic flag for a while until GraphQL is updated
             setTimeout(() => {
                 actions.clearOptimisticData()
             }, 5000) // Give subgraph time to update
-            
+
             return txResponse
         } catch (error) {
             console.error('Staking error:', error)
@@ -317,10 +319,10 @@ export const stakingModel: StakingModel = {
         const storeActions = getStoreActions()
         try {
             const userAddress = await signer.getAddress()
-            
+
             // Apply optimistic update immediately after user confirms
             actions.applyOptimisticUnstake({ amount, userAddress })
-            
+
             const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
 
             const txData = await stakingManager.populateTransaction.initiateWithdrawal(parseEther(amount))
@@ -344,16 +346,16 @@ export const stakingModel: StakingModel = {
             })
 
             await txResponse.wait()
-            
+
             // Transaction successful, now get real data
             await actions.fetchTotalStaked({ signer })
             await actions.fetchUserStakedBalance({ signer })
-            
+
             // Keep optimistic flag for a while until GraphQL is updated
             setTimeout(() => {
                 actions.clearOptimisticData()
             }, 5000) // Give subgraph time to update
-            
+
             return txResponse
         } catch (error) {
             console.error('Unstaking error:', error)
@@ -370,10 +372,10 @@ export const stakingModel: StakingModel = {
         const storeActions = getStoreActions()
         try {
             const userAddress = await signer.getAddress()
-            
+
             // Apply optimistic update immediately after user confirms
             actions.applyOptimisticWithdraw({ userAddress })
-            
+
             const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
 
             const txData = await stakingManager.populateTransaction.withdraw()
@@ -397,16 +399,16 @@ export const stakingModel: StakingModel = {
             })
 
             await txResponse.wait()
-            
+
             // Transaction successful, now get real data
             await actions.fetchTotalStaked({ signer })
             await actions.fetchUserStakedBalance({ signer })
-            
+
             // Keep optimistic flag for a while until GraphQL is updated
             setTimeout(() => {
                 actions.clearOptimisticData()
             }, 5000) // Give subgraph time to update
-            
+
             return txResponse
         } catch (error) {
             console.error('Withdrawal error:', error)
@@ -424,7 +426,7 @@ export const stakingModel: StakingModel = {
         try {
             const userAddress = await signer.getAddress()
             const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
-            
+
             // Get the pending withdrawal amount before transaction
             let pendingAmount = '0'
             const currentState = getState()
@@ -432,7 +434,7 @@ export const stakingModel: StakingModel = {
             if (userData?.pendingWithdrawal?.amount) {
                 pendingAmount = String(userData.pendingWithdrawal.amount)
             }
-            
+
             // Apply optimistic update immediately after user confirms
             actions.applyOptimisticCancelWithdrawal({ amount: pendingAmount, userAddress })
 
@@ -457,16 +459,16 @@ export const stakingModel: StakingModel = {
             })
 
             await txResponse.wait()
-            
+
             // Transaction successful, now get real data
             await actions.fetchTotalStaked({ signer })
             await actions.fetchUserStakedBalance({ signer })
-            
+
             // Keep optimistic flag for a while until GraphQL is updated
             setTimeout(() => {
                 actions.clearOptimisticData()
             }, 5000) // Give subgraph time to update
-            
+
             return txResponse
         } catch (error) {
             console.error('Cancel withdrawal error:', error)
@@ -591,7 +593,6 @@ export const stakingModel: StakingModel = {
             const userAddress = await signer.getAddress()
             const balance = await stakingManager.balanceOf(userAddress)
 
-
             console.log('fetchUserStakedBalance', String(balance))
 
             // Update both the single user state and the mapping
@@ -599,8 +600,8 @@ export const stakingModel: StakingModel = {
             actions.updateUserStakingData({
                 userId: userAddress.toLowerCase(),
                 data: {
-                    stakedBalance: ethers.utils.formatEther(balance)
-                }
+                    stakedBalance: ethers.utils.formatEther(balance),
+                },
             })
 
             return balance

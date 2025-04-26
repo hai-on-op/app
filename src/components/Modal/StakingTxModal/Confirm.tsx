@@ -3,6 +3,7 @@ import { ActionState, formatTimeFromSeconds, secondsToDays } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { handleTransactionError, useEthersSigner } from '~/hooks'
 import { useStaking } from '~/providers/StakingProvider'
+import { useStakingSummary } from '~/hooks/useStakingSummary'
 
 import styled from 'styled-components'
 import { HaiButton, Text } from '~/styles'
@@ -24,6 +25,8 @@ export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw, 
     const { popupsModel: popupsActions, stakingModel: stakingActions } = useStoreActions((actions) => actions)
     const { stakingModel: stakingStates } = useStoreState((state) => state)
     const { refetchAll } = useStaking()
+    // Use the effective staked amount from useStakingSummary
+    const { myStaked } = useStakingSummary()
 
     // Use ref to prevent reopening modal after completion
     const hasCompletedRef = useRef(false)
@@ -83,6 +86,9 @@ export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw, 
         }
     }
 
+    // Use effective amount from useStakingSummary
+    const effectiveStakedAmount = myStaked.effectiveAmount.toString()
+
     return (
         <>
             <ModalBody>
@@ -97,13 +103,13 @@ export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw, 
                             label: 'Amount',
                             value: {
                                 current: isWithdraw
-                                    ? (Number(stakedAmount) + Number(amount)).toString()
-                                    : Number(stakedAmount).toString(),
+                                    ? (Number(effectiveStakedAmount) + Number(amount)).toString()
+                                    : effectiveStakedAmount.toString(),
                                 after: isStaking
-                                    ? (Number(stakedAmount) + Number(amount)).toString()
+                                    ? (Number(effectiveStakedAmount) + Number(amount)).toString()
                                     : isWithdraw
-                                    ? stakedAmount
-                                    : (Number(stakedAmount) - Number(amount)).toString(),
+                                    ? effectiveStakedAmount
+                                    : (Number(effectiveStakedAmount) - Number(amount)).toString(),
                                 label: 'KITE',
                             },
                         },
