@@ -32,11 +32,21 @@ type OverviewProps = {
 export function Overview({ simulation }: OverviewProps) {
     const { stakingAmount, unstakingAmount } = simulation
     const { t } = useTranslation()
-    const { loading, kitePrice, totalStaked, myStaked, myShare, stakingApr, boost, calculateSimulatedValues } = useStakingSummary()
+    const {
+        loading,
+        kitePrice,
+        totalStaked,
+        myStaked,
+        myShare,
+        stakingApr,
+        boost,
+        calculateSimulatedValues,
+        isOptimistic,
+    } = useStakingSummary()
 
     // Calculate simulated values if simulation values are provided
-    const simValues = useMemo(() => 
-        calculateSimulatedValues(stakingAmount, unstakingAmount), 
+    const simValues = useMemo(
+        () => calculateSimulatedValues(stakingAmount, unstakingAmount),
         [stakingAmount, unstakingAmount, calculateSimulatedValues]
     )
 
@@ -93,6 +103,16 @@ export function Overview({ simulation }: OverviewProps) {
                                 <Swirl size={14} />
                                 <Text $fontSize="0.67rem" $fontWeight={700}>
                                     Simulation
+                                </Text>
+                            </CenteredFlex>
+                        </StatusLabel>
+                    )}
+                    {isOptimistic && (
+                        <StatusLabel status={Status.POSITIVE} >
+                            <CenteredFlex $gap={8}>
+                                <Loader size={16} hideSpinner={false} color="#00AC11"></Loader>
+                                <Text $fontSize="0.67rem" $fontWeight={700}>
+                                    Confirming Transaction
                                 </Text>
                             </CenteredFlex>
                         </StatusLabel>

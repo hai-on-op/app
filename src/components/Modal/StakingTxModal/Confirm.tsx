@@ -72,13 +72,11 @@ export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw, 
             // First close the modal to prevent any race conditions
             onClose?.()
 
-            if (isStaking) {
-                refetchAll({ stakingAmount: amount })
-            } else if (isWithdraw) {
-                refetchAll({ widthdrawAmount: amount })
-            } else {
-                refetchAll({ unstakingAmount: amount })
-            }
+            // Simplified refetch since optimistic updates are handled in the model
+            await refetchAll({})
+            
+            // Call onSuccess if provided
+            onSuccess?.()
         } catch (e: any) {
             stakingActions.setTransactionState(ActionState.ERROR)
             handleTransactionError(e)

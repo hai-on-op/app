@@ -9,6 +9,8 @@ import { useBoost } from '~/hooks/useBoost'
 export type StakingSummaryData = {
   // Loading state
   loading: boolean
+  // Optimistic update indication
+  isOptimistic: boolean
 
   // Price data
   kitePrice: number
@@ -74,6 +76,7 @@ export type StakingSummaryData = {
 export function useStakingSummary(): StakingSummaryData {
   const { stakingData, stakingStats, loading: stakingLoading, stakingApyData, totalStaked, stakedBalance } = useStakingData()
   const { prices: veloPrices } = useVelodromePrices()
+  const isOptimistic = useStoreState(state => state.stakingModel.isOptimistic)
   const {
     userHaiVELODeposited,
     totalHaiVELODeposited,
@@ -209,6 +212,8 @@ export function useStakingSummary(): StakingSummaryData {
     return {
       // Loading state
       loading: isLoading,
+      // Optimistic update indication
+      isOptimistic,
 
       // Price data
       kitePrice,
@@ -285,11 +290,13 @@ export function useStakingSummary(): StakingSummaryData {
       stakingData,
     }
   }, [stakingLoading, boostLoading, totalStaked, stakingData, kitePrice, effectiveStakedBalance, 
-      stakingApr, netBoostValue, userTotalValue, hvBoost, lpBoostValue, haiVeloPositionValue, userLPPositionValue])
+      stakingApr, netBoostValue, userTotalValue, hvBoost, lpBoostValue, haiVeloPositionValue, 
+      userLPPositionValue, isOptimistic])
 
   // Default values when loading or data is not available
   const defaultSummary: StakingSummaryData = {
     loading: true,
+    isOptimistic: false,
     kitePrice: 0,
     totalStaked: { 
       amount: 0, 
