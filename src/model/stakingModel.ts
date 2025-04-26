@@ -198,16 +198,6 @@ export const stakingModel: StakingModel = {
             Number(state.usersStakingData[lowerCaseAddress]?.stakedBalance || '0') - numAmount
         )
 
-        console.log(
-            'Applying optimistic unstake',
-            amount,
-            userAddress,
-            state.totalStaked,
-            newTotalStaked,
-            state.usersStakingData[lowerCaseAddress]?.stakedBalance,
-            newUserBalance
-        )
-
         // Set optimistic flag and data
         state.isOptimistic = true
         state.optimisticData = {
@@ -251,17 +241,6 @@ export const stakingModel: StakingModel = {
         const newTotalStaked = String(Number(state.totalStaked) + numAmount)
         const newUserBalance = String(
             Number(state.usersStakingData[lowerCaseAddress]?.stakedBalance || '0') + numAmount
-        )
-
-        console.log(
-            'Applying optimistic cancel withdrawal',
-            amount,
-            userAddress,
-            state.totalStaked,
-            newTotalStaked,
-            state.usersStakingData[lowerCaseAddress]?.stakedBalance,
-            newUserBalance,
-            state.usersStakingData[lowerCaseAddress]?.pendingWithdrawal
         )
 
         // Set optimistic flag and data
@@ -319,6 +298,7 @@ export const stakingModel: StakingModel = {
 
             // Transaction successful, now get real data
             await actions.fetchTotalStaked({ signer })
+
             await actions.fetchUserStakedBalance({ signer })
 
             // Keep optimistic flag for a while until GraphQL is updated
@@ -612,8 +592,9 @@ export const stakingModel: StakingModel = {
     fetchUserStakedBalance: thunk(async (actions, { signer }) => {
         await retryAsync(async () => {
             const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
+
             const userAddress = await signer.getAddress()
-            const balance = await stakingManager.stakedBalance(userAddress)
+            const balance = await stakingManager.stakedBalances(userAddress)
 
             // Update both the single user state and the mapping
             actions.setStakedBalance(ethers.utils.formatEther(balance))

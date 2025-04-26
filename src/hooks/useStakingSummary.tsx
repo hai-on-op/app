@@ -86,7 +86,7 @@ export function useStakingSummary(): StakingSummaryData {
         stakingApyData,
         totalStaked,
         stakedBalance,
-        usersStakingData
+        usersStakingData,
     } = useStakingData()
     const { prices: veloPrices } = useVelodromePrices()
     const isOptimistic = useStoreState((state) => state.stakingModel.isOptimistic)
@@ -107,8 +107,6 @@ export function useStakingSummary(): StakingSummaryData {
         haiVeloPositionValue,
         loading: boostLoading,
     } = useBoost()
-
-    console.log('--------------Staked Balance------------------', usersStakingData)
 
     const {
         vaultModel: { liquidationData },
@@ -169,13 +167,11 @@ export function useStakingSummary(): StakingSummaryData {
 
     // Calculate effective staked balance (actual - pending withdrawals)
     const effectiveStakedBalance = useMemo(() => {
-        if(!address) return 0
+        if (!address) return 0
         // Ensure stakedBalance is treated as a string
         const balanceStr = usersStakingData[address.toLowerCase()]?.stakedBalance || '0'
-        
-        // typeof stakedBalance === 'string' ? stakedBalance : String(stakedBalance || '0')
 
-        console.log('balanceStr', usersStakingData, address.toLowerCase(), balanceStr)
+        // typeof stakedBalance === 'string' ? stakedBalance : String(stakedBalance || '0')
 
         // Ensure pendingWithdrawal.amount is treated as a string
         const pendingAmount = stakingData.pendingWithdrawal
@@ -183,7 +179,7 @@ export function useStakingSummary(): StakingSummaryData {
             : 0
 
         return Number(balanceStr) //+ pendingAmount
-    }, [stakedBalance, usersStakingData,  stakingData.pendingWithdrawal, address])
+    }, [stakedBalance, usersStakingData, stakingData.pendingWithdrawal, address])
 
     // Function to calculate simulated values for staking/unstaking
     const calculateSimulatedValues = useCallback(
