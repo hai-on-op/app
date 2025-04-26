@@ -116,7 +116,7 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
         })
     }, [withdrawActive, toggleModal])
 
-    if (stakingDataLoading) {
+    /*if (stakingDataLoading) {
         return (
             <Container>
                 <Header>
@@ -126,7 +126,7 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                 </Header>
             </Container>
         )
-    }
+    }*/
 
     return (
         <>
@@ -144,6 +144,7 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                     }
                     stakedAmount={stakingData.stakedBalance}
                     onClose={() => {
+                        clearInputs()
                         setWithdrawActive(false)
                         toggleModal({
                             modal: 'withdraw',
@@ -317,7 +318,9 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                             Number(stakingAmount) > Number(kiteBalance.raw) ||
                             Number(unstakingAmount) > Number(stakingData.stakedBalance)
                         }
-                        onClick={() => setReviewActive(true)}
+                        onClick={() => {
+                            setReviewActive(true)
+                        }}
                     >
                         {isUnStaking ? 'Unstake' : 'Stake'}
                     </HaiButton>

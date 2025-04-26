@@ -2,7 +2,7 @@ import { useMemo, useRef } from 'react'
 import { ActionState, formatTimeFromSeconds, secondsToDays } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { handleTransactionError, useEthersSigner } from '~/hooks'
-import { useStakingData } from '~/hooks/useStakingData'
+import { useStaking } from '~/providers/StakingProvider'
 
 import styled from 'styled-components'
 import { HaiButton, Text } from '~/styles'
@@ -23,12 +23,10 @@ export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw, 
     const signer = useEthersSigner()
     const { popupsModel: popupsActions, stakingModel: stakingActions } = useStoreActions((actions) => actions)
     const { stakingModel: stakingStates } = useStoreState((state) => state)
-    const { refetchAll } = useStakingData()
+    const { refetchAll } = useStaking()
 
     // Use ref to prevent reopening modal after completion
     const hasCompletedRef = useRef(false)
-
-    console.log('Coool down params:::', stakingStates.cooldownPeriod)
 
     const handleConfirm = async () => {
         if (!signer) return
@@ -64,13 +62,9 @@ export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw, 
                 })
             }
 
-            console.log('setTransactionState success')
-
             stakingActions.setTransactionState(ActionState.SUCCESS)
             popupsActions.setIsWaitingModalOpen(false)
             popupsActions.setWaitingPayload({ status: ActionState.NONE })
-
-            console.log('setWaitingPayload success')
 
             // Mark as completed to prevent reopening
             hasCompletedRef.current = true

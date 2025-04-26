@@ -50,7 +50,6 @@ export function Overview({ simulation }: OverviewProps) {
         userLPPositionValue,
         lpBoostValue,
         userTotalValue,
-        userSharePercentage,
         hvBoost,
         simulateNetBoost,
         netBoostValue,
