@@ -153,6 +153,7 @@ interface StakingContextType {
         widthdrawAmount?: string
         cancelWithdrawalAmount?: string
     }) => Promise<void>
+    usersStakingData: Record<string, ModelUserStakingData>
 }
 
 // Create context
@@ -344,6 +345,7 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
                 userRewards,
                 stakingApyData,
                 refetchAll,
+                usersStakingData
             }}
         >
             {children}

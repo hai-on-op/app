@@ -271,7 +271,7 @@ export const stakingModel: StakingModel = {
             totalStaked: newTotalStaked,
             stakedBalance: newUserBalance,
             // Clear the pending withdrawal in optimistic data
-            pendingWithdrawal: undefined
+            pendingWithdrawal: undefined,
         }
 
         // Apply changes immediately to state
@@ -345,11 +345,11 @@ export const stakingModel: StakingModel = {
             const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
             const txData = await stakingManager.populateTransaction.initiateWithdrawal(parseEther(amount))
             const tx = await handlePreTxGasEstimate(signer, txData)
-            
+
             // Apply optimistic update immediately after user confirms but before sending transaction
             console.log('Applying optimistic unstake', amount, userAddress)
             actions.applyOptimisticUnstake({ amount, userAddress })
-            
+
             const txResponse = await signer.sendTransaction(tx)
 
             storeActions.transactionsModel.addTransaction({
@@ -397,11 +397,11 @@ export const stakingModel: StakingModel = {
             const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
             const txData = await stakingManager.populateTransaction.withdraw()
             const tx = await handlePreTxGasEstimate(signer, txData)
-            
+
             // Apply optimistic update immediately after user confirms but before sending transaction
             console.log('Applying optimistic withdraw', userAddress)
             actions.applyOptimisticWithdraw({ userAddress })
-            
+
             const txResponse = await signer.sendTransaction(tx)
 
             storeActions.transactionsModel.addTransaction({
@@ -458,11 +458,11 @@ export const stakingModel: StakingModel = {
 
             const txData = await stakingManager.populateTransaction.cancelWithdrawal()
             const tx = await handlePreTxGasEstimate(signer, txData)
-            
+
             // Apply optimistic update immediately after user confirms but before sending transaction
             console.log('Applying optimistic cancel withdrawal', pendingAmount, userAddress)
             actions.applyOptimisticCancelWithdrawal({ amount: pendingAmount, userAddress })
-            
+
             const txResponse = await signer.sendTransaction(tx)
 
             storeActions.transactionsModel.addTransaction({
@@ -611,11 +611,9 @@ export const stakingModel: StakingModel = {
 
     fetchUserStakedBalance: thunk(async (actions, { signer }) => {
         await retryAsync(async () => {
-            const stakingManager = new Contract(import.meta.env.VITE_STAKING_TOKEN_ADDRESS, ERC20ABI, signer)
+            const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
             const userAddress = await signer.getAddress()
-            const balance = await stakingManager.balanceOf(userAddress)
-
-            console.log('fetchUserStakedBalance', String(balance))
+            const balance = await stakingManager.stakedBalance(userAddress)
 
             // Update both the single user state and the mapping
             actions.setStakedBalance(ethers.utils.formatEther(balance))

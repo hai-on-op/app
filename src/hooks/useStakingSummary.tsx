@@ -5,6 +5,7 @@ import { useStoreState } from '~/store'
 import { useStakingData } from '~/hooks/useStakingData'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { useBoost } from '~/hooks/useBoost'
+import { useAccount } from 'wagmi'
 
 export type StakingSummaryData = {
     // Loading state
@@ -77,6 +78,7 @@ export type StakingSummaryData = {
 }
 
 export function useStakingSummary(): StakingSummaryData {
+    const { address } = useAccount()
     const {
         stakingData,
         stakingStats,
@@ -84,6 +86,7 @@ export function useStakingSummary(): StakingSummaryData {
         stakingApyData,
         totalStaked,
         stakedBalance,
+        usersStakingData
     } = useStakingData()
     const { prices: veloPrices } = useVelodromePrices()
     const isOptimistic = useStoreState((state) => state.stakingModel.isOptimistic)
@@ -104,6 +107,8 @@ export function useStakingSummary(): StakingSummaryData {
         haiVeloPositionValue,
         loading: boostLoading,
     } = useBoost()
+
+    console.log('--------------Staked Balance------------------', usersStakingData)
 
     const {
         vaultModel: { liquidationData },
@@ -164,16 +169,21 @@ export function useStakingSummary(): StakingSummaryData {
 
     // Calculate effective staked balance (actual - pending withdrawals)
     const effectiveStakedBalance = useMemo(() => {
+        if(!address) return 0
         // Ensure stakedBalance is treated as a string
-        const balanceStr = typeof stakedBalance === 'string' ? stakedBalance : String(stakedBalance || '0')
+        const balanceStr = usersStakingData[address.toLowerCase()]?.stakedBalance || '0'
+        
+        // typeof stakedBalance === 'string' ? stakedBalance : String(stakedBalance || '0')
+
+        console.log('balanceStr', usersStakingData, address.toLowerCase(), balanceStr)
 
         // Ensure pendingWithdrawal.amount is treated as a string
         const pendingAmount = stakingData.pendingWithdrawal
             ? Number(String(stakingData.pendingWithdrawal.amount || '0'))
             : 0
 
-        return Number(balanceStr) - pendingAmount
-    }, [stakedBalance, stakingData.pendingWithdrawal])
+        return Number(balanceStr) //+ pendingAmount
+    }, [stakedBalance, usersStakingData,  stakingData.pendingWithdrawal, address])
 
     // Function to calculate simulated values for staking/unstaking
     const calculateSimulatedValues = useCallback(

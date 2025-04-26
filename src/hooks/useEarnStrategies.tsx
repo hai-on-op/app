@@ -21,6 +21,7 @@ import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { useVelodrome, useVelodromePositions } from './useVelodrome'
 import { useBalance, useMyVaults, useCollateralStats } from '~/hooks'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
+import { useLPData } from '~/providers/LPDataProvider'
 
 const sortableHeaders: SortableHeader[] = [
     { label: 'Asset / Asset Pair' },
@@ -43,7 +44,13 @@ export function useEarnStrategies() {
     const {
         connectWalletModel: { tokensData },
         vaultModel: { list, liquidationData },
+        lpDataModel: { userLPBoostMap, userPositionValuesMap },
     } = useStoreState((state) => state)
+
+    const HAI_WETH_DAILY_REWARDS = 100
+
+    console.log(userLPBoostMap, 'userLPBOOSTMAP')
+    console.log(userPositionValuesMap, 'userPositionValuesMap')
 
     const { address } = useAccount()
     const { prices: veloPrices } = useVelodromePrices()

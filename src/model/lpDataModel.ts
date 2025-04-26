@@ -486,6 +486,15 @@ export const lpDataModel: LPDataModel = {
                     continue
                 }
 
+                console.log('Calculating user boost', {
+                    address,
+                    userStakingData,
+                    userStakingAmount,
+                    totalStakingAmount,
+                    userLPPosition: userLiquidity,
+                    totalPoolLiquidity,
+                })
+
                 const lpBoost = calculateLPBoost({
                     userStakingAmount,
                     totalStakingAmount,

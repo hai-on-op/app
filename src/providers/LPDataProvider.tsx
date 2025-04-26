@@ -61,6 +61,8 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
     // Get staking data from staking model
     const { usersStakingData, totalStaked } = useStoreState((state) => state.stakingModel)
 
+    console.log('Staking data ....', usersStakingData, totalStaked)
+
     const {
         setAccount,
         fetchPoolData,
