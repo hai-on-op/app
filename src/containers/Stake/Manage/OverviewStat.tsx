@@ -141,30 +141,54 @@ export function OverviewProgressStat({
     simulatedValue,
     fullWidth = false,
     loading = false,
-    ...props
+    progress: progressProp,
+    simulatedProgress: simulatedProgressProp,
+    colorLimits,
+    labels,
+    ...otherProps
 }: OverviewProgressStatProps) {
     const isUpToSmall = useMediaQuery('upToSmall')
 
+    // Ensure value is a number between 1 and 2
     const clampedValue = Math.min(Math.max(Number(value) || 1, 1), 2)
 
-    // Define multiplier steps
-    const steps = [
-        { value: 1, label: '1x', position: 0 },
-        { value: 1.25, label: '1.25x', position: 25 },
-        { value: 1.5, label: '1.5x', position: 50 },
-        { value: 1.75, label: '1.75x', position: 75 },
-        { value: 2, label: '2x', position: 100 },
-    ]
-
-    // Convert value to percentage for progress bar
-    const percentage = ((clampedValue - 1) / 1) * 100
-
-    // Format the value display
+    // Format the value display with 'x' suffix
     const formattedValue = `${clampedValue.toFixed(2)}x`
 
+    // Format simulatedValue with 'x' suffix if it exists
     const formattedSimulatedValue = simulatedValue
-        ? `${Math.min(Math.max(Number(simulatedValue) || 1, 1), 2).toFixed(2)}x`
+        ? typeof simulatedValue === 'number'
+            ? `${Math.min(Math.max(simulatedValue, 1), 2).toFixed(2)}x`
+            : simulatedValue.endsWith('x')
+                ? simulatedValue
+                : `${simulatedValue}x`
         : undefined
+
+    // Create progress object if not provided
+    const progressObj = progressProp || { 
+        progress: clampedValue - 1, 
+        label: formattedValue 
+    }
+
+    // Create simulated progress object if not provided but simulatedValue exists
+    const simulatedProgressObj = simulatedProgressProp || (
+        formattedSimulatedValue
+            ? {
+                progress: Number(formattedSimulatedValue.replace('x', '')) - 1,
+                label: formattedSimulatedValue,
+            }
+            : undefined
+    )
+
+    // Default colorLimits and labels if not provided
+    const defaultColorLimits = [0.25, 0.5, 0.75]
+    const defaultLabels = [
+        { progress: 0, label: '1x' },
+        { progress: 0.25, label: '1.25x' },
+        { progress: 0.5, label: '1.5x' },
+        { progress: 0.75, label: '1.75x' },
+        { progress: 1, label: '2x' },
+    ]
 
     return (
         <ProgressStatContainer $fullWidth={fullWidth}>
@@ -173,7 +197,7 @@ export function OverviewProgressStat({
                     <Text>{label}</Text>
                     {!isComingSoon && !loading && (
                         <Text $fontWeight={700} $fontSize="1.25em">
-                            {value}x
+                            {formattedValue}
                         </Text>
                     )}
                     {!isComingSoon && loading && (
@@ -183,17 +207,17 @@ export function OverviewProgressStat({
                     {!!tooltip && <Tooltip width="200px">{tooltip}</Tooltip>}
                 </CenteredFlex>
                 {isComingSoon && <ComingSoon active={true} width="100%" />}
-                <StatusContainer hidden={!(simulatedValue && !isUpToSmall) && !alert}>
+                <StatusContainer hidden={!(formattedSimulatedValue && !isUpToSmall) && !alert}>
                     {!isComingSoon && !!alert && (
                         <StatusLabel status={alert.status} size={0.8}>
                             {alert.value || alert.status}
                         </StatusLabel>
                     )}
 
-                    {!isComingSoon && simulatedValue && !isUpToSmall && !loading && (
+                    {!isComingSoon && formattedSimulatedValue && !isUpToSmall && !loading && (
                         <StatusLabel status={Status.CUSTOM} background="gradient" size={0.8}>
                             <Text $fontSize="0.67rem" $fontWeight={700}>
-                                {simulatedValue}
+                                {formattedSimulatedValue}
                             </Text>
                             <Text $fontSize="0.67rem" $fontWeight={400}>
                                 After Tx
@@ -204,34 +228,22 @@ export function OverviewProgressStat({
             </Flex>
             {!loading ? (
                 <ProgressIndicator
-                    progress={{ progress: Number(value) - 1, label: `${value}x` }}
-                    simulatedProgress={
-                        simulatedValue
-                            ? {
-                                  progress: Number(simulatedValue.replace('x', '')) - 1,
-                                  label: simulatedValue,
-                              }
-                            : undefined
-                    }
-                    colorLimits={[0.25, 0.5, 0.75]}
-                    labels={[
-                        { progress: 0, label: '1x' },
-                        { progress: 0.25, label: '1.25x' },
-                        { progress: 0.5, label: '1.5x' },
-                        { progress: 0.75, label: '1.75x' },
-                        { progress: 1, label: '2x' },
-                    ]}
+                    progress={progressObj}
+                    simulatedProgress={simulatedProgressObj}
+                    colorLimits={colorLimits || defaultColorLimits}
+                    labels={labels || defaultLabels}
+                    {...otherProps}
                 />
             ) : (
                 <Flex $width="100%" $justify="center" $align="center" $padding="12px 0">
                     <Loader size={32} hideSpinner={false} color="#FFD641" />
                 </Flex>
             )}
-            {simulatedValue && isUpToSmall && !loading && (
+            {formattedSimulatedValue && isUpToSmall && !loading && (
                 <Flex $width="100%" $justify="flex-end" $align="center">
                     <StatusLabel status={Status.CUSTOM} background="gradient" size={0.8}>
                         <Text $fontSize="0.67rem" $fontWeight={700}>
-                            {simulatedValue}
+                            {formattedSimulatedValue}
                         </Text>
                         <Text $fontSize="0.67rem" $fontWeight={400}>
                             After Tx
