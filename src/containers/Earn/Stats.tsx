@@ -120,9 +120,9 @@ export function EarnStats() {
                         style: 'percent',
                     })
                 ),
-            label: 'My Est. Rewards APY',
+            label: 'My Rewards APR',
             tooltip:
-                'Current estimated APY of campaign rewards based on current value participating and value of rewards tokens',
+                'Current estimated APR of campaign rewards based on current value participating and value of rewards tokens',
         },
         {
             // header: '$0',
