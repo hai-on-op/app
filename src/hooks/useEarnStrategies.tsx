@@ -197,7 +197,7 @@ export function useEarnStrategies() {
                 earnPlatform: 'uniswap',
                 earnAddress: pool.id,
                 strategyType: 'farm',
-                earnLink: `https://info.uniswap.org/explore/pools/optimism/${pool.id}`,
+                earnLink: `https://app.uniswap.org/explore/pools/optimism/${pool.id}`,
             } as Strategy)
         }
         return temp

@@ -54,13 +54,6 @@ export function EarnStats() {
         )
     }, [rows])
 
-    const formattedAPY = formatNumberWithStyle(value ? apy / value : 0, {
-        maxDecimals: 2,
-        scalingFactor: 100,
-        suffixed: true,
-        style: 'percent',
-    })
-
     const dummyStats: StatProps[] = [
         {
             header: formatNumberWithStyle(value, {
@@ -83,38 +76,50 @@ export function EarnStats() {
             tooltip: 'Your current boost multiplier based on your staked KITE.',
         },
         {
-            header: averageAPR ? (
-                averageAPR.averageWeightedBoostedAPR !== averageAPR.averageWeightedAPR ? (
-                    <StyledRewardsAPYContainer>
-                        <StyledRewardsAPY>
-                            {' '}
-                            {formatNumberWithStyle(averageAPR.averageWeightedAPR, {
-                                maxDecimals: 2,
-                                scalingFactor: 1,
-                                suffixed: true,
-                                style: 'percent',
-                            })}{' '}
-                        </StyledRewardsAPY>
-                        <StyledRewardsAPYWithBoost>
-                            {formatNumberWithStyle(averageAPR.averageWeightedBoostedAPR, {
-                                maxDecimals: 2,
-                                scalingFactor: 1,
-                                suffixed: true,
-                                style: 'percent',
-                            })}
-                        </StyledRewardsAPYWithBoost>
-                    </StyledRewardsAPYContainer>
+            header:
+                averageAPR && averageAPR.averageWeightedBoostedAPR && averageAPR.averageWeightedAPR ? (
+                    averageAPR.averageWeightedBoostedAPR !== averageAPR.averageWeightedAPR ? (
+                        <StyledRewardsAPYContainer>
+                            <StyledRewardsAPY>
+                                {' '}
+                                {formatNumberWithStyle(
+                                    averageAPR.averageWeightedAPR ? averageAPR.averageWeightedAPR : 0,
+                                    {
+                                        maxDecimals: 2,
+                                        scalingFactor: 1,
+                                        suffixed: true,
+                                        style: 'percent',
+                                    }
+                                )}{' '}
+                            </StyledRewardsAPY>
+                            <StyledRewardsAPYWithBoost>
+                                {formatNumberWithStyle(
+                                    averageAPR.averageWeightedBoostedAPR ? averageAPR.averageWeightedBoostedAPR : 0,
+                                    {
+                                        maxDecimals: 2,
+                                        scalingFactor: 1,
+                                        suffixed: true,
+                                        style: 'percent',
+                                    }
+                                )}
+                            </StyledRewardsAPYWithBoost>
+                        </StyledRewardsAPYContainer>
+                    ) : (
+                        formatNumberWithStyle(averageAPR.averageWeightedAPR, {
+                            maxDecimals: 2,
+                            scalingFactor: 100,
+                            suffixed: true,
+                            style: 'percent',
+                        })
+                    )
                 ) : (
-                    formatNumberWithStyle(averageAPR.averageWeightedAPR, {
+                    formatNumberWithStyle(0, {
                         maxDecimals: 2,
                         scalingFactor: 100,
                         suffixed: true,
                         style: 'percent',
                     })
-                )
-            ) : (
-                0
-            ),
+                ),
             label: 'My Est. Rewards APY',
             tooltip:
                 'Current estimated APY of campaign rewards based on current value participating and value of rewards tokens',

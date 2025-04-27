@@ -4,11 +4,22 @@ import { NavContainer } from '~/components/NavContainer'
 import { StrategyTable } from './StrategyTable'
 import { CheckboxButton } from '~/components/CheckboxButton'
 import { SortByDropdown } from '~/components/SortByDropdown'
+import { WrapperAdProps, WrapperAd } from '~/components/WrapperAd'
+
+const wrappers: WrapperAdProps[] = [
+    {
+        heading: 'OP REWARDS',
+        status: 'NOW LIVE',
+        description: 'Earn OP tokens daily by participating in incentive campaigns.',
+        cta: 'Provide Liquidity',
+        ctaLink: 'https://app.uniswap.org/explore/pools/optimism/0x146b020399769339509c98b7b353d19130c150ec',
+        tokenImages: ['OP'],
+    },
+]
 
 export function Earn() {
     const { headers, rows, loading, error, uniError, veloError, sorting, setSorting, filterEmpty, setFilterEmpty } =
         useEarnStrategies()
-
 
     const isUpToMedium = useMediaQuery('upToMedium')
 
@@ -37,6 +48,11 @@ export function Earn() {
                 sorting={sorting}
                 setSorting={setSorting}
             />
+            <>
+                {wrappers.map((wrapper, i) => (
+                    <WrapperAd key={i} bgVariant={i} {...wrapper} />
+                ))}
+            </>
         </NavContainer>
     )
 }
