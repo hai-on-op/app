@@ -66,6 +66,7 @@ export function calculateHaiVeloBoost({
 }) {
     // Skip calculation if user has no stake
     if (userStakingAmount <= 0) return { haiVeloBoost: 1 }
+    if (Number(totalHaiVELODeposited) <= 0) return { haiVeloBoost: 1 }
 
     // Calculate KITE ratio
     const calculatedKiteRatio =

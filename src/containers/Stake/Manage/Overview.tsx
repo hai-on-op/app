@@ -66,7 +66,7 @@ export function Overview({ simulation }: OverviewProps) {
                     +{' '}
                     {formatNumberWithStyle(boost.haiVeloBoost, {
                         minDecimals: 0,
-                        maxDecimals: 1,
+                        maxDecimals: 2,
                     })}
                     x Boost
                 </Text>
@@ -84,7 +84,7 @@ export function Overview({ simulation }: OverviewProps) {
                     +{' '}
                     {formatNumberWithStyle(boost.lpBoost, {
                         minDecimals: 0,
-                        maxDecimals: 1,
+                        maxDecimals: 2,
                     })}
                     x Boost
                 </Text>

@@ -35,7 +35,7 @@ const StyledRewardsAPYWithBoost = styled.div`
 export function EarnStats() {
     const { address } = useAccount()
 
-    const { rows } = useEarnStrategies()
+    const { rows, averageAPR } = useEarnStrategies()
     const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
 
     const { netBoostValue, baseAPR } = useBoost()
@@ -55,7 +55,7 @@ export function EarnStats() {
     }, [rows])
 
     const formattedAPY = formatNumberWithStyle(value ? apy / value : 0, {
-        maxDecimals: 1,
+        maxDecimals: 2,
         scalingFactor: 100,
         suffixed: true,
         style: 'percent',
@@ -83,11 +83,37 @@ export function EarnStats() {
             tooltip: 'Your current boost multiplier based on your staked KITE.',
         },
         {
-            header: (
-                <StyledRewardsAPYContainer>
-                    <StyledRewardsAPY>{formattedAPY} </StyledRewardsAPY>
-                    <StyledRewardsAPYWithBoost>150</StyledRewardsAPYWithBoost>
-                </StyledRewardsAPYContainer>
+            header: averageAPR ? (
+                averageAPR.averageWeightedBoostedAPR !== averageAPR.averageWeightedAPR ? (
+                    <StyledRewardsAPYContainer>
+                        <StyledRewardsAPY>
+                            {' '}
+                            {formatNumberWithStyle(averageAPR.averageWeightedAPR, {
+                                maxDecimals: 2,
+                                scalingFactor: 1,
+                                suffixed: true,
+                                style: 'percent',
+                            })}{' '}
+                        </StyledRewardsAPY>
+                        <StyledRewardsAPYWithBoost>
+                            {formatNumberWithStyle(averageAPR.averageWeightedBoostedAPR, {
+                                maxDecimals: 2,
+                                scalingFactor: 1,
+                                suffixed: true,
+                                style: 'percent',
+                            })}
+                        </StyledRewardsAPYWithBoost>
+                    </StyledRewardsAPYContainer>
+                ) : (
+                    formatNumberWithStyle(averageAPR.averageWeightedAPR, {
+                        maxDecimals: 2,
+                        scalingFactor: 100,
+                        suffixed: true,
+                        style: 'percent',
+                    })
+                )
+            ) : (
+                0
             ),
             label: 'My Est. Rewards APY',
             tooltip:

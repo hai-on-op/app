@@ -35,8 +35,7 @@ export type Strategy = {
     pair: [TokenKey] | [TokenKey, TokenKey]
     rewards: [EarnStrategyReward] | [EarnStrategyReward, EarnStrategyReward]
     tvl: string
-    apy: number
-    apr?: number
+    apr: number
     userPosition?: string
     strategyType: 'hold' | 'borrow' | 'farm' | 'deposit'
     boostAPR?: BoostAPRData
