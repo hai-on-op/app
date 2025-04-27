@@ -56,6 +56,7 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
         userTotalLiquidity,
         userLPBoostMap,
         userKiteRatioMap,
+        userTotalLiquidityMap,
     } = useStoreState((state) => state.lpDataModel)
 
     // Get staking data from staking model
@@ -86,7 +87,7 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
         if (usersStakingData && Object.keys(usersStakingData).length > 0 && totalStaked) {
             calculateAllUserLPBoosts({ usersStakingData, totalStaked })
         }
-    }, [usersStakingData, totalStaked, calculateAllUserLPBoosts])
+    }, [usersStakingData, totalStaked, calculateAllUserLPBoosts, userTotalLiquidityMap, pool])
 
     // Initial data fetch - fetch all data once at startup
     useEffect(() => {

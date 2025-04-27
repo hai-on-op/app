@@ -369,30 +369,6 @@ export function useEarnStrategies() {
         return [...specialStrategies, ...vaultStrategies, ...uniStrategies, ...veloStrategies]
     }, [specialStrategies, vaultStrategies, uniStrategies, veloStrategies])
 
-    console.log(
-        strategies.reduce(
-            (acc, strategy) => {
-                //if (strategy.strategyType === 'deposit') {
-                //    return acc + Number(strategy.userPosition)
-                //}
-
-                const target = strategy as Strategy
-
-                return {
-                    apr: acc.apr + (strategy.apr ? Number(strategy.apr) : 0),
-                    boostedApr: 0,
-                    totalPosition: 0,
-                }
-            },
-            {
-                apr: 0,
-                boostedApr: 0,
-                totalPosition: 0,
-            }
-        ),
-        'strategies'
-    )
-
     const averageAPR = useMemo(() => {
         const totalPosition = strategies.reduce((acc, strategy) => {
             return acc + Number(strategy.userPosition)
@@ -422,8 +398,6 @@ export function useEarnStrategies() {
             effectiveStrategiesAPR,
         }
     }, [strategies, userCollateralMapping, usersStakingData, totalStaked])
-
-    console.log(averageAPR)
 
     const [filterEmpty, setFilterEmpty] = useState(false)
 
