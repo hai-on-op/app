@@ -84,7 +84,6 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
     // Calculate LP boosts whenever staking data or LP data changes
     useEffect(() => {
         if (usersStakingData && Object.keys(usersStakingData).length > 0 && totalStaked) {
-            console.log('calculateAllUserLPBoosts', usersStakingData, totalStaked)
             calculateAllUserLPBoosts({ usersStakingData, totalStaked })
         }
     }, [usersStakingData, totalStaked, calculateAllUserLPBoosts])

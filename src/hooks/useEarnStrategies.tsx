@@ -31,11 +31,15 @@ const sortableHeaders: SortableHeader[] = [
         tooltip: `Value participating in campaign`,
     },
     {
-        label: 'My Position',
+        label: 'Position',
         tooltip: `Your value participating in the campaign`,
     },
     {
-        label: 'Rewards APY',
+        label: 'Boost',
+        tooltip: `Amount of boost you will receive based on your participation and staked kite`,
+    },
+    {
+        label: 'APR',
         tooltip: `Variable based upon participation and value of campaign emissions`,
     },
 ]
@@ -47,10 +51,10 @@ export function useEarnStrategies() {
         lpDataModel: { userLPBoostMap, userPositionValuesMap },
     } = useStoreState((state) => state)
 
-    const HAI_WETH_DAILY_REWARDS = 100
 
-    console.log(userLPBoostMap, 'userLPBOOSTMAP')
-    console.log(userPositionValuesMap, 'userPositionValuesMap')
+    console.log(userLPBoostMap, 'userLPBoostMap')
+
+    const HAI_WETH_DAILY_REWARDS = 100
 
     const { address } = useAccount()
     const { prices: veloPrices } = useVelodromePrices()
@@ -119,6 +123,50 @@ export function useEarnStrategies() {
     const uniStrategies = useMemo(() => {
         if (!uniData?.liquidityPools.length) return []
         const temp: Strategy[] = []
+
+        console.log(userLPBoostMap, 'userLPBOOSTMAP')
+        console.log(userPositionValuesMap, 'userPositionValuesMap')
+
+        const calculateBoostAPR = () => {
+            const calculateTotalBoostedValueParticipating = () => {
+                return Object.entries(userPositionValuesMap).reduce((acc, [address, value]) => {
+                    return acc + value * userLPBoostMap[address]
+                }, 0)
+            }
+
+
+            const totalBoostedValueParticipating = calculateTotalBoostedValueParticipating()
+
+
+            const baseAPR = totalBoostedValueParticipating ? (HAI_WETH_DAILY_REWARDS / totalBoostedValueParticipating) * 365 * 100 : 0
+
+            const myBoost = address ? userLPBoostMap[address.toLowerCase()] : 1
+
+            const myValueParticipating = address ? userPositionValuesMap[address.toLowerCase()] : 0
+
+            const myBoostedValueParticipating = myValueParticipating * myBoost
+
+            const myBoostedShare = totalBoostedValueParticipating ? myBoostedValueParticipating / totalBoostedValueParticipating : 0
+
+            // myBoost * baseAPR
+
+            const myBoostedAPR = myBoost * baseAPR  //((myBoostedShare * HAI_WETH_DAILY_REWARDS) / myValueParticipating) * 365 * 100
+
+            return {
+                totalBoostedValueParticipating,
+                baseAPR,
+                myBoost,
+                myValueParticipating,
+                myBoostedValueParticipating,
+                myBoostedShare,
+                myBoostedAPR,
+                userLPBoostMap,
+                userPositionValuesMap,
+            }
+        }
+
+        console.log(calculateBoostAPR(), 'calculateTotalBoostedValueParticipating')
+
         for (const pool of uniData.liquidityPools) {
             const rewards = REWARDS.uniswap[pool.id.toLowerCase()]
             if (!rewards) continue // sanity check
@@ -128,12 +176,14 @@ export function useEarnStrategies() {
                 parseFloat(formatUnits(pool.inputTokenBalances[1], 18)) * prices.WETH
             const apy = calculateAPY(tvl, prices, rewards)
             const apr = calculateAPR(tvl, prices, rewards)
+            const boostAPRData = calculateBoostAPR()
             temp.push({
                 pair: pool.inputTokens.map((token) => token.symbol) as any,
                 rewards: Object.entries(rewards).map(([token, emission]) => ({ token, emission })) as any,
                 tvl: tvl.toString(),
                 apy,
                 apr,
+                boostAPR: boostAPRData,
                 userPosition: (pool.positions || [])
                     .reduce((total, { cumulativeDepositTokenAmounts, cumulativeWithdrawTokenAmounts }) => {
                         const posHai =
@@ -152,7 +202,7 @@ export function useEarnStrategies() {
             } as Strategy)
         }
         return temp
-    }, [uniData?.liquidityPools, prices])
+    }, [uniData?.liquidityPools, prices, userLPBoostMap, userPositionValuesMap])
 
     const veloStrategies = useMemo(() => {
         if (!veloPrices || !veloData) return []

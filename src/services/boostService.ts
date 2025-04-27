@@ -34,6 +34,7 @@ export function calculateLPBoost({
 
     // Calculate LP boost
     const lpRatio = Number(totalPoolLiquidity) === 0 ? 0 : Number(userLPPosition) / Number(totalPoolLiquidity)
+
     const lpBoostRaw = lpRatio === 0 ? 1 : calculatedKiteRatio / lpRatio + 1
     const lpBoost = Math.min(lpBoostRaw, 2)
 

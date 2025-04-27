@@ -40,7 +40,7 @@ export function EarnStats() {
 
     const { netBoostValue, baseAPR } = useBoost()
 
-    console.log('baseAPR', netBoostValue, baseAPR)
+    //console.log('baseAPR', netBoostValue, baseAPR)
 
     const { value, apy } = useMemo(() => {
         return rows.reduce(
