@@ -58,6 +58,8 @@ export function useEarnStrategies() {
 
     const HAI_WETH_DAILY_REWARDS = 100
 
+    const HAI_VELO_DAILY_REWARDS = 200
+
     const { address } = useAccount()
     const { prices: veloPrices } = useVelodromePrices()
 
@@ -315,7 +317,7 @@ export function useEarnStrategies() {
         const totalBoostedValueParticipating = calculateTotalBoostedValueParticipating()
 
         const baseAPR = totalBoostedValueParticipating
-            ? (HAI_WETH_DAILY_REWARDS / totalBoostedValueParticipating) * 365 * 100
+            ? (HAI_VELO_DAILY_REWARDS / totalBoostedValueParticipating) * 365 * 100
             : 0
 
         const myBoost = address ? userHaiVeloBoostMap[address.toLowerCase()] : 1
@@ -330,7 +332,7 @@ export function useEarnStrategies() {
 
         // myBoost * baseAPR
 
-        const myBoostedAPR = myBoost * baseAPR //((myBoostedShare * HAI_WETH_DAILY_REWARDS) / myValueParticipating) * 365 * 100
+        const myBoostedAPR = myBoost * baseAPR //((myBoostedShare * HAI_VELO_DAILY_REWARDS) / myValueParticipating) * 365 * 100
 
         return {
             totalBoostedValueParticipating,

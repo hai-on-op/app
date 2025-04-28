@@ -1,5 +1,5 @@
 import { useMemo, useRef } from 'react'
-import { ActionState, formatTimeFromSeconds, secondsToDays } from '~/utils'
+import { ActionState, formatNumberWithStyle, formatTimeFromSeconds, secondsToDays } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { handleTransactionError, useEthersSigner } from '~/hooks'
 import { useStaking } from '~/providers/StakingProvider'
@@ -77,7 +77,7 @@ export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw, 
 
             // Simplified refetch since optimistic updates are handled in the model
             await refetchAll({})
-            
+
             // Call onSuccess if provided
             onSuccess?.()
         } catch (e: any) {
@@ -87,7 +87,7 @@ export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw, 
     }
 
     // Use effective amount from useStakingSummary
-    const effectiveStakedAmount = myStaked.effectiveAmount.toString()
+    const effectiveStakedAmount = stakingStates.stakedBalance
 
     return (
         <>
@@ -102,14 +102,26 @@ export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw, 
                         {
                             label: 'Amount',
                             value: {
-                                current: isWithdraw
-                                    ? (Number(effectiveStakedAmount) + Number(amount)).toString()
-                                    : effectiveStakedAmount.toString(),
-                                after: isStaking
-                                    ? (Number(effectiveStakedAmount) + Number(amount)).toString()
-                                    : isWithdraw
-                                    ? effectiveStakedAmount
-                                    : (Number(effectiveStakedAmount) - Number(amount)).toString(),
+                                current: formatNumberWithStyle(
+                                    isWithdraw
+                                        ? (Number(effectiveStakedAmount) + Number(amount)).toString()
+                                        : effectiveStakedAmount.toString(),
+                                    {
+                                        maxDecimals: 2,
+                                        minDecimals: 0,
+                                    }
+                                ),
+                                after: formatNumberWithStyle(
+                                    isStaking
+                                        ? (Number(effectiveStakedAmount) + Number(amount)).toString()
+                                        : isWithdraw
+                                        ? effectiveStakedAmount
+                                        : (Number(effectiveStakedAmount) - Number(amount)).toString(),
+                                    {
+                                        maxDecimals: 2,
+                                        minDecimals: 0,
+                                    }
+                                ),
                                 label: 'KITE',
                             },
                         },

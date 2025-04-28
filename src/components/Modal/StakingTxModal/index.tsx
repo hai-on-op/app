@@ -42,6 +42,17 @@ export function StakingTxModal({
     }
 
     const content = useMemo(() => {
+        if (isWithdraw)
+            return (
+                <Confirm
+                    onClose={handleClose}
+                    isStaking={isStaking}
+                    amount={amount}
+                    stakedAmount={stakedAmount}
+                    isWithdraw={isWithdraw}
+                    onSuccess={onSuccess}
+                />
+            )
         switch (step) {
             case StakingTxStep.APPROVE:
                 return <Approvals onNext={() => setStep(StakingTxStep.CONFIRM)} isStaking={isStaking} amount={amount} />

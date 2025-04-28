@@ -92,7 +92,7 @@ export type PendingWithdrawal = {
     id: string
     amount: string
     timestamp: number
-    status: string
+    status: 'PENDING' | 'COMPLETED' | 'CANCELLED'
 }
 
 export type StakingData = {
@@ -154,6 +154,11 @@ interface StakingContextType {
         cancelWithdrawalAmount?: string
     }) => Promise<void>
     usersStakingData: Record<string, ModelUserStakingData>
+    pendingWithdrawals: Record<string, {
+        amount: number
+        timestamp: number
+        status: 'PENDING' | 'COMPLETED' | 'CANCELLED'
+    }>
 }
 
 // Create context
@@ -172,6 +177,8 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
     const stakingApyData = useStoreState((state) => state.stakingModel.stakingApyData)
     const stakedBalance = useStoreState((state) => state.stakingModel.stakedBalance)
     const usersStakingData = useStoreState((state) => state.stakingModel.usersStakingData)
+    const pendingWithdrawals = useStoreState((state) => state.stakingModel.pendingWithdrawals)
+    const { setPendingWithdrawals } = useStoreActions((actions) => actions.stakingModel)
 
     const {
         data: userData,
@@ -203,25 +210,34 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (allUsersData?.stakingUsers) {
             const modelUsersMap: Record<string, ModelUserStakingData> = {}
+            const pendingWithdrawalsMap: Record<string, {
+                amount: number
+                timestamp: number
+                status: 'PENDING' | 'COMPLETED' | 'CANCELLED'
+            }> = {}
 
             allUsersData.stakingUsers.forEach((user: any) => {
                 const formattedBalance = formatBigNumber(user.stakedBalance)
+                const userId = user.id.toLowerCase()
 
-                modelUsersMap[user.id] = {
-                    id: user.id,
+                modelUsersMap[userId] = {
+                    id: userId,
                     stakedBalance: formattedBalance,
-                    pendingWithdrawal: user.pendingWithdrawal
-                        ? {
-                              amount: Number(formatBigNumber(user.pendingWithdrawal.amount)),
-                              timestamp: Number(user.pendingWithdrawal.timestamp),
-                          }
-                        : undefined,
+                }
+
+                if (user.pendingWithdrawal) {
+                    pendingWithdrawalsMap[userId] = {
+                        amount: Number(formatBigNumber(user.pendingWithdrawal.amount)),
+                        timestamp: Number(user.pendingWithdrawal.timestamp),
+                        status: user.pendingWithdrawal.status || 'PENDING'
+                    }
                 }
             })
 
             stakingActions.setUsersStakingData(modelUsersMap)
+            setPendingWithdrawals(pendingWithdrawalsMap)
         }
-    }, [allUsersData, stakingActions])
+    }, [allUsersData, stakingActions, setPendingWithdrawals])
 
     // Simplified refetch function that avoids race conditions
     const refetchAll = async ({
@@ -235,18 +251,20 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
         widthdrawAmount?: string
         cancelWithdrawalAmount?: string
     } = {}) => {
-        if (!signer || !address) return
+        setTimeout(async() => {
+            if (!signer || !address) return
 
-        setIsRefetching(true)
+            setIsRefetching(true)
 
         try {
             // Just refetch GraphQL data since optimistic updates are now handled in the model
             await Promise.all([refetchUser(), refetchAllUsers(), refetchStats()])
         } catch (error) {
             console.error('Error refetching staking data:', error)
-        } finally {
-            setIsRefetching(false)
-        }
+            } finally {
+                setIsRefetching(false)
+            }
+        }, 60 * 1000)
     }
 
     // Initial data fetch
@@ -264,26 +282,20 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
 
     // Simplified data merging that prioritizes model data
     const stakingData = useMemo((): StakingData => {
-        // If address is not available or loading, return default
         if (!address) return defaultStakingData
 
-        // Get user data from model (most up-to-date source)
         const userDataFromModel = usersStakingData[address.toLowerCase()]
+        const userPendingWithdrawal = pendingWithdrawals[address.toLowerCase()]
 
-        // If we have no data at all, return default
         if (!userDataFromModel && !userData?.stakingUser) {
             return defaultStakingData
         }
 
-        // Merge data from model and GraphQL
         return {
-            // Prefer model data for frequently updated fields
             stakedBalance:
                 userDataFromModel?.stakedBalance ||
                 (userData?.stakingUser?.stakedBalance ? formatBigNumber(userData.stakingUser.stakedBalance) : '0'),
             totalStaked: formatBigNumber(totalStaked),
-
-            // Less frequently changed data from GraphQL
             totalWithdrawn: userData?.stakingUser?.totalWithdrawn
                 ? formatBigNumber(userData.stakingUser.totalWithdrawn)
                 : '0',
@@ -301,24 +313,16 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
                       timestamp: Number(reward.timestamp),
                   }))
                 : [],
-
-            // Prefer model data for pending withdrawal (most likely to be recently changed)
-            pendingWithdrawal: userDataFromModel?.pendingWithdrawal
+            pendingWithdrawal: userPendingWithdrawal
                 ? {
                       id: 'pending-' + address.toLowerCase(),
-                      amount: String(userDataFromModel.pendingWithdrawal.amount),
-                      timestamp: userDataFromModel.pendingWithdrawal.timestamp,
-                      status: 'PENDING',
-                  }
-                : userData?.stakingUser?.pendingWithdrawal
-                ? {
-                      ...userData.stakingUser.pendingWithdrawal,
-                      amount: formatBigNumber(userData.stakingUser.pendingWithdrawal.amount),
-                      timestamp: Number(userData.stakingUser.pendingWithdrawal.timestamp),
+                      amount: String(userPendingWithdrawal.amount),
+                      timestamp: userPendingWithdrawal.timestamp,
+                      status: userPendingWithdrawal.status,
                   }
                 : undefined,
         }
-    }, [userData, totalStaked, usersStakingData, address])
+    }, [userData, totalStaked, usersStakingData, pendingWithdrawals, address])
 
     const stakingStats = useMemo((): StakingStats => {
         if (!statsData?.stakingStatistic) return defaultStakingStats
@@ -345,7 +349,8 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
                 userRewards,
                 stakingApyData,
                 refetchAll,
-                usersStakingData
+                usersStakingData,
+                pendingWithdrawals
             }}
         >
             {children}
