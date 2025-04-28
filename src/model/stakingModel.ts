@@ -222,10 +222,13 @@ export const stakingModel: StakingModel = {
         }
 
         // Update pending withdrawals in a consistent way
+
+        const currentPendingWithdrawal = state.pendingWithdrawals[lowerCaseAddress] ? state.pendingWithdrawals[lowerCaseAddress].amount : 0
+
         state.pendingWithdrawals = {
             ...state.pendingWithdrawals,
             [lowerCaseAddress]: {
-                amount: numAmount,
+                amount: numAmount + currentPendingWithdrawal,
                 timestamp: Math.floor(Date.now() / 1000),
                 status: 'PENDING',
             },
