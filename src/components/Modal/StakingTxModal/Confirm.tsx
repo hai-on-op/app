@@ -42,8 +42,6 @@ export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw, 
             status: ActionState.LOADING,
         })
 
-        console.log('Confirming', isStaking, isWithdraw, amount)
-
         try {
             stakingActions.setTransactionState(ActionState.LOADING)
 

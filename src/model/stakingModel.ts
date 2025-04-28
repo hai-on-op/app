@@ -64,7 +64,7 @@ export interface StakingModel {
                 amount: number
                 timestamp: number
                 status: 'PENDING' | 'COMPLETED' | 'CANCELLED'
-            }
+            } | null
         >
     >
 
@@ -198,9 +198,16 @@ export const stakingModel: StakingModel = {
 
         // Apply changes immediately to state
         state.totalStaked = newTotalStaked
-        if (state.usersStakingData[lowerCaseAddress]) {
-            state.usersStakingData[lowerCaseAddress].stakedBalance = newUserBalance
+        
+        // Initialize user data if it doesn't exist
+        if (!state.usersStakingData[lowerCaseAddress]) {
+            state.usersStakingData[lowerCaseAddress] = {
+                id: lowerCaseAddress,
+                stakedBalance: '0'
+            }
         }
+        
+        state.usersStakingData[lowerCaseAddress].stakedBalance = newUserBalance
     }),
 
     applyOptimisticUnstake: action((state, { amount, userAddress }) => {
@@ -209,9 +216,8 @@ export const stakingModel: StakingModel = {
 
         // Calculate new values
         const newTotalStaked = String(Number(state.totalStaked) - numAmount * 10 ** 18)
-        const newUserBalance = String(
-            Number(state.usersStakingData[lowerCaseAddress]?.stakedBalance || '0') - numAmount
-        )
+        const currentStakedBalance = Number(state.usersStakingData[lowerCaseAddress]?.stakedBalance || '0')
+        const newUserBalance = String(currentStakedBalance - numAmount)
 
         // Set optimistic flag and data
         state.isOptimistic = true
@@ -221,14 +227,23 @@ export const stakingModel: StakingModel = {
             stakedBalance: newUserBalance,
         }
 
-        // Update pending withdrawals in a consistent way
+        // Initialize user data if it doesn't exist
+        if (!state.usersStakingData[lowerCaseAddress]) {
+            state.usersStakingData[lowerCaseAddress] = {
+                id: lowerCaseAddress,
+                stakedBalance: '0'
+            }
+        }
 
-        const currentPendingWithdrawal = state.pendingWithdrawals[lowerCaseAddress] ? state.pendingWithdrawals[lowerCaseAddress].amount : 0
+        // Update pending withdrawals
+        const currentPendingAmount = state.pendingWithdrawals[lowerCaseAddress] 
+            ? state.pendingWithdrawals[lowerCaseAddress]!.amount 
+            : 0
 
         state.pendingWithdrawals = {
             ...state.pendingWithdrawals,
             [lowerCaseAddress]: {
-                amount: numAmount + currentPendingWithdrawal,
+                amount: numAmount + currentPendingAmount,
                 timestamp: Math.floor(Date.now() / 1000),
                 status: 'PENDING',
             },
@@ -236,9 +251,7 @@ export const stakingModel: StakingModel = {
 
         // Apply changes immediately to state
         state.totalStaked = newTotalStaked
-        if (state.usersStakingData[lowerCaseAddress]) {
-            state.usersStakingData[lowerCaseAddress].stakedBalance = newUserBalance
-        }
+        state.usersStakingData[lowerCaseAddress].stakedBalance = newUserBalance
     }),
 
     applyOptimisticWithdraw: action((state, { userAddress }) => {
@@ -247,12 +260,18 @@ export const stakingModel: StakingModel = {
         // Set optimistic flag
         state.isOptimistic = true
 
-        // Update pending withdrawal status
-        if (state.pendingWithdrawals[lowerCaseAddress]) {
-            state.pendingWithdrawals = {
-                ...state.pendingWithdrawals,
-                [lowerCaseAddress]: null,
+        // Initialize user data if it doesn't exist
+        if (!state.usersStakingData[lowerCaseAddress]) {
+            state.usersStakingData[lowerCaseAddress] = {
+                id: lowerCaseAddress,
+                stakedBalance: '0'
             }
+        }
+
+        // Update pending withdrawal status
+        state.pendingWithdrawals = {
+            ...state.pendingWithdrawals,
+            [lowerCaseAddress]: null,
         }
     }),
 
@@ -262,9 +281,8 @@ export const stakingModel: StakingModel = {
 
         // Calculate new values
         const newTotalStaked = String(Number(state.totalStaked) + numAmount)
-        const newUserBalance = String(
-            Number(state.usersStakingData[lowerCaseAddress]?.stakedBalance || '0') + numAmount
-        )
+        const currentStakedBalance = Number(state.usersStakingData[lowerCaseAddress]?.stakedBalance || '0')
+        const newUserBalance = String(currentStakedBalance + numAmount)
 
         // Set optimistic flag and data
         state.isOptimistic = true
@@ -274,19 +292,23 @@ export const stakingModel: StakingModel = {
             stakedBalance: newUserBalance,
         }
 
-        // Update pending withdrawal status
-        if (state.pendingWithdrawals[lowerCaseAddress]) {
-            state.pendingWithdrawals = {
-                ...state.pendingWithdrawals,
-                [lowerCaseAddress]: null,
+        // Initialize user data if it doesn't exist
+        if (!state.usersStakingData[lowerCaseAddress]) {
+            state.usersStakingData[lowerCaseAddress] = {
+                id: lowerCaseAddress,
+                stakedBalance: '0'
             }
+        }
+
+        // Update pending withdrawal status
+        state.pendingWithdrawals = {
+            ...state.pendingWithdrawals,
+            [lowerCaseAddress]: null,
         }
 
         // Apply changes immediately to state
         state.totalStaked = newTotalStaked
-        if (state.usersStakingData[lowerCaseAddress]) {
-            state.usersStakingData[lowerCaseAddress].stakedBalance = newUserBalance
-        }
+        state.usersStakingData[lowerCaseAddress].stakedBalance = newUserBalance
     }),
 
     stake: thunk(async (actions, { signer, amount }, { getStoreActions }) => {

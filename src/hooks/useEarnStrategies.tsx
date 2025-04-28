@@ -54,14 +54,18 @@ export function useEarnStrategies() {
         stakingModel: { usersStakingData, totalStaked },
     } = useStoreState((state) => state)
 
+    // Check if store data is loaded
+    const isStoreDataLoaded = !!tokensData && !!liquidationData && !!list
+
     const { userCollateralMapping } = useHaiVeloData()
+    const isHaiVeloDataLoaded = !!userCollateralMapping
 
     const HAI_WETH_DAILY_REWARDS = 100
 
     const HAI_VELO_DAILY_REWARDS = 200
 
     const { address } = useAccount()
-    const { prices: veloPrices } = useVelodromePrices()
+    const { prices: veloPrices, loading: veloPricesLoading } = useVelodromePrices()
 
     const { data, loading, error } = useQuery<{ collateralTypes: QueryCollateralType[] }>(ALL_COLLATERAL_TYPES_QUERY)
 
@@ -82,9 +86,11 @@ export function useEarnStrategies() {
         }
     )
     const { data: veloData, loading: veloLoading, error: veloError } = useVelodrome()
-    const { data: veloPositions } = useVelodromePositions()
+    const { data: veloPositions, loading: veloPositionsLoading } = useVelodromePositions()
 
     const prices = useMemo(() => {
+        if (!liquidationData || !veloPrices) return null
+        
         return {
             HAI: parseFloat(liquidationData?.currentRedemptionPrice || '0'),
             KITE: parseFloat(veloPrices?.KITE.raw || '0'),
@@ -94,9 +100,13 @@ export function useEarnStrategies() {
         }
     }, [liquidationData?.currentRedemptionPrice, liquidationData?.collateralLiquidationData, veloPrices])
 
+    const defaultPrices = { HAI: 0, KITE: 0, VELO: 0, OP: 0, WETH: 0 }
+
     const vaultStrategies = useMemo(() => {
+        if (!data?.collateralTypes || !prices) return []
+        
         return (
-            data?.collateralTypes
+            data.collateralTypes
                 .filter((cType) =>
                     Object.values(REWARDS.vaults[cType.id as keyof typeof REWARDS.vaults] || {}).some((a) => a != 0)
                 )
@@ -125,7 +135,7 @@ export function useEarnStrategies() {
     }, [data?.collateralTypes, prices, list, tokenAssets])
 
     const uniStrategies = useMemo(() => {
-        if (!uniData?.liquidityPools.length) return []
+        if (!uniData?.liquidityPools.length || !prices) return []
         const temp: Strategy[] = []
 
         const calculateBoostAPR = () => {
@@ -206,7 +216,7 @@ export function useEarnStrategies() {
     }, [uniData?.liquidityPools, prices, userLPBoostMap, userPositionValuesMap])
 
     const veloStrategies = useMemo(() => {
-        if (!veloPrices || !veloData) return []
+        if (!veloPrices || !veloData || !prices) return []
         const temp: Strategy[] = []
         // Filter out SAIL
         for (const pool of veloData.filter((p) => p.address === '0xf2d3941b6E1cbD3616061E556Eb06986147715d1')) {
@@ -283,6 +293,8 @@ export function useEarnStrategies() {
     }, [myVaults])
 
     const calculateHaiVeloBoostAPR = useCallback(() => {
+        if (!userCollateralMapping || !usersStakingData) return null;
+        
         const totalHaiVeloDeposited = Object.values(userCollateralMapping).reduce((acc, value) => {
             return acc + Number(value)
         }, 0)
@@ -347,31 +359,49 @@ export function useEarnStrategies() {
         }
     }, [userCollateralMapping, userLPBoostMap, address, usersStakingData, totalStaked])
 
-    const specialStrategies = [
-        {
-            pair: ['HAI'],
-            rewards: [],
-            tvl: erc20Supply.raw,
-            apr: rRateApy,
-            userPosition: haiBalance?.raw,
-            strategyType: 'hold',
-        },
-        {
-            pair: ['HAIVELO'],
-            rewards: [],
-            tvl: haiVeloTVL,
-            apr: '0',
-            boostAPR: calculateHaiVeloBoostAPR(),
-            userPosition: myHaiVeloParticipation,
-            strategyType: 'deposit',
-        },
-    ]
+    const specialStrategies = useMemo(() => {
+        if (!prices) return [];
+        
+        const haiVeloBoostData = calculateHaiVeloBoostAPR();
+        
+        return [
+            {
+                pair: ['HAI'],
+                rewards: [],
+                tvl: erc20Supply.raw,
+                apr: rRateApy,
+                userPosition: haiBalance?.raw,
+                strategyType: 'hold',
+            },
+            {
+                pair: ['HAIVELO'],
+                rewards: [],
+                tvl: haiVeloTVL,
+                apr: '0',
+                boostAPR: haiVeloBoostData,
+                userPosition: myHaiVeloParticipation,
+                strategyType: 'deposit',
+            },
+        ];
+    }, [prices, erc20Supply.raw, rRateApy, haiBalance?.raw, haiVeloTVL, myHaiVeloParticipation, calculateHaiVeloBoostAPR]);
+
+    const isLoading = loading || uniLoading || veloLoading || veloPositionsLoading || veloPricesLoading || !isStoreDataLoaded || !isHaiVeloDataLoaded || !prices
 
     const strategies = useMemo(() => {
+        if (isLoading) return []
         return [...specialStrategies, ...vaultStrategies, ...uniStrategies, ...veloStrategies]
-    }, [specialStrategies, vaultStrategies, uniStrategies, veloStrategies])
+    }, [isLoading, specialStrategies, vaultStrategies, uniStrategies, veloStrategies])
 
     const averageAPR = useMemo(() => {
+        if (isLoading || strategies.length === 0) {
+            return {
+                totalPosition: 0,
+                averageWeightedAPR: 0,
+                averageWeightedBoostedAPR: 0,
+                effectiveStrategiesAPR: [],
+            }
+        }
+
         const totalPosition = strategies.reduce((acc, strategy) => {
             return acc + Number(strategy.userPosition)
         }, 0)
@@ -399,15 +429,16 @@ export function useEarnStrategies() {
             averageWeightedBoostedAPR,
             effectiveStrategiesAPR,
         }
-    }, [strategies, userCollateralMapping, usersStakingData, totalStaked])
+    }, [isLoading, strategies, userCollateralMapping, usersStakingData, totalStaked])
 
     const [filterEmpty, setFilterEmpty] = useState(false)
 
     const filteredRows = useMemo(() => {
+        if (isLoading) return []
         if (!filterEmpty) return strategies
 
         return strategies.filter(({ userPosition }) => !!userPosition && userPosition !== '0')
-    }, [strategies, filterEmpty])
+    }, [strategies, filterEmpty, isLoading])
 
     const [sorting, setSorting] = useState<Sorting>({
         key: 'My Position',
@@ -415,6 +446,8 @@ export function useEarnStrategies() {
     })
 
     const sortedRows = useMemo(() => {
+        if (isLoading) return []
+        
         switch (sorting.key) {
             case 'Asset / Asset Pair':
                 return arrayToSorted(filteredRows, {
@@ -450,14 +483,14 @@ export function useEarnStrategies() {
                     checkValueExists: true,
                 })
         }
-    }, [filteredRows, sorting])
+    }, [filteredRows, sorting, isLoading])
 
     return {
         headers: sortableHeaders,
         averageAPR,
         rows: sortedRows,
         rowsUnmodified: strategies,
-        loading: loading || uniLoading || veloLoading,
+        loading: isLoading,
         error: error?.message,
         uniError: uniError?.message,
         veloError,
@@ -470,10 +503,10 @@ export function useEarnStrategies() {
 
 const calculateAPR = (
     tvl: number,
-    prices: { KITE: number; OP: number },
+    prices: { KITE: number; OP: number } | null | undefined,
     rewards: { KITE: number; OP: number } = REWARDS.default
 ) => {
-    if (!tvl) return 0
+    if (!tvl || !prices) return 0
     if (!prices.KITE || !prices.OP) return 0
 
     // ((kite-daily-emission * kite-price + op-daily-emission * op-price) * 365) / (hai-debt-per-collateral * hai-redemption-price)
@@ -483,10 +516,10 @@ const calculateAPR = (
 
 const calculateAPY = (
     tvl: number,
-    prices: { KITE: number; OP: number },
+    prices: { KITE: number; OP: number } | null | undefined,
     rewards: { KITE: number; OP: number } = REWARDS.default
 ) => {
-    if (!tvl) return 0
+    if (!tvl || !prices) return 0
     if (!prices.KITE || !prices.OP) return 0
 
     // ((kite-daily-emission * kite-price + op-daily-emission * op-price) * 365) / (hai-debt-per-collateral * hai-redemption-price)

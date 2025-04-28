@@ -158,7 +158,7 @@ interface StakingContextType {
         amount: number
         timestamp: number
         status: 'PENDING' | 'COMPLETED' | 'CANCELLED'
-    }>
+    } | null>
 }
 
 // Create context
@@ -169,6 +169,7 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
     const { address } = useAccount()
 
     const [isRefetching, setIsRefetching] = useState(false)
+    const [isInitialDataLoaded, setIsInitialDataLoaded] = useState(false)
     const signer = useEthersSigner()
     const { stakingModel: stakingActions } = useStoreActions((actions) => actions)
     const cooldownPeriod = useStoreState((state) => state.stakingModel.cooldownPeriod)
@@ -179,6 +180,9 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
     const usersStakingData = useStoreState((state) => state.stakingModel.usersStakingData)
     const pendingWithdrawals = useStoreState((state) => state.stakingModel.pendingWithdrawals)
     const { setPendingWithdrawals } = useStoreActions((actions) => actions.stakingModel)
+
+    // Track when the signer is first available
+    const signerInitialized = useRef(false)
 
     const {
         data: userData,
@@ -214,7 +218,7 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
                 amount: number
                 timestamp: number
                 status: 'PENDING' | 'COMPLETED' | 'CANCELLED'
-            }> = {}
+            } | null> = {}
 
             allUsersData.stakingUsers.forEach((user: any) => {
                 const formattedBalance = formatBigNumber(user.stakedBalance)
@@ -231,6 +235,8 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
                         timestamp: Number(user.pendingWithdrawal.timestamp),
                         status: user.pendingWithdrawal.status || 'PENDING'
                     }
+                } else {
+                    pendingWithdrawalsMap[userId] = null;
                 }
             })
 
@@ -239,46 +245,38 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
         }
     }, [allUsersData, stakingActions, setPendingWithdrawals])
 
-    // Simplified refetch function that avoids race conditions
-    const refetchAll = async ({
-        stakingAmount,
-        unstakingAmount,
-        widthdrawAmount,
-        cancelWithdrawalAmount,
-    }: {
-        stakingAmount?: string
-        unstakingAmount?: string
-        widthdrawAmount?: string
-        cancelWithdrawalAmount?: string
-    } = {}) => {
-        setTimeout(async() => {
-            if (!signer || !address) return
-
-            setIsRefetching(true)
-
-        try {
-            // Just refetch GraphQL data since optimistic updates are now handled in the model
-            await Promise.all([refetchUser(), refetchAllUsers(), refetchStats()])
-        } catch (error) {
-            console.error('Error refetching staking data:', error)
-            } finally {
-                setIsRefetching(false)
-            }
-        }, 60 * 1000)
-    }
-
-    // Initial data fetch
+    // Initial data fetch - only run once when signer becomes available
     useEffect(() => {
-        if (signer) {
-            Promise.all([
-                stakingActions.fetchCooldownPeriod({ signer }),
-                stakingActions.fetchUserRewards({ signer }),
-                stakingActions.fetchStakingApyData({ signer }),
-                stakingActions.fetchTotalStaked({ signer }),
-                stakingActions.fetchUserStakedBalance({ signer }),
-            ])
+        async function loadInitialData() {
+            if (signer && !signerInitialized.current) {
+                signerInitialized.current = true;
+                try {
+                    await Promise.all([
+                        stakingActions.fetchCooldownPeriod({ signer }),
+                        stakingActions.fetchUserRewards({ signer }),
+                        stakingActions.fetchStakingApyData({ signer }),
+                        stakingActions.fetchTotalStaked({ signer }),
+                        stakingActions.fetchUserStakedBalance({ signer }),
+                    ]);
+                    setIsInitialDataLoaded(true);
+                } catch (error) {
+                    console.error("Error loading initial staking data:", error);
+                    // Reset the flag to try again
+                    signerInitialized.current = false;
+                }
+            }
         }
-    }, [signer, stakingActions])
+        
+        loadInitialData();
+    }, [signer, stakingActions]);
+
+    // Reset initialization flag when signer changes
+    useEffect(() => {
+        if (!signer) {
+            signerInitialized.current = false;
+            setIsInitialDataLoaded(false);
+        }
+    }, [signer]);
 
     // Simplified data merging that prioritizes model data
     const stakingData = useMemo((): StakingData => {
@@ -335,7 +333,43 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
         }
     }, [statsData])
 
-    const loading = userLoading || statsLoading || allUsersLoading
+    // Simplified refetch function that avoids race conditions
+    const refetchAll = async ({
+        stakingAmount,
+        unstakingAmount,
+        widthdrawAmount,
+        cancelWithdrawalAmount,
+    }: {
+        stakingAmount?: string
+        unstakingAmount?: string
+        widthdrawAmount?: string
+        cancelWithdrawalAmount?: string
+    } = {}) => {
+        if (!signer || !address) return
+
+        setIsRefetching(true)
+
+        try {
+            // Just refetch GraphQL data since optimistic updates are now handled in the model
+            await Promise.all([refetchUser(), refetchAllUsers(), refetchStats()])
+            
+            // Also refresh contract data
+            if (signer) {
+                await Promise.all([
+                    stakingActions.fetchTotalStaked({ signer }),
+                    stakingActions.fetchUserStakedBalance({ signer }),
+                    stakingActions.fetchUserRewards({ signer })
+                ])
+            }
+        } catch (error) {
+            console.error('Error refetching staking data:', error)
+        } finally {
+            setIsRefetching(false)
+        }
+    }
+
+    // Improved loading logic that accounts for initial data loading
+    const loading = (userLoading || statsLoading || allUsersLoading || !isInitialDataLoaded) && !isRefetching
 
     return (
         <StakingContext.Provider
