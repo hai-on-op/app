@@ -135,7 +135,7 @@ export function StakingClaimModal() {
                 </Flex>
             }
         >
-            <Text>Claim your staking rewards. Unclaimed rewards will accure bellow and do not expire.</Text>
+            <Text>Claim your staking rewards. Unclaimed rewards will accrue below and do not expire.</Text>
             <ScrollableBody>
                 <ContentWithStatus
                     loading={false}

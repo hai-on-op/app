@@ -1,29 +1,50 @@
-import { useMemo } from 'react'
-import { useStoreState } from '~/store'
+import { useMemo, useCallback, useEffect } from 'react'
+import { useStoreState, useStoreActions } from '~/store'
 import { useVault } from '~/providers/VaultProvider'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { useAccount } from 'wagmi'
 import { formatUnits } from 'ethers/lib/utils'
 import { useLPData } from '~/providers/LPDataProvider'
 import { useVelodromePositions } from './useVelodrome'
-import { calculatePositionValue } from '~/utils/uniswapV3'
 import { formatNumberWithStyle } from '~/utils'
-import { useStakingData } from './useStakingData'
+import { useStaking } from '~/providers/StakingProvider'
 import { useHaiVeloData } from './useHaiVeloData'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
+import {
+    calculateLPBoost,
+    calculateHaiVeloBoost,
+    combineBoostValues,
+    simulateNetBoost as simulateNetBoostService,
+    calculateBaseAPR,
+} from '~/services/boostService'
 
 export function useBoost() {
     const { address } = useAccount()
-    const { pool, userPositions, loading: lpDataLoading } = useLPData()
+    // Use LP data from our enhanced model
+    const { 
+        pool, 
+        userPositions, 
+        userLPPositionValue, 
+        userTotalLiquidity, 
+        loading: lpDataLoading,
+        // NEW - Get boost data from LP data model
+        userLPBoostMap,
+        userKiteRatioMap,
+    } = useLPData()
     const { data: veloPositions, loading: positionsLoading } = useVelodromePositions()
     const { prices: veloPrices } = useVelodromePrices()
-    const { stakingData, stakingStats, loading: stakingLoading } = useStakingData()
+    const { stakingData, stakingStats, loading: stakingLoading } = useStaking()
     const { userHaiVELODeposited, totalHaiVELODeposited } = useHaiVeloData()
 
     const {
         haiMarketPrice,
         data: { tokenAnalyticsData },
     } = useAnalytics()
+
+    // Get token price actions for updating the LP data model
+    const { updateTokenPrices, calculateAllPositionValues, calculateAllUserLiquidity } = useStoreActions(
+        (actions) => actions.lpDataModel
+    )
 
     // Get HAI and WETH prices from analytics provider
     const haiPrice = useMemo(() => parseFloat(haiMarketPrice.raw || '0'), [haiMarketPrice])
@@ -35,42 +56,21 @@ export function useBoost() {
         return wethData ? parseFloat(formatUnits(wethData.currentPrice.toString(), 18)) : 0
     }, [tokenAnalyticsData])
 
-    // Get token prices (ideally would come from a price oracle)
-    // For now using token0Price and token1Price from the pool as approximate USD values
-    // In a real implementation, you would need to convert to actual USD prices
-    const token0UsdPrice = haiPrice
-    const token1UsdPrice = wethPrice
+    // Update token prices in the model when they change
+    useEffect(() => {
+        if (haiPrice && wethPrice) {
+            updateTokenPrices({
+                token0UsdPrice: haiPrice,
+                token1UsdPrice: wethPrice,
+            })
 
-    // Calculate total user LP position value using V3 formulas
-    const calculatedUserLPPositionValue = useMemo(() => {
-        if (!userPositions || !pool || userPositions.length === 0) return '0'
+            // Calculate position values for all users once prices are set
+            calculateAllPositionValues()
 
-        // Calculate value for each position and sum them
-        const totalValue = userPositions.reduce((sum, position) => {
-            const positionValue = calculatePositionValue(position, pool, token0UsdPrice, token1UsdPrice)
-            return sum + positionValue
-        }, 0)
-
-        return totalValue.toString()
-    }, [userPositions, pool, token0UsdPrice, token1UsdPrice])
-
-    // Calculate user's total liquidity (for boost calculation)
-    const userTotalLiquidity = useMemo(() => {
-        if (!userPositions || userPositions.length === 0) return '0'
-
-        return userPositions
-            .reduce((sum, position) => {
-                return sum + Number(position.liquidity)
-            }, 0)
-            .toString()
-    }, [userPositions])
-
-    // Calculate user's share percentage
-    const userSharePercentage = useMemo(() => {
-        if (!userTotalLiquidity || !pool?.liquidity || Number(pool.liquidity) === 0) return 0
-
-        return (Number(userTotalLiquidity) / Number(pool.liquidity)) * 100
-    }, [userTotalLiquidity, pool])
+            // Also calculate total liquidity (this doesn't need prices, but we can run it here)
+            calculateAllUserLiquidity()
+        }
+    }, [haiPrice, wethPrice, updateTokenPrices, calculateAllPositionValues, calculateAllUserLiquidity])
 
     // KITE staking data
     const userKITEStaked = useMemo(() => {
@@ -81,136 +81,10 @@ export function useBoost() {
         return stakingLoading ? '0' : stakingStats.totalStaked
     }, [stakingStats, stakingLoading])
 
-    // Calculate user's stake percentage
-    const userStakePercentage = useMemo(() => {
-        if (!userKITEStaked || !totalKITEStaked || Number(totalKITEStaked) === 0) return 0
-
-        return (Number(userKITEStaked) / Number(totalKITEStaked)) * 100
-    }, [userKITEStaked, totalKITEStaked])
-
-    // Calculate HAI/WETH LP boost based on the provided formula:
-    // (amount of HAI/WETH LP user deposited / total amount of HAI/WETH LP deposited) / (# of KITE user staked / # of all KITE staked) + 1
-    const haiWethLpBoost = useMemo(() => {
-        if (!userTotalLiquidity || !pool?.liquidity || Number(pool.liquidity) === 0) return 1.0
-        if (!userKITEStaked || !totalKITEStaked || Number(totalKITEStaked) === 0 || Number(userKITEStaked) === 0)
-            return 1.0
-
-        const lpRatio = Number(userTotalLiquidity) / Number(pool.liquidity)
-        const kiteRatio = Number(userKITEStaked) / Number(totalKITEStaked)
-
-        // Apply the formula
-        const boost = lpRatio / kiteRatio + 1
-
-        // Capped at maximum of 2.5
-        const cappedBoost = Math.min(boost, 2.5)
-
-        return cappedBoost
-    }, [userTotalLiquidity, pool?.liquidity, userKITEStaked, totalKITEStaked])
-
-    // Calculate haiVELO boost based on the provided formula:
-    // (# of KITE user staked / # of all KITE staked) / (# of haiVELO user deposited / all haiVELO deposited) + 1
-    const haiVeloBoost = useMemo(() => {
-        if (!userKITEStaked || !totalKITEStaked || Number(totalKITEStaked) === 0 || Number(userKITEStaked) === 0)
-            return 1.0
-        if (
-            !userHaiVELODeposited ||
-            !totalHaiVELODeposited ||
-            Number(totalHaiVELODeposited) === 0 ||
-            Number(userHaiVELODeposited) === 0
-        )
-            return 1.0
-
-        const kiteRatio = Number(userKITEStaked) / Number(totalKITEStaked)
-        const haiVeloRatio = Number(userHaiVELODeposited) / Number(totalHaiVELODeposited)
-
-        // Apply the formula
-        const boost = kiteRatio / haiVeloRatio + 1
-
-        // Capped at maximum of 2
-        const cappedBoost = Math.min(boost, 2)
-
-        return cappedBoost
-    }, [userKITEStaked, totalKITEStaked, userHaiVELODeposited, totalHaiVELODeposited])
-
-    // Formatted values for display
-    // Formatted values for display
-    const formattedValues = useMemo(() => {
-        return {
-            // Format liquidity for display (shortened with K, M, B suffix)
-            userLiquidity: formatNumberWithStyle(Number(userTotalLiquidity), {
-                maxDecimals: 2,
-                minDecimals: 0,
-                suffixed: true,
-            }),
-
-            totalLiquidity: formatNumberWithStyle(Number(pool?.liquidity || 0), {
-                maxDecimals: 2,
-                minDecimals: 0,
-                suffixed: true,
-            }),
-
-            // Format position value in USD with 3 decimals
-            positionValue: formatNumberWithStyle(Number(calculatedUserLPPositionValue), {
-                style: 'currency',
-                maxDecimals: 3,
-                minDecimals: 3,
-            }),
-
-            // Format share as percentage with 4 decimals
-            sharePercentage:
-                formatNumberWithStyle(userSharePercentage, {
-                    maxDecimals: 4,
-                    minDecimals: 4,
-                }) + '%',
-
-            // Format staking data
-            userStaked: formatNumberWithStyle(Number(userKITEStaked), {
-                maxDecimals: 2,
-                minDecimals: 2,
-            }),
-
-            totalStaked: formatNumberWithStyle(Number(totalKITEStaked), {
-                maxDecimals: 0,
-                minDecimals: 0,
-                suffixed: true,
-            }),
-
-            stakePercentage:
-                formatNumberWithStyle(userStakePercentage, {
-                    maxDecimals: 4,
-                    minDecimals: 4,
-                }) + '%',
-
-            // Format HAI/WETH LP boost
-            haiWethLpBoost:
-                formatNumberWithStyle(haiWethLpBoost, {
-                    maxDecimals: 3,
-                    minDecimals: 3,
-                }) + 'x',
-
-            // Format haiVELO boost
-            haiVeloBoost:
-                formatNumberWithStyle(haiVeloBoost, {
-                    maxDecimals: 3,
-                    minDecimals: 3,
-                }) + 'x',
-        }
-    }, [
-        userTotalLiquidity,
-        pool?.liquidity,
-        calculatedUserLPPositionValue,
-        userSharePercentage,
-        userKITEStaked,
-        totalKITEStaked,
-        userStakePercentage,
-        haiWethLpBoost,
-        haiVeloBoost,
-    ])
-
-    // LP Position data
+    // LP Position data - now using values from the model
     const userLPPosition = userTotalLiquidity
     const totalPoolLiquidity = pool?.liquidity || '0'
-    const userLPPositionValue = calculatedUserLPPositionValue
+    const calculatedUserLPPositionValue = userLPPositionValue
 
     // Calculate haiVELO position value in USD using VELO price
     const haiVeloPositionValue = useMemo(() => {
@@ -221,91 +95,95 @@ export function useBoost() {
         return (haiVeloAmount * veloPrice).toString()
     }, [userHaiVELODeposited, veloPrices])
 
-    // Calculate Net Boost (weighted average of both boosts based on dollar value)
-    const netBoost = useMemo(() => {
-        const lpValue = parseFloat(userLPPositionValue || '0')
-        const haiVeloValue = parseFloat(haiVeloPositionValue || '0')
-        const totalValue = lpValue + haiVeloValue
+    // Get LP boost from the model if available, or calculate it using boostService
+    const lpBoostValue = useMemo(() => {
+        if (address && userLPBoostMap[address.toLowerCase()]) {
+            return userLPBoostMap[address.toLowerCase()]
+        }
+        
+        // Fallback to direct calculation if not available in the model
+        // Use the exact boostService function for consistency
+        const result = calculateLPBoost({
+            userStakingAmount: Number(userKITEStaked),
+            totalStakingAmount: Number(totalKITEStaked),
+            userLPPosition,
+            totalPoolLiquidity,
+        })
+        
+        return result.lpBoost
+    }, [address, userLPBoostMap, userKITEStaked, totalKITEStaked, userLPPosition, totalPoolLiquidity])
 
-        if (totalValue === 0) return 1.0
+    // Get KITE ratio from the model if available, or calculate it
+    const kiteRatio = useMemo(() => {
+        if (address && userKiteRatioMap[address.toLowerCase()]) {
+            return userKiteRatioMap[address.toLowerCase()]
+        }
+        
+        // Fallback to same calculation as in boostService
+        const totalStakingAmount = Number(totalKITEStaked)
+        return isNaN(totalStakingAmount) || totalStakingAmount === 0 
+            ? 0 
+            : Number(userKITEStaked) / totalStakingAmount
+    }, [address, userKiteRatioMap, userKITEStaked, totalKITEStaked])
 
-        // Calculate weighted components
-        const lpBoostComponent = haiWethLpBoost * (lpValue / totalValue)
-        const haiVeloBoostComponent = haiVeloBoost * (haiVeloValue / totalValue)
+    // Calculate haiVELO boost values
+    const haiVeloBoostResult = useMemo(
+        () =>
+            calculateHaiVeloBoost({
+                userStakingAmount: Number(userKITEStaked),
+                totalStakingAmount: Number(totalKITEStaked),
+                userHaiVELODeposited,
+                totalHaiVELODeposited,
+            }),
+        [userKITEStaked, totalKITEStaked, userHaiVELODeposited, totalHaiVELODeposited]
+    )
 
-        // Calculate combined boost
-        const combined = lpBoostComponent + haiVeloBoostComponent
+    // Combine the boost values
+    const combinedBoostResult = useMemo(
+        () =>
+            combineBoostValues({
+                lpBoost: lpBoostValue,
+                haiVeloBoost: haiVeloBoostResult.haiVeloBoost,
+                userLPPositionValue: calculatedUserLPPositionValue,
+                haiVeloPositionValue,
+            }),
+        [lpBoostValue, haiVeloBoostResult.haiVeloBoost, calculatedUserLPPositionValue, haiVeloPositionValue]
+    )
 
-        return combined
-    }, [userLPPositionValue, haiVeloPositionValue, haiWethLpBoost, haiVeloBoost])
+    // Reuse the simulation function from the service
+    const simulateNetBoost = useCallback(
+        (userAfterStakingAmount: number, totalAfterStakingAmount: number) => {
+            return simulateNetBoostService({
+                userAfterStakingAmount,
+                totalAfterStakingAmount,
+                userLPPosition,
+                totalPoolLiquidity,
+                userLPPositionValue: calculatedUserLPPositionValue,
+                userHaiVELODeposited,
+                totalHaiVELODeposited,
+                haiVeloPositionValue,
+            })
+        },
+        [
+            userLPPosition,
+            totalPoolLiquidity,
+            calculatedUserLPPositionValue,
+            userHaiVELODeposited,
+            totalHaiVELODeposited,
+            haiVeloPositionValue,
+        ]
+    )
 
-    // Replace the old boostFactor calculation with the netBoost
-    const boostFactor = netBoost.toFixed(2)
-    const maxBoostFactor = '2.0'
-    const boostProgress = (parseFloat(boostFactor) - 1.0) / (parseFloat(maxBoostFactor) - 1.0)
-
-    // Boosted vaults count
-    const boostedVaultsCount = 0
-
-    const userKiteRatio =
-        isNaN(Number(totalKITEStaked)) || Number(totalKITEStaked) === 0
-            ? 0
-            : Number(userKITEStaked) / Number(totalKITEStaked)
-    const haiVeloRatio = Number(userHaiVELODeposited) / Number(totalHaiVELODeposited)
-    const boostValue = Number(haiVeloRatio) === 0 ? 1 : userKiteRatio / haiVeloRatio + 1
-
-    const reduceFactor = 1
-
-    const hvBoost = Math.min(boostValue * reduceFactor, 2)
-
-    const lpRatio = Number(totalPoolLiquidity) === 0 ? 0 : Number(userLPPosition) / Number(totalPoolLiquidity)
-
-    const rawLpBoostValue = Number(lpRatio) === 0 ? 1 : userKiteRatio / lpRatio + 1
-
-    const lpBoostValue = Math.min(rawLpBoostValue * reduceFactor, 2)
-
-    const userTotalValue = Number(userLPPositionValue) + Number(haiVeloPositionValue)
-
-    const hvValueRatio = userTotalValue === 0 ? 0.5 : Number(haiVeloPositionValue) / userTotalValue
-    const lpValueRatio = userTotalValue === 0 ? 0.5 : Number(userLPPositionValue) / userTotalValue
-
-    const hvWeightedBoost = hvBoost * hvValueRatio
-    const lpWeightedBoost = lpBoostValue * lpValueRatio
-
-    const netBoostValue = hvWeightedBoost + lpWeightedBoost
-
-    const simulateNetBoost = (userAfterStakingAmount: number, totalAfterStakingAmount: number) => {
-        if (userAfterStakingAmount <= 0) return 1
-
-        const userKiteRatio =
-            isNaN(Number(totalAfterStakingAmount)) || Number(totalAfterStakingAmount) === 0
-                ? 0
-                : Number(userAfterStakingAmount) / Number(totalAfterStakingAmount)
-        const haiVeloRatio = Number(userHaiVELODeposited) / Number(totalHaiVELODeposited)
-        const boostValue = Number(haiVeloRatio) === 0 ? 1 : userKiteRatio / haiVeloRatio + 1
-
-        const reduceFactor = 1
-
-        const hvBoost = Math.min(boostValue * reduceFactor, 2)
-
-        const lpRatio = Number(totalPoolLiquidity) === 0 ? 0 : Number(userLPPosition) / Number(totalPoolLiquidity)
-
-        const rawLpBoostValue = Number(lpRatio) === 0 ? 1 : userKiteRatio / lpRatio + 1
-
-        const lpBoostValue = Math.min(rawLpBoostValue * reduceFactor, 2)
-
-        const userTotalValue = Number(userLPPositionValue) + Number(haiVeloPositionValue)
-
-        const hvValueRatio = userTotalValue === 0 ? 0.5 : Number(haiVeloPositionValue) / userTotalValue
-        const lpValueRatio = userTotalValue === 0 ? 0.5 : Number(userLPPositionValue) / userTotalValue
-
-        const hvWeightedBoost = hvBoost * hvValueRatio
-        const lpWeightedBoost = lpBoostValue * lpValueRatio
-
-        const netBoostValue = hvWeightedBoost + lpWeightedBoost
-
-        return netBoostValue
-    }
+    const totalDailyRewardsInUSD = 0.1
+    const baseAPR = useMemo(
+        () =>
+            calculateBaseAPR({
+                totalDailyRewardsInUSD,
+                haiVeloPositionValue,
+                userLPPositionValue: calculatedUserLPPositionValue,
+            }),
+        [totalDailyRewardsInUSD, haiVeloPositionValue, calculatedUserLPPositionValue]
+    )
 
     return {
         // HaiVELO data
@@ -316,40 +194,22 @@ export function useBoost() {
         // KITE staking data
         userKITEStaked,
         totalKITEStaked,
-        userStakePercentage,
 
         // LP Position data
         userLPPosition,
         totalPoolLiquidity,
-        userLPPositionValue,
+        userLPPositionValue: calculatedUserLPPositionValue,
 
-        // HAI/WETH LP boost data
-        haiWethLpBoost,
-
-        // haiVELO boost data
-        haiVeloBoost,
-
-        hvBoost,
+        // Boost data from the LP data model
+        kiteRatio,
+        hvBoost: haiVeloBoostResult.haiVeloBoost,
         lpBoostValue,
-        userTotalValue,
-
-        // Net boost data
-        netBoost,
-        netBoostValue,
-
-        // Formatted values for display
-        formattedValues,
-        userSharePercentage,
-
-        // Boost calculations
-        boostFactor,
-        maxBoostFactor,
-        boostProgress,
-
-        // Boosted vaults
-        boostedVaultsCount,
+        userTotalValue: Number(calculatedUserLPPositionValue) + Number(haiVeloPositionValue),
+        netBoostValue: combinedBoostResult.netBoost,
 
         simulateNetBoost,
+
+        baseAPR,
 
         // Loading state
         loading: lpDataLoading || positionsLoading || stakingLoading,

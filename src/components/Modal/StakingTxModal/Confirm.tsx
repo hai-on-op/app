@@ -1,8 +1,9 @@
 import { useMemo, useRef } from 'react'
-import { ActionState, formatTimeFromSeconds, secondsToDays } from '~/utils'
+import { ActionState, formatNumberWithStyle, formatTimeFromSeconds, secondsToDays } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { handleTransactionError, useEthersSigner } from '~/hooks'
-import { useStakingData } from '~/hooks/useStakingData'
+import { useStaking } from '~/providers/StakingProvider'
+import { useStakingSummary } from '~/hooks/useStakingSummary'
 
 import styled from 'styled-components'
 import { HaiButton, Text } from '~/styles'
@@ -23,12 +24,12 @@ export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw, 
     const signer = useEthersSigner()
     const { popupsModel: popupsActions, stakingModel: stakingActions } = useStoreActions((actions) => actions)
     const { stakingModel: stakingStates } = useStoreState((state) => state)
-    const { refetchAll } = useStakingData()
+    const { refetchAll } = useStaking()
+    // Use the effective staked amount from useStakingSummary
+    const { myStaked } = useStakingSummary()
 
     // Use ref to prevent reopening modal after completion
     const hasCompletedRef = useRef(false)
-
-    console.log('Coool down params:::', stakingStates.cooldownPeriod)
 
     const handleConfirm = async () => {
         if (!signer) return
@@ -64,13 +65,9 @@ export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw, 
                 })
             }
 
-            console.log('setTransactionState success')
-
             stakingActions.setTransactionState(ActionState.SUCCESS)
             popupsActions.setIsWaitingModalOpen(false)
             popupsActions.setWaitingPayload({ status: ActionState.NONE })
-
-            console.log('setWaitingPayload success')
 
             // Mark as completed to prevent reopening
             hasCompletedRef.current = true
@@ -78,18 +75,19 @@ export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw, 
             // First close the modal to prevent any race conditions
             onClose?.()
 
-            if (isStaking) {
-                refetchAll({ stakingAmount: amount })
-            } else if (isWithdraw) {
-                refetchAll({ widthdrawAmount: amount })
-            } else {
-                refetchAll({ unstakingAmount: amount })
-            }
+            // Simplified refetch since optimistic updates are handled in the model
+            await refetchAll({})
+
+            // Call onSuccess if provided
+            onSuccess?.()
         } catch (e: any) {
             stakingActions.setTransactionState(ActionState.ERROR)
             handleTransactionError(e)
         }
     }
+
+    // Use effective amount from useStakingSummary
+    const effectiveStakedAmount = stakingStates.stakedBalance
 
     return (
         <>
@@ -104,14 +102,26 @@ export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw, 
                         {
                             label: 'Amount',
                             value: {
-                                current: isWithdraw
-                                    ? (Number(stakedAmount) + Number(amount)).toString()
-                                    : Number(stakedAmount).toString(),
-                                after: isStaking
-                                    ? (Number(stakedAmount) + Number(amount)).toString()
-                                    : isWithdraw
-                                    ? stakedAmount
-                                    : (Number(stakedAmount) - Number(amount)).toString(),
+                                current: formatNumberWithStyle(
+                                    isWithdraw
+                                        ? (Number(effectiveStakedAmount) + Number(amount)).toString()
+                                        : effectiveStakedAmount.toString(),
+                                    {
+                                        maxDecimals: 2,
+                                        minDecimals: 0,
+                                    }
+                                ),
+                                after: formatNumberWithStyle(
+                                    isStaking
+                                        ? (Number(effectiveStakedAmount) + Number(amount)).toString()
+                                        : isWithdraw
+                                        ? effectiveStakedAmount
+                                        : (Number(effectiveStakedAmount) - Number(amount)).toString(),
+                                    {
+                                        maxDecimals: 2,
+                                        minDecimals: 0,
+                                    }
+                                ),
                                 label: 'KITE',
                             },
                         },

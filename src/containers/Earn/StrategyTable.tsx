@@ -39,6 +39,52 @@ type StrategyTableProps = {
 //     `}
 // `
 
+const BadgeWrapper = styled.div`
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+`
+
+const Badge = styled.div`
+    margin-left: 0px;
+    width: 38.84px;
+    height: 18.77px;
+    background: #ffffff;
+    backdrop-filter: blur(50px);
+    border-radius: 23.5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-style: normal;
+    font-weight: 700;
+    font-size: 7px;
+    line-height: 8px;
+    text-align: center;
+    color: #00ac11;
+    box-sizing: border-box;
+`
+
+const StyledRewardsAPYContainer = styled.div`
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+`
+
+const StyledRewardsAPY = styled.div`
+    //font-size: 2.2em;
+    font-weight: 700;
+    text-decoration: line-through;
+`
+
+const StyledRewardsAPYWithBoost = styled.div`
+    color: #00ac11;
+    //font-size: 2.2em;
+    font-weight: 700;
+    margin-left: 8px;
+`
+
 export function StrategyTable({
     headers,
     rows,
@@ -60,7 +106,22 @@ export function StrategyTable({
             setSorting={setSorting}
             compactQuery="upToMedium"
             rows={rows.map(
-                ({ pair, rewards, tvl, apy, userPosition, earnPlatform, earnAddress, earnLink, strategyType }, i) => {
+                (
+                    {
+                        pair,
+                        rewards,
+                        tvl,
+                        apy,
+                        userPosition,
+                        earnPlatform,
+                        earnAddress,
+                        earnLink,
+                        strategyType,
+                        apr,
+                        boostAPR,
+                    },
+                    i
+                ) => {
                     // const LSTS = ['RETH', 'APXETH', 'WSTETH']
                     // const isLST = LSTS.includes(pair[0])
                     // const isAPXETH = pair.includes('APXETH')
@@ -139,19 +200,78 @@ export function StrategyTable({
                                 },
                                 {
                                     content: (
-                                        <div style={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
+                                        <Flex $width="100%" $justify="flex-start" $align="center" $gap={12}>
                                             <Text $fontWeight={700}>
-                                                {strategyType === 'deposit'
-                                                    ? '40% - 50%'
-                                                    : apy
-                                                    ? formatNumberWithStyle(apy, {
-                                                          style: 'percent',
-                                                          scalingFactor: 100,
-                                                          maxDecimals: 1,
-                                                          suffixed: true,
-                                                      })
+                                                {!!boostAPR && boostAPR.myBoost > 0
+                                                    ? formatNumberWithStyle(boostAPR.myBoost, {
+                                                          maxDecimals: 2,
+                                                          suffixed: false,
+                                                      }) + 'x'
                                                     : '-'}
                                             </Text>
+                                            {!!boostAPR && boostAPR.myBoost > 0 && (
+                                                <BadgeWrapper>
+                                                    <Badge>BOOST</Badge>
+                                                </BadgeWrapper>
+                                            )}
+                                        </Flex>
+                                    ),
+                                },
+                                {
+                                    content: (
+                                        <div style={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
+                                            {!!boostAPR && boostAPR.myBoost ? (
+                                                boostAPR.baseAPR === boostAPR.myBoostedAPR ? (
+                                                    <Text $fontWeight={700}>
+                                                        {formatNumberWithStyle(boostAPR.baseAPR / 100, {
+                                                            style: 'percent',
+                                                            scalingFactor: 100,
+                                                            maxDecimals: 1,
+                                                            suffixed: true,
+                                                        })}
+                                                    </Text>
+                                                ) : (
+                                                    <StyledRewardsAPYContainer>
+                                                        <StyledRewardsAPY>
+                                                            {formatNumberWithStyle(boostAPR.baseAPR / 100, {
+                                                                style: 'percent',
+                                                                scalingFactor: 100,
+                                                                maxDecimals: 1,
+                                                                suffixed: true,
+                                                            })}
+                                                        </StyledRewardsAPY>
+                                                        <StyledRewardsAPYWithBoost>
+                                                            {' '}
+                                                            {formatNumberWithStyle(boostAPR.myBoostedAPR / 100, {
+                                                                style: 'percent',
+                                                                scalingFactor: 100,
+                                                                maxDecimals: 1,
+                                                                suffixed: true,
+                                                            })}
+                                                        </StyledRewardsAPYWithBoost>
+                                                    </StyledRewardsAPYContainer>
+                                                )
+                                            ) : (
+                                                <Text $fontWeight={700}>
+                                                    {strategyType === 'deposit'
+                                                        ? '40% - 50%'
+                                                        : apr
+                                                        ? formatNumberWithStyle(apr, {
+                                                              style: 'percent',
+                                                              scalingFactor: 100,
+                                                              maxDecimals: 1,
+                                                              suffixed: true,
+                                                          })
+                                                        : apy
+                                                        ? formatNumberWithStyle(apy, {
+                                                              style: 'percent',
+                                                              scalingFactor: 100,
+                                                              maxDecimals: 1,
+                                                              suffixed: true,
+                                                          })
+                                                        : '-'}
+                                                </Text>
+                                            )}
                                             {/* {(isAPXETH || isPXETH) && (
                                                 <BoostBadge>
                                                     <Flex $justify="flex-start" $align="center">
@@ -217,7 +337,9 @@ export function StrategyTable({
 }
 
 const TableHeader = styled(Grid)`
-    grid-template-columns: 340px minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) 220px;
+    grid-template-columns:
+        340px minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr)
+        220px;
     align-items: center;
     padding: 0px;
     padding-left: 6px;

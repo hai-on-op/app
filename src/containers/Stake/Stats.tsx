@@ -8,31 +8,13 @@ import { Stats, type StatProps } from '~/components/Stats'
 import { Link } from '~/components/Link'
 import { Loader } from '~/components/Loader'
 import { RefreshCw } from 'react-feather'
-import { useStakingData } from '~/hooks/useStakingData'
-import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
-import { useBoost } from '~/hooks/useBoost'
+import { useStakingSummary } from '~/hooks/useStakingSummary'
 
 export function StakeStats() {
     const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
-    const { stakingData, stakingStats, loading, totalStaked } = useStakingData()
-
-    const { prices: veloPrices } = useVelodromePrices()
-
-    const { netBoostValue } = useBoost()
-
-    const kitePrice = veloPrices?.KITE.raw
-
-    // const kitePrice = 10.0 // TODO: Get real KITE price from somewhere
+    const { loading, totalStaked, myStaked, myShare, stakingApr, boost, stakingData } = useStakingSummary()
 
     const stats: StatProps[] = useMemo(() => {
-        const totalStakedUSD = Number(stakingStats.totalStaked) * kitePrice
-        const myStakedUSD = Number(stakingData.stakedBalance) * kitePrice
-        const myShare =
-            stakingStats.totalStaked !== '0'
-                ? (Number(stakingData.stakedBalance) / Number(stakingStats.totalStaked)) * 100
-                : 0
-        const myBoost = 1.69 // TODO: Calculate real boost
-
         if (loading) {
             return Array(5).fill({
                 header: <Loader size={24} />,
@@ -42,11 +24,7 @@ export function StakeStats() {
 
         return [
             {
-                header: formatNumberWithStyle(totalStakedUSD, {
-                    minDecimals: 0,
-                    maxDecimals: 2,
-                    style: 'currency',
-                }),
+                header: totalStaked.usdValueFormatted,
                 label: 'Staking TVL',
                 tooltip: (
                     <span>
@@ -55,10 +33,7 @@ export function StakeStats() {
                 ),
             },
             {
-                header: formatNumberWithStyle(Number(stakingData.stakedBalance), {
-                    minDecimals: 0,
-                    maxDecimals: 2,
-                }),
+                header: myStaked.effectiveAmountFormatted,
                 label: 'My KITE Staked',
                 tooltip: (
                     <span>
@@ -68,12 +43,7 @@ export function StakeStats() {
                 ),
             },
             {
-                header: formatNumberWithStyle(myShare, {
-                    minDecimals: 0,
-                    maxDecimals: 2,
-                    style: 'percent',
-                    scalingFactor: 0.01,
-                }),
+                header: myShare.percentage,
                 label: 'My stKITE Share',
                 tooltip: (
                     <span>
@@ -83,12 +53,7 @@ export function StakeStats() {
                 ),
             },
             {
-                header: isNaN(netBoostValue)
-                    ? '...'
-                    : `${formatNumberWithStyle(netBoostValue, {
-                          minDecimals: 0,
-                          maxDecimals: 2,
-                      })}x`,
+                header: isNaN(boost.netBoostValue) ? '...' : boost.netBoostFormatted,
                 label: 'My Net Boost',
                 tooltip: (
                     <Text>
@@ -98,17 +63,17 @@ export function StakeStats() {
                 ),
             },
             {
-                header: stakingData.pendingWithdrawal ? (
+                header: "3" /*stakingData.pendingWithdrawal ? (
                     formatNumberWithStyle(Number(stakingData.pendingWithdrawal.amount), {
                         minDecimals: 0,
                         maxDecimals: 2,
                     })
                 ) : (
                     <Loader speed={0.5} icon={<RefreshCw />} />
-                ),
+                )*/,
                 headerStatus: <RewardsTokenArray tokens={['HAI', 'KITE', 'OP']} hideLabel />,
                 label: 'My Staking Rewards',
-                tooltip: 'Claim your staking rewards. Unclaimed rewards will accure bellow and do not expire.',
+                tooltip: 'Claim your staking rewards. Unclaimed rewards will accrue below and do not expire.',
                 button: (
                     <HaiButton $variant="yellowish" onClick={() => popupsActions.setIsStakeClaimPopupOpen(true)}>
                         Claim
@@ -116,7 +81,7 @@ export function StakeStats() {
                 ),
             },
         ]
-    }, [stakingData, stakingStats, loading, kitePrice, popupsActions, netBoostValue, totalStaked])
+    }, [loading, totalStaked, myStaked, myShare, boost, stakingData, popupsActions])
 
     return <Stats stats={stats} columns="repeat(4, 1fr) 1.6fr" fun />
 }

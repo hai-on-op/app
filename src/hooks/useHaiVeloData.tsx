@@ -38,6 +38,31 @@ const USER_SAFES_QUERY = gql`
     }
 `
 
+// Query to get all safes by collateral type
+const ALL_SAFES_QUERY = gql`
+    query GetAllSafesByCollateralType($collateralTypeId: ID!, $limit: Int = 1000) {
+        safes(
+            where: { collateralType_: { id: $collateralTypeId } }
+            orderBy: collateral
+            orderDirection: desc
+            first: $limit
+        ) {
+            id
+            safeId
+            collateral
+            debt
+            cRatio
+            safeHandler
+            owner {
+                id
+                address
+            }
+            createdAt
+            modifiedAt
+        }
+    }
+`
+
 // Type definitions for query response
 export type HaiVeloCollateralData = {
     collateralType: {
@@ -66,12 +91,22 @@ export type UserSafesData = {
     safes: UserSafe[]
 }
 
+export type AllSafesData = {
+    safes: UserSafe[]
+}
+
+// Type for user collateral mapping
+export type UserCollateralMapping = {
+    [userAddress: string]: string
+}
+
 export type HaiVeloData = {
     loading: boolean
     error?: ApolloError
     data?: HaiVeloCollateralData
     totalHaiVELODeposited: string
     userHaiVELODeposited: string
+    userCollateralMapping: UserCollateralMapping
 }
 
 export function useHaiVeloData(): HaiVeloData {
@@ -97,12 +132,21 @@ export function useHaiVeloData(): HaiVeloData {
         fetchPolicy: 'cache-and-network',
     })
 
+    // Query all HAIVELO safes
+    const { data: allSafesData, loading: allSafesLoading } = useQuery<AllSafesData>(ALL_SAFES_QUERY, {
+        variables: {
+            collateralTypeId: 'HAIVELO',
+        },
+        fetchPolicy: 'cache-and-network',
+    })
+
     // Format and extract the data using useMemo to prevent unnecessary recalculations
     const formattedData = useMemo(() => {
         if (!data) {
             return {
                 totalHaiVELODeposited: '0',
                 userHaiVELODeposited: '0',
+                userCollateralMapping: {},
             }
         }
 
@@ -131,15 +175,37 @@ export function useHaiVeloData(): HaiVeloData {
             userDeposited = totalUserCollateral
         }
 
-        return {
-            totalHaiVELODeposited: totalCollateral || 0,
-            userHaiVELODeposited: userDeposited || 0,
+        // Create mapping of user addresses to their collateral amounts
+        const userCollateralMapping: UserCollateralMapping = {}
+        
+        if (allSafesData?.safes && allSafesData.safes.length > 0) {
+            // Group safes by owner address and sum their collateral
+            allSafesData.safes.forEach(safe => {
+                const ownerAddress = safe.owner.address.toLowerCase()
+                const collateralAmount = parseFloat(safe.collateral)
+                
+                if (userCollateralMapping[ownerAddress]) {
+                    // Add to existing collateral for this user
+                    userCollateralMapping[ownerAddress] = (
+                        parseFloat(userCollateralMapping[ownerAddress]) + collateralAmount
+                    ).toString()
+                } else {
+                    // First safe for this user
+                    userCollateralMapping[ownerAddress] = collateralAmount.toString()
+                }
+            })
         }
-    }, [data, userSafesData])
+
+        return {
+            totalHaiVELODeposited: totalCollateral || '0',
+            userHaiVELODeposited: userDeposited || '0',
+            userCollateralMapping,
+        }
+    }, [data, userSafesData, allSafesData])
 
     // Return the data object with loading and error states
     return {
-        loading: loading || userSafesLoading,
+        loading: loading || userSafesLoading || allSafesLoading,
         error,
         data,
         ...formattedData,
