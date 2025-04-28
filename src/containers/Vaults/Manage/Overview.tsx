@@ -380,13 +380,17 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
                                 style: 'percent',
                             })}
                             label="My stKITE Share"
-                            button={{
-                                variant: 'yellowish',
-                                text: 'Stake KITE',
-                                onClick: () => {
-                                    window.location.href = '/stake'
-                                },
-                            }}
+                            button={
+                                userHaiVeloBoostData.myBoost === 2
+                                    ? undefined
+                                    : {
+                                          variant: 'yellowish',
+                                          text: 'Stake KITE',
+                                          onClick: () => {
+                                              window.location.href = '/stake'
+                                          },
+                                      }
+                            }
                             tooltip={'Your staking share of the total stKITE supply'}
                         />
                         <OverviewStat
@@ -396,7 +400,7 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
                                 scalingFactor: 1,
                                 style: 'percent',
                             })}`}
-                            label="My HAI VELO Share"
+                            label="My haiVELO Share"
                             simulatedValue={
                                 userHaiVeloBoostData.myHaiVeloShare !== userHaiVeloBoostData.myHaiVeloSimulatedShare
                                     ? `${formatNumberWithStyle(Number(userHaiVeloBoostData.myHaiVeloSimulatedShare), {
@@ -407,7 +411,7 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
                                       })}`
                                     : ''
                             }
-                            tooltip={'The amount of HAI VELO you have in compare to the total HAI VELO supply'}
+                            tooltip={'The amount of  haiVELO you have in compare to the total HAI VELO supply'}
                         />
                         <OverviewStat
                             value={`${formatNumberWithStyle(Number(userHaiVeloBoostData.myBoost), {

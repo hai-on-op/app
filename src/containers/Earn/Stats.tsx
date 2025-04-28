@@ -128,7 +128,7 @@ export function EarnStats() {
             // header: '$0',
             header: <Loader speed={0.5} icon={<RefreshCw />} />,
             headerStatus: <RewardsTokenArray tokens={['OP', 'KITE']} hideLabel />,
-            label: 'My Campaign Rewards',
+            label: 'My Rewards',
             tooltip: 'Rewards currently voted upon and distributed by DAO approximately once per month.',
             button: (
                 <HaiButton $variant="yellowish" onClick={() => popupsActions.setIsClaimPopupOpen(true)}>
