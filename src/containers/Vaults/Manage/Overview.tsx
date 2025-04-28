@@ -16,7 +16,7 @@ import { useAccount } from 'wagmi'
 import { useHaiVeloData } from '~/hooks/useHaiVeloData'
 import { calculateHaiVeloBoost } from '~/services/boostService'
 
-export function Overview() {
+export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
     const { t } = useTranslation()
     const { address } = useAccount()
 
@@ -45,6 +45,8 @@ export function Overview() {
 
         const totalKite = Object.values(usersStakingData).reduce((acc, curr) => acc + Number(curr.stakedBalance), 0)
 
+        console.log(totalKite, usersStakingData)
+
         const userHaiVeloBoostMap: Record<string, number> = Object.entries(userCollateralMapping).reduce(
             (acc, [address, value]) => {
                 if (!usersStakingData[address.toLowerCase()]) return { ...acc, [address]: 1 }
@@ -68,7 +70,7 @@ export function Overview() {
             }, 0)
         }
 
-        const mystKiteShare = usersStakingData[address.toLowerCase()]?.stakedBalance
+        const mystKiteShare = totalKite ? Number(usersStakingData[address.toLowerCase()]?.stakedBalance) / totalKite : 0
 
         const totalBoostedValueParticipating = calculateTotalBoostedValueParticipating()
 
@@ -368,61 +370,68 @@ export function Overview() {
                     {...progressProps}
                     fullWidth
                 />
-                <OverviewStat
-                    value={formatNumberWithStyle(userHaiVeloBoostData.mystKiteShare, {
-                        minDecimals: 2,
-                        maxDecimals: 2,
-                        scalingFactor: 1,
-                        style: 'percent',
-                    })}
-                    label="My stKITE Share"
-                    button={{
-                        variant: 'yellowish',
-                        text: 'Stake KITE',
-                        onClick: () => {
-                            window.location.href = '/stake'
-                        },
-                    }}
-                    tooltip={'Your staking share of the total stKITE supply'}
-                />
-                <OverviewStat
-                    value={`${formatNumberWithStyle(Number(userHaiVeloBoostData.myHaiVeloShare), {
-                        minDecimals: 0,
-                        maxDecimals: 2,
-                        scalingFactor: 1,
-                        style: 'percent',
-                    })}`}
-                    label="My HAI VELO Share"
-                    simulatedValue={
-                        userHaiVeloBoostData.myHaiVeloShare !== userHaiVeloBoostData.myHaiVeloSimulatedShare
-                            ? `${formatNumberWithStyle(Number(userHaiVeloBoostData.myHaiVeloSimulatedShare), {
-                                  minDecimals: 0,
-                                  maxDecimals: 2,
-                                  scalingFactor: 1,
-                                  style: 'percent',
-                              })}`
-                            : ''
-                    }
-                    tooltip={'The amount of HAI VELO you have in compare to the total HAI VELO supply'}
-                />
-                <OverviewStat
-                    value={`${formatNumberWithStyle(Number(userHaiVeloBoostData.myBoost), {
-                        minDecimals: 0,
-                        maxDecimals: 2,
-                        scalingFactor: 1,
-                    })}x`}
-                    label="Boost"
-                    simulatedValue={
-                        userHaiVeloBoostData.myBoost !== userHaiVeloBoostData.simulatedBoostAfterDeposit
-                            ? `${formatNumberWithStyle(Number(userHaiVeloBoostData.simulatedBoostAfterDeposit), {
-                                  minDecimals: 0,
-                                  maxDecimals: 2,
-                                  scalingFactor: 1,
-                              })}x`
-                            : ''
-                    }
-                    tooltip={'The amount of Boost you get for rewards over your HAI VELO position'}
-                />
+                {isHAIVELO ? (
+                    <>
+                        <OverviewStat
+                            value={formatNumberWithStyle(userHaiVeloBoostData.mystKiteShare, {
+                                minDecimals: 2,
+                                maxDecimals: 2,
+                                scalingFactor: 1,
+                                style: 'percent',
+                            })}
+                            label="My stKITE Share"
+                            button={{
+                                variant: 'yellowish',
+                                text: 'Stake KITE',
+                                onClick: () => {
+                                    window.location.href = '/stake'
+                                },
+                            }}
+                            tooltip={'Your staking share of the total stKITE supply'}
+                        />
+                        <OverviewStat
+                            value={`${formatNumberWithStyle(Number(userHaiVeloBoostData.myHaiVeloShare), {
+                                minDecimals: 0,
+                                maxDecimals: 2,
+                                scalingFactor: 1,
+                                style: 'percent',
+                            })}`}
+                            label="My HAI VELO Share"
+                            simulatedValue={
+                                userHaiVeloBoostData.myHaiVeloShare !== userHaiVeloBoostData.myHaiVeloSimulatedShare
+                                    ? `${formatNumberWithStyle(Number(userHaiVeloBoostData.myHaiVeloSimulatedShare), {
+                                          minDecimals: 0,
+                                          maxDecimals: 2,
+                                          scalingFactor: 1,
+                                          style: 'percent',
+                                      })}`
+                                    : ''
+                            }
+                            tooltip={'The amount of HAI VELO you have in compare to the total HAI VELO supply'}
+                        />
+                        <OverviewStat
+                            value={`${formatNumberWithStyle(Number(userHaiVeloBoostData.myBoost), {
+                                minDecimals: 0,
+                                maxDecimals: 2,
+                                scalingFactor: 1,
+                            })}x`}
+                            label="Boost"
+                            simulatedValue={
+                                userHaiVeloBoostData.myBoost !== userHaiVeloBoostData.simulatedBoostAfterDeposit
+                                    ? `${formatNumberWithStyle(
+                                          Number(userHaiVeloBoostData.simulatedBoostAfterDeposit),
+                                          {
+                                              minDecimals: 0,
+                                              maxDecimals: 2,
+                                              scalingFactor: 1,
+                                          }
+                                      )}x`
+                                    : ''
+                            }
+                            tooltip={'The amount of Boost you get for rewards over your HAI VELO position'}
+                        />
+                    </>
+                ) : null}
             </Inner>
         </Container>
     )

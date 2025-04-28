@@ -54,7 +54,7 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
             {tab === 0 || action === VaultAction.CREATE ? (
                 <ProxyPrompt>
                     <BodyGrid>
-                        <Overview />
+                        <Overview isHAIVELO={isHAIVELO} />
                         <VaultActions />
                     </BodyGrid>
                 </ProxyPrompt>
