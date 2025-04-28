@@ -1,6 +1,6 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
-import { formatNumberWithStyle } from '~/utils'
+import { formatNumberWithStyle, tokenAssets } from '~/utils'
 import { useStoreActions } from '~/store'
 import { HaiButton, Text } from '~/styles'
 import { RewardsTokenArray } from '~/components/TokenArray'
@@ -9,10 +9,53 @@ import { Link } from '~/components/Link'
 import { Loader } from '~/components/Loader'
 import { RefreshCw } from 'react-feather'
 import { useStakingSummary } from '~/hooks/useStakingSummary'
+import { useStoreState } from 'easy-peasy'
+import { useStakingData } from '~/hooks/useStakingData'
+import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
+import { ethers } from 'ethers'
 
 export function StakeStats() {
+    const {
+        vaultModel: { liquidationData },
+        popupsModel: { isStakeClaimPopupOpen },
+    } = useStoreState((state) => state)
     const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
     const { loading, totalStaked, myStaked, myShare, stakingApr, boost, stakingData } = useStakingSummary()
+
+    const { userRewards, refetchAll } = useStakingData()
+
+    const [claiming, setClaiming] = useState(false)
+
+    const { prices: veloPrices } = useVelodromePrices()
+
+    const haiPrice = parseFloat(liquidationData?.currentRedemptionPrice || '1')
+    const kitePrice = veloPrices?.KITE.raw
+    const opPrice = liquidationData?.collateralLiquidationData?.OP?.currentPrice.value
+
+    const HAI_ADDRESS = import.meta.env.VITE_HAI_ADDRESS
+    const KITE_ADDRESS = import.meta.env.VITE_KITE_ADDRESS
+    const OP_ADDRESS = import.meta.env.VITE_OP_ADDRESS
+
+    const rewardsDataMap = {
+        [HAI_ADDRESS]: {
+            id: 0,
+            name: tokenAssets.HAI.symbol,
+            tokenImg: tokenAssets.HAI.icon,
+            price: haiPrice,
+        },
+        [KITE_ADDRESS]: {
+            id: 1,
+            name: tokenAssets.KITE.symbol,
+            tokenImg: tokenAssets.KITE.icon,
+            price: kitePrice,
+        },
+        [OP_ADDRESS]: {
+            id: 2,
+            name: tokenAssets.OP.symbol,
+            tokenImg: tokenAssets.OP.icon,
+            price: opPrice,
+        },
+    }
 
     const stats: StatProps[] = useMemo(() => {
         if (loading) {
@@ -63,7 +106,14 @@ export function StakeStats() {
                 ),
             },
             {
-                header: "3" /*stakingData.pendingWithdrawal ? (
+                header: formatNumberWithStyle(
+                    userRewards.reduce((acc, reward) => {
+                        const amount = parseFloat(ethers.utils.formatEther(reward.amount))
+                        const price = rewardsDataMap[reward.tokenAddress as any].price as number
+                        return acc + amount * price
+                    }, 0),
+                    { style: 'currency', minDecimals: 0, maxDecimals: 2 }
+                ) /*stakingData.pendingWithdrawal ? (
                     formatNumberWithStyle(Number(stakingData.pendingWithdrawal.amount), {
                         minDecimals: 0,
                         maxDecimals: 2,
