@@ -54,6 +54,53 @@ export function EarnStats() {
         )
     }, [rows])
 
+    const formattedWeightedAPR = useMemo(() => {
+        return formatNumberWithStyle(averageAPR && averageAPR.averageWeightedAPR ? averageAPR.averageWeightedAPR : 0, {
+            maxDecimals: 2,
+            scalingFactor: 1,
+            suffixed: true,
+            style: 'percent',
+        })
+    }, [averageAPR])
+
+    const formattedBoostedAPR = useMemo(() => {
+        return formatNumberWithStyle(
+            averageAPR && averageAPR.averageWeightedBoostedAPR ? averageAPR.averageWeightedBoostedAPR : 0,
+            {
+                maxDecimals: 2,
+                scalingFactor: 1,
+                suffixed: true,
+                style: 'percent',
+            }
+        )
+    }, [averageAPR])
+
+    const formattedZeroAPR = useMemo(() => {
+        return formatNumberWithStyle(0, {
+            maxDecimals: 2,
+            scalingFactor: 100,
+            suffixed: true,
+            style: 'percent',
+        })
+    }, [])
+
+    const formattedAPR = useMemo(() => {
+        if (averageAPR && averageAPR.averageWeightedBoostedAPR && averageAPR.averageWeightedAPR) {
+            if (formattedWeightedAPR !== formattedBoostedAPR) {
+                return (
+                    <StyledRewardsAPYContainer>
+                        <StyledRewardsAPY> {formattedWeightedAPR} </StyledRewardsAPY>
+                        <StyledRewardsAPYWithBoost>{formattedBoostedAPR}</StyledRewardsAPYWithBoost>
+                    </StyledRewardsAPYContainer>
+                )
+            } else {
+                return formattedWeightedAPR
+            }
+        } else {
+            return formattedZeroAPR
+        }
+    }, [averageAPR, formattedWeightedAPR, formattedBoostedAPR, formattedZeroAPR])
+
     const dummyStats: StatProps[] = [
         {
             header: formatNumberWithStyle(value, {
@@ -76,50 +123,7 @@ export function EarnStats() {
             tooltip: 'Your current boost multiplier based on your staked KITE.',
         },
         {
-            header:
-                averageAPR && averageAPR.averageWeightedBoostedAPR && averageAPR.averageWeightedAPR ? (
-                    averageAPR.averageWeightedBoostedAPR !== averageAPR.averageWeightedAPR ? (
-                        <StyledRewardsAPYContainer>
-                            <StyledRewardsAPY>
-                                {' '}
-                                {formatNumberWithStyle(
-                                    averageAPR.averageWeightedAPR ? averageAPR.averageWeightedAPR : 0,
-                                    {
-                                        maxDecimals: 2,
-                                        scalingFactor: 1,
-                                        suffixed: true,
-                                        style: 'percent',
-                                    }
-                                )}{' '}
-                            </StyledRewardsAPY>
-                            <StyledRewardsAPYWithBoost>
-                                {formatNumberWithStyle(
-                                    averageAPR.averageWeightedBoostedAPR ? averageAPR.averageWeightedBoostedAPR : 0,
-                                    {
-                                        maxDecimals: 2,
-                                        scalingFactor: 1,
-                                        suffixed: true,
-                                        style: 'percent',
-                                    }
-                                )}
-                            </StyledRewardsAPYWithBoost>
-                        </StyledRewardsAPYContainer>
-                    ) : (
-                        formatNumberWithStyle(averageAPR.averageWeightedAPR, {
-                            maxDecimals: 2,
-                            scalingFactor: 100,
-                            suffixed: true,
-                            style: 'percent',
-                        })
-                    )
-                ) : (
-                    formatNumberWithStyle(0, {
-                        maxDecimals: 2,
-                        scalingFactor: 100,
-                        suffixed: true,
-                        style: 'percent',
-                    })
-                ),
+            header: formattedAPR,
             label: 'My Rewards APR',
             tooltip:
                 'Current estimated APR of campaign rewards based on current value participating and value of rewards tokens',
