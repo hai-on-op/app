@@ -25,7 +25,7 @@ const sortableHeaders: (SortableHeader & FlexProps)[] = [
     },
 ]
 
-const MAX_VAULTS_TO_FETCH = 500
+const MAX_VAULTS_TO_FETCH = 1000
 
 type OrderBy = 'collateral' | 'cRatio' | 'debt'
 export function useAllVaults() {
@@ -38,6 +38,8 @@ export function useAllVaults() {
         key: 'Collateral Ratio',
         dir: 'asc',
     })
+
+    console.log(collateralFilter)
 
     const orderBy: OrderBy = useMemo(() => {
         switch (sorting.key) {
