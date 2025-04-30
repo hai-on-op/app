@@ -12,19 +12,122 @@ import { Swirl } from '~/components/Icons/Swirl'
 import { StatusLabel } from '~/components/StatusLabel'
 import { OverviewProgressStat, OverviewStat } from './OverviewStat'
 import { AlertTriangle, ArrowLeft, ArrowRight } from 'react-feather'
+import { useAccount } from 'wagmi'
+import { useHaiVeloData } from '~/hooks/useHaiVeloData'
+import { calculateHaiVeloBoost } from '~/services/boostService'
 
-export function Overview() {
+export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
     const { t } = useTranslation()
+    const { address } = useAccount()
+
+    const { userCollateralMapping } = useHaiVeloData()
 
     const {
         vaultModel: { liquidationData },
+        stakingModel: { usersStakingData },
     } = useStoreState((state) => state)
 
-    const { rows } = useEarnStrategies()
+    const HAI_VELO_DAILY_REWARDS = 200
 
-    const { action, vault, collateral, riskStatus, safetyRatio, collateralRatio, simulation, summary } = useVault()
+    const { action, vault, collateral, riskStatus, safetyRatio, collateralRatio, simulation, summary, formState } =
+        useVault()
 
-    const { apy = 0 } = rows.find(({ pair }) => pair[0] === collateral.name) || {}
+    const userHaiVeloBoostData = useMemo(() => {
+        if (!address)
+            return {
+                mystKiteShare: 0,
+                totalKite: 0,
+            }
+
+        const totalHaiVeloDeposited = Object.values(userCollateralMapping).reduce((acc, value) => {
+            return acc + Number(value)
+        }, 0)
+
+        const totalKite = Object.values(usersStakingData).reduce((acc, curr) => acc + Number(curr.stakedBalance), 0)
+
+        console.log(totalKite, usersStakingData)
+
+        const userHaiVeloBoostMap: Record<string, number> = Object.entries(userCollateralMapping).reduce(
+            (acc, [address, value]) => {
+                if (!usersStakingData[address.toLowerCase()]) return { ...acc, [address]: 1 }
+
+                return {
+                    ...acc,
+                    [address]: calculateHaiVeloBoost({
+                        userStakingAmount: Number(usersStakingData[address.toLowerCase()]?.stakedBalance),
+                        totalStakingAmount: Number(totalKite),
+                        userHaiVELODeposited: Number(value),
+                        totalHaiVELODeposited: Number(totalHaiVeloDeposited),
+                    }).haiVeloBoost,
+                }
+            },
+            {}
+        )
+
+        const calculateTotalBoostedValueParticipating = () => {
+            return Object.entries(userCollateralMapping).reduce((acc, [address, value]) => {
+                return acc + Number(value) * userHaiVeloBoostMap[address]
+            }, 0)
+        }
+
+        const mystKiteShare = totalKite ? Number(usersStakingData[address.toLowerCase()]?.stakedBalance) / totalKite : 0
+
+        const totalBoostedValueParticipating = calculateTotalBoostedValueParticipating()
+
+        const baseAPR = totalBoostedValueParticipating
+            ? (HAI_VELO_DAILY_REWARDS / totalBoostedValueParticipating) * 365 * 100
+            : 0
+
+        const myBoost = address ? userHaiVeloBoostMap[address.toLowerCase()] : 1
+
+        const myValueParticipating = address ? userCollateralMapping[address.toLowerCase()] : 0
+
+        const myBoostedValueParticipating = Number(myValueParticipating) * myBoost
+
+        const myBoostedShare = totalBoostedValueParticipating
+            ? myBoostedValueParticipating / totalBoostedValueParticipating
+            : 0
+
+        const simulateBoostAfterDeposit = (amount: number) => {
+            const currentUserDeposit = userCollateralMapping[address.toLowerCase()]
+
+            return calculateHaiVeloBoost({
+                userStakingAmount: Number(usersStakingData[address.toLowerCase()]?.stakedBalance),
+                totalStakingAmount: Number(totalKite),
+                userHaiVELODeposited: Number(currentUserDeposit) + Number(amount),
+                totalHaiVELODeposited: Number(totalHaiVeloDeposited) + Number(amount),
+            }).haiVeloBoost
+        }
+
+        const effectiveDeposit = formState.withdraw
+            ? -1 * Number(formState.withdraw)
+            : formState.deposit
+            ? Number(formState.deposit)
+            : 0
+
+        const simulatedBoostAfterDeposit = simulateBoostAfterDeposit(effectiveDeposit)
+
+        const myHaiVeloShare = Number(myValueParticipating) / Number(totalHaiVeloDeposited)
+
+        const myHaiVeloSimulatedShare =
+            (Number(myValueParticipating) + effectiveDeposit) / (Number(totalHaiVeloDeposited) + effectiveDeposit)
+
+        const myBoostedAPR = myBoost * baseAPR //((myBoostedShare * HAI_VELO_DAILY_REWARDS) / myValueParticipating) * 365 * 100
+
+        return {
+            mystKiteShare,
+            myHaiVeloShare,
+            totalKite,
+            myBoostedShare,
+            baseAPR,
+            myBoost,
+            myValueParticipating,
+            myBoostedValueParticipating,
+            simulatedBoostAfterDeposit,
+            myHaiVeloSimulatedShare,
+            myBoostedAPR,
+        }
+    }, [address, usersStakingData, userCollateralMapping, formState])
 
     const progressProps = useMemo(() => {
         if (!collateralRatio || !safetyRatio || !collateral.liquidationData?.liquidationCRatio)
@@ -138,17 +241,34 @@ export function Overview() {
                         </StatusLabel>
                     )}
                 </Flex>
-                <StatusLabel status={Status.NEGATIVE}>
-                    {apy
-                        ? formatNumberWithStyle(apy, {
-                              minDecimals: 1,
-                              maxDecimals: 1,
-                              style: 'percent',
-                              scalingFactor: 100,
-                              suffixed: true,
-                          })
+                <StatusLabel
+                    status={
+                        userHaiVeloBoostData.myBoostedAPR === userHaiVeloBoostData.baseAPR
+                            ? Status.NO_DEBT
+                            : Status.POSITIVE
+                    }
+                >
+                    <span style={{ color: 'black' }}>
+                        {userHaiVeloBoostData.baseAPR
+                            ? formatNumberWithStyle(userHaiVeloBoostData.baseAPR, {
+                                  minDecimals: 1,
+                                  maxDecimals: 1,
+                                  style: 'percent',
+                                  suffixed: true,
+                              })
+                            : '--%'}
+                    </span>{' '}
+                    {userHaiVeloBoostData.myBoostedAPR !== userHaiVeloBoostData.baseAPR
+                        ? userHaiVeloBoostData.myBoostedAPR
+                            ? formatNumberWithStyle(userHaiVeloBoostData.myBoostedAPR, {
+                                  minDecimals: 1,
+                                  maxDecimals: 1,
+                                  style: 'percent',
+                                  suffixed: true,
+                              })
+                            : ''
                         : '--%'}{' '}
-                    Rewards APY
+                    APR
                 </StatusLabel>
                 <Flex $justify="flex-end" $align="center" $gap={12} $fontSize="0.8em">
                     <Text>
@@ -250,6 +370,72 @@ export function Overview() {
                     {...progressProps}
                     fullWidth
                 />
+                {isHAIVELO ? (
+                    <>
+                        <OverviewStat
+                            value={formatNumberWithStyle(userHaiVeloBoostData.mystKiteShare, {
+                                minDecimals: 2,
+                                maxDecimals: 2,
+                                scalingFactor: 1,
+                                style: 'percent',
+                            })}
+                            label="My stKITE Share"
+                            button={
+                                userHaiVeloBoostData.myBoost === 2
+                                    ? undefined
+                                    : {
+                                          variant: 'yellowish',
+                                          text: 'Stake KITE',
+                                          onClick: () => {
+                                              window.location.href = '/stake'
+                                          },
+                                      }
+                            }
+                            tooltip={'Your staking share of the total stKITE supply'}
+                        />
+                        <OverviewStat
+                            value={`${formatNumberWithStyle(Number(userHaiVeloBoostData.myHaiVeloShare), {
+                                minDecimals: 0,
+                                maxDecimals: 2,
+                                scalingFactor: 1,
+                                style: 'percent',
+                            })}`}
+                            label="My haiVELO Share"
+                            simulatedValue={
+                                userHaiVeloBoostData.myHaiVeloShare !== userHaiVeloBoostData.myHaiVeloSimulatedShare
+                                    ? `${formatNumberWithStyle(Number(userHaiVeloBoostData.myHaiVeloSimulatedShare), {
+                                          minDecimals: 0,
+                                          maxDecimals: 2,
+                                          scalingFactor: 1,
+                                          style: 'percent',
+                                      })}`
+                                    : ''
+                            }
+                            tooltip={'The amount of  haiVELO you have in compare to the total HAI VELO supply'}
+                        />
+                        <OverviewStat
+                            value={`${formatNumberWithStyle(Number(userHaiVeloBoostData.myBoost), {
+                                minDecimals: 0,
+                                maxDecimals: 2,
+                                scalingFactor: 1,
+                            })}x`}
+                            label="Boost"
+                            simulatedValue={
+                                userHaiVeloBoostData.myBoost !== userHaiVeloBoostData.simulatedBoostAfterDeposit
+                                    ? `${formatNumberWithStyle(
+                                          Number(userHaiVeloBoostData.simulatedBoostAfterDeposit),
+                                          {
+                                              minDecimals: 0,
+                                              maxDecimals: 2,
+                                              scalingFactor: 1,
+                                          }
+                                      )}x`
+                                    : ''
+                            }
+                            tooltip={'The amount of Boost you get for rewards over your HAI VELO position'}
+                        />
+                    </>
+                ) : null}
             </Inner>
         </Container>
     )
@@ -303,6 +489,18 @@ const Inner = styled(Grid).attrs((props) => ({
         &:nth-child(5) {
             grid-column: 5 / -1;
         }
+        &:nth-child(6) {
+            grid-column: 1 / 7;
+        }
+        &:nth-child(7) {
+            grid-column: 1 / 3;
+        }
+        &:nth-child(8) {
+            grid-column: 3 / 5;
+        }
+        &:nth-child(9) {
+            grid-column: 5 / 7;
+        }
     }
     &::after {
         border-top: none;
@@ -311,10 +509,14 @@ const Inner = styled(Grid).attrs((props) => ({
 
     ${({ theme }) => theme.mediaWidth.upToMedium`
         & > * {
-            &:nth-child(1) {
+            &:nth-child(1), 
+            &:nth-child(2), 
+            &:nth-child(6) {
                 grid-column: 1 / -1;
             }
-            &:nth-child(2) {
+            &:nth-child(7),
+            &:nth-child(8),
+            &:nth-child(9) {
                 grid-column: 1 / -1;
             }
             padding: 12px;

@@ -22,6 +22,16 @@ const ERC20ABI = [
     },
 ]
 
+// User staking data interface
+export interface UserStakingData {
+    id: string
+    stakedBalance: string
+    pendingWithdrawal?: {
+        amount: number
+        timestamp: number
+    }
+}
+
 export interface StakingModel {
     stakedAmount: string
     totalStaked: string
@@ -33,11 +43,50 @@ export interface StakingModel {
     setStakedBalance: Action<StakingModel, string>
     fetchUserStakedBalance: Thunk<StakingModel, { signer: JsonRpcSigner }, BigNumber, StoreModel>
 
-    pendingWithdrawals: Array<{
-        amount: number
-        timestamp: number
-    }>
-    setPendingWithdrawals: Action<StakingModel, Array<{ amount: number; timestamp: number }>>
+    // Users mapping to store all users' staking data
+    usersStakingData: Record<string, UserStakingData>
+    setUsersStakingData: Action<StakingModel, Record<string, UserStakingData>>
+    updateUserStakingData: Action<StakingModel, { userId: string; data: Partial<UserStakingData> }>
+
+    pendingWithdrawals: Record<
+        string,
+        {
+            amount: number
+            timestamp: number
+            status: 'PENDING' | 'COMPLETED' | 'CANCELLED'
+        } | null
+    >
+    setPendingWithdrawals: Action<
+        StakingModel,
+        Record<
+            string,
+            {
+                amount: number
+                timestamp: number
+                status: 'PENDING' | 'COMPLETED' | 'CANCELLED'
+            } | null
+        >
+    >
+
+    // Optimistic state tracking
+    isOptimistic: boolean
+    optimisticData: {
+        stakedBalance?: string
+        totalStaked?: string
+        pendingWithdrawal?: {
+            amount: number
+            timestamp: number
+        }
+    }
+    setOptimisticState: Action<StakingModel, boolean>
+    setOptimisticData: Action<StakingModel, Partial<StakingModel['optimisticData']>>
+    clearOptimisticData: Action<StakingModel>
+
+    // Enhanced existing functions
+    applyOptimisticStake: Action<StakingModel, { amount: string; userAddress: string }>
+    applyOptimisticUnstake: Action<StakingModel, { amount: string; userAddress: string }>
+    applyOptimisticWithdraw: Action<StakingModel, { userAddress: string }>
+    applyOptimisticCancelWithdrawal: Action<StakingModel, { amount: string; userAddress: string }>
 
     stake: Thunk<StakingModel, { signer: JsonRpcSigner; amount: string }, any, StoreModel>
     unstake: Thunk<StakingModel, { signer: JsonRpcSigner; amount: string }, any, StoreModel>
@@ -93,21 +142,192 @@ export const stakingModel: StakingModel = {
         state.stakedBalance = payload
     }),
 
-    pendingWithdrawals: [],
+    // Initialize empty users mapping
+    usersStakingData: {},
+    setUsersStakingData: action((state, payload) => {
+        state.usersStakingData = payload
+    }),
+    updateUserStakingData: action((state, { userId, data }) => {
+        state.usersStakingData[userId] = {
+            ...(state.usersStakingData[userId] || { id: userId, stakedBalance: '0' }),
+            ...data,
+        }
+    }),
+
+    pendingWithdrawals: {},
     setPendingWithdrawals: action((state, payload) => {
         state.pendingWithdrawals = payload
+    }),
+
+    // Initialize optimistic state
+    isOptimistic: false,
+    optimisticData: {},
+
+    setOptimisticState: action((state, payload) => {
+        state.isOptimistic = payload
+    }),
+
+    setOptimisticData: action((state, payload) => {
+        state.optimisticData = { ...state.optimisticData, ...payload }
+    }),
+
+    clearOptimisticData: action((state) => {
+        state.optimisticData = {}
+        state.isOptimistic = false
+    }),
+
+    // Apply optimistic updates immediately
+    applyOptimisticStake: action((state, { amount, userAddress }) => {
+        const numAmount = Number(amount)
+        const lowerCaseAddress = userAddress.toLowerCase()
+
+        // Calculate new values
+        const newTotalStaked = String(Number(state.totalStaked) + numAmount * 10 ** 18)
+
+        const newUserBalance = String(
+            Number(state.usersStakingData[lowerCaseAddress]?.stakedBalance || '0') + numAmount
+        )
+
+        // Set optimistic flag and data
+        state.isOptimistic = true
+        state.optimisticData = {
+            ...state.optimisticData,
+            totalStaked: newTotalStaked,
+            stakedBalance: newUserBalance,
+        }
+
+        // Apply changes immediately to state
+        state.totalStaked = newTotalStaked
+        
+        // Initialize user data if it doesn't exist
+        if (!state.usersStakingData[lowerCaseAddress]) {
+            state.usersStakingData[lowerCaseAddress] = {
+                id: lowerCaseAddress,
+                stakedBalance: '0'
+            }
+        }
+        
+        state.usersStakingData[lowerCaseAddress].stakedBalance = newUserBalance
+    }),
+
+    applyOptimisticUnstake: action((state, { amount, userAddress }) => {
+        const numAmount = Number(amount)
+        const lowerCaseAddress = userAddress.toLowerCase()
+
+        // Calculate new values
+        const newTotalStaked = String(Number(state.totalStaked) - numAmount * 10 ** 18)
+        const currentStakedBalance = Number(state.usersStakingData[lowerCaseAddress]?.stakedBalance || '0')
+        const newUserBalance = String(currentStakedBalance - numAmount)
+
+        // Set optimistic flag and data
+        state.isOptimistic = true
+        state.optimisticData = {
+            ...state.optimisticData,
+            totalStaked: newTotalStaked,
+            stakedBalance: newUserBalance,
+        }
+
+        // Initialize user data if it doesn't exist
+        if (!state.usersStakingData[lowerCaseAddress]) {
+            state.usersStakingData[lowerCaseAddress] = {
+                id: lowerCaseAddress,
+                stakedBalance: '0'
+            }
+        }
+
+        // Update pending withdrawals
+        const currentPendingAmount = state.pendingWithdrawals[lowerCaseAddress] 
+            ? state.pendingWithdrawals[lowerCaseAddress]!.amount 
+            : 0
+
+        state.pendingWithdrawals = {
+            ...state.pendingWithdrawals,
+            [lowerCaseAddress]: {
+                amount: numAmount + currentPendingAmount,
+                timestamp: Math.floor(Date.now() / 1000),
+                status: 'PENDING',
+            },
+        }
+
+        // Apply changes immediately to state
+        state.totalStaked = newTotalStaked
+        state.usersStakingData[lowerCaseAddress].stakedBalance = newUserBalance
+    }),
+
+    applyOptimisticWithdraw: action((state, { userAddress }) => {
+        const lowerCaseAddress = userAddress.toLowerCase()
+
+        // Set optimistic flag
+        state.isOptimistic = true
+
+        // Initialize user data if it doesn't exist
+        if (!state.usersStakingData[lowerCaseAddress]) {
+            state.usersStakingData[lowerCaseAddress] = {
+                id: lowerCaseAddress,
+                stakedBalance: '0'
+            }
+        }
+
+        // Update pending withdrawal status
+        state.pendingWithdrawals = {
+            ...state.pendingWithdrawals,
+            [lowerCaseAddress]: null,
+        }
+    }),
+
+    applyOptimisticCancelWithdrawal: action((state, { amount, userAddress }) => {
+        const numAmount = Number(amount)
+        const lowerCaseAddress = userAddress.toLowerCase()
+
+        // Calculate new values
+        const newTotalStaked = String(Number(state.totalStaked) + numAmount)
+        const currentStakedBalance = Number(state.usersStakingData[lowerCaseAddress]?.stakedBalance || '0')
+        const newUserBalance = String(currentStakedBalance + numAmount)
+
+        // Set optimistic flag and data
+        state.isOptimistic = true
+        state.optimisticData = {
+            ...state.optimisticData,
+            totalStaked: newTotalStaked,
+            stakedBalance: newUserBalance,
+        }
+
+        // Initialize user data if it doesn't exist
+        if (!state.usersStakingData[lowerCaseAddress]) {
+            state.usersStakingData[lowerCaseAddress] = {
+                id: lowerCaseAddress,
+                stakedBalance: '0'
+            }
+        }
+
+        // Update pending withdrawal status
+        state.pendingWithdrawals = {
+            ...state.pendingWithdrawals,
+            [lowerCaseAddress]: null,
+        }
+
+        // Apply changes immediately to state
+        state.totalStaked = newTotalStaked
+        state.usersStakingData[lowerCaseAddress].stakedBalance = newUserBalance
     }),
 
     stake: thunk(async (actions, { signer, amount }, { getStoreActions }) => {
         // debugger
         const storeActions = getStoreActions()
         try {
+            const userAddress = await signer.getAddress()
+
             const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
 
             const txData = await stakingManager.populateTransaction.stake(await signer.getAddress(), parseEther(amount))
 
             const tx = await handlePreTxGasEstimate(signer, txData)
             const txResponse = await signer.sendTransaction(tx)
+
+            // Apply optimistic update immediately after user confirms
+
+            console.log('Applying optimistic stake', amount, userAddress)
+            actions.applyOptimisticStake({ amount, userAddress })
 
             storeActions.transactionsModel.addTransaction({
                 chainId: await signer.getChainId(),
@@ -125,9 +345,25 @@ export const stakingModel: StakingModel = {
             })
 
             await txResponse.wait()
+
+            // Transaction successful, now get real data
+            await actions.fetchTotalStaked({ signer })
+
+            await actions.fetchUserStakedBalance({ signer })
+
+            // Keep optimistic flag for a while until GraphQL is updated
+            setTimeout(() => {
+                actions.clearOptimisticData()
+            }, 5000) // Give subgraph time to update
+
             return txResponse
         } catch (error) {
             console.error('Staking error:', error)
+            // Transaction failed, revert optimistic updates
+            actions.clearOptimisticData()
+            // Re-fetch actual data
+            await actions.fetchTotalStaked({ signer })
+            await actions.fetchUserStakedBalance({ signer })
             throw error
         }
     }),
@@ -135,11 +371,11 @@ export const stakingModel: StakingModel = {
     unstake: thunk(async (actions, { signer, amount }, { getStoreActions }) => {
         const storeActions = getStoreActions()
         try {
+            const userAddress = await signer.getAddress()
             const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
-
             const txData = await stakingManager.populateTransaction.initiateWithdrawal(parseEther(amount))
-
             const tx = await handlePreTxGasEstimate(signer, txData)
+
             const txResponse = await signer.sendTransaction(tx)
 
             storeActions.transactionsModel.addTransaction({
@@ -157,10 +393,30 @@ export const stakingModel: StakingModel = {
                 status: ActionState.SUCCESS,
             })
 
+            // Apply optimistic update immediately after user confirms but before sending transaction
+            console.log('Applying optimistic unstake', amount, userAddress)
+
+            actions.applyOptimisticUnstake({ amount, userAddress })
+
             await txResponse.wait()
+
+            // Transaction successful, now get real data
+            await actions.fetchTotalStaked({ signer })
+            await actions.fetchUserStakedBalance({ signer })
+
+            // Keep optimistic flag for a while until GraphQL is updated
+            setTimeout(() => {
+                actions.clearOptimisticData()
+            }, 5000) // Give subgraph time to update
+
             return txResponse
         } catch (error) {
             console.error('Unstaking error:', error)
+            // Transaction failed, revert optimistic updates
+            actions.clearOptimisticData()
+            // Re-fetch actual data
+            await actions.fetchTotalStaked({ signer })
+            await actions.fetchUserStakedBalance({ signer })
             throw error
         }
     }),
@@ -168,11 +424,11 @@ export const stakingModel: StakingModel = {
     withdraw: thunk(async (actions, { signer }, { getStoreActions }) => {
         const storeActions = getStoreActions()
         try {
+            const userAddress = await signer.getAddress()
             const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
-
             const txData = await stakingManager.populateTransaction.withdraw()
-
             const tx = await handlePreTxGasEstimate(signer, txData)
+
             const txResponse = await signer.sendTransaction(tx)
 
             storeActions.transactionsModel.addTransaction({
@@ -190,56 +446,50 @@ export const stakingModel: StakingModel = {
                 status: ActionState.SUCCESS,
             })
 
+            // Apply optimistic update immediately after user confirms but before sending transaction
+            console.log('Applying optimistic withdraw', userAddress)
+            actions.applyOptimisticWithdraw({ userAddress })
+
             await txResponse.wait()
+
+            // Transaction successful, now get real data
+            await actions.fetchTotalStaked({ signer })
+            await actions.fetchUserStakedBalance({ signer })
+
+            // Keep optimistic flag for a while until GraphQL is updated
+            setTimeout(() => {
+                actions.clearOptimisticData()
+            }, 5000) // Give subgraph time to update
+
             return txResponse
         } catch (error) {
             console.error('Withdrawal error:', error)
+            // Transaction failed, revert optimistic updates
+            actions.clearOptimisticData()
+            // Re-fetch actual data
+            await actions.fetchTotalStaked({ signer })
+            await actions.fetchUserStakedBalance({ signer })
             throw error
         }
     }),
 
-    getReward: thunk(async (actions, { signer }, { getStoreActions }) => {
+    cancelWithdrawal: thunk(async (actions, { signer }, { getStoreActions, getState }) => {
         const storeActions = getStoreActions()
         try {
+            const userAddress = await signer.getAddress()
             const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
 
-            const txData = await stakingManager.populateTransaction.getReward(await signer.getAddress())
-
-            const tx = await handlePreTxGasEstimate(signer, txData)
-            const txResponse = await signer.sendTransaction(tx)
-
-            storeActions.transactionsModel.addTransaction({
-                chainId: await signer.getChainId(),
-                hash: txResponse.hash,
-                from: txResponse.from,
-                summary: 'Claiming Rewards',
-                addedTime: new Date().getTime(),
-                originalTx: txResponse,
-            })
-
-            storeActions.popupsModel.setWaitingPayload({
-                title: 'Transaction Submitted',
-                hash: txResponse.hash,
-                status: ActionState.SUCCESS,
-            })
-
-            await txResponse.wait()
-            actions.fetchUserRewards({ signer }) // Refresh rewards after claim
-            return txResponse
-        } catch (error) {
-            console.error('Reward claim error:', error)
-            throw error
-        }
-    }),
-
-    cancelWithdrawal: thunk(async (actions, { signer }, { getStoreActions }) => {
-        const storeActions = getStoreActions()
-        try {
-            const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
+            // Get the pending withdrawal amount before transaction
+            let pendingAmount = '0'
+            const currentState = getState()
+            const userData = currentState.usersStakingData[userAddress.toLowerCase()]
+            if (userData?.pendingWithdrawal?.amount) {
+                pendingAmount = String(userData.pendingWithdrawal.amount)
+            }
 
             const txData = await stakingManager.populateTransaction.cancelWithdrawal()
-
             const tx = await handlePreTxGasEstimate(signer, txData)
+
             const txResponse = await signer.sendTransaction(tx)
 
             storeActions.transactionsModel.addTransaction({
@@ -257,10 +507,29 @@ export const stakingModel: StakingModel = {
                 status: ActionState.SUCCESS,
             })
 
+            // Apply optimistic update immediately after user confirms but before sending transaction
+            console.log('Applying optimistic cancel withdrawal', pendingAmount, userAddress)
+            actions.applyOptimisticCancelWithdrawal({ amount: pendingAmount, userAddress })
+
             await txResponse.wait()
+
+            // Transaction successful, now get real data
+            await actions.fetchTotalStaked({ signer })
+            await actions.fetchUserStakedBalance({ signer })
+
+            // Keep optimistic flag for a while until GraphQL is updated
+            setTimeout(() => {
+                actions.clearOptimisticData()
+            }, 5000) // Give subgraph time to update
+
             return txResponse
         } catch (error) {
             console.error('Cancel withdrawal error:', error)
+            // Transaction failed, revert optimistic updates
+            actions.clearOptimisticData()
+            // Re-fetch actual data
+            await actions.fetchTotalStaked({ signer })
+            await actions.fetchUserStakedBalance({ signer })
             throw error
         }
     }),
@@ -373,11 +642,55 @@ export const stakingModel: StakingModel = {
 
     fetchUserStakedBalance: thunk(async (actions, { signer }) => {
         await retryAsync(async () => {
-            const stakingManager = new Contract(import.meta.env.VITE_STAKING_TOKEN_ADDRESS, ERC20ABI, signer)
-            const balance = await stakingManager.balanceOf(await signer.getAddress())
+            const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
 
+            const userAddress = await signer.getAddress()
+            const balance = await stakingManager.stakedBalances(userAddress)
+
+            // Update both the single user state and the mapping
             actions.setStakedBalance(ethers.utils.formatEther(balance))
+            actions.updateUserStakingData({
+                userId: userAddress.toLowerCase(),
+                data: {
+                    stakedBalance: ethers.utils.formatEther(balance),
+                },
+            })
+
             return balance
         })
+    }),
+
+    getReward: thunk(async (actions, { signer }, { getStoreActions }) => {
+        const storeActions = getStoreActions()
+        try {
+            const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
+
+            const txData = await stakingManager.populateTransaction.getReward(await signer.getAddress())
+
+            const tx = await handlePreTxGasEstimate(signer, txData)
+            const txResponse = await signer.sendTransaction(tx)
+
+            storeActions.transactionsModel.addTransaction({
+                chainId: await signer.getChainId(),
+                hash: txResponse.hash,
+                from: txResponse.from,
+                summary: 'Claiming Rewards',
+                addedTime: new Date().getTime(),
+                originalTx: txResponse,
+            })
+
+            storeActions.popupsModel.setWaitingPayload({
+                title: 'Transaction Submitted',
+                hash: txResponse.hash,
+                status: ActionState.SUCCESS,
+            })
+
+            await txResponse.wait()
+            actions.fetchUserRewards({ signer }) // Refresh rewards after claim
+            return txResponse
+        } catch (error) {
+            console.error('Reward claim error:', error)
+            throw error
+        }
     }),
 }

@@ -19,29 +19,54 @@ type StakingTxModalProps = ModalProps & {
     onSuccess?: () => void
 }
 
-export function StakingTxModal({ isStaking, amount, stakedAmount, isWithdraw = false, onSuccess, ...props }: StakingTxModalProps) {
+export function StakingTxModal({
+    isStaking,
+    amount,
+    stakedAmount,
+    isWithdraw = false,
+    onSuccess,
+    ...props
+}: StakingTxModalProps) {
     const [step, setStep] = useState(StakingTxStep.APPROVE)
     // Track if transaction is completed to prevent reopening
     const hasClosedRef = useRef(false)
-    
+
     // Ensure we only close once
     const handleClose = () => {
-        if (hasClosedRef.current) return;
-        hasClosedRef.current = true;
-        
-        if (props.onClose) {
-            props.onClose();
-        }
-    };
+        if (hasClosedRef.current) return
+        hasClosedRef.current = true
 
-    console.log(props.maxWidth)
+        if (props.onClose) {
+            props.onClose()
+        }
+    }
 
     const content = useMemo(() => {
+        if (isWithdraw)
+            return (
+                <Confirm
+                    onClose={handleClose}
+                    isStaking={isStaking}
+                    amount={amount}
+                    stakedAmount={stakedAmount}
+                    isWithdraw={isWithdraw}
+                    onSuccess={onSuccess}
+                />
+            )
         switch (step) {
             case StakingTxStep.APPROVE:
                 return <Approvals onNext={() => setStep(StakingTxStep.CONFIRM)} isStaking={isStaking} amount={amount} />
             case StakingTxStep.CONFIRM:
-                return <Confirm onClose={handleClose} isStaking={isStaking} amount={amount} stakedAmount={stakedAmount} isWithdraw={isWithdraw} onSuccess={onSuccess} />
+                return (
+                    <Confirm
+                        onClose={handleClose}
+                        isStaking={isStaking}
+                        amount={amount}
+                        stakedAmount={stakedAmount}
+                        isWithdraw={isWithdraw}
+                        onSuccess={onSuccess}
+                    />
+                )
         }
     }, [step, handleClose, isStaking, amount, stakedAmount, isWithdraw, onSuccess])
 
@@ -65,4 +90,4 @@ export function StakingTxModal({ isStaking, amount, stakedAmount, isWithdraw = f
             }
         />
     )
-} 
+}

@@ -6,7 +6,7 @@ import { useStoreState } from '~/store'
 import { useVault } from '~/providers/VaultProvider'
 import { useEarnStrategies } from '~/hooks'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
-import { useStakingData } from '~/hooks/useStakingData'
+import { useStakingSummary } from '~/hooks/useStakingSummary'
 import { Loader } from '~/components/Loader'
 import { ComingSoon } from '~/components/ComingSoon'
 
@@ -32,191 +32,25 @@ type OverviewProps = {
 export function Overview({ simulation }: OverviewProps) {
     const { stakingAmount, unstakingAmount } = simulation
     const { t } = useTranslation()
-    const { stakingData, stakingStats, loading, stakingApyData, totalStaked, stakedBalance } = useStakingData()
-    const boostData = useBoost()
-    const { prices: veloPrices } = useVelodromePrices()
-
     const {
-        vaultModel: { liquidationData },
-    } = useStoreState((state) => state)
+        loading,
+        kitePrice,
+        totalStaked,
+        myStaked,
+        myShare,
+        stakingApr,
+        boost,
+        calculateSimulatedValues,
+        isOptimistic,
+    } = useStakingSummary()
 
-    const {
-        userHaiVELODeposited,
-        totalHaiVELODeposited,
-        userKITEStaked,
-        totalKITEStaked,
-        userLPPosition,
-        totalPoolLiquidity,
-        userLPPositionValue,
-        haiWethLpBoost,
-        lpBoostValue,
-        userTotalValue,
-        formattedValues,
-        userSharePercentage,
-        boostFactor,
-        maxBoostFactor,
-        boostProgress,
-        boostedVaultsCount,
-        haiVeloBoost,
-        hvBoost,
-        netBoost,
-        simulateNetBoost,
-        netBoostValue,
-        haiVeloPositionValue,
-        loading: boostLoading,
-    } = boostData
+    // Calculate simulated values if simulation values are provided
+    const simValues = useMemo(
+        () => calculateSimulatedValues(stakingAmount, unstakingAmount),
+        [stakingAmount, unstakingAmount, calculateSimulatedValues]
+    )
 
-    //const totalStaked = totalStaked
-
-    // --------------------------------
-    // Staking APY Calculation Example
-    // --------------------------------
-    //
-    // pool A:
-    // rate = .000165343915343915
-    // price = 1.18688975069085
-
-    // pool B:
-    // rate = .000165343915343915
-    // price = 1.159339
-
-    // pool C:
-    // rate = .000165343915343915
-    // price = 0.6634020531829766
-
-    // Total Staked = 20
-    // Staked asset price = 1.159339
-
-    // totalRewardValuePerSecond = (.000165343915343915 * 1.18688975069085) + (.000165343915343915 * 1.159339) + (.000165343915343915 * 0.6634020531829766)
-    // totalRewardValuePerSecond = 0.000497624140852152833989406075139
-
-    // totalRewardValuePerYear = totalRewardValuePerSecond * 31,536,000
-    // totalRewardValuePerYear = 0.000497624140852152833989406075139 * 31536000
-    // totalRewardValuePerYear = 15693.074905913491772689909985583504
-
-    // totalStakedValue = 20 * 1.159339
-    // totalStakedValue = 23.18678
-
-    // APR = totalRewardValuePerYear / totalStakedValue
-    // APR = 15693 / 23.18678
-
-    // APR = 676
-    //
-    // --------------------------------
-
-    const haiPrice = parseFloat(liquidationData?.currentRedemptionPrice || '1')
-    const kitePrice = Number(veloPrices?.KITE?.raw || 0)
-    const opPrice = Number(liquidationData?.collateralLiquidationData?.OP?.currentPrice.value || 0)
-
-    const HAI_ADDRESS = import.meta.env.VITE_HAI_ADDRESS
-    const KITE_ADDRESS = import.meta.env.VITE_KITE_ADDRESS
-    const OP_ADDRESS = import.meta.env.VITE_OP_ADDRESS
-
-    const rewardsDataMap = {
-        [HAI_ADDRESS]: haiPrice,
-        [KITE_ADDRESS]: kitePrice,
-        [OP_ADDRESS]: opPrice,
-    }
-    const stakingApyRewardsTotal = stakingApyData.reduce((acc, item) => {
-        const price = rewardsDataMap[item.rpToken as any]
-        const scaledPrice = utils.parseUnits(price.toString(), 18)
-        const amount = item.rpRate.mul(scaledPrice)
-        const nextAcc = acc.add(amount)
-        return nextAcc
-    }, BigNumber.from(0))
-    // const totalStaked = totalStaked
-
-    // Ensure totalStaked is a number
-    const totalStakedNumber = Number(stakingStats.totalStaked) || 0
-
-    let stakingApy = 0
-    if (!isNaN(totalStakedNumber) && totalStakedNumber !== 0 && kitePrice !== 0) {
-        const stakingApyRewardsTotalYearly = stakingApyRewardsTotal.mul(31536000)
-        const scaledKitePrice = utils.parseUnits(kitePrice.toString(), 18)
-        const scaledTotalStaked = utils.parseUnits(totalStakedNumber.toString(), 18)
-        const scaledTotalStakedUSD = scaledTotalStaked.mul(scaledKitePrice)
-        stakingApy = Number(stakingApyRewardsTotalYearly.div(scaledTotalStakedUSD).toString())
-    }
-
-    const stakingSummary = useMemo(() => {
-        if (loading || boostLoading) return null
-
-        const totalStakedValue = Number(totalStaked) / 10 ** 18
-
-        const totalStakedUSD = Number(totalStakedValue) * kitePrice
-        const myStakedUSD = Number(stakingData.stakedBalance) * kitePrice
-        const myShare =
-            Number(totalStakedValue) !== 0 ? (Number(stakingData.stakedBalance) / Number(totalStakedValue)) * 100 : 0
-
-        const effectiveStakedBalance =
-            Number(stakedBalance) - Number(stakingData.pendingWithdrawal ? stakingData.pendingWithdrawal.amount : 0)
-
-        // Calculate simulated values
-        const simulatedStakedBalance =
-            Number(effectiveStakedBalance) + (Number(stakingAmount) || 0) - (Number(unstakingAmount) || 0)
-
-        const simulatedTotalStaked =
-            Number(totalStakedValue) + (Number(stakingAmount) || 0) - (Number(unstakingAmount) || 0)
-
-        const simulatedShare = simulatedTotalStaked !== 0 ? (simulatedStakedBalance / simulatedTotalStaked) * 100 : 0
-
-        return {
-            // Static data / meta
-            kitePrice,
-            simulationMode: Boolean(
-                (stakingAmount || unstakingAmount) && (Number(stakingAmount) > 0 || Number(unstakingAmount) > 0)
-            ),
-
-            // Totals section
-            totalStaked: {
-                title: 'Total Staked KITE',
-                stKiteAmount: Number(totalStakedValue),
-                usdValue: totalStakedUSD,
-                afterTx: Number(totalStakedValue) + (Number(stakingAmount) || 0) - (Number(unstakingAmount) || 0),
-            },
-
-            // My stake section
-            myStaked: {
-                title: 'My Staked KITE',
-                stKiteAmount: Number(effectiveStakedBalance),
-                usdValue: myStakedUSD,
-                afterTx: simulatedStakedBalance,
-            },
-
-            // Additional details
-            myStKiteShare: myShare,
-            myStKiteShareAfterTx: simulatedShare,
-            myStakingAPY: stakingApy, // TODO: Calculate real APY
-            myBoostedVaults: 4, // TODO: Get real boosted vaults count
-
-            // Boost section
-            myNetHaiBoost: netBoostValue, // TODO: Calculate real boost
-            myNetHaiBoostAfterTx: 1.69, // Will be different in simulation mode
-            boostSlider: {
-                min: 1.0,
-                max: 2.0,
-                current: 1.69,
-            },
-        }
-    }, [stakingData, stakingStats, boostLoading, loading, kitePrice, stakingAmount, unstakingAmount])
-
-    const simulateNetBoostValue = useMemo(() => {
-        if (!stakingSummary) return 1
-        return simulateNetBoost(stakingSummary?.myStaked.afterTx, stakingSummary?.totalStaked.afterTx)
-    }, [stakingSummary, stakingSummary?.myStaked.afterTx, stakingSummary?.totalStaked.afterTx])
-
-    if (loading || boostLoading || !stakingSummary) {
-        return (
-            <Container>
-                <Header>
-                    <Flex $width="100%" $justify="center" $align="center">
-                        <Loader size={32} />
-                    </Flex>
-                </Header>
-            </Container>
-        )
-    }
-
+    // Tooltip content for boosted value
     const myBoostedValueToolTip = (
         <div style={{ width: '100%' }}>
             <div style={{ marginBottom: '10px' }}>
@@ -224,15 +58,15 @@ export function Overview({ simulation }: OverviewProps) {
                     haiVELO
                 </Text>
                 <Text $fontSize=".9rem">
-                    {formatNumberWithStyle(Number(haiVeloPositionValue), {
+                    {formatNumberWithStyle(boost.haiVeloPositionValue, {
                         minDecimals: 2,
                         maxDecimals: 2,
                         style: 'currency',
                     })}{' '}
                     +{' '}
-                    {formatNumberWithStyle(Number(hvBoost), {
+                    {formatNumberWithStyle(boost.haiVeloBoost, {
                         minDecimals: 0,
-                        maxDecimals: 1,
+                        maxDecimals: 2,
                     })}
                     x Boost
                 </Text>
@@ -242,15 +76,15 @@ export function Overview({ simulation }: OverviewProps) {
                     HAI/WETH LP
                 </Text>
                 <Text $fontSize=".9rem">
-                    {formatNumberWithStyle(userLPPositionValue, {
+                    {formatNumberWithStyle(boost.userLPPositionValue, {
                         minDecimals: 2,
                         maxDecimals: 2,
                         style: 'currency',
                     })}{' '}
                     +{' '}
-                    {formatNumberWithStyle(Number(lpBoostValue), {
+                    {formatNumberWithStyle(boost.lpBoost, {
                         minDecimals: 0,
-                        maxDecimals: 1,
+                        maxDecimals: 2,
                     })}
                     x Boost
                 </Text>
@@ -263,12 +97,22 @@ export function Overview({ simulation }: OverviewProps) {
             <Header>
                 <Flex $justify="flex-start" $align="center" $gap={12}>
                     <Text $fontWeight={700}>Staking Overview</Text>
-                    {stakingSummary.simulationMode && (
+                    {simValues.simulationMode && (
                         <StatusLabel status={Status.CUSTOM} background="gradient">
                             <CenteredFlex $gap={8}>
                                 <Swirl size={14} />
                                 <Text $fontSize="0.67rem" $fontWeight={700}>
                                     Simulation
+                                </Text>
+                            </CenteredFlex>
+                        </StatusLabel>
+                    )}
+                    {isOptimistic && (
+                        <StatusLabel status={Status.POSITIVE} >
+                            <CenteredFlex $gap={8}>
+                                <Loader size={16} hideSpinner={false} color="#00AC11"></Loader>
+                                <Text $fontSize="0.67rem" $fontWeight={700}>
+                                    Confirming Transaction
                                 </Text>
                             </CenteredFlex>
                         </StatusLabel>
@@ -279,7 +123,7 @@ export function Overview({ simulation }: OverviewProps) {
                     <Text>
                         KITE: &nbsp;
                         <strong>
-                            {formatNumberWithStyle(stakingSummary.kitePrice, {
+                            {formatNumberWithStyle(kitePrice, {
                                 minDecimals: 2,
                                 maxDecimals: 2,
                                 style: 'currency',
@@ -290,22 +134,16 @@ export function Overview({ simulation }: OverviewProps) {
             </Header>
             <Inner $borderOpacity={0.2}>
                 <OverviewStat
-                    value={formatNumberWithStyle(stakingSummary.totalStaked.stKiteAmount, {
-                        minDecimals: 0,
-                        maxDecimals: 2,
-                    })}
+                    loading={loading}
+                    value={totalStaked.amountFormatted}
                     token="KITE"
                     tokenLabel={'stKITE'}
                     simulatedToken="stKITE"
                     label="Total Staked KITE"
-                    convertedValue={formatNumberWithStyle(stakingSummary.totalStaked.usdValue, {
-                        minDecimals: 0,
-                        maxDecimals: 2,
-                        style: 'currency',
-                    })}
+                    convertedValue={totalStaked.usdValueFormatted}
                     simulatedValue={
-                        stakingSummary.totalStaked.afterTx !== stakingSummary.totalStaked.stKiteAmount
-                            ? formatNumberWithStyle(stakingSummary.totalStaked.afterTx, {
+                        simValues.totalStakedAfterTx !== totalStaked.amount
+                            ? formatNumberWithStyle(simValues.totalStakedAfterTx, {
                                   minDecimals: 0,
                                   maxDecimals: 2,
                               })
@@ -314,22 +152,16 @@ export function Overview({ simulation }: OverviewProps) {
                     labelOnTop
                 />
                 <OverviewStat
-                    value={formatNumberWithStyle(stakingSummary.myStaked.stKiteAmount, {
-                        minDecimals: 0,
-                        maxDecimals: 2,
-                    })}
+                    loading={loading}
+                    value={myStaked.effectiveAmountFormatted}
                     token="KITE"
                     tokenLabel={'stKITE'}
                     simulatedToken="stKITE"
                     label="My Staked KITE"
-                    convertedValue={formatNumberWithStyle(stakingSummary.myStaked.usdValue, {
-                        minDecimals: 0,
-                        maxDecimals: 2,
-                        style: 'currency',
-                    })}
+                    convertedValue={myStaked.usdValueFormatted}
                     simulatedValue={
-                        stakingSummary.myStaked.afterTx !== stakingSummary.myStaked.stKiteAmount
-                            ? formatNumberWithStyle(stakingSummary.myStaked.afterTx, {
+                        simValues.myStakedAfterTx !== myStaked.effectiveAmount
+                            ? formatNumberWithStyle(simValues.myStakedAfterTx, {
                                   minDecimals: 0,
                                   maxDecimals: 2,
                               })
@@ -338,14 +170,15 @@ export function Overview({ simulation }: OverviewProps) {
                     labelOnTop
                 />
                 <OverviewStat
-                    value={`${formatNumberWithStyle(stakingSummary.myStKiteShare, {
+                    loading={loading}
+                    value={`${formatNumberWithStyle(myShare.value, {
                         minDecimals: 2,
                         maxDecimals: 2,
                     })}%`}
                     label="My stKITE Share"
                     simulatedValue={
-                        stakingSummary.myStKiteShareAfterTx !== stakingSummary.myStKiteShare
-                            ? `${formatNumberWithStyle(stakingSummary.myStKiteShareAfterTx, {
+                        simValues.myShareAfterTx !== myShare.value
+                            ? `${formatNumberWithStyle(simValues.myShareAfterTx, {
                                   minDecimals: 0,
                                   maxDecimals: 2,
                               })}%`
@@ -354,34 +187,27 @@ export function Overview({ simulation }: OverviewProps) {
                 />
                 <OverviewStat
                     isComingSoon={false}
-                    value={`${formatNumberWithStyle(stakingApy, {
-                        minDecimals: 0,
-                        maxDecimals: 2,
-                    })}%`}
+                    loading={loading}
+                    value={stakingApr.formatted}
                     label="Staking APR"
                     tooltip={`The base staking APR is determined by protocol fees accrued in system surplus and the stream rate set by the DAO.`}
                 />
 
                 <OverviewStat
                     isComingSoon={false}
-                    value={formatNumberWithStyle(userTotalValue, {
-                        minDecimals: 0,
-                        maxDecimals: 2,
-                        style: 'currency',
-                    })}
+                    loading={loading}
+                    value={boost.boostedValueFormatted}
                     label="My Boosted Value"
                     tooltip={myBoostedValueToolTip as any}
                 />
                 <OverviewProgressStat
+                    loading={loading}
                     isComingSoon={false}
-                    value={`${formatNumberWithStyle(netBoostValue, {
-                        minDecimals: 0,
-                        maxDecimals: 2,
-                    })}`}
+                    value={boost.netBoostValue}
                     label="My Net Boost:"
                     simulatedValue={
-                        netBoostValue !== simulateNetBoostValue
-                            ? `${formatNumberWithStyle(simulateNetBoostValue, {
+                        boost.netBoostValue !== simValues.netBoostAfterTx
+                            ? `${formatNumberWithStyle(simValues.netBoostAfterTx, {
                                   minDecimals: 2,
                                   maxDecimals: 2,
                               })}x`
@@ -390,20 +216,20 @@ export function Overview({ simulation }: OverviewProps) {
                     alert={{ value: 'BOOST', status: Status.POSITIVE }}
                     fullWidth
                     progress={{
-                        progress: netBoostValue - 1,
-                        label: `${formatNumberWithStyle(netBoostValue, {
+                        progress: boost.netBoostValue - 1,
+                        label: `${formatNumberWithStyle(boost.netBoostValue, {
                             minDecimals: 2,
                             maxDecimals: 2,
-                        })}x`
+                        })}x`,
                     }}
                     simulatedProgress={
-                        netBoostValue !== simulateNetBoostValue
+                        boost.netBoostValue !== simValues.netBoostAfterTx
                             ? {
-                                  progress: simulateNetBoostValue - 1,
-                                  label: `${formatNumberWithStyle(simulateNetBoostValue, {
+                                  progress: simValues.netBoostAfterTx - 1,
+                                  label: `${formatNumberWithStyle(simValues.netBoostAfterTx, {
                                       minDecimals: 2,
                                       maxDecimals: 2,
-                                  })}x`
+                                  })}x`,
                               }
                             : undefined
                     }

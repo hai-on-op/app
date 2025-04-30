@@ -20,6 +20,7 @@ import { Loader } from '~/components/Loader'
 import { AvailabilityBadge } from '~/components/AvailabilityBadge'
 import { stakingModel } from '~/model/stakingModel'
 import { formatTimeFromSeconds, secondsToDays } from '~/utils/time'
+import { useAccount } from 'wagmi'
 
 type StakingSimulation = {
     stakingAmount: string
@@ -37,6 +38,9 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
     const [haiBalance, kiteBalance] = useBalances(['HAI', 'KITE'])
     const { stakingData, cooldownPeriod, loading: stakingDataLoading, refetchAll } = useStakingData()
     const signer = useEthersSigner()
+    const { address } = useAccount()
+
+    const { stakingModel: stakingState } = useStoreState((state) => state)
 
     const availableKite = formatNumberWithStyle(kiteBalance.raw, {
         maxDecimals: 0,
@@ -46,15 +50,18 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
         if (stakingDataLoading) return null
         return formatNumberWithStyle(stakingData.stakedBalance, {
             maxDecimals: 2,
-            minDecimals: 2,
+            minDecimals: 0,
         })
     }, [stakingData.stakedBalance, stakingDataLoading])
 
     const pendingWithdrawal = useMemo(() => {
-        if (!stakingData.pendingWithdrawal) return null
+        if (!address) return null
 
-        const remainingTime =
-            Number(stakingData.pendingWithdrawal.timestamp) + Number(cooldownPeriod) - Date.now() / 1000
+        const pW = stakingState.pendingWithdrawals[address.toLowerCase()]
+
+        if (!pW) return null
+
+        const remainingTime = Number(pW.timestamp) + Number(cooldownPeriod) - Date.now() / 1000
 
         let availableIn
         if (remainingTime <= 0) {
@@ -70,13 +77,13 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
         }
 
         return {
-            amount: formatNumberWithStyle(stakingData.pendingWithdrawal.amount, {
+            amount: formatNumberWithStyle(pW.amount, {
                 maxDecimals: 2,
                 minDecimals: 2,
             }),
             availableIn,
         }
-    }, [stakingData.pendingWithdrawal, cooldownPeriod])
+    }, [stakingData.pendingWithdrawal, cooldownPeriod, stakingState, address])
 
     const isUnStaking = Number(unstakingAmount) > 0
     const isStaking = Number(stakingAmount) > 0
@@ -116,7 +123,7 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
         })
     }, [withdrawActive, toggleModal])
 
-    if (stakingDataLoading) {
+    /*if (stakingDataLoading) {
         return (
             <Container>
                 <Header>
@@ -126,7 +133,7 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                 </Header>
             </Container>
         )
-    }
+    }*/
 
     return (
         <>
@@ -144,6 +151,7 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                     }
                     stakedAmount={stakingData.stakedBalance}
                     onClose={() => {
+                        clearInputs()
                         setWithdrawActive(false)
                         toggleModal({
                             modal: 'withdraw',
@@ -317,7 +325,9 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                             Number(stakingAmount) > Number(kiteBalance.raw) ||
                             Number(unstakingAmount) > Number(stakingData.stakedBalance)
                         }
-                        onClick={() => setReviewActive(true)}
+                        onClick={() => {
+                            setReviewActive(true)
+                        }}
                     >
                         {isUnStaking ? 'Unstake' : 'Stake'}
                     </HaiButton>
