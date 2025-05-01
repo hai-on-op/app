@@ -60,8 +60,6 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
         userCurrentPositionsMap,
     } = useStoreState((state) => state.lpDataModel)
 
-    console.log('user LP postion value', userLPPositionValue)
-
     // Get staking data from staking model
     const { usersStakingData, totalStaked } = useStoreState((state) => state.stakingModel)
 
