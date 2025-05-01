@@ -266,8 +266,8 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
                                   style: 'percent',
                                   suffixed: true,
                               })
-                            : ''
-                        : '--%'}{' '}
+                            : '--%'
+                        : ''}{' '}
                     APR
                 </StatusLabel>
                 <Flex $justify="flex-end" $align="center" $gap={12} $fontSize="0.8em">
@@ -411,7 +411,7 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
                                       })}`
                                     : ''
                             }
-                            tooltip={'The amount of  haiVELO you have in compare to the total HAI VELO supply'}
+                            tooltip={'The amount of  haiVELO you have in compare to the total haiVELO supply'}
                         />
                         <OverviewStat
                             value={`${formatNumberWithStyle(Number(userHaiVeloBoostData.myBoost), {
@@ -432,7 +432,7 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
                                       )}x`
                                     : ''
                             }
-                            tooltip={'The amount of Boost you get for rewards over your HAI VELO position'}
+                            tooltip={'The amount of Boost you get for rewards over your haiVELO position'}
                         />
                     </>
                 ) : null}
