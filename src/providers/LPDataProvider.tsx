@@ -59,6 +59,8 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
         userTotalLiquidityMap,
     } = useStoreState((state) => state.lpDataModel)
 
+    console.log('user LP postion value', userLPPositionValue)
+
     // Get staking data from staking model
     const { usersStakingData, totalStaked } = useStoreState((state) => state.stakingModel)
 
@@ -80,7 +82,7 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
         if (account) {
             updateUserData(account)
         }
-    }, [account, setAccount, updateUserData])
+    }, [account, setAccount, allPositions, updateUserData, pool, userPositionValuesMap, userTotalLiquidityMap])
 
     // Calculate LP boosts whenever staking data or LP data changes
     useEffect(() => {

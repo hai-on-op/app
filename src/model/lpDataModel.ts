@@ -367,6 +367,8 @@ export const lpDataModel: LPDataModel = {
             await storeActions.lpDataModel.calculateAllCurrentPositions()
         }
 
+        // console.log("we are here 2?", account, allPositions)
+
         // Update the current user's data for backward compatibility
         const { allPositions: updatedAllPositions, userCurrentPositionsMap } = getState()
         if (updatedAllPositions) {
