@@ -539,7 +539,7 @@ export const stakingModel: StakingModel = {
         state.transactionState = payload
     }),
 
-    cooldownPeriod: '1814400', // Default 21 days in seconds
+    cooldownPeriod: '1209600', // Default 21 days in seconds
     setCooldownPeriod: action((state, payload) => {
         state.cooldownPeriod = payload
     }),
