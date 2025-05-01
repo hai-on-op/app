@@ -43,6 +43,8 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
     const { address: account } = useAccount()
 
     // Get model state and actions
+    const lpDataState = useStoreState((state) => state.lpDataModel)
+
     const {
         pool,
         userPositions,
@@ -58,7 +60,7 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
         userKiteRatioMap,
         userTotalLiquidityMap,
         userCurrentPositionsMap,
-    } = useStoreState((state) => state.lpDataModel)
+    } = lpDataState
 
     // Get staking data from staking model
     const { usersStakingData, totalStaked } = useStoreState((state) => state.stakingModel)
@@ -80,6 +82,14 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
         // If the account changes, update user-specific data
         if (account) {
             updateUserData(account)
+
+            setTimeout(() => {
+                updateUserData(account)
+            }, 5000)
+
+            setTimeout(() => {
+                updateUserData(account)
+            }, 10000)
         }
     }, [
         account,
