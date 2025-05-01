@@ -82,14 +82,6 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
         // If the account changes, update user-specific data
         if (account) {
             updateUserData(account)
-
-            setTimeout(() => {
-                updateUserData(account)
-            }, 5000)
-
-            setTimeout(() => {
-                updateUserData(account)
-            }, 10000)
         }
     }, [
         account,
