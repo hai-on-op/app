@@ -198,15 +198,15 @@ export const stakingModel: StakingModel = {
 
         // Apply changes immediately to state
         state.totalStaked = newTotalStaked
-        
+
         // Initialize user data if it doesn't exist
         if (!state.usersStakingData[lowerCaseAddress]) {
             state.usersStakingData[lowerCaseAddress] = {
                 id: lowerCaseAddress,
-                stakedBalance: '0'
+                stakedBalance: '0',
             }
         }
-        
+
         state.usersStakingData[lowerCaseAddress].stakedBalance = newUserBalance
     }),
 
@@ -231,13 +231,13 @@ export const stakingModel: StakingModel = {
         if (!state.usersStakingData[lowerCaseAddress]) {
             state.usersStakingData[lowerCaseAddress] = {
                 id: lowerCaseAddress,
-                stakedBalance: '0'
+                stakedBalance: '0',
             }
         }
 
         // Update pending withdrawals
-        const currentPendingAmount = state.pendingWithdrawals[lowerCaseAddress] 
-            ? state.pendingWithdrawals[lowerCaseAddress]!.amount 
+        const currentPendingAmount = state.pendingWithdrawals[lowerCaseAddress]
+            ? state.pendingWithdrawals[lowerCaseAddress]!.amount
             : 0
 
         state.pendingWithdrawals = {
@@ -264,7 +264,7 @@ export const stakingModel: StakingModel = {
         if (!state.usersStakingData[lowerCaseAddress]) {
             state.usersStakingData[lowerCaseAddress] = {
                 id: lowerCaseAddress,
-                stakedBalance: '0'
+                stakedBalance: '0',
             }
         }
 
@@ -296,7 +296,7 @@ export const stakingModel: StakingModel = {
         if (!state.usersStakingData[lowerCaseAddress]) {
             state.usersStakingData[lowerCaseAddress] = {
                 id: lowerCaseAddress,
-                stakedBalance: '0'
+                stakedBalance: '0',
             }
         }
 
@@ -606,14 +606,15 @@ export const stakingModel: StakingModel = {
                 const poolData = await stakingManager.rewardTypes(i)
                 const { isActive } = poolData
                 if (isActive) {
-                    const rpContract = new Contract(poolData.rewardPool, RewardPoolABI, signer)
-                    const rpRate = await rpContract.rewardRate()
-                    const rpTotalStaked = await rpContract.totalStaked()
-                    const ratePerStakedToken = rpRate.div(stakingManagerTotalStaked)
+                    //const rpContract = new Contract(poolData.rewardPool, RewardPoolABI, signer)
+                    //const rpRate = await rpContract.rewardRate()
+                    //const rpTotalStaked = await rpContract.totalStaked()
+                    //const ratePerStakedToken = rpRate.div(stakingManagerTotalStaked)
                     activePools.push({ ...poolData, index: i })
                     activePoolIndexes.push(i)
                 }
             }
+
             const rewardPools = await stakingManager.callStatic.earned(address)
             const aggregatedRewards: Record<string, ethers.BigNumber> = {}
             for (let i = 0; i < activePoolIndexes.length; i++) {
@@ -636,6 +637,7 @@ export const stakingModel: StakingModel = {
                     tokenAddress: tokenAddress,
                 }
             })
+
             actions.setUserRewards(finalRewardsState)
         })
     }),
