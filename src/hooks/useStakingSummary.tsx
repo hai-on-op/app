@@ -161,6 +161,7 @@ export function useStakingSummary(): StakingSummaryData {
             formatted: `${formatNumberWithStyle(aprValue, {
                 minDecimals: 0,
                 maxDecimals: 2,
+                scalingFactor: 100,
             })}%`,
         }
     }, [stakingApyRewardsTotal, stakingStats.totalStaked, kitePrice])
