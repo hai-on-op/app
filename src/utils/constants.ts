@@ -12,6 +12,7 @@ export const {
     VITE_FLAGSMITH_API_KEY,
 } = import.meta.env
 
+
 export enum ChainId {
     MAINNET = 10,
     OPTIMISM_GOERLI = 420,
