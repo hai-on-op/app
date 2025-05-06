@@ -1,5 +1,5 @@
 import { type Action, type Thunk, action, thunk } from 'easy-peasy'
-import { JsonRpcSigner, TransactionResponse } from '@ethersproject/providers'
+import { JsonRpcSigner, TransactionResponse, Provider } from '@ethersproject/providers'
 import { BigNumber, Contract } from 'ethers'
 import { parseEther } from 'ethers/lib/utils'
 import * as ethers from 'ethers'
@@ -36,7 +36,7 @@ export interface StakingModel {
     stakedAmount: string
     totalStaked: string
     setTotalStaked: Action<StakingModel, string>
-    fetchTotalStaked: Thunk<StakingModel, { signer: JsonRpcSigner }, any, StoreModel>
+    fetchTotalStaked: Thunk<StakingModel, { signer?: JsonRpcSigner; provider?: Provider }, any, StoreModel>
 
     // Add stakedBalance to track user's staked amount
     stakedBalance: string
@@ -99,7 +99,7 @@ export interface StakingModel {
 
     cooldownPeriod: string
     setCooldownPeriod: Action<StakingModel, string>
-    fetchCooldownPeriod: Thunk<StakingModel, { signer: JsonRpcSigner }, any, StoreModel>
+    fetchCooldownPeriod: Thunk<StakingModel, { signer?: JsonRpcSigner; provider?: Provider }, any, StoreModel>
 
     userRewards: Array<{
         id: number
@@ -111,7 +111,7 @@ export interface StakingModel {
 
     stakingApyData: Array<{ id: number; rpRate: BigNumber; rpToken: string }>
     setStakingApyData: Action<StakingModel, Array<{ id: number; rpRate: BigNumber; rpToken: string }>>
-    fetchStakingApyData: Thunk<StakingModel, { signer: JsonRpcSigner }, any, StoreModel>
+    fetchStakingApyData: Thunk<StakingModel, { signer?: JsonRpcSigner; provider?: Provider }, any, StoreModel>
 }
 
 // Helper function for retrying async operations
@@ -544,9 +544,15 @@ export const stakingModel: StakingModel = {
         state.cooldownPeriod = payload
     }),
 
-    fetchCooldownPeriod: thunk(async (actions, { signer }) => {
+    fetchCooldownPeriod: thunk(async (actions, { signer, provider }) => {
         await retryAsync(async () => {
-            const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
+            // Use signer if available, otherwise use provider
+            const providerOrSigner = signer || provider
+            if (!providerOrSigner) {
+                throw new Error('Neither signer nor provider available')
+            }
+            
+            const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, providerOrSigner)
             const params = await stakingManager._params()
 
             actions.setCooldownPeriod(params.toString())
@@ -561,17 +567,29 @@ export const stakingModel: StakingModel = {
     setStakingApyData: action((state, payload) => {
         state.stakingApyData = payload
     }),
-    fetchTotalStaked: thunk(async (actions, { signer }) => {
+    fetchTotalStaked: thunk(async (actions, { signer, provider }) => {
         await retryAsync(async () => {
-            const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
+            // Use signer if available, otherwise use provider
+            const providerOrSigner = signer || provider
+            if (!providerOrSigner) {
+                throw new Error('Neither signer nor provider available')
+            }
+            
+            const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, providerOrSigner)
             const totalStaked = await stakingManager.totalStaked()
             actions.setTotalStaked(totalStaked.toString())
         })
     }),
-    fetchStakingApyData: thunk(async (actions, { signer }) => {
+    fetchStakingApyData: thunk(async (actions, { signer, provider }) => {
         await retryAsync(async () => {
+            // Use signer if available, otherwise use provider
+            const providerOrSigner = signer || provider
+            if (!providerOrSigner) {
+                throw new Error('Neither signer nor provider available')
+            }
+            
             const apyData = []
-            const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
+            const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, providerOrSigner)
             const stakingManagerTotalStaked = await stakingManager.totalStaked()
             const rewardsCountBigNum = await stakingManager.rewards()
             const rewardsCount = rewardsCountBigNum.toNumber()
@@ -579,7 +597,7 @@ export const stakingModel: StakingModel = {
                 const poolData = await stakingManager.rewardTypes(i)
                 const { isActive } = poolData
                 if (isActive) {
-                    const rpContract = new Contract(poolData.rewardPool, RewardPoolABI, signer)
+                    const rpContract = new Contract(poolData.rewardPool, RewardPoolABI, providerOrSigner)
                     const rpRate = await rpContract.rewardRate()
                     apyData.push({
                         id: i,

@@ -108,7 +108,7 @@ export function Overview({ simulation }: OverviewProps) {
                         </StatusLabel>
                     )}
                     {isOptimistic && (
-                        <StatusLabel status={Status.POSITIVE} >
+                        <StatusLabel status={Status.POSITIVE}>
                             <CenteredFlex $gap={8}>
                                 <Loader size={16} hideSpinner={false} color="#00AC11"></Loader>
                                 <Text $fontSize="0.67rem" $fontWeight={700}>
