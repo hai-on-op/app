@@ -21,6 +21,10 @@ type ManageVaultProps = {
 export function ManageVault({ headerContent }: ManageVaultProps) {
     const { action, vault, updateForm } = useVault()
 
+    const isHAIVELO =
+        vault?.collateralName === 'HAIVELO' ||
+        new URLSearchParams(window.location.search).get('collateral') === 'HAIVELO'
+
     const { vault: vaultWithActivity } = useVaultById(vault?.id || '')
 
     const isUpToExtraSmall = useMediaQuery('upToExtraSmall')
@@ -41,7 +45,7 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
                 <Header $removePadding={action === VaultAction.CREATE}>
                     {headerContent}
                     <CenteredFlex $gap={12}>
-                        <RewardsTokenArray tokens={['OP', 'KITE']} hideLabel={isUpToExtraSmall} />
+                        {isHAIVELO ? <RewardsTokenArray tokens={['HAI']} hideLabel={isUpToExtraSmall} /> : null}
                         <ManageDropdown $width={isUpToSmall ? '100%' : undefined} />
                     </CenteredFlex>
                 </Header>
@@ -50,7 +54,7 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
             {tab === 0 || action === VaultAction.CREATE ? (
                 <ProxyPrompt>
                     <BodyGrid>
-                        <Overview />
+                        <Overview isHAIVELO={isHAIVELO} />
                         <VaultActions />
                     </BodyGrid>
                 </ProxyPrompt>

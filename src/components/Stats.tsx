@@ -13,6 +13,7 @@ export type StatProps = {
     tooltip?: ReactChildren
     button?: ReactChildren
     fullWidth?: boolean
+    badge?: string
 }
 
 type StatsProps = FlexProps & {
@@ -39,13 +40,16 @@ type StatElProps = FlexProps & {
     unbordered?: boolean
 }
 export function Stat({ stat, unbordered, ...props }: StatElProps) {
-    const { header, headerStatus, label, tooltip, button, fullWidth } = stat
+    const { header, headerStatus, label, tooltip, button, fullWidth, badge } = stat
 
     return (
         <StatContainer $unbordered={unbordered} $fullWidth={fullWidth || !!button} {...props}>
             <Flex $width="100%" $column $justify="flex-end" $align="flex-start" $gap={12} $fontSize="0.7rem">
                 <Flex $width="100%" $justify="flex-start" $align="center" $gap={12}>
-                    {typeof header === 'string' ? <StatHeader>{header}</StatHeader> : header}
+                    <BadgeWrapper>
+                        {typeof header === 'string' ? <StatHeader>{header}</StatHeader> : header}
+                        {badge && <Badge>{badge}</Badge>}
+                    </BadgeWrapper>
                     {headerStatus}
                 </Flex>
                 <Flex $justify="flex-start" $align="center" $gap={8}>
@@ -144,5 +148,32 @@ const StatHeader = styled(Text).attrs((props) => ({
     $fontWeight: 700,
     ...props,
 }))``
+
+const BadgeWrapper = styled.div`
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+`
+
+const Badge = styled.div`
+    margin-left: 8px;
+    width: 38.84px;
+    height: 18.77px;
+    background: #ffffff;
+    backdrop-filter: blur(50px);
+    border-radius: 23.5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-style: normal;
+    font-weight: 700;
+    font-size: 7px;
+    line-height: 8px;
+    text-align: center;
+    color: #00ac11;
+    box-sizing: border-box;
+`
 
 Stat.Header = StatHeader

@@ -8,6 +8,7 @@ import { StatusLabel } from '~/components/StatusLabel'
 import { TokenArray } from '~/components/TokenArray'
 import { Tooltip } from '~/components/Tooltip'
 import { ProgressIndicator, ProgressIndicatorProps } from '~/components/ProgressIndicator'
+import { HaiButton, HaiButtonProps } from '~/styles/Button'
 
 type OverviewStatProps = {
     token?: TokenKey
@@ -23,6 +24,13 @@ type OverviewStatProps = {
     }
     simulatedValue?: string
     fullWidth?: boolean
+    button?: {
+        text: string
+        onClick: () => void
+        variant?: HaiButtonProps['$variant']
+        disabled?: boolean
+        size?: HaiButtonProps['$size']
+    }
 }
 export function OverviewStat({
     token,
@@ -35,6 +43,7 @@ export function OverviewStat({
     alert,
     simulatedValue,
     fullWidth = false,
+    button,
 }: OverviewStatProps) {
     return (
         <StatContainer $fullWidth={fullWidth}>
@@ -67,7 +76,7 @@ export function OverviewStat({
                     {!!tooltip && <Tooltip width="200px">{tooltip}</Tooltip>}
                 </Flex>
             )}
-            <StatusContainer hidden={!simulatedValue && !alert}>
+            <ActionContainer hidden={!simulatedValue && !alert && !button}>
                 {!!alert && (
                     <StatusLabel status={alert.status} size={0.8}>
                         {alert.value || alert.status}
@@ -83,7 +92,17 @@ export function OverviewStat({
                         </Text>
                     </StatusLabel>
                 )}
-            </StatusContainer>
+                {!!button && (
+                    <HaiButton 
+                        onClick={button.onClick} 
+                        disabled={button.disabled}
+                        $variant={button.variant}
+                        $size={button.size}
+                    >
+                        {button.text}
+                    </HaiButton>
+                )}
+            </ActionContainer>
         </StatContainer>
     )
 }
@@ -96,6 +115,7 @@ export function OverviewProgressStat({
     alert,
     simulatedValue,
     fullWidth = false,
+    button,
     ...props
 }: OverviewProgressStatProps) {
     const isUpToSmall = useMediaQuery('upToSmall')
@@ -110,7 +130,7 @@ export function OverviewProgressStat({
                     </Text>
                     {!!tooltip && <Tooltip width="200px">{tooltip}</Tooltip>}
                 </CenteredFlex>
-                <StatusContainer hidden={!(simulatedValue && !isUpToSmall) && !alert}>
+                <ActionContainer hidden={!(simulatedValue && !isUpToSmall) && !alert && !button}>
                     {!!alert && (
                         <StatusLabel status={alert.status} size={0.8}>
                             {alert.value || alert.status}
@@ -126,7 +146,17 @@ export function OverviewProgressStat({
                             </Text>
                         </StatusLabel>
                     )}
-                </StatusContainer>
+                    {!!button && (
+                        <HaiButton 
+                            onClick={button.onClick} 
+                            disabled={button.disabled}
+                            $variant={button.variant}
+                            $size={button.size}
+                        >
+                            {button.text}
+                        </HaiButton>
+                    )}
+                </ActionContainer>
             </Flex>
             <ProgressIndicator {...props} />
             {simulatedValue && isUpToSmall && (
@@ -199,7 +229,7 @@ const ValueContainer = styled(Flex).attrs((props) => ({
     `} */
 `
 
-const StatusContainer = styled(Flex).attrs((props) => ({
+const ActionContainer = styled(Flex).attrs((props) => ({
     $justify: 'center',
     $align: 'center',
     $gap: 12,

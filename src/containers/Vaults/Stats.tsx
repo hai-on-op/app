@@ -85,7 +85,7 @@ export function BorrowStats() {
                 label: 'My Net Stability Fee',
                 tooltip: 'Weighted average stability fee of My Total Debt',
             },
-            {
+            /*{
                 header: formatNumberWithStyle(value ? apy / value : 0, {
                     maxDecimals: 1,
                     scalingFactor: 100,
@@ -114,9 +114,9 @@ export function BorrowStats() {
                     //     Claim
                     // </HaiButton>
                 ),
-            },
+            },*/
         ]
     }, [list, liquidationData, value, apy, popupsActions])
 
-    return <Stats stats={stats} columns="repeat(4, 1fr) 1.6fr" fun />
+    return <Stats stats={stats} /*columns="repeat(4, 1fr) 1.6fr"*/ fun />
 }
