@@ -150,10 +150,12 @@ export function useStakingSummary(): StakingSummaryData {
 
         if (!isNaN(totalStakedNumber) && totalStakedNumber !== 0 && kitePrice !== 0) {
             const stakingApyRewardsTotalYearly = stakingApyRewardsTotal.mul(31536000)
+
             const scaledKitePrice = utils.parseUnits(kitePrice.toString(), 18)
             const scaledTotalStaked = utils.parseUnits(totalStakedNumber.toString(), 18)
             const scaledTotalStakedUSD = scaledTotalStaked.mul(scaledKitePrice)
-            aprValue = Number(stakingApyRewardsTotalYearly.div(scaledTotalStakedUSD).toString())
+
+            aprValue = Number(stakingApyRewardsTotalYearly.mul(10000).div(scaledTotalStakedUSD).toString())
         }
 
         return {
@@ -161,6 +163,7 @@ export function useStakingSummary(): StakingSummaryData {
             formatted: `${formatNumberWithStyle(aprValue, {
                 minDecimals: 0,
                 maxDecimals: 2,
+                scalingFactor: 1 / 100,
             })}%`,
         }
     }, [stakingApyRewardsTotal, stakingStats.totalStaked, kitePrice])

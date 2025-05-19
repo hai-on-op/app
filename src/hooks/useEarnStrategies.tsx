@@ -60,12 +60,17 @@ export function useEarnStrategies() {
     const { userCollateralMapping } = useHaiVeloData()
     const isHaiVeloDataLoaded = !!userCollateralMapping
 
-    const HAI_WETH_DAILY_REWARDS = 100
-
-    const HAI_VELO_DAILY_REWARDS = 200
+    const haiPrice = parseFloat(liquidationData?.currentRedemptionPrice || '1')
 
     const { address } = useAccount()
     const { prices: veloPrices, loading: veloPricesLoading } = useVelodromePrices()
+
+    const HAI_WETH_DAILY_REWARDS = 100
+
+    const HAI_VELO_DAILY_REWARDS = useMemo(() => {
+        if (!veloPrices || !veloPrices.VELO.raw || !veloPrices.HAI.raw) return 780
+        return (35 * parseFloat(veloPrices.HAI.raw)) / parseFloat(veloPrices.VELO.raw)
+    }, [veloPrices])
 
     const { data, loading, error } = useQuery<{ collateralTypes: QueryCollateralType[] }>(ALL_COLLATERAL_TYPES_QUERY)
 
@@ -357,7 +362,7 @@ export function useEarnStrategies() {
             userLPBoostMap,
             userPositionValuesMap,
         }
-    }, [userCollateralMapping, userLPBoostMap, address, usersStakingData, totalStaked])
+    }, [userCollateralMapping, userLPBoostMap, address, usersStakingData, totalStaked, HAI_VELO_DAILY_REWARDS])
 
     const specialStrategies = useMemo(() => {
         if (!prices) return []

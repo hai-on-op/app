@@ -426,7 +426,6 @@ function EarnEmissionTooltip({ rewards, earnPlatform, earnLink, strategyType }: 
                     Velodrome propotional to their amount of haiVELO deposited.
                     <br />
                     <br />
-                    Current APY (40% - 50%) is a rough estimate based on the current Velodrome voting rewards.
                 </Text>
             </Flex>
         )

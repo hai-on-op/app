@@ -212,3 +212,50 @@ export function calculatePositionValue(
         return 0
     }
 }
+
+/**
+ * Creates a Position instance from pool data and position data
+ */
+export function createPositionFromPoolData(
+    poolData: {
+        token0: { id: string; decimals: number }
+        token1: { id: string; decimals: number }
+        tick: string
+        sqrtPrice: string
+        liquidity: string
+    },
+    positionData: {
+        liquidity: string
+        tickLower: { tickIdx: string }
+        tickUpper: { tickIdx: string }
+    }
+): Position {
+    // Create tokens
+    const token0 = new Token(NETWORK_ID, poolData.token0.id, Number(poolData.token0.decimals))
+    const token1 = new Token(NETWORK_ID, poolData.token1.id, Number(poolData.token1.decimals))
+
+    // Convert values to JSBI
+    const jsbiLiquidity = JSBI.BigInt(positionData.liquidity)
+    const sqrtPriceX96JSBI = JSBI.BigInt(poolData.sqrtPrice)
+    const currentTick = parseInt(poolData.tick)
+    const tickLower = parseInt(positionData.tickLower.tickIdx)
+    const tickUpper = parseInt(positionData.tickUpper.tickIdx)
+
+    // Create pool instance
+    const pool = new Pool(
+        token0,
+        token1,
+        FeeAmount.MEDIUM,
+        sqrtPriceX96JSBI,
+        JSBI.BigInt(poolData.liquidity), // Liquidity - not important for our calculation
+        currentTick
+    )
+
+    // Create and return position instance
+    return new Position({
+        pool,
+        tickLower,
+        tickUpper,
+        liquidity: jsbiLiquidity,
+    })
+}

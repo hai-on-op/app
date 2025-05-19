@@ -4,7 +4,7 @@ import { Position, FeeAmount, Pool } from '@uniswap/v3-sdk'
 import { Token } from '@uniswap/sdk-core'
 import JSBI from 'jsbi'
 import type { PoolData, UserPosition, CurrentUserPosition } from '~/model/lpDataModel'
-import { calculatePositionValue } from '~/utils/uniswapV3'
+import { calculatePositionValue, createPositionFromPoolData } from '~/utils/uniswapV3'
 
 // Pool ID from the subgraph
 export const POOL_ID = '0x146b020399769339509c98b7b353d19130c150ec'
@@ -30,10 +30,12 @@ const POOL_DATA_QUERY = gql`
             token0 {
                 symbol
                 decimals
+                id
             }
             token1 {
                 symbol
                 decimals
+                id
             }
             token0Price
             token1Price
@@ -46,7 +48,7 @@ const POOL_DATA_QUERY = gql`
 // Query for user positions
 const USER_POSITIONS_QUERY = gql`
     query GetUserPositions($poolId: String!, $owner: String!) {
-        positions(where: { pool: $poolId, owner: $owner }) {
+        positions(first: 1000, where: { pool: $poolId, owner: $owner }) {
             id
             liquidity
             depositedToken0
@@ -217,26 +219,29 @@ export async function fetchPoolData(): Promise<PoolData | null> {
  * Fetches user positions from the subgraph
  * @deprecated Use fetchAllActivePositions and filter by user instead
  */
-export async function fetchUserPositions(account: string): Promise<UserPosition[] | null> {
-    if (!account) {
-        return null
-    }
-
+export async function fetchUserPositions(owner: string): Promise<UserPosition[] | null> {
     try {
-        const result = await lpClient.query({
-            query: USER_POSITIONS_QUERY,
+        // First fetch pool data
+        const poolResult = await lpClient.query({
+            query: POOL_DATA_QUERY,
             variables: {
-                poolId: POOL_ID,
-                owner: account.toLowerCase(),
+                id: POOL_ID,
             },
         })
 
-        const { data } = result
+        // Then fetch user positions
+        const positionsResult = await lpClient.query({
+            query: USER_POSITIONS_QUERY,
+            variables: {
+                poolId: POOL_ID,
+                owner,
+            },
+        })
 
-        if (data && data.positions) {
-            return data.positions
-        }
-        return null
+        const { data: poolData } = poolResult
+        const { data: positionsData } = positionsResult
+
+        return positionsData.positions
     } catch (err) {
         console.error('Error fetching user positions:', err)
         throw err
@@ -248,6 +253,15 @@ export async function fetchUserPositions(account: string): Promise<UserPosition[
  */
 export async function fetchAllActivePositions(): Promise<UserPosition[] | null> {
     try {
+        const poolResult = await lpClient.query({
+            query: POOL_DATA_QUERY,
+            variables: {
+                id: POOL_ID,
+            },
+        })
+
+        const { data: poolData } = poolResult
+
         const result = await lpClient.query({
             query: ALL_ACTIVE_POSITIONS_QUERY,
             variables: {
@@ -255,10 +269,15 @@ export async function fetchAllActivePositions(): Promise<UserPosition[] | null> 
             },
         })
 
-        const { data } = result
+        const filteredPositions = result.data.positions.filter((position: any) => {
+            const inRange =
+                Number(position.tickLower.tickIdx) <= Number(poolData.pool.tick) &&
+                Number(poolData.pool.tick) < Number(position.tickUpper.tickIdx)
+            return inRange ? position : null
+        })
 
-        if (data && data.positions) {
-            return data.positions
+        if (filteredPositions) {
+            return filteredPositions
         }
         return null
     } catch (err) {

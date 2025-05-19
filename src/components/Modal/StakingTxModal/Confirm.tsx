@@ -10,6 +10,7 @@ import { HaiButton, Text } from '~/styles'
 import { TransactionSummary } from '~/components/TransactionSummary'
 import { ModalBody, ModalFooter } from '../index'
 import { stakingModel } from '~/model/stakingModel'
+import { useBoost } from '~/hooks/useBoost'
 
 type ConfirmProps = {
     onClose?: () => void
@@ -27,6 +28,8 @@ export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw, 
     const { refetchAll } = useStaking()
     // Use the effective staked amount from useStakingSummary
     const { myStaked } = useStakingSummary()
+
+    const { simulateNetBoost, netBoostValue } = useBoost()
 
     // Use ref to prevent reopening modal after completion
     const hasCompletedRef = useRef(false)
@@ -87,6 +90,8 @@ export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw, 
     // Use effective amount from useStakingSummary
     const effectiveStakedAmount = stakingStates.stakedBalance
 
+    const totalStaked = Number(stakingStates.totalStaked) > 0 ? Number(stakingStates.totalStaked) / 10 ** 18 : 0
+
     return (
         <>
             <ModalBody>
@@ -100,7 +105,7 @@ export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw, 
                         {
                             label: 'Amount',
                             value: {
-                                current: formatNumberWithStyle(
+                                current: `${formatNumberWithStyle(
                                     isWithdraw
                                         ? (Number(effectiveStakedAmount) + Number(amount)).toString()
                                         : effectiveStakedAmount.toString(),
@@ -108,8 +113,8 @@ export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw, 
                                         maxDecimals: 2,
                                         minDecimals: 0,
                                     }
-                                ),
-                                after: formatNumberWithStyle(
+                                )} `,
+                                after: `${formatNumberWithStyle(
                                     isStaking
                                         ? (Number(effectiveStakedAmount) + Number(amount)).toString()
                                         : isWithdraw
@@ -119,16 +124,47 @@ export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw, 
                                         maxDecimals: 2,
                                         minDecimals: 0,
                                     }
-                                ),
-                                label: 'KITE',
+                                )}`,
+                                label: 'stKITE',
+                            },
+                        },
+                        {
+                            label: 'Net Boost',
+                            value: {
+                                current: `${
+                                    !isWithdraw
+                                        ? `${formatNumberWithStyle(
+                                              simulateNetBoost(Number(effectiveStakedAmount), Number(totalStaked)),
+                                              {
+                                                  maxDecimals: 2,
+                                                  minDecimals: 0,
+                                              }
+                                          )}x`
+                                        : ''
+                                }`,
+                                after: `${
+                                    !isWithdraw
+                                        ? `${formatNumberWithStyle(
+                                              simulateNetBoost(
+                                                  Number(effectiveStakedAmount) + (isStaking ? 1 : -1) * Number(amount),
+                                                  Number(totalStaked + (isStaking ? 1 : -1) * Number(amount))
+                                              ),
+                                              {
+                                                  maxDecimals: 2,
+                                                  minDecimals: 0,
+                                              }
+                                          )}x`
+                                        : ''
+                                }`,
+                                label: '',
                             },
                         },
                     ]}
                 />
                 {!isStaking && (
                     <Text $fontSize="0.8em" $color="rgba(0,0,0,0.4)">
-                        Note: Unstaked KITE has a {formatTimeFromSeconds(Number(stakingStates.cooldownPeriod))}-day
-                        cooldown period before it can be claimed
+                        Note: Unstaked KITE has a {formatTimeFromSeconds(Number(stakingStates.cooldownPeriod))} cooldown
+                        period before it can be claimed
                     </Text>
                 )}
             </ModalBody>

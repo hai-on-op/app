@@ -6,7 +6,7 @@ import { BigNumber } from 'ethers'
 import { formatEther } from 'ethers/lib/utils'
 
 import { useStoreState, useStoreActions } from '~/store'
-import { useEthersSigner } from '~/hooks'
+import { useEthersSigner, useGeb, usePublicProvider } from '~/hooks'
 import { UserStakingData as ModelUserStakingData } from '~/model/stakingModel'
 
 // GraphQL queries
@@ -173,6 +173,7 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
 
     const [isRefetching, setIsRefetching] = useState(false)
     const [isInitialDataLoaded, setIsInitialDataLoaded] = useState(false)
+    const provider = usePublicProvider()
     const signer = useEthersSigner()
     const { stakingModel: stakingActions } = useStoreActions((actions) => actions)
     const cooldownPeriod = useStoreState((state) => state.stakingModel.cooldownPeriod)
@@ -184,16 +185,20 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
     const pendingWithdrawals = useStoreState((state) => state.stakingModel.pendingWithdrawals)
     const { setPendingWithdrawals } = useStoreActions((actions) => actions.stakingModel)
 
+    const targetAddress = address ? address : '0x0000000000000000000000000000000000000000'
+
     // Track when the signer is first available
     const signerInitialized = useRef(false)
+    // Track when provider is initialized (as fallback)
+    const providerInitialized = useRef(false)
 
     const {
         data: userData,
         loading: userLoading,
         refetch: refetchUser,
     } = useQuery(STAKING_USER_QUERY, {
-        variables: { id: address?.toLowerCase() },
-        skip: !address,
+        variables: { id: targetAddress?.toLowerCase() },
+        skip: !targetAddress,
         fetchPolicy: 'network-only',
     })
 
@@ -270,26 +275,47 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
                     // Reset the flag to try again
                     signerInitialized.current = false
                 }
+            } else if (provider && !signer && !providerInitialized.current) {
+                // Use provider as fallback when signer is not available
+                // This avoids the system crashing when there's no signer
+                providerInitialized.current = true
+                try {
+                    await Promise.all([
+                        stakingActions.fetchCooldownPeriod({ provider }),
+                        stakingActions.fetchStakingApyData({ provider }),
+                        stakingActions.fetchTotalStaked({ provider }),
+                    ])
+                    // Note: We can't fetch user-specific data without a signer
+                    setIsInitialDataLoaded(true)
+                } catch (error) {
+                    console.error('Error loading initial staking data with provider:', error)
+                    providerInitialized.current = false
+                }
             }
         }
 
         loadInitialData()
-    }, [signer, stakingActions])
+    }, [signer, provider, stakingActions])
 
-    // Reset initialization flag when signer changes
+    // Reset initialization flags when signer or provider changes
     useEffect(() => {
         if (!signer) {
             signerInitialized.current = false
+        }
+        if (!provider) {
+            providerInitialized.current = false
+        }
+        if (!signer && !provider) {
             setIsInitialDataLoaded(false)
         }
-    }, [signer])
+    }, [signer, provider])
 
     // Simplified data merging that prioritizes model data
     const stakingData = useMemo((): StakingData => {
-        if (!address) return defaultStakingData
+        if (!targetAddress) return defaultStakingData
 
-        const userDataFromModel = usersStakingData[address.toLowerCase()]
-        const userPendingWithdrawal = pendingWithdrawals[address.toLowerCase()]
+        const userDataFromModel = usersStakingData[targetAddress.toLowerCase()]
+        const userPendingWithdrawal = pendingWithdrawals[targetAddress.toLowerCase()]
 
         if (!userDataFromModel && !userData?.stakingUser) {
             return defaultStakingData
@@ -319,14 +345,14 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
                 : [],
             pendingWithdrawal: userPendingWithdrawal
                 ? {
-                      id: 'pending-' + address.toLowerCase(),
+                      id: 'pending-' + targetAddress.toLowerCase(),
                       amount: String(userPendingWithdrawal.amount),
                       timestamp: userPendingWithdrawal.timestamp,
                       status: userPendingWithdrawal.status,
                   }
                 : undefined,
         }
-    }, [userData, totalStaked, usersStakingData, pendingWithdrawals, address])
+    }, [userData, totalStaked, usersStakingData, pendingWithdrawals, targetAddress])
 
     const stakingStats = useMemo((): StakingStats => {
         if (!statsData?.stakingStatistic) return defaultStakingStats
@@ -351,7 +377,7 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
         widthdrawAmount?: string
         cancelWithdrawalAmount?: string
     } = {}) => {
-        if (!signer || !address) return
+        if (!provider) return
 
         setIsRefetching(true)
 
@@ -361,11 +387,16 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
 
             // Also refresh contract data
             if (signer) {
+                // If signer is available, fetch all data including user-specific data
                 await Promise.all([
                     stakingActions.fetchTotalStaked({ signer }),
                     stakingActions.fetchUserStakedBalance({ signer }),
                     stakingActions.fetchUserRewards({ signer }),
                 ])
+            } else if (provider) {
+                // Use provider for non-user-specific data
+                // This ensures the application works even without a connected wallet
+                await stakingActions.fetchTotalStaked({ provider })
             }
         } catch (error) {
             console.error('Error refetching staking data:', error)

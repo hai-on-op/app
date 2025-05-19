@@ -30,6 +30,7 @@ export function useBoost() {
         // NEW - Get boost data from LP data model
         userLPBoostMap,
         userKiteRatioMap,
+        userPositionsMap,
     } = useLPData()
     const { data: veloPositions, loading: positionsLoading } = useVelodromePositions()
     const { prices: veloPrices } = useVelodromePrices()
@@ -70,7 +71,15 @@ export function useBoost() {
             // Also calculate total liquidity (this doesn't need prices, but we can run it here)
             calculateAllUserLiquidity()
         }
-    }, [haiPrice, wethPrice, updateTokenPrices, calculateAllPositionValues, calculateAllUserLiquidity])
+    }, [
+        haiPrice,
+        wethPrice,
+        updateTokenPrices,
+        userPositionsMap,
+        pool,
+        calculateAllPositionValues,
+        calculateAllUserLiquidity,
+    ])
 
     // KITE staking data
     const userKITEStaked = useMemo(() => {

@@ -43,6 +43,8 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
     const { address: account } = useAccount()
 
     // Get model state and actions
+    const lpDataState = useStoreState((state) => state.lpDataModel)
+
     const {
         pool,
         userPositions,
@@ -57,7 +59,8 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
         userLPBoostMap,
         userKiteRatioMap,
         userTotalLiquidityMap,
-    } = useStoreState((state) => state.lpDataModel)
+        userCurrentPositionsMap,
+    } = lpDataState
 
     // Get staking data from staking model
     const { usersStakingData, totalStaked } = useStoreState((state) => state.stakingModel)
@@ -80,7 +83,16 @@ export function LPDataProvider({ children }: { children: React.ReactNode }) {
         if (account) {
             updateUserData(account)
         }
-    }, [account, setAccount, updateUserData])
+    }, [
+        account,
+        setAccount,
+        allPositions,
+        updateUserData,
+        userCurrentPositionsMap,
+        pool,
+        userPositionValuesMap,
+        userTotalLiquidityMap,
+    ])
 
     // Calculate LP boosts whenever staking data or LP data changes
     useEffect(() => {

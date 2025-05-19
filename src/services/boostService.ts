@@ -41,6 +41,7 @@ export function calculateLPBoost({
     return {
         kiteRatio: calculatedKiteRatio,
         lpBoost,
+        lpBoostRaw,
     }
 }
 
