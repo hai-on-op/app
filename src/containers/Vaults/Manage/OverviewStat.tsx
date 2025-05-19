@@ -93,8 +93,8 @@ export function OverviewStat({
                     </StatusLabel>
                 )}
                 {!!button && (
-                    <HaiButton 
-                        onClick={button.onClick} 
+                    <HaiButton
+                        onClick={button.onClick}
                         disabled={button.disabled}
                         $variant={button.variant}
                         $size={button.size}
@@ -147,8 +147,8 @@ export function OverviewProgressStat({
                         </StatusLabel>
                     )}
                     {!!button && (
-                        <HaiButton 
-                            onClick={button.onClick} 
+                        <HaiButton
+                            onClick={button.onClick}
                             disabled={button.disabled}
                             $variant={button.variant}
                             $size={button.size}

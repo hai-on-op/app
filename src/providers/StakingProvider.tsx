@@ -154,11 +154,14 @@ interface StakingContextType {
         cancelWithdrawalAmount?: string
     }) => Promise<void>
     usersStakingData: Record<string, ModelUserStakingData>
-    pendingWithdrawals: Record<string, {
-        amount: number
-        timestamp: number
-        status: 'PENDING' | 'COMPLETED' | 'CANCELLED'
-    } | null>
+    pendingWithdrawals: Record<
+        string,
+        {
+            amount: number
+            timestamp: number
+            status: 'PENDING' | 'COMPLETED' | 'CANCELLED'
+        } | null
+    >
 }
 
 // Create context
@@ -214,11 +217,14 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (allUsersData?.stakingUsers) {
             const modelUsersMap: Record<string, ModelUserStakingData> = {}
-            const pendingWithdrawalsMap: Record<string, {
-                amount: number
-                timestamp: number
-                status: 'PENDING' | 'COMPLETED' | 'CANCELLED'
-            } | null> = {}
+            const pendingWithdrawalsMap: Record<
+                string,
+                {
+                    amount: number
+                    timestamp: number
+                    status: 'PENDING' | 'COMPLETED' | 'CANCELLED'
+                } | null
+            > = {}
 
             allUsersData.stakingUsers.forEach((user: any) => {
                 const formattedBalance = formatBigNumber(user.stakedBalance)
@@ -233,10 +239,10 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
                     pendingWithdrawalsMap[userId] = {
                         amount: Number(formatBigNumber(user.pendingWithdrawal.amount)),
                         timestamp: Number(user.pendingWithdrawal.timestamp),
-                        status: user.pendingWithdrawal.status || 'PENDING'
+                        status: user.pendingWithdrawal.status || 'PENDING',
                     }
                 } else {
-                    pendingWithdrawalsMap[userId] = null;
+                    pendingWithdrawalsMap[userId] = null
                 }
             })
 
@@ -249,7 +255,7 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         async function loadInitialData() {
             if (signer && !signerInitialized.current) {
-                signerInitialized.current = true;
+                signerInitialized.current = true
                 try {
                     await Promise.all([
                         stakingActions.fetchCooldownPeriod({ signer }),
@@ -257,26 +263,26 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
                         stakingActions.fetchStakingApyData({ signer }),
                         stakingActions.fetchTotalStaked({ signer }),
                         stakingActions.fetchUserStakedBalance({ signer }),
-                    ]);
-                    setIsInitialDataLoaded(true);
+                    ])
+                    setIsInitialDataLoaded(true)
                 } catch (error) {
-                    console.error("Error loading initial staking data:", error);
+                    console.error('Error loading initial staking data:', error)
                     // Reset the flag to try again
-                    signerInitialized.current = false;
+                    signerInitialized.current = false
                 }
             }
         }
-        
-        loadInitialData();
-    }, [signer, stakingActions]);
+
+        loadInitialData()
+    }, [signer, stakingActions])
 
     // Reset initialization flag when signer changes
     useEffect(() => {
         if (!signer) {
-            signerInitialized.current = false;
-            setIsInitialDataLoaded(false);
+            signerInitialized.current = false
+            setIsInitialDataLoaded(false)
         }
-    }, [signer]);
+    }, [signer])
 
     // Simplified data merging that prioritizes model data
     const stakingData = useMemo((): StakingData => {
@@ -352,13 +358,13 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
         try {
             // Just refetch GraphQL data since optimistic updates are now handled in the model
             await Promise.all([refetchUser(), refetchAllUsers(), refetchStats()])
-            
+
             // Also refresh contract data
             if (signer) {
                 await Promise.all([
                     stakingActions.fetchTotalStaked({ signer }),
                     stakingActions.fetchUserStakedBalance({ signer }),
-                    stakingActions.fetchUserRewards({ signer })
+                    stakingActions.fetchUserRewards({ signer }),
                 ])
             }
         } catch (error) {
@@ -384,7 +390,7 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
                 stakingApyData,
                 refetchAll,
                 usersStakingData,
-                pendingWithdrawals
+                pendingWithdrawals,
             }}
         >
             {children}

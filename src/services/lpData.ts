@@ -67,10 +67,7 @@ const USER_POSITIONS_QUERY = gql`
 // Query for all active positions
 const ALL_ACTIVE_POSITIONS_QUERY = gql`
     query GetAllActivePositions($poolId: String!) {
-        positions(
-            first: 1000, 
-            where: { pool: $poolId, liquidity_gt: "0" }
-        ) {
+        positions(first: 1000, where: { pool: $poolId, liquidity_gt: "0" }) {
             id
             liquidity
             depositedToken0
@@ -284,13 +281,7 @@ export function calculateCurrentPositionComposition(
     try {
         const currentTick = parseInt(pool.tick)
         return userPositions.map((position) =>
-            initialPositionToCurrent(
-                position,
-                currentTick,
-                pool.sqrtPrice,
-                pool.token0.decimals,
-                pool.token1.decimals
-            )
+            initialPositionToCurrent(position, currentTick, pool.sqrtPrice, pool.token0.decimals, pool.token1.decimals)
         )
     } catch (err) {
         console.error('Error calculating current positions:', err)
@@ -302,14 +293,17 @@ export function calculateCurrentPositionComposition(
  * Groups positions by user address
  */
 export function groupPositionsByUser(positions: UserPosition[]): Record<string, UserPosition[]> {
-    return positions.reduce((grouped, position) => {
-        const owner = position.owner.toLowerCase()
-        if (!grouped[owner]) {
-            grouped[owner] = []
-        }
-        grouped[owner].push(position)
-        return grouped
-    }, {} as Record<string, UserPosition[]>)
+    return positions.reduce(
+        (grouped, position) => {
+            const owner = position.owner.toLowerCase()
+            if (!grouped[owner]) {
+                grouped[owner] = []
+            }
+            grouped[owner].push(position)
+            return grouped
+        },
+        {} as Record<string, UserPosition[]>
+    )
 }
 
 /**
@@ -318,7 +312,7 @@ export function groupPositionsByUser(positions: UserPosition[]): Record<string, 
 export function getUserPositionsFromAll(allPositions: UserPosition[], userAddress: string): UserPosition[] {
     if (!userAddress) return []
     const address = userAddress.toLowerCase()
-    return allPositions.filter(position => position.owner.toLowerCase() === address)
+    return allPositions.filter((position) => position.owner.toLowerCase() === address)
 }
 
 /**
@@ -365,11 +359,11 @@ export function calculateAllUserPositionValues(
     token1UsdPrice: number
 ): Record<string, number> {
     const result: Record<string, number> = {}
-    
+
     for (const [userAddress, positions] of Object.entries(userPositionsMap)) {
         result[userAddress] = calculateUserPositionsValue(positions, pool, token0UsdPrice, token1UsdPrice)
     }
-    
+
     return result
 }
 
@@ -378,7 +372,7 @@ export function calculateAllUserPositionValues(
  */
 export function calculateUserTotalLiquidity(positions: UserPosition[]): string {
     if (!positions || positions.length === 0) return '0'
-    
+
     return positions
         .reduce((sum, position) => {
             return sum + Number(position.liquidity)
@@ -393,10 +387,10 @@ export function calculateAllUserTotalLiquidity(
     userPositionsMap: Record<string, UserPosition[]>
 ): Record<string, string> {
     const result: Record<string, string> = {}
-    
+
     for (const [userAddress, positions] of Object.entries(userPositionsMap)) {
         result[userAddress] = calculateUserTotalLiquidity(positions)
     }
-    
+
     return result
-} 
+}

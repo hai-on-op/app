@@ -198,15 +198,15 @@ export const stakingModel: StakingModel = {
 
         // Apply changes immediately to state
         state.totalStaked = newTotalStaked
-        
+
         // Initialize user data if it doesn't exist
         if (!state.usersStakingData[lowerCaseAddress]) {
             state.usersStakingData[lowerCaseAddress] = {
                 id: lowerCaseAddress,
-                stakedBalance: '0'
+                stakedBalance: '0',
             }
         }
-        
+
         state.usersStakingData[lowerCaseAddress].stakedBalance = newUserBalance
     }),
 
@@ -231,13 +231,13 @@ export const stakingModel: StakingModel = {
         if (!state.usersStakingData[lowerCaseAddress]) {
             state.usersStakingData[lowerCaseAddress] = {
                 id: lowerCaseAddress,
-                stakedBalance: '0'
+                stakedBalance: '0',
             }
         }
 
         // Update pending withdrawals
-        const currentPendingAmount = state.pendingWithdrawals[lowerCaseAddress] 
-            ? state.pendingWithdrawals[lowerCaseAddress]!.amount 
+        const currentPendingAmount = state.pendingWithdrawals[lowerCaseAddress]
+            ? state.pendingWithdrawals[lowerCaseAddress]!.amount
             : 0
 
         state.pendingWithdrawals = {
@@ -264,7 +264,7 @@ export const stakingModel: StakingModel = {
         if (!state.usersStakingData[lowerCaseAddress]) {
             state.usersStakingData[lowerCaseAddress] = {
                 id: lowerCaseAddress,
-                stakedBalance: '0'
+                stakedBalance: '0',
             }
         }
 
@@ -296,7 +296,7 @@ export const stakingModel: StakingModel = {
         if (!state.usersStakingData[lowerCaseAddress]) {
             state.usersStakingData[lowerCaseAddress] = {
                 id: lowerCaseAddress,
-                stakedBalance: '0'
+                stakedBalance: '0',
             }
         }
 

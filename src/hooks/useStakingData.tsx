@@ -9,4 +9,4 @@ export function useStakingData() {
 }
 
 // Re-export everything from the provider
-export * from '~/providers/StakingProvider' 
+export * from '~/providers/StakingProvider'

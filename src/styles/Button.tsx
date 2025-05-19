@@ -56,14 +56,16 @@ export const HaiButton = styled.button.attrs((props: HaiButtonProps) => ({
     transition: all 0.3s ease;
     cursor: pointer;
 
-    ${({ $size }) => $size === 'small' && css`
-        height: 30px;
-        font-size: 11px;
-        padding: 0 12px;
-        font-weight: 500;
-        line-height: 13px;
-        border-width: 0.5px;
-    `}
+    ${({ $size }) =>
+        $size === 'small' &&
+        css`
+            height: 30px;
+            font-size: 11px;
+            padding: 0 12px;
+            font-weight: 500;
+            line-height: 13px;
+            border-width: 0.5px;
+        `}
 
     ${({ theme, $variant = 'default' }) =>
         $variant === 'default'

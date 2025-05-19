@@ -106,7 +106,6 @@ const TableHeader = styled(Grid)`
     padding: 0px 24px;
     font-size: 0.8rem;
     margin-bottom: 1em;
-
 `
 
 const TableRow = styled(TableHeader)`

@@ -113,7 +113,6 @@ export function useHaiVeloData(): HaiVeloData {
     const { address } = useAccount()
     //const address = '0x328cace41eadf6df6e693b8e4810bf97aac4f5ee'
 
-
     // Query the GraphQL API for HAIVELO collateral data
     const { data, loading, error } = useQuery<HaiVeloCollateralData>(HAIVELO_COLLATERAL_QUERY, {
         variables: {
@@ -177,13 +176,13 @@ export function useHaiVeloData(): HaiVeloData {
 
         // Create mapping of user addresses to their collateral amounts
         const userCollateralMapping: UserCollateralMapping = {}
-        
+
         if (allSafesData?.safes && allSafesData.safes.length > 0) {
             // Group safes by owner address and sum their collateral
-            allSafesData.safes.forEach(safe => {
+            allSafesData.safes.forEach((safe) => {
                 const ownerAddress = safe.owner.address.toLowerCase()
                 const collateralAmount = parseFloat(safe.collateral)
-                
+
                 if (userCollateralMapping[ownerAddress]) {
                     // Add to existing collateral for this user
                     userCollateralMapping[ownerAddress] = (

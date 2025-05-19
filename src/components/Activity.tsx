@@ -32,7 +32,7 @@ const TxLink = styled.a`
     align-items: center;
     gap: 4px;
     text-decoration: none;
-    
+
     &:hover {
         text-decoration: underline;
     }
@@ -112,4 +112,4 @@ export function Activity({ activities = [], children, fun = false }: ActivityPro
             ))}
         />
     )
-} 
+}

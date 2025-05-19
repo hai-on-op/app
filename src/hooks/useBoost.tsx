@@ -21,11 +21,11 @@ import {
 export function useBoost() {
     const { address } = useAccount()
     // Use LP data from our enhanced model
-    const { 
-        pool, 
-        userPositions, 
-        userLPPositionValue, 
-        userTotalLiquidity, 
+    const {
+        pool,
+        userPositions,
+        userLPPositionValue,
+        userTotalLiquidity,
         loading: lpDataLoading,
         // NEW - Get boost data from LP data model
         userLPBoostMap,
@@ -100,7 +100,7 @@ export function useBoost() {
         if (address && userLPBoostMap[address.toLowerCase()]) {
             return userLPBoostMap[address.toLowerCase()]
         }
-        
+
         // Fallback to direct calculation if not available in the model
         // Use the exact boostService function for consistency
         const result = calculateLPBoost({
@@ -109,7 +109,7 @@ export function useBoost() {
             userLPPosition,
             totalPoolLiquidity,
         })
-        
+
         return result.lpBoost
     }, [address, userLPBoostMap, userKITEStaked, totalKITEStaked, userLPPosition, totalPoolLiquidity])
 
@@ -118,12 +118,10 @@ export function useBoost() {
         if (address && userKiteRatioMap[address.toLowerCase()]) {
             return userKiteRatioMap[address.toLowerCase()]
         }
-        
+
         // Fallback to same calculation as in boostService
         const totalStakingAmount = Number(totalKITEStaked)
-        return isNaN(totalStakingAmount) || totalStakingAmount === 0 
-            ? 0 
-            : Number(userKITEStaked) / totalStakingAmount
+        return isNaN(totalStakingAmount) || totalStakingAmount === 0 ? 0 : Number(userKITEStaked) / totalStakingAmount
     }, [address, userKiteRatioMap, userKITEStaked, totalKITEStaked])
 
     // Calculate haiVELO boost values

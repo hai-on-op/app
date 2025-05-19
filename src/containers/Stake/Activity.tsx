@@ -16,10 +16,7 @@ export function StakeActivity() {
 
     return (
         <Container>
-            <StakingActivityTable 
-                positions={stakingData.stakingPositions} 
-                loading={loading} 
-            />
+            <StakingActivityTable positions={stakingData.stakingPositions} loading={loading} />
         </Container>
     )
 }

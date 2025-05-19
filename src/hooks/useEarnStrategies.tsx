@@ -90,7 +90,7 @@ export function useEarnStrategies() {
 
     const prices = useMemo(() => {
         if (!liquidationData || !veloPrices) return null
-        
+
         return {
             HAI: parseFloat(liquidationData?.currentRedemptionPrice || '0'),
             KITE: parseFloat(veloPrices?.KITE.raw || '0'),
@@ -104,7 +104,7 @@ export function useEarnStrategies() {
 
     const vaultStrategies = useMemo(() => {
         if (!data?.collateralTypes || !prices) return []
-        
+
         return (
             data.collateralTypes
                 .filter((cType) =>
@@ -293,8 +293,8 @@ export function useEarnStrategies() {
     }, [myVaults])
 
     const calculateHaiVeloBoostAPR = useCallback(() => {
-        if (!userCollateralMapping || !usersStakingData) return null;
-        
+        if (!userCollateralMapping || !usersStakingData) return null
+
         const totalHaiVeloDeposited = Object.values(userCollateralMapping).reduce((acc, value) => {
             return acc + Number(value)
         }, 0)
@@ -360,10 +360,10 @@ export function useEarnStrategies() {
     }, [userCollateralMapping, userLPBoostMap, address, usersStakingData, totalStaked])
 
     const specialStrategies = useMemo(() => {
-        if (!prices) return [];
-        
-        const haiVeloBoostData = calculateHaiVeloBoostAPR();
-        
+        if (!prices) return []
+
+        const haiVeloBoostData = calculateHaiVeloBoostAPR()
+
         return [
             {
                 pair: ['HAI'],
@@ -382,10 +382,26 @@ export function useEarnStrategies() {
                 userPosition: myHaiVeloParticipation,
                 strategyType: 'deposit',
             },
-        ];
-    }, [prices, erc20Supply.raw, rRateApy, haiBalance?.raw, haiVeloTVL, myHaiVeloParticipation, calculateHaiVeloBoostAPR]);
+        ]
+    }, [
+        prices,
+        erc20Supply.raw,
+        rRateApy,
+        haiBalance?.raw,
+        haiVeloTVL,
+        myHaiVeloParticipation,
+        calculateHaiVeloBoostAPR,
+    ])
 
-    const isLoading = loading || uniLoading || veloLoading || veloPositionsLoading || veloPricesLoading || !isStoreDataLoaded || !isHaiVeloDataLoaded || !prices
+    const isLoading =
+        loading ||
+        uniLoading ||
+        veloLoading ||
+        veloPositionsLoading ||
+        veloPricesLoading ||
+        !isStoreDataLoaded ||
+        !isHaiVeloDataLoaded ||
+        !prices
 
     const strategies = useMemo(() => {
         if (isLoading) return []
@@ -447,7 +463,7 @@ export function useEarnStrategies() {
 
     const sortedRows = useMemo(() => {
         if (isLoading) return []
-        
+
         switch (sorting.key) {
             case 'Asset / Asset Pair':
                 return arrayToSorted(filteredRows, {

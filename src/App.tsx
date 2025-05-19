@@ -74,9 +74,24 @@ const App = () => {
                                                                     />
                                                                 )}
                                                                 <Route exact strict component={Splash} path={'/'} />
-                                                                <Route exact strict component={Auctions} path={'/auctions'} />
-                                                                <Route exact strict component={Analytics} path={'/analytics'} />
-                                                                <Route exact strict component={Contracts} path={'/contracts'} />
+                                                                <Route
+                                                                    exact
+                                                                    strict
+                                                                    component={Auctions}
+                                                                    path={'/auctions'}
+                                                                />
+                                                                <Route
+                                                                    exact
+                                                                    strict
+                                                                    component={Analytics}
+                                                                    path={'/analytics'}
+                                                                />
+                                                                <Route
+                                                                    exact
+                                                                    strict
+                                                                    component={Contracts}
+                                                                    path={'/contracts'}
+                                                                />
                                                                 <Route exact strict component={Learn} path={'/learn'} />
                                                                 <Route exact strict component={Stake} path={'/stake'} />
                                                                 <Route exact strict component={Earn} path={'/earn'} />
@@ -92,9 +107,23 @@ const App = () => {
                                                                     component={Vaults}
                                                                     path={'/vaults/manage'}
                                                                 />
-                                                                <Route exact strict component={Vaults} path={'/vaults/open'} />
-                                                                <Route exact component={Vaults} path={'/vaults/:idOrOwner'} />
-                                                                <Route exact strict component={Vaults} path={'/vaults'} />
+                                                                <Route
+                                                                    exact
+                                                                    strict
+                                                                    component={Vaults}
+                                                                    path={'/vaults/open'}
+                                                                />
+                                                                <Route
+                                                                    exact
+                                                                    component={Vaults}
+                                                                    path={'/vaults/:idOrOwner'}
+                                                                />
+                                                                <Route
+                                                                    exact
+                                                                    strict
+                                                                    component={Vaults}
+                                                                    path={'/vaults'}
+                                                                />
 
                                                                 <Redirect from="*" to="/" />
                                                             </Switch>

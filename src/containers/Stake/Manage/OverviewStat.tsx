@@ -160,25 +160,25 @@ export function OverviewProgressStat({
         ? typeof simulatedValue === 'number'
             ? `${Math.min(Math.max(simulatedValue, 1), 2).toFixed(2)}x`
             : simulatedValue.endsWith('x')
-                ? simulatedValue
-                : `${simulatedValue}x`
+            ? simulatedValue
+            : `${simulatedValue}x`
         : undefined
 
     // Create progress object if not provided
-    const progressObj = progressProp || { 
-        progress: clampedValue - 1, 
-        label: formattedValue 
+    const progressObj = progressProp || {
+        progress: clampedValue - 1,
+        label: formattedValue,
     }
 
     // Create simulated progress object if not provided but simulatedValue exists
-    const simulatedProgressObj = simulatedProgressProp || (
-        formattedSimulatedValue
+    const simulatedProgressObj =
+        simulatedProgressProp ||
+        (formattedSimulatedValue
             ? {
-                progress: Number(formattedSimulatedValue.replace('x', '')) - 1,
-                label: formattedSimulatedValue,
-            }
-            : undefined
-    )
+                  progress: Number(formattedSimulatedValue.replace('x', '')) - 1,
+                  label: formattedSimulatedValue,
+              }
+            : undefined)
 
     // Default colorLimits and labels if not provided
     const defaultColorLimits = [0.25, 0.5, 0.75]
@@ -200,9 +200,7 @@ export function OverviewProgressStat({
                             {formattedValue}
                         </Text>
                     )}
-                    {!isComingSoon && loading && (
-                        <Loader size={24} hideSpinner={false} color="#FFD641" />
-                    )}
+                    {!isComingSoon && loading && <Loader size={24} hideSpinner={false} color="#FFD641" />}
 
                     {!!tooltip && <Tooltip width="200px">{tooltip}</Tooltip>}
                 </CenteredFlex>
