@@ -60,6 +60,7 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                     'APXETH',
                     'TBTC',
                     'OP',
+                    'ALETH',
                 ]
                 const collateralLabel = formatCollateralLabel(collateralName)
                 const tooltip =
