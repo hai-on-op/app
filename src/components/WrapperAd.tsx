@@ -29,6 +29,7 @@ export function WrapperAd({
     status = 'NOW LIVE',
     description,
     cta = 'Get HAI to Earn',
+    ctaLink,
     tokenImages,
     bgVariant = 0,
 }: WrapperAdProps) {
@@ -65,7 +66,17 @@ export function WrapperAd({
                 </Header>
                 <Text $fontSize="0.8rem">{description}</Text>
             </Flex>
-            <HaiButton $variant="yellowish" $gap={8} onClick={handleBannerClick}>
+            <HaiButton
+                $variant="yellowish"
+                $gap={8}
+                onClick={() => {
+                    if (ctaLink) {
+                        window.open(ctaLink, '_blank')
+                    } else {
+                        handleBannerClick()
+                    }
+                }}
+            >
                 <Text>{cta}</Text>
             </HaiButton>
             {accountModalActive && !wrapTokenActive && (

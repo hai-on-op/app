@@ -4,12 +4,12 @@ import { formatNumberWithStyle } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { useEarnStrategies } from '~/hooks'
 
-import { HaiButton, Text } from '~/styles'
-import { RewardsTokenArray } from '~/components/TokenArray'
+// import { HaiButton, Text } from '~/styles'
+// import { RewardsTokenArray } from '~/components/TokenArray'
 import { Stats, type StatProps } from '~/components/Stats'
-import { Link } from '~/components/Link'
-import { Loader } from '~/components/Loader'
-import { RefreshCw } from 'react-feather'
+// import { Link } from '~/components/Link'
+// import { Loader } from '~/components/Loader'
+// import { RefreshCw } from 'react-feather'
 
 export function BorrowStats() {
     const {
@@ -85,7 +85,7 @@ export function BorrowStats() {
                 label: 'My Net Stability Fee',
                 tooltip: 'Weighted average stability fee of My Total Debt',
             },
-            {
+            /*{
                 header: formatNumberWithStyle(value ? apy / value : 0, {
                     maxDecimals: 1,
                     scalingFactor: 100,
@@ -114,9 +114,9 @@ export function BorrowStats() {
                     //     Claim
                     // </HaiButton>
                 ),
-            },
+            },*/
         ]
     }, [list, liquidationData, value, apy, popupsActions])
 
-    return <Stats stats={stats} columns="repeat(4, 1fr) 1.6fr" fun />
+    return <Stats stats={stats} /*columns="repeat(4, 1fr) 1.6fr"*/ fun />
 }

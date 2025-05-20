@@ -10,6 +10,7 @@ export const {
     VITE_MAINNET_PUBLIC_RPC,
     VITE_TESTNET_PUBLIC_RPC,
     VITE_FLAGSMITH_API_KEY,
+    VITE_LP_SUBGRAPH_URL,
 } = import.meta.env
 
 export enum ChainId {
