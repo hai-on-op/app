@@ -10,6 +10,8 @@ import { VelodromePriceProvider } from './providers/VelodromePriceProvider'
 import { AnalyticsProvider } from '~/providers/AnalyticsProvider'
 import { EffectsProvider } from './providers/EffectsProvider'
 import { ClaimsProvider } from './providers/ClaimsProvider'
+import { LPDataProvider } from './providers/LPDataProvider'
+import { StakingProvider } from './providers/StakingProvider'
 
 import { GlobalStyle } from '~/styles'
 import { ErrorBoundary } from '~/ErrorBoundary'
@@ -23,6 +25,7 @@ import { Contracts } from '~/containers/Contracts'
 import { Learn } from './containers/Learn'
 import { VaultExplorer } from './containers/Vaults/Explore'
 import { TestClaim } from './containers/TestClaim'
+import { Stake } from './containers/Stake'
 import { TestClaimVelo } from './containers/TestClaimVelo'
 import flagsmith from 'flagsmith'
 import { FlagsmithProvider } from 'flagsmith/react'
@@ -44,60 +47,94 @@ const App = () => {
                 <ErrorBoundary>
                     <ApolloProvider client={client}>
                         <VelodromePriceProvider>
-                            <AnalyticsProvider>
-                                <EffectsProvider>
-                                    <ClaimsProvider>
-                                        <Shared>
-                                            <Suspense fallback={null}>
-                                                <Route />
-                                                <>
-                                                    <Switch>
-                                                        {NETWORK_ID === ChainId.OPTIMISM_SEPOLIA && (
-                                                            <Route
-                                                                exact
-                                                                strict
-                                                                component={TestClaim}
-                                                                path={'/test/claim'}
-                                                            />
-                                                        )}
-                                                        {NETWORK_ID === ChainId.OPTIMISM_SEPOLIA && (
-                                                            <Route
-                                                                exact
-                                                                strict
-                                                                component={TestClaimVelo}
-                                                                path={'/test/claim-velo'}
-                                                            />
-                                                        )}
-                                                        <Route exact strict component={Splash} path={'/'} />
-                                                        <Route exact strict component={Auctions} path={'/auctions'} />
-                                                        <Route exact strict component={Analytics} path={'/analytics'} />
-                                                        <Route exact strict component={Contracts} path={'/contracts'} />
-                                                        <Route exact strict component={Learn} path={'/learn'} />
-                                                        <Route exact strict component={Earn} path={'/earn'} />
-                                                        <Route
-                                                            exact
-                                                            strict
-                                                            component={VaultExplorer}
-                                                            path={'/vaults/explore'}
-                                                        />
-                                                        <Route
-                                                            exact
-                                                            strict
-                                                            component={Vaults}
-                                                            path={'/vaults/manage'}
-                                                        />
-                                                        <Route exact strict component={Vaults} path={'/vaults/open'} />
-                                                        <Route exact component={Vaults} path={'/vaults/:idOrOwner'} />
-                                                        <Route exact strict component={Vaults} path={'/vaults'} />
+                            <LPDataProvider>
+                                <StakingProvider>
+                                    <AnalyticsProvider>
+                                        <EffectsProvider>
+                                            <ClaimsProvider>
+                                                <Shared>
+                                                    <Suspense fallback={null}>
+                                                        <Route />
+                                                        <>
+                                                            <Switch>
+                                                                {NETWORK_ID === ChainId.OPTIMISM_SEPOLIA && (
+                                                                    <Route
+                                                                        exact
+                                                                        strict
+                                                                        component={TestClaim}
+                                                                        path={'/test/claim'}
+                                                                    />
+                                                                )}
+                                                                {NETWORK_ID === ChainId.OPTIMISM_SEPOLIA && (
+                                                                    <Route
+                                                                        exact
+                                                                        strict
+                                                                        component={TestClaimVelo}
+                                                                        path={'/test/claim-velo'}
+                                                                    />
+                                                                )}
+                                                                <Route exact strict component={Splash} path={'/'} />
+                                                                <Route
+                                                                    exact
+                                                                    strict
+                                                                    component={Auctions}
+                                                                    path={'/auctions'}
+                                                                />
+                                                                <Route
+                                                                    exact
+                                                                    strict
+                                                                    component={Analytics}
+                                                                    path={'/analytics'}
+                                                                />
+                                                                <Route
+                                                                    exact
+                                                                    strict
+                                                                    component={Contracts}
+                                                                    path={'/contracts'}
+                                                                />
+                                                                <Route exact strict component={Learn} path={'/learn'} />
+                                                                <Route exact strict component={Stake} path={'/stake'} />
+                                                                <Route exact strict component={Earn} path={'/earn'} />
+                                                                <Route
+                                                                    exact
+                                                                    strict
+                                                                    component={VaultExplorer}
+                                                                    path={'/vaults/explore'}
+                                                                />
+                                                                <Route
+                                                                    exact
+                                                                    strict
+                                                                    component={Vaults}
+                                                                    path={'/vaults/manage'}
+                                                                />
+                                                                <Route
+                                                                    exact
+                                                                    strict
+                                                                    component={Vaults}
+                                                                    path={'/vaults/open'}
+                                                                />
+                                                                <Route
+                                                                    exact
+                                                                    component={Vaults}
+                                                                    path={'/vaults/:idOrOwner'}
+                                                                />
+                                                                <Route
+                                                                    exact
+                                                                    strict
+                                                                    component={Vaults}
+                                                                    path={'/vaults'}
+                                                                />
 
-                                                        <Redirect from="*" to="/" />
-                                                    </Switch>
-                                                </>
-                                            </Suspense>
-                                        </Shared>
-                                    </ClaimsProvider>
-                                </EffectsProvider>
-                            </AnalyticsProvider>
+                                                                <Redirect from="*" to="/" />
+                                                            </Switch>
+                                                        </>
+                                                    </Suspense>
+                                                </Shared>
+                                            </ClaimsProvider>
+                                        </EffectsProvider>
+                                    </AnalyticsProvider>
+                                </StakingProvider>
+                            </LPDataProvider>
                         </VelodromePriceProvider>
                     </ApolloProvider>
                 </ErrorBoundary>

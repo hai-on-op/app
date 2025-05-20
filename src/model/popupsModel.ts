@@ -35,6 +35,9 @@ export interface PopupsModel {
     isClaimPopupOpen: boolean
     setIsClaimPopupOpen: Action<PopupsModel, boolean>
 
+    isStakeClaimPopupOpen: boolean
+    setIsStakeClaimPopupOpen: Action<PopupsModel, boolean>
+
     // isVotingModalOpen: boolean
     // setIsVotingModalOpen: Action<PopupsModel, boolean>
 
@@ -132,6 +135,11 @@ export const popupsModel: PopupsModel = {
     isClaimPopupOpen: false,
     setIsClaimPopupOpen: action((state, isOpen) => {
         state.isClaimPopupOpen = isOpen
+    }),
+
+    isStakeClaimPopupOpen: false,
+    setIsStakeClaimPopupOpen: action((state, isOpen) => {
+        state.isStakeClaimPopupOpen = isOpen
     }),
 
     // isVotingModalOpen: false,
