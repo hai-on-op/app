@@ -17,8 +17,8 @@ export type ProgressIndicatorProps = {
     labels?: Progress[]
 }
 export function ProgressIndicator({ progress, simulatedProgress, colorLimits, labels }: ProgressIndicatorProps) {
-    const data = progressToPercentage(progress.progress)
-    const item = colorLimits.map(progressToPercentage)
+    // const data = progressToPercentage(progress.progress)
+    // const item = colorLimits.map(progressToPercentage)
     return (
         <Container>
             <Inner $limits={colorLimits.map(progressToPercentage) as any} />

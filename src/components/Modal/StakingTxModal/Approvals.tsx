@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { ActionState } from '~/utils'
-import { useStoreState } from '~/store'
+// import { useStoreState } from '~/store'
 import { ApprovalState, useTokenApproval } from '~/hooks'
 
 import styled from 'styled-components'
@@ -16,9 +16,9 @@ type ApprovalsProps = {
 }
 
 export function Approvals({ onNext, isStaking, amount }: ApprovalsProps) {
-    const {
-        connectWalletModel: { proxyAddress },
-    } = useStoreState((state) => state)
+    // const {
+    //     connectWalletModel: { proxyAddress },
+    // } = useStoreState((state) => state)
 
     const [kiteApproval, approveKite] = useTokenApproval(
         amount,

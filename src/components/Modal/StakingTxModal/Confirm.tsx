@@ -1,15 +1,15 @@
-import { useMemo, useRef } from 'react'
-import { ActionState, formatNumberWithStyle, formatTimeFromSeconds, secondsToDays } from '~/utils'
+import { useRef } from 'react'
+import { ActionState, formatNumberWithStyle, formatTimeFromSeconds } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { handleTransactionError, useEthersSigner } from '~/hooks'
 import { useStaking } from '~/providers/StakingProvider'
-import { useStakingSummary } from '~/hooks/useStakingSummary'
+// import { useStakingSummary } from '~/hooks/useStakingSummary'
 
 import styled from 'styled-components'
 import { HaiButton, Text } from '~/styles'
 import { TransactionSummary } from '~/components/TransactionSummary'
 import { ModalBody, ModalFooter } from '../index'
-import { stakingModel } from '~/model/stakingModel'
+// import { stakingModel } from '~/model/stakingModel'
 import { useBoost } from '~/hooks/useBoost'
 
 type ConfirmProps = {
@@ -21,15 +21,15 @@ type ConfirmProps = {
     onSuccess?: () => void
 }
 
-export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw, onSuccess }: ConfirmProps) {
+export function Confirm({ onClose, isStaking, amount, isWithdraw, onSuccess }: ConfirmProps) {
     const signer = useEthersSigner()
     const { popupsModel: popupsActions, stakingModel: stakingActions } = useStoreActions((actions) => actions)
     const { stakingModel: stakingStates } = useStoreState((state) => state)
     const { refetchAll } = useStaking()
     // Use the effective staked amount from useStakingSummary
-    const { myStaked } = useStakingSummary()
+    // const { myStaked } = useStakingSummary()
 
-    const { simulateNetBoost, netBoostValue } = useBoost()
+    const { simulateNetBoost } = useBoost()
 
     // Use ref to prevent reopening modal after completion
     const hasCompletedRef = useRef(false)
@@ -118,8 +118,8 @@ export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw, 
                                     isStaking
                                         ? (Number(effectiveStakedAmount) + Number(amount)).toString()
                                         : isWithdraw
-                                        ? effectiveStakedAmount
-                                        : (Number(effectiveStakedAmount) - Number(amount)).toString(),
+                                            ? effectiveStakedAmount
+                                            : (Number(effectiveStakedAmount) - Number(amount)).toString(),
                                     {
                                         maxDecimals: 2,
                                         minDecimals: 0,
@@ -134,26 +134,26 @@ export function Confirm({ onClose, isStaking, amount, stakedAmount, isWithdraw, 
                                 current: `${
                                     !isWithdraw
                                         ? `${formatNumberWithStyle(
-                                              simulateNetBoost(Number(effectiveStakedAmount), Number(totalStaked)),
-                                              {
-                                                  maxDecimals: 2,
-                                                  minDecimals: 0,
-                                              }
-                                          )}x`
+                                            simulateNetBoost(Number(effectiveStakedAmount), Number(totalStaked)),
+                                            {
+                                                maxDecimals: 2,
+                                                minDecimals: 0,
+                                            }
+                                        )}x`
                                         : ''
                                 }`,
                                 after: `${
                                     !isWithdraw
                                         ? `${formatNumberWithStyle(
-                                              simulateNetBoost(
-                                                  Number(effectiveStakedAmount) + (isStaking ? 1 : -1) * Number(amount),
-                                                  Number(totalStaked + (isStaking ? 1 : -1) * Number(amount))
-                                              ),
-                                              {
-                                                  maxDecimals: 2,
-                                                  minDecimals: 0,
-                                              }
-                                          )}x`
+                                            simulateNetBoost(
+                                                Number(effectiveStakedAmount) + (isStaking ? 1 : -1) * Number(amount),
+                                                Number(totalStaked + (isStaking ? 1 : -1) * Number(amount))
+                                            ),
+                                            {
+                                                maxDecimals: 2,
+                                                minDecimals: 0,
+                                            }
+                                        )}x`
                                         : ''
                                 }`,
                                 label: '',

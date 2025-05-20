@@ -6,7 +6,7 @@ import { BigNumber } from 'ethers'
 import { formatEther } from 'ethers/lib/utils'
 
 import { useStoreState, useStoreActions } from '~/store'
-import { useEthersSigner, useGeb, usePublicProvider } from '~/hooks'
+import { useEthersSigner, usePublicProvider } from '~/hooks'
 import { UserStakingData as ModelUserStakingData } from '~/model/stakingModel'
 
 // GraphQL queries
@@ -331,25 +331,25 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
                 : '0',
             stakingPositions: userData?.stakingUser?.stakingPositions
                 ? userData.stakingUser.stakingPositions.map((pos: any) => ({
-                      ...pos,
-                      amount: formatBigNumber(pos.amount),
-                      timestamp: Number(pos.timestamp),
-                  }))
+                    ...pos,
+                    amount: formatBigNumber(pos.amount),
+                    timestamp: Number(pos.timestamp),
+                }))
                 : [],
             rewards: userData?.stakingUser?.rewards
                 ? userData.stakingUser.rewards.map((reward: any) => ({
-                      ...reward,
-                      amount: formatBigNumber(reward.amount),
-                      timestamp: Number(reward.timestamp),
-                  }))
+                    ...reward,
+                    amount: formatBigNumber(reward.amount),
+                    timestamp: Number(reward.timestamp),
+                }))
                 : [],
             pendingWithdrawal: userPendingWithdrawal
                 ? {
-                      id: 'pending-' + targetAddress.toLowerCase(),
-                      amount: String(userPendingWithdrawal.amount),
-                      timestamp: userPendingWithdrawal.timestamp,
-                      status: userPendingWithdrawal.status,
-                  }
+                    id: 'pending-' + targetAddress.toLowerCase(),
+                    amount: String(userPendingWithdrawal.amount),
+                    timestamp: userPendingWithdrawal.timestamp,
+                    status: userPendingWithdrawal.status,
+                }
                 : undefined,
         }
     }, [userData, totalStaked, usersStakingData, pendingWithdrawals, targetAddress])
@@ -366,12 +366,13 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
     }, [statsData])
 
     // Simplified refetch function that avoids race conditions
-    const refetchAll = async ({
-        stakingAmount,
-        unstakingAmount,
-        widthdrawAmount,
-        cancelWithdrawalAmount,
-    }: {
+    /* tslint:disable */
+    /* eslint-disable */
+    const refetchAll = async ({}: // stakingAmount,
+    // unstakingAmount,
+    // widthdrawAmount,
+    // cancelWithdrawalAmount,
+    {
         stakingAmount?: string
         unstakingAmount?: string
         widthdrawAmount?: string

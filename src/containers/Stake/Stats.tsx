@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 
 import { formatNumberWithStyle, tokenAssets } from '~/utils'
 import { useStoreActions } from '~/store'
@@ -7,7 +7,7 @@ import { RewardsTokenArray } from '~/components/TokenArray'
 import { Stats, type StatProps } from '~/components/Stats'
 import { Link } from '~/components/Link'
 import { Loader } from '~/components/Loader'
-import { RefreshCw } from 'react-feather'
+// import { RefreshCw } from 'react-feather'
 import { useStakingSummary } from '~/hooks/useStakingSummary'
 import { useStoreState } from 'easy-peasy'
 import { useStakingData } from '~/hooks/useStakingData'
@@ -17,14 +17,14 @@ import { ethers } from 'ethers'
 export function StakeStats() {
     const {
         vaultModel: { liquidationData },
-        popupsModel: { isStakeClaimPopupOpen },
+        // popupsModel: { isStakeClaimPopupOpen },
     } = useStoreState((state) => state)
     const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
-    const { loading, totalStaked, myStaked, myShare, stakingApr, boost, stakingData } = useStakingSummary()
+    const { loading, totalStaked, myStaked, myShare, boost, stakingData } = useStakingSummary()
 
-    const { userRewards, refetchAll } = useStakingData()
+    const { userRewards } = useStakingData()
 
-    const [claiming, setClaiming] = useState(false)
+    // const [claiming, setClaiming] = useState(false)
 
     const { prices: veloPrices } = useVelodromePrices()
 

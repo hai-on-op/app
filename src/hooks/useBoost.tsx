@@ -1,12 +1,12 @@
 import { useMemo, useCallback, useEffect } from 'react'
-import { useStoreState, useStoreActions } from '~/store'
-import { useVault } from '~/providers/VaultProvider'
+import { useStoreActions } from '~/store'
+// import { useVault } from '~/providers/VaultProvider'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { useAccount } from 'wagmi'
 import { formatUnits } from 'ethers/lib/utils'
 import { useLPData } from '~/providers/LPDataProvider'
 import { useVelodromePositions } from './useVelodrome'
-import { formatNumberWithStyle } from '~/utils'
+// import { formatNumberWithStyle } from '~/utils'
 import { useStaking } from '~/providers/StakingProvider'
 import { useHaiVeloData } from './useHaiVeloData'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
@@ -23,7 +23,7 @@ export function useBoost() {
     // Use LP data from our enhanced model
     const {
         pool,
-        userPositions,
+        // userPositions,
         userLPPositionValue,
         userTotalLiquidity,
         loading: lpDataLoading,
@@ -32,7 +32,7 @@ export function useBoost() {
         userKiteRatioMap,
         userPositionsMap,
     } = useLPData()
-    const { data: veloPositions, loading: positionsLoading } = useVelodromePositions()
+    const { loading: positionsLoading } = useVelodromePositions()
     const { prices: veloPrices } = useVelodromePrices()
     const { stakingData, stakingStats, loading: stakingLoading } = useStaking()
     const { userHaiVELODeposited, totalHaiVELODeposited } = useHaiVeloData()

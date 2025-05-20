@@ -41,7 +41,7 @@ export function OverviewStat({
     convertedValue,
     alert,
     simulatedValue,
-    simulationMode = false,
+    // simulationMode = false,
     fullWidth = false,
     loading = false,
 }: OverviewStatProps) {
@@ -160,8 +160,8 @@ export function OverviewProgressStat({
         ? typeof simulatedValue === 'number'
             ? `${Math.min(Math.max(simulatedValue, 1), 2).toFixed(2)}x`
             : simulatedValue.endsWith('x')
-            ? simulatedValue
-            : `${simulatedValue}x`
+                ? simulatedValue
+                : `${simulatedValue}x`
         : undefined
 
     // Create progress object if not provided
@@ -175,9 +175,9 @@ export function OverviewProgressStat({
         simulatedProgressProp ||
         (formattedSimulatedValue
             ? {
-                  progress: Number(formattedSimulatedValue.replace('x', '')) - 1,
-                  label: formattedSimulatedValue,
-              }
+                progress: Number(formattedSimulatedValue.replace('x', '')) - 1,
+                label: formattedSimulatedValue,
+            }
             : undefined)
 
     // Default colorLimits and labels if not provided

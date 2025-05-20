@@ -3,23 +3,23 @@ import { useEffect, useMemo, useState } from 'react'
 import { ActionState, VaultAction, formatNumberWithStyle } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { useVault } from '~/providers/VaultProvider'
-import { formatCollateralLabel } from '~/utils'
+// import { formatCollateralLabel } from '~/utils'
 import styled from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
 import { NumberInput } from '~/components/NumberInput'
-import { WrapETHModal } from '~/components/Modal/WrapETHModal'
+// import { WrapETHModal } from '~/components/Modal/WrapETHModal'
 import { ManageStakingError } from './ManageStakingError'
 import { CheckBox } from '~/components/CheckBox'
-import { VaultTxModal } from '~/components/Modal/VaultTxModal'
+// import { VaultTxModal } from '~/components/Modal/VaultTxModal'
 import { StakingTxModal } from '~/components/Modal/StakingTxModal'
 
-import { Info } from '~/components/Icons/Info'
+// import { Info } from '~/components/Icons/Info'
 import { useBalances, useEthersSigner } from '~/hooks'
 import { useStakingData } from '~/hooks/useStakingData'
-import { Loader } from '~/components/Loader'
+// import { Loader } from '~/components/Loader'
 import { AvailabilityBadge } from '~/components/AvailabilityBadge'
-import { stakingModel } from '~/model/stakingModel'
-import { formatTimeFromSeconds, secondsToDays } from '~/utils/time'
+// import { stakingModel } from '~/model/stakingModel'
+import { formatTimeFromSeconds } from '~/utils/time'
 import { useAccount } from 'wagmi'
 
 type StakingSimulation = {
@@ -35,7 +35,7 @@ type ManageStakingProps = {
 
 export function ManageStaking({ simulation }: ManageStakingProps) {
     const { stakingAmount, unstakingAmount, setStakingAmount, setUnstakingAmount } = simulation
-    const [haiBalance, kiteBalance] = useBalances(['HAI', 'KITE'])
+    const [, kiteBalance] = useBalances(['HAI', 'KITE'])
     const { stakingData, cooldownPeriod, loading: stakingDataLoading, refetchAll } = useStakingData()
     const signer = useEthersSigner()
     const { address } = useAccount()
@@ -89,17 +89,17 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
     const isStaking = Number(stakingAmount) > 0
 
     const {
-        vaultModel: vaultActions,
+        // vaultModel: vaultActions,
         popupsModel: { toggleModal },
         stakingModel: stakingActions,
         popupsModel: popupsActions,
     } = useStoreActions((actions) => actions)
     const { stakingModel: stakingStates } = useStoreState((state) => state)
 
-    const { vault, action, setAction, formState, updateForm, collateral, debt, summary, error } = useVault()
+    const { action, formState, collateral } = useVault()
 
     const isWithdraw = action === VaultAction.WITHDRAW_REPAY || action === VaultAction.WITHDRAW_BORROW
-    const isRepay = action === VaultAction.WITHDRAW_REPAY || action === VaultAction.DEPOSIT_REPAY
+    // const isRepay = action === VaultAction.WITHDRAW_REPAY || action === VaultAction.DEPOSIT_REPAY
 
     const [reviewActive, setReviewActive] = useState(false)
     const [withdrawActive, setWithdrawActive] = useState(false)
@@ -144,10 +144,10 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                         isUnStaking
                             ? unstakingAmount
                             : isStaking
-                            ? stakingAmount
-                            : pendingWithdrawal
-                            ? pendingWithdrawal.amount
-                            : ''
+                                ? stakingAmount
+                                : pendingWithdrawal
+                                    ? pendingWithdrawal.amount
+                                    : ''
                     }
                     stakedAmount={stakingData.stakedBalance}
                     onClose={() => {
@@ -169,10 +169,10 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                         isUnStaking
                             ? unstakingAmount
                             : isStaking
-                            ? stakingAmount
-                            : pendingWithdrawal
-                            ? pendingWithdrawal.amount
-                            : ''
+                                ? stakingAmount
+                                : pendingWithdrawal
+                                    ? pendingWithdrawal.amount
+                                    : ''
                     }
                     stakedAmount={stakingData.stakedBalance}
                     onClose={() => {
@@ -226,9 +226,9 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                         conversion={
                             stakingAmount && Number(stakingAmount) > 0
                                 ? `~${formatNumberWithStyle(
-                                      parseFloat(collateral.priceInUSD || '0') * parseFloat(stakingAmount),
-                                      { style: 'currency' }
-                                  )}`
+                                    parseFloat(collateral.priceInUSD || '0') * parseFloat(stakingAmount),
+                                    { style: 'currency' }
+                                )}`
                                 : ''
                         }
                         style={!isWithdraw ? undefined : { opacity: 0.4 }}
@@ -255,9 +255,9 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                         conversion={
                             formState.deposit && Number(formState.deposit) > 0
                                 ? `~${formatNumberWithStyle(
-                                      parseFloat(collateral.priceInUSD || '0') * parseFloat(formState.deposit),
-                                      { style: 'currency' }
-                                  )}`
+                                    parseFloat(collateral.priceInUSD || '0') * parseFloat(formState.deposit),
+                                    { style: 'currency' }
+                                )}`
                                 : ''
                         }
                         style={!isWithdraw ? undefined : { opacity: 0.4 }}
@@ -385,16 +385,16 @@ const Body = styled(Flex).attrs((props) => ({
     padding: 24px;
     overflow: auto;
 `
-const WrapEthText = styled(Text).attrs((props) => ({
-    $textAlign: 'right',
-    $color: 'rgba(0,0,0,0.5)',
-    $fontSize: '0.67em',
-    ...props,
-}))`
-    width: 100%;
-    margin-top: 8px;
-    cursor: pointer;
-`
+// const WrapEthText = styled(Text).attrs((props) => ({
+//     $textAlign: 'right',
+//     $color: 'rgba(0,0,0,0.5)',
+//     $fontSize: '0.67em',
+//     ...props,
+// }))`
+//     width: 100%;
+//     margin-top: 8px;
+//     cursor: pointer;
+// `
 
 const Footer = styled(CenteredFlex).attrs((props) => ({
     $column: true,

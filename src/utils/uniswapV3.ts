@@ -114,15 +114,15 @@ function calculateCurrentAmounts(
         const amount1Raw = position.amount1
 
         // Format amounts as human readable with commas
-        const formatWithCommas = (value: string): string => {
-            const parts = value.split('.')
-            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-            return parts.join('.')
-        }
+        // const formatWithCommas = (value: string): string => {
+        //     const parts = value.split('.')
+        //     parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+        //     return parts.join('.')
+        // }
 
         // Get human readable values with proper decimals and commas
-        const amount0Human = formatWithCommas(amount0Raw.toSignificant(6))
-        const amount1Human = formatWithCommas(amount1Raw.toSignificant(6))
+        // const amount0Human = formatWithCommas(amount0Raw.toSignificant(6))
+        // const amount1Human = formatWithCommas(amount1Raw.toSignificant(6))
 
         return {
             amount0: amount0Raw,

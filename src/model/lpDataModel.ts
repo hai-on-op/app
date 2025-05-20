@@ -1,7 +1,7 @@
 import { type Action, type Thunk, action, thunk } from 'easy-peasy'
 import * as lpDataService from '~/services/lpData'
 import { calculateLPBoost } from '~/services/boostService'
-import type { StoreModel } from './index'
+// import type { StoreModel } from './index'
 
 // Define user position type
 export type UserPosition = {
@@ -399,7 +399,7 @@ export const lpDataModel: LPDataModel = {
         actions.setToken1UsdPrice(token1UsdPrice)
     }),
 
-    calculateAllPositionValues: thunk(async (actions, _, { getState, getStoreActions }) => {
+    calculateAllPositionValues: thunk(async (actions, _, { getState }) => {
         const { userPositionsMap, pool, token0UsdPrice, token1UsdPrice, account } = getState()
 
         if (

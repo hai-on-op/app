@@ -90,14 +90,14 @@ export function useStakingSummary(): StakingSummaryData {
     } = useStakingData()
     const { prices: veloPrices } = useVelodromePrices()
     const isOptimistic = useStoreState((state) => state.stakingModel.isOptimistic)
-    const optimisticData = useStoreState((state) => state.stakingModel.optimisticData)
+    // const optimisticData = useStoreState((state) => state.stakingModel.optimisticData)
     const {
-        userHaiVELODeposited,
-        totalHaiVELODeposited,
-        userKITEStaked,
-        totalKITEStaked,
-        userLPPosition,
-        totalPoolLiquidity,
+        // userHaiVELODeposited,
+        // totalHaiVELODeposited,
+        // userKITEStaked,
+        // totalKITEStaked,
+        // userLPPosition,
+        // totalPoolLiquidity,
         userLPPositionValue,
         lpBoostValue,
         userTotalValue,
@@ -130,17 +130,14 @@ export function useStakingSummary(): StakingSummaryData {
 
     // Calculate staking APR
     const stakingApyRewardsTotal = useMemo(() => {
-        return stakingApyData.reduce(
-            (acc, item) => {
-                // Access price based on token address
-                const price = rewardsDataMap[item.rpToken as string] || 0
-                const scaledPrice = utils.parseUnits(price.toString(), 18)
-                const amount = item.rpRate.mul(scaledPrice)
-                const nextAcc = acc.add(amount)
-                return nextAcc
-            },
-            utils.parseUnits('0', 18)
-        )
+        return stakingApyData.reduce((acc, item) => {
+            // Access price based on token address
+            const price = rewardsDataMap[item.rpToken as string] || 0
+            const scaledPrice = utils.parseUnits(price.toString(), 18)
+            const amount = item.rpRate.mul(scaledPrice)
+            const nextAcc = acc.add(amount)
+            return nextAcc
+        }, utils.parseUnits('0', 18))
     }, [stakingApyData, rewardsDataMap])
 
     // Calculate total staking APR
@@ -177,9 +174,9 @@ export function useStakingSummary(): StakingSummaryData {
         // typeof stakedBalance === 'string' ? stakedBalance : String(stakedBalance || '0')
 
         // Ensure pendingWithdrawal.amount is treated as a string
-        const pendingAmount = stakingData.pendingWithdrawal
-            ? Number(String(stakingData.pendingWithdrawal.amount || '0'))
-            : 0
+        // const pendingAmount = stakingData.pendingWithdrawal
+        //     ? Number(String(stakingData.pendingWithdrawal.amount || '0'))
+        //     : 0
 
         return Number(balanceStr) //+ pendingAmount
     }, [stakedBalance, usersStakingData, stakingData.pendingWithdrawal, address])
@@ -376,10 +373,10 @@ export function useStakingSummary(): StakingSummaryData {
     // Return all necessary data and functions
     return stakingSummary
         ? {
-              ...stakingSummary,
-              stakingData,
-              simulateNetBoost,
-              calculateSimulatedValues,
-          }
+            ...stakingSummary,
+            stakingData,
+            simulateNetBoost,
+            calculateSimulatedValues,
+        }
         : defaultSummary
 }

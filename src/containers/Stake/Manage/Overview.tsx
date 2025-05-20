@@ -1,23 +1,23 @@
 import { useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
-import { formatCollateralLabel } from '~/utils'
-import { Status, VaultAction, formatNumberWithStyle } from '~/utils'
-import { useStoreState } from '~/store'
-import { useVault } from '~/providers/VaultProvider'
-import { useEarnStrategies } from '~/hooks'
-import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
+// import { useTranslation } from 'react-i18next'
+// import { formatCollateralLabel } from '~/utils'
+import { Status, formatNumberWithStyle } from '~/utils'
+// import { useStoreState } from '~/store'
+// import { useVault } from '~/providers/VaultProvider'
+// import { useEarnStrategies } from '~/hooks'
+// import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { useStakingSummary } from '~/hooks/useStakingSummary'
 import { Loader } from '~/components/Loader'
-import { ComingSoon } from '~/components/ComingSoon'
+// import { ComingSoon } from '~/components/ComingSoon'
 
 import styled from 'styled-components'
 import { type DashedContainerProps, DashedContainerStyle, Flex, Grid, Text, CenteredFlex } from '~/styles'
 import { Swirl } from '~/components/Icons/Swirl'
 import { StatusLabel } from '~/components/StatusLabel'
 import { OverviewProgressStat, OverviewStat } from './OverviewStat'
-import { AlertTriangle, ArrowLeft, ArrowRight } from 'react-feather'
-import { useBoost } from '~/hooks/useBoost'
-import { BigNumber, utils } from 'ethers'
+// import { AlertTriangle, ArrowLeft, ArrowRight } from 'react-feather'
+// import { useBoost } from '~/hooks/useBoost'
+// import { BigNumber, utils } from 'ethers'
 type StakingSimulation = {
     stakingAmount: string
     unstakingAmount: string
@@ -31,7 +31,7 @@ type OverviewProps = {
 
 export function Overview({ simulation }: OverviewProps) {
     const { stakingAmount, unstakingAmount } = simulation
-    const { t } = useTranslation()
+    // const { t } = useTranslation()
     const {
         loading,
         kitePrice,
@@ -144,9 +144,9 @@ export function Overview({ simulation }: OverviewProps) {
                     simulatedValue={
                         simValues.totalStakedAfterTx !== totalStaked.amount
                             ? formatNumberWithStyle(simValues.totalStakedAfterTx, {
-                                  minDecimals: 0,
-                                  maxDecimals: 2,
-                              })
+                                minDecimals: 0,
+                                maxDecimals: 2,
+                            })
                             : undefined
                     }
                     labelOnTop
@@ -162,9 +162,9 @@ export function Overview({ simulation }: OverviewProps) {
                     simulatedValue={
                         simValues.myStakedAfterTx !== myStaked.effectiveAmount
                             ? formatNumberWithStyle(simValues.myStakedAfterTx, {
-                                  minDecimals: 0,
-                                  maxDecimals: 2,
-                              })
+                                minDecimals: 0,
+                                maxDecimals: 2,
+                            })
                             : undefined
                     }
                     labelOnTop
@@ -179,9 +179,9 @@ export function Overview({ simulation }: OverviewProps) {
                     simulatedValue={
                         simValues.myShareAfterTx !== myShare.value
                             ? `${formatNumberWithStyle(simValues.myShareAfterTx, {
-                                  minDecimals: 0,
-                                  maxDecimals: 2,
-                              })}%`
+                                minDecimals: 0,
+                                maxDecimals: 2,
+                            })}%`
                             : undefined
                     }
                 />
@@ -208,9 +208,9 @@ export function Overview({ simulation }: OverviewProps) {
                     simulatedValue={
                         boost.netBoostValue !== simValues.netBoostAfterTx
                             ? `${formatNumberWithStyle(simValues.netBoostAfterTx, {
-                                  minDecimals: 2,
-                                  maxDecimals: 2,
-                              })}x`
+                                minDecimals: 2,
+                                maxDecimals: 2,
+                            })}x`
                             : undefined
                     }
                     alert={{ value: 'BOOST', status: Status.POSITIVE }}
@@ -225,12 +225,12 @@ export function Overview({ simulation }: OverviewProps) {
                     simulatedProgress={
                         boost.netBoostValue !== simValues.netBoostAfterTx
                             ? {
-                                  progress: simValues.netBoostAfterTx - 1,
-                                  label: `${formatNumberWithStyle(simValues.netBoostAfterTx, {
-                                      minDecimals: 2,
-                                      maxDecimals: 2,
-                                  })}x`,
-                              }
+                                progress: simValues.netBoostAfterTx - 1,
+                                label: `${formatNumberWithStyle(simValues.netBoostAfterTx, {
+                                    minDecimals: 2,
+                                    maxDecimals: 2,
+                                })}x`,
+                            }
                             : undefined
                     }
                     colorLimits={[0.25, 0.5, 0.75]}

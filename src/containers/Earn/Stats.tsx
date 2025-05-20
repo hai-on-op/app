@@ -5,7 +5,7 @@ import { formatNumberWithStyle } from '~/utils'
 import { useStoreActions } from '~/store'
 import { useEarnStrategies } from '~/hooks'
 
-import { HaiButton, Text } from '~/styles'
+import { HaiButton } from '~/styles'
 import { RewardsTokenArray } from '~/components/TokenArray'
 import { Stats, type StatProps } from '~/components/Stats'
 import { Loader } from '~/components/Loader'
@@ -38,11 +38,11 @@ export function EarnStats() {
     const { rows, averageAPR } = useEarnStrategies()
     const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
 
-    const { netBoostValue, baseAPR } = useBoost()
+    const { netBoostValue } = useBoost()
 
     //console.log('baseAPR', netBoostValue, baseAPR)
 
-    const { value, apy } = useMemo(() => {
+    const { value } = useMemo(() => {
         return rows.reduce(
             (obj, { userPosition = '0', apy }) => {
                 const apyToUse = apy ? apy : 0
@@ -115,9 +115,9 @@ export function EarnStats() {
             header: isNaN(netBoostValue)
                 ? '...'
                 : `${formatNumberWithStyle(netBoostValue, {
-                      minDecimals: 0,
-                      maxDecimals: 2,
-                  })}x`,
+                    minDecimals: 0,
+                    maxDecimals: 2,
+                })}x`,
             label: 'My Net HAI Boost',
             badge: 'BOOST',
             tooltip: 'Your current boost multiplier based on your staked KITE.',

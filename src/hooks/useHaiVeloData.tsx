@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { ApolloError, useQuery, gql } from '@apollo/client'
-import { formatSummaryValue } from '~/utils'
+// import { formatSummaryValue } from '~/utils'
 import { useAccount } from 'wagmi'
 
 // Define the GraphQL query to fetch HAIVELO collateral data

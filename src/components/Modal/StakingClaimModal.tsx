@@ -1,16 +1,15 @@
 import { useStoreActions, useStoreState } from '~/store'
 import { Modal } from '.'
 import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
-import { ActionState, formatNumberWithStyle, tokenMap, wait, isFormattedAddress, slugify, TOKEN_LOGOS } from '~/utils'
+import { ActionState, formatNumberWithStyle, tokenMap } from '~/utils'
 import styled from 'styled-components'
 import { ContentWithStatus } from '../ContentWithStatus'
 import { tokenAssets } from '~/utils'
-import type { IAuction } from '~/types'
 import { handleTransactionError, useEthersSigner } from '~/hooks'
-import { useAccount } from 'wagmi'
+// import { useAccount } from 'wagmi'
 import { useState } from 'react'
 import { TokenArray } from '../TokenArray'
-import dayjs from 'dayjs'
+// import dayjs from 'dayjs'
 import { useStakingData } from '~/hooks/useStakingData'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { ethers } from 'ethers'
@@ -177,14 +176,14 @@ type ClaimableAssetProps = {
       }
 )*/
 
-const returnDaysLeftToClaim = (date: number) => {
-    const deploymentTime = dayjs(date * 1000)
-    const dayDiff = dayjs().diff(deploymentTime, 'day')
-    if (dayDiff > 90) {
-        return 0
-    }
-    return 90 - dayjs().diff(deploymentTime, 'day')
-}
+// const returnDaysLeftToClaim = (date: number) => {
+//     const deploymentTime = dayjs(date * 1000)
+//     const dayDiff = dayjs().diff(deploymentTime, 'day')
+//     if (dayDiff > 90) {
+//         return 0
+//     }
+//     return 90 - dayjs().diff(deploymentTime, 'day')
+// }
 
 const ClaimableAssetContainer = styled(Flex).attrs((props) => ({
     $width: '100%',
@@ -199,19 +198,19 @@ const ClaimableAssetContainer = styled(Flex).attrs((props) => ({
 `
 
 function ClaimableAsset({ asset, amount, price = 0, claim }: ClaimableAssetProps) {
-    const signer = useEthersSigner()
-    const { address: account } = useAccount()
+    // const signer = useEthersSigner()
+    // const { address: account } = useAccount()
 
-    const {
-        auctionModel: auctionActions,
-        popupsModel: popupsActions,
-        transactionsModel: transactionsActions,
-    } = useStoreActions((actions) => actions)
+    // const {
+    //     auctionModel: auctionActions,
+    //     popupsModel: popupsActions,
+    //     transactionsModel: transactionsActions,
+    // } = useStoreActions((actions) => actions)
 
-    const [status, setStatus] = useState(ActionState.NONE)
+    const [status] = useState(ActionState.NONE)
 
-    const onClaim = async () => {
-        /*if (incentive) {
+    // const onClaim = async () => {
+    /*if (incentive) {
             const formatted = isFormattedAddress(account)
             if (!formatted) {
                 console.debug('wrong address')
@@ -292,7 +291,7 @@ function ClaimableAsset({ asset, amount, price = 0, claim }: ClaimableAssetProps
                 })
             }
         }*/
-    }
+    // }
 
     if (!claim) return <div></div>
 

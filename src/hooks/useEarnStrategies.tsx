@@ -21,7 +21,7 @@ import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { useVelodrome, useVelodromePositions } from './useVelodrome'
 import { useBalance, useMyVaults, useCollateralStats } from '~/hooks'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
-import { useLPData } from '~/providers/LPDataProvider'
+// import { useLPData } from '~/providers/LPDataProvider'
 import { useHaiVeloData } from './useHaiVeloData'
 import { calculateHaiVeloBoost } from '~/services/boostService'
 
@@ -60,7 +60,7 @@ export function useEarnStrategies() {
     const { userCollateralMapping } = useHaiVeloData()
     const isHaiVeloDataLoaded = !!userCollateralMapping
 
-    const haiPrice = parseFloat(liquidationData?.currentRedemptionPrice || '1')
+    // const haiPrice = parseFloat(liquidationData?.currentRedemptionPrice || '1')
 
     const { address } = useAccount()
     const { prices: veloPrices, loading: veloPricesLoading } = useVelodromePrices()
@@ -105,7 +105,7 @@ export function useEarnStrategies() {
         }
     }, [liquidationData?.currentRedemptionPrice, liquidationData?.collateralLiquidationData, veloPrices])
 
-    const defaultPrices = { HAI: 0, KITE: 0, VELO: 0, OP: 0, WETH: 0 }
+    // const defaultPrices = { HAI: 0, KITE: 0, VELO: 0, OP: 0, WETH: 0 }
 
     const vaultStrategies = useMemo(() => {
         if (!data?.collateralTypes || !prices) return []
@@ -247,7 +247,7 @@ export function useEarnStrategies() {
             const tvl = tvl0 + tvl1
             const veloAPR = (365 * parseFloat(formatUnits(pool.emissions, pool.decimals)) * prices.VELO * 86400) / tvl
 
-            const apy = veloAPR === Infinity ? 0 : Math.pow(1 + veloAPR / 12, 12) - 1
+            // const apy = veloAPR === Infinity ? 0 : Math.pow(1 + veloAPR / 12, 12) - 1
 
             temp.push({
                 pair: [token0, token1] as any,

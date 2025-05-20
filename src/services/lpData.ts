@@ -4,7 +4,7 @@ import { Position, FeeAmount, Pool } from '@uniswap/v3-sdk'
 import { Token } from '@uniswap/sdk-core'
 import JSBI from 'jsbi'
 import type { PoolData, UserPosition, CurrentUserPosition } from '~/model/lpDataModel'
-import { calculatePositionValue, createPositionFromPoolData } from '~/utils/uniswapV3'
+import { calculatePositionValue } from '~/utils/uniswapV3'
 
 // Pool ID from the subgraph
 export const POOL_ID = '0x146b020399769339509c98b7b353d19130c150ec'
@@ -222,12 +222,12 @@ export async function fetchPoolData(): Promise<PoolData | null> {
 export async function fetchUserPositions(owner: string): Promise<UserPosition[] | null> {
     try {
         // First fetch pool data
-        const poolResult = await lpClient.query({
-            query: POOL_DATA_QUERY,
-            variables: {
-                id: POOL_ID,
-            },
-        })
+        // const poolResult = await lpClient.query({
+        //     query: POOL_DATA_QUERY,
+        //     variables: {
+        //         id: POOL_ID,
+        //     },
+        // })
 
         // Then fetch user positions
         const positionsResult = await lpClient.query({
@@ -238,7 +238,7 @@ export async function fetchUserPositions(owner: string): Promise<UserPosition[] 
             },
         })
 
-        const { data: poolData } = poolResult
+        // const { data: poolData } = poolResult
         const { data: positionsData } = positionsResult
 
         return positionsData.positions
@@ -312,17 +312,14 @@ export function calculateCurrentPositionComposition(
  * Groups positions by user address
  */
 export function groupPositionsByUser(positions: UserPosition[]): Record<string, UserPosition[]> {
-    return positions.reduce(
-        (grouped, position) => {
-            const owner = position.owner.toLowerCase()
-            if (!grouped[owner]) {
-                grouped[owner] = []
-            }
-            grouped[owner].push(position)
-            return grouped
-        },
-        {} as Record<string, UserPosition[]>
-    )
+    return positions.reduce((grouped, position) => {
+        const owner = position.owner.toLowerCase()
+        if (!grouped[owner]) {
+            grouped[owner] = []
+        }
+        grouped[owner].push(position)
+        return grouped
+    }, {} as Record<string, UserPosition[]>)
 }
 
 /**

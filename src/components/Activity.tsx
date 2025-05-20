@@ -7,7 +7,7 @@ import { ExternalLink } from 'react-feather'
 import { formatNumberWithStyle } from '~/utils'
 import { Table } from '~/components/Table'
 import { type SortableHeader } from '~/types'
-import { Flex, Grid, Text } from '~/styles'
+import { Grid, Text } from '~/styles'
 
 // Initialize dayjs relative time plugin
 dayjs.extend(relativeTime)
@@ -44,7 +44,7 @@ const TableHeader = styled(Grid)`
     padding: 12px 24px;
 `
 
-export function Activity({ activities = [], children, fun = false }: ActivityProps) {
+export function Activity({ activities = [] }: ActivityProps) {
     const headers: SortableHeader[] = [
         {
             label: 'Action',
@@ -86,11 +86,11 @@ export function Activity({ activities = [], children, fun = false }: ActivityPro
                                 <Text>
                                     {activity.boostChange
                                         ? formatNumberWithStyle(parseFloat(activity.boostChange), {
-                                              maxDecimals: 2,
-                                              minDecimals: 2,
-                                              scalingFactor: 100,
-                                              style: 'percent',
-                                          })
+                                            maxDecimals: 2,
+                                            minDecimals: 2,
+                                            scalingFactor: 100,
+                                            style: 'percent',
+                                        })
                                         : '-'}
                                 </Text>
                             ),

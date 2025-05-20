@@ -1,5 +1,5 @@
 import { type Action, type Thunk, action, thunk } from 'easy-peasy'
-import { JsonRpcSigner, TransactionResponse, Provider } from '@ethersproject/providers'
+import { JsonRpcSigner, Provider } from '@ethersproject/providers'
 import { BigNumber, Contract } from 'ethers'
 import { parseEther } from 'ethers/lib/utils'
 import * as ethers from 'ethers'
@@ -10,17 +10,17 @@ import { handlePreTxGasEstimate } from '~/hooks'
 import StakingManagerABI from '~/abis/StakingManager.json'
 import RewardPoolABI from '~/abis/RewardPool.json'
 
-const ERC20ABI = [
-    {
-        constant: true,
-        inputs: [{ name: '_owner', type: 'address' }],
-        name: 'balanceOf',
-        outputs: [{ name: 'balance', type: 'uint256' }],
-        payable: false,
-        stateMutability: 'view',
-        type: 'function',
-    },
-]
+// const ERC20ABI = [
+//     {
+//         constant: true,
+//         inputs: [{ name: '_owner', type: 'address' }],
+//         name: 'balanceOf',
+//         outputs: [{ name: 'balance', type: 'uint256' }],
+//         payable: false,
+//         stateMutability: 'view',
+//         type: 'function',
+//     },
+// ]
 
 // User staking data interface
 export interface UserStakingData {
@@ -602,7 +602,7 @@ export const stakingModel: StakingModel = {
                 StakingManagerABI,
                 providerOrSigner
             )
-            const stakingManagerTotalStaked = await stakingManager.totalStaked()
+            // const stakingManagerTotalStaked = await stakingManager.totalStaked()
             const rewardsCountBigNum = await stakingManager.rewards()
             const rewardsCount = rewardsCountBigNum.toNumber()
             for (let i = 0; i < rewardsCount; i++) {
@@ -626,7 +626,7 @@ export const stakingModel: StakingModel = {
         await retryAsync(async () => {
             const stakingManager = new Contract(import.meta.env.VITE_STAKING_MANAGER, StakingManagerABI, signer)
             const address = await signer.getAddress()
-            const stakingManagerTotalStaked = await stakingManager.totalStaked()
+            // const stakingManagerTotalStaked = await stakingManager.totalStaked()
             const rewardsCountBigNum = await stakingManager.rewards()
             const rewardsCount = rewardsCountBigNum.toNumber()
 

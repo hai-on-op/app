@@ -4,12 +4,12 @@ import { formatNumberWithStyle } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { useEarnStrategies } from '~/hooks'
 
-import { HaiButton, Text } from '~/styles'
-import { RewardsTokenArray } from '~/components/TokenArray'
+// import { HaiButton, Text } from '~/styles'
+// import { RewardsTokenArray } from '~/components/TokenArray'
 import { Stats, type StatProps } from '~/components/Stats'
-import { Link } from '~/components/Link'
-import { Loader } from '~/components/Loader'
-import { RefreshCw } from 'react-feather'
+// import { Link } from '~/components/Link'
+// import { Loader } from '~/components/Loader'
+// import { RefreshCw } from 'react-feather'
 
 export function BorrowStats() {
     const {
@@ -52,11 +52,11 @@ export function BorrowStats() {
             {
                 header: totalCollateralInUSD
                     ? formatNumberWithStyle(totalCollateralInUSD.toString(), {
-                          style: 'currency',
-                          minDecimals: 1,
-                          maxDecimals: 1,
-                          suffixed: true,
-                      })
+                        style: 'currency',
+                        minDecimals: 1,
+                        maxDecimals: 1,
+                        suffixed: true,
+                    })
                     : '$0',
                 label: 'My Locked Collateral',
                 tooltip:
@@ -65,11 +65,11 @@ export function BorrowStats() {
             {
                 header: totalDebtInUSD
                     ? formatNumberWithStyle(totalDebtInUSD.toString(), {
-                          style: 'currency',
-                          minDecimals: 1,
-                          maxDecimals: 1,
-                          suffixed: true,
-                      })
+                        style: 'currency',
+                        minDecimals: 1,
+                        maxDecimals: 1,
+                        suffixed: true,
+                    })
                     : '$0',
                 label: 'My Total Debt',
                 tooltip: 'The total amount of minted debt tokens multiplied by the protocol redemption price of debt.',

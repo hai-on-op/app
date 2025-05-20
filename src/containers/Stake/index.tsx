@@ -1,10 +1,10 @@
 import { useState } from 'react'
 
-import { useEarnStrategies, useMediaQuery } from '~/hooks'
+// import { useEarnStrategies, useMediaQuery } from '~/hooks'
 
 import { NavContainer } from '~/components/NavContainer'
-import { CheckboxButton } from '~/components/CheckboxButton'
-import { SortByDropdown } from '~/components/SortByDropdown'
+// import { CheckboxButton } from '~/components/CheckboxButton'
+// import { SortByDropdown } from '~/components/SortByDropdown'
 import { Grid } from '~/styles'
 import styled from 'styled-components'
 import { Overview } from './Manage/Overview'

@@ -56,9 +56,9 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
         return !auctionsData
             ? [DEFAULT_BID_CHANGES.increase, DEFAULT_BID_CHANGES.decrease]
             : [
-                  formatEther(auctionsData.surplusAuctionHouseParams.bidIncrease),
-                  formatEther(auctionsData.debtAuctionHouseParams.bidDecrease),
-              ]
+                formatEther(auctionsData.surplusAuctionHouseParams.bidIncrease),
+                formatEther(auctionsData.debtAuctionHouseParams.bidDecrease),
+            ]
     }, [auctionsData])
 
     const collateralPrice = useMemo(() => {
@@ -291,13 +291,13 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
     const claimValues = useMemo(() => {
         return Number(protInternalBalance) > Number(internalBalance)
             ? {
-                  amount: Number(protInternalBalance),
-                  symbol: 'KITE',
-              }
+                amount: Number(protInternalBalance),
+                symbol: 'KITE',
+            }
             : {
-                  amount: Number(internalBalance),
-                  symbol: 'HAI',
-              }
+                amount: Number(internalBalance),
+                symbol: 'HAI',
+            }
     }, [internalBalance, protInternalBalance])
 
     const upperInput = useMemo(() => {
@@ -406,8 +406,8 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
                                     !action.includes('settle') && !action.includes('claim')
                                         ? lowerInput.value || '0'
                                         : action.includes('claim')
-                                        ? claimValues.amount.toLocaleString()
-                                        : auction.buyAmount,
+                                            ? claimValues.amount.toLocaleString()
+                                            : auction.buyAmount,
                             },
                         },
                     ]}
