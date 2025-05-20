@@ -51,8 +51,8 @@ export function useVelodrome() {
                         lp[0] == CL50_HAI_LUSD_ADDRESS
                             ? ['HAI', 'LUSD']
                             : lp[1]
-                                .split('/')
-                                .map((token: string) => token.replace(/^[v|s]AMMV2-/gi, '').toUpperCase()),
+                                  .split('/')
+                                  .map((token: string) => token.replace(/^[v|s]AMMV2-/gi, '').toUpperCase()),
                     address: lp.lp,
                     // symbol: lp[0] == CL50_HAI_LUSD_ADDRESS ? CL50_HAI_LUSD_SYMBOL : lp[1],
                     symbol: lp.symbol,

@@ -115,9 +115,9 @@ export function EarnStats() {
             header: isNaN(netBoostValue)
                 ? '...'
                 : `${formatNumberWithStyle(netBoostValue, {
-                    minDecimals: 0,
-                    maxDecimals: 2,
-                })}x`,
+                      minDecimals: 0,
+                      maxDecimals: 2,
+                  })}x`,
             label: 'My Net HAI Boost',
             badge: 'BOOST',
             tooltip: 'Your current boost multiplier based on your staked KITE.',

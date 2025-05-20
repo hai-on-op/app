@@ -130,14 +130,17 @@ export function useStakingSummary(): StakingSummaryData {
 
     // Calculate staking APR
     const stakingApyRewardsTotal = useMemo(() => {
-        return stakingApyData.reduce((acc, item) => {
-            // Access price based on token address
-            const price = rewardsDataMap[item.rpToken as string] || 0
-            const scaledPrice = utils.parseUnits(price.toString(), 18)
-            const amount = item.rpRate.mul(scaledPrice)
-            const nextAcc = acc.add(amount)
-            return nextAcc
-        }, utils.parseUnits('0', 18))
+        return stakingApyData.reduce(
+            (acc, item) => {
+                // Access price based on token address
+                const price = rewardsDataMap[item.rpToken as string] || 0
+                const scaledPrice = utils.parseUnits(price.toString(), 18)
+                const amount = item.rpRate.mul(scaledPrice)
+                const nextAcc = acc.add(amount)
+                return nextAcc
+            },
+            utils.parseUnits('0', 18)
+        )
     }, [stakingApyData, rewardsDataMap])
 
     // Calculate total staking APR
@@ -373,10 +376,10 @@ export function useStakingSummary(): StakingSummaryData {
     // Return all necessary data and functions
     return stakingSummary
         ? {
-            ...stakingSummary,
-            stakingData,
-            simulateNetBoost,
-            calculateSimulatedValues,
-        }
+              ...stakingSummary,
+              stakingData,
+              simulateNetBoost,
+              calculateSimulatedValues,
+          }
         : defaultSummary
 }

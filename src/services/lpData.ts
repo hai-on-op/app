@@ -312,14 +312,17 @@ export function calculateCurrentPositionComposition(
  * Groups positions by user address
  */
 export function groupPositionsByUser(positions: UserPosition[]): Record<string, UserPosition[]> {
-    return positions.reduce((grouped, position) => {
-        const owner = position.owner.toLowerCase()
-        if (!grouped[owner]) {
-            grouped[owner] = []
-        }
-        grouped[owner].push(position)
-        return grouped
-    }, {} as Record<string, UserPosition[]>)
+    return positions.reduce(
+        (grouped, position) => {
+            const owner = position.owner.toLowerCase()
+            if (!grouped[owner]) {
+                grouped[owner] = []
+            }
+            grouped[owner].push(position)
+            return grouped
+        },
+        {} as Record<string, UserPosition[]>
+    )
 }
 
 /**
