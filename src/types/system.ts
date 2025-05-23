@@ -20,12 +20,25 @@ export type EarnStrategyReward = {
     token: TokenKey
     emission: number
 }
+
+export type BoostAPRData = {
+    totalBoostedValueParticipating: number
+    baseAPR: number
+    myBoost: number
+    myValueParticipating: number
+    myBoostedValueParticipating: number
+    myBoostedShare: number
+    myBoostedAPR: number
+}
+
 export type Strategy = {
     pair: [TokenKey] | [TokenKey, TokenKey]
     rewards: [EarnStrategyReward] | [EarnStrategyReward, EarnStrategyReward]
     tvl: string
-    apy: number
+    apr: number
     userPosition?: string
+    strategyType: 'hold' | 'borrow' | 'farm' | 'deposit'
+    boostAPR?: BoostAPRData
 } & (
     | {
           earnPlatform?: undefined

@@ -39,7 +39,7 @@ export function TokenArray({ tokens, size = 32, label, hideLabel = false }: Toke
         <Flex $align="center" $gap={12} $grow={0}>
             {tokens[0] == 'MOO-VELO-V2-OP-VELO' && (
                 <div style={{ position: 'absolute' }}>
-                    <div style={{ position: 'absolute', top: -20, left: -10 }}>
+                    <div style={{ position: 'absolute', top: -20, left: -10, opacity: 0.65 }}>
                         <BlockBanner text="EXPERIMENTAL" $justify="flex-start" $fontSize=".5rem">
                             --
                         </BlockBanner>
@@ -96,7 +96,7 @@ export function TokenArray({ tokens, size = 32, label, hideLabel = false }: Toke
     )
 }
 
-const IconContainer = styled(CenteredFlex)<{ $size: number; $isKite?: boolean }>`
+export const IconContainer = styled(CenteredFlex)<{ $size: number; $isKite?: boolean }>`
     width: fit-content;
 
     & > * {

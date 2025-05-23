@@ -7,10 +7,15 @@ import { useStoreActions, useStoreState } from '~/store'
 const hostedTokenImages = {
     HAI: 'https://i.postimg.cc/QdVYkNcp/hai-logo.jpg',
     KITE: 'https://i.postimg.cc/Z5g7fkLX/kite-logo.jpg',
+    HAIVELO: 'https://i.postimg.cc/66YBwPjp/hai-velo.png',
 }
 
-export function useAddTokens() {
+export function useAddTokens({ isHaiVelo = false }: { isHaiVelo?: boolean } = {}) {
     const { address } = useAccount()
+
+    const tokenImages = isHaiVelo
+        ? { HAIVELO: hostedTokenImages['HAIVELO'] }
+        : { HAI: hostedTokenImages['HAI'], KITE: hostedTokenImages['KITE'] }
 
     const {
         connectWalletModel: { tokensData },
@@ -31,7 +36,7 @@ export function useAddTokens() {
         })
         try {
             const wasAdded = await addTokensToMetamask(
-                Object.entries(hostedTokenImages).map(([token, image]) => ({
+                Object.entries(tokenImages).map(([token, image]) => ({
                     type: 'ERC20',
                     options: {
                         ...tokensData[token],

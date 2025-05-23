@@ -37,6 +37,7 @@ import {
     TrendingUp,
     Tv,
     User,
+    Lock,
 } from 'react-feather'
 import { Twitter } from '~/components/Icons/Twitter'
 import { Telegram } from '~/components/Icons/Telegram'
@@ -103,14 +104,21 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
                                     Earn
                                 </BrandedDropdown.Item>
                                 <BrandedDropdown.Item
-                                    href="/learn"
-                                    icon={<Grid size={18} />}
-                                    active={location.pathname === '/learn'}
+                                    href="/stake"
+                                    icon={<Lock size={18} />}
+                                    active={location.pathname === '/stake'}
                                 >
-                                    Learn
+                                    Stake
                                 </BrandedDropdown.Item>
                             </>
                         )}
+                        <BrandedDropdown.Item
+                            href="/learn"
+                            icon={<Grid size={18} />}
+                            active={location.pathname === '/learn'}
+                        >
+                            Learn
+                        </BrandedDropdown.Item>
                         <BrandedDropdown.Item
                             href="/auctions"
                             icon={<ShoppingBag size={18} />}
@@ -146,6 +154,15 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
                                 active={location.pathname === '/test/claim'}
                             >
                                 Claim Test Tokens
+                            </BrandedDropdown.Item>
+                        )}
+                        {NETWORK_ID === ChainId.OPTIMISM_SEPOLIA && (
+                            <BrandedDropdown.Item
+                                href="/test/claim-velo"
+                                icon={<Download size={18} />}
+                                active={location.pathname === '/test/claim-velo'}
+                            >
+                                Claim Test Velo
                             </BrandedDropdown.Item>
                         )}
                         <BrandedDropdown.Item onClick={showWrapEth} icon={<Repeat size={18} />}>

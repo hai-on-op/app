@@ -1,0 +1,384 @@
+[
+    {
+        "inputs": [
+            { "internalType": "address", "name": "_rewardToken", "type": "address" },
+            { "internalType": "address", "name": "_stakingManager", "type": "address" },
+            { "internalType": "uint256", "name": "_initialStakedAmount", "type": "uint256" },
+            { "internalType": "uint256", "name": "_duration", "type": "uint256" },
+            { "internalType": "uint256", "name": "_newRewardRatio", "type": "uint256" },
+            { "internalType": "address", "name": "_deployer", "type": "address" }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
+        "inputs": [{ "internalType": "address", "name": "target", "type": "address" }],
+        "name": "AddressEmptyCode",
+        "type": "error"
+    },
+    {
+        "inputs": [{ "internalType": "address", "name": "account", "type": "address" }],
+        "name": "AddressInsufficientBalance",
+        "type": "error"
+    },
+    { "inputs": [], "name": "AlreadyAuthorized", "type": "error" },
+    { "inputs": [], "name": "CallerNotFactory", "type": "error" },
+    { "inputs": [], "name": "FailedInnerCall", "type": "error" },
+    {
+        "inputs": [{ "internalType": "address", "name": "_contract", "type": "address" }],
+        "name": "NoCode",
+        "type": "error"
+    },
+    { "inputs": [], "name": "NotAuthorized", "type": "error" },
+    { "inputs": [], "name": "NotFactoryDeployment", "type": "error" },
+    {
+        "inputs": [
+            { "internalType": "uint256", "name": "_x", "type": "uint256" },
+            { "internalType": "uint256", "name": "_y", "type": "uint256" }
+        ],
+        "name": "NotGreaterThan",
+        "type": "error"
+    },
+    { "inputs": [], "name": "NullAmount", "type": "error" },
+    { "inputs": [], "name": "RewardPool_DecreaseStakeNullAmount", "type": "error" },
+    { "inputs": [], "name": "RewardPool_IncreaseStakeNullAmount", "type": "error" },
+    { "inputs": [], "name": "RewardPool_InsufficientBalance", "type": "error" },
+    { "inputs": [], "name": "RewardPool_InvalidRewardAmount", "type": "error" },
+    { "inputs": [], "name": "RewardPool_InvalidRewardToken", "type": "error" },
+    { "inputs": [], "name": "RewardPool_NewPeriodWillFinishTooSoon", "type": "error" },
+    { "inputs": [], "name": "RewardPool_StakeNullAmount", "type": "error" },
+    { "inputs": [], "name": "RewardPool_WithdrawNullAmount", "type": "error" },
+    {
+        "inputs": [{ "internalType": "address", "name": "token", "type": "address" }],
+        "name": "SafeERC20FailedOperation",
+        "type": "error"
+    },
+    { "inputs": [], "name": "Unauthorized", "type": "error" },
+    { "inputs": [], "name": "UnrecognizedCType", "type": "error" },
+    { "inputs": [], "name": "UnrecognizedParam", "type": "error" },
+    {
+        "anonymous": false,
+        "inputs": [{ "indexed": false, "internalType": "address", "name": "_account", "type": "address" }],
+        "name": "AddAuthorization",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            { "indexed": true, "internalType": "bytes32", "name": "_param", "type": "bytes32" },
+            { "indexed": true, "internalType": "bytes32", "name": "_cType", "type": "bytes32" },
+            { "indexed": false, "internalType": "bytes", "name": "_data", "type": "bytes" }
+        ],
+        "name": "ModifyParameters",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [{ "indexed": false, "internalType": "address", "name": "_account", "type": "address" }],
+        "name": "RemoveAuthorization",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            { "indexed": true, "internalType": "address", "name": "_account", "type": "address" },
+            { "indexed": false, "internalType": "uint256", "name": "_amount", "type": "uint256" }
+        ],
+        "name": "RewardPoolDecreaseStake",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            { "indexed": true, "internalType": "address", "name": "_account", "type": "address" },
+            { "indexed": false, "internalType": "uint256", "name": "_amount", "type": "uint256" }
+        ],
+        "name": "RewardPoolEmergencyWithdrawal",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            { "indexed": true, "internalType": "address", "name": "_account", "type": "address" },
+            { "indexed": false, "internalType": "uint256", "name": "_amount", "type": "uint256" }
+        ],
+        "name": "RewardPoolIncreaseStake",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [{ "indexed": false, "internalType": "uint256", "name": "_reward", "type": "uint256" }],
+        "name": "RewardPoolRewardAdded",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            { "indexed": true, "internalType": "address", "name": "_account", "type": "address" },
+            { "indexed": false, "internalType": "uint256", "name": "_reward", "type": "uint256" }
+        ],
+        "name": "RewardPoolRewardPaid",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            { "indexed": true, "internalType": "address", "name": "_account", "type": "address" },
+            { "indexed": false, "internalType": "uint256", "name": "_amount", "type": "uint256" }
+        ],
+        "name": "RewardPoolStaked",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            { "indexed": true, "internalType": "address", "name": "_account", "type": "address" },
+            { "indexed": false, "internalType": "uint256", "name": "_amount", "type": "uint256" }
+        ],
+        "name": "RewardPoolWithdrawn",
+        "type": "event"
+    },
+    {
+        "inputs": [],
+        "name": "RATIO_MULTIPLIER",
+        "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "_params",
+        "outputs": [
+            { "internalType": "address", "name": "stakingManager", "type": "address" },
+            { "internalType": "uint256", "name": "duration", "type": "uint256" },
+            { "internalType": "uint256", "name": "newRewardRatio", "type": "uint256" }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [{ "internalType": "address", "name": "_account", "type": "address" }],
+        "name": "addAuthorization",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [{ "internalType": "address", "name": "_account", "type": "address" }],
+        "name": "authorizedAccounts",
+        "outputs": [{ "internalType": "bool", "name": "_authorized", "type": "bool" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "authorizedAccounts",
+        "outputs": [{ "internalType": "address[]", "name": "_accounts", "type": "address[]" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "cumulativeStakingManagerRewards",
+        "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "currentRewards",
+        "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [{ "internalType": "uint256", "name": "_wad", "type": "uint256" }],
+        "name": "decreaseStake",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "earned",
+        "outputs": [{ "internalType": "uint256", "name": "_earned", "type": "uint256" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "address", "name": "_rescueReceiver", "type": "address" },
+            { "internalType": "uint256", "name": "_wad", "type": "uint256" }
+        ],
+        "name": "emergencyWithdraw",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "factory",
+        "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    { "inputs": [], "name": "getReward", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
+    {
+        "inputs": [],
+        "name": "historicalRewards",
+        "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [{ "internalType": "uint256", "name": "_wad", "type": "uint256" }],
+        "name": "increaseStake",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "lastTimeRewardApplicable",
+        "outputs": [{ "internalType": "uint256", "name": "_lastTime", "type": "uint256" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "lastUpdateTime",
+        "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "bytes32", "name": "_param", "type": "bytes32" },
+            { "internalType": "bytes", "name": "_data", "type": "bytes" }
+        ],
+        "name": "modifyParameters",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [{ "internalType": "uint256", "name": "_reward", "type": "uint256" }],
+        "name": "notifyRewardAmount",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "params",
+        "outputs": [
+            {
+                "components": [
+                    { "internalType": "address", "name": "stakingManager", "type": "address" },
+                    { "internalType": "uint256", "name": "duration", "type": "uint256" },
+                    { "internalType": "uint256", "name": "newRewardRatio", "type": "uint256" }
+                ],
+                "internalType": "struct IRewardPool.RewardPoolParams",
+                "name": "_rewardPoolParams",
+                "type": "tuple"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "periodFinish",
+        "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [{ "internalType": "uint256", "name": "_rewardsToQueue", "type": "uint256" }],
+        "name": "queueNewRewards",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "queuedRewards",
+        "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [{ "internalType": "address", "name": "_account", "type": "address" }],
+        "name": "removeAuthorization",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "rewardPerToken",
+        "outputs": [{ "internalType": "uint256", "name": "_rewardPerToken", "type": "uint256" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "rewardPerTokenPaid",
+        "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "rewardPerTokenStored",
+        "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "rewardRate",
+        "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "rewardToken",
+        "outputs": [{ "internalType": "contract IERC20", "name": "", "type": "address" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [{ "internalType": "uint256", "name": "_totalStakedUpdated", "type": "uint256" }],
+        "name": "setTotalStaked",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [{ "internalType": "uint256", "name": "_wad", "type": "uint256" }],
+        "name": "stake",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "totalStaked",
+        "outputs": [{ "internalType": "uint256", "name": "_totalStakedAmt", "type": "uint256" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    { "inputs": [], "name": "updateRewardHelper", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
+    {
+        "inputs": [
+            { "internalType": "uint256", "name": "_wad", "type": "uint256" },
+            { "internalType": "bool", "name": "_claim", "type": "bool" }
+        ],
+        "name": "withdraw",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    }
+]

@@ -15,30 +15,30 @@ import { SortByDropdown } from '~/components/SortByDropdown'
 import { CollateralDropdown } from '~/components/CollateralDropdown'
 
 const strategies: StrategyAdProps[] = [
-    {
-        heading: 'DINERO REWARDS',
-        status: 'NOW LIVE',
-        description: 'Earn DINERO tokens by borrowing HAI & providing liquidity',
-        cta: 'Learn More',
-        ctaLink: '/earn',
-        tokenImages: ['DINERO'],
-    },
+    // {
+    //     heading: 'DINERO REWARDS',
+    //     status: 'NOW LIVE',
+    //     description: 'Earn DINERO tokens by borrowing HAI & providing liquidity',
+    //     cta: 'Learn More',
+    //     ctaLink: '/earn',
+    //     tokenImages: ['DINERO'],
+    // },
     {
         heading: 'OP REWARDS',
         status: 'NOW LIVE',
-        description: 'Earn OP tokens by borrowing HAI & providing liquidity',
+        description: 'Earn OP tokens by providing liquidity',
         cta: 'Learn More',
         ctaLink: '/earn',
         tokenImages: ['OP'],
     },
-    {
-        heading: 'KITE REWARDS',
-        status: 'NOW LIVE',
-        description: 'Earn KITE tokens by borrowing HAI & providing liquidity',
-        cta: 'Learn More',
-        ctaLink: '/earn',
-        tokenImages: ['KITE'],
-    },
+    // {
+    //     heading: 'KITE REWARDS',
+    //     status: 'NOW LIVE',
+    //     description: 'Earn KITE tokens by borrowing HAI & providing liquidity',
+    //     cta: 'Learn More',
+    //     ctaLink: '/earn',
+    //     tokenImages: ['KITE'],
+    // },
 ]
 
 type VaultsListProps = {

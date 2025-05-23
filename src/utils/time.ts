@@ -35,9 +35,30 @@ export function parseRemainingTime(ms: number) {
     }
 }
 
+// Returns cooldown period in days (rounded)
+export function secondsToDays(cooldownPeriod: string): number {
+    // cooldownPeriod is a string in seconds
+    const seconds = Number(cooldownPeriod)
+    return Math.round(seconds / 86400)
+}
+
 export enum Timeframe {
     ONE_DAY,
     ONE_WEEK,
     ONE_MONTH,
     ONE_YEAR,
+}
+
+export function formatTimeFromSeconds(seconds: number): string {
+    const days = Math.floor(seconds / 86400)
+    const hours = Math.floor((seconds % 86400) / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
+
+    if (days > 0) {
+        return `${days} ${days === 1 ? 'day' : 'days'}`
+    } else if (hours > 0) {
+        return `${hours} ${hours === 1 ? 'hour' : 'hours'}`
+    } else {
+        return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`
+    }
 }

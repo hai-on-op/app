@@ -14,12 +14,17 @@ import { BorrowStats } from '~/containers/Vaults/Stats'
 import { EarnStats } from '~/containers/Earn/Stats'
 import { AuctionStats } from '~/containers/Auctions/Stats'
 
+import { useFlags } from 'flagsmith/react'
+
 import uniswapLogo from '~/assets/uniswap-icon.svg'
+import { StakeStats } from '~/containers/Stake/Stats'
+import { WrapperAd, WrapperAdProps } from './WrapperAd'
 
 enum Intention {
     AUCTION = 'auctions',
     BORROW = 'vaults',
     EARN = 'earn',
+    STAKE = 'stake',
 }
 
 const copy: Record<
@@ -45,6 +50,11 @@ const copy: Record<
         cta: 'Read more about earning opportunities →',
         ctaLink: `${LINK_TO_DOCS}detailed/intro/hai.html`,
     },
+    [Intention.STAKE]: {
+        subtitle: 'Stake KITE to earn protocol revenue and boost your incentives. ',
+        cta: 'Read more about staking →',
+        ctaLink: `${LINK_TO_DOCS}detailed/intro/hai.html`,
+    },
 }
 
 const typeOptions: BrandedSelectOption[] = [
@@ -55,18 +65,25 @@ const typeOptions: BrandedSelectOption[] = [
         description: 'Mint & borrow $HAI stablecoin against your preferred collateral',
     },
     {
+        label: 'Earn Rewards',
+        value: Intention.EARN,
+        icon: ['HAI', 'OP'],
+        description: 'Earn long term yields by staking a growing list of crypto assets',
+    },
+    {
+        label: 'STAKE $KITE',
+        value: Intention.STAKE,
+        icon: ['KITE'],
+        description: 'Stake KITE to earn revenue share and boost your HAI minting incentives.',
+    },
+    {
         label: 'Buy $HAI',
         value: '',
         icon: <img src={uniswapLogo} alt="" />,
         description: 'Market buy $HAI from various pairs on Uniswap',
-        href: 'https://app.uniswap.org/swap',
+        href: 'https://swap.defillama.com/?chain=optimism&from=&to=0x10398abc267496e49106b07dd6be13364d10dc71',
     },
-    {
-        label: 'Earn Rewards',
-        value: Intention.EARN,
-        icon: ['OP', 'KITE'],
-        description: 'Earn long term yields by staking a growing list of crypto assets',
-    },
+
     {
         label: 'Buy Auctioned Assets',
         value: Intention.AUCTION,
@@ -75,10 +92,24 @@ const typeOptions: BrandedSelectOption[] = [
     },
 ]
 
+const wrappers: WrapperAdProps[] = [
+    {
+        heading: 'haiVELO',
+        status: 'NOW LIVE',
+        description: 'Convert your VELO into haiVELO to use as collateral while earning veVELO rewards.',
+        cta: 'Mint haiVELO',
+        ctaLink: '',
+        tokenImages: ['HAIVELO'],
+    },
+]
+
 type IntentionHeaderProps = {
     children?: ReactChildren
 }
 export function IntentionHeader({ children }: IntentionHeaderProps) {
+    const flags = useFlags(['hai_velo'])
+    const haiVeloEnabled = flags.hai_velo?.enabled
+
     const location = useLocation()
     const history = useHistory()
 
@@ -95,6 +126,12 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
             return {
                 type: Intention.EARN,
                 stats: <EarnStats />,
+            }
+        }
+        if (location.pathname.startsWith('/stake')) {
+            return {
+                type: Intention.STAKE,
+                stats: <StakeStats />,
             }
         }
         if (location.pathname.startsWith('/vaults')) {
@@ -133,12 +170,20 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
                 </Flex>
                 <Text>
                     {subtitle}
+
                     <Link href={ctaLink} $fontWeight={700}>
                         {cta}
                     </Link>
                 </Text>
                 {stats}
                 {children}
+                {haiVeloEnabled && (
+                    <>
+                        {wrappers.map((wrapper, i) => (
+                            <WrapperAd key={i} bgVariant={i} {...wrapper} />
+                        ))}
+                    </>
+                )}
             </Inner>
         </Container>
     )

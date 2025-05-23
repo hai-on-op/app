@@ -21,9 +21,12 @@ import frxethImg from '~/assets/frxeth-img.svg'
 import sfrxethImg from '~/assets/sfrxeth-img.svg'
 import pendleImg from '~/assets/pendle-img.png'
 import apxethImg from '~/assets/apxeth-img.png'
+import alethImg from '~/assets/aleth-img-2.svg'
 import pxethImg from '~/assets/pxeth-img.png'
 import beefyImg from '~/assets/beefy-img.svg'
 import dineroImg from '~/assets/dinero-img.svg'
+import haiVeloImg from '~/assets/hai-velo.png'
+// force rebuild x
 
 export type Tokens = {
     [key: string]: {
@@ -63,6 +66,8 @@ export const TOKEN_LOGOS = {
     MOO: beefyImg,
     DINERO: dineroImg,
     PXETH: pxethImg,
+    ALETH: alethImg,
+    HAIVELO: haiVeloImg,
 }
 
 export const tokenMap: Record<string, string> = {
@@ -127,10 +132,20 @@ export const tokenAssets: Record<string, Token> = {
         name: 'VELO',
         icon: velodromeImg,
     },
+    HAIVELO: {
+        symbol: 'HAIVELO',
+        name: 'HAIVELO',
+        icon: haiVeloImg,
+    },
     APXETH: {
         symbol: 'APXETH',
         name: 'APXETH',
         icon: apxethImg,
+    },
+    ALETH: {
+        symbol: 'ALETH',
+        name: 'ALETH',
+        icon: alethImg,
     },
     PXETH: {
         symbol: 'PXETH',

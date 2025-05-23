@@ -11,7 +11,7 @@ import { RewardsTokenArray, TokenArray } from '~/components/TokenArray'
 import { Tooltip } from '~/components/Tooltip'
 import { HaiArrow } from '~/components/Icons/HaiArrow'
 import { Table, TableContainer } from '~/components/Table'
-
+import { DEPRECATED_COLLATERALS } from '~/utils/constants'
 type AvailableVaultsTableProps = {
     rows: AvailableVaultPair[]
     headers: SortableHeader[]
@@ -22,6 +22,8 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
     const { setActiveVault } = useVault()
 
     const isUpToSmall = useMediaQuery('upToSmall')
+
+    const pausedRewards = ['APXETH', 'PXETH', 'RETH', 'WSTETH', 'OP', 'TBTC']
 
     return (
         <Table
@@ -36,7 +38,7 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                 .sort((a, b) => {
                     return Number(b.hasRewards) - Number(a.hasRewards)
                 })
-                .filter((row) => row.collateralName !== 'WBTC')
+                .filter((row) => !DEPRECATED_COLLATERALS.includes(row.collateralName))
                 .map(
                     ({
                         collateralName,
@@ -47,6 +49,12 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                         eligibleBalance,
                         myVaults: existingVaults,
                     }) => {
+                        const rewardOverride = collateralName == 'HAIVELO'
+
+                        const tooltip =
+                            collateralName == 'HAIVELO'
+                                ? 'haiVELO depositors receive rewards in HAI based off the rewards the protocol receives from voting on Velodrome propotional to their amount of haiVELO deposited.'
+                                : 'Earn OP by providing Liquitity'
                         return (
                             <Table.Row
                                 key={collateralName}
@@ -61,17 +69,12 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                                     label={collateralLabel}
                                                     tokens={[collateralName.toUpperCase() as any]}
                                                 />
-                                                {hasRewards && (
+                                                {((hasRewards && !pausedRewards.includes(collateralName)) ||
+                                                    rewardOverride) && (
                                                     <RewardsTokenArray
-                                                        tokens={
-                                                            collateralName === 'APXETH'
-                                                                ? ['OP', 'KITE', 'DINERO']
-                                                                : ['OP', 'KITE']
-                                                        }
+                                                        tokens={collateralName === 'HAIVELO' ? ['HAI'] : ['OP']}
                                                         label="EARN"
-                                                        tooltip={`Earn OP/KITE${
-                                                            collateralName === 'APXETH' ? '/DINERO' : ''
-                                                        } tokens by minting HAI and providing liquidity`}
+                                                        tooltip={tooltip}
                                                     />
                                                 )}
                                             </Grid>
