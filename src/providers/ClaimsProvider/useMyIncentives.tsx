@@ -3,63 +3,104 @@ import { ChainId, isFormattedAddress } from '~/utils'
 import { StandardMerkleTree } from '@openzeppelin/merkle-tree'
 
 // TODO: THIS MUST GO TO THE SDK
-const REWARD_DISTRIBUTOR_ABI = [
+export const REWARD_DISTRIBUTOR_ABI = [
     {
         inputs: [
-            {
-                internalType: 'uint256',
-                name: 'targetDuration',
-                type: 'uint256',
-            },
+            { internalType: 'uint256', name: '_epochDuration', type: 'uint256' },
+            { internalType: 'address', name: '_rootSetter', type: 'address' },
         ],
         stateMutability: 'nonpayable',
         type: 'constructor',
     },
+    { inputs: [], name: 'AlreadyAuthorized', type: 'error' },
+    { inputs: [], name: 'EnforcedPause', type: 'error' },
+    { inputs: [], name: 'ExpectedPause', type: 'error' },
+    { inputs: [], name: 'NotAuthorized', type: 'error' },
     {
         inputs: [
+            { internalType: 'uint256', name: '_x', type: 'uint256' },
+            { internalType: 'uint256', name: '_y', type: 'uint256' },
+        ],
+        name: 'NotGreaterThan',
+        type: 'error',
+    },
+    { inputs: [], name: 'RewardDistributor_AlreadyClaimed', type: 'error' },
+    {
+        inputs: [],
+        name: 'RewardDistributor_ArrayLengthsMustMatch',
+        type: 'error',
+    },
+    { inputs: [], name: 'RewardDistributor_InvalidAmount', type: 'error' },
+    { inputs: [], name: 'RewardDistributor_InvalidMerkleProof', type: 'error' },
+    { inputs: [], name: 'RewardDistributor_InvalidMerkleRoot', type: 'error' },
+    { inputs: [], name: 'RewardDistributor_InvalidTokenAddress', type: 'error' },
+    { inputs: [], name: 'RewardDistributor_NotRootSetter', type: 'error' },
+    {
+        inputs: [],
+        name: 'RewardDistributor_TooSoonEpochNotElapsed',
+        type: 'error',
+    },
+    { inputs: [], name: 'RewardDistributor_TransferFailed', type: 'error' },
+    { inputs: [], name: 'Unauthorized', type: 'error' },
+    { inputs: [], name: 'UnrecognizedCType', type: 'error' },
+    { inputs: [], name: 'UnrecognizedParam', type: 'error' },
+    {
+        anonymous: false,
+        inputs: [
             {
+                indexed: false,
                 internalType: 'address',
-                name: 'owner',
+                name: '_account',
                 type: 'address',
             },
         ],
-        name: 'OwnableInvalidOwner',
-        type: 'error',
+        name: 'AddAuthorization',
+        type: 'event',
     },
     {
+        anonymous: false,
         inputs: [
             {
+                indexed: true,
+                internalType: 'bytes32',
+                name: '_param',
+                type: 'bytes32',
+            },
+            {
+                indexed: true,
+                internalType: 'bytes32',
+                name: '_cType',
+                type: 'bytes32',
+            },
+            { indexed: false, internalType: 'bytes', name: '_data', type: 'bytes' },
+        ],
+        name: 'ModifyParameters',
+        type: 'event',
+    },
+    {
+        anonymous: false,
+        inputs: [
+            {
+                indexed: false,
                 internalType: 'address',
                 name: 'account',
                 type: 'address',
             },
         ],
-        name: 'OwnableUnauthorizedAccount',
-        type: 'error',
+        name: 'Paused',
+        type: 'event',
     },
     {
         anonymous: false,
         inputs: [
             {
                 indexed: false,
-                internalType: 'address[]',
-                name: 'tokens',
-                type: 'address[]',
-            },
-            {
-                indexed: false,
-                internalType: 'bytes32[]',
-                name: 'roots',
-                type: 'bytes32[]',
-            },
-            {
-                indexed: false,
-                internalType: 'uint256',
-                name: 'counter',
-                type: 'uint256',
+                internalType: 'address',
+                name: '_account',
+                type: 'address',
             },
         ],
-        name: 'MerkleRootsUpdated',
+        name: 'RemoveAuthorization',
         type: 'event',
     },
     {
@@ -68,93 +109,114 @@ const REWARD_DISTRIBUTOR_ABI = [
             {
                 indexed: true,
                 internalType: 'address',
-                name: 'previousOwner',
+                name: '_rescueReceiver',
                 type: 'address',
             },
             {
                 indexed: true,
                 internalType: 'address',
-                name: 'newOwner',
-                type: 'address',
-            },
-        ],
-        name: 'OwnershipTransferred',
-        type: 'event',
-    },
-    {
-        anonymous: false,
-        inputs: [
-            {
-                indexed: false,
-                internalType: 'uint256',
-                name: 'newDuration',
-                type: 'uint256',
-            },
-        ],
-        name: 'RewardDurationUpdated',
-        type: 'event',
-    },
-    {
-        anonymous: false,
-        inputs: [
-            {
-                indexed: true,
-                internalType: 'address',
-                name: 'oldSetter',
-                type: 'address',
-            },
-            {
-                indexed: true,
-                internalType: 'address',
-                name: 'newSetter',
-                type: 'address',
-            },
-        ],
-        name: 'RewardSetterUpdated',
-        type: 'event',
-    },
-    {
-        anonymous: false,
-        inputs: [
-            {
-                indexed: true,
-                internalType: 'address',
-                name: 'user',
-                type: 'address',
-            },
-            {
-                indexed: true,
-                internalType: 'address',
-                name: 'token',
+                name: '_rewardToken',
                 type: 'address',
             },
             {
                 indexed: false,
                 internalType: 'uint256',
-                name: 'amount',
+                name: '_wad',
                 type: 'uint256',
             },
         ],
-        name: 'RewardsClaimed',
+        name: 'RewardDistributorEmergencyWithdrawal',
         type: 'event',
     },
     {
+        anonymous: false,
         inputs: [
             {
+                indexed: true,
                 internalType: 'address',
-                name: 'token',
+                name: '_rewardToken',
                 type: 'address',
             },
             {
-                internalType: 'uint256',
-                name: 'amount',
-                type: 'uint256',
+                indexed: false,
+                internalType: 'bytes32',
+                name: '_merkleRoot',
+                type: 'bytes32',
             },
             {
-                internalType: 'bytes32[]',
-                name: 'merkleProof',
-                type: 'bytes32[]',
+                indexed: false,
+                internalType: 'uint256',
+                name: '_epochCounter',
+                type: 'uint256',
             },
+        ],
+        name: 'RewardDistributorMerkleRootUpdated',
+        type: 'event',
+    },
+    {
+        anonymous: false,
+        inputs: [
+            {
+                indexed: true,
+                internalType: 'address',
+                name: '_account',
+                type: 'address',
+            },
+            {
+                indexed: true,
+                internalType: 'address',
+                name: '_rewardToken',
+                type: 'address',
+            },
+            {
+                indexed: false,
+                internalType: 'uint256',
+                name: '_wad',
+                type: 'uint256',
+            },
+        ],
+        name: 'RewardDistributorRewardClaimed',
+        type: 'event',
+    },
+    {
+        anonymous: false,
+        inputs: [
+            {
+                indexed: false,
+                internalType: 'address',
+                name: 'account',
+                type: 'address',
+            },
+        ],
+        name: 'Unpaused',
+        type: 'event',
+    },
+    {
+        inputs: [{ internalType: 'address', name: '_account', type: 'address' }],
+        name: 'addAuthorization',
+        outputs: [],
+        stateMutability: 'nonpayable',
+        type: 'function',
+    },
+    {
+        inputs: [{ internalType: 'address', name: '_account', type: 'address' }],
+        name: 'authorizedAccounts',
+        outputs: [{ internalType: 'bool', name: '_authorized', type: 'bool' }],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [],
+        name: 'authorizedAccounts',
+        outputs: [{ internalType: 'address[]', name: '_accounts', type: 'address[]' }],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [
+            { internalType: 'address', name: '_token', type: 'address' },
+            { internalType: 'uint256', name: '_wad', type: 'uint256' },
+            { internalType: 'bytes32[]', name: '_merkleProof', type: 'bytes32[]' },
         ],
         name: 'claim',
         outputs: [],
@@ -162,102 +224,71 @@ const REWARD_DISTRIBUTOR_ABI = [
         type: 'function',
     },
     {
-        inputs: [],
-        name: 'duration',
-        outputs: [
-            {
-                internalType: 'uint256',
-                name: '',
-                type: 'uint256',
-            },
+        inputs: [
+            { internalType: 'address', name: '_rescueReceiver', type: 'address' },
+            { internalType: 'address', name: '_token', type: 'address' },
+            { internalType: 'uint256', name: '_wad', type: 'uint256' },
         ],
+        name: 'emergencyWithdraw',
+        outputs: [],
+        stateMutability: 'nonpayable',
+        type: 'function',
+    },
+    {
+        inputs: [],
+        name: 'epochCounter',
+        outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [],
+        name: 'epochDuration',
+        outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
         stateMutability: 'view',
         type: 'function',
     },
     {
         inputs: [
-            {
-                internalType: 'bytes32',
-                name: '',
-                type: 'bytes32',
-            },
-            {
-                internalType: 'address',
-                name: '',
-                type: 'address',
-            },
+            { internalType: 'bytes32', name: '_root', type: 'bytes32' },
+            { internalType: 'address', name: '_account', type: 'address' },
         ],
         name: 'isClaimed',
-        outputs: [
-            {
-                internalType: 'bool',
-                name: '',
-                type: 'bool',
-            },
-        ],
+        outputs: [{ internalType: 'bool', name: '_hasClaimed', type: 'bool' }],
         stateMutability: 'view',
         type: 'function',
     },
     {
         inputs: [],
-        name: 'lastSettedMerkleRoot',
-        outputs: [
-            {
-                internalType: 'uint256',
-                name: '',
-                type: 'uint256',
-            },
-        ],
+        name: 'lastUpdatedTime',
+        outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
         stateMutability: 'view',
         type: 'function',
     },
     {
-        inputs: [],
-        name: 'merkleRootCounter',
-        outputs: [
-            {
-                internalType: 'uint256',
-                name: '',
-                type: 'uint256',
-            },
-        ],
-        stateMutability: 'view',
-        type: 'function',
-    },
-    {
-        inputs: [
-            {
-                internalType: 'address',
-                name: '',
-                type: 'address',
-            },
-        ],
+        inputs: [{ internalType: 'address', name: '_token', type: 'address' }],
         name: 'merkleRoots',
-        outputs: [
-            {
-                internalType: 'bytes32',
-                name: '',
-                type: 'bytes32',
-            },
-        ],
+        outputs: [{ internalType: 'bytes32', name: '_root', type: 'bytes32' }],
         stateMutability: 'view',
         type: 'function',
     },
     {
         inputs: [
-            {
-                internalType: 'address[]',
-                name: 'tokens',
-                type: 'address[]',
-            },
-            {
-                internalType: 'uint256[]',
-                name: 'amounts',
-                type: 'uint256[]',
-            },
+            { internalType: 'bytes32', name: '_param', type: 'bytes32' },
+            { internalType: 'bytes', name: '_data', type: 'bytes' },
+        ],
+        name: 'modifyParameters',
+        outputs: [],
+        stateMutability: 'nonpayable',
+        type: 'function',
+    },
+    {
+        inputs: [
+            { internalType: 'address[]', name: '_tokens', type: 'address[]' },
+            { internalType: 'uint256[]', name: '_wads', type: 'uint256[]' },
             {
                 internalType: 'bytes32[][]',
-                name: 'merkleProofs',
+                name: '_merkleProofs',
                 type: 'bytes32[][]',
             },
         ],
@@ -268,106 +299,43 @@ const REWARD_DISTRIBUTOR_ABI = [
     },
     {
         inputs: [],
-        name: 'owner',
-        outputs: [
-            {
-                internalType: 'address',
-                name: '',
-                type: 'address',
-            },
-        ],
-        stateMutability: 'view',
-        type: 'function',
-    },
-    {
-        inputs: [
-            {
-                internalType: 'address',
-                name: 'token',
-                type: 'address',
-            },
-            {
-                internalType: 'uint256',
-                name: 'amount',
-                type: 'uint256',
-            },
-        ],
-        name: 'recoverERC20',
+        name: 'pause',
         outputs: [],
         stateMutability: 'nonpayable',
         type: 'function',
     },
     {
         inputs: [],
-        name: 'renounceOwnership',
+        name: 'paused',
+        outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [{ internalType: 'address', name: '_account', type: 'address' }],
+        name: 'removeAuthorization',
         outputs: [],
         stateMutability: 'nonpayable',
         type: 'function',
     },
     {
         inputs: [],
-        name: 'rewardSetter',
-        outputs: [
-            {
-                internalType: 'address',
-                name: '',
-                type: 'address',
-            },
-        ],
+        name: 'rootSetter',
+        outputs: [{ internalType: 'address', name: '', type: 'address' }],
         stateMutability: 'view',
         type: 'function',
     },
     {
-        inputs: [
-            {
-                internalType: 'uint256',
-                name: 'newDuration',
-                type: 'uint256',
-            },
-        ],
-        name: 'setDuration',
+        inputs: [],
+        name: 'unpause',
         outputs: [],
         stateMutability: 'nonpayable',
         type: 'function',
     },
     {
         inputs: [
-            {
-                internalType: 'address',
-                name: 'newRewardSetter',
-                type: 'address',
-            },
-        ],
-        name: 'setRewardSetter',
-        outputs: [],
-        stateMutability: 'nonpayable',
-        type: 'function',
-    },
-    {
-        inputs: [
-            {
-                internalType: 'address',
-                name: 'newOwner',
-                type: 'address',
-            },
-        ],
-        name: 'transferOwnership',
-        outputs: [],
-        stateMutability: 'nonpayable',
-        type: 'function',
-    },
-    {
-        inputs: [
-            {
-                internalType: 'address[]',
-                name: 'tokens',
-                type: 'address[]',
-            },
-            {
-                internalType: 'bytes32[]',
-                name: 'roots',
-                type: 'bytes32[]',
-            },
+            { internalType: 'address[]', name: '_tokens', type: 'address[]' },
+            { internalType: 'bytes32[]', name: '_merkleRoots', type: 'bytes32[]' },
         ],
         name: 'updateMerkleRoots',
         outputs: [],
@@ -377,12 +345,13 @@ const REWARD_DISTRIBUTOR_ABI = [
 ]
 
 const tokensAddresses = {
-    KITE: '0x47c6ae06686D35DD7656bE6AF3091Fcd626bbB2f',
-    OP: '0x7a877B2286B63b71b566AE1debdcC3e80Fc4B868',
+    KITE: '0xf467C7d5a4A9C4687fFc7986aC6aD5A4c81E1404',
+    OP: '0x4200000000000000000000000000000000000042',
     DINERO: '0x9FFc23fd5637bc1A2B73E26d61CF65f9873E8d25',
+    HAI: '0x10398AbC267496E49106B07dd6BE13364D10dC71',
 }
 
-const tokens = ['KITE', 'OP', 'DINERO']
+const tokens = ['KITE', 'OP', 'DINERO', 'HAI']
 
 function formatTime(seconds: number) {
     // Handle zero or negative values
@@ -415,14 +384,15 @@ export const fetchIncentivesData = async (geb: any, account: string, chainId: Ch
 
     const rewardDistributor = new ethers.Contract(rewardDistributorAddress, REWARD_DISTRIBUTOR_ABI, geb?.signer)
 
-    const lastSettedMerkleRoot = await rewardDistributor.lastSettedMerkleRoot()
-    //
-
-    const distributionDuration = await rewardDistributor.duration()
+    const lastSettedMerkleRoot = await rewardDistributor.lastUpdatedTime()
+    const distributionDuration = await rewardDistributor.epochDuration()
+    const isPaused = await rewardDistributor.paused()
 
     const currentBlock = await geb.provider.getBlock('latest')
 
     const currentTime = currentBlock.timestamp
+
+    console.log('currentTime', currentTime, currentBlock, distributionDuration, lastSettedMerkleRoot)
 
     const claimData = {}
 
@@ -432,92 +402,160 @@ export const fetchIncentivesData = async (geb: any, account: string, chainId: Ch
 
         const tokenDistroClaims = await fetchTokenDistroClaims(account, chainId, token)
 
-        const tokenTree = StandardMerkleTree.load(tokenDistroClaims[token.toLowerCase()])
+        //console.log(
+        //    'tokenDistroClaims',
+        //    Object.entries(tokenDistroClaims).map(([key, value]) =>
+        //        console.log({ key, value: value.values.map((v) => v.value[0]) })
+        //    )
+        //)
 
-        const distroClaim = tokenDistroClaims[token.toLowerCase()]
-        const distroClaimValues = distroClaim.values
-        const isClaimed = await rewardDistributor.isClaimed(tokenTree.root, account)
+        // console.log('tokenDistroClaims', tokenDistroClaims)
 
-        const accountClaim = distroClaimValues.find(
-            (claim) => claim.value[0].toLowerCase() === account.toLowerCase()
-        ).value
-        const hasClaimableDistros = ethers.BigNumber.from(accountClaim[1]).gt(0) && !isClaimed
-        const claimableAmount = ethers.BigNumber.from(accountClaim[1])
+        try {
+            const tokenTree = StandardMerkleTree.load(tokenDistroClaims[token.toLowerCase()])
 
-        const claimingData = [account, claimableAmount]
+            
 
-        //console.log('claimingData', claimingData)
+            const distroClaim = tokenDistroClaims[token.toLowerCase()]
 
-        const proof = tokenTree.getProof(claimingData)
+            const distroClaimValues = distroClaim.values
+            const isClaimed = await rewardDistributor.isClaimed(tokenTree.root, account)
 
-        const claimIt = async () => {
-            // @ts-ignore
-            return await rewardDistributor.connect(geb.signer).claim(tokensAddresses[token], claimableAmount, proof)
-        }
+            /*  distroClaimValues.find((cV: any) =>
+           console.log(
+                cV.value[0].toLowerCase(),
+                account.toLowerCase(),
+                cV.value[0].toLowerCase() === account.toLowerCase(),
+                cV,
+                '++++++++++++++',
+                distroClaimValues.find((claim: any) => claim.value[0].toLowerCase() === account.toLowerCase())
+            )
+        )*/
 
-        const claimAll = async () => {
-            console.log(tokensAddresses)
+            const accountClaim = distroClaimValues.find(
+                (claim: any) => claim.value[0].toLowerCase() === account.toLowerCase()
+            )?.value
 
-            const targetTokensAddresses: string[] = []
-            const claimableAmounts: ethers.BigNumber[] = []
-            const allProofs: string[][] = []
+            console.log(
+                'tokenTree',
+                token,
+                tokenTree,
+                tokenTree.root,
+                accountClaim,
+                tokenTree.getProof([account, ethers.BigNumber.from(accountClaim[1])])
+            )
 
-            for (let i = 0; i < tokens.length; i++) {
-                const token = tokens[i]
-                const tokenDistroClaims = await fetchTokenDistroClaims(account, chainId, token)
-                const tokenTree = StandardMerkleTree.load(tokenDistroClaims[token.toLowerCase()])
-                const distroClaim = tokenDistroClaims[token.toLowerCase()]
-                const distroClaimValues = distroClaim.values
-                const isClaimed = await rewardDistributor.isClaimed(tokenTree.root, account)
+            if (accountClaim) {
+                //      console.log('Account Claim =======', accountClaim)
+                const hasClaimableDistros = accountClaim && ethers.BigNumber.from(accountClaim[1]).gt(0) && !isClaimed
+                const claimableAmount = accountClaim ? ethers.BigNumber.from(accountClaim[1]) : ethers.BigNumber.from(0)
+                //        console.log('here===================?? ds fvsdv')
 
-                const accountClaim = distroClaimValues.find(
-                    (claim) => claim.value[0].toLowerCase() === account.toLowerCase()
-                ).value
+                const claimingData = [account, claimableAmount]
 
-                const hasClaimableDistros = ethers.BigNumber.from(accountClaim[1]).gt(0) && !isClaimed
+                //console.log('claimingData', claimingData)
 
-                if (hasClaimableDistros) {
-                    const claimableAmount = ethers.BigNumber.from(accountClaim[1])
-                    const claimingData = [account, claimableAmount]
-                    const proof = tokenTree.getProof(claimingData)
+                const proof = tokenTree.getProof(claimingData)
 
-                    targetTokensAddresses.push(tokensAddresses[token])
-                    claimableAmounts.push(claimableAmount)
-                    allProofs.push(proof)
+                const claimIt = async () => {
+                    console.log(tokensAddresses[token], String(claimableAmount), proof, geb.signer, rewardDistributor)
+                    // @ts-ignore
+                    try {
+                        const tx = await rewardDistributor
+                            .connect(geb.signer)
+                            .claim(tokensAddresses[token], claimableAmount, proof)
+                        
+                        // Wait for the transaction to be confirmed
+                        await tx.wait()
+                        return tx
+                    } catch (err) {
+                        console.log('err', err)
+                        throw err
+                    }
                 }
+
+                const claimAll = async () => {
+                    console.log(tokensAddresses)
+
+                    const targetTokensAddresses: string[] = []
+                    const claimableAmounts: ethers.BigNumber[] = []
+                    const allProofs: string[][] = []
+
+                    const tokenDistroClaims = await fetchTokenDistroClaims(account, chainId, 'whatever')
+
+                    for (let i = 0; i < Object.keys(tokenDistroClaims).length; i++) {
+                        const token = Object.keys(tokenDistroClaims)[i].toUpperCase()
+
+                        console.log('claiming all token', token)
+
+                        const tokenTree = StandardMerkleTree.load(tokenDistroClaims[token.toLowerCase()])
+                        const distroClaim = tokenDistroClaims[token.toLowerCase()]
+                        const distroClaimValues = distroClaim.values
+                        const isClaimed = await rewardDistributor.isClaimed(tokenTree.root, account)
+
+                        const accountClaim = distroClaimValues.find(
+                            (claim) => claim.value[0].toLowerCase() === account.toLowerCase()
+                        ).value
+
+                        const hasClaimableDistros = ethers.BigNumber.from(accountClaim[1]).gt(0) && !isClaimed
+
+                        if (hasClaimableDistros) {
+                            const claimableAmount = ethers.BigNumber.from(accountClaim[1])
+                            const claimingData = [account, claimableAmount]
+                            const proof = tokenTree.getProof(claimingData)
+
+                            targetTokensAddresses.push(tokensAddresses[token])
+                            claimableAmounts.push(claimableAmount)
+                            allProofs.push(proof)
+                        }
+                    }
+
+                    //console.log('claiming all', tokensAddresses, claimableAmounts, allProofs)
+
+                    if (targetTokensAddresses.length > 0) {
+                        const tx = await rewardDistributor
+                            .connect(geb.signer)
+                            .multiClaim(targetTokensAddresses, claimableAmounts, allProofs)
+                        
+                        // Wait for the transaction to be confirmed
+                        await tx.wait()
+                        return tx
+                    }
+                    
+                    return null
+                }
+
+                // @ts-ignore
+                claimData[token] = {
+                    distroClaim,
+                    distroClaimValues,
+                    tree: tokenTree,
+                    root: tokenTree.root,
+                    distributorContract: rewardDistributor,
+                    distributor: rewardDistributorAddress,
+                    isClaimed,
+                    accountClaim,
+                    hasClaimableDistros,
+                    amount: claimableAmount,
+                    description: `${token} Daily Rewards`,
+                    createdAt: new Date().getTime(),
+                    claims: [],
+                    proof,
+                    claimIt,
+                    endTime: Number(lastSettedMerkleRoot) + Number(distributionDuration),
+                    nextDistribution: formatTime(
+                        Number(String(distributionDuration)) - (currentTime - Number(String(lastSettedMerkleRoot)))
+                    ),
+                    claimAll,
+                    isPaused,
+                }
+
+                console.log('claimData', token, claimData)
+            } else {
+                console.log('No claim found for account', account, token)
             }
-
-            console.log('claiming all', tokensAddresses, claimableAmounts, allProofs)
-
-            if (targetTokensAddresses.length > 0) {
-                return await rewardDistributor
-                    .connect(geb.signer)
-                    .multiClaim(targetTokensAddresses, claimableAmounts, allProofs)
-            }
-        }
-
-        // @ts-ignore
-        claimData[token] = {
-            distroClaim,
-            distroClaimValues,
-            tree: tokenTree,
-            root: tokenTree.root,
-            distributorContract: rewardDistributor,
-            distributor: rewardDistributorAddress,
-            isClaimed,
-            accountClaim,
-            hasClaimableDistros,
-            amount: claimableAmount,
-            description: `${token} Daily Rewards`,
-            createdAt: new Date().getTime(),
-            claims: [],
-            proof,
-            claimIt,
-            endTime: Number(lastSettedMerkleRoot) + Number(distributionDuration),
-            nextDistribution: formatTime(
-                Number(String(distributionDuration)) - (currentTime - Number(String(lastSettedMerkleRoot)))
-            ),
-            claimAll,
+        } catch (err) {
+            console.log('err', err)
         }
 
         //console.log('claimData', claimData)
@@ -544,19 +582,36 @@ export const fetchIncentivesData = async (geb: any, account: string, chainId: Ch
     return claimData
 }
 
-const fetchTokenDistroClaims = (account: string, chainId: ChainId, token: string) => {
+function formatDistro<T extends Record<string, Record<string, any>>>(obj: T): Partial<T> {
+    const result: Partial<T> = {}
+
+    for (const key in obj) {
+        if (Object.keys(obj[key]).length > 0) {
+            result[key] = obj[key]
+        }
+    }
+
+    console.log('result', obj, result)
+
+    return result
+}
+
+const fetchTokenDistroClaims = async (account: string, chainId: ChainId, token: string) => {
     const formatted = isFormattedAddress(account)
     if (!formatted) return Promise.reject(new Error('Invalid address'))
     const baseNetwork = chainId === 10 ? 'optimism' : 'optimism-sepolia'
     const networkKey = `${baseNetwork}-${token.toLowerCase()}`
-    return claimFetcher(networkKey, formatted)
+    const fetchedClaims = await claimFetcher(networkKey, formatted)
+    return formatDistro(fetchedClaims)
 }
 
 function claimFetcher(networkKey: string, formatted: string) {
     return fetch(`${import.meta.env.VITE_MERKLER_WORKER}`)
-        .then((res) => {
+        .then(async (res) => {
+            const result = await res.json()
+
             if (res.status === 200) {
-                return res.json()
+                return result
             }
         })
         .catch((error) => {

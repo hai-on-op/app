@@ -32,6 +32,7 @@ type ClaimsContext = {
         refetch: () => void
     }
     totalUSD: SummaryItemValue
+    refetchIncentives: () => Promise<void>
 }
 
 const defaultTokenMetadata = {
@@ -50,7 +51,7 @@ const defaultState: ClaimsContext = {
         KITE: defaultTokenMetadata,
         OP: defaultTokenMetadata,
     },
-    refetchIncentives: () => undefined,
+    refetchIncentives: async () => Promise.resolve(),
     activeAuctions: {
         bids: [],
         activeBids: [],
@@ -116,6 +117,7 @@ export function ClaimsProvider({ children }: Props) {
                 internalBalances,
                 incentivesData,
                 refetchIncentives: async () => {
+                    if (!account || !chainId || !geb) return
                     const updatedData = await fetchIncentivesData(geb, account, chainId)
                     setIncentivesData(updatedData)
                 },
