@@ -7,6 +7,7 @@ export const REWARD_DISTRIBUTOR_ABI = [
     {
         inputs: [
             { internalType: 'uint256', name: '_epochDuration', type: 'uint256' },
+            { internalType: 'uint256', name: '_bufferDuration', type: 'uint256' },
             { internalType: 'address', name: '_rootSetter', type: 'address' },
         ],
         stateMutability: 'nonpayable',
@@ -25,53 +26,30 @@ export const REWARD_DISTRIBUTOR_ABI = [
         type: 'error',
     },
     { inputs: [], name: 'RewardDistributor_AlreadyClaimed', type: 'error' },
-    {
-        inputs: [],
-        name: 'RewardDistributor_ArrayLengthsMustMatch',
-        type: 'error',
-    },
+    { inputs: [], name: 'RewardDistributor_ArrayLengthsMustMatch', type: 'error' },
+    { inputs: [], name: 'RewardDistributor_InitialEpochAlreadyStarted', type: 'error' },
+    { inputs: [], name: 'RewardDistributor_InitialEpochNotStarted', type: 'error' },
     { inputs: [], name: 'RewardDistributor_InvalidAmount', type: 'error' },
     { inputs: [], name: 'RewardDistributor_InvalidMerkleProof', type: 'error' },
     { inputs: [], name: 'RewardDistributor_InvalidMerkleRoot', type: 'error' },
     { inputs: [], name: 'RewardDistributor_InvalidTokenAddress', type: 'error' },
     { inputs: [], name: 'RewardDistributor_NotRootSetter', type: 'error' },
-    {
-        inputs: [],
-        name: 'RewardDistributor_TooSoonEpochNotElapsed',
-        type: 'error',
-    },
+    { inputs: [], name: 'RewardDistributor_TooSoonEpochNotElapsed', type: 'error' },
     { inputs: [], name: 'RewardDistributor_TransferFailed', type: 'error' },
     { inputs: [], name: 'Unauthorized', type: 'error' },
     { inputs: [], name: 'UnrecognizedCType', type: 'error' },
     { inputs: [], name: 'UnrecognizedParam', type: 'error' },
     {
         anonymous: false,
-        inputs: [
-            {
-                indexed: false,
-                internalType: 'address',
-                name: '_account',
-                type: 'address',
-            },
-        ],
+        inputs: [{ indexed: false, internalType: 'address', name: '_account', type: 'address' }],
         name: 'AddAuthorization',
         type: 'event',
     },
     {
         anonymous: false,
         inputs: [
-            {
-                indexed: true,
-                internalType: 'bytes32',
-                name: '_param',
-                type: 'bytes32',
-            },
-            {
-                indexed: true,
-                internalType: 'bytes32',
-                name: '_cType',
-                type: 'bytes32',
-            },
+            { indexed: true, internalType: 'bytes32', name: '_param', type: 'bytes32' },
+            { indexed: true, internalType: 'bytes32', name: '_cType', type: 'bytes32' },
             { indexed: false, internalType: 'bytes', name: '_data', type: 'bytes' },
         ],
         name: 'ModifyParameters',
@@ -79,51 +57,22 @@ export const REWARD_DISTRIBUTOR_ABI = [
     },
     {
         anonymous: false,
-        inputs: [
-            {
-                indexed: false,
-                internalType: 'address',
-                name: 'account',
-                type: 'address',
-            },
-        ],
+        inputs: [{ indexed: false, internalType: 'address', name: 'account', type: 'address' }],
         name: 'Paused',
         type: 'event',
     },
     {
         anonymous: false,
-        inputs: [
-            {
-                indexed: false,
-                internalType: 'address',
-                name: '_account',
-                type: 'address',
-            },
-        ],
+        inputs: [{ indexed: false, internalType: 'address', name: '_account', type: 'address' }],
         name: 'RemoveAuthorization',
         type: 'event',
     },
     {
         anonymous: false,
         inputs: [
-            {
-                indexed: true,
-                internalType: 'address',
-                name: '_rescueReceiver',
-                type: 'address',
-            },
-            {
-                indexed: true,
-                internalType: 'address',
-                name: '_rewardToken',
-                type: 'address',
-            },
-            {
-                indexed: false,
-                internalType: 'uint256',
-                name: '_wad',
-                type: 'uint256',
-            },
+            { indexed: true, internalType: 'address', name: '_rescueReceiver', type: 'address' },
+            { indexed: true, internalType: 'address', name: '_rewardToken', type: 'address' },
+            { indexed: false, internalType: 'uint256', name: '_wad', type: 'uint256' },
         ],
         name: 'RewardDistributorEmergencyWithdrawal',
         type: 'event',
@@ -131,24 +80,9 @@ export const REWARD_DISTRIBUTOR_ABI = [
     {
         anonymous: false,
         inputs: [
-            {
-                indexed: true,
-                internalType: 'address',
-                name: '_rewardToken',
-                type: 'address',
-            },
-            {
-                indexed: false,
-                internalType: 'bytes32',
-                name: '_merkleRoot',
-                type: 'bytes32',
-            },
-            {
-                indexed: false,
-                internalType: 'uint256',
-                name: '_epochCounter',
-                type: 'uint256',
-            },
+            { indexed: true, internalType: 'address', name: '_rewardToken', type: 'address' },
+            { indexed: false, internalType: 'bytes32', name: '_merkleRoot', type: 'bytes32' },
+            { indexed: false, internalType: 'uint256', name: '_epochCounter', type: 'uint256' },
         ],
         name: 'RewardDistributorMerkleRootUpdated',
         type: 'event',
@@ -156,38 +90,16 @@ export const REWARD_DISTRIBUTOR_ABI = [
     {
         anonymous: false,
         inputs: [
-            {
-                indexed: true,
-                internalType: 'address',
-                name: '_account',
-                type: 'address',
-            },
-            {
-                indexed: true,
-                internalType: 'address',
-                name: '_rewardToken',
-                type: 'address',
-            },
-            {
-                indexed: false,
-                internalType: 'uint256',
-                name: '_wad',
-                type: 'uint256',
-            },
+            { indexed: true, internalType: 'address', name: '_account', type: 'address' },
+            { indexed: true, internalType: 'address', name: '_rewardToken', type: 'address' },
+            { indexed: false, internalType: 'uint256', name: '_wad', type: 'uint256' },
         ],
         name: 'RewardDistributorRewardClaimed',
         type: 'event',
     },
     {
         anonymous: false,
-        inputs: [
-            {
-                indexed: false,
-                internalType: 'address',
-                name: 'account',
-                type: 'address',
-            },
-        ],
+        inputs: [{ indexed: false, internalType: 'address', name: 'account', type: 'address' }],
         name: 'Unpaused',
         type: 'event',
     },
@@ -209,6 +121,13 @@ export const REWARD_DISTRIBUTOR_ABI = [
         inputs: [],
         name: 'authorizedAccounts',
         outputs: [{ internalType: 'address[]', name: '_accounts', type: 'address[]' }],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [],
+        name: 'bufferDuration',
+        outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
         stateMutability: 'view',
         type: 'function',
     },
@@ -259,13 +178,6 @@ export const REWARD_DISTRIBUTOR_ABI = [
         type: 'function',
     },
     {
-        inputs: [],
-        name: 'lastUpdatedTime',
-        outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
-        stateMutability: 'view',
-        type: 'function',
-    },
-    {
         inputs: [{ internalType: 'address', name: '_token', type: 'address' }],
         name: 'merkleRoots',
         outputs: [{ internalType: 'bytes32', name: '_root', type: 'bytes32' }],
@@ -286,24 +198,14 @@ export const REWARD_DISTRIBUTOR_ABI = [
         inputs: [
             { internalType: 'address[]', name: '_tokens', type: 'address[]' },
             { internalType: 'uint256[]', name: '_wads', type: 'uint256[]' },
-            {
-                internalType: 'bytes32[][]',
-                name: '_merkleProofs',
-                type: 'bytes32[][]',
-            },
+            { internalType: 'bytes32[][]', name: '_merkleProofs', type: 'bytes32[][]' },
         ],
         name: 'multiClaim',
         outputs: [],
         stateMutability: 'nonpayable',
         type: 'function',
     },
-    {
-        inputs: [],
-        name: 'pause',
-        outputs: [],
-        stateMutability: 'nonpayable',
-        type: 'function',
-    },
+    { inputs: [], name: 'pause', outputs: [], stateMutability: 'nonpayable', type: 'function' },
     {
         inputs: [],
         name: 'paused',
@@ -325,13 +227,15 @@ export const REWARD_DISTRIBUTOR_ABI = [
         stateMutability: 'view',
         type: 'function',
     },
+    { inputs: [], name: 'startInitialEpoch', outputs: [], stateMutability: 'nonpayable', type: 'function' },
     {
         inputs: [],
-        name: 'unpause',
-        outputs: [],
-        stateMutability: 'nonpayable',
+        name: 'startTimestamp',
+        outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+        stateMutability: 'view',
         type: 'function',
     },
+    { inputs: [], name: 'unpause', outputs: [], stateMutability: 'nonpayable', type: 'function' },
     {
         inputs: [
             { internalType: 'address[]', name: '_tokens', type: 'address[]' },
@@ -384,15 +288,28 @@ export const fetchIncentivesData = async (geb: any, account: string, chainId: Ch
 
     const rewardDistributor = new ethers.Contract(rewardDistributorAddress, REWARD_DISTRIBUTOR_ABI, geb?.signer)
 
-    const lastSettedMerkleRoot = await rewardDistributor.lastUpdatedTime()
-    const distributionDuration = await rewardDistributor.epochDuration()
+    const bufferDuration = await rewardDistributor.bufferDuration()
+    const startTimestamp = await rewardDistributor.startTimestamp()
+    const epochDuration = await rewardDistributor.epochDuration()
+    const epochCounter = await rewardDistributor.epochCounter()
+
+    const lastSettedMerkleRoot =
+        Number(startTimestamp) +
+        Number(epochDuration) * (Number(epochCounter) - 1) +
+        Number(bufferDuration) * (Number(epochCounter) - 1)
+
+    console.log('lastSettedMerkleRoot', lastSettedMerkleRoot, Number(startTimestamp))
+
+    console.log('fetching incentives data!!!', rewardDistributorAddress, bufferDuration, lastSettedMerkleRoot)
+
+    const distributionDuration = Number(epochDuration) + Number(bufferDuration)
     const isPaused = await rewardDistributor.paused()
 
     const currentBlock = await geb.provider.getBlock('latest')
 
     const currentTime = currentBlock.timestamp
 
-    console.log('currentTime', currentTime, currentBlock, distributionDuration, lastSettedMerkleRoot)
+    console.log('currentTime', currentTime, currentBlock, distributionDuration)
 
     const claimData = {}
 
@@ -413,8 +330,6 @@ export const fetchIncentivesData = async (geb: any, account: string, chainId: Ch
 
         try {
             const tokenTree = StandardMerkleTree.load(tokenDistroClaims[token.toLowerCase()])
-
-            
 
             const distroClaim = tokenDistroClaims[token.toLowerCase()]
 
@@ -464,7 +379,7 @@ export const fetchIncentivesData = async (geb: any, account: string, chainId: Ch
                         const tx = await rewardDistributor
                             .connect(geb.signer)
                             .claim(tokensAddresses[token], claimableAmount, proof)
-                        
+
                         // Wait for the transaction to be confirmed
                         await tx.wait()
                         return tx
@@ -516,12 +431,12 @@ export const fetchIncentivesData = async (geb: any, account: string, chainId: Ch
                         const tx = await rewardDistributor
                             .connect(geb.signer)
                             .multiClaim(targetTokensAddresses, claimableAmounts, allProofs)
-                        
+
                         // Wait for the transaction to be confirmed
                         await tx.wait()
                         return tx
                     }
-                    
+
                     return null
                 }
 
