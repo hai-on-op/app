@@ -16,6 +16,10 @@ export const REWARDS = {
             KITE: 0,
             OP: 0,
         },
+        YV_VELO_ALETH_WETH: {
+            KITE: 0,
+            OP: 0,
+        },
         RETH: {
             KITE: 0,
             OP: 0,

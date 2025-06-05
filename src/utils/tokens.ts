@@ -26,6 +26,7 @@ import pxethImg from '~/assets/pxeth-img.png'
 import beefyImg from '~/assets/beefy-img.svg'
 import dineroImg from '~/assets/dinero-img.svg'
 import haiVeloImg from '~/assets/hai-velo.png'
+import yvVeloAlethWethImg from '~/assets/yv-velo-aleth-weth-img.png'
 // force rebuild x
 
 export type Tokens = {
@@ -68,6 +69,7 @@ export const TOKEN_LOGOS = {
     PXETH: pxethImg,
     ALETH: alethImg,
     HAIVELO: haiVeloImg,
+    'YV-VELO-ALETH-WETH': yvVeloAlethWethImg,
 }
 
 export const tokenMap: Record<string, string> = {

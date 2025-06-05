@@ -21,6 +21,7 @@ const pairs: [string, string][] = [
     // ['WBTC', TOKEN_LOGOS['WBTC']],
     ['APXETH', TOKEN_LOGOS['APXETH']],
     ['ALETH', TOKEN_LOGOS['ALETH']],
+    ['YV-VELO-ALETH-WETH', TOKEN_LOGOS['YV-VELO-ALETH-WETH']],
     // ['Beefy Vaults', TOKEN_LOGOS['MOO']],
 ]
 
@@ -48,10 +49,30 @@ export function PairsBanner() {
                     .flat()
                     .map(([ticker, logo], i) => (
                         <Pair key={i}>
-                            <IconContainer>
+                            {/* <IconContainer>
                                 <img src={logo} alt="HAI" width={48} height={48} style={{ backgroundColor: 'white' }} />
-                            </IconContainer>
-                            <Text $fontWeight={900}>{ticker}</Text>
+                            </IconContainer> */}
+                            {ticker == 'YV-VELO-ALETH-WETH' ? (
+                                <>
+                                    <img src={logo} alt="HAI" width={48} height={48} />
+                                    <Text $fontWeight={900} $fontSize={12}>
+                                        yvVelo-alETH-WETH
+                                    </Text>
+                                </>
+                            ) : (
+                                <>
+                                    <IconContainer>
+                                        <img
+                                            src={logo}
+                                            alt="HAI"
+                                            width={48}
+                                            height={48}
+                                            style={{ backgroundColor: 'white' }}
+                                        />
+                                    </IconContainer>
+                                    <Text $fontWeight={900}>{ticker}</Text>
+                                </>
+                            )}
                         </Pair>
                     ))}
             </Inner>
