@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 import type { IAuction } from '~/types'
 import { ActionState, formatNumberWithStyle, tokenMap, wait, isFormattedAddress, slugify } from '~/utils'
@@ -15,6 +15,7 @@ import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
 import { Modal, type ModalProps } from './index'
 import { TokenArray } from '../TokenArray'
 import { ContentWithStatus } from '../ContentWithStatus'
+import { Box } from 'react-feather'
 
 const returnDaysLeftToClaim = (date: number) => {
     const deploymentTime = dayjs(date * 1000)
@@ -25,9 +26,68 @@ const returnDaysLeftToClaim = (date: number) => {
     return 90 - dayjs().diff(deploymentTime, 'day')
 }
 
+function formatTime(seconds: number) {
+    // Handle zero or negative values
+    if (seconds <= 0) {
+        return 'now'
+    }
+
+    // Convert seconds to hours
+    const hours = Math.floor(seconds / 3600)
+
+    // If it's more than or equal to 1 hour, return just the hours
+    if (hours >= 1) {
+        return `${hours} hour${hours > 1 ? 's' : ''}`
+    }
+
+    // If less than an hour, convert to minutes
+    const minutes = Math.floor(seconds / 60)
+    return `${minutes} minute${minutes !== 1 ? 's' : ''}`
+}
+
 const returnAmount = (value: BigNumberish) => utils.formatEther(value)
 
+export function RemainingTime({ endTimestamp }: { endTimestamp?: number }) {
+    const [formattedTimeRemaining, setFormattedTimeRemaining] = useState<string>('')
+
+    useEffect(() => {
+        if (endTimestamp) {
+            const updateTime = () => {
+                const currentTime = Math.floor(Date.now() / 1000)
+                const remainingSeconds = endTimestamp - currentTime
+
+                setFormattedTimeRemaining(formatTime(remainingSeconds))
+            }
+
+            updateTime()
+            const intervalId = setInterval(updateTime, 1000)
+            return () => clearInterval(intervalId)
+        }
+    }, [endTimestamp])
+
+    return <span>{formattedTimeRemaining}</span>
+}
+
+// Token types we want to support for incentives
+const INCENTIVE_TOKENS = ['KITE', 'OP', 'DINERO', 'HAI'] as const
+type IncentiveToken = (typeof INCENTIVE_TOKENS)[number]
+
+// Define proper types for incentive claims
+interface IncentiveClaim {
+    isPaused?: boolean
+    isClaimed?: boolean
+    hasClaimableDistros?: boolean
+    amount?: any
+    description?: string
+    claimIt?: () => Promise<any>
+    [key: string]: any
+}
+
 export function ClaimModal(props: ModalProps) {
+    const { address: account } = useAccount()
+
+    const { popupsModel: popupsActions, transactionsModel: transactionsActions } = useStoreActions((actions) => actions)
+
     const {
         vaultModel: { liquidationData },
         popupsModel: { isClaimPopupOpen },
@@ -40,8 +100,12 @@ export function ClaimModal(props: ModalProps) {
     const { prices: veloPrices } = useVelodromePrices()
 
     const kitePrice = veloPrices?.KITE.raw
+
+    console.log('KITE price:', liquidationData)
+
     const dineroPrice = veloPrices?.DINERO.raw
     const opPrice = liquidationData?.collateralLiquidationData?.OP?.currentPrice.value
+    const haiPrice = liquidationData?.currentRedemptionPrice
 
     const geb = useGeb()
 
@@ -62,74 +126,104 @@ export function ClaimModal(props: ModalProps) {
                     token === 'HAI'
                         ? parseFloat(currentRedemptionPrice || '1')
                         : token === 'KITE'
-                        ? kitePrice
+                        ? Number(kitePrice || 0)
                         : parseFloat(collateralLiquidationData?.[token]?.currentPrice.value || '0')
-                acc.prices[token] = price
-                acc.total += parseFloat(sellAmount) * price
+                acc.prices[token] = price || 0 // Ensure price is never undefined
+                acc.total += parseFloat(sellAmount) * (price || 0) // Safely handle undefined price
                 return acc
             },
             { prices: {} as Record<string, number>, total: 0 }
         )
-    }, [liquidationData, activeAuctions.claimableAuctions])
+    }, [liquidationData, activeAuctions.claimableAuctions, kitePrice])
 
     if (!isClaimPopupOpen) return null
 
-    const kiteIncentivesData = incentivesData['KITE']
-    const opIncentivesData = incentivesData['OP']
-    const dineroIncentivesData = incentivesData['DINERO']
+    // Helper function to get token price
+    const getTokenPrice = (token: IncentiveToken): number => {
+        switch (token) {
+            case 'KITE':
+                return Number(kitePrice || 0)
+            case 'OP':
+                return Number(opPrice || 0)
+            case 'DINERO':
+                return Number(dineroPrice || 0)
+            case 'HAI':
+                return Number(haiPrice || 0)
+            default:
+                return 0
+        }
+    }
 
-    const kiteIncentivesContent = kiteIncentivesData?.hasClaimableDistros
-        ? kiteIncentivesData.claims.map((claim) => (
-              <ClaimableIncentive
-                  key={slugify(claim.description)}
-                  asset="KITE"
-                  claim={claim}
-                  price={kitePrice}
-                  onSuccess={refetchIncentives}
-              />
-          ))
-        : []
+    // Process all incentive tokens
+    const incentiveTokens = INCENTIVE_TOKENS.reduce(
+        (acc, token) => {
+            const data = (incentivesData as any)[token]
+            const price = getTokenPrice(token)
 
-    const opIncentivesContent = opIncentivesData?.hasClaimableDistros
-        ? opIncentivesData.claims.map((claim) => (
-              <ClaimableIncentive
-                  key={slugify(claim.description)}
-                  asset="OP"
-                  claim={claim}
-                  price={opPrice}
-                  onSuccess={refetchIncentives}
-              />
-          ))
-        : []
+            console.log(`Processing ${token}:`, data, 'price:', price)
+            acc[token] = { data, price }
+            return acc
+        },
+        {} as Record<IncentiveToken, { data: any; price: number }>
+    )
 
-    const dineroIncentivesContent = dineroIncentivesData?.hasClaimableDistros
-        ? dineroIncentivesData.claims.map((claim) => (
-              <ClaimableIncentive
-                  key={slugify(claim.description)}
-                  asset="DINERO"
-                  claim={claim}
-                  price={dineroPrice}
-                  onSuccess={refetchIncentives}
-              />
-          ))
-        : []
+    // Check if distributor is paused from any available incentive data
+    const isDistributorPaused = Object.values(incentiveTokens).some(({ data }) => data?.isPaused)
 
-    const tokenIncentiveValue = (claims, price) =>
-        claims?.reduce((acc, claim) => {
-            const value = claim.isClaimed ? 0 : parseFloat(returnAmount(claim.amount))
-            return acc + value
-        }, 0) * price
+    console.log('incentiveTokens', incentiveTokens)
 
-    const kiteIncentiveValue = tokenIncentiveValue(kiteIncentivesData?.claims, kitePrice)
-    const opIncentiveValue = tokenIncentiveValue(opIncentivesData?.claims, opPrice)
-    const dineroIncentiveValue = tokenIncentiveValue(dineroIncentivesData?.claims, dineroPrice)
+    // Generate content for each token
+    const incentivesContent = INCENTIVE_TOKENS.flatMap((token) => {
+        const { data, price } = incentiveTokens[token]
+        if (!data?.hasClaimableDistros) return []
 
-    const totalIncentiveValue = kiteIncentiveValue + opIncentiveValue + dineroIncentiveValue
+        console.log(`${token} has claimable distros:`, data.hasClaimableDistros)
+        return [
+            <ClaimableIncentive
+                key={`${token}-Daily-rewards`}
+                asset={token}
+                claim={{ ...data }}
+                price={price}
+                onSuccess={refetchIncentives}
+            />,
+        ]
+    })
 
-    const incentivesContent = [...kiteIncentivesContent, ...opIncentivesContent, ...dineroIncentivesContent]
+    console.log('incentiveTokens', incentiveTokens)
+
+    // Direct calculation for each token's incentive value
+    // This is more reliable than the generic function
+    const kiteValue =
+        incentiveTokens.KITE?.data?.hasClaimableDistros && incentiveTokens.KITE?.data?.amount
+            ? parseFloat(utils.formatEther(incentiveTokens.KITE.data.amount)) * (incentiveTokens.KITE.price || 0)
+            : 0
+
+    const opValue =
+        incentiveTokens.OP?.data?.hasClaimableDistros && incentiveTokens.OP?.data?.amount
+            ? parseFloat(utils.formatEther(incentiveTokens.OP.data.amount)) * (incentiveTokens.OP.price || 0)
+            : 0
+
+    const dineroValue =
+        incentiveTokens.DINERO?.data?.hasClaimableDistros && incentiveTokens.DINERO?.data?.amount
+            ? parseFloat(utils.formatEther(incentiveTokens.DINERO.data.amount)) * (incentiveTokens.DINERO.price || 0)
+            : 0
+
+    const haiValue =
+        incentiveTokens.HAI?.data?.hasClaimableDistros && incentiveTokens.HAI?.data?.amount
+            ? parseFloat(utils.formatEther(incentiveTokens.HAI.data.amount)) * (incentiveTokens.HAI.price || 0)
+            : 0
+
+    // Log direct values for debugging
+    console.log('Direct values - KITE:', kiteValue, 'OP:', opValue, 'DINERO:', dineroValue, 'HAI:', haiValue)
+
+    // Calculate total incentive value using direct values
+    const totalIncentiveValue = kiteValue + opValue + dineroValue + haiValue
+    console.log('Total incentive value:', totalIncentiveValue, kiteValue, opValue, dineroValue, haiValue)
 
     const totalClaimableValue = total + totalIncentiveValue
+    console.log('Total claimable value (auction + incentives):', totalClaimableValue, 'auction total:', total)
 
+    // Get content for auctions and internal balances
     const content = [
         ...incentivesContent,
         ...activeAuctions.claimableAuctions.map(({ sellAmount, auction }) => {
@@ -142,6 +236,7 @@ export function ClaimModal(props: ModalProps) {
                     amount={sellAmount}
                     price={prices[asset]}
                     auction={auction}
+                    incentive={false} // Add the incentive prop
                     onSuccess={() => {
                         auctionActions.fetchAuctions({
                             geb,
@@ -163,7 +258,8 @@ export function ClaimModal(props: ModalProps) {
                       asset="COIN"
                       amount={internalBalances.HAI?.raw || '0'}
                       price={parseFloat(liquidationData?.currentRedemptionPrice || '1')}
-                      internal
+                      internal={true}
+                      incentive={false} // Add the incentive prop
                       onSuccess={internalBalances.refetch}
                   />,
               ]
@@ -175,12 +271,57 @@ export function ClaimModal(props: ModalProps) {
                       asset="PROTOCOL_TOKEN"
                       amount={internalBalances.KITE?.raw || '0'}
                       price={10}
-                      internal
+                      internal={true}
+                      incentive={false} // Add the incentive prop
                       onSuccess={internalBalances.refetch}
                   />,
               ]
             : []),
     ]
+
+    // Find a token that has claimAll function
+    const tokenWithClaimAll = INCENTIVE_TOKENS.find(
+        (token) => incentiveTokens[token]?.data?.claimAll && incentiveTokens[token]?.data?.hasClaimableDistros
+    )
+
+    const onClaimAll = async () => {
+        const formatted = isFormattedAddress(account)
+        if (!formatted || !tokenWithClaimAll) {
+            console.debug('wrong address or no token with claimAll')
+            return false
+        }
+        try {
+            const txResponse = await incentiveTokens[tokenWithClaimAll].data.claimAll()
+            if (txResponse) {
+                transactionsActions.addTransaction({
+                    chainId: txResponse?.chainId,
+                    hash: txResponse?.hash,
+                    from: txResponse.from,
+                    summary: `Claiming all rewards`,
+                    addedTime: new Date().getTime(),
+                    originalTx: txResponse,
+                })
+                popupsActions.setIsWaitingModalOpen(true)
+                popupsActions.setWaitingPayload({
+                    title: 'Transaction Submitted',
+                    hash: txResponse?.hash,
+                    status: ActionState.SUCCESS,
+                })
+                await refetchIncentives()
+                popupsActions.setIsWaitingModalOpen(false)
+                popupsActions.setWaitingPayload({ status: ActionState.NONE })
+            } else {
+                throw new Error('No transaction request!')
+            }
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
+    // Find a token with end time for the countdown
+    const tokenWithEndTime = INCENTIVE_TOKENS.find((token) => incentiveTokens[token]?.data?.endTime !== undefined)
+
+    const isClaimAllDisabled = !tokenWithClaimAll
 
     return (
         <Modal
@@ -189,16 +330,83 @@ export function ClaimModal(props: ModalProps) {
             {...props}
             onClose={() => setIsClaimPopupOpen(false)}
             footerContent={
-                <Flex $width="100%" $justify="space-between" $align="center">
-                    <Text>
-                        <strong>Total Estimated Value:</strong>
-                        &nbsp;
-                        {formatNumberWithStyle(totalClaimableValue, { style: 'currency' })}
-                    </Text>
+                <Flex $width="100%" $column $gap={12}>
+                    <Flex $width="100%" $justify="space-between" $align="center">
+                        <Text>
+                            <strong>Total Estimated Value:</strong>
+                            &nbsp;
+                            {content.filter((c) => !!c).length > 0 ? (
+                                formatNumberWithStyle(totalClaimableValue, {
+                                    style: 'currency',
+                                    maxDecimals: 2,
+                                    minDecimals: 0,
+                                })
+                            ) : (
+                                <span style={{ fontStyle: 'italic' }}>No rewards available</span>
+                            )}
+                        </Text>
+                        <HaiButton
+                            $variant="yellowish"
+                            onClick={onClaimAll}
+                            disabled={
+                                isClaimAllDisabled || isDistributorPaused || content.filter((c) => !!c).length === 0
+                            }
+                        >
+                            Claim All
+                        </HaiButton>
+                    </Flex>
+
+                    {isDistributorPaused ? (
+                        <Flex $width="100%" $justify="flex-start" $align="center">
+                            <Text style={{ color: '#ff6b6b', textAlign: 'left', width: '100%' }}>
+                                Distributor is currently paused to update rewards. <br />
+                                {tokenWithEndTime && incentiveTokens[tokenWithEndTime]?.data?.endTime && (
+                                    <>
+                                        Time to unpause:{' '}
+                                        <span
+                                            style={{
+                                                backgroundColor: '#f8f8f8',
+                                                padding: '0.2em 0.5em',
+                                                borderRadius: '1em',
+                                                fontWeight: 600,
+                                                color: '#000',
+                                            }}
+                                        >
+                                            <RemainingTime
+                                                endTimestamp={incentiveTokens[tokenWithEndTime]?.data?.endTime}
+                                            />
+                                        </span>
+                                    </>
+                                )}
+                            </Text>
+                        </Flex>
+                    ) : (
+                        <Flex $width="100%" $justify="center" $align="center">
+                            {tokenWithEndTime && (
+                                <Text style={{ textAlign: 'left', width: '100%' }}>
+                                    Next distribution in{' '}
+                                    <span
+                                        style={{
+                                            backgroundColor: '#f8f8f8',
+                                            padding: '0.2em 0.5em',
+                                            borderRadius: '1em',
+                                            fontWeight: 600,
+                                        }}
+                                    >
+                                        <RemainingTime
+                                            endTimestamp={incentiveTokens[tokenWithEndTime]?.data?.endTime}
+                                        />
+                                    </span>
+                                </Text>
+                            )}
+                        </Flex>
+                    )}
                 </Flex>
             }
         >
-            <Text>Claim incentive rewards, assets purchased in auctions, and reclaim unsuccessful auction bids</Text>
+            <Text>
+                Incentive rewards are distributed every 24 hours. Unclaimed rewards will accure below and do not expire.
+            </Text>
             <ScrollableBody>
                 <ContentWithStatus
                     loading={false}
@@ -245,42 +453,58 @@ const ClaimableAssetContainer = styled(Flex).attrs((props) => ({
     border: 2px solid rgba(0, 0, 0, 0.1);
 `
 
-type Claim = object
-
 type ClaimableAssetProps = {
     asset: string
     amount: string
     price?: number
-    claim?: Claim
+    claim?: IncentiveClaim
     distributor?: any
     onSuccess?: () => void
+    incentive: boolean
 } & (
     | {
           asset: string
           auction: IAuction
           internal?: undefined
-          incentive: boolean
       }
     | {
           asset: 'COIN' | 'PROTOCOL_TOKEN'
           auction?: undefined
           internal: boolean
-          incentive: boolean
       }
 )
 
-const ClaimableIncentive = ({ asset, claim, price, onSuccess }) => {
-    if (claim.isClaimed) return null
+const ClaimableIncentive = ({ 
+    asset, 
+    claim, 
+    price, 
+    onSuccess 
+}: {
+    asset: string
+    claim: IncentiveClaim
+    price: number
+    onSuccess?: () => void
+}) => {
+    console.log(`ClaimableIncentive for ${asset}:`, claim)
+    if (!claim || claim.isClaimed) return null
+
+    // Make sure we have the correct amount/value for display
+    let amount = '0'
+    if (claim.amount) {
+        amount = typeof claim.amount === 'object' ? utils.formatEther(claim.amount) : claim.amount.toString()
+    }
+
     const distributor = useDistributorContract(claim.distributorAddress)
     return (
         <ClaimableAsset
             key={`distributor-${claim.distributorAddress}`}
             asset={asset}
             claim={claim}
-            amount={returnAmount(claim.amount)}
-            price={price}
+            amount={amount}
+            price={price || 0}
             distributor={distributor}
-            incentive
+            incentive={true}
+            auction={{} as IAuction} // Dummy auction object to satisfy the union type
             onSuccess={onSuccess}
         />
     )
@@ -308,16 +532,21 @@ function ClaimableAsset({
 
     const [status, setStatus] = useState(ActionState.NONE)
 
+    // Get pause state from the claim data
+    const isDistributorPaused = (claim as IncentiveClaim)?.isPaused
+
     const onClaim = async () => {
         if (incentive) {
+            console.log('claim', claim)
+
             const formatted = isFormattedAddress(account)
             if (!formatted) {
                 console.debug('wrong address')
                 return false
             }
-            const { index, amount, proof } = claim
+            const incentiveClaim = claim as IncentiveClaim
             try {
-                const txResponse = await distributor.claim(index, formatted, amount, proof)
+                const txResponse = await incentiveClaim.claimIt?.()
                 if (txResponse) {
                     transactionsActions.addTransaction({
                         chainId: txResponse?.chainId,
@@ -331,9 +560,8 @@ function ClaimableAsset({
                     popupsActions.setWaitingPayload({
                         title: 'Transaction Submitted',
                         hash: txResponse?.hash,
-                        status: 'success',
+                        status: ActionState.SUCCESS,
                     })
-                    await txResponse.wait()
                     onSuccess?.()
                     popupsActions.setIsWaitingModalOpen(false)
                     popupsActions.setWaitingPayload({ status: ActionState.NONE })
@@ -400,18 +628,15 @@ function ClaimableAsset({
                     {incentive ? (
                         <>
                             <Text $fontSize="1em" $fontWeight={700}>
-                                {claim.description}
+                                {(claim as IncentiveClaim)?.description || asset}
                             </Text>
                         </>
                     ) : (
                         <Text $fontSize="0.7em">
-                            {auction
+                            {auction && auction.auctionId
                                 ? `Auction: #${auction.auctionId} (${auction.englishAuctionType})`
                                 : `Unsuccessful Bid(s)`}
                         </Text>
-                    )}
-                    {incentive && (
-                        <Text $fontSize="0.8em">{returnDaysLeftToClaim(claim.createdAt)} days left to claim</Text>
                     )}
 
                     <Text $fontSize="1em" $fontWeight={700}>
@@ -429,10 +654,15 @@ function ClaimableAsset({
             <CenteredFlex $column $gap={12}>
                 <HaiButton
                     $variant="yellowish"
-                    disabled={!signer || status === ActionState.LOADING || status === ActionState.SUCCESS}
+                    disabled={
+                        !signer ||
+                        status === ActionState.LOADING ||
+                        status === ActionState.SUCCESS ||
+                        isDistributorPaused
+                    }
                     onClick={onClaim}
                 >
-                    {status === ActionState.SUCCESS ? 'Claimed' : 'Claim'}
+                    {status === ActionState.SUCCESS ? 'Claimed' : isDistributorPaused ? 'Paused' : 'Claim'}
                 </HaiButton>
             </CenteredFlex>
         </ClaimableAssetContainer>
