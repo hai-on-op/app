@@ -1,6 +1,44 @@
 import { ethers } from 'ethers'
 import { ChainId, isFormattedAddress } from '~/utils'
 import { StandardMerkleTree } from '@openzeppelin/merkle-tree'
+import { gql } from '@apollo/client'
+import { client } from '~/utils/graphql/client'
+
+// GraphQL query to fetch merkle roots and find the latest one
+const MERKLE_ROOTS_QUERY = gql`
+    query GetMerkleRoots {
+        merkleRoots {
+            id
+            updatedAt
+        }
+    }
+`
+
+// Function to fetch the latest merkle root timestamp
+const fetchLatestMerkleRootTimestamp = async (): Promise<number | null> => {
+    try {
+        const { data } = await client.query({
+            query: MERKLE_ROOTS_QUERY,
+            fetchPolicy: 'network-only',
+        })
+
+        if (!data?.merkleRoots || data.merkleRoots.length === 0) {
+            return null
+        }
+
+        // Find the merkle root with the biggest updatedAt value
+        const latestMerkleRoot = data.merkleRoots.reduce((latest: any, current: any) => {
+            const currentUpdatedAt = Number(current.updatedAt)
+            const latestUpdatedAt = Number(latest.updatedAt)
+            return currentUpdatedAt > latestUpdatedAt ? current : latest
+        })
+
+        return Number(latestMerkleRoot.updatedAt)
+    } catch (error) {
+        console.error('Failed to fetch merkle roots from GraphQL:', error)
+        return null
+    }
+}
 
 // TODO: THIS MUST GO TO THE SDK
 export const REWARD_DISTRIBUTOR_ABI = [
@@ -248,14 +286,14 @@ export const REWARD_DISTRIBUTOR_ABI = [
     },
 ]
 
-const tokensAddresses = {
+const tokensAddresses: Record<string, string> = {
     KITE: '0xf467C7d5a4A9C4687fFc7986aC6aD5A4c81E1404',
     OP: '0x4200000000000000000000000000000000000042',
     DINERO: '0x9FFc23fd5637bc1A2B73E26d61CF65f9873E8d25',
     HAI: '0x10398AbC267496E49106B07dd6BE13364D10dC71',
 }
 
-const tokens = ['KITE', 'OP', 'DINERO', 'HAI']
+const tokens = ['KITE', 'OP', 'DINERO', 'HAI'] as const
 
 function formatTime(seconds: number) {
     // Handle zero or negative values
@@ -276,7 +314,11 @@ function formatTime(seconds: number) {
     return `${minutes} minute${minutes !== 1 ? 's' : ''}`
 }
 
-export const fetchIncentivesData = async (geb: any, account: string, chainId: ChainId) => {
+export const fetchIncentivesData = async (
+    geb: any,
+    account: string,
+    chainId: ChainId
+) => {
     //const factories: { [key: string]: any } = {
     //    KITE: geb?.contracts?.merkleDistributorFactoryKite,
     //    OP: geb?.contracts?.merkleDistributorFactoryOp,
@@ -293,10 +335,24 @@ export const fetchIncentivesData = async (geb: any, account: string, chainId: Ch
     const epochDuration = await rewardDistributor.epochDuration()
     const epochCounter = await rewardDistributor.epochCounter()
 
-    const lastSettedMerkleRoot =
-        Number(startTimestamp) +
-        Number(epochDuration) * (Number(epochCounter) - 1) +
-        Number(bufferDuration) * (Number(epochCounter) - 1)
+    // Fetch the latest merkle root timestamp from GraphQL
+    const latestMerkleRootTimestamp = await fetchLatestMerkleRootTimestamp()
+    
+    // Use the latest merkle root timestamp if available, otherwise fallback to calculation
+    let lastSettedMerkleRoot: number
+    if (latestMerkleRootTimestamp) {
+        lastSettedMerkleRoot = latestMerkleRootTimestamp
+        console.log('Using latest merkle root timestamp from GraphQL:', lastSettedMerkleRoot)
+    } else {
+        // Fallback to the original calculation
+        lastSettedMerkleRoot =
+            Number(startTimestamp) +
+            Number(epochDuration) * (Number(epochCounter) - 1) +
+            Number(bufferDuration) * (Number(epochCounter) - 1)
+        console.log('Using calculated merkle root timestamp (fallback):', lastSettedMerkleRoot)
+    }
+
+    console.log('lastSettedMerkleRoot', lastSettedMerkleRoot)
 
     console.log('lastSettedMerkleRoot', lastSettedMerkleRoot, Number(startTimestamp))
 
@@ -399,17 +455,17 @@ export const fetchIncentivesData = async (geb: any, account: string, chainId: Ch
                     const tokenDistroClaims = await fetchTokenDistroClaims(account, chainId, 'whatever')
 
                     for (let i = 0; i < Object.keys(tokenDistroClaims).length; i++) {
-                        const token = Object.keys(tokenDistroClaims)[i].toUpperCase()
+                        const tokenKey = Object.keys(tokenDistroClaims)[i].toUpperCase() as keyof typeof tokensAddresses
 
-                        console.log('claiming all token', token)
+                        console.log('claiming all token', tokenKey)
 
-                        const tokenTree = StandardMerkleTree.load(tokenDistroClaims[token.toLowerCase()])
-                        const distroClaim = tokenDistroClaims[token.toLowerCase()]
+                        const tokenTree = StandardMerkleTree.load(tokenDistroClaims[tokenKey.toLowerCase()])
+                        const distroClaim = tokenDistroClaims[tokenKey.toLowerCase()]
                         const distroClaimValues = distroClaim.values
                         const isClaimed = await rewardDistributor.isClaimed(tokenTree.root, account)
 
                         const accountClaim = distroClaimValues.find(
-                            (claim) => claim.value[0].toLowerCase() === account.toLowerCase()
+                            (claim: any) => claim.value[0].toLowerCase() === account.toLowerCase()
                         ).value
 
                         const hasClaimableDistros = ethers.BigNumber.from(accountClaim[1]).gt(0) && !isClaimed
@@ -419,7 +475,7 @@ export const fetchIncentivesData = async (geb: any, account: string, chainId: Ch
                             const claimingData = [account, claimableAmount]
                             const proof = tokenTree.getProof(claimingData)
 
-                            targetTokensAddresses.push(tokensAddresses[token])
+                            targetTokensAddresses.push(tokensAddresses[tokenKey])
                             claimableAmounts.push(claimableAmount)
                             allProofs.push(proof)
                         }
@@ -452,7 +508,7 @@ export const fetchIncentivesData = async (geb: any, account: string, chainId: Ch
                     accountClaim,
                     hasClaimableDistros,
                     amount: claimableAmount,
-                    description: `${token} Daily Rewards`,
+                    description: `${token}`,
                     createdAt: new Date().getTime(),
                     claims: [],
                     proof,

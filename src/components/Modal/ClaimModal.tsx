@@ -72,6 +72,17 @@ export function RemainingTime({ endTimestamp }: { endTimestamp?: number }) {
 const INCENTIVE_TOKENS = ['KITE', 'OP', 'DINERO', 'HAI'] as const
 type IncentiveToken = (typeof INCENTIVE_TOKENS)[number]
 
+// Define proper types for incentive claims
+interface IncentiveClaim {
+    isPaused?: boolean
+    isClaimed?: boolean
+    hasClaimableDistros?: boolean
+    amount?: any
+    description?: string
+    claimIt?: () => Promise<any>
+    [key: string]: any
+}
+
 export function ClaimModal(props: ModalProps) {
     const { address: account } = useAccount()
 
@@ -115,7 +126,7 @@ export function ClaimModal(props: ModalProps) {
                     token === 'HAI'
                         ? parseFloat(currentRedemptionPrice || '1')
                         : token === 'KITE'
-                        ? kitePrice
+                        ? Number(kitePrice || 0)
                         : parseFloat(collateralLiquidationData?.[token]?.currentPrice.value || '0')
                 acc.prices[token] = price || 0 // Ensure price is never undefined
                 acc.total += parseFloat(sellAmount) * (price || 0) // Safely handle undefined price
@@ -123,21 +134,21 @@ export function ClaimModal(props: ModalProps) {
             },
             { prices: {} as Record<string, number>, total: 0 }
         )
-    }, [liquidationData, activeAuctions.claimableAuctions])
+    }, [liquidationData, activeAuctions.claimableAuctions, kitePrice])
 
     if (!isClaimPopupOpen) return null
 
     // Helper function to get token price
-    const getTokenPrice = (token: IncentiveToken) => {
+    const getTokenPrice = (token: IncentiveToken): number => {
         switch (token) {
             case 'KITE':
-                return kitePrice || 0
+                return Number(kitePrice || 0)
             case 'OP':
-                return opPrice || 0
+                return Number(opPrice || 0)
             case 'DINERO':
-                return dineroPrice || 0
+                return Number(dineroPrice || 0)
             case 'HAI':
-                return haiPrice || 0
+                return Number(haiPrice || 0)
             default:
                 return 0
         }
@@ -146,7 +157,7 @@ export function ClaimModal(props: ModalProps) {
     // Process all incentive tokens
     const incentiveTokens = INCENTIVE_TOKENS.reduce(
         (acc, token) => {
-            const data = incentivesData[token]
+            const data = (incentivesData as any)[token]
             const price = getTokenPrice(token)
 
             console.log(`Processing ${token}:`, data, 'price:', price)
@@ -442,13 +453,11 @@ const ClaimableAssetContainer = styled(Flex).attrs((props) => ({
     border: 2px solid rgba(0, 0, 0, 0.1);
 `
 
-type Claim = object
-
 type ClaimableAssetProps = {
     asset: string
     amount: string
     price?: number
-    claim?: Claim
+    claim?: IncentiveClaim
     distributor?: any
     onSuccess?: () => void
     incentive: boolean
@@ -465,7 +474,17 @@ type ClaimableAssetProps = {
       }
 )
 
-const ClaimableIncentive = ({ asset, claim, price, onSuccess }) => {
+const ClaimableIncentive = ({ 
+    asset, 
+    claim, 
+    price, 
+    onSuccess 
+}: {
+    asset: string
+    claim: IncentiveClaim
+    price: number
+    onSuccess?: () => void
+}) => {
     console.log(`ClaimableIncentive for ${asset}:`, claim)
     if (!claim || claim.isClaimed) return null
 
@@ -485,7 +504,7 @@ const ClaimableIncentive = ({ asset, claim, price, onSuccess }) => {
             price={price || 0}
             distributor={distributor}
             incentive={true}
-            internal={false} // Explicitly set to false since this is an incentive
+            auction={{} as IAuction} // Dummy auction object to satisfy the union type
             onSuccess={onSuccess}
         />
     )
@@ -514,7 +533,7 @@ function ClaimableAsset({
     const [status, setStatus] = useState(ActionState.NONE)
 
     // Get pause state from the claim data
-    const isDistributorPaused = claim?.isPaused
+    const isDistributorPaused = (claim as IncentiveClaim)?.isPaused
 
     const onClaim = async () => {
         if (incentive) {
@@ -525,9 +544,9 @@ function ClaimableAsset({
                 console.debug('wrong address')
                 return false
             }
-            const { index, amount, proof } = claim
+            const incentiveClaim = claim as IncentiveClaim
             try {
-                const txResponse = await claim.claimIt()
+                const txResponse = await incentiveClaim.claimIt?.()
                 if (txResponse) {
                     transactionsActions.addTransaction({
                         chainId: txResponse?.chainId,
@@ -609,12 +628,12 @@ function ClaimableAsset({
                     {incentive ? (
                         <>
                             <Text $fontSize="1em" $fontWeight={700}>
-                                {claim.description}
+                                {(claim as IncentiveClaim)?.description || asset}
                             </Text>
                         </>
                     ) : (
                         <Text $fontSize="0.7em">
-                            {auction
+                            {auction && auction.auctionId
                                 ? `Auction: #${auction.auctionId} (${auction.englishAuctionType})`
                                 : `Unsuccessful Bid(s)`}
                         </Text>
