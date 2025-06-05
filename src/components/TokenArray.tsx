@@ -20,6 +20,8 @@ export function TokenArray({ tokens, size = 32, label, hideLabel = false }: Toke
         switch (token) {
             case 'MOO-VELO-V2-OP-VELO':
                 return 'white'
+            case 'YV-VELO-ALETH-WETH':
+                return 'white'
             case 'VELO':
                 return 'white'
             case 'APXETH':
@@ -35,6 +37,52 @@ export function TokenArray({ tokens, size = 32, label, hideLabel = false }: Toke
         }
     }
 
+    const containerContent = (
+        <>
+            {tokens.map((token, i) => {
+                switch (token) {
+                    case 'All':
+                    case 'MOO-VELO-V2-OP-VELO':
+                        return (
+                            <>
+                                <img
+                                    key={i}
+                                    src={TOKEN_LOGOS['MOO']}
+                                    alt={token}
+                                    className={`token-${token}`}
+                                    style={{ backgroundColor: 'white' }}
+                                />
+                                <img
+                                    key={i}
+                                    src={TOKEN_LOGOS['VELO']}
+                                    alt={token}
+                                    className={`token-${token}`}
+                                    style={{ backgroundColor: 'white' }}
+                                />
+                                <img key={i} src={TOKEN_LOGOS['OP']} alt={token} className={`token-${token}`} />
+                            </>
+                        )
+                    case 'Collateral':
+                        return <CyclingTokenArray key={i} size={size} includeProtocolTokens={token === 'All'} />
+                    default:
+                        return (
+                            <img
+                                key={i}
+                                src={TOKEN_LOGOS[token]}
+                                alt={token}
+                                width={48}
+                                height={48}
+                                className={`token-${token}`}
+                                style={{
+                                    backgroundColor: token == 'YV-VELO-ALETH-WETH' ? 'none' : tokenBg(token),
+                                }}
+                            />
+                        )
+                }
+            })}
+        </>
+    )
+
     return (
         <Flex $align="center" $gap={12} $grow={0}>
             {tokens[0] == 'MOO-VELO-V2-OP-VELO' && (
@@ -46,50 +94,16 @@ export function TokenArray({ tokens, size = 32, label, hideLabel = false }: Toke
                     </div>
                 </div>
             )}
-            <IconContainer $size={size}>
-                {tokens.map((token, i) => {
-                    switch (token) {
-                        case 'All':
-                        case 'MOO-VELO-V2-OP-VELO':
-                            return (
-                                <>
-                                    <img
-                                        key={i}
-                                        src={TOKEN_LOGOS['MOO']}
-                                        alt={token}
-                                        className={`token-${token}`}
-                                        style={{ backgroundColor: 'white' }}
-                                    />
-                                    <img
-                                        key={i}
-                                        src={TOKEN_LOGOS['VELO']}
-                                        alt={token}
-                                        className={`token-${token}`}
-                                        style={{ backgroundColor: 'white' }}
-                                    />
-                                    <img key={i} src={TOKEN_LOGOS['OP']} alt={token} className={`token-${token}`} />
-                                </>
-                            )
-                        case 'Collateral':
-                            return <CyclingTokenArray key={i} size={size} includeProtocolTokens={token === 'All'} />
-                        default:
-                            return (
-                                <img
-                                    key={i}
-                                    src={TOKEN_LOGOS[token]}
-                                    alt={token}
-                                    width={48}
-                                    height={48}
-                                    className={`token-${token}`}
-                                    style={{ backgroundColor: tokenBg(token) }}
-                                />
-                            )
-                    }
-                })}
-            </IconContainer>
+            {tokens[0] == 'YV-VELO-ALETH-WETH' ? (
+                <>{containerContent}</>
+            ) : (
+                <IconContainer $size={size}>{containerContent}</IconContainer>
+            )}
             {!hideLabel && tokens.length < 3 && (
                 <Text $fontWeight={700}>
-                    {label || (tokens.length === 1 ? tokens[0] : `${tokens[0]}/${tokens[1]}`)}
+                    {tokens[0] == 'YV-VELO-ALETH-WETH'
+                        ? 'yvVelo-alETH-WETH'
+                        : label || (tokens.length === 1 ? tokens[0] : `${tokens[0]}/${tokens[1]}`)}
                 </Text>
             )}
         </Flex>
