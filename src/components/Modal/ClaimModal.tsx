@@ -79,40 +79,46 @@ export function ClaimModal(props: ModalProps) {
     const dineroIncentivesData = incentivesData['DINERO']
 
     const kiteIncentivesContent = kiteIncentivesData?.hasClaimableDistros
-        ? kiteIncentivesData.claims.map((claim) => (
-              <ClaimableIncentive
-                  key={slugify(claim.description)}
-                  asset="KITE"
-                  claim={claim}
-                  price={kitePrice}
-                  onSuccess={refetchIncentives}
-              />
-          ))
+        ? kiteIncentivesData.claims
+              .filter((claim) => claim.distributionIndex > 10)
+              .map((claim) => (
+                  <ClaimableIncentive
+                      key={slugify(claim.description)}
+                      asset="KITE"
+                      claim={claim}
+                      price={kitePrice}
+                      onSuccess={refetchIncentives}
+                  />
+              ))
         : []
 
     const opIncentivesContent = opIncentivesData?.hasClaimableDistros
-        ? opIncentivesData.claims.map((claim) => (
-              <ClaimableIncentive
-                  key={slugify(claim.description)}
-                  asset="OP"
-                  claim={claim}
-                  price={opPrice}
-                  onSuccess={refetchIncentives}
-              />
-          ))
+        ? opIncentivesData.claims
+              .filter((claim) => claim.distributionIndex > 10)
+              .map((claim) => (
+                  <ClaimableIncentive
+                      key={slugify(claim.description)}
+                      asset="OP"
+                      claim={claim}
+                      price={opPrice}
+                      onSuccess={refetchIncentives}
+                  />
+              ))
         : []
 
-    const dineroIncentivesContent = dineroIncentivesData?.hasClaimableDistros
-        ? dineroIncentivesData.claims.map((claim) => (
-              <ClaimableIncentive
-                  key={slugify(claim.description)}
-                  asset="DINERO"
-                  claim={claim}
-                  price={dineroPrice}
-                  onSuccess={refetchIncentives}
-              />
-          ))
-        : []
+    // const dineroIncentivesContent = dineroIncentivesData?.hasClaimableDistros
+    //     ? dineroIncentivesData.claims.map((claim) => (
+    //           <ClaimableIncentive
+    //               key={slugify(claim.description)}
+    //               asset="DINERO"
+    //               claim={claim}
+    //               price={dineroPrice}
+    //               onSuccess={refetchIncentives}
+    //           />
+    //       ))
+    //     : []
+
+    const dineroIncentivesContent = []
 
     const tokenIncentiveValue = (claims, price) =>
         claims?.reduce((acc, claim) => {
