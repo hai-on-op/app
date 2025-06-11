@@ -144,9 +144,9 @@ export function Overview({ simulation }: OverviewProps) {
                     simulatedValue={
                         simValues.totalStakedAfterTx !== totalStaked.amount
                             ? formatNumberWithStyle(simValues.totalStakedAfterTx, {
-                                  minDecimals: 0,
-                                  maxDecimals: 2,
-                              })
+                                minDecimals: 0,
+                                maxDecimals: 2,
+                            })
                             : undefined
                     }
                     labelOnTop
@@ -162,9 +162,9 @@ export function Overview({ simulation }: OverviewProps) {
                     simulatedValue={
                         simValues.myStakedAfterTx !== myStaked.effectiveAmount
                             ? formatNumberWithStyle(simValues.myStakedAfterTx, {
-                                  minDecimals: 0,
-                                  maxDecimals: 2,
-                              })
+                                minDecimals: 0,
+                                maxDecimals: 2,
+                            })
                             : undefined
                     }
                     labelOnTop
@@ -179,9 +179,9 @@ export function Overview({ simulation }: OverviewProps) {
                     simulatedValue={
                         simValues.myShareAfterTx !== myShare.value
                             ? `${formatNumberWithStyle(simValues.myShareAfterTx, {
-                                  minDecimals: 0,
-                                  maxDecimals: 2,
-                              })}%`
+                                minDecimals: 0,
+                                maxDecimals: 2,
+                            })}%`
                             : undefined
                     }
                 />
@@ -208,9 +208,9 @@ export function Overview({ simulation }: OverviewProps) {
                     simulatedValue={
                         boost.netBoostValue !== simValues.netBoostAfterTx
                             ? `${formatNumberWithStyle(simValues.netBoostAfterTx, {
-                                  minDecimals: 2,
-                                  maxDecimals: 2,
-                              })}x`
+                                minDecimals: 2,
+                                maxDecimals: 2,
+                            })}x`
                             : undefined
                     }
                     alert={{ value: 'BOOST', status: Status.POSITIVE }}
@@ -225,12 +225,12 @@ export function Overview({ simulation }: OverviewProps) {
                     simulatedProgress={
                         boost.netBoostValue !== simValues.netBoostAfterTx
                             ? {
-                                  progress: simValues.netBoostAfterTx - 1,
-                                  label: `${formatNumberWithStyle(simValues.netBoostAfterTx, {
-                                      minDecimals: 2,
-                                      maxDecimals: 2,
-                                  })}x`,
-                              }
+                                progress: simValues.netBoostAfterTx - 1,
+                                label: `${formatNumberWithStyle(simValues.netBoostAfterTx, {
+                                    minDecimals: 2,
+                                    maxDecimals: 2,
+                                })}x`,
+                            }
                             : undefined
                     }
                     colorLimits={[0.25, 0.5, 0.75]}

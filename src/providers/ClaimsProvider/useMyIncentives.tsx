@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ethers } from 'ethers'
 import { ChainId, isFormattedAddress } from '~/utils'
 import { StandardMerkleTree } from '@openzeppelin/merkle-tree'
@@ -426,7 +427,6 @@ export const fetchIncentivesData = async (geb: any, account: string, chainId: Ch
 
                 const claimIt = async () => {
                     console.log(tokensAddresses[token], String(claimableAmount), proof, geb.signer, rewardDistributor)
-                    // @ts-ignore
                     try {
                         const tx = await rewardDistributor
                             .connect(geb.signer)
@@ -568,11 +568,13 @@ const fetchTokenDistroClaims = async (account: string, chainId: ChainId, token: 
     if (!formatted) return Promise.reject(new Error('Invalid address'))
     const baseNetwork = chainId === 10 ? 'optimism' : 'optimism-sepolia'
     const networkKey = `${baseNetwork}-${token.toLowerCase()}`
-    const fetchedClaims = await claimFetcher(networkKey, formatted)
+    // const fetchedClaims = await claimFetcher(networkKey, formatted)
+    const fetchedClaims = await claimFetcher()
     return formatDistro(fetchedClaims)
 }
 
-function claimFetcher(networkKey: string, formatted: string) {
+// function claimFetcher(networkKey: string, formatted: string) {
+function claimFetcher() {
     return fetch(`${import.meta.env.VITE_MERKLER_WORKER}`)
         .then(async (res) => {
             const result = await res.json()

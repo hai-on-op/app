@@ -331,25 +331,25 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
                 : '0',
             stakingPositions: userData?.stakingUser?.stakingPositions
                 ? userData.stakingUser.stakingPositions.map((pos: any) => ({
-                      ...pos,
-                      amount: formatBigNumber(pos.amount),
-                      timestamp: Number(pos.timestamp),
-                  }))
+                    ...pos,
+                    amount: formatBigNumber(pos.amount),
+                    timestamp: Number(pos.timestamp),
+                }))
                 : [],
             rewards: userData?.stakingUser?.rewards
                 ? userData.stakingUser.rewards.map((reward: any) => ({
-                      ...reward,
-                      amount: formatBigNumber(reward.amount),
-                      timestamp: Number(reward.timestamp),
-                  }))
+                    ...reward,
+                    amount: formatBigNumber(reward.amount),
+                    timestamp: Number(reward.timestamp),
+                }))
                 : [],
             pendingWithdrawal: userPendingWithdrawal
                 ? {
-                      id: 'pending-' + targetAddress.toLowerCase(),
-                      amount: String(userPendingWithdrawal.amount),
-                      timestamp: userPendingWithdrawal.timestamp,
-                      status: userPendingWithdrawal.status,
-                  }
+                    id: 'pending-' + targetAddress.toLowerCase(),
+                    amount: String(userPendingWithdrawal.amount),
+                    timestamp: userPendingWithdrawal.timestamp,
+                    status: userPendingWithdrawal.status,
+                }
                 : undefined,
         }
     }, [userData, totalStaked, usersStakingData, pendingWithdrawals, targetAddress])

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 import type { IAuction } from '~/types'
-import { ActionState, formatNumberWithStyle, tokenMap, wait, isFormattedAddress, slugify } from '~/utils'
+import { ActionState, formatNumberWithStyle, tokenMap, wait, isFormattedAddress } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { useClaims } from '~/providers/ClaimsProvider'
 import { useAccount } from 'wagmi'
@@ -15,16 +15,15 @@ import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
 import { Modal, type ModalProps } from './index'
 import { TokenArray } from '../TokenArray'
 import { ContentWithStatus } from '../ContentWithStatus'
-import { Box } from 'react-feather'
 
-const returnDaysLeftToClaim = (date: number) => {
-    const deploymentTime = dayjs(date * 1000)
-    const dayDiff = dayjs().diff(deploymentTime, 'day')
-    if (dayDiff > 90) {
-        return 0
-    }
-    return 90 - dayjs().diff(deploymentTime, 'day')
-}
+// const returnDaysLeftToClaim = (date: number) => {
+//     const deploymentTime = dayjs(date * 1000)
+//     const dayDiff = dayjs().diff(deploymentTime, 'day')
+//     if (dayDiff > 90) {
+//         return 0
+//     }
+//     return 90 - dayjs().diff(deploymentTime, 'day')
+// }
 
 function formatTime(seconds: number) {
     // Handle zero or negative values
@@ -45,7 +44,7 @@ function formatTime(seconds: number) {
     return `${minutes} minute${minutes !== 1 ? 's' : ''}`
 }
 
-const returnAmount = (value: BigNumberish) => utils.formatEther(value)
+// const returnAmount = (value: BigNumberish) => utils.formatEther(value)
 
 export function RemainingTime({ endTimestamp }: { endTimestamp?: number }) {
     const [formattedTimeRemaining, setFormattedTimeRemaining] = useState<string>('')
@@ -155,17 +154,14 @@ export function ClaimModal(props: ModalProps) {
     }
 
     // Process all incentive tokens
-    const incentiveTokens = INCENTIVE_TOKENS.reduce(
-        (acc, token) => {
-            const data = (incentivesData as any)[token]
-            const price = getTokenPrice(token)
+    const incentiveTokens = INCENTIVE_TOKENS.reduce((acc, token) => {
+        const data = (incentivesData as any)[token]
+        const price = getTokenPrice(token)
 
-            console.log(`Processing ${token}:`, data, 'price:', price)
-            acc[token] = { data, price }
-            return acc
-        },
-        {} as Record<IncentiveToken, { data: any; price: number }>
-    )
+        console.log(`Processing ${token}:`, data, 'price:', price)
+        acc[token] = { data, price }
+        return acc
+    }, {} as Record<IncentiveToken, { data: any; price: number }>)
 
     // Check if distributor is paused from any available incentive data
     const isDistributorPaused = Object.values(incentiveTokens).some(({ data }) => data?.isPaused)
@@ -578,7 +574,6 @@ function ClaimableAsset({
     internal,
     incentive,
     claim,
-    distributor,
     onSuccess,
 }: ClaimableAssetProps) {
     const signer = useEthersSigner()
