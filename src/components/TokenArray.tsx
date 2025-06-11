@@ -177,15 +177,15 @@ export function CyclingTokenArray({ size = 32, tokens, includeProtocolTokens = f
 
     const icons = tokens
         ? tokens.map((token) => ({
-            icon: TOKEN_LOGOS[token],
-            bg: token === 'KITE' ? '#eecabc' : 'greenish',
-        }))
+              icon: TOKEN_LOGOS[token],
+              bg: token === 'KITE' ? '#eecabc' : 'greenish',
+          }))
         : Object.values(tokensData || {})
-            .filter(({ isCollateral }) => includeProtocolTokens || isCollateral)
-            .map(({ symbol }) => ({
-                icon: TOKEN_LOGOS[symbol as TokenKey],
-                bg: symbol === 'KITE' ? '#eecabc' : 'greenish',
-            }))
+              .filter(({ isCollateral }) => includeProtocolTokens || isCollateral)
+              .map(({ symbol }) => ({
+                  icon: TOKEN_LOGOS[symbol as TokenKey],
+                  bg: symbol === 'KITE' ? '#eecabc' : 'greenish',
+              }))
 
     return <IconCycler size={size} icons={icons} />
 }
