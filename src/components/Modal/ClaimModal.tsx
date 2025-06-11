@@ -219,6 +219,65 @@ export function ClaimModal(props: ModalProps) {
     // Calculate total incentive value using direct values
     const totalIncentiveValue = kiteValue + opValue + dineroValue + haiValue
     console.log('Total incentive value:', totalIncentiveValue, kiteValue, opValue, dineroValue, haiValue)
+<!--     const kiteIncentivesData = incentivesData['KITE']
+    const opIncentivesData = incentivesData['OP']
+    const dineroIncentivesData = incentivesData['DINERO']
+
+    const kiteIncentivesContent = kiteIncentivesData?.hasClaimableDistros
+        ? kiteIncentivesData.claims
+              .filter((claim) => claim.distributionIndex > 10)
+              .map((claim) => (
+                  <ClaimableIncentive
+                      key={slugify(claim.description)}
+                      asset="KITE"
+                      claim={claim}
+                      price={kitePrice}
+                      onSuccess={refetchIncentives}
+                  />
+              ))
+        : []
+
+    const opIncentivesContent = opIncentivesData?.hasClaimableDistros
+        ? opIncentivesData.claims
+              .filter((claim) => claim.distributionIndex > 10)
+              .map((claim) => (
+                  <ClaimableIncentive
+                      key={slugify(claim.description)}
+                      asset="OP"
+                      claim={claim}
+                      price={opPrice}
+                      onSuccess={refetchIncentives}
+                  />
+              ))
+        : []
+
+    // const dineroIncentivesContent = dineroIncentivesData?.hasClaimableDistros
+    //     ? dineroIncentivesData.claims.map((claim) => (
+    //           <ClaimableIncentive
+    //               key={slugify(claim.description)}
+    //               asset="DINERO"
+    //               claim={claim}
+    //               price={dineroPrice}
+    //               onSuccess={refetchIncentives}
+    //           />
+    //       ))
+    //     : []
+
+    const dineroIncentivesContent = []
+
+    const tokenIncentiveValue = (claims, price) =>
+        claims?.reduce((acc, claim) => {
+            const value = claim.isClaimed ? 0 : parseFloat(returnAmount(claim.amount))
+            return acc + value
+        }, 0) * price
+
+    const kiteIncentiveValue = tokenIncentiveValue(kiteIncentivesData?.claims, kitePrice)
+    const opIncentiveValue = tokenIncentiveValue(opIncentivesData?.claims, opPrice)
+    const dineroIncentiveValue = tokenIncentiveValue(dineroIncentivesData?.claims, dineroPrice)
+
+    const totalIncentiveValue = kiteIncentiveValue + opIncentiveValue + dineroIncentiveValue
+
+    const incentivesContent = [...kiteIncentivesContent, ...opIncentivesContent, ...dineroIncentivesContent] -->
 
     const totalClaimableValue = total + totalIncentiveValue
     console.log('Total claimable value (auction + incentives):', totalClaimableValue, 'auction total:', total)
