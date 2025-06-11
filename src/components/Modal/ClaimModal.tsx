@@ -155,17 +155,14 @@ export function ClaimModal(props: ModalProps) {
     }
 
     // Process all incentive tokens
-    const incentiveTokens = INCENTIVE_TOKENS.reduce(
-        (acc, token) => {
-            const data = (incentivesData as any)[token]
-            const price = getTokenPrice(token)
+    const incentiveTokens = INCENTIVE_TOKENS.reduce((acc, token) => {
+        const data = (incentivesData as any)[token]
+        const price = getTokenPrice(token)
 
-            console.log(`Processing ${token}:`, data, 'price:', price)
-            acc[token] = { data, price }
-            return acc
-        },
-        {} as Record<IncentiveToken, { data: any; price: number }>
-    )
+        console.log(`Processing ${token}:`, data, 'price:', price)
+        acc[token] = { data, price }
+        return acc
+    }, {} as Record<IncentiveToken, { data: any; price: number }>)
 
     // Check if distributor is paused from any available incentive data
     const isDistributorPaused = Object.values(incentiveTokens).some(({ data }) => data?.isPaused)
@@ -219,37 +216,38 @@ export function ClaimModal(props: ModalProps) {
     // Calculate total incentive value using direct values
     const totalIncentiveValue = kiteValue + opValue + dineroValue + haiValue
     console.log('Total incentive value:', totalIncentiveValue, kiteValue, opValue, dineroValue, haiValue)
-<!--     const kiteIncentivesData = incentivesData['KITE']
-    const opIncentivesData = incentivesData['OP']
-    const dineroIncentivesData = incentivesData['DINERO']
 
-    const kiteIncentivesContent = kiteIncentivesData?.hasClaimableDistros
-        ? kiteIncentivesData.claims
-              .filter((claim) => claim.distributionIndex > 10)
-              .map((claim) => (
-                  <ClaimableIncentive
-                      key={slugify(claim.description)}
-                      asset="KITE"
-                      claim={claim}
-                      price={kitePrice}
-                      onSuccess={refetchIncentives}
-                  />
-              ))
-        : []
+    // const kiteIncentivesData = incentivesData['KITE']
+    // const opIncentivesData = incentivesData['OP']
+    // const dineroIncentivesData = incentivesData['DINERO']
 
-    const opIncentivesContent = opIncentivesData?.hasClaimableDistros
-        ? opIncentivesData.claims
-              .filter((claim) => claim.distributionIndex > 10)
-              .map((claim) => (
-                  <ClaimableIncentive
-                      key={slugify(claim.description)}
-                      asset="OP"
-                      claim={claim}
-                      price={opPrice}
-                      onSuccess={refetchIncentives}
-                  />
-              ))
-        : []
+    // const kiteIncentivesContent = kiteIncentivesData?.hasClaimableDistros
+    //     ? kiteIncentivesData.claims
+    //           .filter((claim) => claim.distributionIndex > 10)
+    //           .map((claim) => (
+    //               <ClaimableIncentive
+    //                   key={slugify(claim.description)}
+    //                   asset="KITE"
+    //                   claim={claim}
+    //                   price={kitePrice}
+    //                   onSuccess={refetchIncentives}
+    //               />
+    //           ))
+    //     : []
+
+    // const opIncentivesContent = opIncentivesData?.hasClaimableDistros
+    //     ? opIncentivesData.claims
+    //           .filter((claim) => claim.distributionIndex > 10)
+    //           .map((claim) => (
+    //               <ClaimableIncentive
+    //                   key={slugify(claim.description)}
+    //                   asset="OP"
+    //                   claim={claim}
+    //                   price={opPrice}
+    //                   onSuccess={refetchIncentives}
+    //               />
+    //           ))
+    //     : []
 
     // const dineroIncentivesContent = dineroIncentivesData?.hasClaimableDistros
     //     ? dineroIncentivesData.claims.map((claim) => (
@@ -263,21 +261,21 @@ export function ClaimModal(props: ModalProps) {
     //       ))
     //     : []
 
-    const dineroIncentivesContent = []
+    // const dineroIncentivesContent = []
 
-    const tokenIncentiveValue = (claims, price) =>
-        claims?.reduce((acc, claim) => {
-            const value = claim.isClaimed ? 0 : parseFloat(returnAmount(claim.amount))
-            return acc + value
-        }, 0) * price
+    // const tokenIncentiveValue = (claims, price) =>
+    //     claims?.reduce((acc, claim) => {
+    //         const value = claim.isClaimed ? 0 : parseFloat(returnAmount(claim.amount))
+    //         return acc + value
+    //     }, 0) * price
 
-    const kiteIncentiveValue = tokenIncentiveValue(kiteIncentivesData?.claims, kitePrice)
-    const opIncentiveValue = tokenIncentiveValue(opIncentivesData?.claims, opPrice)
-    const dineroIncentiveValue = tokenIncentiveValue(dineroIncentivesData?.claims, dineroPrice)
+    // const kiteIncentiveValue = tokenIncentiveValue(kiteIncentivesData?.claims, kitePrice)
+    // const opIncentiveValue = tokenIncentiveValue(opIncentivesData?.claims, opPrice)
+    // const dineroIncentiveValue = tokenIncentiveValue(dineroIncentivesData?.claims, dineroPrice)
 
-    const totalIncentiveValue = kiteIncentiveValue + opIncentiveValue + dineroIncentiveValue
+    // const totalIncentiveValue = kiteIncentiveValue + opIncentiveValue + dineroIncentiveValue
 
-    const incentivesContent = [...kiteIncentivesContent, ...opIncentivesContent, ...dineroIncentivesContent] -->
+    // const incentivesContent = [...kiteIncentivesContent, ...opIncentivesContent, ...dineroIncentivesContent] -->
 
     const totalClaimableValue = total + totalIncentiveValue
     console.log('Total claimable value (auction + incentives):', totalClaimableValue, 'auction total:', total)
@@ -533,11 +531,11 @@ type ClaimableAssetProps = {
       }
 )
 
-const ClaimableIncentive = ({ 
-    asset, 
-    claim, 
-    price, 
-    onSuccess 
+const ClaimableIncentive = ({
+    asset,
+    claim,
+    price,
+    onSuccess,
 }: {
     asset: string
     claim: IncentiveClaim
