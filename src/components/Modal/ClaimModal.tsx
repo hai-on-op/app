@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import dayjs from 'dayjs'
+// import dayjs from 'dayjs'
 import type { IAuction } from '~/types'
 import { ActionState, formatNumberWithStyle, tokenMap, wait, isFormattedAddress } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
@@ -7,7 +7,7 @@ import { useClaims } from '~/providers/ClaimsProvider'
 import { useAccount } from 'wagmi'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { handleTransactionError, useEthersSigner, useGeb } from '~/hooks'
-import { BigNumberish, utils } from 'ethers'
+import { utils } from 'ethers'
 import { useDistributorContract } from '~/hooks/useContract'
 
 import styled from 'styled-components'
@@ -154,17 +154,14 @@ export function ClaimModal(props: ModalProps) {
     }
 
     // Process all incentive tokens
-    const incentiveTokens = INCENTIVE_TOKENS.reduce(
-        (acc, token) => {
-            const data = (incentivesData as any)[token]
-            const price = getTokenPrice(token)
+    const incentiveTokens = INCENTIVE_TOKENS.reduce((acc, token) => {
+        const data = (incentivesData as any)[token]
+        const price = getTokenPrice(token)
 
-            console.log(`Processing ${token}:`, data, 'price:', price)
-            acc[token] = { data, price }
-            return acc
-        },
-        {} as Record<IncentiveToken, { data: any; price: number }>
-    )
+        console.log(`Processing ${token}:`, data, 'price:', price)
+        acc[token] = { data, price }
+        return acc
+    }, {} as Record<IncentiveToken, { data: any; price: number }>)
 
     // Check if distributor is paused from any available incentive data
     const isDistributorPaused = Object.values(incentiveTokens).some(({ data }) => data?.isPaused)

@@ -566,8 +566,8 @@ function formatDistro<T extends Record<string, Record<string, any>>>(obj: T): Pa
 const fetchTokenDistroClaims = async (account: string, chainId: ChainId, token: string) => {
     const formatted = isFormattedAddress(account)
     if (!formatted) return Promise.reject(new Error('Invalid address'))
-    const baseNetwork = chainId === 10 ? 'optimism' : 'optimism-sepolia'
-    const networkKey = `${baseNetwork}-${token.toLowerCase()}`
+    // const baseNetwork = chainId === 10 ? 'optimism' : 'optimism-sepolia'
+    // const networkKey = `${baseNetwork}-${token.toLowerCase()}`
     // const fetchedClaims = await claimFetcher(networkKey, formatted)
     const fetchedClaims = await claimFetcher()
     return formatDistro(fetchedClaims)
