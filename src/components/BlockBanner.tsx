@@ -16,12 +16,11 @@ export function BlockBanner({ text, width, active = true, children, ...props }: 
     const [rotation] = useState(() => Math.floor(-5 + 10 * Math.random()))
 
     if (!active) return <>{children}</>
-    
 
     return (
         <Container $width="100%" $justify="center" $align="center" {...props}>
             {children}
-            {text.split('').map((char, i) => () => <span key={i+ 1}>{char}</span>)}
+            {text.split('').map((char, i) => () => <span key={i + 1}>{char}</span>)}
             <Band $width={width} $offset={offset} style={{ transform: `rotate(${rotation}deg)` }}>
                 {text.split('').map((char, i) => (
                     <>{char == ' ' ? <>&nbsp;</> : <span key={i}>{char}</span>}</>

@@ -314,11 +314,7 @@ function formatTime(seconds: number) {
     return `${minutes} minute${minutes !== 1 ? 's' : ''}`
 }
 
-export const fetchIncentivesData = async (
-    geb: any,
-    account: string,
-    chainId: ChainId
-) => {
+export const fetchIncentivesData = async (geb: any, account: string, chainId: ChainId) => {
     //const factories: { [key: string]: any } = {
     //    KITE: geb?.contracts?.merkleDistributorFactoryKite,
     //    OP: geb?.contracts?.merkleDistributorFactoryOp,
@@ -337,7 +333,7 @@ export const fetchIncentivesData = async (
 
     // Fetch the latest merkle root timestamp from GraphQL
     const latestMerkleRootTimestamp = await fetchLatestMerkleRootTimestamp()
-    
+
     // Use the latest merkle root timestamp if available, otherwise fallback to calculation
     let lastSettedMerkleRoot: number
     if (latestMerkleRootTimestamp) {

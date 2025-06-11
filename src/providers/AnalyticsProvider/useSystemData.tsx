@@ -50,7 +50,6 @@ export function useSystemData(): SystemData {
             ],
         } = data
 
-
         // Filtering out deprecated collaterals
         const activeCollateralTypes = collateralTypes.filter(
             ({ id }) => !DEPRECATED_COLLATERALS.includes(id.toUpperCase())
