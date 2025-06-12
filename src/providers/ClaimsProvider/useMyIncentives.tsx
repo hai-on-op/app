@@ -315,7 +315,29 @@ function formatTime(seconds: number) {
     return `${minutes} minute${minutes !== 1 ? 's' : ''}`
 }
 
-export const fetchIncentivesData = async (geb: any, account: string, chainId: ChainId) => {
+// Define proper types for incentive claims
+interface IncentiveClaim {
+    isPaused?: boolean
+    isClaimed?: boolean
+    hasClaimableDistros?: boolean
+    amount?: any
+    description?: string
+    claimIt?: () => Promise<any>
+    [key: string]: any
+}
+
+interface TimerData {
+    endTime: number
+    nextDistribution: string
+    isPaused: boolean
+}
+
+interface IncentivesData {
+    claimData: Record<string, IncentiveClaim>
+    timerData: TimerData
+}
+
+export const fetchIncentivesData = async (geb: any, account: string, chainId: ChainId): Promise<IncentivesData> => {
     //const factories: { [key: string]: any } = {
     //    KITE: geb?.contracts?.merkleDistributorFactoryKite,
     //    OP: geb?.contracts?.merkleDistributorFactoryOp,
@@ -359,12 +381,20 @@ export const fetchIncentivesData = async (geb: any, account: string, chainId: Ch
     const isPaused = await rewardDistributor.paused()
 
     const currentBlock = await geb.provider.getBlock('latest')
-
     const currentTime = currentBlock.timestamp
 
     console.log('currentTime', currentTime, currentBlock, distributionDuration)
 
     const claimData = {}
+
+    // Calculate timer data independently of claims
+    const timerData = {
+        endTime: Number(lastSettedMerkleRoot) + Number(distributionDuration),
+        nextDistribution: formatTime(
+            Number(String(distributionDuration)) - (currentTime - Number(String(lastSettedMerkleRoot)))
+        ),
+        isPaused
+    }
 
     // Fetch users claims for each tokens
     for (let i = 0; i < tokens.length; i++) {
@@ -372,46 +402,27 @@ export const fetchIncentivesData = async (geb: any, account: string, chainId: Ch
 
         const tokenDistroClaims = await fetchTokenDistroClaims(account, chainId, token)
 
-        //console.log(
-        //    'tokenDistroClaims',
-        //    Object.entries(tokenDistroClaims).map(([key, value]) =>
-        //        console.log({ key, value: value.values.map((v) => v.value[0]) })
-        //    )
-        //)
-
-        // console.log('tokenDistroClaims', tokenDistroClaims)
-
         try {
-            const tokenTree = StandardMerkleTree.load(tokenDistroClaims[token.toLowerCase()])
+            // Skip if no claims data for this token
+            if (!tokenDistroClaims || !tokenDistroClaims[token.toLowerCase()]) {
+                console.log(`No claims data for token ${token}`)
+                continue
+            }
 
+            const tokenTree = StandardMerkleTree.load(tokenDistroClaims[token.toLowerCase()])
             const distroClaim = tokenDistroClaims[token.toLowerCase()]
+
+            if (!distroClaim || !distroClaim.values) {
+                console.log(`No claim values for token ${token}`)
+                continue
+            }
 
             const distroClaimValues = distroClaim.values
             const isClaimed = await rewardDistributor.isClaimed(tokenTree.root, account)
 
-            /*  distroClaimValues.find((cV: any) =>
-           console.log(
-                cV.value[0].toLowerCase(),
-                account.toLowerCase(),
-                cV.value[0].toLowerCase() === account.toLowerCase(),
-                cV,
-                '++++++++++++++',
-                distroClaimValues.find((claim: any) => claim.value[0].toLowerCase() === account.toLowerCase())
-            )
-        )*/
-
             const accountClaim = distroClaimValues.find(
                 (claim: any) => claim.value[0].toLowerCase() === account.toLowerCase()
             )?.value
-
-            console.log(
-                'tokenTree',
-                token,
-                tokenTree,
-                tokenTree.root,
-                accountClaim,
-                tokenTree.getProof([account, ethers.BigNumber.from(accountClaim[1])])
-            )
 
             if (accountClaim) {
                 //      console.log('Account Claim =======', accountClaim)
@@ -462,9 +473,10 @@ export const fetchIncentivesData = async (geb: any, account: string, chainId: Ch
 
                         const accountClaim = distroClaimValues.find(
                             (claim: any) => claim.value[0].toLowerCase() === account.toLowerCase()
-                        ).value
+                        )?.value
 
-                        const hasClaimableDistros = ethers.BigNumber.from(accountClaim[1]).gt(0) && !isClaimed
+                        const hasClaimableDistros =
+                            accountClaim && ethers.BigNumber.from(accountClaim[1]).gt(0) && !isClaimed
 
                         if (hasClaimableDistros) {
                             const claimableAmount = ethers.BigNumber.from(accountClaim[1])
@@ -509,12 +521,10 @@ export const fetchIncentivesData = async (geb: any, account: string, chainId: Ch
                     claims: [],
                     proof,
                     claimIt,
-                    endTime: Number(lastSettedMerkleRoot) + Number(distributionDuration),
-                    nextDistribution: formatTime(
-                        Number(String(distributionDuration)) - (currentTime - Number(String(lastSettedMerkleRoot)))
-                    ),
+                    endTime: timerData.endTime,
+                    nextDistribution: timerData.nextDistribution,
                     claimAll,
-                    isPaused,
+                    isPaused: timerData.isPaused,
                 }
 
                 console.log('claimData', token, claimData)
@@ -546,7 +556,10 @@ export const fetchIncentivesData = async (geb: any, account: string, chainId: Ch
         }*/
     }
 
-    return claimData
+    return {
+        claimData,
+        timerData
+    }
 }
 
 function formatDistro<T extends Record<string, Record<string, any>>>(obj: T): Partial<T> {

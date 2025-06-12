@@ -16,9 +16,12 @@ type ClaimsContext = {
         refetch?: () => void
     }
     incentivesData: {
-        KITE?: SummaryItemValue<SummaryCurrency>
-        OP?: SummaryItemValue<SummaryCurrency>
-        DINERO?: SummaryItemValue<SummaryCurrency>
+        claimData: Record<string, any>
+        timerData: {
+            endTime: number
+            nextDistribution: string
+            isPaused: boolean
+        }
         refetch?: () => void
     }
     activeAuctions: {
@@ -48,8 +51,12 @@ const defaultState: ClaimsContext = {
         KITE: defaultTokenMetadata,
     },
     incentivesData: {
-        KITE: defaultTokenMetadata,
-        OP: defaultTokenMetadata,
+        claimData: {},
+        timerData: {
+            endTime: 0,
+            nextDistribution: '',
+            isPaused: false
+        }
     },
     refetchIncentives: async () => Promise.resolve(),
     activeAuctions: {
@@ -91,7 +98,21 @@ export function ClaimsProvider({ children }: Props) {
 
     const activeAuctions = useMyActiveAuctions()
 
-    const [incentivesData, setIncentivesData] = useState({})
+    const [incentivesData, setIncentivesData] = useState<{
+        claimData: Record<string, any>
+        timerData: {
+            endTime: number
+            nextDistribution: string
+            isPaused: boolean
+        }
+    }>({
+        claimData: {},
+        timerData: {
+            endTime: 0,
+            nextDistribution: '',
+            isPaused: false
+        }
+    })
 
     useEffect(() => {
         const fetchIncentives = async () => {

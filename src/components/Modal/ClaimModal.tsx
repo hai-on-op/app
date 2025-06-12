@@ -343,6 +343,9 @@ export function ClaimModal(props: ModalProps) {
         (token) => incentiveTokens[token]?.data?.claimAll && incentiveTokens[token]?.data?.hasClaimableDistros
     )
 
+    // Get timer data from incentives data
+    const timerData = incentivesData?.timerData
+
     const onClaimAll = async () => {
         const formatted = isFormattedAddress(account)
         if (!formatted || !tokenWithClaimAll) {
@@ -376,9 +379,6 @@ export function ClaimModal(props: ModalProps) {
             console.error(e)
         }
     }
-
-    // Find a token with end time for the countdown
-    const tokenWithEndTime = INCENTIVE_TOKENS.find((token) => incentiveTokens[token]?.data?.endTime !== undefined)
 
     const isClaimAllDisabled = !tokenWithClaimAll
 
@@ -415,11 +415,11 @@ export function ClaimModal(props: ModalProps) {
                         </HaiButton>
                     </Flex>
 
-                    {isDistributorPaused ? (
+                    {timerData?.isPaused ? (
                         <Flex $width="100%" $justify="flex-start" $align="center">
                             <Text style={{ color: '#ff6b6b', textAlign: 'left', width: '100%' }}>
                                 Distributor is currently paused to update rewards. <br />
-                                {tokenWithEndTime && incentiveTokens[tokenWithEndTime]?.data?.endTime && (
+                                {timerData?.endTime && (
                                     <>
                                         Time to unpause:{' '}
                                         <span
@@ -431,9 +431,7 @@ export function ClaimModal(props: ModalProps) {
                                                 color: '#000',
                                             }}
                                         >
-                                            <RemainingTime
-                                                endTimestamp={incentiveTokens[tokenWithEndTime]?.data?.endTime}
-                                            />
+                                            <RemainingTime endTimestamp={timerData.endTime} />
                                         </span>
                                     </>
                                 )}
@@ -441,7 +439,7 @@ export function ClaimModal(props: ModalProps) {
                         </Flex>
                     ) : (
                         <Flex $width="100%" $justify="center" $align="center">
-                            {tokenWithEndTime && (
+                            {timerData?.endTime && (
                                 <Text style={{ textAlign: 'left', width: '100%' }}>
                                     Next distribution in{' '}
                                     <span
@@ -452,9 +450,7 @@ export function ClaimModal(props: ModalProps) {
                                             fontWeight: 600,
                                         }}
                                     >
-                                        <RemainingTime
-                                            endTimestamp={incentiveTokens[tokenWithEndTime]?.data?.endTime}
-                                        />
+                                        <RemainingTime endTimestamp={timerData.endTime} />
                                     </span>
                                 </Text>
                             )}
