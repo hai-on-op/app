@@ -648,7 +648,7 @@ export function ClaimModal(props: ModalProps) {
             }
         >
             <Text>
-                Incentive rewards are distributed every 24 hours. Unclaimed rewards will accure below and do not expire.
+                Incentive rewards are distributed every 24 hours. Unclaimed rewards will accrue below and do not expire
             </Text>
             <ScrollableBody>
                 <ContentWithStatus
