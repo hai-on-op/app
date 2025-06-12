@@ -64,6 +64,7 @@ export function RemainingTime({ endTimestamp }: { endTimestamp?: number }) {
         }
     }, [endTimestamp])
 
+    if (!endTimestamp) return null
     return <span>{formattedTimeRemaining}</span>
 }
 
@@ -80,400 +81,6 @@ interface IncentiveClaim {
     description?: string
     claimIt?: () => Promise<any>
     [key: string]: any
-}
-
-export function ClaimModal(props: ModalProps) {
-    const { address: account } = useAccount()
-
-    const { popupsModel: popupsActions, transactionsModel: transactionsActions } = useStoreActions((actions) => actions)
-
-    const {
-        vaultModel: { liquidationData },
-        popupsModel: { isClaimPopupOpen },
-    } = useStoreState((state) => state)
-    const {
-        auctionModel: auctionActions,
-        popupsModel: { setIsClaimPopupOpen },
-    } = useStoreActions((actions) => actions)
-
-    const { prices: veloPrices } = useVelodromePrices()
-
-    const kitePrice = veloPrices?.KITE.raw
-
-    console.log('KITE price:', liquidationData)
-
-    const dineroPrice = veloPrices?.DINERO.raw
-    const opPrice = liquidationData?.collateralLiquidationData?.OP?.currentPrice.value
-    const haiPrice = liquidationData?.currentRedemptionPrice
-
-    const geb = useGeb()
-
-    const { activeAuctions, internalBalances, incentivesData, refetchIncentives } = useClaims()
-
-    const { prices, total } = useMemo(() => {
-        if (!liquidationData)
-            return {
-                prices: {},
-                total: 0,
-            }
-        const { collateralLiquidationData, currentRedemptionPrice } = liquidationData
-        return activeAuctions.claimableAuctions.reduce(
-            (acc, { sellAmount, auction }) => {
-                if (!auction) return acc
-                const token = tokenMap[auction.sellToken] || auction.sellToken
-                const price =
-                    token === 'HAI'
-                        ? parseFloat(currentRedemptionPrice || '1')
-                        : token === 'KITE'
-                        ? Number(kitePrice || 0)
-                        : parseFloat(collateralLiquidationData?.[token]?.currentPrice.value || '0')
-                acc.prices[token] = price || 0 // Ensure price is never undefined
-                acc.total += parseFloat(sellAmount) * (price || 0) // Safely handle undefined price
-                return acc
-            },
-            { prices: {} as Record<string, number>, total: 0 }
-        )
-    }, [liquidationData, activeAuctions.claimableAuctions, kitePrice])
-
-    if (!isClaimPopupOpen) return null
-
-    // Helper function to get token price
-    const getTokenPrice = (token: IncentiveToken): number => {
-        switch (token) {
-            case 'KITE':
-                return Number(kitePrice || 0)
-            case 'OP':
-                return Number(opPrice || 0)
-            case 'DINERO':
-                return Number(dineroPrice || 0)
-            case 'HAI':
-                return Number(haiPrice || 0)
-            default:
-                return 0
-        }
-    }
-
-    // Process all incentive tokens
-    const incentiveTokens = INCENTIVE_TOKENS.reduce(
-        (acc, token) => {
-            const data = (incentivesData as any)[token]
-            const price = getTokenPrice(token)
-
-            console.log(`Processing ${token}:`, data, 'price:', price)
-            acc[token] = { data, price }
-            return acc
-        },
-        {} as Record<IncentiveToken, { data: any; price: number }>
-    )
-
-    // Check if distributor is paused from any available incentive data
-    const isDistributorPaused = Object.values(incentiveTokens).some(({ data }) => data?.isPaused)
-
-    console.log('incentiveTokens', incentiveTokens)
-
-    // Generate content for each token
-    const incentivesContent = INCENTIVE_TOKENS.flatMap((token) => {
-        const { data, price } = incentiveTokens[token]
-        if (!data?.hasClaimableDistros) return []
-
-        console.log(`${token} has claimable distros:`, data.hasClaimableDistros)
-        return [
-            <ClaimableIncentive
-                key={`${token}-Daily-rewards`}
-                asset={token}
-                claim={{ ...data }}
-                price={price}
-                onSuccess={refetchIncentives}
-            />,
-        ]
-    })
-
-    console.log('incentiveTokens', incentiveTokens)
-
-    // Direct calculation for each token's incentive value
-    // This is more reliable than the generic function
-    const kiteValue =
-        incentiveTokens.KITE?.data?.hasClaimableDistros && incentiveTokens.KITE?.data?.amount
-            ? parseFloat(utils.formatEther(incentiveTokens.KITE.data.amount)) * (incentiveTokens.KITE.price || 0)
-            : 0
-
-    const opValue =
-        incentiveTokens.OP?.data?.hasClaimableDistros && incentiveTokens.OP?.data?.amount
-            ? parseFloat(utils.formatEther(incentiveTokens.OP.data.amount)) * (incentiveTokens.OP.price || 0)
-            : 0
-
-    const dineroValue =
-        incentiveTokens.DINERO?.data?.hasClaimableDistros && incentiveTokens.DINERO?.data?.amount
-            ? parseFloat(utils.formatEther(incentiveTokens.DINERO.data.amount)) * (incentiveTokens.DINERO.price || 0)
-            : 0
-
-    const haiValue =
-        incentiveTokens.HAI?.data?.hasClaimableDistros && incentiveTokens.HAI?.data?.amount
-            ? parseFloat(utils.formatEther(incentiveTokens.HAI.data.amount)) * (incentiveTokens.HAI.price || 0)
-            : 0
-
-    // Log direct values for debugging
-    console.log('Direct values - KITE:', kiteValue, 'OP:', opValue, 'DINERO:', dineroValue, 'HAI:', haiValue)
-
-    // Calculate total incentive value using direct values
-    const totalIncentiveValue = kiteValue + opValue + dineroValue + haiValue
-    console.log('Total incentive value:', totalIncentiveValue, kiteValue, opValue, dineroValue, haiValue)
-
-    // const kiteIncentivesData = incentivesData['KITE']
-    // const opIncentivesData = incentivesData['OP']
-    // const dineroIncentivesData = incentivesData['DINERO']
-
-    // const kiteIncentivesContent = kiteIncentivesData?.hasClaimableDistros
-    //     ? kiteIncentivesData.claims
-    //           .filter((claim) => claim.distributionIndex > 10)
-    //           .map((claim) => (
-    //               <ClaimableIncentive
-    //                   key={slugify(claim.description)}
-    //                   asset="KITE"
-    //                   claim={claim}
-    //                   price={kitePrice}
-    //                   onSuccess={refetchIncentives}
-    //               />
-    //           ))
-    //     : []
-
-    // const opIncentivesContent = opIncentivesData?.hasClaimableDistros
-    //     ? opIncentivesData.claims
-    //           .filter((claim) => claim.distributionIndex > 10)
-    //           .map((claim) => (
-    //               <ClaimableIncentive
-    //                   key={slugify(claim.description)}
-    //                   asset="OP"
-    //                   claim={claim}
-    //                   price={opPrice}
-    //                   onSuccess={refetchIncentives}
-    //               />
-    //           ))
-    //     : []
-
-    // const dineroIncentivesContent = dineroIncentivesData?.hasClaimableDistros
-    //     ? dineroIncentivesData.claims.map((claim) => (
-    //           <ClaimableIncentive
-    //               key={slugify(claim.description)}
-    //               asset="DINERO"
-    //               claim={claim}
-    //               price={dineroPrice}
-    //               onSuccess={refetchIncentives}
-    //           />
-    //       ))
-    //     : []
-
-    // const dineroIncentivesContent = []
-
-    // const tokenIncentiveValue = (claims, price) =>
-    //     claims?.reduce((acc, claim) => {
-    //         const value = claim.isClaimed ? 0 : parseFloat(returnAmount(claim.amount))
-    //         return acc + value
-    //     }, 0) * price
-
-    // const kiteIncentiveValue = tokenIncentiveValue(kiteIncentivesData?.claims, kitePrice)
-    // const opIncentiveValue = tokenIncentiveValue(opIncentivesData?.claims, opPrice)
-    // const dineroIncentiveValue = tokenIncentiveValue(dineroIncentivesData?.claims, dineroPrice)
-
-    // const totalIncentiveValue = kiteIncentiveValue + opIncentiveValue + dineroIncentiveValue
-
-    // const incentivesContent = [...kiteIncentivesContent, ...opIncentivesContent, ...dineroIncentivesContent] -->
-
-    const totalClaimableValue = total + totalIncentiveValue
-    console.log('Total claimable value (auction + incentives):', totalClaimableValue, 'auction total:', total)
-
-    // Get content for auctions and internal balances
-    const content = [
-        ...incentivesContent,
-        ...activeAuctions.claimableAuctions.map(({ sellAmount, auction }) => {
-            if (!auction) return null
-            const asset = tokenMap[auction.sellToken] || auction.sellToken
-            return (
-                <ClaimableAsset
-                    key={auction.auctionId}
-                    asset={asset}
-                    amount={sellAmount}
-                    price={prices[asset]}
-                    auction={auction}
-                    incentive={false} // Add the incentive prop
-                    onSuccess={() => {
-                        auctionActions.fetchAuctions({
-                            geb,
-                            type: 'DEBT',
-                        })
-                        auctionActions.fetchAuctions({
-                            geb,
-                            type: 'SURPLUS',
-                        })
-                        activeAuctions.refetch()
-                    }}
-                />
-            )
-        }),
-        ...(parseFloat(internalBalances.HAI?.raw || '0') > 0
-            ? [
-                  <ClaimableAsset
-                      key="internalHai"
-                      asset="COIN"
-                      amount={internalBalances.HAI?.raw || '0'}
-                      price={parseFloat(liquidationData?.currentRedemptionPrice || '1')}
-                      internal={true}
-                      incentive={false} // Add the incentive prop
-                      onSuccess={internalBalances.refetch}
-                  />,
-              ]
-            : []),
-        ...(parseFloat(internalBalances.KITE?.raw || '0') > 0
-            ? [
-                  <ClaimableAsset
-                      key="internalKITE"
-                      asset="PROTOCOL_TOKEN"
-                      amount={internalBalances.KITE?.raw || '0'}
-                      price={10}
-                      internal={true}
-                      incentive={false} // Add the incentive prop
-                      onSuccess={internalBalances.refetch}
-                  />,
-              ]
-            : []),
-    ]
-
-    // Find a token that has claimAll function
-    const tokenWithClaimAll = INCENTIVE_TOKENS.find(
-        (token) => incentiveTokens[token]?.data?.claimAll && incentiveTokens[token]?.data?.hasClaimableDistros
-    )
-
-    // Get timer data from incentives data
-    const timerData = incentivesData?.timerData
-
-    const onClaimAll = async () => {
-        const formatted = isFormattedAddress(account)
-        if (!formatted || !tokenWithClaimAll) {
-            console.debug('wrong address or no token with claimAll')
-            return false
-        }
-        try {
-            const txResponse = await incentiveTokens[tokenWithClaimAll].data.claimAll()
-            if (txResponse) {
-                transactionsActions.addTransaction({
-                    chainId: txResponse?.chainId,
-                    hash: txResponse?.hash,
-                    from: txResponse.from,
-                    summary: `Claiming all rewards`,
-                    addedTime: new Date().getTime(),
-                    originalTx: txResponse,
-                })
-                popupsActions.setIsWaitingModalOpen(true)
-                popupsActions.setWaitingPayload({
-                    title: 'Transaction Submitted',
-                    hash: txResponse?.hash,
-                    status: ActionState.SUCCESS,
-                })
-                await refetchIncentives()
-                popupsActions.setIsWaitingModalOpen(false)
-                popupsActions.setWaitingPayload({ status: ActionState.NONE })
-            } else {
-                throw new Error('No transaction request!')
-            }
-        } catch (e) {
-            console.error(e)
-        }
-    }
-
-    const isClaimAllDisabled = !tokenWithClaimAll
-
-    return (
-        <Modal
-            heading="CLAIM"
-            maxWidth="560px"
-            {...props}
-            onClose={() => setIsClaimPopupOpen(false)}
-            footerContent={
-                <Flex $width="100%" $column $gap={12}>
-                    <Flex $width="100%" $justify="space-between" $align="center">
-                        <Text>
-                            <strong>Total Estimated Value:</strong>
-                            &nbsp;
-                            {content.filter((c) => !!c).length > 0 ? (
-                                formatNumberWithStyle(totalClaimableValue, {
-                                    style: 'currency',
-                                    maxDecimals: 2,
-                                    minDecimals: 0,
-                                })
-                            ) : (
-                                <span style={{ fontStyle: 'italic' }}>No rewards available</span>
-                            )}
-                        </Text>
-                        <HaiButton
-                            $variant="yellowish"
-                            onClick={onClaimAll}
-                            disabled={
-                                isClaimAllDisabled || isDistributorPaused || content.filter((c) => !!c).length === 0
-                            }
-                        >
-                            Claim All
-                        </HaiButton>
-                    </Flex>
-
-                    {timerData?.isPaused ? (
-                        <Flex $width="100%" $justify="flex-start" $align="center">
-                            <Text style={{ color: '#ff6b6b', textAlign: 'left', width: '100%' }}>
-                                Distributor is currently paused to update rewards. <br />
-                                {timerData?.endTime && (
-                                    <>
-                                        Time to unpause:{' '}
-                                        <span
-                                            style={{
-                                                backgroundColor: '#f8f8f8',
-                                                padding: '0.2em 0.5em',
-                                                borderRadius: '1em',
-                                                fontWeight: 600,
-                                                color: '#000',
-                                            }}
-                                        >
-                                            <RemainingTime endTimestamp={timerData.endTime} />
-                                        </span>
-                                    </>
-                                )}
-                            </Text>
-                        </Flex>
-                    ) : (
-                        <Flex $width="100%" $justify="center" $align="center">
-                            {timerData?.endTime && (
-                                <Text style={{ textAlign: 'left', width: '100%' }}>
-                                    Next distribution in{' '}
-                                    <span
-                                        style={{
-                                            backgroundColor: '#f8f8f8',
-                                            padding: '0.2em 0.5em',
-                                            borderRadius: '1em',
-                                            fontWeight: 600,
-                                        }}
-                                    >
-                                        <RemainingTime endTimestamp={timerData.endTime} />
-                                    </span>
-                                </Text>
-                            )}
-                        </Flex>
-                    )}
-                </Flex>
-            }
-        >
-            <Text>
-                Incentive rewards are distributed every 24 hours. Unclaimed rewards will accure below and do not expire.
-            </Text>
-            <ScrollableBody>
-                <ContentWithStatus
-                    loading={false}
-                    error={undefined}
-                    isEmpty={!content.filter((c) => !!c).length}
-                    emptyContent="No rewards available to claim"
-                >
-                    {content}
-                </ContentWithStatus>
-            </ScrollableBody>
-        </Modal>
-    )
 }
 
 const ScrollableBody = styled(Flex).attrs((props) => ({
@@ -720,5 +327,339 @@ function ClaimableAsset({
                 </HaiButton>
             </CenteredFlex>
         </ClaimableAssetContainer>
+    )
+}
+
+export function ClaimModal(props: ModalProps) {
+    const { address: account } = useAccount()
+
+    const { popupsModel: popupsActions, transactionsModel: transactionsActions } = useStoreActions((actions) => actions)
+
+    const {
+        vaultModel: { liquidationData },
+        popupsModel: { isClaimPopupOpen },
+    } = useStoreState((state) => state)
+    const {
+        auctionModel: auctionActions,
+        popupsModel: { setIsClaimPopupOpen },
+    } = useStoreActions((actions) => actions)
+
+    const { prices: veloPrices } = useVelodromePrices()
+
+    const kitePrice = veloPrices?.KITE.raw
+
+    console.log('KITE price:', liquidationData)
+
+    const dineroPrice = veloPrices?.DINERO.raw
+    const opPrice = liquidationData?.collateralLiquidationData?.OP?.currentPrice.value
+    const haiPrice = liquidationData?.currentRedemptionPrice
+
+    const geb = useGeb()
+
+    const { activeAuctions, internalBalances, incentivesData, refetchIncentives } = useClaims()
+
+    const { prices, total } = useMemo(() => {
+        if (!liquidationData)
+            return {
+                prices: {},
+                total: 0,
+            }
+        const { collateralLiquidationData, currentRedemptionPrice } = liquidationData
+        return activeAuctions.claimableAuctions.reduce(
+            (acc, { sellAmount, auction }) => {
+                if (!auction) return acc
+                const token = tokenMap[auction.sellToken] || auction.sellToken
+                const price =
+                    token === 'HAI'
+                        ? parseFloat(currentRedemptionPrice || '1')
+                        : token === 'KITE'
+                        ? Number(kitePrice || 0)
+                        : parseFloat(collateralLiquidationData?.[token]?.currentPrice.value || '0')
+                acc.prices[token] = price || 0 // Ensure price is never undefined
+                acc.total += parseFloat(sellAmount) * (price || 0) // Safely handle undefined price
+                return acc
+            },
+            { prices: {} as Record<string, number>, total: 0 }
+        )
+    }, [liquidationData, activeAuctions.claimableAuctions, kitePrice])
+
+    if (!isClaimPopupOpen) return null
+
+    // Helper function to get token price
+    const getTokenPrice = (token: IncentiveToken): number => {
+        switch (token) {
+            case 'KITE':
+                return Number(kitePrice || 0)
+            case 'OP':
+                return Number(opPrice || 0)
+            case 'DINERO':
+                return Number(dineroPrice || 0)
+            case 'HAI':
+                return Number(haiPrice || 0)
+            default:
+                return 0
+        }
+    }
+
+    // Process all incentive tokens
+    const incentiveTokens = INCENTIVE_TOKENS.reduce(
+        (acc, token) => {
+            const data = incentivesData?.claimData?.[token]
+            const price = getTokenPrice(token)
+
+            console.log(`Processing ${token}:`, data, 'price:', price)
+            acc[token] = { data, price }
+            return acc
+        },
+        {} as Record<IncentiveToken, { data: any; price: number }>
+    )
+
+    // Check if distributor is paused from any available incentive data
+    const isDistributorPaused = incentivesData?.timerData?.isPaused
+
+    console.log('incentiveTokens', incentiveTokens)
+
+    // Generate content for each token
+    const incentivesContent = INCENTIVE_TOKENS.flatMap((token) => {
+        const { data, price } = incentiveTokens[token]
+        if (!data?.hasClaimableDistros) return []
+
+        console.log(`${token} has claimable distros:`, data.hasClaimableDistros)
+        return [
+            <ClaimableIncentive
+                key={`${token}-Daily-rewards`}
+                asset={token}
+                claim={{ ...data }}
+                price={price}
+                onSuccess={refetchIncentives}
+            />,
+        ]
+    })
+
+    console.log('incentiveTokens', incentiveTokens)
+
+    // Direct calculation for each token's incentive value
+    // This is more reliable than the generic function
+    const kiteValue =
+        incentiveTokens.KITE?.data?.hasClaimableDistros && incentiveTokens.KITE?.data?.amount
+            ? parseFloat(utils.formatEther(incentiveTokens.KITE.data.amount)) * (incentiveTokens.KITE.price || 0)
+            : 0
+
+    const opValue =
+        incentiveTokens.OP?.data?.hasClaimableDistros && incentiveTokens.OP?.data?.amount
+            ? parseFloat(utils.formatEther(incentiveTokens.OP.data.amount)) * (incentiveTokens.OP.price || 0)
+            : 0
+
+    const dineroValue =
+        incentiveTokens.DINERO?.data?.hasClaimableDistros && incentiveTokens.DINERO?.data?.amount
+            ? parseFloat(utils.formatEther(incentiveTokens.DINERO.data.amount)) * (incentiveTokens.DINERO.price || 0)
+            : 0
+
+    const haiValue =
+        incentiveTokens.HAI?.data?.hasClaimableDistros && incentiveTokens.HAI?.data?.amount
+            ? parseFloat(utils.formatEther(incentiveTokens.HAI.data.amount)) * (incentiveTokens.HAI.price || 0)
+            : 0
+
+    // Log direct values for debugging
+    console.log('Direct values - KITE:', kiteValue, 'OP:', opValue, 'DINERO:', dineroValue, 'HAI:', haiValue)
+
+    // Calculate total incentive value using direct values
+    const totalIncentiveValue = kiteValue + opValue + dineroValue + haiValue
+    console.log('Total incentive value:', totalIncentiveValue, kiteValue, opValue, dineroValue, haiValue)
+
+    const totalClaimableValue = total + totalIncentiveValue
+    console.log('Total claimable value (auction + incentives):', totalClaimableValue, 'auction total:', total)
+
+    // Get content for auctions and internal balances
+    const content = [
+        ...incentivesContent,
+        ...activeAuctions.claimableAuctions.map(({ sellAmount, auction }) => {
+            if (!auction) return null
+            const asset = tokenMap[auction.sellToken] || auction.sellToken
+            return (
+                <ClaimableAsset
+                    key={auction.auctionId}
+                    asset={asset}
+                    amount={sellAmount}
+                    price={prices[asset]}
+                    auction={auction}
+                    incentive={false}
+                    onSuccess={() => {
+                        auctionActions.fetchAuctions({
+                            geb,
+                            type: 'DEBT',
+                        })
+                        auctionActions.fetchAuctions({
+                            geb,
+                            type: 'SURPLUS',
+                        })
+                        activeAuctions.refetch()
+                    }}
+                />
+            )
+        }),
+        ...(parseFloat(internalBalances.HAI?.raw || '0') > 0
+            ? [
+                  <ClaimableAsset
+                      key="internalHai"
+                      asset="COIN"
+                      amount={internalBalances.HAI?.raw || '0'}
+                      price={parseFloat(liquidationData?.currentRedemptionPrice || '1')}
+                      internal={true}
+                      incentive={false}
+                      onSuccess={internalBalances.refetch}
+                  />,
+              ]
+            : []),
+        ...(parseFloat(internalBalances.KITE?.raw || '0') > 0
+            ? [
+                  <ClaimableAsset
+                      key="internalKITE"
+                      asset="PROTOCOL_TOKEN"
+                      amount={internalBalances.KITE?.raw || '0'}
+                      price={10}
+                      internal={true}
+                      incentive={false}
+                      onSuccess={internalBalances.refetch}
+                  />,
+              ]
+            : []),
+    ]
+
+    // Find a token that has claimAll function
+    const tokenWithClaimAll = INCENTIVE_TOKENS.find(
+        (token) => incentiveTokens[token]?.data?.claimAll && incentiveTokens[token]?.data?.hasClaimableDistros
+    )
+
+    // Get timer data from incentives data
+    const timerData = incentivesData?.timerData
+
+    const onClaimAll = async () => {
+        const formatted = isFormattedAddress(account)
+        if (!formatted || !tokenWithClaimAll) {
+            console.debug('wrong address or no token with claimAll')
+            return false
+        }
+        try {
+            const txResponse = await incentiveTokens[tokenWithClaimAll].data.claimAll()
+            if (txResponse) {
+                transactionsActions.addTransaction({
+                    chainId: txResponse?.chainId,
+                    hash: txResponse?.hash,
+                    from: txResponse.from,
+                    summary: `Claiming all rewards`,
+                    addedTime: new Date().getTime(),
+                    originalTx: txResponse,
+                })
+                popupsActions.setIsWaitingModalOpen(true)
+                popupsActions.setWaitingPayload({
+                    title: 'Transaction Submitted',
+                    hash: txResponse?.hash,
+                    status: ActionState.SUCCESS,
+                })
+                await refetchIncentives()
+                popupsActions.setIsWaitingModalOpen(false)
+                popupsActions.setWaitingPayload({ status: ActionState.NONE })
+            } else {
+                throw new Error('No transaction request!')
+            }
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
+    const isClaimAllDisabled = !tokenWithClaimAll
+
+    return (
+        <Modal
+            heading="CLAIM"
+            maxWidth="560px"
+            {...props}
+            onClose={() => setIsClaimPopupOpen(false)}
+            footerContent={
+                <Flex $width="100%" $column $gap={12}>
+                    <Flex $width="100%" $justify="space-between" $align="center">
+                        <Text>
+                            <strong>Total Estimated Value:</strong>
+                            &nbsp;
+                            {content.filter((c) => !!c).length > 0 ? (
+                                formatNumberWithStyle(totalClaimableValue, {
+                                    style: 'currency',
+                                    maxDecimals: 2,
+                                    minDecimals: 0,
+                                })
+                            ) : (
+                                <span style={{ fontStyle: 'italic' }}>No rewards available</span>
+                            )}
+                        </Text>
+                        <HaiButton
+                            $variant="yellowish"
+                            onClick={onClaimAll}
+                            disabled={
+                                isClaimAllDisabled || isDistributorPaused || content.filter((c) => !!c).length === 0
+                            }
+                        >
+                            Claim All
+                        </HaiButton>
+                    </Flex>
+
+                    {timerData?.isPaused ? (
+                        <Flex $width="100%" $justify="flex-start" $align="center">
+                            <Text style={{ color: '#ff6b6b', textAlign: 'left', width: '100%' }}>
+                                Distributor is currently paused to update rewards. <br />
+                                {timerData?.endTime ? (
+                                    <>
+                                        Time to unpause:{' '}
+                                        <span
+                                            style={{
+                                                backgroundColor: '#f8f8f8',
+                                                padding: '0.2em 0.5em',
+                                                borderRadius: '1em',
+                                                fontWeight: 600,
+                                                color: '#000',
+                                            }}
+                                        >
+                                            <RemainingTime endTimestamp={timerData.endTime} />
+                                        </span>
+                                    </>
+                                ) : null}
+                            </Text>
+                        </Flex>
+                    ) : (
+                        <Flex $width="100%" $justify="center" $align="center">
+                            {timerData?.endTime ? (
+                                <Text style={{ textAlign: 'left', width: '100%' }}>
+                                    Next distribution in{' '}
+                                    <span
+                                        style={{
+                                            backgroundColor: '#f8f8f8',
+                                            padding: '0.2em 0.5em',
+                                            borderRadius: '1em',
+                                            fontWeight: 600,
+                                        }}
+                                    >
+                                        <RemainingTime endTimestamp={timerData.endTime} />
+                                    </span>
+                                </Text>
+                            ) : null}
+                        </Flex>
+                    )}
+                </Flex>
+            }
+        >
+            <Text>
+                Incentive rewards are distributed every 24 hours. Unclaimed rewards will accure below and do not expire.
+            </Text>
+            <ScrollableBody>
+                <ContentWithStatus
+                    loading={false}
+                    error={undefined}
+                    isEmpty={!content.filter((c) => !!c).length}
+                    emptyContent="No rewards available to claim"
+                >
+                    {content}
+                </ContentWithStatus>
+            </ScrollableBody>
+        </Modal>
     )
 }

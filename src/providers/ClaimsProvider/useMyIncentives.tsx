@@ -389,11 +389,14 @@ export const fetchIncentivesData = async (geb: any, account: string, chainId: Ch
 
     // Calculate timer data independently of claims
     const timerData = {
-        endTime: Number(lastSettedMerkleRoot) + Number(distributionDuration),
+        endTime:
+            currentTime - lastSettedMerkleRoot > bufferDuration
+                ? Number(lastSettedMerkleRoot) + Number(distributionDuration) + Number(bufferDuration)
+                : Number(lastSettedMerkleRoot) + Number(bufferDuration),
         nextDistribution: formatTime(
             Number(String(distributionDuration)) - (currentTime - Number(String(lastSettedMerkleRoot)))
         ),
-        isPaused
+        isPaused,
     }
 
     // Fetch users claims for each tokens
@@ -558,7 +561,7 @@ export const fetchIncentivesData = async (geb: any, account: string, chainId: Ch
 
     return {
         claimData,
-        timerData
+        timerData,
     }
 }
 
