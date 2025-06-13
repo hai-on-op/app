@@ -72,7 +72,7 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                                 {((hasRewards && !pausedRewards.includes(collateralName)) ||
                                                     rewardOverride) && (
                                                     <RewardsTokenArray
-                                                        tokens={collateralName === 'HAIVELO' ? ['HAI'] : ['OP']}
+                                                        tokens={collateralName === 'HAIVELO' ? ['HAI'] : ['']}
                                                         label="EARN"
                                                         tooltip={tooltip}
                                                     />
