@@ -93,14 +93,14 @@ const typeOptions: BrandedSelectOption[] = [
 ]
 
 const wrappers: WrapperAdProps[] = [
-    /*{
+    {
         heading: 'haiVELO',
         status: 'NOW LIVE',
         description: 'Convert your VELO into haiVELO to use as collateral while earning veVELO rewards.',
         cta: 'Mint haiVELO',
         ctaLink: '',
         tokenImages: ['HAIVELO'],
-    },*/
+    },
 ]
 
 type IntentionHeaderProps = {
