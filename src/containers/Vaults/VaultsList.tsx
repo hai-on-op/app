@@ -23,14 +23,14 @@ const strategies: StrategyAdProps[] = [
     //     ctaLink: '/earn',
     //     tokenImages: ['DINERO'],
     // },
-    {
-        heading: 'OP REWARDS',
-        status: 'NOW LIVE',
-        description: 'Earn OP tokens by providing liquidity',
-        cta: 'Learn More',
-        ctaLink: '/earn',
-        tokenImages: ['OP'],
-    },
+   // {
+   //     heading: 'OP REWARDS',
+   //     status: 'NOW LIVE',
+   //     description: 'Earn OP tokens by providing liquidity',
+   //     cta: 'Learn More',
+   //     ctaLink: '/earn',
+   //     tokenImages: ['OP'],
+   // },
     // {
     //     heading: 'KITE REWARDS',
     //     status: 'NOW LIVE',
