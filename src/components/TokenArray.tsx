@@ -1,3 +1,4 @@
+import React from 'react'
 import type { ReactChildren, TokenKey } from '~/types'
 import { TOKEN_LOGOS } from '~/utils'
 import { useStoreState } from '~/store'
@@ -44,32 +45,31 @@ export function TokenArray({ tokens, size = 32, label, hideLabel = false }: Toke
                     case 'All':
                     case 'MOO-VELO-V2-OP-VELO':
                         return (
-                            <>
+                            <React.Fragment key={i}>
                                 <img
-                                    key={i}
+                                    key={`${i}-MOO`}
                                     src={TOKEN_LOGOS['MOO']}
                                     alt={token}
                                     className={`token-${token}`}
                                     style={{ backgroundColor: 'white' }}
                                 />
                                 <img
-                                    key={i}
+                                    key={`${i}-VELO`}
                                     src={TOKEN_LOGOS['VELO']}
                                     alt={token}
                                     className={`token-${token}`}
                                     style={{ backgroundColor: 'white' }}
                                 />
-                                <img key={i} src={TOKEN_LOGOS['OP']} alt={token} className={`token-${token}`} />
-                            </>
+                                <img key={`${i}-OP`} src={TOKEN_LOGOS['OP']} alt={token} className={`token-${token}`} />
+                            </React.Fragment>
                         )
                     case 'Collateral':
                         return <CyclingTokenArray key={i} size={size} includeProtocolTokens={token === 'All'} />
                     default:
                         return (
-                            <>
+                            <React.Fragment key={i}>
                                 {token == 'VELO' ? (
                                     <img
-                                        key={i}
                                         src={TOKEN_LOGOS[token]}
                                         alt={token}
                                         width={48}
@@ -79,7 +79,6 @@ export function TokenArray({ tokens, size = 32, label, hideLabel = false }: Toke
                                     />
                                 ) : (
                                     <img
-                                        key={i}
                                         src={TOKEN_LOGOS[token]}
                                         alt={token}
                                         width={48}
@@ -87,7 +86,7 @@ export function TokenArray({ tokens, size = 32, label, hideLabel = false }: Toke
                                         className={`token-${token}`}
                                     />
                                 )}
-                            </>
+                            </React.Fragment>
                         )
                 }
             })}

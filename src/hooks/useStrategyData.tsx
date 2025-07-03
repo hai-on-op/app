@@ -203,7 +203,7 @@ export function useStrategyData(
     // // === Staking Strategy ===
     const kitePrice = Number(velodromePricesData?.KITE?.raw)
     const kiteStakingTvl = (totalStakedAmount as any) * kitePrice
-    const kiteStakingUserQuantity = usersStakingData[address.toLowerCase()]?.stakedBalance || 0
+    const kiteStakingUserQuantity = usersStakingData[address?.toLowerCase()]?.stakedBalance || 0
     const kiteStakingUserPosition = kiteStakingUserQuantity * kitePrice
 
     const opPrice = Number(velodromePricesData?.OP?.raw)

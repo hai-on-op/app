@@ -247,7 +247,7 @@ export function useEarnStrategies() {
     }
 
     const calculateVeloStrategies = () => {
-        if (!velodromePricesData || !velodromeData || !velodromePositionsData) return []
+        if (!velodromePricesData || !velodromeData) return []
         const strategies: any[] = []
         for (const pool of velodromeData) {
             if (!VELO_POOLS.includes(pool.address)) continue
