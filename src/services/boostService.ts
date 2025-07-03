@@ -85,6 +85,38 @@ export function calculateHaiVeloBoost({
 }
 
 /**
+ * Calculate vault boost value for a user
+ *
+ * @param userStakingAmount User's staked amount (KITE)
+ * @param totalStakingAmount Total staked amount (KITE)
+ * @param userVaultMinted User's vault minted amount
+ * @param totalVaultMinted Total vault minted
+ * @returns vault boost calculation values
+ */
+export function calculateVaultBoost({
+    userStakingAmount,
+    totalStakingAmount,
+    userVaultMinted,
+    totalVaultMinted,
+}: {
+    userStakingAmount: number
+    totalStakingAmount: number
+    userVaultMinted: string | number
+    totalVaultMinted: string | number
+}) {
+    // Skip calculation if user has no stake
+    if (userStakingAmount <= 0) return { vaultBoost: 1 }
+    if (Number(totalVaultMinted) <= 0) return { vaultBoost: 1 }
+    // Calculate KITE ratio
+    const calculatedKiteRatio = userStakingAmount / totalStakingAmount
+    // Calculate haiVELO boost
+    const vaultRatio = Number(userVaultMinted) / Number(totalVaultMinted)
+    const vaultBoostRaw = vaultRatio === 0 ? 1 : calculatedKiteRatio / vaultRatio + 1
+    const vaultBoost = Math.min(vaultBoostRaw, 2)
+    return vaultBoost
+}
+
+/**
  * Combine LP and haiVELO boost values into a net boost value
  *
  * @param lpBoost LP boost value

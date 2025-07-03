@@ -6,6 +6,30 @@ import {
     SafeFragment,
 } from './fragments'
 
+export const ALL_SAFES_QUERY = gql`
+    query GetAllSafesByCollateralType($collateralTypeId: ID!, $limit: Int = 1000) {
+        safes(
+            where: { collateralType_: { id: $collateralTypeId } }
+            orderBy: collateral
+            orderDirection: desc
+            first: $limit
+        ) {
+            id
+            safeId
+            collateral
+            debt
+            cRatio
+            safeHandler
+            owner {
+                id
+                address
+            }
+            createdAt
+            modifiedAt
+        }
+    }
+`
+
 // TODO: get refactored version with fragments working
 export const SYSTEMSTATE_QUERY = gql`
     query GetSystemState {

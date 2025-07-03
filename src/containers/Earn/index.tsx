@@ -1,4 +1,5 @@
 import { useEarnStrategies, useMediaQuery } from '~/hooks'
+import { useEffect, useMemo } from 'react'
 
 import { NavContainer } from '~/components/NavContainer'
 import { StrategyTable } from './StrategyTable'
@@ -7,19 +8,30 @@ import { SortByDropdown } from '~/components/SortByDropdown'
 import { WrapperAdProps, WrapperAd } from '~/components/WrapperAd'
 
 const wrappers: WrapperAdProps[] = [
-    {
+    /*{
         heading: 'OP REWARDS',
         status: 'NOW LIVE',
         description: 'Earn OP tokens daily by participating in incentive campaigns.',
         cta: 'Provide Liquidity',
         ctaLink: 'https://app.uniswap.org/explore/pools/optimism/0x146b020399769339509c98b7b353d19130c150ec',
         tokenImages: ['OP'],
-    },
+    },*/
 ]
 
 export function Earn() {
-    const { headers, rows, loading, error, uniError, veloError, sorting, setSorting, filterEmpty, setFilterEmpty } =
-        useEarnStrategies()
+    const {
+        rawData,
+        headers,
+        rows,
+        loading,
+        error,
+        uniError,
+        veloError,
+        sorting,
+        setSorting,
+        filterEmpty,
+        setFilterEmpty,
+    } = useEarnStrategies()
 
     const isUpToMedium = useMediaQuery('upToMedium')
 
@@ -40,11 +52,11 @@ export function Earn() {
         >
             <StrategyTable
                 headers={headers}
-                rows={rows}
+                rows={rows as any}
                 loading={loading}
-                error={error}
-                uniError={uniError}
-                veloError={veloError}
+                error={error as any}
+                uniError={uniError as any}
+                veloError={veloError as any}
                 sorting={sorting}
                 setSorting={setSorting}
             />

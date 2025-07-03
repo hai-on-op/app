@@ -241,7 +241,7 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
                         </StatusLabel>
                     )}
                 </Flex>
-                <StatusLabel
+                {/*<StatusLabel
                     status={
                         userHaiVeloBoostData.myBoostedAPR === userHaiVeloBoostData.baseAPR
                             ? Status.NO_DEBT
@@ -269,7 +269,7 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
                             : '--%'
                         : ''}{' '}
                     APR
-                </StatusLabel>
+                </StatusLabel>*/}
                 <Flex $justify="flex-end" $align="center" $gap={12} $fontSize="0.8em">
                     <Text>
                         {formatCollateralLabel(collateral.name)}:&nbsp;

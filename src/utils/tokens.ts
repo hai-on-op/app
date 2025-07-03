@@ -27,7 +27,7 @@ import beefyImg from '~/assets/beefy-img.svg'
 import dineroImg from '~/assets/dinero-img.svg'
 import haiVeloImg from '~/assets/hai-velo.png'
 import yvVeloAlethWethImg from '~/assets/yv-velo-aleth-weth-img.png'
-// force rebuild x
+import alusdImg from '~/assets/alusd-img.svg'
 
 export type Tokens = {
     [key: string]: {
@@ -70,6 +70,7 @@ export const TOKEN_LOGOS = {
     ALETH: alethImg,
     HAIVELO: haiVeloImg,
     'YV-VELO-ALETH-WETH': yvVeloAlethWethImg,
+    ALUSD: alusdImg,
 }
 
 export const tokenMap: Record<string, string> = {
@@ -223,6 +224,16 @@ export const tokenAssets: Record<string, Token> = {
         symbol: 'PENDLE',
         name: 'Pendle',
         icon: pendleImg,
+    },
+    'YV-VELO-ALETH-WETH': {
+        symbol: 'YV-VELO-ALETH-WETH',
+        name: 'YV-VELO-ALETH-WETH',
+        icon: yvVeloAlethWethImg,
+    },
+    ALUSD: {
+        symbol: 'ALUSD',
+        name: 'ALUSD',
+        icon: alusdImg,
     },
 }
 

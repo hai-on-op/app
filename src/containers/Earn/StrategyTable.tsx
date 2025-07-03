@@ -122,11 +122,14 @@ export function StrategyTable({
                     },
                     i
                 ) => {
-                    // const LSTS = ['RETH', 'APXETH', 'WSTETH']
-                    // const isLST = LSTS.includes(pair[0])
-                    // const isAPXETH = pair.includes('APXETH')
-                    // const baseTokens = rewards.map(({ token }) => token)
-                    const tokens: TokenKey[] = earnPlatform === 'velodrome' ? ['VELO'] : ['OP']
+                    const tokens: TokenKey[] =
+                        strategyType === 'borrow'
+                            ? ['KITE']
+                            : earnPlatform === 'velodrome'
+                            ? ['VELO']
+                            : strategyType === 'stake'
+                            ? ['HAI', 'KITE', 'OP']
+                            : ['OP']
 
                     return (
                         <Table.Row
@@ -253,23 +256,12 @@ export function StrategyTable({
                                                 )
                                             ) : (
                                                 <Text $fontWeight={700}>
-                                                    {strategyType === 'deposit'
-                                                        ? '40% - 50%'
-                                                        : apr
-                                                        ? formatNumberWithStyle(apr, {
-                                                              style: 'percent',
-                                                              scalingFactor: 100,
-                                                              maxDecimals: 1,
-                                                              suffixed: true,
-                                                          })
-                                                        : apy
-                                                        ? formatNumberWithStyle(apy, {
-                                                              style: 'percent',
-                                                              scalingFactor: 100,
-                                                              maxDecimals: 1,
-                                                              suffixed: true,
-                                                          })
-                                                        : '-'}
+                                                    {formatNumberWithStyle(apr, {
+                                                        style: 'percent',
+                                                        scalingFactor: 100,
+                                                        maxDecimals: 1,
+                                                        suffixed: true,
+                                                    })}
                                                 </Text>
                                             )}
                                             {/* {(isAPXETH || isPXETH) && (
@@ -427,6 +419,14 @@ function EarnEmissionTooltip({ rewards, earnPlatform, earnLink, strategyType }: 
                     <br />
                     <br />
                 </Text>
+            </Flex>
+        )
+    }
+
+    if (strategyType == 'stake') {
+        return (
+            <Flex $width="140px" $column $justify="flex-end" $align="flex-start" $gap={4}>
+                <Text $fontWeight={700}>Stake KITE to earn protocol fees and boost your incentives.</Text>
             </Flex>
         )
     }
