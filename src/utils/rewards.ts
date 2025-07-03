@@ -13,13 +13,14 @@ export const REWARDS = {
             OP: 0,
         },
         ALETH: {
-            KITE: 0,
+            KITE: 50,
             OP: 0,
         },
-        YV_VELO_ALETH_WETH: {
-            KITE: 0,
+        'YV-VELO-ALETH-WETH': {
+            KITE: 25,
             OP: 0,
         },
+
         RETH: {
             KITE: 0,
             OP: 0,
@@ -37,7 +38,7 @@ export const REWARDS = {
             OP: 0,
         },
         HAIVELO: {
-            KITE: 0,
+            KITE: 50,
             OP: 0,
         },
 
@@ -80,7 +81,7 @@ export const REWARDS = {
         // vAMMV2-KITE/HAI
         ['0xf2d3941b6E1cbD3616061E556Eb06986147715d1'.toLowerCase()]: {
             KITE: 0,
-            OP: 100,
+            OP: 0,
         },
         // vAMMV2-KITE/OP
         ['0xf4638dC488F9C826DC40250515592E678E447238'.toLowerCase()]: {
@@ -102,6 +103,16 @@ export const REWARDS = {
             KITE: 0,
             OP: 0,
         },
+        // vAMMV2-ALETH/HAI
+        ['0x056B153132F105356d95CcF34a0065A28617DaC4'.toLowerCase()]: {
+            KITE: 0,
+            OP: 0,
+        },
+        // vAMMV2-ALUSD/HAI
+        ['0x2408DC2B6CAD3af2Bd65474F0167a107b8b0Be0b'.toLowerCase()]: {
+            KITE: 0,
+            OP: 0,
+        },
     },
     default: {
         OP: 0,
@@ -109,6 +120,7 @@ export const REWARDS = {
     },
 }
 
+// export const VELO_SUGAR_ADDRESS = '0xC8229d65581afE8f04344A6706FF45faECC426f9'
 export const VELO_SUGAR_ADDRESS = '0x3b919747b46b13cffd9f16629cff951c0b7ea1e2'
 
 export const KITE_ADDRESS = '0xf467C7d5a4A9C4687fFc7986aC6aD5A4c81E1404'

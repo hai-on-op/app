@@ -20,8 +20,6 @@ export function TokenArray({ tokens, size = 32, label, hideLabel = false }: Toke
         switch (token) {
             case 'MOO-VELO-V2-OP-VELO':
                 return 'white'
-            case 'YV-VELO-ALETH-WETH':
-                return 'white'
             case 'VELO':
                 return 'white'
             case 'APXETH':
@@ -32,6 +30,8 @@ export function TokenArray({ tokens, size = 32, label, hideLabel = false }: Toke
                 return 'black'
             case 'LINK':
                 return '#335DD2'
+            case 'ALETH':
+                return '#eecabc'
             default:
                 return 'greenish'
         }
@@ -66,17 +66,28 @@ export function TokenArray({ tokens, size = 32, label, hideLabel = false }: Toke
                         return <CyclingTokenArray key={i} size={size} includeProtocolTokens={token === 'All'} />
                     default:
                         return (
-                            <img
-                                key={i}
-                                src={TOKEN_LOGOS[token]}
-                                alt={token}
-                                width={48}
-                                height={48}
-                                className={`token-${token}`}
-                                style={{
-                                    backgroundColor: token == 'YV-VELO-ALETH-WETH' ? 'none' : tokenBg(token),
-                                }}
-                            />
+                            <>
+                                {token == 'VELO' ? (
+                                    <img
+                                        key={i}
+                                        src={TOKEN_LOGOS[token]}
+                                        alt={token}
+                                        width={48}
+                                        height={48}
+                                        className={`token-${token}`}
+                                        style={{ backgroundColor: 'white' }}
+                                    />
+                                ) : (
+                                    <img
+                                        key={i}
+                                        src={TOKEN_LOGOS[token]}
+                                        alt={token}
+                                        width={48}
+                                        height={48}
+                                        className={`token-${token}`}
+                                    />
+                                )}
+                            </>
                         )
                 }
             })}

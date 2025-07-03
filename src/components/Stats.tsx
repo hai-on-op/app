@@ -29,7 +29,9 @@ export function Stats({ stats, columns, children, fun = false, ...props }: Stats
             $columns={columns || `repeat(${(stats || []).length + (children || []).length}, 1fr)`}
             $fun={fun}
         >
-            {stats?.map((stat, i) => <Stat key={i} stat={stat} {...props} />)}
+            {stats?.map((stat, i) => (
+                <Stat key={i} stat={stat} {...props} />
+            ))}
             {children}
         </Container>
     )

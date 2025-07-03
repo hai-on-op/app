@@ -10,7 +10,6 @@ import { RewardsTokenArray } from '~/components/TokenArray'
 import { Stats, type StatProps } from '~/components/Stats'
 import { Loader } from '~/components/Loader'
 import { RefreshCw } from 'react-feather'
-import { useBoost } from '~/hooks/useBoost'
 import styled from 'styled-components'
 
 const StyledRewardsAPYContainer = styled.div`
@@ -35,24 +34,8 @@ const StyledRewardsAPYWithBoost = styled.div`
 export function EarnStats() {
     const { address } = useAccount()
 
-    const { rows, averageAPR } = useEarnStrategies()
+    const { averageAPR, averageWeightedBoost, totalBoostablePosition } = useEarnStrategies()
     const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
-
-    const { netBoostValue } = useBoost()
-
-    //console.log('baseAPR', netBoostValue, baseAPR)
-
-    const { value } = useMemo(() => {
-        return rows.reduce(
-            (obj, { userPosition = '0', apy }) => {
-                const apyToUse = apy ? apy : 0
-                obj.value += parseFloat(userPosition)
-                obj.apy += parseFloat(userPosition) * apyToUse
-                return obj
-            },
-            { value: 0, apy: 0 }
-        )
-    }, [rows])
 
     const formattedWeightedAPR = useMemo(() => {
         return formatNumberWithStyle(averageAPR && averageAPR.averageWeightedAPR ? averageAPR.averageWeightedAPR : 0, {
@@ -103,7 +86,7 @@ export function EarnStats() {
 
     const dummyStats: StatProps[] = [
         {
-            header: formatNumberWithStyle(value, {
+            header: formatNumberWithStyle(totalBoostablePosition, {
                 maxDecimals: 1,
                 suffixed: true,
                 style: 'currency',
@@ -112,9 +95,9 @@ export function EarnStats() {
             tooltip: 'Total eligible value participating in DAO rewards campaign activities',
         },
         {
-            header: isNaN(netBoostValue)
+            header: isNaN(averageWeightedBoost)
                 ? '...'
-                : `${formatNumberWithStyle(netBoostValue, {
+                : `${formatNumberWithStyle(averageWeightedBoost, {
                       minDecimals: 0,
                       maxDecimals: 2,
                   })}x`,
@@ -128,6 +111,12 @@ export function EarnStats() {
             tooltip:
                 'Current estimated APR of campaign rewards based on current value participating and value of rewards tokens',
         },
+        // {
+        //     header: formattedAPR,
+        //     label: 'My Rewards APR',
+        //     tooltip:
+        //         'Current estimated APR of campaign rewards based on current value participating and value of rewards tokens',
+        // },
         {
             // header: '$0',
             header: <Loader speed={0.5} icon={<RefreshCw />} />,

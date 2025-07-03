@@ -55,8 +55,8 @@ const defaultState: ClaimsContext = {
         timerData: {
             endTime: 0,
             nextDistribution: '',
-            isPaused: false
-        }
+            isPaused: false,
+        },
     },
     refetchIncentives: async () => Promise.resolve(),
     activeAuctions: {
@@ -110,8 +110,8 @@ export function ClaimsProvider({ children }: Props) {
         timerData: {
             endTime: 0,
             nextDistribution: '',
-            isPaused: false
-        }
+            isPaused: false,
+        },
     })
 
     useEffect(() => {

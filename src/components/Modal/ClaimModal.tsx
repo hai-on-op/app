@@ -348,9 +348,6 @@ export function ClaimModal(props: ModalProps) {
     const { prices: veloPrices } = useVelodromePrices()
 
     const kitePrice = veloPrices?.KITE.raw
-
-    console.log('KITE price:', liquidationData)
-
     const dineroPrice = veloPrices?.DINERO.raw
     const opPrice = liquidationData?.collateralLiquidationData?.OP?.currentPrice.value
     const haiPrice = liquidationData?.currentRedemptionPrice
@@ -415,8 +412,6 @@ export function ClaimModal(props: ModalProps) {
     // Check if distributor is paused from any available incentive data
     const isDistributorPaused = incentivesData?.timerData?.isPaused
 
-    console.log('incentiveTokens', incentiveTokens)
-
     // Generate content for each token
     const incentivesContent = INCENTIVE_TOKENS.flatMap((token) => {
         const { data, price } = incentiveTokens[token]
@@ -433,8 +428,6 @@ export function ClaimModal(props: ModalProps) {
             />,
         ]
     })
-
-    console.log('incentiveTokens', incentiveTokens)
 
     // Direct calculation for each token's incentive value
     // This is more reliable than the generic function
