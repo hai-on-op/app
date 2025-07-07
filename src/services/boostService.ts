@@ -105,8 +105,8 @@ export function calculateVaultBoost({
     totalVaultMinted: string | number
 }) {
     // Skip calculation if user has no stake
-    if (userStakingAmount <= 0) return { vaultBoost: 1 }
-    if (Number(totalVaultMinted) <= 0) return { vaultBoost: 1 }
+    if (userStakingAmount <= 0) return 1
+    if (Number(totalVaultMinted) <= 0) return 1
     // Calculate KITE ratio
     const calculatedKiteRatio = userStakingAmount / totalStakingAmount
     // Calculate haiVELO boost
