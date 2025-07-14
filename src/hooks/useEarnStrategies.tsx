@@ -390,7 +390,15 @@ export function useEarnStrategies() {
 
     const strategies = [...vaultStrategies, ...specialStrategies, ...veloStrategies]
 
-    const filteredRows = strategies
+    const filteredRows = useMemo(() => {
+        if (!filterEmpty) return strategies
+        
+        // Filter to only show strategies where user has a position
+        return strategies.filter((strategy) => {
+            const userPosition = Number(strategy.userPosition)
+            return userPosition > 0
+        })
+    }, [strategies, filterEmpty])
 
     const boostEligibleStrategies = strategies.filter(({ boostEligible }: any) => boostEligible)
 
