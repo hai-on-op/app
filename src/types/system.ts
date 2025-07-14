@@ -37,7 +37,7 @@ export type Strategy = {
     tvl: string
     apr: number
     userPosition?: string
-    strategyType: 'hold' | 'borrow' | 'farm' | 'deposit'
+    strategyType: 'hold' | 'borrow' | 'farm' | 'deposit' | 'stake'
     boostAPR?: BoostAPRData
 } & (
     | {

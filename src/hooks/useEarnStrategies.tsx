@@ -62,7 +62,7 @@ export function useEarnStrategies() {
     const [veloStrategies, setVeloStrategies] = useState<any[]>([])
 
     const [sorting, setSorting] = useState<Sorting>({
-        key: 'APR',
+        key: 'TVP',
         dir: 'desc',
     })
 
@@ -182,7 +182,6 @@ export function useEarnStrategies() {
                     if (collateralName.toLowerCase() !== cType.id.toLowerCase()) return total
                     return total + parseFloat(totalDebt)
                 }, 0)
-                .toString()
 
             const rewards = REWARDS.vaults[cType.id as keyof typeof REWARDS.vaults] || REWARDS.default
             const vbr = calculateVaultBoostAPR(cType, rewards)
@@ -195,7 +194,7 @@ export function useEarnStrategies() {
                 strategyType: 'borrow',
                 boostAPR: vbr as any,
                 apr: '0' as any,
-                userPosition: (cTypeUserPosition as any) * haiPrice,
+                userPosition: (cTypeUserPosition * haiPrice) as any,
                 boostEligible: true,
             }
         })
@@ -204,17 +203,17 @@ export function useEarnStrategies() {
     }
 
     const calculateSpecialStrategies = () => {
-        const haiApr = strategyData?.hai?.apr
-        const haiTvl = strategyData?.hai?.tvl
-        const haiUserPosition = strategyData?.hai?.userPosition
+        const haiApr = strategyData?.hai?.apr || 0
+        const haiTvl = strategyData?.hai?.tvl || 0
+        const haiUserPosition = strategyData?.hai?.userPosition || 0
 
-        const haiVeloTvl = strategyData?.haiVelo?.tvl
-        const haiVeloUserPositionUsd = strategyData?.haiVelo?.userPosition
+        const haiVeloTvl = strategyData?.haiVelo?.tvl || 0
+        const haiVeloUserPositionUsd = strategyData?.haiVelo?.userPosition || 0
         const haiVeloBoostApr = strategyData?.haiVelo?.boostApr
 
-        const kiteApr = strategyData?.kiteStaking?.apr
-        const kiteTvl = strategyData?.kiteStaking?.tvl
-        const kiteUserPosition = strategyData?.kiteStaking?.userPosition
+        const kiteApr = strategyData?.kiteStaking?.apr || 0
+        const kiteTvl = strategyData?.kiteStaking?.tvl || 0
+        const kiteUserPosition = strategyData?.kiteStaking?.userPosition || 0
 
         return [
             {
@@ -283,7 +282,7 @@ export function useEarnStrategies() {
             const strategy = {
                 pair: [token0, token1] as any,
                 rewards: REWARDS.velodrome[pool.address.toLowerCase()] as any,
-                tvl: tvl.toString(),
+                tvl: tvl,
                 apr: veloAPR || 0,
                 userPosition: (velodromePositionsData || [])
                     .reduce((total, position) => {
@@ -293,8 +292,7 @@ export function useEarnStrategies() {
                             parseFloat(formatUnits(position.staked0, pool.decimals)) * price0 +
                             parseFloat(formatUnits(position.staked1, pool.decimals)) * price1
                         )
-                    }, 0)
-                    .toString(),
+                    }, 0),
                 earnPlatform: 'velodrome',
                 earnAddress: pool.address,
                 earnLink: `https://velodrome.finance/deposit?token0=${pool.token0}&token1=${pool.token1}&type=${pool.type}`,
@@ -309,6 +307,20 @@ export function useEarnStrategies() {
 
     const calculateVaultBoostAPR = (cType: QueryCollateralType, rewards: any) => {
         const ctypeMinterData = minterVaultsData[cType.id]
+
+        if (!ctypeMinterData) {
+            return {
+                userVaultBoostMap: {},
+                cType: cType.id,
+                totalBoostedValueParticipating: 0,
+                baseAPR: 0,
+                myBoost: 1,
+                myValueParticipating: 0,
+                myBoostedValueParticipating: 0,
+                myBoostedShare: 0,
+                myBoostedAPR: 0,
+            }
+        }
 
         const userVaultBoostMap = calculateVaultBoostMap(ctypeMinterData)
 
@@ -347,6 +359,10 @@ export function useEarnStrategies() {
     }
 
     const calculateVaultBoostMap = (ctypeMinterData: any) => {
+        if (!ctypeMinterData) {
+            return {}
+        }
+        
         return Object.entries(ctypeMinterData?.userDebtMapping || {}).reduce((acc, [address, value]) => {
             const lowercasedAddress = address.toLowerCase()
             if (!usersStakingData[lowercasedAddress]) {
@@ -364,8 +380,7 @@ export function useEarnStrategies() {
                 })
 
                 return {
-                    ...acc,
-                    [lowercasedAddress]: vaultBoost,
+                    ...acc, [lowercasedAddress]: vaultBoost,
                 }
             }
         }, {} as any)
@@ -412,7 +427,7 @@ export function useEarnStrategies() {
         switch (sorting.key) {
             case 'Asset / Asset Pair':
                 return arrayToSorted(filteredRows, {
-                    getProperty: (row: any) => row.symbol,
+                    getProperty: (row: any) => row.pair[0],
                     dir: sorting.dir,
                     type: 'alphabetical',
                 })
@@ -429,16 +444,53 @@ export function useEarnStrategies() {
                     type: 'parseFloat',
                     checkValueExists: true,
                 })
-            case 'Rewards APR':
+            case 'Position':
                 return arrayToSorted(filteredRows, {
-                    getProperty: (row: any) => row.apr,
+                    getProperty: (row: any) => row.userPosition,
+                    dir: sorting.dir,
+                    type: 'parseFloat',
+                    checkValueExists: true,
+                })
+            case 'Boost':
+                return arrayToSorted(filteredRows, {
+                    getProperty: (row: any) => row.boostAPR?.myBoost || 1,
                     dir: sorting.dir,
                     type: 'numerical',
                 })
-            case 'My Position':
+            case 'APR':
+                return arrayToSorted(filteredRows, {
+                    getProperty: (row: any) => {
+                        let aprValue = 0
+                        // For strategies with boostAPR, use the boosted APR
+                        if (row.boostAPR && row.boostAPR.myBoostedAPR) {
+                            aprValue = row.boostAPR.myBoostedAPR
+                        } else {
+                            // For other strategies, use the apr field
+                            aprValue = row.apr
+                        }
+                        
+                        // Normalize APR values to percentage format for consistent sorting
+                        // Farm strategies (Velodrome) store APR as decimal, convert to percentage
+                        if (row.strategyType === 'farm') {
+                            aprValue = aprValue * 100
+                        }
+                        // Borrow strategies already store APR as percentage
+                        // Hold/Stake strategies need to be checked - they might be in decimal format
+                        else if (row.strategyType === 'hold' || row.strategyType === 'stake') {
+                            // If the value is less than 1, it's likely in decimal format
+                            if (aprValue < 1) {
+                                aprValue = aprValue * 100
+                            }
+                        }
+                        
+                        return aprValue
+                    },
+                    dir: sorting.dir,
+                    type: 'numerical',
+                })
             default:
                 return arrayToSorted(filteredRows, {
-                    getProperty: (row: any) => row.userPosition,
+                    getProperty: (row: any) => row.tvl,
                     dir: sorting.dir,
                     type: 'parseFloat',
                     checkValueExists: true,

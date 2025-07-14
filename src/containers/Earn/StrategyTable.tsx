@@ -111,7 +111,6 @@ export function StrategyTable({
                         pair,
                         rewards,
                         tvl,
-                        apy,
                         userPosition,
                         earnPlatform,
                         earnAddress,
