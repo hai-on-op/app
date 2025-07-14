@@ -38,7 +38,8 @@ export function useBoost() {
     } = useLPData()
     const { loading: positionsLoading } = useVelodromePositions()
     const { prices: veloPrices } = useVelodromePrices()
-    const { stakingData, stakingStats, loading: stakingLoading } = useStaking()
+    const stakingContext = useStaking()
+    const { stakingData = { stakedBalance: '0' }, stakingStats = { totalStaked: '0' }, loading: stakingLoading = false } = stakingContext || {}
     const { userHaiVELODeposited, totalHaiVELODeposited } = useHaiVeloData()
 
     // Load system state data for HAI HOLD boost calculation
@@ -177,19 +178,20 @@ export function useBoost() {
     const combinedBoostResult = useMemo(
         () =>
             combineBoostValues({
-                lpBoost: lpBoostValue,
                 haiVeloBoost: haiVeloBoostResult.haiVeloBoost,
                 haiHoldBoost: haiHoldBoostResult.haiHoldBoost,
-                userLPPositionValue: calculatedUserLPPositionValue,
                 haiVeloPositionValue,
                 haiHoldPositionValue: haiHoldBoostResult.haiHoldPositionValue,
             }),
-        [lpBoostValue, haiVeloBoostResult.haiVeloBoost, haiHoldBoostResult, calculatedUserLPPositionValue, haiVeloPositionValue]
+        [haiVeloBoostResult.haiVeloBoost, haiHoldBoostResult, haiVeloPositionValue]
     )
 
     // Reuse the simulation function from the service
     const simulateNetBoost = useCallback(
         (userAfterStakingAmount: number, totalAfterStakingAmount: number) => {
+            const userHaiAmount = Number(haiBalance?.raw || 0)
+            const totalHaiAmount = Number(systemStateData?.systemStates[0]?.erc20CoinTotalSupply || 0)
+            
             return simulateNetBoostService({
                 userAfterStakingAmount,
                 totalAfterStakingAmount,
@@ -199,6 +201,9 @@ export function useBoost() {
                 userHaiVELODeposited,
                 totalHaiVELODeposited,
                 haiVeloPositionValue,
+                userHaiAmount,
+                totalHaiAmount,
+                haiHoldPositionValue: haiHoldBoostResult.haiHoldPositionValue,
             })
         },
         [
@@ -208,6 +213,9 @@ export function useBoost() {
             userHaiVELODeposited,
             totalHaiVELODeposited,
             haiVeloPositionValue,
+            haiBalance,
+            systemStateData,
+            haiHoldBoostResult.haiHoldPositionValue,
         ]
     )
 
@@ -245,7 +253,7 @@ export function useBoost() {
         kiteRatio,
         hvBoost: haiVeloBoostResult.haiVeloBoost,
         lpBoostValue,
-        userTotalValue: Number(calculatedUserLPPositionValue) + Number(haiVeloPositionValue) + Number(haiHoldBoostResult.haiHoldPositionValue),
+        userTotalValue: Number(haiVeloPositionValue) + Number(haiHoldBoostResult.haiHoldPositionValue),
         netBoostValue: combinedBoostResult.netBoost,
 
         simulateNetBoost,

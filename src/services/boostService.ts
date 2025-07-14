@@ -158,76 +158,39 @@ export function calculateHaiHoldBoost({
 }
 
 /**
- * Combine LP, haiVELO, and HAI HOLD boost values into a net boost value
+ * Combine haiVELO and HAI HOLD boost values into a net boost value
  *
- * @param lpBoost LP boost value
  * @param haiVeloBoost haiVELO boost value
  * @param haiHoldBoost HAI HOLD boost value
- * @param userLPPositionValue Value of user's LP position in USD
  * @param haiVeloPositionValue Value of user's haiVELO position in USD
  * @param haiHoldPositionValue Value of user's HAI HOLD position in USD
  * @returns Combined boost values
  */
 export function combineBoostValues({
-    lpBoost,
     haiVeloBoost,
     haiHoldBoost,
-    userLPPositionValue,
     haiVeloPositionValue,
     haiHoldPositionValue,
 }: {
-    lpBoost: number
     haiVeloBoost: number
     haiHoldBoost: number
-    userLPPositionValue: string | number
     haiVeloPositionValue: string | number
     haiHoldPositionValue: string | number
 }) {
-    // Calculate weighted average boost
-    const totalValue = Number(userLPPositionValue) + Number(haiVeloPositionValue) + Number(haiHoldPositionValue)
-    const haiVeloValueRatio = totalValue === 0 ? 0.33 : Number(haiVeloPositionValue) / totalValue
-    const lpValueRatio = totalValue === 0 ? 0.33 : Number(userLPPositionValue) / totalValue
-    const haiHoldValueRatio = totalValue === 0 ? 0.34 : Number(haiHoldPositionValue) / totalValue
-
-
-    console.log({
-        values: {
-            totalValue,
-            haiVeloPositionValue,
-            userLPPositionValue,
-            haiHoldPositionValue,
-        },
-        ratios: {
-            haiVeloValueRatio,
-            lpValueRatio,
-            haiHoldValueRatio,
-        },
-        boosts: {
-            haiVeloBoost,
-            lpBoost,
-            haiHoldBoost,
-        },
-    })
-
-    console.log('haiVeloBoost is: ', haiVeloBoost)
-    console.log('haiVeloValueRatio is: ', haiVeloValueRatio)
-    console.log('lpBoost is: ', lpBoost)
-    console.log('lpValueRatio is: ', lpValueRatio)
-    console.log('haiHoldBoost is: ', haiHoldBoost)
-    console.log('haiHoldValueRatio is: ', haiHoldValueRatio)
+    // Calculate weighted average boost (excluding LP boost)
+    const totalValue = Number(haiVeloPositionValue) + Number(haiHoldPositionValue)
+    const haiVeloValueRatio = totalValue === 0 ? 0.5 : Number(haiVeloPositionValue) / totalValue
+    const haiHoldValueRatio = totalValue === 0 ? 0.5 : Number(haiHoldPositionValue) / totalValue
 
     const weightedHaiVeloBoost = haiVeloBoost * haiVeloValueRatio
-    const weightedLpBoost = lpBoost * lpValueRatio
     const weightedHaiHoldBoost = haiHoldBoost * haiHoldValueRatio
 
-    const netBoost = weightedHaiVeloBoost + weightedLpBoost + weightedHaiHoldBoost
+    const netBoost = weightedHaiVeloBoost + weightedHaiHoldBoost
 
     return {
         haiVeloBoost,
-        lpBoost,
         haiHoldBoost,
         haiVeloValueRatio,
-        lpValueRatio,
         haiHoldValueRatio,
         netBoost,
     }
@@ -286,10 +249,8 @@ export function calculateBoostValues({
 
     // Combine the results using the new function
     const combinedResult = combineBoostValues({
-        lpBoost: lpBoostResult.lpBoost,
         haiVeloBoost: haiVeloBoostResult.haiVeloBoost,
         haiHoldBoost: 1, // Default to 1 for now, will be updated when HAI HOLD is added
-        userLPPositionValue,
         haiVeloPositionValue,
         haiHoldPositionValue: 0, // Default to 0 for now, will be updated when HAI HOLD is added
     })
@@ -311,6 +272,9 @@ export function calculateBoostValues({
  * @param userHaiVELODeposited User's haiVELO deposited amount
  * @param totalHaiVELODeposited Total haiVELO deposited
  * @param haiVeloPositionValue Value of user's haiVELO position in USD
+ * @param userHaiAmount User's HAI amount for HAI HOLD boost calculation
+ * @param totalHaiAmount Total HAI amount for HAI HOLD boost calculation
+ * @param haiHoldPositionValue Value of user's HAI HOLD position in USD
  * @returns Simulated net boost value
  */
 export function simulateNetBoost({
@@ -322,6 +286,9 @@ export function simulateNetBoost({
     userHaiVELODeposited,
     totalHaiVELODeposited,
     haiVeloPositionValue,
+    userHaiAmount = 0,
+    totalHaiAmount = 0,
+    haiHoldPositionValue = 0,
 }: {
     userAfterStakingAmount: number
     totalAfterStakingAmount: number
@@ -331,6 +298,9 @@ export function simulateNetBoost({
     userHaiVELODeposited: string | number
     totalHaiVELODeposited: string | number
     haiVeloPositionValue: string | number
+    userHaiAmount?: number
+    totalHaiAmount?: number
+    haiHoldPositionValue?: number
 }) {
     // Calculate LP boost with simulated staking amounts
     const lpBoostResult = calculateLPBoost({
@@ -348,14 +318,20 @@ export function simulateNetBoost({
         totalHaiVELODeposited,
     })
 
+    // Calculate HAI HOLD boost with simulated staking amounts
+    const haiHoldBoostResult = calculateHaiHoldBoost({
+        userStakingAmount: userAfterStakingAmount,
+        totalStakingAmount: totalAfterStakingAmount,
+        userHaiAmount,
+        totalHaiAmount,
+    })
+
     // Combine the boost values
     const combinedResult = combineBoostValues({
-        lpBoost: lpBoostResult.lpBoost,
         haiVeloBoost: haiVeloBoostResult.haiVeloBoost,
-        haiHoldBoost: 1, // Default to 1 for now, will be updated when HAI HOLD is added
-        userLPPositionValue,
+        haiHoldBoost: haiHoldBoostResult.haiHoldBoost,
         haiVeloPositionValue,
-        haiHoldPositionValue: 0, // Default to 0 for now, will be updated when HAI HOLD is added
+        haiHoldPositionValue,
     })
 
     return combinedResult.netBoost

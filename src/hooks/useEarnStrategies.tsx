@@ -12,7 +12,7 @@ import { useMyVaults, useBalance } from '~/hooks'
 import { useVelodrome, useVelodromePositions } from './useVelodrome'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { REWARDS } from '~/utils/rewards'
-import { calculateVaultBoost } from '~/services/boostService'
+import { calculateVaultBoost, calculateHaiHoldBoost } from '~/services/boostService'
 import { useStrategyData } from './useStrategyData'
 
 const sortableHeaders: SortableHeader[] = [
@@ -179,11 +179,10 @@ export function useEarnStrategies() {
         const strategies = collateralsWithMinterRewards.map((cType) => {
             const assets = tokenAssets[cType.id]
 
-            const cTypeUserPosition = userPositionsList
-                .reduce((total, { totalDebt, collateralName }) => {
-                    if (collateralName.toLowerCase() !== cType.id.toLowerCase()) return total
-                    return total + parseFloat(totalDebt)
-                }, 0)
+            const cTypeUserPosition = userPositionsList.reduce((total, { totalDebt, collateralName }) => {
+                if (collateralName.toLowerCase() !== cType.id.toLowerCase()) return total
+                return total + parseFloat(totalDebt)
+            }, 0)
 
             const rewards = REWARDS.vaults[cType.id as keyof typeof REWARDS.vaults] || REWARDS.default
             const vbr = calculateVaultBoostAPR(cType, rewards)
@@ -217,14 +216,35 @@ export function useEarnStrategies() {
         const kiteTvl = strategyData?.kiteStaking?.tvl || 0
         const kiteUserPosition = strategyData?.kiteStaking?.userPosition || 0
 
+        // Calculate HAI HOLD boost using the same logic as staking page
+        const userHaiAmount = Number(haiUserPosition) / Number(velodromePricesData?.HAI?.raw || 1)
+        const totalHaiAmount = Number(systemStateData?.systemStates[0]?.erc20CoinTotalSupply || 0)
+        const userStakingAmount = address ? Number(usersStakingData[address.toLowerCase()]?.stakedBalance || 0) : 0
+        const totalStakingAmount = Number(formatEther(totalStaked || '0'))
+
+        const haiHoldBoostResult = calculateHaiHoldBoost({
+            userStakingAmount,
+            totalStakingAmount,
+            userHaiAmount,
+            totalHaiAmount,
+        })
+
+        const haiHoldBoost = {
+            baseAPR: haiApr * 100,
+            myBoost: haiHoldBoostResult.haiHoldBoost,
+            myBoostedAPR: haiApr * 100 * haiHoldBoostResult.haiHoldBoost,
+        }
+
         return [
             {
                 pair: ['HAI'],
                 rewards: [],
                 tvl: haiTvl,
                 apr: haiApr,
+                boostAPR: haiHoldBoost,
                 userPosition: haiUserPosition,
                 strategyType: 'hold',
+                boostEligible: true,
             },
             {
                 pair: ['HAIVELO'],
@@ -287,15 +307,14 @@ export function useEarnStrategies() {
                 rewards: REWARDS.velodrome[pool.address.toLowerCase()] as any,
                 tvl: tvl,
                 apr: veloAPR || 0,
-                userPosition: (velodromePositionsData || [])
-                    .reduce((total, position) => {
-                        if (!stringsExistAndAreEqual(position.lp, pool.address)) return total
-                        return (
-                            total +
-                            parseFloat(formatUnits(position.staked0, pool.decimals)) * price0 +
-                            parseFloat(formatUnits(position.staked1, pool.decimals)) * price1
-                        )
-                    }, 0),
+                userPosition: (velodromePositionsData || []).reduce((total, position) => {
+                    if (!stringsExistAndAreEqual(position.lp, pool.address)) return total
+                    return (
+                        total +
+                        parseFloat(formatUnits(position.staked0, pool.decimals)) * price0 +
+                        parseFloat(formatUnits(position.staked1, pool.decimals)) * price1
+                    )
+                }, 0),
                 earnPlatform: 'velodrome',
                 earnAddress: pool.address,
                 earnLink: `https://velodrome.finance/deposit?token0=${pool.token0}&token1=${pool.token1}&type=${pool.type}`,
@@ -365,7 +384,7 @@ export function useEarnStrategies() {
         if (!ctypeMinterData) {
             return {}
         }
-        
+
         return Object.entries(ctypeMinterData?.userDebtMapping || {}).reduce((acc, [address, value]) => {
             const lowercasedAddress = address.toLowerCase()
             if (!usersStakingData[lowercasedAddress]) {
@@ -383,7 +402,8 @@ export function useEarnStrategies() {
                 })
 
                 return {
-                    ...acc, [lowercasedAddress]: vaultBoost,
+                    ...acc,
+                    [lowercasedAddress]: vaultBoost,
                 }
             }
         }, {} as any)
@@ -395,7 +415,7 @@ export function useEarnStrategies() {
 
     const filteredRows = useMemo(() => {
         if (!filterEmpty) return strategies
-        
+
         // Filter to only show strategies where user has a position
         return strategies.filter((strategy) => {
             const userPosition = Number(strategy.userPosition)
@@ -479,7 +499,7 @@ export function useEarnStrategies() {
                             // For other strategies, use the apr field
                             aprValue = row.apr
                         }
-                        
+
                         // Normalize APR values to percentage format for consistent sorting
                         // Farm strategies (Velodrome) store APR as decimal, convert to percentage
                         if (row.strategyType === 'farm') {
@@ -493,7 +513,7 @@ export function useEarnStrategies() {
                                 aprValue = aprValue * 100
                             }
                         }
-                        
+
                         return aprValue
                     },
                     dir: sorting.dir,
