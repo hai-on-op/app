@@ -54,8 +54,10 @@ export type StakingSummaryData = {
         boostedValueFormatted: string
         haiVeloBoost: number
         lpBoost: number
+        haiHoldBoost: number
         haiVeloPositionValue: number
         userLPPositionValue: number
+        haiHoldPositionValue: number
     }
 
     // Raw data access
@@ -102,6 +104,8 @@ export function useStakingSummary(): StakingSummaryData {
         lpBoostValue,
         userTotalValue,
         hvBoost,
+        haiHoldBoost,
+        haiHoldPositionValue,
         simulateNetBoost,
         netBoostValue,
         haiVeloPositionValue,
@@ -307,8 +311,10 @@ export function useStakingSummary(): StakingSummaryData {
                 }),
                 haiVeloBoost: hvBoost,
                 lpBoost: lpBoostValue,
+                haiHoldBoost: haiHoldBoost,
                 haiVeloPositionValue: numericHaiVeloPositionValue,
                 userLPPositionValue: numericUserLPPositionValue,
+                haiHoldPositionValue: haiHoldPositionValue,
             },
 
             // Raw data access
@@ -365,8 +371,10 @@ export function useStakingSummary(): StakingSummaryData {
             boostedValueFormatted: '$0',
             haiVeloBoost: 0,
             lpBoost: 0,
+            haiHoldBoost: 0,
             haiVeloPositionValue: 0,
             userLPPositionValue: 0,
+            haiHoldPositionValue: 0,
         },
         stakingData: {},
         simulateNetBoost,

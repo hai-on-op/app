@@ -10,9 +10,13 @@ import { useVelodromePositions } from './useVelodrome'
 import { useStaking } from '~/providers/StakingProvider'
 import { useHaiVeloData } from './useHaiVeloData'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
+import { useQuery } from '@apollo/client'
+import { SYSTEMSTATE_QUERY } from '~/utils/graphql/queries'
+import { useBalance } from '~/hooks/useBalance'
 import {
     calculateLPBoost,
     calculateHaiVeloBoost,
+    calculateHaiHoldBoost,
     combineBoostValues,
     simulateNetBoost as simulateNetBoostService,
     calculateBaseAPR,
@@ -36,6 +40,12 @@ export function useBoost() {
     const { prices: veloPrices } = useVelodromePrices()
     const { stakingData, stakingStats, loading: stakingLoading } = useStaking()
     const { userHaiVELODeposited, totalHaiVELODeposited } = useHaiVeloData()
+
+    // Load system state data for HAI HOLD boost calculation
+    const { data: systemStateData } = useQuery(SYSTEMSTATE_QUERY)
+
+    // Get HAI balance for HAI HOLD boost calculation
+    const haiBalance = useBalance('HAI')
 
     const {
         haiMarketPrice,
@@ -145,16 +155,36 @@ export function useBoost() {
         [userKITEStaked, totalKITEStaked, userHaiVELODeposited, totalHaiVELODeposited]
     )
 
+    // Calculate HAI HOLD boost values
+    const haiHoldBoostResult = useMemo(() => {
+        const userHaiAmount = Number(haiBalance?.raw || 0)
+        const totalHaiAmount = Number(systemStateData?.systemStates[0]?.erc20CoinTotalSupply || 0)
+        
+        const result = calculateHaiHoldBoost({
+            userStakingAmount: Number(userKITEStaked),
+            totalStakingAmount: Number(totalKITEStaked),
+            userHaiAmount,
+            totalHaiAmount,
+        })
+        
+        return {
+            haiHoldBoost: result.haiHoldBoost,
+            haiHoldPositionValue: userHaiAmount * haiPrice,
+        }
+    }, [haiBalance, systemStateData, userKITEStaked, totalKITEStaked, haiPrice])
+
     // Combine the boost values
     const combinedBoostResult = useMemo(
         () =>
             combineBoostValues({
                 lpBoost: lpBoostValue,
                 haiVeloBoost: haiVeloBoostResult.haiVeloBoost,
+                haiHoldBoost: haiHoldBoostResult.haiHoldBoost,
                 userLPPositionValue: calculatedUserLPPositionValue,
                 haiVeloPositionValue,
+                haiHoldPositionValue: haiHoldBoostResult.haiHoldPositionValue,
             }),
-        [lpBoostValue, haiVeloBoostResult.haiVeloBoost, calculatedUserLPPositionValue, haiVeloPositionValue]
+        [lpBoostValue, haiVeloBoostResult.haiVeloBoost, haiHoldBoostResult, calculatedUserLPPositionValue, haiVeloPositionValue]
     )
 
     // Reuse the simulation function from the service
@@ -207,11 +237,15 @@ export function useBoost() {
         totalPoolLiquidity,
         userLPPositionValue: calculatedUserLPPositionValue,
 
+        // HAI HOLD data
+        haiHoldBoost: haiHoldBoostResult.haiHoldBoost,
+        haiHoldPositionValue: haiHoldBoostResult.haiHoldPositionValue,
+
         // Boost data from the LP data model
         kiteRatio,
         hvBoost: haiVeloBoostResult.haiVeloBoost,
         lpBoostValue,
-        userTotalValue: Number(calculatedUserLPPositionValue) + Number(haiVeloPositionValue),
+        userTotalValue: Number(calculatedUserLPPositionValue) + Number(haiVeloPositionValue) + Number(haiHoldBoostResult.haiHoldPositionValue),
         netBoostValue: combinedBoostResult.netBoost,
 
         simulateNetBoost,

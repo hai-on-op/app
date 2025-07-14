@@ -71,7 +71,7 @@ export function Overview({ simulation }: OverviewProps) {
                     x Boost
                 </Text>
             </div>
-            <div>
+            <div style={{ marginBottom: '10px' }}>
                 <Text $fontSize=".9rem" $fontWeight={700}>
                     HAI/WETH LP
                 </Text>
@@ -83,6 +83,24 @@ export function Overview({ simulation }: OverviewProps) {
                     })}{' '}
                     +{' '}
                     {formatNumberWithStyle(boost.lpBoost, {
+                        minDecimals: 0,
+                        maxDecimals: 2,
+                    })}
+                    x Boost
+                </Text>
+            </div>
+            <div>
+                <Text $fontSize=".9rem" $fontWeight={700}>
+                    HAI HOLD
+                </Text>
+                <Text $fontSize=".9rem">
+                    {formatNumberWithStyle(boost.haiHoldPositionValue, {
+                        minDecimals: 2,
+                        maxDecimals: 2,
+                        style: 'currency',
+                    })}{' '}
+                    +{' '}
+                    {formatNumberWithStyle(boost.haiHoldBoost, {
                         minDecimals: 0,
                         maxDecimals: 2,
                     })}
