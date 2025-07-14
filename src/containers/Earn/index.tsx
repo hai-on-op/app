@@ -8,14 +8,14 @@ import { SortByDropdown } from '~/components/SortByDropdown'
 import { WrapperAdProps, WrapperAd } from '~/components/WrapperAd'
 
 const wrappers: WrapperAdProps[] = [
-    /*{
-        heading: 'OP REWARDS',
+    {
+        heading: 'KITE REWARDS',
         status: 'NOW LIVE',
-        description: 'Earn OP tokens daily by participating in incentive campaigns.',
-        cta: 'Provide Liquidity',
-        ctaLink: 'https://app.uniswap.org/explore/pools/optimism/0x146b020399769339509c98b7b353d19130c150ec',
-        tokenImages: ['OP'],
-    },*/
+        description: 'Earn KITE tokens daily by participating in incentive campaigns.',
+        cta: 'View Strategies',
+        ctaLink: '/earn',
+        tokenImages: ['KITE'],
+    },
 ]
 
 export function Earn() {

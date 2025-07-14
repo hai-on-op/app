@@ -118,7 +118,7 @@ export function useStrategyData(
     const haiBalance = useBalance('HAI')
     const haiUserPosition = (haiBalance?.raw as any) * haiPrice
     const redemptionRate = systemStateData?.systemStates[0]?.currentRedemptionRate.annualizedRate - 1
-    const haiApr = Math.pow(1 + redemptionRate / 365, 365) - 1
+    const haiApr = redemptionRate
     const haiTvl = systemStateData?.systemStates[0]?.erc20CoinTotalSupply * haiPrice
 
     // === HAI VELO Deposit Strategy ===

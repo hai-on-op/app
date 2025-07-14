@@ -172,9 +172,11 @@ export function useEarnStrategies() {
             Object.values(REWARDS.vaults[cType.id as keyof typeof REWARDS.vaults] || {}).some((a) => a != 0)
         )
 
+        if (!collateralsWithMinterRewards) return []
+
         const haiPrice = Number(velodromePricesData?.HAI.raw)
 
-        const strategies = collateralsWithMinterRewards?.map((cType) => {
+        const strategies = collateralsWithMinterRewards.map((cType) => {
             const assets = tokenAssets[cType.id]
 
             const cTypeUserPosition = userPositionsList
@@ -241,6 +243,7 @@ export function useEarnStrategies() {
                 apr: kiteApr,
                 userPosition: kiteUserPosition,
                 strategyType: 'stake',
+                earnLink: '/stake',
             },
         ]
     }
