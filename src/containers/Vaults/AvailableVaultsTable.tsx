@@ -26,6 +26,8 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
 
     const pausedRewards = ['APXETH', 'PXETH', 'RETH', 'WSTETH', 'OP', 'TBTC']
 
+    console.log('rows', rows)
+
     // Define external links for specific collaterals
     const EXTERNAL_LINKS: Record<string, string> = {
         'YV-VELO-ALETH-WETH': 'https://yearn.fi/vaults/10/0xf7D66b41Cd4241eae450fd9D2d6995754634D9f3',
@@ -108,11 +110,31 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                                             </>
                                                         )}
                                                         {collateralName === 'YV-VELO-ALETH-WETH' && (
-                                                            <RewardsTokenArray
-                                                                tokens={['KITE']}
-                                                                label="EARN"
-                                                                tooltip="Earn KITE minting incentives"
-                                                            />
+                                                            <>
+                                                                <RewardsTokenArray
+                                                                    tokens={['KITE']}
+                                                                    label="EARN"
+                                                                    tooltip="Earn KITE minting incentives"
+                                                                />
+                                                                {EXTERNAL_LINKS[collateralName] && (
+                                                                    <a
+                                                                        href={EXTERNAL_LINKS[collateralName]}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        style={{
+                                                                            marginLeft: 4,
+                                                                            display: 'inline-flex',
+                                                                            alignItems: 'center',
+                                                                        }}
+                                                                        title="Get YV-VELO-ALETH-WETH"
+                                                                    >
+                                                                        <ExternalLink
+                                                                            size={14}
+                                                                            style={{ verticalAlign: 'middle' }}
+                                                                        />
+                                                                    </a>
+                                                                )}
+                                                            </>
                                                         )}
                                                         {collateralName === 'HAIVELO' && (
                                                             <RewardsTokenArray
