@@ -4,6 +4,7 @@ import { useAccount } from 'wagmi'
 import { formatNumberWithStyle } from '~/utils'
 import { useStoreActions } from '~/store'
 import { useEarnStrategies } from '~/hooks'
+import { useBoost } from '~/hooks/useBoost'
 
 import { HaiButton } from '~/styles'
 import { RewardsTokenArray } from '~/components/TokenArray'
@@ -36,6 +37,8 @@ export function EarnStats() {
 
     const { averageAPR, averageWeightedBoost, totalBoostablePosition } = useEarnStrategies()
     const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
+    const { netBoostValue } = useBoost()
+    const netBoostFormatted = `${formatNumberWithStyle(netBoostValue, { minDecimals: 0, maxDecimals: 2 })}x`
 
     const formattedWeightedAPR = useMemo(() => {
         return formatNumberWithStyle(averageAPR && averageAPR.averageWeightedAPR ? averageAPR.averageWeightedAPR : 0, {
@@ -95,12 +98,9 @@ export function EarnStats() {
             tooltip: 'Total eligible value participating in DAO rewards campaign activities',
         },
         {
-            header: isNaN(averageWeightedBoost)
+            header: isNaN(netBoostValue)
                 ? '...'
-                : `${formatNumberWithStyle(averageWeightedBoost, {
-                      minDecimals: 0,
-                      maxDecimals: 2,
-                  })}x`,
+                : netBoostFormatted,
             label: 'My Net HAI Boost',
             badge: 'BOOST',
             tooltip: 'Your current boost multiplier based on your staked KITE.',
