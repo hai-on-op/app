@@ -117,81 +117,81 @@ export function calculateVaultBoost({
 }
 
 /**
- * Calculate HAI HOLD boost value for a user
+ * Calculate HAI MINTING boost value for a user
  *
  * @param userStakingAmount User's staked amount (KITE)
  * @param totalStakingAmount Total staked amount (KITE)
- * @param userHaiAmount User's HAI amount
- * @param totalHaiAmount Total HAI supply
- * @returns HAI HOLD boost calculation values
+ * @param userHaiMinted User's HAI minted amount
+ * @param totalHaiMinted Total HAI minted amount
+ * @returns HAI MINTING boost calculation values
  */
-export function calculateHaiHoldBoost({
+export function calculateHaiMintingBoost({
     userStakingAmount,
     totalStakingAmount,
-    userHaiAmount,
-    totalHaiAmount,
+    userHaiMinted,
+    totalHaiMinted,
 }: {
     userStakingAmount: number
     totalStakingAmount: number
-    userHaiAmount: number
-    totalHaiAmount: number
+    userHaiMinted: number
+    totalHaiMinted: number
 }) {
-    // Skip calculation if user has no stake or no HAI
-    if (userStakingAmount <= 0 || userHaiAmount <= 0 || totalHaiAmount <= 0) {
-        return { haiHoldBoost: 1 }
+    // Skip calculation if user has no stake or no HAI minted
+    if (userStakingAmount <= 0 || userHaiMinted <= 0 || totalHaiMinted <= 0) {
+        return { haiMintingBoost: 1 }
     }
 
     // Calculate KITE ratio
     const calculatedKiteRatio = totalStakingAmount === 0 ? 0 : userStakingAmount / totalStakingAmount
 
-    // Calculate HAI ratio
-    const haiRatio = userHaiAmount / totalHaiAmount
+    // Calculate HAI minting ratio
+    const haiMintingRatio = userHaiMinted / totalHaiMinted
 
-    // Calculate HAI HOLD boost: if user's HAI ratio is higher than their staking ratio, they get a boost
-    const haiHoldBoostRaw = haiRatio === 0 ? 1 : calculatedKiteRatio / haiRatio + 1
-    const haiHoldBoost = Math.min(haiHoldBoostRaw, 2)
+    // Calculate HAI MINTING boost: if user's minting ratio is higher than their staking ratio, they get a boost
+    const haiMintingBoostRaw = haiMintingRatio === 0 ? 1 : calculatedKiteRatio / haiMintingRatio + 1
+    const haiMintingBoost = Math.min(haiMintingBoostRaw, 2)
 
     return {
         kiteRatio: calculatedKiteRatio,
-        haiHoldBoost,
+        haiMintingBoost,
     }
 }
 
 /**
- * Combine haiVELO and HAI HOLD boost values into a net boost value
+ * Combine haiVELO and HAI MINTING boost values into a net boost value
  *
  * @param haiVeloBoost haiVELO boost value
- * @param haiHoldBoost HAI HOLD boost value
+ * @param haiMintingBoost HAI MINTING boost value
  * @param haiVeloPositionValue Value of user's haiVELO position in USD
- * @param haiHoldPositionValue Value of user's HAI HOLD position in USD
+ * @param haiMintingPositionValue Value of user's HAI MINTING position in USD
  * @returns Combined boost values
  */
 export function combineBoostValues({
     haiVeloBoost,
-    haiHoldBoost,
+    haiMintingBoost,
     haiVeloPositionValue,
-    haiHoldPositionValue,
+    haiMintingPositionValue,
 }: {
     haiVeloBoost: number
-    haiHoldBoost: number
+    haiMintingBoost: number
     haiVeloPositionValue: string | number
-    haiHoldPositionValue: string | number
+    haiMintingPositionValue: string | number
 }) {
     // Calculate weighted average boost (excluding LP boost)
-    const totalValue = Number(haiVeloPositionValue) + Number(haiHoldPositionValue)
+    const totalValue = Number(haiVeloPositionValue) + Number(haiMintingPositionValue)
     const haiVeloValueRatio = totalValue === 0 ? 0.5 : Number(haiVeloPositionValue) / totalValue
-    const haiHoldValueRatio = totalValue === 0 ? 0.5 : Number(haiHoldPositionValue) / totalValue
+    const haiMintingValueRatio = totalValue === 0 ? 0.5 : Number(haiMintingPositionValue) / totalValue
 
     const weightedHaiVeloBoost = haiVeloBoost * haiVeloValueRatio
-    const weightedHaiHoldBoost = haiHoldBoost * haiHoldValueRatio
+    const weightedHaiMintingBoost = haiMintingBoost * haiMintingValueRatio
 
-    const netBoost = weightedHaiVeloBoost + weightedHaiHoldBoost
+    const netBoost = weightedHaiVeloBoost + weightedHaiMintingBoost
 
     return {
         haiVeloBoost,
-        haiHoldBoost,
+        haiMintingBoost,
         haiVeloValueRatio,
-        haiHoldValueRatio,
+        haiMintingValueRatio,
         netBoost,
     }
 }
@@ -250,9 +250,9 @@ export function calculateBoostValues({
     // Combine the results using the new function
     const combinedResult = combineBoostValues({
         haiVeloBoost: haiVeloBoostResult.haiVeloBoost,
-        haiHoldBoost: 1, // Default to 1 for now, will be updated when HAI HOLD is added
+        haiMintingBoost: 1, // Default to 1 for now, will be updated when HAI MINTING is added
         haiVeloPositionValue,
-        haiHoldPositionValue: 0, // Default to 0 for now, will be updated when HAI HOLD is added
+        haiMintingPositionValue: 0, // Default to 0 for now, will be updated when HAI MINTING is added
     })
 
     return {
@@ -318,20 +318,20 @@ export function simulateNetBoost({
         totalHaiVELODeposited,
     })
 
-    // Calculate HAI HOLD boost with simulated staking amounts
-    const haiHoldBoostResult = calculateHaiHoldBoost({
+    // Calculate HAI MINTING boost with simulated staking amounts
+    const haiMintingBoostResult = calculateHaiMintingBoost({
         userStakingAmount: userAfterStakingAmount,
         totalStakingAmount: totalAfterStakingAmount,
-        userHaiAmount,
-        totalHaiAmount,
+        userHaiMinted: userHaiAmount, // Using userHaiAmount as userHaiMinted for now
+        totalHaiMinted: totalHaiAmount, // Using totalHaiAmount as totalHaiMinted for now
     })
 
     // Combine the boost values
     const combinedResult = combineBoostValues({
         haiVeloBoost: haiVeloBoostResult.haiVeloBoost,
-        haiHoldBoost: haiHoldBoostResult.haiHoldBoost,
+        haiMintingBoost: haiMintingBoostResult.haiMintingBoost,
         haiVeloPositionValue,
-        haiHoldPositionValue,
+        haiMintingPositionValue: haiHoldPositionValue, // Using haiHoldPositionValue as haiMintingPositionValue for now
     })
 
     return combinedResult.netBoost

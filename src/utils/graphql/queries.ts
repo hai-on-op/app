@@ -250,6 +250,39 @@ export const ALL_COLLATERAL_TYPES_QUERY = gql`
     ${CollateralTypeWithCollateralPriceFragment}
 `
 
+// Query for HAI minting collateral types (ALETH, YV-VELO-ALETH-WETH, HAIVELO)
+export const HAI_MINTING_COLLATERAL_TYPES_QUERY = gql`
+    query GetHaiMintingCollateralTypes {
+        collateralTypes(where: { id_in: ["ALETH", "YV-VELO-ALETH-WETH", "HAIVELO"] }) {
+            id
+            debtAmount
+            totalCollateral
+            totalCollateralLockedInSafes
+            safeCount
+            currentPrice {
+                value
+            }
+        }
+    }
+`
+
+// Query for user's HAI minting safes
+export const USER_HAI_MINTING_SAFES_QUERY = gql`
+    query GetUserHaiMintingSafes($userAddress: Bytes!) {
+        user(id: $userAddress) {
+            safes {
+                id
+                debt
+                collateral
+                collateralType {
+                    id
+                    debtAmount
+                }
+            }
+        }
+    }
+`
+
 export const MY_AUCTION_BIDS_QUERY = gql`
     query MyBids($address: Bytes!) {
         englishAuctionBids(

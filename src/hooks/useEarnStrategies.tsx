@@ -12,7 +12,7 @@ import { useMyVaults, useBalance } from '~/hooks'
 import { useVelodrome, useVelodromePositions } from './useVelodrome'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { REWARDS } from '~/utils/rewards'
-import { calculateVaultBoost, calculateHaiHoldBoost } from '~/services/boostService'
+import { calculateVaultBoost, calculateHaiMintingBoost } from '~/services/boostService'
 import { useStrategyData } from './useStrategyData'
 
 const sortableHeaders: SortableHeader[] = [
@@ -216,23 +216,23 @@ export function useEarnStrategies() {
         const kiteTvl = strategyData?.kiteStaking?.tvl || 0
         const kiteUserPosition = strategyData?.kiteStaking?.userPosition || 0
 
-        // Calculate HAI HOLD boost using the same logic as staking page
-        const userHaiAmount = Number(haiUserPosition) / Number(velodromePricesData?.HAI?.raw || 1)
-        const totalHaiAmount = Number(systemStateData?.systemStates[0]?.erc20CoinTotalSupply || 0)
+        // Calculate HAI MINTING boost using the same logic as staking page
+        const userHaiMinted = Number(haiUserPosition) / Number(velodromePricesData?.HAI?.raw || 1)
+        const totalHaiMinted = Number(systemStateData?.systemStates[0]?.erc20CoinTotalSupply || 0)
         const userStakingAmount = address ? Number(usersStakingData[address.toLowerCase()]?.stakedBalance || 0) : 0
         const totalStakingAmount = Number(formatEther(totalStaked || '0'))
 
-        const haiHoldBoostResult = calculateHaiHoldBoost({
+        const haiMintingBoostResult = calculateHaiMintingBoost({
             userStakingAmount,
             totalStakingAmount,
-            userHaiAmount,
-            totalHaiAmount,
+            userHaiMinted,
+            totalHaiMinted,
         })
 
-        const haiHoldBoost = {
+        const haiMintingBoost = {
             baseAPR: haiApr * 100,
-            myBoost: haiHoldBoostResult.haiHoldBoost,
-            myBoostedAPR: haiApr * 100 * haiHoldBoostResult.haiHoldBoost,
+            myBoost: haiMintingBoostResult.haiMintingBoost,
+            myBoostedAPR: haiApr * 100 * haiMintingBoostResult.haiMintingBoost,
         }
 
         return [
@@ -241,10 +241,9 @@ export function useEarnStrategies() {
                 rewards: [],
                 tvl: haiTvl,
                 apr: haiApr,
-                boostAPR: haiHoldBoost,
                 userPosition: haiUserPosition,
                 strategyType: 'hold',
-                boostEligible: true,
+                boostEligible: false,
             },
             {
                 pair: ['HAIVELO'],

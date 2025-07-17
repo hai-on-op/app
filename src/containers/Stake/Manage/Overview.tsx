@@ -73,16 +73,16 @@ export function Overview({ simulation }: OverviewProps) {
             </div>
             <div>
                 <Text $fontSize=".9rem" $fontWeight={700}>
-                    HAI HOLD
+                    HAI MINTING
                 </Text>
                 <Text $fontSize=".9rem">
-                    {formatNumberWithStyle(boost.haiHoldPositionValue, {
+                    {formatNumberWithStyle(boost.haiMintingPositionValue, {
                         minDecimals: 2,
                         maxDecimals: 2,
                         style: 'currency',
                     })}{' '}
                     +{' '}
-                    {formatNumberWithStyle(boost.haiHoldBoost, {
+                    {formatNumberWithStyle(boost.haiMintingBoost, {
                         minDecimals: 0,
                         maxDecimals: 2,
                     })}
