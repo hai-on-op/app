@@ -48,26 +48,12 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                 } = vault
 
                 const hasFreeCollateral = freeCollateral !== '0.0'
-                const hasNoRewards = [
-                    'SNX',
-                    'LUSD-A',
-                    'LINK',
-                    'VELO',
-                    'WBTC',
-                    'MOO-VELO-V2-OP-VELO',
-                    'RETH',
-                    'WSTETH',
-                    'APXETH',
-                    'TBTC',
-                    'OP',
-                    'ALETH',
-                    'YV-VELO-ALETH-WETH',
-                ]
+                const HAS_REWARDS = ['HAIVELO', 'ALETH', 'YV-VELO-ALETH-WETH']
                 const collateralLabel = formatCollateralLabel(collateralName)
                 const tooltip =
-                    collateralName == 'HAIVELO'
-                        ? 'haiVELO depositors receive rewards in HAI based off the rewards the protocol receives from voting on Velodrome propotional to their amount of haiVELO deposited.'
-                        : 'Earn OP by providing Liquitity'
+                    collateralName === 'HAIVELO'
+                        ? 'Earn HAI and KITE minting incentives'
+                        : 'Earn KITE minting incentives'
                 return (
                     <Table.Row
                         key={id}
@@ -82,9 +68,9 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                                             <TokenArray tokens={[collateralName as any]} />
                                             <Text>#{id}</Text>
                                         </CenteredFlex>
-                                        {hasNoRewards.includes(collateralName) ? null : (
+                                        {HAS_REWARDS.includes(collateralName) && (
                                             <RewardsTokenArray
-                                                tokens={collateralName === 'WETH' ? ['OP'] : ['HAI']}
+                                                tokens={collateralName === 'HAIVELO' ? ['HAI', 'KITE'] : ['KITE']}
                                                 label="EARN"
                                                 tooltip={tooltip}
                                             />
