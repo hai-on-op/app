@@ -1,4 +1,5 @@
 import { formatEther } from 'ethers/lib/utils'
+import { ExternalLink } from 'react-feather'
 
 import type { AvailableVaultPair, SetState, SortableHeader, Sorting } from '~/types'
 import { formatNumberWithStyle } from '~/utils'
@@ -24,6 +25,12 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
     const isUpToSmall = useMediaQuery('upToSmall')
 
     const pausedRewards = ['APXETH', 'PXETH', 'RETH', 'WSTETH', 'OP', 'TBTC']
+
+    // Define external links for specific collaterals
+    const EXTERNAL_LINKS: Record<string, string> = {
+        'YV-VELO-ALETH-WETH': 'https://yearn.fi/vaults/10/0xf7D66b41Cd4241eae450fd9D2d6995754634D9f3', // Sample link for ALETH
+        // Add more as needed
+    }
 
     return (
         <Table
@@ -74,11 +81,24 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                                     <>
                                                         {/* Custom earn tags for specific collaterals */}
                                                         {collateralName === 'ALETH' && (
-                                                            <RewardsTokenArray
-                                                                tokens={['KITE']}
-                                                                label="EARN"
-                                                                tooltip="Earn KITE minting incentives"
-                                                            />
+                                                            <>
+                                                                <RewardsTokenArray
+                                                                    tokens={['KITE']}
+                                                                    label="EARN"
+                                                                    tooltip="Earn KITE minting incentives"
+                                                                />
+                                                                {EXTERNAL_LINKS[collateralName] && (
+                                                                    <a
+                                                                        href={EXTERNAL_LINKS[collateralName]}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        style={{ marginLeft: 4, display: 'inline-flex', alignItems: 'center' }}
+                                                                        title="Get ALETH"
+                                                                    >
+                                                                        <ExternalLink size={14} style={{ verticalAlign: 'middle' }} />
+                                                                    </a>
+                                                                )}
+                                                            </>
                                                         )}
                                                         {collateralName === 'YV-VELO-ALETH-WETH' && (
                                                             <RewardsTokenArray
