@@ -28,7 +28,7 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
 
     // Define external links for specific collaterals
     const EXTERNAL_LINKS: Record<string, string> = {
-        'yvVelo-alETH-WETH': 'https://yearn.fi/vaults/10/0xf7D66b41Cd4241eae450fd9D2d6995754634D9f3',
+        'YV-VELO-ALETH-WETH': 'https://yearn.fi/vaults/10/0xf7D66b41Cd4241eae450fd9D2d6995754634D9f3',
         // Add more as needed
     }
 
