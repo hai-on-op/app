@@ -71,11 +71,40 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                                 />
                                                 {((hasRewards && !pausedRewards.includes(collateralName)) ||
                                                     rewardOverride) && (
-                                                    <RewardsTokenArray
-                                                        tokens={collateralName === 'HAIVELO' ? ['HAI'] : ['']}
-                                                        label="EARN"
-                                                        tooltip={tooltip}
-                                                    />
+                                                    <>
+                                                        {/* Custom earn tags for specific collaterals */}
+                                                        {collateralName === 'ALETH' && (
+                                                            <RewardsTokenArray
+                                                                tokens={['KITE']}
+                                                                label="EARN"
+                                                                tooltip="Earn KITE minting incentives"
+                                                            />
+                                                        )}
+                                                        {collateralName === 'YV-VELO-ALETH-WETH' && (
+                                                            <RewardsTokenArray
+                                                                tokens={['KITE']}
+                                                                label="EARN"
+                                                                tooltip="Earn KITE minting incentives"
+                                                            />
+                                                        )}
+                                                        {collateralName === 'HAIVELO' && (
+                                                            <RewardsTokenArray
+                                                                tokens={['HAI', 'KITE']}
+                                                                label="EARN"
+                                                                tooltip="Earn HAI and KITE minting incentives"
+                                                            />
+                                                        )}
+                                                        {/* Default behavior for other collaterals */}
+                                                        {!['ALETH', 'YV-VELO-ALETH-WETH', 'HAIVELO'].includes(
+                                                            collateralName
+                                                        ) && (
+                                                            <RewardsTokenArray
+                                                                tokens={[]}
+                                                                label="EARN"
+                                                                tooltip={tooltip}
+                                                            />
+                                                        )}
+                                                    </>
                                                 )}
                                             </Grid>
                                         ),

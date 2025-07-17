@@ -40,7 +40,7 @@ export function useAvailableVaults() {
         [tokensData]
     )
 
-    const HAS_REWARDS = ['APXETH', 'WSTETH', 'RETH', 'OP', 'TBTC']
+    const HAS_REWARDS = ['HAIVELO', 'ALETH', 'YV-VELO-ALETH-WETH']
 
     const availableVaults: AvailableVaultPair[] = useMemo(() => {
         return collaterals

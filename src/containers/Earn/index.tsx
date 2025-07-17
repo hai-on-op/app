@@ -11,9 +11,9 @@ const wrappers: WrapperAdProps[] = [
     {
         heading: 'KITE REWARDS',
         status: 'NOW LIVE',
-        description: 'Earn KITE tokens daily by participating in incentive campaigns.',
-        cta: 'View Strategies',
-        ctaLink: '/earn',
+        description: 'Earn KITE tokens daily by minting HAI.',
+        cta: 'Get HAI to Earn',
+        ctaLink: '/vaults',
         tokenImages: ['KITE'],
     },
 ]
