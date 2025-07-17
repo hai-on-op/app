@@ -28,7 +28,7 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
 
     // Define external links for specific collaterals
     const EXTERNAL_LINKS: Record<string, string> = {
-        'YV-VELO-ALETH-WETH': 'https://yearn.fi/vaults/10/0xf7D66b41Cd4241eae450fd9D2d6995754634D9f3', // Sample link for ALETH
+        'yvVelo-alETH-WETH': 'https://yearn.fi/vaults/10/0xf7D66b41Cd4241eae450fd9D2d6995754634D9f3',
         // Add more as needed
     }
 
@@ -92,10 +92,17 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                                                         href={EXTERNAL_LINKS[collateralName]}
                                                                         target="_blank"
                                                                         rel="noopener noreferrer"
-                                                                        style={{ marginLeft: 4, display: 'inline-flex', alignItems: 'center' }}
+                                                                        style={{
+                                                                            marginLeft: 4,
+                                                                            display: 'inline-flex',
+                                                                            alignItems: 'center',
+                                                                        }}
                                                                         title="Get ALETH"
                                                                     >
-                                                                        <ExternalLink size={14} style={{ verticalAlign: 'middle' }} />
+                                                                        <ExternalLink
+                                                                            size={14}
+                                                                            style={{ verticalAlign: 'middle' }}
+                                                                        />
                                                                     </a>
                                                                 )}
                                                             </>
