@@ -16,6 +16,7 @@ import { calculateVaultBoost, calculateHaiMintingBoost } from '~/services/boostS
 import { useStrategyData } from './useStrategyData'
 import { calculateTokenPrice, calculatePoolTVL, getTokenSymbol } from '~/utils/priceCalculations'
 import { VELODROME_POOLS, VELO_POOLS } from '~/utils/constants'
+import { normalizeAPRValue, getEffectiveAPR, getBestAPRValue } from '~/utils/aprNormalization'
 
 const sortableHeaders: SortableHeader[] = [
     { label: 'Asset / Asset Pair' },
@@ -412,12 +413,7 @@ export function useEarnStrategies() {
         return acc + Number(userPosition)
     }, 0)
 
-    const effectiveStrategiesAPR = strategies.map((strategy) => {
-        return {
-            apr: strategy.boostAPR ? Number(strategy.boostAPR.baseAPR) : Number(strategy.apr),
-            boostedApr: strategy.boostAPR ? Number(strategy.boostAPR.myBoostedAPR) : 0,
-        }
-    })
+    const effectiveStrategiesAPR = strategies.map((strategy) => getEffectiveAPR(strategy))
 
     const averageWeightedAPR = strategies.reduce((acc, strategy, i) => {
         const strategyAPR = effectiveStrategiesAPR[i]
@@ -474,30 +470,8 @@ export function useEarnStrategies() {
             case 'APR':
                 return arrayToSorted(filteredRows, {
                     getProperty: (row: any) => {
-                        let aprValue = 0
-                        // For strategies with boostAPR, use the boosted APR
-                        if (row.boostAPR && row.boostAPR.myBoostedAPR) {
-                            aprValue = row.boostAPR.myBoostedAPR
-                        } else {
-                            // For other strategies, use the apr field
-                            aprValue = row.apr
-                        }
-
-                        // Normalize APR values to percentage format for consistent sorting
-                        // Farm strategies (Velodrome) store APR as decimal, convert to percentage
-                        if (row.strategyType === 'farm') {
-                            aprValue = aprValue * 100
-                        }
-                        // Borrow strategies already store APR as percentage
-                        // Hold/Stake strategies need to be checked - they might be in decimal format
-                        else if (row.strategyType === 'hold' || row.strategyType === 'stake') {
-                            // If the value is less than 1, it's likely in decimal format
-                            if (aprValue < 1) {
-                                aprValue = aprValue * 100
-                            }
-                        }
-
-                        return aprValue
+                        const aprValue = getBestAPRValue(row)
+                        return normalizeAPRValue(aprValue, row.strategyType)
                     },
                     dir: sorting.dir,
                     type: 'numerical',
