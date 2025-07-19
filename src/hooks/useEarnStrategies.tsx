@@ -12,6 +12,7 @@ import { VELODROME_POOLS, VELO_POOLS } from '~/utils/constants'
 import { normalizeAPRValue, getEffectiveAPR, getBestAPRValue } from '~/utils/aprNormalization'
 import { createVaultStrategy, createSpecialStrategy, createVeloStrategy } from '~/utils/strategyFactory'
 import { useEarnData } from './useEarnData'
+import { shouldHaltExecution, canContinueWithDegradedMode } from '~/utils/errorHandling'
 
 // Import the BaseStrategy type for state management
 type BaseStrategy = ReturnType<typeof createVaultStrategy>
@@ -66,6 +67,7 @@ export function useEarnStrategies() {
         stakingDataLoaded,
         storeDataLoaded,
         error: dataLoadingError,
+        hasErrors,
     } = useEarnData()
 
     // === State ===
@@ -81,18 +83,37 @@ export function useEarnStrategies() {
     const [filterEmpty, setFilterEmpty] = useState(false)
 
     useEffect(() => {
-        if (allDataLoaded && stakingDataLoaded && storeDataLoaded) {
-            const vaultStrats = calculateVaultStrategies()
-            const specialStrats = calculateSpecialStrategies()
-            const veloStrats = calculateVeloStrategies()
-            setVaultStrategies(vaultStrats as any)
-            setSpecialStrategies(specialStrats as any)
-            setVeloStrategies(veloStrats as any)
+        // Error boundary: halt execution if critical errors exist
+        if (dataLoadingError && shouldHaltExecution(dataLoadingError)) {
+            console.error('Critical error detected, halting strategy calculation:', dataLoadingError)
+            return
+        }
+
+        // Proceed with calculation if data is loaded or if we can continue with degraded mode
+        const canProceed = (allDataLoaded && stakingDataLoaded && storeDataLoaded) || 
+                          (dataLoadingError && canContinueWithDegradedMode(dataLoadingError))
+
+        if (canProceed) {
+            try {
+                const vaultStrats = calculateVaultStrategies()
+                const specialStrats = calculateSpecialStrategies()
+                const veloStrats = calculateVeloStrategies()
+                setVaultStrategies(vaultStrats)
+                setSpecialStrategies(specialStrats)
+                setVeloStrategies(veloStrats)
+            } catch (calculationError) {
+                console.error('Error calculating strategies:', calculationError)
+                // Reset to empty arrays on calculation failure
+                setVaultStrategies([])
+                setSpecialStrategies([])
+                setVeloStrategies([])
+            }
         }
     }, [
         allDataLoaded,
         stakingDataLoaded,
         storeDataLoaded,
+        dataLoadingError,
         userPositionsList,
         systemStateData,
         haiVeloSafesData,
@@ -102,12 +123,17 @@ export function useEarnStrategies() {
 
     // === Calculate Strategies ===
 
-    const calculateVaultStrategies = () => {
-        const collateralsWithMinterRewards = collateralTypesData?.collateralTypes.filter((cType) =>
+    const calculateVaultStrategies = (): BaseStrategy[] => {
+        // Safe fallback if data is missing
+        if (!collateralTypesData?.collateralTypes || !velodromePricesData?.HAI) {
+            return []
+        }
+
+        const collateralsWithMinterRewards = collateralTypesData.collateralTypes.filter((cType) =>
             Object.values(REWARDS.vaults[cType.id as keyof typeof REWARDS.vaults] || {}).some((a) => a != 0)
         )
 
-        if (!collateralsWithMinterRewards) return []
+        if (!collateralsWithMinterRewards.length) return []
 
         const haiPrice = Number(velodromePricesData?.HAI.raw)
 
@@ -135,18 +161,23 @@ export function useEarnStrategies() {
         return strategies
     }
 
-    const calculateSpecialStrategies = () => {
-        const haiApr = strategyData?.hai?.apr || 0
-        const haiTvl = strategyData?.hai?.tvl || 0
-        const haiUserPosition = strategyData?.hai?.userPosition || 0
+    const calculateSpecialStrategies = (): BaseStrategy[] => {
+        // Safe fallback if strategy data is missing
+        if (!strategyData) {
+            return []
+        }
 
-        const haiVeloTvl = strategyData?.haiVelo?.tvl || 0
-        const haiVeloUserPositionUsd = strategyData?.haiVelo?.userPosition || 0
-        const haiVeloBoostApr = strategyData?.haiVelo?.boostApr
+        const haiApr = strategyData.hai?.apr || 0
+        const haiTvl = strategyData.hai?.tvl || 0
+        const haiUserPosition = strategyData.hai?.userPosition || 0
 
-        const kiteApr = strategyData?.kiteStaking?.apr || 0
-        const kiteTvl = strategyData?.kiteStaking?.tvl || 0
-        const kiteUserPosition = strategyData?.kiteStaking?.userPosition || 0
+        const haiVeloTvl = strategyData.haiVelo?.tvl || 0
+        const haiVeloUserPositionUsd = strategyData.haiVelo?.userPosition || 0
+        const haiVeloBoostApr = strategyData.haiVelo?.boostApr
+
+        const kiteApr = strategyData.kiteStaking?.apr || 0
+        const kiteTvl = strategyData.kiteStaking?.tvl || 0
+        const kiteUserPosition = strategyData.kiteStaking?.userPosition || 0
 
         // Calculate HAI MINTING boost using the same logic as staking page
         const userHaiMinted = Number(haiUserPosition) / Number(velodromePricesData?.HAI?.raw || 1)
@@ -196,9 +227,13 @@ export function useEarnStrategies() {
         ]
     }
 
-    const calculateVeloStrategies = () => {
-        if (!velodromePricesData || !velodromeData) return []
-        const strategies: any[] = []
+    const calculateVeloStrategies = (): BaseStrategy[] => {
+        // Safe fallback if required data is missing
+        if (!velodromePricesData || !velodromeData || !tokensData) {
+            return []
+        }
+        
+        const strategies: BaseStrategy[] = []
         for (const pool of velodromeData) {
             if (!VELO_POOLS.includes(pool.address)) continue
             
@@ -443,6 +478,7 @@ export function useEarnStrategies() {
         rowsUnmodified: strategies,
         loading: !allDataLoaded,
         error: dataLoadingError,
+        hasErrors,
         uniError: null,
         veloError: null,
         sorting,

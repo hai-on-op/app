@@ -12,6 +12,7 @@ import { BigNumber } from 'ethers'
 import type { QueryCollateralType } from '~/utils'
 import type { TokenData, TokenFetchData } from '@hai-on-op/sdk'
 import type { UserStakingData } from '~/model/stakingModel'
+import { combineErrors, hasAnyError, type AppError } from '~/utils/errorHandling'
 
 interface VelodromePoolData {
     address: string
@@ -77,8 +78,9 @@ interface EarnDataState {
     storeDataLoaded: boolean
     
     // Error states
-    error: string | ApolloError | Error | undefined | null
-    dataLoadingError: string | ApolloError | Error | undefined | null
+    error: AppError
+    dataLoadingError: AppError
+    hasErrors: boolean
 }
 
 export function useEarnData(): EarnDataState {
@@ -161,15 +163,26 @@ export function useEarnData(): EarnDataState {
 
     const loading = !allDataLoaded || !stakingDataLoaded || !storeDataLoaded
 
-    // Calculate error states
-    const dataLoadingError =
-        minterVaultsError ||
-        collateralTypesError ||
-        velodromeError ||
-        velodromePositionsError ||
-        velodromePricesError ||
-        systemStateError ||
+    // Calculate error states using error handling utilities
+    const dataLoadingError = combineErrors(
+        minterVaultsError,
+        collateralTypesError,
+        velodromeError,
+        velodromePositionsError,
+        velodromePricesError,
+        systemStateError,
         haiVeloSafesError
+    )
+    
+    const hasErrors = hasAnyError(
+        minterVaultsError,
+        collateralTypesError,
+        velodromeError,
+        velodromePositionsError,
+        velodromePricesError,
+        systemStateError,
+        haiVeloSafesError
+    )
 
     return {
         // Raw data
@@ -200,5 +213,6 @@ export function useEarnData(): EarnDataState {
         // Error states
         error: dataLoadingError,
         dataLoadingError,
+        hasErrors,
     }
 } 
