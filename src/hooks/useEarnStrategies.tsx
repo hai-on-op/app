@@ -17,6 +17,7 @@ import { useStrategyData } from './useStrategyData'
 import { calculateTokenPrice, calculatePoolTVL, getTokenSymbol } from '~/utils/priceCalculations'
 import { VELODROME_POOLS, VELO_POOLS } from '~/utils/constants'
 import { normalizeAPRValue, getEffectiveAPR, getBestAPRValue } from '~/utils/aprNormalization'
+import { createVaultStrategy, createSpecialStrategy, createVeloStrategy } from '~/utils/strategyFactory'
 
 const sortableHeaders: SortableHeader[] = [
     { label: 'Asset / Asset Pair' },
@@ -184,17 +185,14 @@ export function useEarnStrategies() {
             const rewards = REWARDS.vaults[cType.id as keyof typeof REWARDS.vaults] || REWARDS.default
             const vbr = calculateVaultBoostAPR(cType, rewards)
 
-            return {
+            return createVaultStrategy({
                 pair: [assets?.symbol || 'HAI'],
                 collateral: cType.id,
                 rewards: Object.entries(rewards).map(([token, emission]) => ({ token, emission })),
-                tvl: (parseFloat(cType.debtAmount) * haiPrice) as any,
-                strategyType: 'borrow',
-                boostAPR: vbr as any,
-                apr: '0' as any,
-                userPosition: (cTypeUserPosition * haiPrice) as any,
-                boostEligible: true,
-            }
+                tvl: parseFloat(cType.debtAmount) * haiPrice,
+                boostAPR: vbr,
+                userPosition: cTypeUserPosition * haiPrice,
+            })
         })
 
         return strategies
@@ -233,34 +231,31 @@ export function useEarnStrategies() {
         }
 
         return [
-            {
+            createSpecialStrategy({
                 pair: ['HAI'],
-                rewards: [],
                 tvl: haiTvl,
                 apr: haiApr,
                 userPosition: haiUserPosition,
                 strategyType: 'hold',
                 boostEligible: false,
-            },
-            {
+            }),
+            createSpecialStrategy({
                 pair: ['HAIVELO'],
-                rewards: [],
                 tvl: haiVeloTvl,
                 apr: haiVeloBoostApr?.baseAPR / 100 || 0,
-                boostAPR: haiVeloBoostApr,
                 userPosition: haiVeloUserPositionUsd,
                 strategyType: 'deposit',
+                boostAPR: haiVeloBoostApr,
                 boostEligible: true,
-            },
-            {
+            }),
+            createSpecialStrategy({
                 pair: ['KITE'],
-                rewards: [],
                 tvl: kiteTvl,
                 apr: kiteApr,
                 userPosition: kiteUserPosition,
                 strategyType: 'stake',
                 earnLink: '/stake',
-            },
+            }),
         ]
     }
 
@@ -286,24 +281,24 @@ export function useEarnStrategies() {
                     Number(velodromePricesData.VELO.raw) *
                     86400) /
                 tvl
-            const strategy = {
-                pair: [token0, token1] as any,
-                rewards: REWARDS.velodrome[pool.address.toLowerCase()] as any,
+            const userPosition = (velodromePositionsData || []).reduce((total, position) => {
+                if (!stringsExistAndAreEqual(position.lp, pool.address)) return total
+                return (
+                    total +
+                    parseFloat(formatUnits(position.staked0, pool.decimals)) * price0 +
+                    parseFloat(formatUnits(position.staked1, pool.decimals)) * price1
+                )
+            }, 0)
+
+            const strategy = createVeloStrategy({
+                pair: [token0, token1],
+                rewards: REWARDS.velodrome[pool.address.toLowerCase()],
                 tvl: tvl,
                 apr: veloAPR || 0,
-                userPosition: (velodromePositionsData || []).reduce((total, position) => {
-                    if (!stringsExistAndAreEqual(position.lp, pool.address)) return total
-                    return (
-                        total +
-                        parseFloat(formatUnits(position.staked0, pool.decimals)) * price0 +
-                        parseFloat(formatUnits(position.staked1, pool.decimals)) * price1
-                    )
-                }, 0),
-                earnPlatform: 'velodrome',
+                userPosition,
                 earnAddress: pool.address,
                 earnLink: `https://velodrome.finance/deposit?token0=${pool.token0}&token1=${pool.token1}&type=${pool.type}`,
-                strategyType: 'farm',
-            }
+            })
             strategies.push(strategy)
         }
         return strategies
