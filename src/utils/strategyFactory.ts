@@ -1,15 +1,17 @@
-// Types duplicated for this utility
+import type { BoostAPRData } from '~/types/system'
+
+// Factory strategy interface - more flexible than the strict Strategy type
 interface BaseStrategy {
     pair: string[]
-    tvl: number
+    tvl: number | string
     apr: number | string
-    userPosition: number
+    userPosition: number | string
     strategyType: 'borrow' | 'hold' | 'deposit' | 'stake' | 'farm'
     rewards?: Array<{ token: string; emission: number }>
-    boostAPR?: any
+    boostAPR?: BoostAPRData
     boostEligible?: boolean
     collateral?: string
-    earnPlatform?: string
+    earnPlatform?: 'uniswap' | 'velodrome'
     earnAddress?: string
     earnLink?: string
 }
@@ -19,7 +21,7 @@ interface VaultStrategyParams {
     collateral: string
     rewards: Array<{ token: string; emission: number }>
     tvl: number
-    boostAPR: any
+    boostAPR: BoostAPRData
     userPosition: number
 }
 
@@ -29,14 +31,14 @@ interface SpecialStrategyParams {
     apr: number
     userPosition: number
     strategyType: 'hold' | 'deposit' | 'stake'
-    boostAPR?: any
+    boostAPR?: BoostAPRData
     boostEligible?: boolean
     earnLink?: string
 }
 
 interface VeloStrategyParams {
     pair: string[]
-    rewards: any
+    rewards: Array<{ token: string; emission: number }>
     tvl: number
     apr: number
     userPosition: number
