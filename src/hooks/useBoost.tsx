@@ -1,9 +1,9 @@
 import { useMemo, useCallback, useEffect } from 'react'
-import { useStoreActions } from '~/store'
+import { useStoreActions, useStoreState } from '~/store'
 // import { useVault } from '~/providers/VaultProvider'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { useAccount } from 'wagmi'
-import { formatUnits } from 'ethers/lib/utils'
+import { formatUnits, formatEther } from 'ethers/lib/utils'
 import { useLPData } from '~/providers/LPDataProvider'
 import { useVelodromePositions } from './useVelodrome'
 // import { formatNumberWithStyle } from '~/utils'
@@ -11,13 +11,14 @@ import { useStaking } from '~/providers/StakingProvider'
 import { useHaiVeloData } from './useHaiVeloData'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { useQuery } from '@apollo/client'
-import { SYSTEMSTATE_QUERY } from '~/utils/graphql/queries'
+import { ALL_COLLATERAL_TYPES_QUERY } from '~/utils/graphql/queries'
 import { useBalance } from '~/hooks/useBalance'
-import { useHaiMintingData } from '~/hooks/useHaiMintingData'
+import { useMinterVaults } from '~/hooks/useMinterVaults'
+import { REWARDS } from '~/utils/rewards'
 import {
     calculateLPBoost,
     calculateHaiVeloBoost,
-    calculateHaiMintingBoost,
+    calculateVaultBoost,
     combineBoostValues,
     simulateNetBoost as simulateNetBoostService,
     calculateBaseAPR,
@@ -43,8 +44,18 @@ export function useBoost() {
     const { stakingData = { stakedBalance: '0' }, stakingStats = { totalStaked: '0' }, loading: stakingLoading = false } = stakingContext || {}
     const { userHaiVELODeposited, totalHaiVELODeposited } = useHaiVeloData()
 
-    // Load HAI minting data for HAI MINTING boost calculation
-    const haiMintingData = useHaiMintingData()
+    // Load vault-specific data for vault boost calculation (similar to useEarnStrategies)
+    const { data: minterVaultsData, loading: minterVaultsLoading } = useMinterVaults(address)
+    const {
+        data: collateralTypesData,
+        loading: collateralTypesLoading,
+    } = useQuery<{ collateralTypes: any[] }>(ALL_COLLATERAL_TYPES_QUERY)
+    
+    // Get staking data from store
+    const {
+        stakingModel: { usersStakingData, totalStaked },
+        vaultModel: { list: userPositionsList },
+    } = useStoreState((state) => state)
 
     const {
         haiMarketPrice,
@@ -154,31 +165,162 @@ export function useBoost() {
         [userKITEStaked, totalKITEStaked, userHaiVELODeposited, totalHaiVELODeposited]
     )
 
-    // Calculate HAI MINTING boost values
-    const haiMintingBoostResult = useMemo(() => {
-        const result = calculateHaiMintingBoost({
-            userStakingAmount: Number(userKITEStaked),
-            totalStakingAmount: Number(totalKITEStaked),
-            userHaiMinted: haiMintingData.userHaiMinted,
-            totalHaiMinted: haiMintingData.totalHaiMinted,
-        })
-        
-        return {
-            haiMintingBoost: result.haiMintingBoost,
-            haiMintingPositionValue: haiMintingData.userHaiMinted * haiPrice,
+    // Calculate vault boost values (replacing HAI minting boost)
+    const vaultBoostResult = useMemo(() => {
+        // Skip calculation if data is not available
+        if (!minterVaultsData || !collateralTypesData?.collateralTypes || minterVaultsLoading || collateralTypesLoading) {
+            return {
+                vaultBoost: 1,
+                vaultPositionValue: 0,
+                totalVaultPosition: 0,
+                userVaultPosition: 0,
+                individualVaultBoosts: {},
+                userVaultBoostMap: {},
+            }
         }
-    }, [haiMintingData, userKITEStaked, totalKITEStaked, haiPrice])
+
+        // Filter to collateral types with minter rewards (same logic as useEarnStrategies)
+        const collateralsWithMinterRewards = collateralTypesData.collateralTypes.filter((cType) =>
+            Object.values(REWARDS.vaults[cType.id as keyof typeof REWARDS.vaults] || {}).some((a) => a != 0)
+        )
+
+        let totalUserVaultMinted = 0
+        let totalVaultMinted = 0
+        let weightedBoostSum = 0
+        let totalUserPositionValue = 0
+        
+        // Store individual vault boost data for useEarnStrategies
+        const individualVaultBoosts: Record<string, any> = {}
+        const userVaultBoostMap: Record<string, Record<string, number>> = {}
+
+        // Calculate aggregated vault boost across all eligible collateral types
+        collateralsWithMinterRewards.forEach((cType) => {
+            const ctypeMinterData = minterVaultsData[cType.id]
+            if (!ctypeMinterData) {
+                // Store default values for missing data
+                individualVaultBoosts[cType.id] = {
+                    userVaultBoostMap: {},
+                    cType: cType.id,
+                    totalBoostedValueParticipating: 0,
+                    baseAPR: 0,
+                    myBoost: 1,
+                    myValueParticipating: 0,
+                    myBoostedValueParticipating: 0,
+                    myBoostedShare: 0,
+                    myBoostedAPR: 0,
+                }
+                return
+            }
+
+            // Calculate boost map for this collateral type (similar to calculateVaultBoostMap in useEarnStrategies)
+            const vaultBoostMap = Object.entries(ctypeMinterData?.userDebtMapping || {}).reduce((acc, [userAddress, value]) => {
+                const lowercasedAddress = userAddress.toLowerCase()
+                if (!usersStakingData[lowercasedAddress]) {
+                    return { ...acc, [lowercasedAddress]: 1 }
+                } else {
+                    const userStakingAmount = Number(usersStakingData[lowercasedAddress]?.stakedBalance)
+                    const totalStakingAmount = Number(formatEther(totalStaked || '0'))
+                    const userVaultMinted = Number(value)
+                    const totalVaultMinted = Number(ctypeMinterData?.totalMinted)
+                    const vaultBoost = calculateVaultBoost({
+                        userStakingAmount,
+                        totalStakingAmount,
+                        userVaultMinted,
+                        totalVaultMinted,
+                    })
+
+                    return {
+                        ...acc,
+                        [lowercasedAddress]: vaultBoost,
+                    }
+                }
+            }, {} as Record<string, number>)
+
+            userVaultBoostMap[cType.id] = vaultBoostMap
+
+            // Calculate boost APR data for this collateral type (similar to calculateVaultBoostAPR in useEarnStrategies)
+            const totalBoostedValueParticipating = Object.entries(ctypeMinterData?.userDebtMapping || {}).reduce(
+                (acc, [userAddress, value]) => {
+                    return acc + Number(value) * (vaultBoostMap[userAddress.toLowerCase()] || 1)
+                },
+                0
+            )
+
+            const rewards = REWARDS.vaults[cType.id as keyof typeof REWARDS.vaults] || REWARDS.default
+            const dailyKiteReward = rewards.KITE || 0
+            const kitePrice = Number(veloPrices?.KITE?.raw || 0)
+            const dailyKiteRewardUsd = dailyKiteReward * kitePrice
+            const baseAPR = totalBoostedValueParticipating
+                ? (dailyKiteRewardUsd / totalBoostedValueParticipating) * 365 * 100
+                : 0
+            const myBoost = address ? vaultBoostMap[address.toLowerCase()] || 1 : 1
+            const myValueParticipating = address ? Number(ctypeMinterData?.userDebtMapping[address.toLowerCase()] || 0) : 0
+            const myBoostedValueParticipating = Number(myValueParticipating) * myBoost
+            const myBoostedShare = totalBoostedValueParticipating
+                ? myBoostedValueParticipating / totalBoostedValueParticipating
+                : 0
+            const myBoostedAPR = myBoost * baseAPR
+
+            individualVaultBoosts[cType.id] = {
+                userVaultBoostMap: vaultBoostMap,
+                cType: cType.id,
+                totalBoostedValueParticipating,
+                baseAPR,
+                myBoost,
+                myValueParticipating,
+                myBoostedValueParticipating,
+                myBoostedShare,
+                myBoostedAPR,
+            }
+
+            const userVaultMinted = address ? Number(ctypeMinterData.userDebtMapping[address.toLowerCase()] || 0) : 0
+            const ctypeVaultMinted = Number(ctypeMinterData.totalMinted || 0)
+            
+            if (userVaultMinted > 0 && ctypeVaultMinted > 0) {
+                // Calculate boost for this collateral type for aggregated calculation
+                const userStakingAmount = Number(userKITEStaked)
+                const totalStakingAmount = Number(formatEther(totalStaked || '0'))
+                
+                const vaultBoost = calculateVaultBoost({
+                    userStakingAmount,
+                    totalStakingAmount,
+                    userVaultMinted,
+                    totalVaultMinted: ctypeVaultMinted,
+                })
+
+                // Weight the boost by the user's position in this vault
+                const userPositionValue = userVaultMinted * haiPrice
+                weightedBoostSum += vaultBoost * userPositionValue
+                totalUserPositionValue += userPositionValue
+                
+                totalUserVaultMinted += userVaultMinted
+                totalVaultMinted += ctypeVaultMinted
+            }
+        })
+
+        // Calculate weighted average boost
+        const vaultBoost = totalUserPositionValue > 0 ? weightedBoostSum / totalUserPositionValue : 1
+
+        return {
+            vaultBoost,
+            vaultPositionValue: totalUserPositionValue,
+            totalVaultPosition: totalVaultMinted * haiPrice,
+            userVaultPosition: totalUserVaultMinted,
+            individualVaultBoosts,
+            userVaultBoostMap,
+        }
+    }, [minterVaultsData, collateralTypesData, minterVaultsLoading, collateralTypesLoading, userKITEStaked, totalStaked, address, haiPrice, usersStakingData, veloPrices])
 
     // Combine the boost values
     const combinedBoostResult = useMemo(
         () =>
             combineBoostValues({
                 haiVeloBoost: haiVeloBoostResult.haiVeloBoost,
-                haiMintingBoost: haiMintingBoostResult.haiMintingBoost,
+                haiMintingBoost: vaultBoostResult.vaultBoost,
                 haiVeloPositionValue,
-                haiMintingPositionValue: haiMintingBoostResult.haiMintingPositionValue,
+                haiMintingPositionValue: vaultBoostResult.vaultPositionValue,
             }),
-        [haiVeloBoostResult.haiVeloBoost, haiMintingBoostResult, haiVeloPositionValue]
+        [haiVeloBoostResult.haiVeloBoost, vaultBoostResult, haiVeloPositionValue]
     )
 
     // Reuse the simulation function from the service
@@ -193,9 +335,9 @@ export function useBoost() {
                 userHaiVELODeposited,
                 totalHaiVELODeposited,
                 haiVeloPositionValue,
-                userHaiAmount: haiMintingData.userHaiMinted,
-                totalHaiAmount: haiMintingData.totalHaiMinted,
-                haiHoldPositionValue: haiMintingBoostResult.haiMintingPositionValue,
+                userHaiAmount: vaultBoostResult.userVaultPosition,
+                totalHaiAmount: vaultBoostResult.totalVaultPosition / haiPrice, // Convert back to HAI amount
+                haiHoldPositionValue: vaultBoostResult.vaultPositionValue,
             })
         },
         [
@@ -205,8 +347,8 @@ export function useBoost() {
             userHaiVELODeposited,
             totalHaiVELODeposited,
             haiVeloPositionValue,
-            haiMintingData,
-            haiMintingBoostResult.haiMintingPositionValue,
+            vaultBoostResult,
+            haiPrice,
         ]
     )
 
@@ -236,15 +378,19 @@ export function useBoost() {
         totalPoolLiquidity,
         userLPPositionValue: calculatedUserLPPositionValue,
 
-        // HAI MINTING data
-        haiMintingBoost: haiMintingBoostResult.haiMintingBoost,
-        haiMintingPositionValue: haiMintingBoostResult.haiMintingPositionValue,
+        // Vault boost data (replacing HAI MINTING data)
+        haiMintingBoost: vaultBoostResult.vaultBoost,
+        haiMintingPositionValue: vaultBoostResult.vaultPositionValue,
+
+        // Individual vault boost data for useEarnStrategies
+        individualVaultBoosts: vaultBoostResult.individualVaultBoosts,
+        userVaultBoostMap: vaultBoostResult.userVaultBoostMap,
 
         // Boost data from the LP data model
         kiteRatio,
         hvBoost: haiVeloBoostResult.haiVeloBoost,
         lpBoostValue,
-        userTotalValue: Number(haiVeloPositionValue) + Number(haiMintingBoostResult.haiMintingPositionValue),
+        userTotalValue: Number(haiVeloPositionValue) + Number(vaultBoostResult.vaultPositionValue),
         netBoostValue: combinedBoostResult.netBoost,
 
         simulateNetBoost,
@@ -252,6 +398,6 @@ export function useBoost() {
         baseAPR,
 
         // Loading state
-        loading: lpDataLoading || positionsLoading || stakingLoading,
+        loading: lpDataLoading || positionsLoading || stakingLoading || minterVaultsLoading || collateralTypesLoading,
     }
 }

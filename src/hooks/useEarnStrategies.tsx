@@ -5,13 +5,14 @@ import type { SortableHeader, Sorting } from '~/types'
 
 import { arrayToSorted, stringsExistAndAreEqual, tokenAssets, type QueryCollateralType } from '~/utils'
 import { REWARDS } from '~/utils/rewards'
-import { calculateVaultBoost, calculateHaiMintingBoost } from '~/services/boostService'
+import { calculateHaiMintingBoost } from '~/services/boostService'
 import type { BoostAPRData } from '~/types/system'
 import { calculateTokenPrice, calculatePoolTVL, getTokenSymbol } from '~/utils/priceCalculations'
 import { VELODROME_POOLS, VELO_POOLS } from '~/utils/constants'
 import { normalizeAPRValue, getEffectiveAPR, getBestAPRValue } from '~/utils/aprNormalization'
 import { createVaultStrategy, createSpecialStrategy, createVeloStrategy } from '~/utils/strategyFactory'
 import { useEarnData } from './useEarnData'
+import { useBoost } from './useBoost'
 import { shouldHaltExecution, canContinueWithDegradedMode } from '~/utils/errorHandling'
 
 // Import the BaseStrategy type for state management
@@ -70,6 +71,12 @@ export function useEarnStrategies() {
         hasErrors,
     } = useEarnData()
 
+    // === Get vault boost data from useBoost ===
+    const {
+        individualVaultBoosts,
+        loading: boostLoading,
+    } = useBoost()
+
     // === State ===
     const [vaultStrategies, setVaultStrategies] = useState<BaseStrategy[]>([])
     const [specialStrategies, setSpecialStrategies] = useState<BaseStrategy[]>([])
@@ -90,7 +97,7 @@ export function useEarnStrategies() {
         }
 
         // Proceed with calculation if data is loaded or if we can continue with degraded mode
-        const canProceed = (allDataLoaded && stakingDataLoaded && storeDataLoaded) || 
+        const canProceed = (allDataLoaded && stakingDataLoaded && storeDataLoaded && !boostLoading) || 
                           (dataLoadingError && canContinueWithDegradedMode(dataLoadingError))
 
         if (canProceed) {
@@ -113,12 +120,14 @@ export function useEarnStrategies() {
         allDataLoaded,
         stakingDataLoaded,
         storeDataLoaded,
+        boostLoading,
         dataLoadingError,
         userPositionsList,
         systemStateData,
         haiVeloSafesData,
         address,
         stakingApyData,
+        individualVaultBoosts,
     ])
 
     // === Calculate Strategies ===
@@ -146,7 +155,19 @@ export function useEarnStrategies() {
             }, 0)
 
             const rewards = REWARDS.vaults[cType.id as keyof typeof REWARDS.vaults] || REWARDS.default
-            const vbr = calculateVaultBoostAPR(cType, rewards)
+            
+            // Use vault boost data from useBoost instead of calculating it here
+            const vbr = individualVaultBoosts[cType.id] || {
+                userVaultBoostMap: {},
+                cType: cType.id,
+                totalBoostedValueParticipating: 0,
+                baseAPR: 0,
+                myBoost: 1,
+                myValueParticipating: 0,
+                myBoostedValueParticipating: 0,
+                myBoostedShare: 0,
+                myBoostedAPR: 0,
+            }
 
             return createVaultStrategy({
                 pair: [assets?.symbol || 'HAI'],
@@ -280,90 +301,8 @@ export function useEarnStrategies() {
     }
 
     // === Calculate Strategy Utils ===
-
-    const calculateVaultBoostAPR = (cType: QueryCollateralType, rewards: any) => {
-        const ctypeMinterData = minterVaultsData?.[cType.id]
-
-        if (!ctypeMinterData) {
-            return {
-                userVaultBoostMap: {},
-                cType: cType.id,
-                totalBoostedValueParticipating: 0,
-                baseAPR: 0,
-                myBoost: 1,
-                myValueParticipating: 0,
-                myBoostedValueParticipating: 0,
-                myBoostedShare: 0,
-                myBoostedAPR: 0,
-            }
-        }
-
-        const userVaultBoostMap = calculateVaultBoostMap(ctypeMinterData)
-
-        const totalBoostedValueParticipating = Object.entries(ctypeMinterData?.userDebtMapping || {}).reduce(
-            (acc, [address, value]) => {
-                return acc + Number(value) * (userVaultBoostMap[address.toLowerCase()] || 1)
-            },
-            0
-        )
-
-        const dailyKiteReward = rewards.KITE || 0
-        const kitePrice = Number(velodromePricesData?.KITE.raw)
-        const dailyKiteRewardUsd = dailyKiteReward * (kitePrice || 0)
-        const baseAPR = totalBoostedValueParticipating
-            ? (dailyKiteRewardUsd / totalBoostedValueParticipating) * 365 * 100
-            : 0
-        const myBoost = address ? userVaultBoostMap[address.toLowerCase()] || 1 : 1
-        const myValueParticipating = address ? Number(ctypeMinterData?.userDebtMapping[address.toLowerCase()] || 0) : 0
-        const myBoostedValueParticipating = Number(myValueParticipating) * myBoost
-        const myBoostedShare = totalBoostedValueParticipating
-            ? myBoostedValueParticipating / totalBoostedValueParticipating
-            : 0
-        const myBoostedAPR = myBoost * baseAPR
-
-        return {
-            userVaultBoostMap,
-            cType: cType.id,
-            totalBoostedValueParticipating,
-            baseAPR,
-            myBoost,
-            myValueParticipating,
-            myBoostedValueParticipating,
-            myBoostedShare,
-            myBoostedAPR,
-        }
-    }
-
-    const calculateVaultBoostMap = (ctypeMinterData: any) => {
-        if (!ctypeMinterData) {
-            return {}
-        }
-
-        return Object.entries(ctypeMinterData?.userDebtMapping || {}).reduce((acc, [address, value]) => {
-            const lowercasedAddress = address.toLowerCase()
-            if (!usersStakingData[lowercasedAddress]) {
-                return { ...acc, [lowercasedAddress]: 1 }
-            } else {
-                const userStakingAmount = Number(usersStakingData[lowercasedAddress]?.stakedBalance)
-                const totalStakingAmount = Number(formatEther(totalStaked || '0'))
-                const userVaultMinted = Number(value)
-                const totalVaultMinted = Number(ctypeMinterData?.totalMinted)
-                const vaultBoost = calculateVaultBoost({
-                    userStakingAmount,
-                    totalStakingAmount,
-                    userVaultMinted,
-                    totalVaultMinted,
-                })
-
-                return {
-                    ...acc,
-                    [lowercasedAddress]: vaultBoost,
-                }
-            }
-        }, {} as any)
-    }
-
-    const calculateHaiVeloBoostAPR = () => {}
+    // Note: calculateVaultBoostAPR and calculateVaultBoostMap functions have been removed
+    // as they are now handled by useBoost hook
 
     const strategies = [...vaultStrategies, ...specialStrategies, ...veloStrategies]
 
@@ -476,7 +415,7 @@ export function useEarnStrategies() {
         totalBoostablePosition: totalPosition,
         rows: sortedRows,
         rowsUnmodified: strategies,
-        loading: !allDataLoaded,
+        loading: !allDataLoaded || boostLoading,
         error: dataLoadingError,
         hasErrors,
         uniError: null,
