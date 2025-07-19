@@ -14,6 +14,8 @@ import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { REWARDS } from '~/utils/rewards'
 import { calculateVaultBoost, calculateHaiMintingBoost } from '~/services/boostService'
 import { useStrategyData } from './useStrategyData'
+import { calculateTokenPrice, calculatePoolTVL, getTokenSymbol } from '~/utils/priceCalculations'
+import { VELODROME_POOLS, VELO_POOLS } from '~/utils/constants'
 
 const sortableHeaders: SortableHeader[] = [
     { label: 'Asset / Asset Pair' },
@@ -36,13 +38,7 @@ const sortableHeaders: SortableHeader[] = [
     },
 ]
 
-const VELO_HAI_KITE_POOL = '0xf2d3941b6E1cbD3616061E556Eb06986147715d1'
-const VELO_HAI_ALETH_POOL = '0x056B153132F105356d95CcF34a0065A28617DaC4'
-const VELO_HAI_ALUSD_POOL = '0x2408DC2B6CAD3af2Bd65474F0167a107b8b0Be0b'
 
-const ALUSD_TOKEN_ADDRESS = '0xCB8FA9a76b8e203D8C3797bF438d8FB81Ea3326A'
-
-const VELO_POOLS = [VELO_HAI_KITE_POOL, VELO_HAI_ALETH_POOL, VELO_HAI_ALUSD_POOL]
 
 export function useEarnStrategies() {
     const { address } = useAccount()
@@ -272,29 +268,17 @@ export function useEarnStrategies() {
         const strategies: any[] = []
         for (const pool of velodromeData) {
             if (!VELO_POOLS.includes(pool.address)) continue
-            const token0 =
-                Object.values(tokensData).find(({ address }) => stringsExistAndAreEqual(address, pool.token0))
-                    ?.symbol || pool.tokenPair[0]
-            const price0 = parseFloat(
-                (velodromePricesData as any)[token0]?.raw || (velodromePricesData as any)[token0]?.toString() || '1'
-            )
-            const base0 =
-                pool.token0 === ALUSD_TOKEN_ADDRESS || pool.token1 === ALUSD_TOKEN_ADDRESS
-                    ? pool.reserve0
-                    : pool.staked0
-            const tvl0 = parseFloat(formatUnits(base0, pool.decimals)) * price0
-            const token1 =
-                Object.values(tokensData).find(({ address }) => stringsExistAndAreEqual(address, pool.token1))
-                    ?.symbol || pool.tokenPair[1]
-            const price1 = parseFloat(
-                (velodromePricesData as any)[token1]?.raw || (velodromePricesData as any)[token1]?.toString() || '1'
-            )
-            const base1 =
-                pool.token1 === ALUSD_TOKEN_ADDRESS || pool.token0 === ALUSD_TOKEN_ADDRESS
-                    ? pool.reserve1
-                    : pool.staked1
-            const tvl1 = parseFloat(formatUnits(base1, pool.decimals)) * price1
-            const tvl = tvl0 + tvl1
+            
+            // Get token symbols using utility function
+            const token0 = getTokenSymbol(pool.token0, tokensData, pool.tokenPair[0])
+            const token1 = getTokenSymbol(pool.token1, tokensData, pool.tokenPair[1])
+            
+            // Get token prices using utility function
+            const price0 = calculateTokenPrice(token0, velodromePricesData as any)
+            const price1 = calculateTokenPrice(token1, velodromePricesData as any)
+            
+            // Calculate pool TVL using utility function
+            const { tvl0, tvl1, totalTvl: tvl } = calculatePoolTVL(pool, tokensData, velodromePricesData as any)
             const veloAPR =
                 (365 *
                     parseFloat(formatUnits(pool.emissions, pool.decimals)) *

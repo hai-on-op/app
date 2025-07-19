@@ -73,7 +73,7 @@ export function Overview({ simulation }: OverviewProps) {
             </div>
             <div>
                 <Text $fontSize=".9rem" $fontWeight={700}>
-                    HAI MINTING
+                    HAI Minted
                 </Text>
                 <Text $fontSize=".9rem">
                     {formatNumberWithStyle(boost.haiMintingPositionValue, {
