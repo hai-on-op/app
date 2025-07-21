@@ -1,6 +1,7 @@
 import type { TokenKey } from '~/types'
 import { Status } from '~/utils'
 import { useMediaQuery } from '~/hooks'
+import type { ReactChildren } from '~/types'
 
 import styled, { css } from 'styled-components'
 import { CenteredFlex, type DashedContainerProps, DashedContainerStyle, Flex, Text } from '~/styles'
@@ -16,7 +17,7 @@ type OverviewStatProps = {
     tokenLabel?: string
     label: string
     labelOnTop?: boolean
-    tooltip?: string
+    tooltip?: string | ReactChildren
     convertedValue?: string | number
     alert?: {
         value?: string

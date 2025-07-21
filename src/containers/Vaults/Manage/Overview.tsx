@@ -370,11 +370,35 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
                         tooltip={`Minimum collateral ratio below which, this vault is at risk of being liquidated`}
                     />
                 )}
-                <OverviewStat
-                    value={summary.stabilityFee.formatted}
-                    label="Stability Fee"
-                    tooltip={t('stability_fee_tip')}
-                />
+                
+                {/* Calculate Net APR: (underlying APR + minting incentives APR) - stability fee */}
+                {(() => {
+                    const underlyingAPR = 0; // TODO: Add underlying collateral APR calculation if needed
+                    const mintingIncentivesAPR = boostData?.myBoostedAPR ? boostData.myBoostedAPR / 100 : 0;
+                    const stabilityFeeCost = parseFloat(summary.stabilityFee.raw || '0') - 1; // Convert to percentage
+                    const netAPR = underlyingAPR + mintingIncentivesAPR + stabilityFeeCost;
+                    
+                    const tooltipText = (
+                        <Flex $column $gap={4}>
+                            <Text>Underlying APR: {formatNumberWithStyle(underlyingAPR, { style: 'percent', maxDecimals: 2 })}</Text>
+                            <Text>Minting Incentives: {formatNumberWithStyle(mintingIncentivesAPR, { style: 'percent', maxDecimals: 2 })}</Text>
+                            <Text>Stability Fee Cost: {formatNumberWithStyle(stabilityFeeCost, { style: 'percent', maxDecimals: 2 })}</Text>
+                            <Text $fontWeight={700}>Net APR: {formatNumberWithStyle(netAPR, { style: 'percent', maxDecimals: 2 })}</Text>
+                        </Flex>
+                    );
+                     
+                    return (
+                        <OverviewStat
+                            value={formatNumberWithStyle(netAPR, {
+                                style: 'percent',
+                                maxDecimals: 2,
+                            })}
+                            label="Net APR"
+                            tooltip={tooltipText}
+                        />
+                    );
+                })()}
+                
                 <OverviewProgressStat
                     value={summary.collateralRatio.current?.formatted || summary.collateralRatio.after.formatted}
                     label="My Collateral Ratio:"

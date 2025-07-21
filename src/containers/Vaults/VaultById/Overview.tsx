@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next'
 
 import { type QueriedVault, formatNumberWithStyle, getRatePercentage } from '~/utils'
 import { useStoreState } from '~/store'
+import { useBoost } from '~/hooks/useBoost'
+import { RewardsModel } from '~/model/rewardsModel'
 
 import styled from 'styled-components'
 import { type DashedContainerProps, DashedContainerStyle, Flex, Grid, Text, CenteredFlex } from '~/styles'
@@ -19,6 +21,10 @@ export function Overview({ vault }: OverviewProps) {
 
     const haiPrice = parseFloat(vaultState.liquidationData?.currentRedemptionPrice || '1')
     const collateralPrice = parseFloat(vault?.collateralType.currentPrice.value || '0')
+
+    // Get boost data for net APR calculation
+    const { individualVaultBoosts } = useBoost()
+    const boostData = vault ? individualVaultBoosts[vault.collateralToken] : null
 
     const progressProps = useMemo(() => {
         if (!vault)
@@ -146,26 +152,46 @@ export function Overview({ vault }: OverviewProps) {
                     fullWidth
                 />
                 <OverviewStat
-                    value={
-                        vault
-                            ? formatNumberWithStyle(
-                                  getRatePercentage(
-                                      vault.liquidationData.totalAnnualizedStabilityFee || '0',
-                                      4,
-                                      true
-                                  ).toString(),
-                                  { scalingFactor: -1, style: 'percent' }
-                              )
-                            : '--%'
-                    }
-                    label="Stability Fee"
-                    tooltip={t('stability_fee_tip')}
-                />
-                <OverviewStat
                     value={vault ? formatNumberWithStyle(vault.liquidationPrice, { style: 'currency' }) : '$--'}
                     label="Liq. Price"
                     tooltip={t('liquidation_price_tip')}
                 />
+                
+                {/* Calculate Net APR: minting incentives APR - stability fee */}
+                {(() => {
+                    if (!vault) return (
+                        <OverviewStat
+                            value="--"
+                            label="Net APR"
+                            tooltip="Net APR calculation unavailable"
+                        />
+                    );
+                    
+                    const underlyingAPR = 0; // TODO: Add underlying collateral APR if needed
+                    const mintingIncentivesAPR = boostData?.myBoostedAPR ? boostData.myBoostedAPR / 100 : 0;
+                    const stabilityFeeCost = parseFloat(vault.liquidationData.totalAnnualizedStabilityFee || '1') - 1;
+                    const netAPR = underlyingAPR + mintingIncentivesAPR + stabilityFeeCost;
+                    
+                    const tooltipText = (
+                        <Flex $column $gap={4}>
+                            <Text>Underlying APR: {formatNumberWithStyle(underlyingAPR, { style: 'percent', maxDecimals: 2 })}</Text>
+                            <Text>Minting Incentives: {formatNumberWithStyle(mintingIncentivesAPR, { style: 'percent', maxDecimals: 2 })}</Text>
+                            <Text>Stability Fee Cost: {formatNumberWithStyle(stabilityFeeCost, { style: 'percent', maxDecimals: 2 })}</Text>
+                            <Text $fontWeight={700}>Net APR: {formatNumberWithStyle(netAPR, { style: 'percent', maxDecimals: 2 })}</Text>
+                        </Flex>
+                    );
+                    
+                    return (
+                        <OverviewStat
+                            value={formatNumberWithStyle(netAPR, {
+                                style: 'percent',
+                                maxDecimals: 2,
+                            })}
+                            label="Net APR"
+                            tooltip={tooltipText}
+                        />
+                    );
+                })()}
             </Inner>
         </Container>
     )

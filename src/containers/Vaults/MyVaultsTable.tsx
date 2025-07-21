@@ -8,6 +8,8 @@ import { RewardsTokenArray, TokenArray } from '~/components/TokenArray'
 import { StatusLabel } from '~/components/StatusLabel'
 import { Table } from '~/components/Table'
 import { ClaimableFreeCollateral } from './ClaimableFreeCollateral'
+import { useBoost } from '~/hooks/useBoost'
+import { RewardsModel } from '~/model/rewardsModel'
 
 type MyVaultsTableProps = {
     headers: SortableHeader[]
@@ -18,6 +20,9 @@ type MyVaultsTableProps = {
 }
 export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: MyVaultsTableProps) {
     const { setActiveVault } = useVault()
+    
+    // Get boost data for net APR calculation
+    const { individualVaultBoosts } = useBoost()
 
     return (
         <Table
@@ -120,12 +125,22 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                             },
                             {
                                 content: (
-                                    <Text>
-                                        {formatNumberWithStyle(getRatePercentage(totalAnnualizedStabilityFee, 4), {
-                                            scalingFactor: -0.01,
-                                            style: 'percent',
-                                        })}
-                                    </Text>
+                                   (() => {
+                                       const boostData = individualVaultBoosts[collateralName]
+                                       const underlyingAPR = 0 // TODO: Add underlying collateral APR if needed
+                                       const mintingIncentivesAPR = boostData?.myBoostedAPR ? boostData.myBoostedAPR / 100 : 0
+                                       const stabilityFeeCost = parseFloat(totalAnnualizedStabilityFee || '1') - 1
+                                       const netAPR = underlyingAPR + mintingIncentivesAPR + stabilityFeeCost
+                                       
+                                       return (
+                                           <Text>
+                                               {formatNumberWithStyle(netAPR, {
+                                                   style: 'percent',
+                                                   maxDecimals: 2,
+                                               })}
+                                           </Text>
+                                       )
+                                   })()
                                 ),
                             },
                             {
