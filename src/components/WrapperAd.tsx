@@ -71,7 +71,7 @@ export function WrapperAd({
                 $gap={8}
                 onClick={() => {
                     if (ctaLink) {
-                        window.open(ctaLink, '_blank')
+                        window.location.href = ctaLink
                     } else {
                         handleBannerClick()
                     }
