@@ -4,7 +4,7 @@ import { formatEther, formatUnits } from 'ethers/lib/utils'
 import type { SortableHeader, Sorting } from '~/types'
 
 import { arrayToSorted, stringsExistAndAreEqual, tokenAssets, type QueryCollateralType } from '~/utils'
-import { REWARDS } from '~/utils/rewards'
+import { RewardsModel } from '~/model/rewardsModel'
 import { calculateHaiMintingBoost } from '~/services/boostService'
 import type { BoostAPRData } from '~/types/system'
 import { calculateTokenPrice, calculatePoolTVL, getTokenSymbol } from '~/utils/priceCalculations'
@@ -166,7 +166,7 @@ export function useEarnStrategies() {
         }
 
         const collateralsWithMinterRewards = collateralTypesData.collateralTypes.filter((cType) =>
-            Object.values(REWARDS.vaults[cType.id as keyof typeof REWARDS.vaults] || {}).some((a) => a != 0)
+            Object.values(RewardsModel.getVaultRewards(cType.id) || {}).some((a) => a != 0)
         )
 
         if (!collateralsWithMinterRewards.length) return []
@@ -181,7 +181,7 @@ export function useEarnStrategies() {
                 return total + parseFloat(totalDebt)
             }, 0)
 
-            const rewards = REWARDS.vaults[cType.id as keyof typeof REWARDS.vaults] || REWARDS.default
+            const rewards = RewardsModel.getVaultRewards(cType.id) || {}
             
             // Use vault boost data from useBoost instead of calculating it here
             const vbr = individualVaultBoosts[cType.id] || {
@@ -310,7 +310,7 @@ export function useEarnStrategies() {
                 )
             }, 0)
 
-            const rewardsObj = REWARDS.velodrome[pool.address.toLowerCase()] || {}
+            const rewardsObj = RewardsModel.getPoolRewards(pool.address) || {}
             const rewardsArray = Object.entries(rewardsObj).map(([token, emission]) => ({ token, emission }))
             
             const strategy = createVeloStrategy({

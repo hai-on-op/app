@@ -6,6 +6,7 @@ import { formatNumberWithStyle, VITE_MAINNET_PUBLIC_RPC } from '~/utils'
 import { useBalance } from '~/hooks'
 import { calculateHaiVeloBoost } from '~/services/boostService'
 import { useStakingSummary } from './useStakingSummary'
+import { RewardsModel } from '~/model/rewardsModel'
 
 const HAIVELO_DEPOSITER = '0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3'
 const REWARD_DISTRIBUTOR = '0xfEd2eB6325432F0bF7110DcE2CCC5fF811ac3D4D'
@@ -54,41 +55,6 @@ const calculateHaiVeloBoostMap = (
             }).haiVeloBoost,
         }
     }, {})
-}
-
-const getMostRecentHaiVeloTransferAmount = async () => {
-    try {
-        const response = await axios.post(VITE_MAINNET_PUBLIC_RPC, {
-            jsonrpc: '2.0',
-            id: 1,
-            method: 'alchemy_getAssetTransfers',
-            params: [
-                {
-                    fromBlock: '0x0',
-                    toBlock: 'latest',
-                    fromAddress: HAIVELO_DEPOSITER,
-                    toAddress: REWARD_DISTRIBUTOR,
-                    contractAddresses: [HAI_TOKEN_ADDRESS],
-                    category: ['erc20'],
-                    withMetadata: true,
-                    excludeZeroValue: true,
-                    maxCount: '0x1', // We only want the most recent one
-                    order: 'desc', // 'desc' for descending order (most recent first)
-                },
-            ],
-        })
-        const transfers = response.data.result.transfers
-        if (transfers.length === 0) {
-            console.log('No matching transfers found.')
-            return
-        }
-
-        const latestTransfer = transfers[0]
-        return latestTransfer?.value
-    } catch (error) {
-        console.log('Error fetching transfer data:', error)
-        return 0
-    }
 }
 
 export function useStrategyData(
@@ -152,7 +118,12 @@ export function useStrategyData(
     }, [haiVeloCollateralMapping, usersStakingData, totalStakedAmount, haiVeloTotalCollateralLockedInSafes])
 
     useEffect(() => {
-        getMostRecentHaiVeloTransferAmount().then((amount) => {
+        RewardsModel.fetchHaiVeloDailyReward({
+          haiTokenAddress: HAI_TOKEN_ADDRESS,
+          haiVeloDepositer: HAIVELO_DEPOSITER,
+          rewardDistributor: REWARD_DISTRIBUTOR,
+          rpcUrl: VITE_MAINNET_PUBLIC_RPC,
+        }).then((amount) => {
             setHaiVeloLatestTransferAmount(amount)
         })
     }, [])
