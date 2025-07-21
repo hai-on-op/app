@@ -5,6 +5,8 @@ import { Status, VaultAction, formatNumberWithStyle } from '~/utils'
 import { useStoreState } from '~/store'
 import { useVault } from '~/providers/VaultProvider'
 // import { useEarnStrategies } from '~/hooks'
+import { useBoost } from '~/hooks/useBoost'
+import { RewardsModel } from '~/model/rewardsModel'
 
 import styled from 'styled-components'
 import { type DashedContainerProps, DashedContainerStyle, Flex, Grid, Text, CenteredFlex } from '~/styles'
@@ -31,6 +33,23 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
 
     const { action, vault, collateral, riskStatus, safetyRatio, collateralRatio, simulation, summary, formState } =
         useVault()
+
+    // --- Generalized boost logic for all boostable vaults ---
+    const { individualVaultBoosts } = useBoost()
+    const boostData = individualVaultBoosts[collateral.name]
+    const rewards = RewardsModel.getVaultRewards(collateral.name)
+    const isBoostable = Object.values(rewards).some((v) => v > 0)
+
+    // Calculate stKITE share for all boostable vaults
+    const totalKite = Object.values(usersStakingData).reduce((acc, curr) => acc + Number(curr.stakedBalance), 0)
+    const myStKiteShare = totalKite
+        ? Number(usersStakingData[address?.toLowerCase() || '']?.stakedBalance || 0) / totalKite
+        : 0
+    // Calculate my vault share (user's value in this vault / total value in all boostable vaults of this type)
+    const myVaultShare =
+        boostData && boostData.myValueParticipating && boostData.totalBoostedValueParticipating
+            ? Number(boostData.myValueParticipating) / Number(boostData.totalBoostedValueParticipating || 1)
+            : 0
 
     const userHaiVeloBoostData = useMemo(() => {
         if (!address)
@@ -370,6 +389,7 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
                     {...progressProps}
                     fullWidth
                 />
+                {/* Show boost stats: for haiVELO use the original block, for other boostable vaults use the generalized block */}
                 {isHAIVELO ? (
                     <>
                         <OverviewStat
@@ -433,6 +453,49 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
                                     : ''
                             }
                             tooltip={'The amount of Boost you get for rewards over your haiVELO position'}
+                        />
+                    </>
+                ) : isBoostable && boostData ? (
+                    <>
+                        <OverviewStat
+                            value={formatNumberWithStyle(myStKiteShare, {
+                                minDecimals: 2,
+                                maxDecimals: 2,
+                                scalingFactor: 1,
+                                style: 'percent',
+                            })}
+                            label="My stKITE Share"
+                            button={
+                                boostData.myBoost === 2
+                                    ? undefined
+                                    : {
+                                          variant: 'yellowish',
+                                          text: 'Stake KITE',
+                                          onClick: () => {
+                                              window.location.href = '/stake'
+                                          },
+                                      }
+                            }
+                            tooltip={'Your staking share of the total stKITE supply'}
+                        />
+                        <OverviewStat
+                            value={formatNumberWithStyle(myVaultShare, {
+                                minDecimals: 0,
+                                maxDecimals: 2,
+                                scalingFactor: 1,
+                                style: 'percent',
+                            })}
+                            label={`My ${collateral.name} Share`}
+                            tooltip={`The amount of ${collateral.name} you have in comparison to the total ${collateral.name} supply in all boostable vaults`}
+                        />
+                        <OverviewStat
+                            value={`${formatNumberWithStyle(Number(boostData.myBoost), {
+                                minDecimals: 0,
+                                maxDecimals: 2,
+                                scalingFactor: 1,
+                            })}x`}
+                            label="Boost"
+                            tooltip={`The amount of Boost you get for rewards over your ${collateral.name} position`}
                         />
                     </>
                 ) : null}
