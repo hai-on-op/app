@@ -35,7 +35,7 @@ const StyledRewardsAPYWithBoost = styled.div`
 export function EarnStats() {
     const { address } = useAccount()
 
-    const { averageAPR, averageWeightedBoost, totalBoostablePosition } = useEarnStrategies()
+    const { averageAPR, averageWeightedBoost, totalBoostablePosition, totalRewardsValue, rewardTokens, loading } = useEarnStrategies()
     const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
     const { netBoostValue } = useBoost()
     const netBoostFormatted = `${formatNumberWithStyle(netBoostValue, { minDecimals: 0, maxDecimals: 2 })}x`
@@ -111,38 +111,27 @@ export function EarnStats() {
             tooltip:
                 'Current estimated APR of campaign rewards based on current value participating and value of rewards tokens',
         },
-        // {
-        //     header: formattedAPR,
-        //     label: 'My Rewards APR',
-        //     tooltip:
-        //         'Current estimated APR of campaign rewards based on current value participating and value of rewards tokens',
-        // },
         {
-            // header: '$0',
-            header: <Loader speed={0.5} icon={<RefreshCw />} />,
-            headerStatus: <RewardsTokenArray tokens={['OP', 'KITE']} hideLabel />,
-            label: 'My Rewards',
-            tooltip: 'Incentive allocations are voted on by the DAO on a monthly basis, with rewards distributed daily',
+            header: loading ? (
+                <Loader speed={0.5} icon={<RefreshCw />} />
+            ) : (
+                formatNumberWithStyle(totalRewardsValue, {
+                    style: 'currency',
+                    minDecimals: 0,
+                    maxDecimals: 2,
+                })
+            ),
+            headerStatus: rewardTokens.length > 0 ? (
+                <RewardsTokenArray tokens={rewardTokens as any} hideLabel />
+            ) : undefined,
+            label: 'My Claimable Rewards',
+            tooltip: 'Accumulated rewards available to claim from your participation in various strategies',
             button: (
                 <HaiButton $variant="yellowish" onClick={() => popupsActions.setIsClaimPopupOpen(true)}>
                     Claim
                 </HaiButton>
-                // <HaiButton title="Claim window is closed" $variant="yellowish" disabled>
-                //     Claim
-                // </HaiButton>
             ),
         },
-        // {
-        //     header: '$7,000',
-        //     headerStatus: <RewardsTokenArray tokens={['OP', 'KITE']} hideLabel />,
-        //     label: 'My Farm Rewards',
-        //     tooltip: 'Hello World',
-        //     button: (
-        //         <HaiButton $variant="yellowish" onClick={() => popupsActions.setIsClaimPopupOpen(true)}>
-        //             Claim
-        //         </HaiButton>
-        //     ),
-        // },
     ]
 
     if (!address) return null

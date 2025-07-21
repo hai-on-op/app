@@ -14,6 +14,10 @@ import { createVaultStrategy, createSpecialStrategy, createVeloStrategy } from '
 import { useEarnData } from './useEarnData'
 import { useBoost } from './useBoost'
 import { shouldHaltExecution, canContinueWithDegradedMode } from '~/utils/errorHandling'
+import { useClaims } from '~/providers/ClaimsProvider'
+import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
+import { useStoreState } from '~/store'
+import { utils } from 'ethers'
 
 // Import the BaseStrategy type for state management
 type BaseStrategy = ReturnType<typeof createVaultStrategy>
@@ -76,6 +80,29 @@ export function useEarnStrategies() {
         individualVaultBoosts,
         loading: boostLoading,
     } = useBoost()
+
+    // === Get incentives data for rewards calculation ===
+    const { incentivesData } = useClaims()
+    const { prices: veloPrices } = useVelodromePrices()
+    const {
+        vaultModel: { liquidationData },
+    } = useStoreState((state) => state)
+
+    // Get token prices for rewards calculation
+    const getTokenPrice = (token: string): number => {
+        switch (token) {
+            case 'KITE':
+                return Number(veloPrices?.KITE?.raw || 0)
+            case 'OP':
+                return Number(liquidationData?.collateralLiquidationData?.OP?.currentPrice.value || 0)
+            case 'DINERO':
+                return Number(veloPrices?.DINERO?.raw || 0)
+            case 'HAI':
+                return Number(liquidationData?.currentRedemptionPrice || 1)
+            default:
+                return 0
+        }
+    }
 
     // === State ===
     const [vaultStrategies, setVaultStrategies] = useState<BaseStrategy[]>([])
@@ -340,6 +367,45 @@ export function useEarnStrategies() {
         return acc + (userPosition / totalPosition) * strategyBoost
     }, 0)
 
+    // Calculate total rewards value from user's positions
+    const totalRewardsValue = useMemo(() => {
+        if (!incentivesData?.claimData) return 0
+
+        let totalValue = 0
+
+        // Calculate rewards from incentives data (same as ClaimModal)
+        const incentiveTokens = ['KITE', 'OP', 'DINERO', 'HAI'] as const
+        
+        incentiveTokens.forEach((token) => {
+            const data = incentivesData.claimData[token]
+            const price = getTokenPrice(token)
+            
+            if (data?.hasClaimableDistros && data?.amount) {
+                const amount = parseFloat(utils.formatEther(data.amount))
+                totalValue += amount * price
+            }
+        })
+
+        return totalValue
+    }, [incentivesData?.claimData])
+
+    // Get unique reward tokens from incentives data
+    const rewardTokens = useMemo(() => {
+        if (!incentivesData?.claimData) return []
+        
+        const tokens: string[] = []
+        const incentiveTokens = ['KITE', 'OP', 'DINERO', 'HAI'] as const
+        
+        incentiveTokens.forEach((token) => {
+            const data = incentivesData.claimData[token]
+            if (data?.hasClaimableDistros && data?.amount) {
+                tokens.push(token)
+            }
+        })
+        
+        return tokens
+    }, [incentivesData?.claimData])
+
     const sortedRows = useMemo(() => {
         if (!allDataLoaded) return []
 
@@ -413,6 +479,8 @@ export function useEarnStrategies() {
         },
         averageWeightedBoost,
         totalBoostablePosition: totalPosition,
+        totalRewardsValue,
+        rewardTokens,
         rows: sortedRows,
         rowsUnmodified: strategies,
         loading: !allDataLoaded || boostLoading,
