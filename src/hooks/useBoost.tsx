@@ -300,7 +300,7 @@ export function useBoost() {
 
         // Calculate weighted average boost
         const vaultBoost = totalUserPositionValue > 0 ? weightedBoostSum / totalUserPositionValue : 1
-
+        
         return {
             vaultBoost,
             vaultPositionValue: totalUserPositionValue,
@@ -326,28 +326,79 @@ export function useBoost() {
     // Reuse the simulation function from the service
     const simulateNetBoost = useCallback(
         (userAfterStakingAmount: number, totalAfterStakingAmount: number) => {
-            return simulateNetBoostService({
-                userAfterStakingAmount,
-                totalAfterStakingAmount,
+            // Calculate LP boost with simulated staking amounts
+            const lpBoostResult = calculateLPBoost({
+                userStakingAmount: userAfterStakingAmount,
+                totalStakingAmount: totalAfterStakingAmount,
                 userLPPosition,
                 totalPoolLiquidity,
-                userLPPositionValue: calculatedUserLPPositionValue,
+            })
+
+            // Calculate haiVELO boost with simulated staking amounts
+            const haiVeloBoostResult = calculateHaiVeloBoost({
+                userStakingAmount: userAfterStakingAmount,
+                totalStakingAmount: totalAfterStakingAmount,
                 userHaiVELODeposited,
                 totalHaiVELODeposited,
-                haiVeloPositionValue,
-                userHaiAmount: vaultBoostResult.userVaultPosition,
-                totalHaiAmount: vaultBoostResult.totalVaultPosition / haiPrice, // Convert back to HAI amount
-                haiHoldPositionValue: vaultBoostResult.vaultPositionValue,
             })
+
+            // Calculate vault boost with simulated staking amounts
+            let simulatedVaultBoost = 1
+            let totalUserVaultPositionValue = 0
+            let weightedVaultBoostSum = 0
+
+            // Simulate vault boost for each collateral type
+            if (minterVaultsData && collateralTypesData?.collateralTypes) {
+                const collateralsWithMinterRewards = collateralTypesData.collateralTypes.filter((cType) =>
+                    Object.values(REWARDS.vaults[cType.id as keyof typeof REWARDS.vaults] || {}).some((a) => a != 0)
+                )
+
+                collateralsWithMinterRewards.forEach((cType) => {
+                    const ctypeMinterData = minterVaultsData[cType.id]
+                    if (!ctypeMinterData) return
+
+                    const userVaultMinted = address ? Number(ctypeMinterData.userDebtMapping[address.toLowerCase()] || 0) : 0
+                    const ctypeVaultMinted = Number(ctypeMinterData.totalMinted || 0)
+                    
+                    if (userVaultMinted > 0 && ctypeVaultMinted > 0) {
+                        // Calculate simulated vault boost for this collateral type
+                        const vaultBoost = calculateVaultBoost({
+                            userStakingAmount: userAfterStakingAmount,
+                            totalStakingAmount: totalAfterStakingAmount,
+                            userVaultMinted,
+                            totalVaultMinted: ctypeVaultMinted,
+                        })
+
+                        // Weight the boost by the user's position in this vault
+                        const userPositionValue = userVaultMinted * haiPrice
+                        weightedVaultBoostSum += vaultBoost * userPositionValue
+                        totalUserVaultPositionValue += userPositionValue
+                    }
+                })
+
+                // Calculate weighted average vault boost
+                simulatedVaultBoost = totalUserVaultPositionValue > 0 ? weightedVaultBoostSum / totalUserVaultPositionValue : 1
+            }
+
+            // Combine the boost values
+            const combinedResult = combineBoostValues({
+                haiVeloBoost: haiVeloBoostResult.haiVeloBoost,
+                haiMintingBoost: simulatedVaultBoost,
+                haiVeloPositionValue,
+                haiMintingPositionValue: totalUserVaultPositionValue,
+            })
+
+            return combinedResult.netBoost
         },
         [
             userLPPosition,
             totalPoolLiquidity,
-            calculatedUserLPPositionValue,
             userHaiVELODeposited,
             totalHaiVELODeposited,
             haiVeloPositionValue,
-            vaultBoostResult,
+            minterVaultsData,
+            collateralTypesData,
+            address,
             haiPrice,
         ]
     )
