@@ -15,6 +15,7 @@ import { Table, TableContainer } from '~/components/Table'
 import { DEPRECATED_COLLATERALS } from '~/utils/constants'
 import { useBoost } from '~/hooks/useBoost'
 import { RewardsModel } from '~/model/rewardsModel'
+import { getRatePercentage } from '~/utils'
 type AvailableVaultsTableProps = {
     rows: AvailableVaultPair[]
     headers: SortableHeader[]
@@ -182,7 +183,7 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                                 const boostData = individualVaultBoosts[collateralName]
                                                 const underlyingAPR = 0 // TODO: Add underlying collateral APR if needed
                                                 const mintingIncentivesAPR = boostData?.myBoostedAPR ? boostData.myBoostedAPR / 100 : 0
-                                                const stabilityFeeCost = stabilityFee ? (parseFloat(stabilityFee.toString()) - 1) : 0
+                                                const stabilityFeeCost = stabilityFee ? -getRatePercentage(stabilityFee.toString(), 4, true) : 0
                                                 const netAPR = underlyingAPR + mintingIncentivesAPR + stabilityFeeCost
                                                 
                                                 return (

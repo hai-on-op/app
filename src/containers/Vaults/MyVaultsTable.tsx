@@ -129,7 +129,7 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                                        const boostData = individualVaultBoosts[collateralName]
                                        const underlyingAPR = 0 // TODO: Add underlying collateral APR if needed
                                        const mintingIncentivesAPR = boostData?.myBoostedAPR ? boostData.myBoostedAPR / 100 : 0
-                                       const stabilityFeeCost = parseFloat(totalAnnualizedStabilityFee || '1') - 1
+                                       const stabilityFeeCost = -getRatePercentage(totalAnnualizedStabilityFee || '1', 4, true);
                                        const netAPR = underlyingAPR + mintingIncentivesAPR + stabilityFeeCost
                                        
                                        return (

@@ -375,7 +375,7 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
                 {(() => {
                     const underlyingAPR = 0; // TODO: Add underlying collateral APR calculation if needed
                     const mintingIncentivesAPR = boostData?.myBoostedAPR ? boostData.myBoostedAPR / 100 : 0;
-                    const stabilityFeeCost = parseFloat(summary.stabilityFee.raw || '0') - 1; // Convert to percentage
+                    const stabilityFeeCost = -parseFloat(summary.stabilityFee.raw || '0'); // Use raw value directly as negative cost
                     const netAPR = underlyingAPR + mintingIncentivesAPR + stabilityFeeCost;
                     
                     const tooltipText = (
