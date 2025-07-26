@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { BigNumber } from 'ethers'
 
 import type { AvailableVaultPair, SortableHeader, Sorting } from '~/types'
-import { arrayToSorted, DEPRECATED_COLLATERALS } from '~/utils'
+import { arrayToSorted, DEPRECATED_COLLATERALS, getRatePercentage } from '~/utils'
 import { useStoreState } from '~/store'
 
 const sortableHeaders: SortableHeader[] = [
@@ -49,13 +49,14 @@ export function useAvailableVaults() {
                 const symbol = collateral.symbol
                 const { liquidationCRatio, totalAnnualizedStabilityFee } =
                     vaultState.liquidationData?.collateralLiquidationData[symbol] || {}
+
                 return {
                     collateralName: symbol,
                     collateralLabel: collateral.label,
                     // hasRewards: collateral.hasRewards,
                     hasRewards: HAS_REWARDS.includes(symbol),
                     collateralizationFactor: liquidationCRatio || '',
-                    stabilityFee: (1 - parseFloat(totalAnnualizedStabilityFee || '1')).toString(),
+                    stabilityFee: getRatePercentage(totalAnnualizedStabilityFee || '1', 4, true).toString(),
                     apy: totalAnnualizedStabilityFee || '',
                     eligibleBalance: tokensFetchedData[symbol]?.balanceE18,
                     myVaults: vaultState.list.filter(({ collateralName }) => collateralName === symbol),
@@ -89,7 +90,7 @@ export function useAvailableVaults() {
                 })
             case 'Stability Fee':
                 return arrayToSorted(filteredAvailableVaults, {
-                    getProperty: (vault) => vault.stabilityFee || '0',
+                    getProperty: (vault) => (vault.stabilityFee ? parseFloat(vault.stabilityFee) : 0),
                     dir: sorting.dir,
                     type: 'parseFloat',
                 })

@@ -13,9 +13,6 @@ import { Tooltip } from '~/components/Tooltip'
 import { HaiArrow } from '~/components/Icons/HaiArrow'
 import { Table, TableContainer } from '~/components/Table'
 import { DEPRECATED_COLLATERALS } from '~/utils/constants'
-import { useBoost } from '~/hooks/useBoost'
-import { RewardsModel } from '~/model/rewardsModel'
-import { getRatePercentage } from '~/utils'
 type AvailableVaultsTableProps = {
     rows: AvailableVaultPair[]
     headers: SortableHeader[]
@@ -35,9 +32,6 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
         // Add more as needed
     }
 
-    // Get boost data for net APR calculation
-    const { individualVaultBoosts } = useBoost()
-
     return (
         <Table
             container={StyledTableContainer}
@@ -48,9 +42,6 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
             isEmpty={!rows.length}
             compactQuery="upToMedium"
             rows={rows
-                .sort((a, b) => {
-                    return Number(b.hasRewards) - Number(a.hasRewards)
-                })
                 .filter((row) => !DEPRECATED_COLLATERALS.includes(row.collateralName))
                 .map(
                     ({
@@ -179,22 +170,14 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                     },
                                     {
                                         content: (
-                                            (() => {
-                                                const boostData = individualVaultBoosts[collateralName]
-                                                const underlyingAPR = 0 // TODO: Add underlying collateral APR if needed
-                                                const mintingIncentivesAPR = boostData?.myBoostedAPR ? boostData.myBoostedAPR / 100 : 0
-                                                const stabilityFeeCost = stabilityFee ? -getRatePercentage(stabilityFee.toString(), 4, true) : 0
-                                                const netAPR = underlyingAPR + mintingIncentivesAPR + stabilityFeeCost
-                                                
-                                                return (
-                                                    <Text>
-                                                        {formatNumberWithStyle(netAPR, {
-                                                            style: 'percent',
-                                                            maxDecimals: 2,
-                                                        })}
-                                                    </Text>
-                                                )
-                                            })()
+                                            <Text>
+                                                {stabilityFee
+                                                    ? formatNumberWithStyle(-parseFloat(stabilityFee), {
+                                                          maxDecimals: 2,
+                                                          style: 'percent',
+                                                      })
+                                                    : '--%'}
+                                            </Text>
                                         ),
                                     },
                                     {
