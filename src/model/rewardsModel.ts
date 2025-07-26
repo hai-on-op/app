@@ -104,8 +104,8 @@ export class RewardsModel {
       const transfers = response.data.result.transfers
       if (!transfers || transfers.length === 0) return 0
       const latestTransfer = transfers[0]
-      // Divide by 7 to get daily average
-      return Number(latestTransfer?.value || 0) / 7
+      // Return raw transfer value - division by 7 is done in useStrategyData
+      return Number(latestTransfer?.value || 0)
     } catch (error) {
       console.error('Error fetching HAI VELO transfer data:', error)
       return 0
