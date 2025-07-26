@@ -5,6 +5,7 @@ import { type QueriedVault, formatNumberWithStyle, getRatePercentage } from '~/u
 import { useStoreState } from '~/store'
 import { useBoost } from '~/hooks/useBoost'
 import { RewardsModel } from '~/model/rewardsModel'
+import { useUnderlyingAPR } from '~/hooks/useUnderlyingAPR'
 
 import styled from 'styled-components'
 import { type DashedContainerProps, DashedContainerStyle, Flex, Grid, Text, CenteredFlex } from '~/styles'
@@ -167,7 +168,7 @@ export function Overview({ vault }: OverviewProps) {
                         />
                     );
                     
-                    const underlyingAPR = 0; // TODO: Add underlying collateral APR if needed
+                    const { underlyingAPR } = useUnderlyingAPR({ collateralType: vault.collateralToken })
                     const mintingIncentivesAPR = boostData?.myBoostedAPR ? boostData.myBoostedAPR / 100 : 0;
                     const stabilityFeeCost = -getRatePercentage(vault.liquidationData.totalAnnualizedStabilityFee || '1', 4, true);
                     const netAPR = underlyingAPR + mintingIncentivesAPR + stabilityFeeCost;

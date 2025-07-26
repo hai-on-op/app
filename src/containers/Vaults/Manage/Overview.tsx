@@ -7,6 +7,7 @@ import { useVault } from '~/providers/VaultProvider'
 // import { useEarnStrategies } from '~/hooks'
 import { useBoost } from '~/hooks/useBoost'
 import { RewardsModel } from '~/model/rewardsModel'
+import { useUnderlyingAPR } from '~/hooks/useUnderlyingAPR'
 
 import styled from 'styled-components'
 import { type DashedContainerProps, DashedContainerStyle, Flex, Grid, Text, CenteredFlex } from '~/styles'
@@ -373,7 +374,7 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
                 
                 {/* Calculate Net APR: (underlying APR + minting incentives APR) - stability fee */}
                 {(() => {
-                    const underlyingAPR = 0; // TODO: Add underlying collateral APR calculation if needed
+                    const { underlyingAPR } = useUnderlyingAPR({ collateralType: collateral.name })
                     const mintingIncentivesAPR = boostData?.myBoostedAPR ? boostData.myBoostedAPR / 100 : 0;
                     const stabilityFeeCost = -parseFloat(summary.stabilityFee.raw || '0'); // Use raw value directly as negative cost
                     const netAPR = underlyingAPR + mintingIncentivesAPR + stabilityFeeCost;

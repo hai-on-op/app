@@ -10,6 +10,7 @@ import { Table } from '~/components/Table'
 import { ClaimableFreeCollateral } from './ClaimableFreeCollateral'
 import { useBoost } from '~/hooks/useBoost'
 import { RewardsModel } from '~/model/rewardsModel'
+import { useUnderlyingAPR } from '~/hooks/useUnderlyingAPR'
 
 type MyVaultsTableProps = {
     headers: SortableHeader[]
@@ -127,7 +128,7 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                                 content: (
                                    (() => {
                                        const boostData = individualVaultBoosts[collateralName]
-                                       const underlyingAPR = 0 // TODO: Add underlying collateral APR if needed
+                                       const { underlyingAPR } = useUnderlyingAPR({ collateralType: collateralName })
                                        const mintingIncentivesAPR = boostData?.myBoostedAPR ? boostData.myBoostedAPR / 100 : 0
                                        const stabilityFeeCost = -getRatePercentage(totalAnnualizedStabilityFee || '1', 4, true);
                                        const netAPR = underlyingAPR + mintingIncentivesAPR + stabilityFeeCost
