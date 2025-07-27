@@ -23,11 +23,6 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
   const [isLoading, setIsLoading] = useState(false)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
-  // Debug logging for HAIVELO
-  if (collateralType === 'HAIVELO') {
-    console.log('🚀 useUnderlyingAPR called for HAIVELO, enabled:', enabled)
-  }
-
   // Get relevant data from store that might be needed for calculations
   const {
     vaultModel: { liquidationData },
@@ -49,7 +44,8 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
    
     // For HAI VELO, we need HAI price and the actual strategy data
     const haiPrice = Number(velodromePricesData?.HAI?.raw || 1)
-    const haiVeloBoostApr = strategyData?.haiVelo?.boostApr
+    // Only pass the specific values we need to avoid dependency issues
+    const haiVeloBoostApr = collateralType === 'HAIVELO' ? strategyData?.haiVelo?.boostApr : undefined
 
     return {
       collateralType,
@@ -60,10 +56,18 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
         liquidationData: collateralLiquidationData,
         tokenData,
         haiPrice,
-        haiVeloBoostApr,
+        // Only pass the specific values we need to avoid dependency issues
+        haiVeloBoostApr: collateralType === 'HAIVELO' ? strategyData?.haiVelo?.boostApr : undefined,
       }
     }
-  }, [collateralType, liquidationData, tokensData, velodromePricesData, strategyData])
+  }, [
+    collateralType, 
+    liquidationData, 
+    tokensData, 
+    velodromePricesData?.HAI?.raw,
+    // For HAIVELO, depend on a stringified version of the boost data to avoid object reference issues
+    collateralType === 'HAIVELO' ? JSON.stringify(strategyData?.haiVelo?.boostApr) : null
+  ])
 
   // Fetch underlying APR
   useEffect(() => {
@@ -72,25 +76,14 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
     let isCancelled = false
     setIsLoading(true)
 
-    if (collateralType === 'HAIVELO') {
-     // console.log('🚀 useUnderlyingAPR: Starting fetch for HAIVELO with data:', aprData)
-    }
-
     const fetchAPR = async () => {
       try {
         const aprResult = await underlyingAPRService.getUnderlyingAPR(collateralType, aprData)
-        
-        if (collateralType === 'HAIVELO') {
-       //   console.log('🚀 useUnderlyingAPR: Got result for HAIVELO:', aprResult)
-        }
         
         if (!isCancelled) {
           setResult(aprResult)
         }
       } catch (error) {
-        if (collateralType === 'HAIVELO') {
-    //      console.log('🚀 useUnderlyingAPR: Error for HAIVELO:', error)
-        }
         if (!isCancelled) {
           setResult({
             collateralType,
@@ -116,10 +109,6 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
   const refresh = () => {
     underlyingAPRService.clearCache(collateralType)
     setRefreshTrigger(prev => prev + 1)
-  }
-
-  if (collateralType === 'HAIVELO') {
-   // console.log('🚀 useUnderlyingAPR: Returning for HAIVELO - APR:', result?.underlyingAPR, 'Loading:', isLoading)
   }
 
   return {

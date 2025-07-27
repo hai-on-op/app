@@ -73,7 +73,6 @@ class LiquidStakingAPRCalculator implements IUnderlyingAPRCalculator {
                         underlyingAPR = parseFloat(aprString) / 100 // Convert percentage to decimal
                         source = 'Lido stETH/wstETH Staking'
                         description = `Ethereum staking yield via Lido (${aprString}%)`
-                        console.log('✅ Fetched wstETH APR from Lido:', aprString + '%')
                     } else {
                         console.warn('Failed to fetch Lido APR, using 0%')
                     }
@@ -95,7 +94,6 @@ class LiquidStakingAPRCalculator implements IUnderlyingAPRCalculator {
                     underlyingAPR = aprValue / 100 // Convert percentage to decimal
                     source = 'Rocket Pool rETH Staking'
                     description = `Ethereum staking yield via Rocket Pool (${aprValue.toFixed(2)}%)`
-                    console.log('✅ Fetched rETH APR from DefiLlama:', aprValue.toFixed(2) + '%')
                   } else {
                    console.warn('No rETH chart data found in DefiLlama response')
                   }
@@ -152,7 +150,6 @@ class LPTokenAPRCalculator implements IUnderlyingAPRCalculator {
                   underlyingAPR = netAPY // Already in decimal format (e.g., 0.025 for 2.5%)
                   source = 'Yearn Vault Yield'
                   description = `Net APY from Yearn vault strategy (${(netAPY * 100).toFixed(2)}%)`
-                  console.log('✅ Fetched YV-VELO-ALETH-WETH APY from Yearn:', (netAPY * 100).toFixed(2) + '%')
                 } else {
                   console.warn('Failed to fetch Yearn vault data, using 0%')
                 }
@@ -194,7 +191,6 @@ class YieldBearingAPRCalculator implements IUnderlyingAPRCalculator {
         try {
             // For HAI VELO, get the APR from the deposit strategy calculation
             if (data.collateralType.toUpperCase() === 'HAIVELO') {
-                console.log('🔥 UnderlyingAPRService: Calculating HAIVELO APR...')
 
                 let baseAPR = 0.05 // Default fallback
 

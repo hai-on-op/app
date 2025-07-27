@@ -65,8 +65,6 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
 
         const totalKite = Object.values(usersStakingData).reduce((acc, curr) => acc + Number(curr.stakedBalance), 0)
 
-        console.log(totalKite, usersStakingData)
-
         const userHaiVeloBoostMap: Record<string, number> = Object.entries(userCollateralMapping).reduce(
             (acc, [address, value]) => {
                 if (!usersStakingData[address.toLowerCase()]) return { ...acc, [address]: 1 }
