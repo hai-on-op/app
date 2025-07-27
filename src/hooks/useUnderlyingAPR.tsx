@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo } from 'react'
 import { underlyingAPRService, type UnderlyingAPRResult, type UnderlyingAPRData } from '~/services/underlyingAPRService'
 import { useStoreState } from '~/store'
+import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
+import { useEarnData } from '~/hooks/useEarnData'
 
 interface UseUnderlyingAPRProps {
   collateralType: string
@@ -21,11 +23,22 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
   const [isLoading, setIsLoading] = useState(false)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
+  // Debug logging for HAIVELO
+  if (collateralType === 'HAIVELO') {
+    console.log('🚀 useUnderlyingAPR called for HAIVELO, enabled:', enabled)
+  }
+
   // Get relevant data from store that might be needed for calculations
   const {
     vaultModel: { liquidationData },
     connectWalletModel: { tokensData },
   } = useStoreState((state) => state)
+
+  // Get Velodrome price data
+  const { prices: velodromePricesData } = useVelodromePrices()
+  
+  // Get strategy data (includes HAI VELO boost APR with correct TVL)
+  const { strategyData } = useEarnData()
 
   // Prepare data that might be needed for APR calculations
   const aprData = useMemo((): Partial<UnderlyingAPRData> => {
@@ -33,6 +46,10 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
 
     const collateralLiquidationData = liquidationData.collateralLiquidationData?.[collateralType]
     const tokenData = Object.values(tokensData).find(token => token.symbol === collateralType)
+   
+    // For HAI VELO, we need HAI price and the actual strategy data
+    const haiPrice = Number(velodromePricesData?.HAI?.raw || 1)
+    const haiVeloBoostApr = strategyData?.haiVelo?.boostApr
 
     return {
       collateralType,
@@ -42,9 +59,11 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
       externalProtocolData: {
         liquidationData: collateralLiquidationData,
         tokenData,
+        haiPrice,
+        haiVeloBoostApr,
       }
     }
-  }, [collateralType, liquidationData, tokensData])
+  }, [collateralType, liquidationData, tokensData, velodromePricesData, strategyData])
 
   // Fetch underlying APR
   useEffect(() => {
@@ -53,14 +72,25 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
     let isCancelled = false
     setIsLoading(true)
 
+    if (collateralType === 'HAIVELO') {
+     // console.log('🚀 useUnderlyingAPR: Starting fetch for HAIVELO with data:', aprData)
+    }
+
     const fetchAPR = async () => {
       try {
         const aprResult = await underlyingAPRService.getUnderlyingAPR(collateralType, aprData)
+        
+        if (collateralType === 'HAIVELO') {
+       //   console.log('🚀 useUnderlyingAPR: Got result for HAIVELO:', aprResult)
+        }
         
         if (!isCancelled) {
           setResult(aprResult)
         }
       } catch (error) {
+        if (collateralType === 'HAIVELO') {
+    //      console.log('🚀 useUnderlyingAPR: Error for HAIVELO:', error)
+        }
         if (!isCancelled) {
           setResult({
             collateralType,
@@ -86,6 +116,10 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
   const refresh = () => {
     underlyingAPRService.clearCache(collateralType)
     setRefreshTrigger(prev => prev + 1)
+  }
+
+  if (collateralType === 'HAIVELO') {
+   // console.log('🚀 useUnderlyingAPR: Returning for HAIVELO - APR:', result?.underlyingAPR, 'Loading:', isLoading)
   }
 
   return {
