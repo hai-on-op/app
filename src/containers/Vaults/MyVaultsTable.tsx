@@ -58,8 +58,8 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                 const collateralLabel = formatCollateralLabel(collateralName)
                 const tooltip =
                     collateralName === 'HAIVELO'
-                        ? 'Earn HAI and KITE minting incentives'
-                        : 'Earn KITE minting incentives'
+                        ? 'Deposit haiVELO to earn HAI from veVELO voting rewards. Earn KITE rewards for borrowing HAI against this asset. See earn page for details'
+                        : 'Earn KITE rewards for borrowing HAI against this asset. See earn page for details.'
                 return (
                     <Table.Row
                         key={id}

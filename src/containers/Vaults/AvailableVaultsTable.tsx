@@ -82,7 +82,7 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                                                 <RewardsTokenArray
                                                                     tokens={['KITE']}
                                                                     label="EARN"
-                                                                    tooltip="Earn KITE minting incentives"
+                                                                    tooltip="Earn KITE rewards for borrowing HAI against this asset. See earn page for details."
                                                                 />
                                                                 {EXTERNAL_LINKS[collateralName] && (
                                                                     <a
@@ -109,7 +109,7 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                                                 <RewardsTokenArray
                                                                     tokens={['KITE']}
                                                                     label="EARN"
-                                                                    tooltip="Earn KITE minting incentives"
+                                                                    tooltip="Earn KITE rewards for borrowing HAI against this asset. See earn page for details."
                                                                 />
                                                                 {EXTERNAL_LINKS[collateralName] && (
                                                                     <a
@@ -135,7 +135,7 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                                             <RewardsTokenArray
                                                                 tokens={['HAI', 'KITE']}
                                                                 label="EARN"
-                                                                tooltip="Earn HAI and KITE minting incentives"
+                                                                tooltip="Deposit haiVELO to earn HAI from veVELO voting rewards. Earn KITE rewards for borrowing HAI against this asset. See earn page for details"
                                                             />
                                                         )}
                                                         {/* Default behavior for other collaterals */}
