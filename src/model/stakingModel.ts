@@ -590,15 +590,15 @@ export const stakingModel: StakingModel = {
         })
     }),
     fetchStakingApyData: thunk(async (actions, { signer, provider }) => {
-        const providerOrSigner = signer || provider
-        if (!providerOrSigner) {
-          throw new Error('Neither signer nor provider available')
-        }
+            const providerOrSigner = signer || provider
+            if (!providerOrSigner) {
+                throw new Error('Neither signer nor provider available')
+            }
         const apyData = await RewardsModel.fetchStakingApyData({
           stakingManagerAddress: import.meta.env.VITE_STAKING_MANAGER,
           providerOrSigner,
-        })
-        actions.setStakingApyData(apyData)
+                    })
+            actions.setStakingApyData(apyData)
     }),
 
     fetchUserRewards: thunk(async (actions, { signer }) => {

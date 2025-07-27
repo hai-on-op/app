@@ -58,18 +58,74 @@ class LiquidStakingAPRCalculator implements IUnderlyingAPRCalculator {
     }
 
     async calculateAPR(data: UnderlyingAPRData): Promise<UnderlyingAPRResult> {
-        // Placeholder - will be implemented later
-        return {
-            collateralType: data.collateralType,
-            underlyingAPR: 0,
-            breakdown: [
-                {
-                    source: 'Liquid Staking',
-                    apr: 0,
-                    description: 'Placeholder for liquid staking yield',
-                },
-            ],
-            lastUpdated: new Date(),
+        try {
+            let underlyingAPR = 0
+            let source = 'Liquid Staking'
+            let description = 'Placeholder for liquid staking yield'
+
+            // For wstETH, fetch real APR from Lido API
+            if (data.collateralType.toUpperCase() === 'WSTETH') {
+                try {
+                    const response = await fetch('https://eth-api.lido.fi/v1/protocol/steth/apr/sma')
+                    if (response.ok) {
+                        const { data: lidoData } = await response.json()
+                        const aprString = lidoData.smaApr || lidoData.apr || '0'
+                        underlyingAPR = parseFloat(aprString) / 100 // Convert percentage to decimal
+                        source = 'Lido stETH/wstETH Staking'
+                        description = `Ethereum staking yield via Lido (${aprString}%)`
+                        console.log('✅ Fetched wstETH APR from Lido:', aprString + '%')
+                    } else {
+                        console.warn('Failed to fetch Lido APR, using 0%')
+                    }
+                } catch (error) {
+                    console.warn('Error fetching Lido APR:', error)
+                }
+            }
+
+            // For rETH, fetch real APR from DefiLlama API
+            if (data.collateralType.toUpperCase() === 'RETH') {
+              try {
+               const response = await fetch('https://yields.llama.fi/chart/d4b3c522-6127-4b89-bedf-83641cdcd2eb')
+                if (response.ok) {
+                 const { data: chartData } = await response.json()
+                 if (chartData && chartData.length > 0) {
+                   // Get the latest data point (last item in array)
+                   const latestData = chartData[chartData.length - 1]
+                   const aprValue = latestData.apyBase || latestData.apy || 0
+                    underlyingAPR = aprValue / 100 // Convert percentage to decimal
+                    source = 'Rocket Pool rETH Staking'
+                    description = `Ethereum staking yield via Rocket Pool (${aprValue.toFixed(2)}%)`
+                    console.log('✅ Fetched rETH APR from DefiLlama:', aprValue.toFixed(2) + '%')
+                  } else {
+                   console.warn('No rETH chart data found in DefiLlama response')
+                  }
+                } else {
+                 console.warn('Failed to fetch DefiLlama chart data, using 0%')
+                }
+              } catch (error) {
+                console.warn('Error fetching rETH APR:', error)
+              }
+            }
+
+            return {
+                collateralType: data.collateralType,
+                underlyingAPR,
+                breakdown: [
+                    {
+                        source,
+                        apr: underlyingAPR,
+                        description
+                    }
+                ],
+                lastUpdated: new Date()
+            }
+        } catch (error) {
+            return {
+                collateralType: data.collateralType,
+                underlyingAPR: 0,
+                lastUpdated: new Date(),
+                error: error instanceof Error ? error.message : 'Unknown error'
+            }
         }
     }
 }
@@ -81,18 +137,49 @@ class LPTokenAPRCalculator implements IUnderlyingAPRCalculator {
     }
 
     async calculateAPR(data: UnderlyingAPRData): Promise<UnderlyingAPRResult> {
-        // Placeholder - will be implemented later
-        return {
-            collateralType: data.collateralType,
-            underlyingAPR: 0,
-            breakdown: [
-                {
-                    source: 'LP Fees',
-                    apr: 0,
-                    description: 'Placeholder for LP token yield',
-                },
-            ],
-            lastUpdated: new Date(),
+        try {
+            let underlyingAPR = 0
+            let source = 'LP Fees'
+            let description = 'Placeholder for LP token yield'
+
+            // For YV-VELO-ALETH-WETH, fetch real APY from Yearn's yDaemon API
+            if (data.collateralType.toUpperCase() === 'YV-VELO-ALETH-WETH') {
+              try {
+                const response = await fetch('https://ydaemon.yearn.fi/10/vaults/0xf7D66b41Cd4241eae450fd9D2d6995754634D9f3')
+                if (response.ok) {
+                  const vaultData = await response.json()
+                  const netAPY = vaultData.apy?.net_apy || 0
+                  underlyingAPR = netAPY // Already in decimal format (e.g., 0.025 for 2.5%)
+                  source = 'Yearn Vault Yield'
+                  description = `Net APY from Yearn vault strategy (${(netAPY * 100).toFixed(2)}%)`
+                  console.log('✅ Fetched YV-VELO-ALETH-WETH APY from Yearn:', (netAPY * 100).toFixed(2) + '%')
+                } else {
+                  console.warn('Failed to fetch Yearn vault data, using 0%')
+                }
+              } catch (error) {
+                console.warn('Error fetching Yearn vault APY:', error)
+              }
+            }
+
+            return {
+                collateralType: data.collateralType,
+                underlyingAPR,
+                breakdown: [
+                    {
+                        source,
+                        apr: underlyingAPR,
+                        description
+                    }
+                ],
+                lastUpdated: new Date()
+            }
+        } catch (error) {
+            return {
+                collateralType: data.collateralType,
+                underlyingAPR: 0,
+                lastUpdated: new Date(),
+                error: error instanceof Error ? error.message : 'Unknown error'
+            }
         }
     }
 }
