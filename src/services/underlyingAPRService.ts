@@ -148,7 +148,7 @@ class LPTokenAPRCalculator implements IUnderlyingAPRCalculator {
                 const response = await fetch('https://ydaemon.yearn.fi/10/vaults/0xf7D66b41Cd4241eae450fd9D2d6995754634D9f3')
                 if (response.ok) {
                   const vaultData = await response.json()
-                  const netAPY = vaultData.apy?.net_apy || 0
+                  const netAPY = vaultData.apr?.netAPR || 0
                   underlyingAPR = netAPY // Already in decimal format (e.g., 0.025 for 2.5%)
                   source = 'Yearn Vault Yield'
                   description = `Net APY from Yearn vault strategy (${(netAPY * 100).toFixed(2)}%)`
