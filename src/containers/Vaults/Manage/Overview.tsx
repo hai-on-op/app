@@ -381,8 +381,21 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
                     
                     // For new vaults, use simple addition
                     if (action === VaultAction.CREATE || !vault?.id) {
-                        netAPR = underlyingAPR + mintingIncentivesAPR + stabilityFeeCost;
-                        calculationMethod = 'Simple addition (no existing position)';
+                        // For new vaults, assume a typical 200% collateral ratio (2:1 collateral:debt)
+                        // This means for every $2 of collateral, user borrows $1 of HAI
+                        const assumedCollateralRatio = 2.0; // 200%
+                        const assumedCollateralValue = assumedCollateralRatio; // e.g., $2
+                        const assumedDebtValue = 1; // e.g., $1
+                        
+                        // Calculate yields based on assumed position
+                        const collateralYield = assumedCollateralValue * underlyingAPR;
+                        const debtNetAPR = mintingIncentivesAPR + stabilityFeeCost;
+                        const debtNetYield = assumedDebtValue * debtNetAPR;
+                        const totalYield = collateralYield + debtNetYield;
+                        
+                        // Net APR based on collateral (what user invests)
+                        netAPR = totalYield / assumedCollateralValue;
+                        calculationMethod = `Estimated for 200% collateral ratio: $${collateralYield.toFixed(2)} collateral yield + $${debtNetYield.toFixed(2)} debt net yield = $${totalYield.toFixed(2)} per $${assumedCollateralValue} collateral`;
                     } else {
                         // For existing vaults, use weighted average based on USD values
                         const collateralUsdValue = parseFloat(summary.collateral.current?.usdFormatted?.replace(/[$,]/g, '') || '0');
