@@ -7,7 +7,6 @@ import { StrategyTableButton } from './StrategyTableButton'
 import { Table } from '~/components/Table'
 import { Link } from '~/components/Link'
 import { ComingSoon } from '~/components/ComingSoon'
-import { CL50_HAI_LUSD_ADDRESS } from '~/utils/rewards'
 
 type StrategyTableProps = {
     headers: SortableHeader[]
@@ -143,9 +142,7 @@ export function StrategyTable({
                                             <Flex $justify="flex-start" $align="center" $gap={8}>
                                                 <TokenArray tokens={pair} hideLabel />
                                                 <Text $fontWeight={700}>
-                                                    {`${
-                                                        earnAddress == CL50_HAI_LUSD_ADDRESS ? 'CL-50' : ''
-                                                    }  ${pair.join('/')}`}
+                                                    {pair.join('/')}
                                                 </Text>
                                             </Flex>
                                             <RewardsTokenArray

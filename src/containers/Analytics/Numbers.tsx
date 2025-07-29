@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { formatEther, formatUnits } from 'ethers/lib/utils'
 
 import { formatNumberWithStyle, getRatePercentage } from '~/utils'
+import { REWARDS } from '~/utils/rewards'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { useMediaQuery } from '~/hooks'
 
@@ -26,12 +27,12 @@ import { Legend } from '~/components/Charts/Legend'
 import { BlockBanner } from '~/components/BlockBanner'
 
 const colors = [
-    'hsl(49, 84%, 68%)', // yellowish
-    'hsl(115, 70%, 84%)', // greenish
-    'hsl(313, 100%, 88%)', // pinkish
-    'hsl(232, 64%, 84%)', // blueish
-    'hsl(16, 100%, 84%)', // orangeish
-    'hsl(0, 100%, 74%)', // reddish
+    'hsl(49, 84%, 68%)', // HAI Gold - for HAI related pools
+    'hsl(115, 70%, 70%)', // KITE Green - for KITE related pools  
+    'hsl(232, 64%, 75%)', // ALETH Blue - for ALETH related pools
+    'hsl(16, 100%, 75%)', // ALUSD Orange - for ALUSD related pools
+    'hsl(280, 70%, 75%)', // Purple - for other pools
+    'hsl(200, 70%, 75%)', // Light Blue - for Uniswap pools
 ]
 
 export function Numbers() {
@@ -99,7 +100,14 @@ export function Numbers() {
     const [poolPieData, totalHaiInPools] = useMemo(() => {
         let total = 0
         const data: { id: string; color: string; value: number }[] = []
-        let colorIndex = 0
+        // Helper function to get color based on pool type and tokens
+        const getPoolColor = (poolTokens: string[], isUniswap = false) => {
+            if (isUniswap) return colors[5] // Light Blue for Uniswap
+            if (poolTokens.includes('KITE')) return colors[1] // KITE Green
+            if (poolTokens.includes('ALETH')) return colors[2] // ALETH Blue  
+            if (poolTokens.includes('ALUSD')) return colors[3] // ALUSD Orange
+            return colors[0] // HAI Gold as default
+        }
 
         const uniLabel = isUpToSmall ? 'UniV3' : 'Uniswap V3 Pool'
         for (const pool of pools.uniPools) {
@@ -107,30 +115,34 @@ export function Numbers() {
             if (indexOfToken < 0) continue // sanity check
             const hai = parseFloat(formatEther(pool.inputTokenBalances[indexOfToken]))
             total += hai
+            const poolTokens = pool.inputTokens.map(token => token.symbol)
             data.push({
                 id: `${uniLabel} - ${pool.inputTokens[0].symbol}/${pool.inputTokens[1].symbol} (${pool.name.slice(
                     pool.name.lastIndexOf(' ') + 1,
                     pool.name.length
                 )})`,
-                color: colors[colorIndex % colors.length],
+                color: getPoolColor(poolTokens, true),
                 value: hai,
             })
-            colorIndex++
         }
 
         const veloLabel = isUpToSmall ? 'Velo' : 'Velodrome Pool'
         for (const pool of pools.veloPools) {
             if (!pool.tokenPair.includes('HAI')) continue
+           
+            // Only include pools that are configured in REWARDS
+            const poolAddress = pool.address.toLowerCase()
+            if (!REWARDS.velodrome[poolAddress]) continue
+            
             const hai = parseFloat(
                 formatUnits(pool.tokenPair[0] === 'HAI' ? pool.reserve0 : pool.reserve1, pool.decimals)
             )
             total += hai
             data.push({
                 id: `${veloLabel} - ${pool.tokenPair.join('/')}`,
-                color: colors[colorIndex % colors.length],
+                color: getPoolColor(pool.tokenPair),
                 value: hai,
             })
-            colorIndex++
         }
 
         return [data, total]

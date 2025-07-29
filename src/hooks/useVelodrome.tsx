@@ -1,12 +1,12 @@
 import { useEffect, useReducer, useState } from 'react'
 import { BigNumber } from 'ethers'
+import { formatUnits, getAddress } from 'ethers/lib/utils'
 
 import sugarAbi from '~/abis/velo_sugar.abi.json'
 import { useContract } from './useContract'
 import { useAccount } from 'wagmi'
-import { getAddress } from 'viem'
 
-import { CL50_HAI_LUSD_ADDRESS, HAI_ADDRESS, KITE_ADDRESS, VELO_SUGAR_ADDRESS } from '~/utils'
+import { HAI_ADDRESS, KITE_ADDRESS, VELO_SUGAR_ADDRESS } from '~/utils'
 
 export type VelodromeLpData = {
     tokenPair: [string, string]
@@ -55,11 +55,9 @@ export function useVelodrome() {
                 if (isStale) return
                 const lpData = flteredLps.map((lp) => ({
                     tokenPair:
-                        lp[0] == CL50_HAI_LUSD_ADDRESS
-                            ? ['HAI', 'LUSD']
-                            : lp[1]
-                                  .split('/')
-                                  .map((token: string) => token.replace(/^[v|s]AMMV2-/gi, '').toUpperCase()),
+                        lp[1]
+                            .split('/')
+                            .map((token: string) => token.replace(/^[v|s]AMMV2-/gi, '').toUpperCase()),
                     address: lp.lp,
                     // symbol: lp[0] == CL50_HAI_LUSD_ADDRESS ? CL50_HAI_LUSD_SYMBOL : lp[1],
                     symbol: lp.symbol,
