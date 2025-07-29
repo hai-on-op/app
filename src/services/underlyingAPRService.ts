@@ -63,14 +63,15 @@ class LiquidStakingAPRCalculator implements IUnderlyingAPRCalculator {
             let source = 'Liquid Staking'
             let description = 'Placeholder for liquid staking yield'
 
-            // For wstETH, fetch real APR from Lido API
+            // Handle different liquid staking tokens
             if (data.collateralType.toUpperCase() === 'WSTETH') {
                 try {
                     const response = await fetch('https://eth-api.lido.fi/v1/protocol/steth/apr/sma')
                     if (response.ok) {
-                        const { data: lidoData } = await response.json()
-                        const aprString = lidoData.smaApr || lidoData.apr || '0'
-                        underlyingAPR = parseFloat(aprString) / 100 // Convert percentage to decimal
+                        const lidoData = await response.json()
+                        const aprValue = lidoData.data?.smaApr || 0
+                        underlyingAPR = aprValue / 100 // Convert percentage to decimal
+                        const aprString = aprValue.toFixed(2)
                         source = 'Lido stETH/wstETH Staking'
                         description = `Ethereum staking yield via Lido (${aprString}%)`
                     } else {
@@ -79,30 +80,48 @@ class LiquidStakingAPRCalculator implements IUnderlyingAPRCalculator {
                 } catch (error) {
                     console.warn('Error fetching Lido APR:', error)
                 }
-            }
-
-            // For rETH, fetch real APR from DefiLlama API
-            if (data.collateralType.toUpperCase() === 'RETH') {
-              try {
-               const response = await fetch('https://yields.llama.fi/chart/d4b3c522-6127-4b89-bedf-83641cdcd2eb')
-                if (response.ok) {
-                 const { data: chartData } = await response.json()
-                 if (chartData && chartData.length > 0) {
-                   // Get the latest data point (last item in array)
-                   const latestData = chartData[chartData.length - 1]
-                   const aprValue = latestData.apyBase || latestData.apy || 0
-                    underlyingAPR = aprValue / 100 // Convert percentage to decimal
-                    source = 'Rocket Pool rETH Staking'
-                    description = `Ethereum staking yield via Rocket Pool (${aprValue.toFixed(2)}%)`
-                  } else {
-                   console.warn('No rETH chart data found in DefiLlama response')
-                  }
-                } else {
-                 console.warn('Failed to fetch DefiLlama chart data, using 0%')
+            } else if (data.collateralType.toUpperCase() === 'RETH') {
+                try {
+                    const response = await fetch('https://yields.llama.fi/chart/d4b3c522-6127-4b89-bedf-83641cdcd2eb')
+                    if (response.ok) {
+                        const chartData = await response.json()
+                        if (chartData.data && chartData.data.length > 0) {
+                            // Get the latest APY from the chart data
+                            const latestData = chartData.data[chartData.data.length - 1]
+                            const aprValue = latestData.apy || 0
+                            underlyingAPR = aprValue / 100 // Convert percentage to decimal
+                            source = 'Rocket Pool rETH Staking'
+                            description = `Ethereum staking yield via Rocket Pool (${aprValue.toFixed(2)}%)`
+                        } else {
+                            console.warn('No rETH chart data found in DefiLlama response')
+                        }
+                    } else {
+                        console.warn('Failed to fetch rETH APR from DefiLlama, using 0%')
+                    }
+                } catch (error) {
+                    console.warn('Error fetching rETH APR from DefiLlama:', error)
                 }
-              } catch (error) {
-                console.warn('Error fetching rETH APR:', error)
-              }
+            } else if (data.collateralType.toUpperCase() === 'APXETH') {
+                try {
+                    const response = await fetch('https://yields.llama.fi/chart/fc25b5ff-2ba8-44a3-895b-e0d22d96365f')
+                    if (response.ok) {
+                        const chartData = await response.json()
+                        if (chartData.data && chartData.data.length > 0) {
+                            // Get the latest APY from the chart data
+                            const latestData = chartData.data[chartData.data.length - 1]
+                            const aprValue = latestData.apy || 0
+                            underlyingAPR = aprValue / 100 // Convert percentage to decimal
+                            source = 'Dinero apxETH Staking'
+                            description = `Ethereum staking yield via Dinero apxETH (${aprValue.toFixed(2)}%)`
+                        } else {
+                            console.warn('No APXETH chart data found in DefiLlama response')
+                        }
+                    } else {
+                        console.warn('Failed to fetch APXETH APR from DefiLlama, using 0%')
+                    }
+                } catch (error) {
+                    console.warn('Error fetching APXETH APR from DefiLlama:', error)
+                }
             }
 
             return {
@@ -193,6 +212,7 @@ class YieldBearingAPRCalculator implements IUnderlyingAPRCalculator {
             if (data.collateralType.toUpperCase() === 'HAIVELO') {
 
                 let baseAPR = 0.05 // Default fallback
+                let userBoost = 1 // Default boost
 
                 try {
                     // Get the HAI VELO daily reward using the same method as useStrategyData
@@ -218,7 +238,14 @@ class YieldBearingAPRCalculator implements IUnderlyingAPRCalculator {
                     // (haiVeloDailyRewardValue / totalHaiVeloBoostedValueParticipating) * 365 * 100
                     // But convert to decimal by dividing by 100 (like in useEarnStrategies line 261)
                     const baseAPRPercentage = actualTVL > 0 ? (haiVeloDailyRewardValue / actualTVL) * 365 * 100 : 0
-                    baseAPR = baseAPRPercentage / 100 // Convert percentage to decimal
+                    const baseAPRDecimal = baseAPRPercentage / 100 // Convert percentage to decimal
+                    
+                    // For underlying APR, we want the boosted deposit strategy APR, not the base APR
+                    // Get the user's boost multiplier from the boost APR data
+                    userBoost = haiVeloBoostApr?.myBoost || 1
+                    const userBoostedAPR = baseAPRDecimal * userBoost
+                    
+                    baseAPR = userBoostedAPR
                 } catch (error) {
                     console.error('🔥 Error calculating HAI VELO APR:', error)
                     baseAPR = 0.05 // Fallback to 5%
@@ -229,12 +256,12 @@ class YieldBearingAPRCalculator implements IUnderlyingAPRCalculator {
                     underlyingAPR: baseAPR,
                     breakdown: [
                         {
-                            source: 'HAI VELO Rewards',
+                            source: 'HAI VELO Deposit Strategy (Boosted)',
                             apr: baseAPR,
-                            description: 'HAI rewards from Velodrome voting',
-                        },
+                            description: `Boosted yield from HAI VELO deposit strategy (${userBoost?.toFixed(2)}x boost)`
+                        }
                     ],
-                    lastUpdated: new Date(),
+                    lastUpdated: new Date()
                 }
             }
 
