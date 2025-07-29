@@ -2,6 +2,7 @@ import type { IVault, SetState, SortableHeader, Sorting } from '~/types'
 import { Status, formatNumberWithStyle, riskStateToStatus, getRatePercentage } from '~/utils'
 import { useVault } from '~/providers/VaultProvider'
 import { formatCollateralLabel } from '~/utils/formatting'
+import { useStoreState } from '~/store'
 import styled from 'styled-components'
 import { CenteredFlex, Flex, Grid, HaiButton, TableButton, Text } from '~/styles'
 import { RewardsTokenArray, TokenArray } from '~/components/TokenArray'
@@ -24,6 +25,11 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
     
     // Get boost data for net APR calculation
     const { individualVaultBoosts } = useBoost()
+   
+    // Get liquidation data for price calculations
+    const {
+        vaultModel: { liquidationData },
+    } = useStoreState((state) => state)
 
     return (
         <Table
@@ -131,7 +137,30 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                                        const { underlyingAPR } = useUnderlyingAPR({ collateralType: collateralName })
                                        const mintingIncentivesAPR = boostData?.myBoostedAPR ? boostData.myBoostedAPR / 100 : 0
                                        const stabilityFeeCost = -getRatePercentage(totalAnnualizedStabilityFee || '1', 4, true);
-                                       const netAPR = underlyingAPR + mintingIncentivesAPR + stabilityFeeCost
+                                       
+                                       // For MyVaultsTable, we always have existing vaults, so use weighted average
+                                       let netAPR: number = 0;
+                                       
+                                       const collateralPrice = parseFloat(liquidationData?.collateralLiquidationData?.[collateralName]?.currentPrice?.value || '0');
+                                       const collateralUsdValue = parseFloat(collateral || '0') * collateralPrice;
+                                       const debtUsdValue = parseFloat(totalDebt || '0'); // HAI is approximately $1
+                                       if (collateralUsdValue > 0) {
+                                           // Collateral side: earns underlying APR
+                                           const collateralYield = collateralUsdValue * underlyingAPR;
+                                           
+                                           // Debt side: earns minting incentives but pays stability fee
+                                           const debtNetAPR = mintingIncentivesAPR + stabilityFeeCost; // Note: stabilityFeeCost is already negative
+                                           const debtNetYield = debtUsdValue * debtNetAPR;
+                                           
+                                           // Total annual yield from the position
+                                           const totalYield = collateralYield + debtNetYield;
+                                           
+                                           // Net APR based on collateral value (what user is risking)
+                                           netAPR = totalYield / collateralUsdValue;
+                                       } else {
+                                           // Fallback to simple addition if no position values
+                                           netAPR = underlyingAPR + mintingIncentivesAPR + stabilityFeeCost;
+                                       }
                                        
                                        return (
                                            <Text>
