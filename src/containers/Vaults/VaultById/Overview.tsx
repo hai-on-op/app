@@ -175,6 +175,7 @@ export function Overview({ vault }: OverviewProps) {
                     // For VaultById, we always have an existing vault, so use weighted average
                     let netAPR: number = 0;
                     let calculationMethod: string = '';
+                    let simulatedNetAPR: number | undefined = undefined;
                     
                     const collateralUsdValue = parseFloat(vault.collateral || '0') * parseFloat(vault.liquidationData.currentPrice?.value || '0');
                     const debtUsdValue = parseFloat(vault.debt || '0'); // HAI is approximately $1
@@ -192,6 +193,9 @@ export function Overview({ vault }: OverviewProps) {
                         // Net APR based on collateral value (what user is risking)
                         netAPR = totalYield / collateralUsdValue;
                         calculationMethod = `Collateral yield: $${collateralYield.toFixed(2)}/year + Debt net yield: $${debtNetYield.toFixed(2)}/year = $${totalYield.toFixed(2)}/year on $${collateralUsdValue.toLocaleString()} collateral`;
+                        
+                        // Note: VaultById page is read-only, so no simulation needed here
+                        // Simulation is only relevant in the Manage view where users can input amounts
                     } else {
                         // Fallback to simple addition if no position values
                         netAPR = underlyingAPR + mintingIncentivesAPR + stabilityFeeCost;
