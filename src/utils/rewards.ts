@@ -57,10 +57,10 @@ export const REWARDS = {
         },
     },
     uniswap: {
-        /*['0x146b020399769339509c98b7b353d19130c150ec'.toLowerCase()]: {
+        ['0x146b020399769339509c98b7b353d19130c150ec'.toLowerCase()]: {
             KITE: 0,
             OP: 100,
-        },*/
+        },
     },
     velodrome: {
         // vAMMV2-KITE/HAI

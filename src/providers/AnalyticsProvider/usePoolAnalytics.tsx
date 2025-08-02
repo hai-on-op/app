@@ -23,8 +23,6 @@ export type PoolAnalytics = {
     error: string
 }
 
-const uniHaiWethPool1Percent = '0x2A087fd694DeBec1ED61E0740BD0810b804da8f0'.toLowerCase()
-
 export function usePoolAnalytics() {
     const {
         connectWalletModel: { tokensData },
@@ -37,7 +35,7 @@ export function usePoolAnalytics() {
     } = useQuery<{ liquidityPools: QueryLiquidityPool[] }>(OPTIMISM_UNISWAP_POOL_QUERY, {
         client: uniClient,
         variables: {
-            ids: [...Object.keys(REWARDS.uniswap), uniHaiWethPool1Percent],
+            ids: Object.keys(REWARDS.uniswap),
         },
     })
 
