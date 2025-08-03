@@ -202,23 +202,28 @@ export function Overview({ vault }: OverviewProps) {
                         calculationMethod = 'Simple addition (fallback)';
                     }
                     
-                    const tooltipText = (
+                    // Check if this collateral type should show Net APR (has underlying yield or minting incentives)
+                    const hasUnderlyingYield = underlyingAPR > 0;
+                    const hasMintingIncentives = mintingIncentivesAPR > 0;
+                    const shouldShowNetAPR = hasUnderlyingYield || hasMintingIncentives;
+                    
+                    const tooltipText = shouldShowNetAPR ? (
                         <Flex $column $gap={4}>
                             <Text>Underlying APR: {formatNumberWithStyle(underlyingAPR, { style: 'percent', maxDecimals: 2 })}</Text>
                             <Text>Minting Incentives: {formatNumberWithStyle(mintingIncentivesAPR, { style: 'percent', maxDecimals: 2 })}</Text>
                             <Text>Stability Fee Cost: {formatNumberWithStyle(stabilityFeeCost, { style: 'percent', maxDecimals: 2 })}</Text>
-                            <Text $fontSize="12px" $color="black">{calculationMethod}</Text>
                             <Text $fontWeight={700}>Net APR: {formatNumberWithStyle(netAPR, { style: 'percent', maxDecimals: 2 })}</Text>
+                            <Text $fontSize="12px" $color="black">Net APR is expressed in terms of your collateral value.</Text>
                         </Flex>
-                    );
+                    ) : `Stability Fee: ${formatNumberWithStyle(stabilityFeeCost, { style: 'percent', maxDecimals: 2 })}`;
                     
                     return (
                         <OverviewStat
-                            value={formatNumberWithStyle(netAPR, {
+                            value={formatNumberWithStyle(shouldShowNetAPR ? netAPR : stabilityFeeCost, {
                                 style: 'percent',
                                 maxDecimals: 2,
                             })}
-                            label="Net APR"
+                            label={shouldShowNetAPR ? "Net APR" : "Stability Fee"}
                             tooltip={tooltipText}
                         />
                     );
