@@ -50,7 +50,11 @@ export function OverviewStat({
         <StatContainer $fullWidth={fullWidth}>
             {labelOnTop && (
                 <Flex $justify="flex-start" $align="center" $gap={4}>
-                    <Text $fontSize="0.8em" $whiteSpace="nowrap">
+                    <Text $fontSize="0.8em" style={{ 
+                        wordBreak: 'break-word',
+                        whiteSpace: 'normal',
+                        lineHeight: '1.2'
+                    }}>
                         {label}
                     </Text>
                     {!!tooltip && <Tooltip width="200px">{tooltip}</Tooltip>}
@@ -71,7 +75,11 @@ export function OverviewStat({
             </Flex>
             {!labelOnTop && (
                 <Flex $justify="flex-start" $align="center" $gap={4}>
-                    <Text $fontSize="0.8em" $whiteSpace="nowrap">
+                    <Text $fontSize="0.8em" style={{ 
+                        wordBreak: 'break-word',
+                        whiteSpace: 'normal',
+                        lineHeight: '1.2'
+                    }}>
                         {label}
                     </Text>
                     {!!tooltip && <Tooltip width="200px">{tooltip}</Tooltip>}

@@ -136,5 +136,5 @@ export function EarnStats() {
 
     if (!address) return null
 
-    return <Stats stats={dummyStats} columns="repeat(3, 1fr) 1.5fr" fun />
+    return <Stats stats={dummyStats} columns="repeat(3, 1fr) 1.2fr" fun />
 }
