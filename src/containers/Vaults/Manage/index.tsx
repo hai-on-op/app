@@ -35,11 +35,49 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
 
     const [tab, setTab] = useState(0)
 
+    // Create navItems array based on vault type and action
+    const getNavItems = () => {
+        if (action === VaultAction.CREATE) {
+            return isHAIVELO ? ['Mint HAI Velo', 'Create Vault'] : []
+        } else {
+            return isHAIVELO ? ['Mint HAI Velo', 'Manage', 'Activity'] : ['Manage', 'Activity']
+        }
+    }
+
+    const navItems = getNavItems()
+
+    // Determine content to show based on current tab and vault type
+    const renderTabContent = () => {
+        const isCreateMode = action === VaultAction.CREATE
+        
+        if (isHAIVELO && tab === 0) {
+            // Mint HAI Velo tab content
+            return null
+        } else if (
+            (!isHAIVELO && tab === 0 && isCreateMode) || // Create tab for non-HAIVELO in CREATE mode
+            (!isHAIVELO && tab === 0 && !isCreateMode) || // Manage tab for non-HAIVELO in non-CREATE mode
+            (isHAIVELO && tab === 1) // Create/Manage tab for HAIVELO
+        ) {
+            // Manage/Create content
+            return (
+                <ProxyPrompt>
+                    <BodyGrid>
+                        <Overview isHAIVELO={isHAIVELO} />
+                        <VaultActions />
+                    </BodyGrid>
+                </ProxyPrompt>
+            )
+        } else {
+            // Activity tab
+            return <ActivityTable vault={vaultWithActivity} />
+        }
+    }
+
     return (
         <NavContainer
-            navItems={action === VaultAction.CREATE ? [] : [`Manage`, `Activity`]}
+            navItems={navItems}
             selected={tab}
-            onSelect={action === VaultAction.CREATE ? () => {} : setTab}
+            onSelect={setTab}
             stackHeader
             headerContent={
                 <Header $removePadding={action === VaultAction.CREATE}>
@@ -51,16 +89,7 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
                 </Header>
             }
         >
-            {tab === 0 || action === VaultAction.CREATE ? (
-                <ProxyPrompt>
-                    <BodyGrid>
-                        <Overview isHAIVELO={isHAIVELO} />
-                        <VaultActions />
-                    </BodyGrid>
-                </ProxyPrompt>
-            ) : (
-                <ActivityTable vault={vaultWithActivity} />
-            )}
+            {renderTabContent()}
         </NavContainer>
     )
 }
