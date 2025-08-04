@@ -10,7 +10,7 @@ import { CenteredFlex, Flex, Grid } from '~/styles'
 import { RewardsTokenArray } from '~/components/TokenArray'
 import { ProxyPrompt } from '~/components/ProxyPrompt'
 import { Overview } from './Overview'
-import { HaiVeloOverview } from "./HaiveloOverview"
+import { HaiVeloOverview } from "./HaiVeloOverview"
 import { VaultActions } from './VaultActions'
 import { MintHaiVeloActions } from './MintHaiVeloActions'
 import { ManageDropdown } from './ManageDropdown'
