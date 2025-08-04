@@ -10,6 +10,7 @@ import { CenteredFlex, Flex, Grid } from '~/styles'
 import { RewardsTokenArray } from '~/components/TokenArray'
 import { ProxyPrompt } from '~/components/ProxyPrompt'
 import { Overview } from './Overview'
+import { HaiVeloOverview } from './HaiveloOverview'
 import { VaultActions } from './VaultActions'
 import { ManageDropdown } from './ManageDropdown'
 import { NavContainer } from '~/components/NavContainer'
@@ -38,9 +39,9 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
     // Create navItems array based on vault type and action
     const getNavItems = () => {
         if (action === VaultAction.CREATE) {
-            return isHAIVELO ? ['Mint HAI Velo', 'Create Vault'] : []
+            return isHAIVELO ? ['Mint haiVELO', 'Create Vault'] : []
         } else {
-            return isHAIVELO ? ['Mint HAI Velo', 'Manage', 'Activity'] : ['Manage', 'Activity']
+            return isHAIVELO ? ['Mint haiVELO', 'Manage', 'Activity'] : ['Manage', 'Activity']
         }
     }
 
@@ -49,10 +50,17 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
     // Determine content to show based on current tab and vault type
     const renderTabContent = () => {
         const isCreateMode = action === VaultAction.CREATE
-        
+
         if (isHAIVELO && tab === 0) {
             // Mint HAI Velo tab content
-            return null
+            return (
+                <ProxyPrompt>
+                    <BodyGrid>
+                        <HaiVeloOverview />
+                        <VaultActions />
+                    </BodyGrid>
+                </ProxyPrompt>
+            )
         } else if (
             (!isHAIVELO && tab === 0 && isCreateMode) || // Create tab for non-HAIVELO in CREATE mode
             (!isHAIVELO && tab === 0 && !isCreateMode) || // Manage tab for non-HAIVELO in non-CREATE mode
