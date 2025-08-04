@@ -10,8 +10,9 @@ import { CenteredFlex, Flex, Grid } from '~/styles'
 import { RewardsTokenArray } from '~/components/TokenArray'
 import { ProxyPrompt } from '~/components/ProxyPrompt'
 import { Overview } from './Overview'
-import { HaiVeloOverview } from './HaiveloOverview'
+import { HaiVeloOverview } from "./HaiveloOverview"
 import { VaultActions } from './VaultActions'
+import { MintHaiVeloActions } from './MintHaiVeloActions'
 import { ManageDropdown } from './ManageDropdown'
 import { NavContainer } from '~/components/NavContainer'
 import { ActivityTable } from '../VaultById/ActivityTable'
@@ -57,7 +58,7 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
                 <ProxyPrompt>
                     <BodyGrid>
                         <HaiVeloOverview />
-                        <VaultActions />
+                        <MintHaiVeloActions />
                     </BodyGrid>
                 </ProxyPrompt>
             )
