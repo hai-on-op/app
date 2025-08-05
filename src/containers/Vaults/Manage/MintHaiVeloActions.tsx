@@ -5,12 +5,16 @@ import styled from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
 import { NumberInput } from '~/components/NumberInput'
 import { SelectInput, type SelectOption } from '~/components/SelectInput'
+import { useHaiVeloV2 } from '~/hooks'
 
 type SelectedToken = 'VELO' | 'veVELO' | 'haiVELO_v1'
 
 export function MintHaiVeloActions() {
     const [selectedToken, setSelectedToken] = useState<SelectedToken>('VELO')
     const [convertAmount, setConvertAmount] = useState<string>('')
+
+    // Use the new hook to fetch VELO and veVELO balances
+    const { loading, error, veloBalanceFormatted, veVeloBalanceFormatted } = useHaiVeloV2()
 
     // Token options for the select dropdown
     const tokenOptions: SelectOption<SelectedToken>[] = [
@@ -40,6 +44,22 @@ export function MintHaiVeloActions() {
         }
     }
 
+    // Get available balance for selected token
+    const getAvailableBalance = (token: SelectedToken): string => {
+        switch (token) {
+            case 'VELO':
+                return formatNumberWithStyle(veloBalanceFormatted, {
+                    maxDecimals: 2,
+                })
+            case 'veVELO':
+                return veVeloBalanceFormatted
+            case 'haiVELO_v1':
+                return '0.00' // TODO: Add haiVELO v1 balance hook
+            default:
+                return '0.00'
+        }
+    }
+
     // Check if button should be active
     const buttonActive = useMemo(() => {
         return Number(convertAmount) > 0
@@ -50,17 +70,29 @@ export function MintHaiVeloActions() {
             <Header>
                 <Flex $width="100%" $justify="space-between" $align="center">
                     <Text $fontWeight={700}>Mint haiVELO</Text>
-                    {Number(convertAmount) > 0 && (
-                        <Text
-                            $color="rgba(0,0,0,0.5)"
-                            $fontSize="0.8em"
-                            $textDecoration="underline"
-                            onClick={() => setConvertAmount('')}
-                            style={{ cursor: 'pointer' }}
-                        >
-                            Clear
-                        </Text>
-                    )}
+                    <Flex $gap={12} $align="center">
+                        {loading && (
+                            <Text $color="rgba(0,0,0,0.5)" $fontSize="0.8em">
+                                Loading...
+                            </Text>
+                        )}
+                        {error && (
+                            <Text $color="red" $fontSize="0.8em">
+                                Error loading balances
+                            </Text>
+                        )}
+                        {Number(convertAmount) > 0 && (
+                            <Text
+                                $color="rgba(0,0,0,0.5)"
+                                $fontSize="0.8em"
+                                $textDecoration="underline"
+                                onClick={() => setConvertAmount('')}
+                                style={{ cursor: 'pointer' }}
+                            >
+                                Clear
+                            </Text>
+                        )}
+                    </Flex>
                 </Flex>
             </Header>
             <Body>
@@ -76,14 +108,14 @@ export function MintHaiVeloActions() {
                 {/* Convert Amount Input */}
                 <NumberInput
                     label="Convert"
-                    subLabel={`Available: 0 ${getTokenLabel(selectedToken)}`} // Placeholder - should be replaced with actual balance
+                    subLabel={`Available: ${getAvailableBalance(selectedToken)} ${getTokenLabel(selectedToken)}`}
                     placeholder="Amount to Convert"
                     unitLabel={getTokenLabel(selectedToken)}
                     onChange={(value: string) => setConvertAmount(value || '')}
                     value={convertAmount}
                     onMax={() => {
-                        // Placeholder - should be replaced with actual max balance
-                        setConvertAmount('1000')
+                        // Set max to available balance
+                        setConvertAmount(getAvailableBalance(selectedToken))
                     }}
                     conversion={
                         convertAmount && Number(convertAmount) > 0
@@ -119,7 +151,7 @@ export function MintHaiVeloActions() {
                     $variant="yellowish"
                     $width="100%"
                     $justify="center"
-                    disabled={!buttonActive}
+                    disabled={!buttonActive || loading}
                     onClick={() => {
                         // Placeholder for mint action
                         console.log('Minting haiVELO:', {
@@ -129,7 +161,7 @@ export function MintHaiVeloActions() {
                         })
                     }}
                 >
-                    Convert to haiVELO
+                    {loading ? 'Loading...' : 'Convert to haiVELO'}
                 </HaiButton>
             </Footer>
         </Container>

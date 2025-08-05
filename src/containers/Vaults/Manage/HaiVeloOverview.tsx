@@ -2,16 +2,20 @@ import { useMemo } from 'react'
 import { formatNumberWithStyle } from '~/utils'
 
 import styled from 'styled-components'
-import { type DashedContainerProps, DashedContainerStyle, Flex, Grid, Text, CenteredFlex } from '~/styles'
+import { type DashedContainerProps, DashedContainerStyle, Flex, Grid, Text } from '~/styles'
 import { OverviewProgressStat, OverviewStat } from './OverviewStat'
+import { useHaiVeloV2 } from '~/hooks'
 
 export function HaiVeloOverview() {
+    // Use the new hook to fetch VELO and veVELO balances
+    const { loading, error, veloBalanceFormatted, veVeloBalanceFormatted, totalVeloBalanceFormatted } = useHaiVeloV2()
+
     // Placeholder data - replace with actual hooks/data later
     const placeholderData = {
-        myVelo: '0.00',
-        myVeVelo: '0.00',
-        myHaiVeloV1: '0.00',
-        myHaiVelo: '0.00',
+        myVelo: veloBalanceFormatted,
+        myVeVelo: veVeloBalanceFormatted,
+        myHaiVeloV1: '0.00', // TODO: Add haiVELO v1 balance hook
+        myHaiVelo: '0.00', // TODO: Add haiVELO balance hook
         veloTVL: '1,234,567.89',
         netRewardsAPR: '12.34',
         performanceFee: '2.5',
@@ -41,6 +45,16 @@ export function HaiVeloOverview() {
             <Header>
                 <Flex $justify="flex-start" $align="center" $gap={12}>
                     <Text $fontWeight={700}>haiVELO Overview</Text>
+                    {loading && (
+                        <Text $color="rgba(0,0,0,0.5)" $fontSize="0.8em">
+                            Loading balances...
+                        </Text>
+                    )}
+                    {error && (
+                        <Text $color="red" $fontSize="0.8em">
+                            Error loading balances
+                        </Text>
+                    )}
                 </Flex>
                 <Flex $justify="flex-end" $align="center" $gap={12} $fontSize="0.8em">
                     <Text>
@@ -85,8 +99,11 @@ export function HaiVeloOverview() {
             <Inner $borderOpacity={0.2}>
                 {/* Top section - My VELO/veVELO/haiVELO v1 details */}
                 <OverviewStat
-                    value={placeholderData.myVelo}
+                    value={formatNumberWithStyle(placeholderData.myVelo, {
+                        maxDecimals: 2,
+                    })}
                     token="VELO"
+                    tokenLabel="VELO"
                     label="My VELO, veVELO, haiVELO v1"
                     convertedValue="$0.00"
                     labelOnTop
@@ -94,7 +111,10 @@ export function HaiVeloOverview() {
 
                 {/* My haiVELO section */}
                 <OverviewStat
-                    value={placeholderData.myHaiVelo}
+                    value={formatNumberWithStyle(placeholderData.myHaiVelo, {
+                        style: 'currency',
+                        maxDecimals: 2,
+                    })}
                     token="HAIVELO"
                     label="My haiVELO"
                     convertedValue="$0.00"
