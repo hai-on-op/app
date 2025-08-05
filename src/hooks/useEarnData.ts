@@ -57,12 +57,14 @@ interface EarnDataState {
     velodromePositionsData: VelodromePositionData[] | undefined
     velodromePricesData: Record<string, VelodromePriceData> | undefined
     haiVeloSafesData: { safes: Array<{ owner: { address: string }; collateral: string }> } | undefined
-    strategyData: {
-        hai?: { apr: number; tvl: number; userPosition: number }
-        haiVelo?: { tvl: number; userPosition: number; boostApr: unknown }
-        kiteStaking?: { tvl: number; userPosition: number; apr: number }
-    } | undefined
-    
+    strategyData:
+        | {
+              hai?: { apr: number; tvl: number; userPosition: number }
+              haiVelo?: { tvl: number; userPosition: number; boostApr: unknown }
+              kiteStaking?: { tvl: number; userPosition: number; apr: number }
+          }
+        | undefined
+
     // Store state data
     tokensData: Record<string, TokenData>
     userPositionsList: UserPosition[]
@@ -70,13 +72,13 @@ interface EarnDataState {
     totalStaked: string
     stakingApyData: Array<{ id: number; rpToken: string; rpRate: BigNumber }>
     tokensFetchedData: Record<string, TokenFetchData>
-    
+
     // Loading states
     loading: boolean
     allDataLoaded: boolean
     stakingDataLoaded: boolean
     storeDataLoaded: boolean
-    
+
     // Error states
     error: AppError
     dataLoadingError: AppError
@@ -173,7 +175,7 @@ export function useEarnData(): EarnDataState {
         systemStateError,
         haiVeloSafesError
     )
-    
+
     const hasErrors = hasAnyError(
         minterVaultsError,
         collateralTypesError,
@@ -195,7 +197,7 @@ export function useEarnData(): EarnDataState {
         velodromePricesData,
         haiVeloSafesData,
         strategyData,
-        
+
         // Store state data
         tokensData,
         userPositionsList,
@@ -203,16 +205,16 @@ export function useEarnData(): EarnDataState {
         totalStaked,
         stakingApyData,
         tokensFetchedData,
-        
+
         // Loading states
         loading,
         allDataLoaded,
         stakingDataLoaded,
         storeDataLoaded,
-        
+
         // Error states
         error: dataLoadingError,
         dataLoadingError,
         hasErrors,
     }
-} 
+}

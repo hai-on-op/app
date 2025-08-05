@@ -9,7 +9,7 @@ export enum ErrorSeverity {
     LOW = 'low',
     MEDIUM = 'medium',
     HIGH = 'high',
-    CRITICAL = 'critical'
+    CRITICAL = 'critical',
 }
 
 // Structured error information
@@ -25,14 +25,14 @@ export interface ErrorInfo {
  * Returns the first non-null/undefined error, or null if no errors exist
  */
 export function combineErrors(...errors: AppError[]): AppError {
-    return errors.find(error => error != null) || null
+    return errors.find((error) => error != null) || null
 }
 
 /**
  * Check if any errors exist in a list of error states
  */
 export function hasAnyError(...errors: AppError[]): boolean {
-    return errors.some(error => error != null)
+    return errors.some((error) => error != null)
 }
 
 /**
@@ -47,19 +47,19 @@ export function allErrorsResolved(...errors: AppError[]): boolean {
  */
 export function getErrorMessage(error: AppError): string {
     if (!error) return ''
-    
+
     if (typeof error === 'string') {
         return error
     }
-    
+
     if (error instanceof ApolloError) {
         return error.message || 'GraphQL query failed'
     }
-    
+
     if (error instanceof Error) {
         return error.message || 'An unexpected error occurred'
     }
-    
+
     return 'Unknown error occurred'
 }
 
@@ -68,24 +68,24 @@ export function getErrorMessage(error: AppError): string {
  */
 export function getErrorSeverity(error: AppError): ErrorSeverity {
     if (!error) return ErrorSeverity.LOW
-    
+
     const message = getErrorMessage(error).toLowerCase()
-    
+
     // Critical errors - system failures
     if (message.includes('system') || message.includes('critical') || message.includes('fatal')) {
         return ErrorSeverity.CRITICAL
     }
-    
+
     // High priority - data loading failures that prevent functionality
     if (error instanceof ApolloError || message.includes('failed to fetch') || message.includes('network')) {
         return ErrorSeverity.HIGH
     }
-    
+
     // Medium priority - partial failures
     if (message.includes('timeout') || message.includes('retry')) {
         return ErrorSeverity.MEDIUM
     }
-    
+
     // Low priority - non-critical issues
     return ErrorSeverity.LOW
 }
@@ -95,12 +95,12 @@ export function getErrorSeverity(error: AppError): ErrorSeverity {
  */
 export function createErrorInfo(error: AppError, source?: string): ErrorInfo | null {
     if (!error) return null
-    
+
     return {
         message: getErrorMessage(error),
         severity: getErrorSeverity(error),
         source,
-        originalError: error
+        originalError: error,
     }
 }
 
@@ -132,16 +132,16 @@ export function createSafeErrorHandler<T>(
     } = {}
 ): (error: AppError) => T {
     const { logError = true, source, onError } = options
-    
+
     return (error: AppError): T => {
         if (error && logError) {
             console.error(`Error in ${source || 'unknown'}:`, error)
         }
-        
+
         if (onError) {
             onError(error)
         }
-        
+
         return fallbackValue
     }
 }
@@ -162,28 +162,28 @@ export async function retryWithBackoff<T>(
         maxRetries = 3,
         baseDelay = 1000,
         maxDelay = 10000,
-        shouldRetry = (error) => !shouldHaltExecution(error)
+        shouldRetry = (error) => !shouldHaltExecution(error),
     } = options
-    
+
     let lastError: AppError = null
-    
+
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
         try {
             return await operation()
         } catch (error) {
             lastError = error as AppError
-            
+
             // Don't retry on last attempt or if error shouldn't be retried
             if (attempt === maxRetries || !shouldRetry(lastError)) {
                 throw lastError
             }
-            
+
             // Calculate delay with exponential backoff
             const delay = Math.min(baseDelay * Math.pow(2, attempt), maxDelay)
-            await new Promise(resolve => setTimeout(resolve, delay))
+            await new Promise((resolve) => setTimeout(resolve, delay))
         }
     }
-    
+
     throw lastError
 }
 
@@ -201,27 +201,25 @@ export function batchErrorInfo(errors: Record<string, AppError>): ErrorInfo[] {
  */
 export function getMostSevereError(errors: AppError[]): AppError {
     if (errors.length === 0) return null
-    
+
     return errors.reduce((mostSevere, current) => {
         if (!current) return mostSevere
         if (!mostSevere) return current
-        
+
         const currentSeverity = getErrorSeverity(current)
         const mostSevereSeverity = getErrorSeverity(mostSevere)
-        
+
         // Higher severity values take precedence
         const severityOrder = {
             [ErrorSeverity.LOW]: 1,
             [ErrorSeverity.MEDIUM]: 2,
             [ErrorSeverity.HIGH]: 3,
-            [ErrorSeverity.CRITICAL]: 4
+            [ErrorSeverity.CRITICAL]: 4,
         }
-        
-        return severityOrder[currentSeverity] > severityOrder[mostSevereSeverity] 
-            ? current 
-            : mostSevere
+
+        return severityOrder[currentSeverity] > severityOrder[mostSevereSeverity] ? current : mostSevere
     }, null as AppError)
-} 
+}
 
 /**
  * React hook for handling errors in components
@@ -238,7 +236,7 @@ export function useErrorHandler() {
         console.error(`Error in ${context || 'component'}:`, {
             message: errorInfo.message,
             severity: errorInfo.severity,
-            originalError: errorInfo.originalError
+            originalError: errorInfo.originalError,
         })
 
         // Determine user-facing behavior based on severity
@@ -275,28 +273,28 @@ export function useErrorHandler() {
         shouldHaltExecution,
         canContinueWithDegradedMode,
         getErrorMessage,
-        getErrorSeverity
+        getErrorSeverity,
     }
 }
 
 /**
  * Example usage in a component:
- * 
+ *
  * ```tsx
  * function EarnStrategiesPage() {
  *     const { rows, error, hasErrors, loading } = useEarnStrategies()
  *     const { handleError, getErrorMessage } = useErrorHandler()
- * 
+ *
  *     useEffect(() => {
  *         if (error) {
  *             handleError(error, 'EarnStrategiesPage')
  *         }
  *     }, [error, handleError])
- * 
+ *
  *     if (hasErrors && shouldHaltExecution(error)) {
  *         return <ErrorBoundary message="Unable to load strategies. Please try again later." />
  *     }
- * 
+ *
  *     if (hasErrors && canContinueWithDegradedMode(error)) {
  *         return (
  *             <div>
@@ -305,8 +303,8 @@ export function useErrorHandler() {
  *             </div>
  *         )
  *     }
- * 
+ *
  *     return <StrategiesTable data={rows} loading={loading} />
  * }
  * ```
- */ 
+ */

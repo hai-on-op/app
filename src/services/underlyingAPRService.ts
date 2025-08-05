@@ -131,17 +131,17 @@ class LiquidStakingAPRCalculator implements IUnderlyingAPRCalculator {
                     {
                         source,
                         apr: underlyingAPR,
-                        description
-                    }
+                        description,
+                    },
                 ],
-                lastUpdated: new Date()
+                lastUpdated: new Date(),
             }
         } catch (error) {
             return {
                 collateralType: data.collateralType,
                 underlyingAPR: 0,
                 lastUpdated: new Date(),
-                error: error instanceof Error ? error.message : 'Unknown error'
+                error: error instanceof Error ? error.message : 'Unknown error',
             }
         }
     }
@@ -161,20 +161,22 @@ class LPTokenAPRCalculator implements IUnderlyingAPRCalculator {
 
             // For YV-VELO-ALETH-WETH, fetch real APY from Yearn's yDaemon API
             if (data.collateralType.toUpperCase() === 'YV-VELO-ALETH-WETH') {
-              try {
-                const response = await fetch('https://ydaemon.yearn.fi/10/vaults/0xf7D66b41Cd4241eae450fd9D2d6995754634D9f3')
-                if (response.ok) {
-                  const vaultData = await response.json()
-                  const netAPY = vaultData.apr?.netAPR || 0
-                  underlyingAPR = netAPY // Already in decimal format (e.g., 0.025 for 2.5%)
-                  source = 'Yearn Vault Yield'
-                  description = `Net APY from Yearn vault strategy (${(netAPY * 100).toFixed(2)}%)`
-                } else {
-                  console.warn('Failed to fetch Yearn vault data, using 0%')
+                try {
+                    const response = await fetch(
+                        'https://ydaemon.yearn.fi/10/vaults/0xf7D66b41Cd4241eae450fd9D2d6995754634D9f3'
+                    )
+                    if (response.ok) {
+                        const vaultData = await response.json()
+                        const netAPY = vaultData.apr?.netAPR || 0
+                        underlyingAPR = netAPY // Already in decimal format (e.g., 0.025 for 2.5%)
+                        source = 'Yearn Vault Yield'
+                        description = `Net APY from Yearn vault strategy (${(netAPY * 100).toFixed(2)}%)`
+                    } else {
+                        console.warn('Failed to fetch Yearn vault data, using 0%')
+                    }
+                } catch (error) {
+                    console.warn('Error fetching Yearn vault APY:', error)
                 }
-              } catch (error) {
-                console.warn('Error fetching Yearn vault APY:', error)
-              }
             }
 
             return {
@@ -184,17 +186,17 @@ class LPTokenAPRCalculator implements IUnderlyingAPRCalculator {
                     {
                         source,
                         apr: underlyingAPR,
-                        description
-                    }
+                        description,
+                    },
                 ],
-                lastUpdated: new Date()
+                lastUpdated: new Date(),
             }
         } catch (error) {
             return {
                 collateralType: data.collateralType,
                 underlyingAPR: 0,
                 lastUpdated: new Date(),
-                error: error instanceof Error ? error.message : 'Unknown error'
+                error: error instanceof Error ? error.message : 'Unknown error',
             }
         }
     }
@@ -210,7 +212,6 @@ class YieldBearingAPRCalculator implements IUnderlyingAPRCalculator {
         try {
             // For HAI VELO, get the APR from the deposit strategy calculation
             if (data.collateralType.toUpperCase() === 'HAIVELO') {
-
                 let baseAPR = 0.05 // Default fallback
                 let userBoost = 1 // Default boost
 
@@ -239,12 +240,12 @@ class YieldBearingAPRCalculator implements IUnderlyingAPRCalculator {
                     // But convert to decimal by dividing by 100 (like in useEarnStrategies line 261)
                     const baseAPRPercentage = actualTVL > 0 ? (haiVeloDailyRewardValue / actualTVL) * 365 * 100 : 0
                     const baseAPRDecimal = baseAPRPercentage / 100 // Convert percentage to decimal
-                    
+
                     // For underlying APR, we want the boosted deposit strategy APR, not the base APR
                     // Get the user's boost multiplier from the boost APR data
                     userBoost = haiVeloBoostApr?.myBoost || 1
                     const userBoostedAPR = baseAPRDecimal * userBoost
-                    
+
                     baseAPR = userBoostedAPR
                 } catch (error) {
                     console.error('🔥 Error calculating HAI VELO APR:', error)
@@ -258,10 +259,12 @@ class YieldBearingAPRCalculator implements IUnderlyingAPRCalculator {
                         {
                             source: 'HAI VELO Deposit Strategy (Boosted)',
                             apr: baseAPR,
-                            description: `Boosted yield from HAI VELO deposit strategy (${userBoost?.toFixed(2)}x boost)`
-                        }
+                            description: `Boosted yield from HAI VELO deposit strategy (${userBoost?.toFixed(
+                                2
+                            )}x boost)`,
+                        },
                     ],
-                    lastUpdated: new Date()
+                    lastUpdated: new Date(),
                 }
             }
 

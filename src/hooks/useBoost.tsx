@@ -41,16 +41,19 @@ export function useBoost() {
     const { loading: positionsLoading } = useVelodromePositions()
     const { prices: veloPrices } = useVelodromePrices()
     const stakingContext = useStaking()
-    const { stakingData = { stakedBalance: '0' }, stakingStats = { totalStaked: '0' }, loading: stakingLoading = false } = stakingContext || {}
+    const {
+        stakingData = { stakedBalance: '0' },
+        stakingStats = { totalStaked: '0' },
+        loading: stakingLoading = false,
+    } = stakingContext || {}
     const { userHaiVELODeposited, totalHaiVELODeposited } = useHaiVeloData()
 
     // Load vault-specific data for vault boost calculation (similar to useEarnStrategies)
     const { data: minterVaultsData, loading: minterVaultsLoading } = useMinterVaults(address)
-    const {
-        data: collateralTypesData,
-        loading: collateralTypesLoading,
-    } = useQuery<{ collateralTypes: any[] }>(ALL_COLLATERAL_TYPES_QUERY)
-    
+    const { data: collateralTypesData, loading: collateralTypesLoading } = useQuery<{ collateralTypes: any[] }>(
+        ALL_COLLATERAL_TYPES_QUERY
+    )
+
     // Get staking data from store
     const {
         stakingModel: { usersStakingData, totalStaked },
@@ -168,7 +171,12 @@ export function useBoost() {
     // Calculate vault boost values (replacing HAI minting boost)
     const vaultBoostResult = useMemo(() => {
         // Skip calculation if data is not available
-        if (!minterVaultsData || !collateralTypesData?.collateralTypes || minterVaultsLoading || collateralTypesLoading) {
+        if (
+            !minterVaultsData ||
+            !collateralTypesData?.collateralTypes ||
+            minterVaultsLoading ||
+            collateralTypesLoading
+        ) {
             return {
                 vaultBoost: 1,
                 vaultPositionValue: 0,
@@ -188,7 +196,7 @@ export function useBoost() {
         let totalVaultMinted = 0
         let weightedBoostSum = 0
         let totalUserPositionValue = 0
-        
+
         // Store individual vault boost data for useEarnStrategies
         const individualVaultBoosts: Record<string, any> = {}
         const userVaultBoostMap: Record<string, Record<string, number>> = {}
@@ -213,28 +221,31 @@ export function useBoost() {
             }
 
             // Calculate boost map for this collateral type (similar to calculateVaultBoostMap in useEarnStrategies)
-            const vaultBoostMap = Object.entries(ctypeMinterData?.userDebtMapping || {}).reduce((acc, [userAddress, value]) => {
-                const lowercasedAddress = userAddress.toLowerCase()
-                if (!usersStakingData[lowercasedAddress]) {
-                    return { ...acc, [lowercasedAddress]: 1 }
-                } else {
-                    const userStakingAmount = Number(usersStakingData[lowercasedAddress]?.stakedBalance)
-                    const totalStakingAmount = Number(formatEther(totalStaked || '0'))
-                    const userVaultMinted = Number(value)
-                    const totalVaultMinted = Number(ctypeMinterData?.totalMinted)
-                    const vaultBoost = calculateVaultBoost({
-                        userStakingAmount,
-                        totalStakingAmount,
-                        userVaultMinted,
-                        totalVaultMinted,
-                    })
+            const vaultBoostMap = Object.entries(ctypeMinterData?.userDebtMapping || {}).reduce(
+                (acc, [userAddress, value]) => {
+                    const lowercasedAddress = userAddress.toLowerCase()
+                    if (!usersStakingData[lowercasedAddress]) {
+                        return { ...acc, [lowercasedAddress]: 1 }
+                    } else {
+                        const userStakingAmount = Number(usersStakingData[lowercasedAddress]?.stakedBalance)
+                        const totalStakingAmount = Number(formatEther(totalStaked || '0'))
+                        const userVaultMinted = Number(value)
+                        const totalVaultMinted = Number(ctypeMinterData?.totalMinted)
+                        const vaultBoost = calculateVaultBoost({
+                            userStakingAmount,
+                            totalStakingAmount,
+                            userVaultMinted,
+                            totalVaultMinted,
+                        })
 
-                    return {
-                        ...acc,
-                        [lowercasedAddress]: vaultBoost,
+                        return {
+                            ...acc,
+                            [lowercasedAddress]: vaultBoost,
+                        }
                     }
-                }
-            }, {} as Record<string, number>)
+                },
+                {} as Record<string, number>
+            )
 
             userVaultBoostMap[cType.id] = vaultBoostMap
 
@@ -254,7 +265,9 @@ export function useBoost() {
                 ? (dailyKiteRewardUsd / totalBoostedValueParticipating) * 365 * 100
                 : 0
             const myBoost = address ? vaultBoostMap[address.toLowerCase()] || 1 : 1
-            const myValueParticipating = address ? Number(ctypeMinterData?.userDebtMapping[address.toLowerCase()] || 0) : 0
+            const myValueParticipating = address
+                ? Number(ctypeMinterData?.userDebtMapping[address.toLowerCase()] || 0)
+                : 0
             const myBoostedValueParticipating = Number(myValueParticipating) * myBoost
             const myBoostedShare = totalBoostedValueParticipating
                 ? myBoostedValueParticipating / totalBoostedValueParticipating
@@ -275,12 +288,12 @@ export function useBoost() {
 
             const userVaultMinted = address ? Number(ctypeMinterData.userDebtMapping[address.toLowerCase()] || 0) : 0
             const ctypeVaultMinted = Number(ctypeMinterData.totalMinted || 0)
-            
+
             if (userVaultMinted > 0 && ctypeVaultMinted > 0) {
                 // Calculate boost for this collateral type for aggregated calculation
                 const userStakingAmount = Number(userKITEStaked)
                 const totalStakingAmount = Number(formatEther(totalStaked || '0'))
-                
+
                 const vaultBoost = calculateVaultBoost({
                     userStakingAmount,
                     totalStakingAmount,
@@ -292,7 +305,7 @@ export function useBoost() {
                 const userPositionValue = userVaultMinted * haiPrice
                 weightedBoostSum += vaultBoost * userPositionValue
                 totalUserPositionValue += userPositionValue
-                
+
                 totalUserVaultMinted += userVaultMinted
                 totalVaultMinted += ctypeVaultMinted
             }
@@ -300,7 +313,7 @@ export function useBoost() {
 
         // Calculate weighted average boost
         const vaultBoost = totalUserPositionValue > 0 ? weightedBoostSum / totalUserPositionValue : 1
-        
+
         return {
             vaultBoost,
             vaultPositionValue: totalUserPositionValue,
@@ -309,7 +322,18 @@ export function useBoost() {
             individualVaultBoosts,
             userVaultBoostMap,
         }
-    }, [minterVaultsData, collateralTypesData, minterVaultsLoading, collateralTypesLoading, userKITEStaked, totalStaked, address, haiPrice, usersStakingData, veloPrices])
+    }, [
+        minterVaultsData,
+        collateralTypesData,
+        minterVaultsLoading,
+        collateralTypesLoading,
+        userKITEStaked,
+        totalStaked,
+        address,
+        haiPrice,
+        usersStakingData,
+        veloPrices,
+    ])
 
     // Combine the boost values
     const combinedBoostResult = useMemo(
@@ -357,9 +381,11 @@ export function useBoost() {
                     const ctypeMinterData = minterVaultsData[cType.id]
                     if (!ctypeMinterData) return
 
-                    const userVaultMinted = address ? Number(ctypeMinterData.userDebtMapping[address.toLowerCase()] || 0) : 0
+                    const userVaultMinted = address
+                        ? Number(ctypeMinterData.userDebtMapping[address.toLowerCase()] || 0)
+                        : 0
                     const ctypeVaultMinted = Number(ctypeMinterData.totalMinted || 0)
-                    
+
                     if (userVaultMinted > 0 && ctypeVaultMinted > 0) {
                         // Calculate simulated vault boost for this collateral type
                         const vaultBoost = calculateVaultBoost({
@@ -377,7 +403,8 @@ export function useBoost() {
                 })
 
                 // Calculate weighted average vault boost
-                simulatedVaultBoost = totalUserVaultPositionValue > 0 ? weightedVaultBoostSum / totalUserVaultPositionValue : 1
+                simulatedVaultBoost =
+                    totalUserVaultPositionValue > 0 ? weightedVaultBoostSum / totalUserVaultPositionValue : 1
             }
 
             // Combine the boost values

@@ -22,10 +22,10 @@ type MyVaultsTableProps = {
 }
 export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: MyVaultsTableProps) {
     const { setActiveVault } = useVault()
-    
+
     // Get boost data for net APR calculation
     const { individualVaultBoosts } = useBoost()
-   
+
     // Get liquidation data for price calculations
     const {
         vaultModel: { liquidationData },
@@ -132,12 +132,15 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                             },
                             {
                                 content: (
-                                  <Text>
-                                      {formatNumberWithStyle(-getRatePercentage(totalAnnualizedStabilityFee || '1', 4, true), {
-                                          style: 'percent',
-                                          maxDecimals: 2,
-                                      })}
-                                  </Text>
+                                    <Text>
+                                        {formatNumberWithStyle(
+                                            -getRatePercentage(totalAnnualizedStabilityFee || '1', 4, true),
+                                            {
+                                                style: 'percent',
+                                                maxDecimals: 2,
+                                            }
+                                        )}
+                                    </Text>
                                 ),
                             },
                             {

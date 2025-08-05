@@ -400,14 +400,17 @@ export function ClaimModal(props: ModalProps) {
     }
 
     // Process all incentive tokens
-    const incentiveTokens = INCENTIVE_TOKENS.reduce((acc, token) => {
-        const data = incentivesData?.claimData?.[token]
-        const price = getTokenPrice(token)
+    const incentiveTokens = INCENTIVE_TOKENS.reduce(
+        (acc, token) => {
+            const data = incentivesData?.claimData?.[token]
+            const price = getTokenPrice(token)
 
-        console.log(`Processing ${token}:`, data, 'price:', price)
-        acc[token] = { data, price }
-        return acc
-    }, {} as Record<IncentiveToken, { data: any; price: number }>)
+            console.log(`Processing ${token}:`, data, 'price:', price)
+            acc[token] = { data, price }
+            return acc
+        },
+        {} as Record<IncentiveToken, { data: any; price: number }>
+    )
 
     // Check if distributor is paused from any available incentive data
     const isDistributorPaused = incentivesData?.timerData?.isPaused

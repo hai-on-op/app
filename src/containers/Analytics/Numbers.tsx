@@ -28,7 +28,7 @@ import { BlockBanner } from '~/components/BlockBanner'
 
 const colors = [
     'hsl(49, 84%, 68%)', // HAI Gold - for HAI related pools
-    'hsl(115, 70%, 70%)', // KITE Green - for KITE related pools  
+    'hsl(115, 70%, 70%)', // KITE Green - for KITE related pools
     'hsl(232, 64%, 75%)', // ALETH Blue - for ALETH related pools
     'hsl(16, 100%, 75%)', // ALUSD Orange - for ALUSD related pools
     'hsl(280, 70%, 75%)', // Purple - for other pools
@@ -104,7 +104,7 @@ export function Numbers() {
         const getPoolColor = (poolTokens: string[], isUniswap = false) => {
             if (isUniswap) return colors[5] // Light Blue for Uniswap
             if (poolTokens.includes('KITE')) return colors[1] // KITE Green
-            if (poolTokens.includes('ALETH')) return colors[2] // ALETH Blue  
+            if (poolTokens.includes('ALETH')) return colors[2] // ALETH Blue
             if (poolTokens.includes('ALUSD')) return colors[3] // ALUSD Orange
             return colors[0] // HAI Gold as default
         }
@@ -115,7 +115,7 @@ export function Numbers() {
             if (indexOfToken < 0) continue // sanity check
             const hai = parseFloat(formatEther(pool.inputTokenBalances[indexOfToken]))
             total += hai
-            const poolTokens = pool.inputTokens.map(token => token.symbol)
+            const poolTokens = pool.inputTokens.map((token) => token.symbol)
             data.push({
                 id: `${uniLabel} - ${pool.inputTokens[0].symbol}/${pool.inputTokens[1].symbol} (${pool.name.slice(
                     pool.name.lastIndexOf(' ') + 1,
@@ -129,11 +129,11 @@ export function Numbers() {
         const veloLabel = isUpToSmall ? 'Velo' : 'Velodrome Pool'
         for (const pool of pools.veloPools) {
             if (!pool.tokenPair.includes('HAI')) continue
-           
+
             // Only include pools that are configured in REWARDS
             const poolAddress = pool.address.toLowerCase()
             if (!REWARDS.velodrome[poolAddress]) continue
-            
+
             const hai = parseFloat(
                 formatUnits(pool.tokenPair[0] === 'HAI' ? pool.reserve0 : pool.reserve1, pool.decimals)
             )

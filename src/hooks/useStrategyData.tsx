@@ -119,10 +119,10 @@ export function useStrategyData(
 
     useEffect(() => {
         RewardsModel.fetchHaiVeloDailyReward({
-          haiTokenAddress: HAI_TOKEN_ADDRESS,
-          haiVeloDepositer: HAIVELO_DEPOSITER,
-          rewardDistributor: REWARD_DISTRIBUTOR,
-          rpcUrl: VITE_MAINNET_PUBLIC_RPC,
+            haiTokenAddress: HAI_TOKEN_ADDRESS,
+            haiVeloDepositer: HAIVELO_DEPOSITER,
+            rewardDistributor: REWARD_DISTRIBUTOR,
+            rpcUrl: VITE_MAINNET_PUBLIC_RPC,
         }).then((amount) => {
             setHaiVeloLatestTransferAmount(amount)
         })
@@ -184,16 +184,19 @@ export function useStrategyData(
         [OP_TOKEN_ADDRESS]: opPrice,
     }
     const stakingApyRewardsTotal = useMemo(() => {
-        return stakingApyData.reduce((acc: any, item: any) => {
-            const price = rewardsDataMap[item.rpToken as string] || 0
-            if (isNaN(price)) {
-                return acc
-            }
-            const scaledPrice = utils.parseUnits(price.toString(), 18)
-            const amount = item.rpRate.mul(scaledPrice)
-            const nextAcc = acc.add(amount)
-            return nextAcc
-        }, utils.parseUnits('0', 18))
+        return stakingApyData.reduce(
+            (acc: any, item: any) => {
+                const price = rewardsDataMap[item.rpToken as string] || 0
+                if (isNaN(price)) {
+                    return acc
+                }
+                const scaledPrice = utils.parseUnits(price.toString(), 18)
+                const amount = item.rpRate.mul(scaledPrice)
+                const nextAcc = acc.add(amount)
+                return nextAcc
+            },
+            utils.parseUnits('0', 18)
+        )
     }, [stakingApyData, rewardsDataMap])
 
     const stakingApr = useMemo(() => {

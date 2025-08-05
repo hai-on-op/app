@@ -141,9 +141,7 @@ export function StrategyTable({
                                         <Grid $columns="1fr min-content 12px" $align="center" $gap={12}>
                                             <Flex $justify="flex-start" $align="center" $gap={8}>
                                                 <TokenArray tokens={pair} hideLabel />
-                                                <Text $fontWeight={700}>
-                                                    {pair.join('/')}
-                                                </Text>
+                                                <Text $fontWeight={700}>{pair.join('/')}</Text>
                                             </Flex>
                                             <RewardsTokenArray
                                                 tokens={
