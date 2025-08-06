@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useAccount } from 'wagmi'
-import { formatEther, formatUnits } from 'ethers/lib/utils'
+import { formatUnits } from 'ethers/lib/utils'
 import type { SortableHeader, Sorting } from '~/types'
 
 import { arrayToSorted, stringsExistAndAreEqual, tokenAssets } from '~/utils'
 import { RewardsModel } from '~/model/rewardsModel'
-import { calculateHaiMintingBoost } from '~/services/boostService'
 import type { BoostAPRData } from '~/types/system'
 import { calculateTokenPrice, calculatePoolTVL, getTokenSymbol } from '~/utils/priceCalculations'
 import { VELO_POOLS } from '~/utils/constants'
@@ -223,17 +222,17 @@ export function useEarnStrategies() {
         const kiteUserPosition = strategyData.kiteStaking?.userPosition || 0
 
         // Calculate HAI MINTING boost using the same logic as staking page
-        const userHaiMinted = Number(haiUserPosition) / Number(velodromePricesData?.HAI?.raw || 1)
-        const totalHaiMinted = Number(systemStateData?.systemStates[0]?.erc20CoinTotalSupply || 0)
-        const userStakingAmount = address ? Number(usersStakingData[address.toLowerCase()]?.stakedBalance || 0) : 0
-        const totalStakingAmount = Number(formatEther(totalStaked || '0'))
+        // const userHaiMinted = Number(haiUserPosition) / Number(velodromePricesData?.HAI?.raw || 1)
+        // const totalHaiMinted = Number(systemStateData?.systemStates[0]?.erc20CoinTotalSupply || 0)
+        // const userStakingAmount = address ? Number(usersStakingData[address.toLowerCase()]?.stakedBalance || 0) : 0
+        // const totalStakingAmount = Number(formatEther(totalStaked || '0'))
 
-        const haiMintingBoostResult = calculateHaiMintingBoost({
-            userStakingAmount,
-            totalStakingAmount,
-            userHaiMinted,
-            totalHaiMinted,
-        })
+        // const haiMintingBoostResult = calculateHaiMintingBoost({
+        //     userStakingAmount,
+        //     totalStakingAmount,
+        //     userHaiMinted,
+        //     totalHaiMinted,
+        // })
 
         // const haiMintingBoost = {
         //     baseAPR: haiApr * 100,
