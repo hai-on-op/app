@@ -2,14 +2,13 @@ import type { IVault, SetState, SortableHeader, Sorting } from '~/types'
 import { Status, formatNumberWithStyle, riskStateToStatus, getRatePercentage } from '~/utils'
 import { useVault } from '~/providers/VaultProvider'
 import { formatCollateralLabel } from '~/utils/formatting'
-import { useStoreState } from '~/store'
 import styled from 'styled-components'
 import { CenteredFlex, Flex, Grid, HaiButton, TableButton, Text } from '~/styles'
 import { RewardsTokenArray, TokenArray } from '~/components/TokenArray'
 import { StatusLabel } from '~/components/StatusLabel'
 import { Table } from '~/components/Table'
 import { ClaimableFreeCollateral } from './ClaimableFreeCollateral'
-import { useBoost } from '~/hooks/useBoost'
+// import { useBoost } from '~/hooks/useBoost'
 
 type MyVaultsTableProps = {
     headers: SortableHeader[]
@@ -22,7 +21,7 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
     const { setActiveVault } = useVault()
 
     // Get boost data for net APR calculation
-    const { individualVaultBoosts } = useBoost()
+    // const { individualVaultBoosts } = useBoost()
 
     // Get liquidation data for price calculations
     // const {
