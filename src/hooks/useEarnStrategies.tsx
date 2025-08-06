@@ -3,12 +3,12 @@ import { useAccount } from 'wagmi'
 import { formatEther, formatUnits } from 'ethers/lib/utils'
 import type { SortableHeader, Sorting } from '~/types'
 
-import { arrayToSorted, stringsExistAndAreEqual, tokenAssets, type QueryCollateralType } from '~/utils'
+import { arrayToSorted, stringsExistAndAreEqual, tokenAssets } from '~/utils'
 import { RewardsModel } from '~/model/rewardsModel'
 import { calculateHaiMintingBoost } from '~/services/boostService'
 import type { BoostAPRData } from '~/types/system'
 import { calculateTokenPrice, calculatePoolTVL, getTokenSymbol } from '~/utils/priceCalculations'
-import { VELODROME_POOLS, VELO_POOLS } from '~/utils/constants'
+import { VELO_POOLS } from '~/utils/constants'
 import { normalizeAPRValue, getEffectiveAPR, getBestAPRValue } from '~/utils/aprNormalization'
 import { createVaultStrategy, createSpecialStrategy, createVeloStrategy } from '~/utils/strategyFactory'
 import { useEarnData } from './useEarnData'
@@ -65,7 +65,6 @@ export function useEarnStrategies() {
         totalStaked,
         stakingApyData,
         // Loading/error states
-        loading,
         allDataLoaded,
         stakingDataLoaded,
         storeDataLoaded,
@@ -236,11 +235,11 @@ export function useEarnStrategies() {
             totalHaiMinted,
         })
 
-        const haiMintingBoost = {
-            baseAPR: haiApr * 100,
-            myBoost: haiMintingBoostResult.haiMintingBoost,
-            myBoostedAPR: haiApr * 100 * haiMintingBoostResult.haiMintingBoost,
-        }
+        // const haiMintingBoost = {
+        //     baseAPR: haiApr * 100,
+        //     myBoost: haiMintingBoostResult.haiMintingBoost,
+        //     myBoostedAPR: haiApr * 100 * haiMintingBoostResult.haiMintingBoost,
+        // }
 
         return [
             createSpecialStrategy({
@@ -290,7 +289,7 @@ export function useEarnStrategies() {
             const price1 = calculateTokenPrice(token1, velodromePricesData as any)
 
             // Calculate pool TVL using utility function
-            const { tvl0, tvl1, totalTvl: tvl } = calculatePoolTVL(pool, tokensData, velodromePricesData as any)
+            const { totalTvl: tvl } = calculatePoolTVL(pool, tokensData, velodromePricesData as any)
             const veloAPR =
                 (365 *
                     parseFloat(formatUnits(pool.emissions, pool.decimals)) *
