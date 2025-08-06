@@ -76,7 +76,7 @@ export function MintHaiVeloActions() {
     // Create veVELO NFT options for multi-select
     const veVeloNFTOptions: MultiSelectOption<string>[] = useMemo(() => {
         return veVeloNFTs.map(nft => ({
-            label: `NFT #${nft.tokenId}`,
+            label: `Lock #${nft.tokenId}`,
             value: nft.tokenId,
             description: `${formatNumberWithStyle(parseFloat(nft.balanceFormatted), {
                 maxDecimals: 2,
