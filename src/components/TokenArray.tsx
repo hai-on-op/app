@@ -1,3 +1,4 @@
+import React from 'react'
 import type { ReactChildren, TokenKey } from '~/types'
 import { TOKEN_LOGOS } from '~/utils'
 import { useStoreState } from '~/store'
@@ -16,26 +17,26 @@ type TokenArrayProps = {
 }
 
 export function TokenArray({ tokens, size = 32, label, hideLabel = false }: TokenArrayProps) {
-    const tokenBg = (token: string) => {
-        switch (token) {
-            case 'MOO-VELO-V2-OP-VELO':
-                return 'white'
-            case 'YV-VELO-ALETH-WETH':
-                return 'white'
-            case 'VELO':
-                return 'white'
-            case 'APXETH':
-                return 'black'
-            case 'PXETH':
-                return 'black'
-            case 'TBTC':
-                return 'black'
-            case 'LINK':
-                return '#335DD2'
-            default:
-                return 'greenish'
-        }
-    }
+    // const tokenBg = (token: string) => {
+    //     switch (token) {
+    //         case 'MOO-VELO-V2-OP-VELO':
+    //             return 'white'
+    //         case 'VELO':
+    //             return 'white'
+    //         case 'APXETH':
+    //             return 'black'
+    //         case 'PXETH':
+    //             return 'black'
+    //         case 'TBTC':
+    //             return 'black'
+    //         case 'LINK':
+    //             return '#335DD2'
+    //         case 'ALETH':
+    //             return '#eecabc'
+    //         default:
+    //             return 'greenish'
+    //     }
+    // }
 
     const containerContent = (
         <>
@@ -44,39 +45,48 @@ export function TokenArray({ tokens, size = 32, label, hideLabel = false }: Toke
                     case 'All':
                     case 'MOO-VELO-V2-OP-VELO':
                         return (
-                            <>
+                            <React.Fragment key={i}>
                                 <img
-                                    key={i}
+                                    key={`${i}-MOO`}
                                     src={TOKEN_LOGOS['MOO']}
                                     alt={token}
                                     className={`token-${token}`}
                                     style={{ backgroundColor: 'white' }}
                                 />
                                 <img
-                                    key={i}
+                                    key={`${i}-VELO`}
                                     src={TOKEN_LOGOS['VELO']}
                                     alt={token}
                                     className={`token-${token}`}
                                     style={{ backgroundColor: 'white' }}
                                 />
-                                <img key={i} src={TOKEN_LOGOS['OP']} alt={token} className={`token-${token}`} />
-                            </>
+                                <img key={`${i}-OP`} src={TOKEN_LOGOS['OP']} alt={token} className={`token-${token}`} />
+                            </React.Fragment>
                         )
                     case 'Collateral':
                         return <CyclingTokenArray key={i} size={size} includeProtocolTokens={token === 'All'} />
                     default:
                         return (
-                            <img
-                                key={i}
-                                src={TOKEN_LOGOS[token]}
-                                alt={token}
-                                width={48}
-                                height={48}
-                                className={`token-${token}`}
-                                style={{
-                                    backgroundColor: token == 'YV-VELO-ALETH-WETH' ? 'none' : tokenBg(token),
-                                }}
-                            />
+                            <React.Fragment key={i}>
+                                {token == 'VELO' ? (
+                                    <img
+                                        src={TOKEN_LOGOS[token]}
+                                        alt={token}
+                                        width={48}
+                                        height={48}
+                                        className={`token-${token}`}
+                                        style={{ backgroundColor: 'white' }}
+                                    />
+                                ) : (
+                                    <img
+                                        src={TOKEN_LOGOS[token]}
+                                        alt={token}
+                                        width={48}
+                                        height={48}
+                                        className={`token-${token}`}
+                                    />
+                                )}
+                            </React.Fragment>
                         )
                 }
             })}

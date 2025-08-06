@@ -13,13 +13,14 @@ export const REWARDS = {
             OP: 0,
         },
         ALETH: {
-            KITE: 0,
+            KITE: 50,
             OP: 0,
         },
-        YV_VELO_ALETH_WETH: {
-            KITE: 0,
+        'YV-VELO-ALETH-WETH': {
+            KITE: 25,
             OP: 0,
         },
+
         RETH: {
             KITE: 0,
             OP: 0,
@@ -37,7 +38,7 @@ export const REWARDS = {
             OP: 0,
         },
         HAIVELO: {
-            KITE: 0,
+            KITE: 50,
             OP: 0,
         },
 
@@ -62,43 +63,18 @@ export const REWARDS = {
         },
     },
     velodrome: {
-        // sAMMV2-HAI/sUSD
-        ['0xbdED651C03E2bC332AA49C1ffCa391eAA3ea6B86'.toLowerCase()]: {
-            KITE: 0,
-            OP: 0,
-        },
-        // sAMMV2-HAI/LUSD
-        ['0x588f26d5BefE74dC61694a7B36227C0e0C52C0f9'.toLowerCase()]: {
-            KITE: 0,
-            OP: 0,
-        },
-        // CL50-HAI/LUSD
-        ['0xA61FBA486e2d04C4D865183A47fc1C9F6F4Cec1f'.toLowerCase()]: {
-            KITE: 0,
-            OP: 0,
-        },
         // vAMMV2-KITE/HAI
         ['0xf2d3941b6E1cbD3616061E556Eb06986147715d1'.toLowerCase()]: {
             KITE: 0,
-            OP: 100,
+            OP: 0,
         },
-        // vAMMV2-KITE/OP
-        ['0xf4638dC488F9C826DC40250515592E678E447238'.toLowerCase()]: {
+        // vAMMV2-ALETH/HAI
+        ['0x056B153132F105356d95CcF34a0065A28617DaC4'.toLowerCase()]: {
             KITE: 0,
             OP: 0,
         },
-        // vAMMV2-pxETH/HAI
-        ['0xD5fE49a4c0Fc482Ee757DF703A3a332DB209aC2e'.toLowerCase()]: {
-            KITE: 0,
-            OP: 0,
-        },
-        // vAMM-HAI/rETH
-        ['0x4cE1d27d824062B159D000e3212B2F5106792C34'.toLowerCase()]: {
-            KITE: 0,
-            OP: 0,
-        },
-        // vAMMV2-SAIL/KITE
-        ['0xB5cD4bD4bdB5C97020FBE192258e6F08333990E2'.toLowerCase()]: {
+        // vAMMV2-ALUSD/HAI
+        ['0x2408DC2B6CAD3af2Bd65474F0167a107b8b0Be0b'.toLowerCase()]: {
             KITE: 0,
             OP: 0,
         },
@@ -109,15 +85,13 @@ export const REWARDS = {
     },
 }
 
+// export const VELO_SUGAR_ADDRESS = '0xC8229d65581afE8f04344A6706FF45faECC426f9'
 export const VELO_SUGAR_ADDRESS = '0x3b919747b46b13cffd9f16629cff951c0b7ea1e2'
 
 export const KITE_ADDRESS = '0xf467C7d5a4A9C4687fFc7986aC6aD5A4c81E1404'
 export const HAI_ADDRESS = '0x10398AbC267496E49106B07dd6BE13364D10dC71'
 
 export const HAI_KITE_SYMBOL = 'vAMMV2-HAI/KITE'
-
-export const CL50_HAI_LUSD_SYMBOL = '0xA61FBA486e2d04C4D865183A47fc1C9F6F4Cec1f'
-export const CL50_HAI_LUSD_ADDRESS = '0xA61FBA486e2d04C4D865183A47fc1C9F6F4Cec1f'
 
 // const veloPools = [
 // 	{

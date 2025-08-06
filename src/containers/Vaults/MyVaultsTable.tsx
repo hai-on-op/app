@@ -8,6 +8,7 @@ import { RewardsTokenArray, TokenArray } from '~/components/TokenArray'
 import { StatusLabel } from '~/components/StatusLabel'
 import { Table } from '~/components/Table'
 import { ClaimableFreeCollateral } from './ClaimableFreeCollateral'
+// import { useBoost } from '~/hooks/useBoost'
 
 type MyVaultsTableProps = {
     headers: SortableHeader[]
@@ -18,6 +19,14 @@ type MyVaultsTableProps = {
 }
 export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: MyVaultsTableProps) {
     const { setActiveVault } = useVault()
+
+    // Get boost data for net APR calculation
+    // const { individualVaultBoosts } = useBoost()
+
+    // Get liquidation data for price calculations
+    // const {
+    //     vaultModel: { liquidationData },
+    // } = useStoreState((state) => state)
 
     return (
         <Table
@@ -48,26 +57,12 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                 } = vault
 
                 const hasFreeCollateral = freeCollateral !== '0.0'
-                const hasNoRewards = [
-                    'SNX',
-                    'LUSD-A',
-                    'LINK',
-                    'VELO',
-                    'WBTC',
-                    'MOO-VELO-V2-OP-VELO',
-                    'RETH',
-                    'WSTETH',
-                    'APXETH',
-                    'TBTC',
-                    'OP',
-                    'ALETH',
-                    'YV-VELO-ALETH-WETH',
-                ]
+                const HAS_REWARDS = ['HAIVELO', 'ALETH', 'YV-VELO-ALETH-WETH']
                 const collateralLabel = formatCollateralLabel(collateralName)
                 const tooltip =
-                    collateralName == 'HAIVELO'
-                        ? 'haiVELO depositors receive rewards in HAI based off the rewards the protocol receives from voting on Velodrome propotional to their amount of haiVELO deposited.'
-                        : 'Earn OP by providing Liquitity'
+                    collateralName === 'HAIVELO'
+                        ? 'Deposit haiVELO to earn HAI from veVELO voting rewards. Earn KITE rewards for borrowing HAI against this asset. See earn page for details'
+                        : 'Earn KITE rewards for borrowing HAI against this asset. See earn page for details.'
                 return (
                     <Table.Row
                         key={id}
@@ -82,9 +77,9 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                                             <TokenArray tokens={[collateralName as any]} />
                                             <Text>#{id}</Text>
                                         </CenteredFlex>
-                                        {hasNoRewards.includes(collateralName) ? null : (
+                                        {HAS_REWARDS.includes(collateralName) && (
                                             <RewardsTokenArray
-                                                tokens={collateralName === 'WETH' ? ['OP'] : ['HAI']}
+                                                tokens={collateralName === 'HAIVELO' ? ['HAI', 'KITE'] : ['KITE']}
                                                 label="EARN"
                                                 tooltip={tooltip}
                                             />
@@ -135,10 +130,13 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                             {
                                 content: (
                                     <Text>
-                                        {formatNumberWithStyle(getRatePercentage(totalAnnualizedStabilityFee, 4), {
-                                            scalingFactor: -0.01,
-                                            style: 'percent',
-                                        })}
+                                        {formatNumberWithStyle(
+                                            -getRatePercentage(totalAnnualizedStabilityFee || '1', 4, true),
+                                            {
+                                                style: 'percent',
+                                                maxDecimals: 2,
+                                            }
+                                        )}
                                     </Text>
                                 ),
                             },

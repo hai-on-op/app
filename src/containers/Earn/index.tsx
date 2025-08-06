@@ -1,5 +1,4 @@
 import { useEarnStrategies, useMediaQuery } from '~/hooks'
-
 import { NavContainer } from '~/components/NavContainer'
 import { StrategyTable } from './StrategyTable'
 import { CheckboxButton } from '~/components/CheckboxButton'
@@ -8,12 +7,12 @@ import { WrapperAdProps, WrapperAd } from '~/components/WrapperAd'
 
 const wrappers: WrapperAdProps[] = [
     {
-        heading: 'OP REWARDS',
+        heading: 'KITE REWARDS',
         status: 'NOW LIVE',
-        description: 'Earn OP tokens daily by participating in incentive campaigns.',
-        cta: 'Provide Liquidity',
-        ctaLink: 'https://app.uniswap.org/explore/pools/optimism/0x146b020399769339509c98b7b353d19130c150ec',
-        tokenImages: ['OP'],
+        description: 'Earn KITE tokens daily by minting HAI.',
+        cta: 'Get HAI to Earn',
+        ctaLink: '/vaults',
+        tokenImages: ['KITE'],
     },
 ]
 
@@ -40,11 +39,11 @@ export function Earn() {
         >
             <StrategyTable
                 headers={headers}
-                rows={rows}
+                rows={rows as any}
                 loading={loading}
-                error={error}
-                uniError={uniError}
-                veloError={veloError}
+                error={error as any}
+                uniError={uniError as any}
+                veloError={veloError as any}
                 sorting={sorting}
                 setSorting={setSorting}
             />

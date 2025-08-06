@@ -4,13 +4,13 @@ import { useAccount } from 'wagmi'
 import { formatNumberWithStyle } from '~/utils'
 import { useStoreActions } from '~/store'
 import { useEarnStrategies } from '~/hooks'
+import { useBoost } from '~/hooks/useBoost'
 
 import { HaiButton } from '~/styles'
 import { RewardsTokenArray } from '~/components/TokenArray'
 import { Stats, type StatProps } from '~/components/Stats'
 import { Loader } from '~/components/Loader'
 import { RefreshCw } from 'react-feather'
-import { useBoost } from '~/hooks/useBoost'
 import styled from 'styled-components'
 
 const StyledRewardsAPYContainer = styled.div`
@@ -35,24 +35,10 @@ const StyledRewardsAPYWithBoost = styled.div`
 export function EarnStats() {
     const { address } = useAccount()
 
-    const { rows, averageAPR } = useEarnStrategies()
+    const { averageAPR, totalBoostablePosition, totalRewardsValue, rewardTokens, loading } = useEarnStrategies()
     const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
-
     const { netBoostValue } = useBoost()
-
-    //console.log('baseAPR', netBoostValue, baseAPR)
-
-    const { value } = useMemo(() => {
-        return rows.reduce(
-            (obj, { userPosition = '0', apy }) => {
-                const apyToUse = apy ? apy : 0
-                obj.value += parseFloat(userPosition)
-                obj.apy += parseFloat(userPosition) * apyToUse
-                return obj
-            },
-            { value: 0, apy: 0 }
-        )
-    }, [rows])
+    const netBoostFormatted = `${formatNumberWithStyle(netBoostValue, { minDecimals: 0, maxDecimals: 2 })}x`
 
     const formattedWeightedAPR = useMemo(() => {
         return formatNumberWithStyle(averageAPR && averageAPR.averageWeightedAPR ? averageAPR.averageWeightedAPR : 0, {
@@ -103,7 +89,7 @@ export function EarnStats() {
 
     const dummyStats: StatProps[] = [
         {
-            header: formatNumberWithStyle(value, {
+            header: formatNumberWithStyle(totalBoostablePosition, {
                 maxDecimals: 1,
                 suffixed: true,
                 style: 'currency',
@@ -112,12 +98,7 @@ export function EarnStats() {
             tooltip: 'Total eligible value participating in DAO rewards campaign activities',
         },
         {
-            header: isNaN(netBoostValue)
-                ? '...'
-                : `${formatNumberWithStyle(netBoostValue, {
-                      minDecimals: 0,
-                      maxDecimals: 2,
-                  })}x`,
+            header: isNaN(netBoostValue) ? '...' : netBoostFormatted,
             label: 'My Net HAI Boost',
             badge: 'BOOST',
             tooltip: 'Your current boost multiplier based on your staked KITE.',
@@ -129,34 +110,28 @@ export function EarnStats() {
                 'Current estimated APR of campaign rewards based on current value participating and value of rewards tokens',
         },
         {
-            // header: '$0',
-            header: <Loader speed={0.5} icon={<RefreshCw />} />,
-            headerStatus: <RewardsTokenArray tokens={['OP', 'KITE']} hideLabel />,
-            label: 'My Rewards',
-            tooltip: 'Rewards currently voted upon and distributed by DAO approximately once per month.',
+            header: loading ? (
+                <Loader speed={0.5} icon={<RefreshCw />} />
+            ) : (
+                formatNumberWithStyle(totalRewardsValue, {
+                    style: 'currency',
+                    minDecimals: 0,
+                    maxDecimals: 2,
+                })
+            ),
+            headerStatus:
+                rewardTokens.length > 0 ? <RewardsTokenArray tokens={rewardTokens as any} hideLabel /> : undefined,
+            label: 'My Claimable Rewards',
+            tooltip: 'Accumulated rewards available to claim from your participation in various strategies',
             button: (
                 <HaiButton $variant="yellowish" onClick={() => popupsActions.setIsClaimPopupOpen(true)}>
                     Claim
                 </HaiButton>
-                // <HaiButton title="Claim window is closed" $variant="yellowish" disabled>
-                //     Claim
-                // </HaiButton>
             ),
         },
-        // {
-        //     header: '$7,000',
-        //     headerStatus: <RewardsTokenArray tokens={['OP', 'KITE']} hideLabel />,
-        //     label: 'My Farm Rewards',
-        //     tooltip: 'Hello World',
-        //     button: (
-        //         <HaiButton $variant="yellowish" onClick={() => popupsActions.setIsClaimPopupOpen(true)}>
-        //             Claim
-        //         </HaiButton>
-        //     ),
-        // },
     ]
 
     if (!address) return null
 
-    return <Stats stats={dummyStats} fun />
+    return <Stats stats={dummyStats} columns="repeat(3, 1fr) 1.2fr" fun />
 }

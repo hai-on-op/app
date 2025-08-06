@@ -8,7 +8,7 @@ import { type StoreModel } from './index'
 import { ActionState } from '~/utils'
 import { handlePreTxGasEstimate } from '~/hooks'
 import StakingManagerABI from '~/abis/StakingManager.json'
-import RewardPoolABI from '~/abis/RewardPool.json'
+import { RewardsModel } from '~/model/rewardsModel'
 
 // const ERC20ABI = [
 //     {
@@ -589,37 +589,15 @@ export const stakingModel: StakingModel = {
         })
     }),
     fetchStakingApyData: thunk(async (actions, { signer, provider }) => {
-        await retryAsync(async () => {
-            // Use signer if available, otherwise use provider
-            const providerOrSigner = signer || provider
-            if (!providerOrSigner) {
-                throw new Error('Neither signer nor provider available')
-            }
-
-            const apyData = []
-            const stakingManager = new Contract(
-                import.meta.env.VITE_STAKING_MANAGER,
-                StakingManagerABI,
-                providerOrSigner
-            )
-            // const stakingManagerTotalStaked = await stakingManager.totalStaked()
-            const rewardsCountBigNum = await stakingManager.rewards()
-            const rewardsCount = rewardsCountBigNum.toNumber()
-            for (let i = 0; i < rewardsCount; i++) {
-                const poolData = await stakingManager.rewardTypes(i)
-                const { isActive } = poolData
-                if (isActive) {
-                    const rpContract = new Contract(poolData.rewardPool, RewardPoolABI, providerOrSigner)
-                    const rpRate = await rpContract.rewardRate()
-                    apyData.push({
-                        id: i,
-                        rpRate: rpRate,
-                        rpToken: poolData.rewardToken,
-                    })
-                }
-            }
-            actions.setStakingApyData(apyData)
+        const providerOrSigner = signer || provider
+        if (!providerOrSigner) {
+            throw new Error('Neither signer nor provider available')
+        }
+        const apyData = await RewardsModel.fetchStakingApyData({
+            stakingManagerAddress: import.meta.env.VITE_STAKING_MANAGER,
+            providerOrSigner,
         })
+        actions.setStakingApyData(apyData)
     }),
 
     fetchUserRewards: thunk(async (actions, { signer }) => {

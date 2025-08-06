@@ -1,12 +1,12 @@
 import { useEffect, useReducer, useState } from 'react'
 import { BigNumber } from 'ethers'
+import { getAddress } from 'ethers/lib/utils'
 
 import sugarAbi from '~/abis/velo_sugar.abi.json'
 import { useContract } from './useContract'
 import { useAccount } from 'wagmi'
-import { getAddress } from 'viem'
 
-import { CL50_HAI_LUSD_ADDRESS, HAI_ADDRESS, KITE_ADDRESS, VELO_SUGAR_ADDRESS } from '~/utils'
+import { HAI_ADDRESS, KITE_ADDRESS, VELO_SUGAR_ADDRESS } from '~/utils'
 
 export type VelodromeLpData = {
     tokenPair: [string, string]
@@ -40,19 +40,23 @@ export function useVelodrome() {
         const fetchData = async () => {
             try {
                 setLoading(true)
-                const lps = (await velodromeSugarContract.all(BigNumber.from(500), BigNumber.from(650))) as any[]
+                const lps1 = (await velodromeSugarContract.all(BigNumber.from(500), BigNumber.from(710))) as any[]
+                const lps2 = (await velodromeSugarContract.all(BigNumber.from(500), BigNumber.from(800))) as any[]
+                const lps = [...lps1, ...lps2]
                 const targetTokens = [getAddress(HAI_ADDRESS), getAddress(KITE_ADDRESS)]
 
-                const flteredLps = lps.filter((lp) => targetTokens.includes(lp[7]) || targetTokens.includes(lp[10]))
+                // Deduplicate based on LP address
+                const uniqueLps = lps.filter((lp, index, self) => index === self.findIndex((item) => item.lp === lp.lp))
+
+                const flteredLps = uniqueLps.filter(
+                    (lp) => targetTokens.includes(lp[7]) || targetTokens.includes(lp[10])
+                )
 
                 if (isStale) return
                 const lpData = flteredLps.map((lp) => ({
-                    tokenPair:
-                        lp[0] == CL50_HAI_LUSD_ADDRESS
-                            ? ['HAI', 'LUSD']
-                            : lp[1]
-                                  .split('/')
-                                  .map((token: string) => token.replace(/^[v|s]AMMV2-/gi, '').toUpperCase()),
+                    tokenPair: lp[1]
+                        .split('/')
+                        .map((token: string) => token.replace(/^[v|s]AMMV2-/gi, '').toUpperCase()),
                     address: lp.lp,
                     // symbol: lp[0] == CL50_HAI_LUSD_ADDRESS ? CL50_HAI_LUSD_SYMBOL : lp[1],
                     symbol: lp.symbol,
@@ -128,8 +132,8 @@ export function useVelodromePositions() {
             try {
                 setLoading(true)
                 const positions = (await velodromeSugarContract.positions(
+                    BigNumber.from(800),
                     BigNumber.from(700),
-                    BigNumber.from(300),
                     address
                 )) as any[]
                 if (isStale) return
@@ -164,7 +168,6 @@ export function useVelodromePositions() {
 
         return () => {
             isStale = true
-            setData(undefined)
         }
     }, [address, velodromeSugarContract, refresher])
 

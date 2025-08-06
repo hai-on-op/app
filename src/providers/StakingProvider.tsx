@@ -434,7 +434,7 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
 export function useStaking() {
     const context = useContext(StakingContext)
     if (context === undefined) {
-        throw new Error('useStaking must be used within a StakingProvider')
+        // throw new Error('useStaking must be used within a StakingProvider')
     }
     return context
 }

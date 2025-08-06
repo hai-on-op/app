@@ -16,8 +16,12 @@ type ClaimsContext = {
         refetch?: () => void
     }
     incentivesData: {
-        KITE?: SummaryItemValue<SummaryCurrency>
-        OP?: SummaryItemValue<SummaryCurrency>
+        claimData: Record<string, any>
+        timerData: {
+            endTime: number
+            nextDistribution: string
+            isPaused: boolean
+        }
         refetch?: () => void
     }
     activeAuctions: {
@@ -31,6 +35,7 @@ type ClaimsContext = {
         refetch: () => void
     }
     totalUSD: SummaryItemValue
+    refetchIncentives: () => Promise<void>
 }
 
 const defaultTokenMetadata = {
@@ -46,10 +51,14 @@ const defaultState: ClaimsContext = {
         KITE: defaultTokenMetadata,
     },
     incentivesData: {
-        KITE: defaultTokenMetadata,
-        OP: defaultTokenMetadata,
+        claimData: {},
+        timerData: {
+            endTime: 0,
+            nextDistribution: '',
+            isPaused: false,
+        },
     },
-    refetchIncentives: () => undefined,
+    refetchIncentives: async () => Promise.resolve(),
     activeAuctions: {
         bids: [],
         activeBids: [],
@@ -89,12 +98,27 @@ export function ClaimsProvider({ children }: Props) {
 
     const activeAuctions = useMyActiveAuctions()
 
-    const [incentivesData, setIncentivesData] = useState({})
+    const [incentivesData, setIncentivesData] = useState<{
+        claimData: Record<string, any>
+        timerData: {
+            endTime: number
+            nextDistribution: string
+            isPaused: boolean
+        }
+    }>({
+        claimData: {},
+        timerData: {
+            endTime: 0,
+            nextDistribution: '',
+            isPaused: false,
+        },
+    })
 
     useEffect(() => {
         const fetchIncentives = async () => {
             if (!account || !chainId || !geb) return
             const incentives = await fetchIncentivesData(geb, account, chainId)
+
             setIncentivesData(incentives)
         }
         fetchIncentives()
@@ -114,6 +138,7 @@ export function ClaimsProvider({ children }: Props) {
                 internalBalances,
                 incentivesData,
                 refetchIncentives: async () => {
+                    if (!account || !chainId || !geb) return
                     const updatedData = await fetchIncentivesData(geb, account, chainId)
                     setIncentivesData(updatedData)
                 },

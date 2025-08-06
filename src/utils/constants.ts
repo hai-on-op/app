@@ -118,3 +118,17 @@ export const COLLATERAL_BATCH_SIZE = 5_000_000 // blocks
 export const HARDCODED_KITE = 8
 
 export const DEPRECATED_COLLATERALS = ['MOO-VELO-V2-OP-VELO', 'SNX', 'WBTC', 'LUSD-A', 'LINK']
+
+// Token Addresses
+export const TOKEN_ADDRESSES = {
+    ALUSD: '0xCB8FA9a76b8e203D8C3797bF438d8FB81Ea3326A',
+} as const
+
+// Velodrome Pool Addresses
+export const VELODROME_POOLS = {
+    VELO_HAI_KITE: '0xf2d3941b6E1cbD3616061E556Eb06986147715d1',
+    VELO_HAI_ALETH: '0x056B153132F105356d95CcF34a0065A28617DaC4',
+    VELO_HAI_ALUSD: '0x2408DC2B6CAD3af2Bd65474F0167a107b8b0Be0b',
+} as const
+
+export const VELO_POOLS: string[] = Object.values(VELODROME_POOLS)
