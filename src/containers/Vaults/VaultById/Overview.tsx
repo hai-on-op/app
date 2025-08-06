@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next'
 import { type QueriedVault, formatNumberWithStyle, getRatePercentage } from '~/utils'
 import { useStoreState } from '~/store'
 import { useBoost } from '~/hooks/useBoost'
-import { RewardsModel } from '~/model/rewardsModel'
 import { useUnderlyingAPR } from '~/hooks/useUnderlyingAPR'
 
 import styled from 'styled-components'
@@ -173,8 +172,8 @@ export function Overview({ vault }: OverviewProps) {
 
                     // For VaultById, we always have an existing vault, so use weighted average
                     let netAPR: number = 0
-                    let calculationMethod: string = ''
-                    let simulatedNetAPR: number | undefined = undefined
+                    // let calculationMethod: string = ''
+                    // let simulatedNetAPR: number | undefined = undefined
 
                     const collateralUsdValue =
                         parseFloat(vault.collateral || '0') *

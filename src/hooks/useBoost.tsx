@@ -12,7 +12,6 @@ import { useHaiVeloData } from './useHaiVeloData'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { useQuery } from '@apollo/client'
 import { ALL_COLLATERAL_TYPES_QUERY } from '~/utils/graphql/queries'
-import { useBalance } from '~/hooks/useBalance'
 import { useMinterVaults } from '~/hooks/useMinterVaults'
 import { REWARDS } from '~/utils/rewards'
 import {
@@ -20,7 +19,6 @@ import {
     calculateHaiVeloBoost,
     calculateVaultBoost,
     combineBoostValues,
-    simulateNetBoost as simulateNetBoostService,
     calculateBaseAPR,
 } from '~/services/boostService'
 
@@ -57,7 +55,6 @@ export function useBoost() {
     // Get staking data from store
     const {
         stakingModel: { usersStakingData, totalStaked },
-        vaultModel: { list: userPositionsList },
     } = useStoreState((state) => state)
 
     const {
@@ -351,12 +348,12 @@ export function useBoost() {
     const simulateNetBoost = useCallback(
         (userAfterStakingAmount: number, totalAfterStakingAmount: number) => {
             // Calculate LP boost with simulated staking amounts
-            const lpBoostResult = calculateLPBoost({
-                userStakingAmount: userAfterStakingAmount,
-                totalStakingAmount: totalAfterStakingAmount,
-                userLPPosition,
-                totalPoolLiquidity,
-            })
+            // const lpBoostResult = calculateLPBoost({
+            //     userStakingAmount: userAfterStakingAmount,
+            //     totalStakingAmount: totalAfterStakingAmount,
+            //     userLPPosition,
+            //     totalPoolLiquidity,
+            // })
 
             // Calculate haiVELO boost with simulated staking amounts
             const haiVeloBoostResult = calculateHaiVeloBoost({

@@ -17,26 +17,26 @@ type TokenArrayProps = {
 }
 
 export function TokenArray({ tokens, size = 32, label, hideLabel = false }: TokenArrayProps) {
-    const tokenBg = (token: string) => {
-        switch (token) {
-            case 'MOO-VELO-V2-OP-VELO':
-                return 'white'
-            case 'VELO':
-                return 'white'
-            case 'APXETH':
-                return 'black'
-            case 'PXETH':
-                return 'black'
-            case 'TBTC':
-                return 'black'
-            case 'LINK':
-                return '#335DD2'
-            case 'ALETH':
-                return '#eecabc'
-            default:
-                return 'greenish'
-        }
-    }
+    // const tokenBg = (token: string) => {
+    //     switch (token) {
+    //         case 'MOO-VELO-V2-OP-VELO':
+    //             return 'white'
+    //         case 'VELO':
+    //             return 'white'
+    //         case 'APXETH':
+    //             return 'black'
+    //         case 'PXETH':
+    //             return 'black'
+    //         case 'TBTC':
+    //             return 'black'
+    //         case 'LINK':
+    //             return '#335DD2'
+    //         case 'ALETH':
+    //             return '#eecabc'
+    //         default:
+    //             return 'greenish'
+    //     }
+    // }
 
     const containerContent = (
         <>

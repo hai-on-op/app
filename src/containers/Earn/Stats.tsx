@@ -35,8 +35,7 @@ const StyledRewardsAPYWithBoost = styled.div`
 export function EarnStats() {
     const { address } = useAccount()
 
-    const { averageAPR, averageWeightedBoost, totalBoostablePosition, totalRewardsValue, rewardTokens, loading } =
-        useEarnStrategies()
+    const { averageAPR, totalBoostablePosition, totalRewardsValue, rewardTokens, loading } = useEarnStrategies()
     const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
     const { netBoostValue } = useBoost()
     const netBoostFormatted = `${formatNumberWithStyle(netBoostValue, { minDecimals: 0, maxDecimals: 2 })}x`

@@ -10,8 +10,6 @@ import { StatusLabel } from '~/components/StatusLabel'
 import { Table } from '~/components/Table'
 import { ClaimableFreeCollateral } from './ClaimableFreeCollateral'
 import { useBoost } from '~/hooks/useBoost'
-import { RewardsModel } from '~/model/rewardsModel'
-import { useUnderlyingAPR } from '~/hooks/useUnderlyingAPR'
 
 type MyVaultsTableProps = {
     headers: SortableHeader[]
@@ -27,9 +25,9 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
     const { individualVaultBoosts } = useBoost()
 
     // Get liquidation data for price calculations
-    const {
-        vaultModel: { liquidationData },
-    } = useStoreState((state) => state)
+    // const {
+    //     vaultModel: { liquidationData },
+    // } = useStoreState((state) => state)
 
     return (
         <Table

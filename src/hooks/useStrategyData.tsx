@@ -1,11 +1,9 @@
-import axios from 'axios'
 import { useState, useEffect, useMemo } from 'react'
 import { utils } from 'ethers'
 import { formatNumberWithStyle, VITE_MAINNET_PUBLIC_RPC } from '~/utils'
 
 import { useBalance } from '~/hooks'
 import { calculateHaiVeloBoost } from '~/services/boostService'
-import { useStakingSummary } from './useStakingSummary'
 import { RewardsModel } from '~/model/rewardsModel'
 
 const HAIVELO_DEPOSITER = '0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3'

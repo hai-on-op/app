@@ -45,7 +45,7 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
         // For HAI VELO, we need HAI price and the actual strategy data
         const haiPrice = Number(velodromePricesData?.HAI?.raw || 1)
         // Only pass the specific values we need to avoid dependency issues
-        const haiVeloBoostApr = collateralType === 'HAIVELO' ? strategyData?.haiVelo?.boostApr : undefined
+        // const haiVeloBoostApr = collateralType === 'HAIVELO' ? strategyData?.haiVelo?.boostApr : undefined
 
         return {
             collateralType,

@@ -1,6 +1,6 @@
 import { useEffect, useReducer, useState } from 'react'
 import { BigNumber } from 'ethers'
-import { formatUnits, getAddress } from 'ethers/lib/utils'
+import { getAddress } from 'ethers/lib/utils'
 
 import sugarAbi from '~/abis/velo_sugar.abi.json'
 import { useContract } from './useContract'
