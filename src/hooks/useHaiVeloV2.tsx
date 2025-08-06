@@ -5,6 +5,7 @@ import { useAccount } from 'wagmi'
 
 import { usePublicProvider } from './useEthersAdapters'
 import { useContract } from './useContract'
+import { formatNumberWithStyle } from '~/utils'
 
 // Contract addresses on Optimism
 const VELO_ADDRESS = '0x9560e827aF36c94D2Ac33a39bCE1Fe78631088Db'
@@ -22,6 +23,14 @@ const VE_ABI = [
     'function balanceOfNFT(uint256 _tokenId) view returns (uint256)',
 ]
 
+export type VeVeloNFT = {
+    tokenId: string
+    balance: string
+    balanceFormatted: string
+    lockEndTime?: string
+    lockEndDate?: string
+}
+
 export type HaiVeloV2Data = {
     loading: boolean
     error?: Error
@@ -31,6 +40,7 @@ export type HaiVeloV2Data = {
     veVeloBalanceFormatted: string
     totalVeloBalance: string
     totalVeloBalanceFormatted: string
+    veVeloNFTs: VeVeloNFT[]
 }
 
 export function useHaiVeloV2(): HaiVeloV2Data {
@@ -40,6 +50,7 @@ export function useHaiVeloV2(): HaiVeloV2Data {
     const [error, setError] = useState<Error | undefined>(undefined)
     const [veloBalance, setVeloBalance] = useState<string>('0')
     const [veVeloBalance, setVeVeloBalance] = useState<string>('0')
+    const [veVeloNFTs, setVeVeloNFTs] = useState<VeVeloNFT[]>([])
 
     // Get contract instances
     const veloContract = useContract(VELO_ADDRESS, VELO_ABI, false)
@@ -83,10 +94,21 @@ export function useHaiVeloV2(): HaiVeloV2Data {
                 )
                 const nftBalances = await Promise.all(balancePromises)
 
+                // Create NFT data array
+                const nftData: VeVeloNFT[] = tokenIds.map((tokenId, index) => ({
+                    tokenId: tokenId.toString(),
+                    balance: nftBalances[index].toString(),
+                    balanceFormatted: formatEther(nftBalances[index]),
+                }))
+
+                setVeVeloNFTs(nftData)
+
                 // Sum up all voting powers
                 veVeloBalanceBN = nftBalances.reduce((total, balance) => 
                     total.add(balance), BigNumber.from(0)
                 )
+            } else {
+                setVeVeloNFTs([])
             }
 
             setVeVeloBalance(veVeloBalanceBN.toString())
@@ -115,7 +137,9 @@ export function useHaiVeloV2(): HaiVeloV2Data {
         const veloBN = BigNumber.from(veloBalance)
         const veVeloBN = BigNumber.from(veVeloBalance)
         const totalBN = veloBN.add(veVeloBN)
-        const totalFormatted = formatEther(totalBN)
+        const totalFormatted = formatNumberWithStyle(parseFloat(formatEther(totalBN)), {
+            maxDecimals: 2,
+        })
 
         return {
             veloBalanceFormatted: veloFormatted,
@@ -130,6 +154,7 @@ export function useHaiVeloV2(): HaiVeloV2Data {
         error,
         veloBalance,
         veVeloBalance,
+        veVeloNFTs,
         ...formattedData,
     }
 } 

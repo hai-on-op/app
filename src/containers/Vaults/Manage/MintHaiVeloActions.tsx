@@ -5,6 +5,7 @@ import styled from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
 import { NumberInput } from '~/components/NumberInput'
 import { SelectInput, type SelectOption } from '~/components/SelectInput'
+import { MultiSelectInput, type MultiSelectOption } from '~/components/MultiSelectInput'
 import { useHaiVeloV2 } from '~/hooks'
 
 type SelectedToken = 'VELO' | 'veVELO' | 'haiVELO_v1'
@@ -12,9 +13,16 @@ type SelectedToken = 'VELO' | 'veVELO' | 'haiVELO_v1'
 export function MintHaiVeloActions() {
     const [selectedToken, setSelectedToken] = useState<SelectedToken>('VELO')
     const [convertAmount, setConvertAmount] = useState<string>('')
+    const [selectedVeVeloNFTs, setSelectedVeVeloNFTs] = useState<string[]>([])
 
     // Use the new hook to fetch VELO and veVELO balances
-    const { loading, error, veloBalanceFormatted, veVeloBalanceFormatted } = useHaiVeloV2()
+    const { 
+        loading, 
+        error, 
+        veloBalanceFormatted, 
+        veVeloBalanceFormatted,
+        veVeloNFTs,
+    } = useHaiVeloV2()
 
     // Token options for the select dropdown
     const tokenOptions: SelectOption<SelectedToken>[] = [
@@ -23,12 +31,33 @@ export function MintHaiVeloActions() {
         { label: 'haiVELO v1', value: 'haiVELO_v1' },
     ]
 
+    // Handle token selection change
+    const handleTokenChange = (token: SelectedToken) => {
+        setSelectedToken(token)
+        // Clear previous selections when switching tokens
+        if (token !== 'veVELO') {
+            setSelectedVeVeloNFTs([])
+        }
+        if (token !== 'VELO' && token !== 'haiVELO_v1') {
+            setConvertAmount('')
+        }
+    }
+
     // Calculate haiVELO received (1:1 peg for now)
     const haiVeloReceived = useMemo(() => {
+        if (selectedToken === 'veVELO') {
+            // Calculate total from selected NFTs
+            const selectedNFTs = veVeloNFTs.filter(nft => selectedVeVeloNFTs.includes(nft.tokenId))
+            const totalBalance = selectedNFTs.reduce((sum, nft) => sum + parseFloat(nft.balanceFormatted), 0)
+            return formatNumberWithStyle(totalBalance, {
+                maxDecimals: 2,
+            })
+        }
+        
         if (!convertAmount || Number(convertAmount) <= 0) return '0'
         // For now, simple 1:1 conversion - this should be replaced with actual conversion logic
         return convertAmount
-    }, [convertAmount])
+    }, [convertAmount, selectedToken, selectedVeVeloNFTs, veVeloNFTs])
 
     // Get token label for display
     const getTokenLabel = (token: SelectedToken): string => {
@@ -44,6 +73,17 @@ export function MintHaiVeloActions() {
         }
     }
 
+    // Create veVELO NFT options for multi-select
+    const veVeloNFTOptions: MultiSelectOption<string>[] = useMemo(() => {
+        return veVeloNFTs.map(nft => ({
+            label: `NFT #${nft.tokenId}`,
+            value: nft.tokenId,
+            description: `${formatNumberWithStyle(parseFloat(nft.balanceFormatted), {
+                maxDecimals: 2,
+            })} veVELO`,
+        }))
+    }, [veVeloNFTs])
+
     // Get available balance for selected token
     const getAvailableBalance = (token: SelectedToken): string => {
         switch (token) {
@@ -52,7 +92,12 @@ export function MintHaiVeloActions() {
                     maxDecimals: 2,
                 })
             case 'veVELO':
-                return veVeloBalanceFormatted
+                // Calculate total from selected NFTs
+                const selectedNFTs = veVeloNFTs.filter(nft => selectedVeVeloNFTs.includes(nft.tokenId))
+                const totalBalance = selectedNFTs.reduce((sum, nft) => sum + parseFloat(nft.balanceFormatted), 0)
+                return formatNumberWithStyle(totalBalance, {
+                    maxDecimals: 2,
+                })
             case 'haiVELO_v1':
                 return '0.00' // TODO: Add haiVELO v1 balance hook
             default:
@@ -62,8 +107,11 @@ export function MintHaiVeloActions() {
 
     // Check if button should be active
     const buttonActive = useMemo(() => {
+        if (selectedToken === 'veVELO') {
+            return selectedVeVeloNFTs.length > 0
+        }
         return Number(convertAmount) > 0
-    }, [convertAmount])
+    }, [convertAmount, selectedToken, selectedVeVeloNFTs])
 
     return (
         <Container>
@@ -92,6 +140,17 @@ export function MintHaiVeloActions() {
                                 Clear
                             </Text>
                         )}
+                        {selectedToken === 'veVELO' && selectedVeVeloNFTs.length > 0 && (
+                            <Text
+                                $color="rgba(0,0,0,0.5)"
+                                $fontSize="0.8em"
+                                $textDecoration="underline"
+                                onClick={() => setSelectedVeVeloNFTs([])}
+                                style={{ cursor: 'pointer' }}
+                            >
+                                Clear NFTs
+                            </Text>
+                        )}
                     </Flex>
                 </Flex>
             </Header>
@@ -102,30 +161,43 @@ export function MintHaiVeloActions() {
                     subLabel="Choose token type"
                     options={tokenOptions}
                     value={selectedToken}
-                    onChange={setSelectedToken}
+                    onChange={handleTokenChange}
                 />
 
                 {/* Convert Amount Input */}
-                <NumberInput
-                    label="Convert"
-                    subLabel={`Available: ${getAvailableBalance(selectedToken)} ${getTokenLabel(selectedToken)}`}
-                    placeholder="Amount to Convert"
-                    unitLabel={getTokenLabel(selectedToken)}
-                    onChange={(value: string) => setConvertAmount(value || '')}
-                    value={convertAmount}
-                    onMax={() => {
-                        // Set max to available balance
-                        setConvertAmount(getAvailableBalance(selectedToken))
-                    }}
-                    conversion={
-                        convertAmount && Number(convertAmount) > 0
-                            ? `~${formatNumberWithStyle(
-                                  Number(convertAmount) * 1, // Placeholder price - should use actual price
-                                  { style: 'currency' }
-                              )}`
-                            : ''
-                    }
-                />
+                {selectedToken === 'veVELO' ? (
+                    <MultiSelectInput
+                        label="Select veVELO NFTs"
+                        subLabel={`Available: ${formatNumberWithStyle(parseFloat(veVeloBalanceFormatted), {
+                            maxDecimals: 2,
+                        })} veVELO`}
+                        options={veVeloNFTOptions}
+                        selectedValues={selectedVeVeloNFTs}
+                        onChange={setSelectedVeVeloNFTs}
+                        placeholder="Select NFTs to convert"
+                    />
+                ) : (
+                    <NumberInput
+                        label="Convert"
+                        subLabel={`Available: ${getAvailableBalance(selectedToken)} ${getTokenLabel(selectedToken)}`}
+                        placeholder="Amount to Convert"
+                        unitLabel={getTokenLabel(selectedToken)}
+                        onChange={(value: string) => setConvertAmount(value || '')}
+                        value={convertAmount}
+                        onMax={() => {
+                            // Set max to available balance
+                            setConvertAmount(getAvailableBalance(selectedToken))
+                        }}
+                        conversion={
+                            convertAmount && Number(convertAmount) > 0
+                                ? `~${formatNumberWithStyle(
+                                      Number(convertAmount) * 1, // Placeholder price - should use actual price
+                                      { style: 'currency' }
+                                  )}`
+                                : ''
+                        }
+                    />
+                )}
 
                 {/* haiVELO Received (Disabled) */}
                 <NumberInput
@@ -154,11 +226,19 @@ export function MintHaiVeloActions() {
                     disabled={!buttonActive || loading}
                     onClick={() => {
                         // Placeholder for mint action
-                        console.log('Minting haiVELO:', {
-                            token: selectedToken,
-                            amount: convertAmount,
-                            received: haiVeloReceived,
-                        })
+                        if (selectedToken === 'veVELO') {
+                            console.log('Minting haiVELO from veVELO NFTs:', {
+                                token: selectedToken,
+                                selectedNFTs: selectedVeVeloNFTs,
+                                totalReceived: haiVeloReceived,
+                            })
+                        } else {
+                            console.log('Minting haiVELO:', {
+                                token: selectedToken,
+                                amount: convertAmount,
+                                received: haiVeloReceived,
+                            })
+                        }
                     }}
                 >
                     {loading ? 'Loading...' : 'Convert to haiVELO'}

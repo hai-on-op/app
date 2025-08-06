@@ -10,10 +10,13 @@ export function HaiVeloOverview() {
     // Use the new hook to fetch VELO and veVELO balances
     const { loading, error, veloBalanceFormatted, veVeloBalanceFormatted, totalVeloBalanceFormatted } = useHaiVeloV2()
 
+
+
     // Placeholder data - replace with actual hooks/data later
     const placeholderData = {
         myVelo: veloBalanceFormatted,
         myVeVelo: veVeloBalanceFormatted,
+        myTotalVelo: totalVeloBalanceFormatted, // Sum of VELO + veVELO
         myHaiVeloV1: '0.00', // TODO: Add haiVELO v1 balance hook
         myHaiVelo: '0.00', // TODO: Add haiVELO balance hook
         veloTVL: '1,234,567.89',
@@ -99,7 +102,7 @@ export function HaiVeloOverview() {
             <Inner $borderOpacity={0.2}>
                 {/* Top section - My VELO/veVELO/haiVELO v1 details */}
                 <OverviewStat
-                    value={formatNumberWithStyle(placeholderData.myVelo, {
+                    value={formatNumberWithStyle(placeholderData.myTotalVelo, {
                         maxDecimals: 2,
                     })}
                     token="VELO"
