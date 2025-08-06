@@ -263,8 +263,6 @@ export function calculateBoostValues({
  *
  * @param userAfterStakingAmount User's staking amount after hypothetical action
  * @param totalAfterStakingAmount Total staking amount after hypothetical action
- * @param userLPPosition User's LP position amount
- * @param totalPoolLiquidity Total pool liquidity
  * @param userHaiVELODeposited User's haiVELO deposited amount
  * @param totalHaiVELODeposited Total haiVELO deposited
  * @param haiVeloPositionValue Value of user's haiVELO position in USD
@@ -276,8 +274,6 @@ export function calculateBoostValues({
 export function simulateNetBoost({
     userAfterStakingAmount,
     totalAfterStakingAmount,
-    userLPPosition,
-    totalPoolLiquidity,
     userHaiVELODeposited,
     totalHaiVELODeposited,
     haiVeloPositionValue,
@@ -287,8 +283,6 @@ export function simulateNetBoost({
 }: {
     userAfterStakingAmount: number
     totalAfterStakingAmount: number
-    userLPPosition: string | number
-    totalPoolLiquidity: string | number
     userHaiVELODeposited: string | number
     totalHaiVELODeposited: string | number
     haiVeloPositionValue: string | number
