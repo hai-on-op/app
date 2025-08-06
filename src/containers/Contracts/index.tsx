@@ -22,13 +22,6 @@ const externalContracts = [
         link: 'https://info.uniswap.org/#/optimism/pools/0x146b020399769339509c98b7b353d19130c150ec',
     },
     {
-        address: '0x2A087fd694DeBec1ED61E0740BD0810b804da8f0',
-        name: 'Uniswap V3 Pool - HAI/WETH (1%)',
-        description: `Uniswap liquidity pool.`,
-        labelLink: 'View on Uniswap',
-        link: 'https://info.uniswap.org/#/optimism/pools/0x2a087fd694debec1ed61e0740bd0810b804da8f0',
-    },
-    {
         address: '0xbdED651C03E2bC332AA49C1ffCa391eAA3ea6B86',
         name: 'Velodrome Pool - HAI/sUSD',
         description: `Velodrome liquidity pool. Incentivized with KITE and OP rewards.`,

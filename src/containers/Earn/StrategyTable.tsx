@@ -7,7 +7,6 @@ import { StrategyTableButton } from './StrategyTableButton'
 import { Table } from '~/components/Table'
 import { Link } from '~/components/Link'
 import { ComingSoon } from '~/components/ComingSoon'
-import { CL50_HAI_LUSD_ADDRESS } from '~/utils/rewards'
 
 type StrategyTableProps = {
     headers: SortableHeader[]
@@ -111,7 +110,6 @@ export function StrategyTable({
                         pair,
                         rewards,
                         tvl,
-                        apy,
                         userPosition,
                         earnPlatform,
                         earnAddress,
@@ -122,11 +120,14 @@ export function StrategyTable({
                     },
                     i
                 ) => {
-                    // const LSTS = ['RETH', 'APXETH', 'WSTETH']
-                    // const isLST = LSTS.includes(pair[0])
-                    // const isAPXETH = pair.includes('APXETH')
-                    // const baseTokens = rewards.map(({ token }) => token)
-                    const tokens: TokenKey[] = earnPlatform === 'velodrome' ? ['VELO'] : ['OP']
+                    const tokens: TokenKey[] =
+                        strategyType === 'borrow'
+                            ? ['KITE']
+                            : earnPlatform === 'velodrome'
+                            ? ['VELO']
+                            : strategyType === 'stake'
+                            ? ['HAI', 'KITE', 'OP']
+                            : ['OP']
 
                     return (
                         <Table.Row
@@ -140,11 +141,7 @@ export function StrategyTable({
                                         <Grid $columns="1fr min-content 12px" $align="center" $gap={12}>
                                             <Flex $justify="flex-start" $align="center" $gap={8}>
                                                 <TokenArray tokens={pair} hideLabel />
-                                                <Text $fontWeight={700}>
-                                                    {`${
-                                                        earnAddress == CL50_HAI_LUSD_ADDRESS ? 'CL-50' : ''
-                                                    }  ${pair.join('/')}`}
-                                                </Text>
+                                                <Text $fontWeight={700}>{pair.join('/')}</Text>
                                             </Flex>
                                             <RewardsTokenArray
                                                 tokens={
@@ -253,23 +250,12 @@ export function StrategyTable({
                                                 )
                                             ) : (
                                                 <Text $fontWeight={700}>
-                                                    {strategyType === 'deposit'
-                                                        ? '40% - 50%'
-                                                        : apr
-                                                        ? formatNumberWithStyle(apr, {
-                                                              style: 'percent',
-                                                              scalingFactor: 100,
-                                                              maxDecimals: 1,
-                                                              suffixed: true,
-                                                          })
-                                                        : apy
-                                                        ? formatNumberWithStyle(apy, {
-                                                              style: 'percent',
-                                                              scalingFactor: 100,
-                                                              maxDecimals: 1,
-                                                              suffixed: true,
-                                                          })
-                                                        : '-'}
+                                                    {formatNumberWithStyle(apr, {
+                                                        style: 'percent',
+                                                        scalingFactor: 100,
+                                                        maxDecimals: 1,
+                                                        suffixed: true,
+                                                    })}
                                                 </Text>
                                             )}
                                             {/* {(isAPXETH || isPXETH) && (
@@ -427,6 +413,14 @@ function EarnEmissionTooltip({ rewards, earnPlatform, earnLink, strategyType }: 
                     <br />
                     <br />
                 </Text>
+            </Flex>
+        )
+    }
+
+    if (strategyType == 'stake') {
+        return (
+            <Flex $width="140px" $column $justify="flex-end" $align="flex-start" $gap={4}>
+                <Text $fontWeight={700}>Stake KITE to earn protocol fees and boost your incentives.</Text>
             </Flex>
         )
     }

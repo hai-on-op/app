@@ -13,8 +13,10 @@ import { ApolloClient, InMemoryCache } from '@apollo/client'
 
 const uri =
     NETWORK_ID === 10
-        ? 'https://subgraph.satsuma-prod.com/ea4569e42b10/duuvf2ayrz8e0yxg0udnic--151680/hai-mainnet-v2/version/v1.0.1/api'
-        : 'https://subgraph.satsuma-prod.com/ea4569e42b10/duuvf2ayrz8e0yxg0udnic--151680/sepolia-staking/api'
+        ? 'https://subgraph.satsuma-prod.com/ea4569e42b10/duuvf2ayrz8e0yxg0udnic--151680/hai-mainnet-v2/version/v1.0.6/api'
+        : 'https://subgraph.satsuma-prod.com/ea4569e42b10/duuvf2ayrz8e0yxg0udnic--151680/hai-sepolia-redeploy/api'
+
+// force rebuild
 
 export const client = new ApolloClient({
     uri,

@@ -1,29 +1,25 @@
-import { useCallback, useMemo, useState } from 'react'
-import { formatUnits } from 'ethers/lib/utils'
-import { useQuery } from '@apollo/client'
+import { useEffect, useMemo, useState } from 'react'
 import { useAccount } from 'wagmi'
+import { formatUnits } from 'ethers/lib/utils'
+import type { SortableHeader, Sorting } from '~/types'
 
-import type { SortableHeader, Sorting, Strategy } from '~/types'
-import {
-    ALL_COLLATERAL_TYPES_QUERY,
-    OPTIMISM_UNISWAP_POOL_QUERY,
-    OPTIMISM_UNISWAP_POOL_WITH_POSITION_QUERY,
-    REWARDS,
-    type QueryCollateralType,
-    arrayToSorted,
-    tokenAssets,
-    QueryLiquidityPoolWithPositions,
-    uniClient,
-    stringsExistAndAreEqual,
-} from '~/utils'
-import { useStoreState } from '~/store'
+import { arrayToSorted, stringsExistAndAreEqual, tokenAssets } from '~/utils'
+import { RewardsModel } from '~/model/rewardsModel'
+import type { BoostAPRData } from '~/types/system'
+import { calculateTokenPrice, calculatePoolTVL, getTokenSymbol } from '~/utils/priceCalculations'
+import { VELO_POOLS } from '~/utils/constants'
+import { normalizeAPRValue, getEffectiveAPR, getBestAPRValue } from '~/utils/aprNormalization'
+import { createVaultStrategy, createSpecialStrategy, createVeloStrategy } from '~/utils/strategyFactory'
+import { useEarnData } from './useEarnData'
+import { useBoost } from './useBoost'
+import { shouldHaltExecution, canContinueWithDegradedMode } from '~/utils/errorHandling'
+import { useClaims } from '~/providers/ClaimsProvider'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
-import { useVelodrome, useVelodromePositions } from './useVelodrome'
-import { useBalance, useMyVaults, useCollateralStats } from '~/hooks'
-import { useAnalytics } from '~/providers/AnalyticsProvider'
-// import { useLPData } from '~/providers/LPDataProvider'
-import { useHaiVeloData } from './useHaiVeloData'
-import { calculateHaiVeloBoost } from '~/services/boostService'
+import { useStoreState } from '~/store'
+import { utils } from 'ethers'
+
+// Import the BaseStrategy type for state management
+type BaseStrategy = ReturnType<typeof createVaultStrategy>
 
 const sortableHeaders: SortableHeader[] = [
     { label: 'Asset / Asset Pair' },
@@ -47,503 +43,448 @@ const sortableHeaders: SortableHeader[] = [
 ]
 
 export function useEarnStrategies() {
+    const { address } = useAccount()
+
+    // === Load All Data ===
     const {
-        connectWalletModel: { tokensData },
-        vaultModel: { list, liquidationData },
-        lpDataModel: { userLPBoostMap, userPositionValuesMap },
-        stakingModel: { usersStakingData, totalStaked },
+        // Raw data
+        systemStateData,
+        minterVaultsData,
+        collateralTypesData,
+        myVaultsData,
+        velodromeData,
+        velodromePositionsData,
+        velodromePricesData,
+        haiVeloSafesData,
+        strategyData,
+        // Store state data
+        tokensData,
+        userPositionsList,
+        usersStakingData,
+        totalStaked,
+        stakingApyData,
+        // Loading/error states
+        allDataLoaded,
+        stakingDataLoaded,
+        storeDataLoaded,
+        error: dataLoadingError,
+        hasErrors,
+    } = useEarnData()
+
+    // === Get vault boost data from useBoost ===
+    const { individualVaultBoosts, loading: boostLoading } = useBoost()
+
+    // === Get incentives data for rewards calculation ===
+    const { incentivesData } = useClaims()
+    const { prices: veloPrices } = useVelodromePrices()
+    const {
+        vaultModel: { liquidationData },
     } = useStoreState((state) => state)
 
-    // Check if store data is loaded
-    const isStoreDataLoaded = !!tokensData && !!liquidationData && !!list
-
-    const { userCollateralMapping } = useHaiVeloData()
-    const isHaiVeloDataLoaded = !!userCollateralMapping
-
-    // const haiPrice = parseFloat(liquidationData?.currentRedemptionPrice || '1')
-
-    const { address } = useAccount()
-    const { prices: veloPrices, loading: veloPricesLoading } = useVelodromePrices()
-
-    const HAI_WETH_DAILY_REWARDS = 100
-
-    const HAI_VELO_DAILY_REWARDS = useMemo(() => {
-        if (!veloPrices || !veloPrices.VELO.raw || !veloPrices.HAI.raw) return 780
-        return (35 * parseFloat(veloPrices.HAI.raw)) / parseFloat(veloPrices.VELO.raw)
-    }, [veloPrices])
-
-    const { data, loading, error } = useQuery<{ collateralTypes: QueryCollateralType[] }>(ALL_COLLATERAL_TYPES_QUERY)
-
-    const { rows: myVaults } = useMyVaults()
-
-    const {
-        data: uniData,
-        loading: uniLoading,
-        error: uniError,
-    } = useQuery<{ liquidityPools: QueryLiquidityPoolWithPositions[] }>(
-        address ? OPTIMISM_UNISWAP_POOL_WITH_POSITION_QUERY : OPTIMISM_UNISWAP_POOL_QUERY,
-        {
-            client: uniClient,
-            variables: {
-                ids: Object.keys(REWARDS.uniswap),
-                address,
-            },
+    // Get token prices for rewards calculation
+    const getTokenPrice = (token: string): number => {
+        switch (token) {
+            case 'KITE':
+                return Number(veloPrices?.KITE?.raw || 0)
+            case 'OP':
+                return Number(liquidationData?.collateralLiquidationData?.OP?.currentPrice.value || 0)
+            case 'DINERO':
+                return Number(veloPrices?.DINERO?.raw || 0)
+            case 'HAI':
+                return Number(liquidationData?.currentRedemptionPrice || 1)
+            default:
+                return 0
         }
-    )
-    const { data: veloData, loading: veloLoading, error: veloError } = useVelodrome()
-    const { data: veloPositions, loading: veloPositionsLoading } = useVelodromePositions()
+    }
 
-    const prices = useMemo(() => {
-        if (!liquidationData || !veloPrices) return null
-
-        return {
-            HAI: parseFloat(liquidationData?.currentRedemptionPrice || '0'),
-            KITE: parseFloat(veloPrices?.KITE.raw || '0'),
-            VELO: parseFloat(veloPrices?.VELO.raw || '0'),
-            OP: parseFloat(liquidationData?.collateralLiquidationData['OP']?.currentPrice.value || '0'),
-            WETH: parseFloat(liquidationData?.collateralLiquidationData['WETH']?.currentPrice.value || '0'),
-        }
-    }, [liquidationData?.currentRedemptionPrice, liquidationData?.collateralLiquidationData, veloPrices])
-
-    // const defaultPrices = { HAI: 0, KITE: 0, VELO: 0, OP: 0, WETH: 0 }
-
-    const vaultStrategies = useMemo(() => {
-        if (!data?.collateralTypes || !prices) return []
-
-        return (
-            data.collateralTypes
-                .filter((cType) =>
-                    Object.values(REWARDS.vaults[cType.id as keyof typeof REWARDS.vaults] || {}).some((a) => a != 0)
-                )
-                .map((cType) => {
-                    const { symbol } =
-                        tokenAssets[cType.id] ||
-                        Object.values(tokenAssets).find(({ name }) => name.toLowerCase() === cType.id.toLowerCase()) ||
-                        {}
-                    const rewards = REWARDS.vaults[symbol as keyof typeof REWARDS.vaults] || REWARDS.default
-                    const apy = calculateAPY(parseFloat(cType.debtAmount) * prices.HAI, prices, rewards)
-                    return {
-                        pair: [symbol || 'HAI'],
-                        rewards: Object.entries(rewards).map(([token, emission]) => ({ token, emission })),
-                        tvl: cType.debtAmount,
-                        strategyType: 'borrow',
-                        apr: apy,
-                        userPosition: list
-                            .reduce((total, { totalDebt, collateralName }) => {
-                                if (collateralName !== symbol) return total
-                                return total + parseFloat(totalDebt)
-                            }, 0)
-                            .toString(),
-                    } as Strategy
-                }) || []
-        )
-    }, [data?.collateralTypes, prices, list, tokenAssets])
-
-    const uniStrategies = useMemo(() => {
-        if (!uniData?.liquidityPools.length || !prices) return []
-        const temp: Strategy[] = []
-
-        const calculateBoostAPR = () => {
-            const calculateTotalBoostedValueParticipating = () => {
-                return Object.entries(userPositionValuesMap).reduce((acc, [address, value]) => {
-                    return acc + value * userLPBoostMap[address]
-                }, 0)
-            }
-
-            const totalBoostedValueParticipating = calculateTotalBoostedValueParticipating()
-
-            const baseAPR = totalBoostedValueParticipating
-                ? (HAI_WETH_DAILY_REWARDS / totalBoostedValueParticipating) * 365 * 100
-                : 0
-
-            const myBoost = address ? userLPBoostMap[address.toLowerCase()] : 1
-
-            const myValueParticipating = address ? userPositionValuesMap[address.toLowerCase()] : 0
-
-            const myBoostedValueParticipating = myValueParticipating * myBoost
-
-            const myBoostedShare = totalBoostedValueParticipating
-                ? myBoostedValueParticipating / totalBoostedValueParticipating
-                : 0
-
-            // myBoost * baseAPR
-
-            const myBoostedAPR = myBoost * baseAPR //((myBoostedShare * HAI_WETH_DAILY_REWARDS) / myValueParticipating) * 365 * 100
-
-            return {
-                totalBoostedValueParticipating,
-                baseAPR,
-                myBoost,
-                myValueParticipating,
-                myBoostedValueParticipating,
-                myBoostedShare,
-                myBoostedAPR,
-                userLPBoostMap,
-                userPositionValuesMap,
-            }
-        }
-
-        for (const pool of uniData.liquidityPools) {
-            const rewards = REWARDS.uniswap[pool.id.toLowerCase()]
-            if (!rewards) continue // sanity check
-
-            const tvl =
-                parseFloat(formatUnits(pool.inputTokenBalances[0], 18)) * prices.HAI +
-                parseFloat(formatUnits(pool.inputTokenBalances[1], 18)) * prices.WETH
-            const apy = calculateAPY(tvl, prices, rewards)
-            const apr = calculateAPR(tvl, prices, rewards)
-            const boostAPRData = calculateBoostAPR()
-            temp.push({
-                pair: pool.inputTokens.map((token) => token.symbol) as any,
-                rewards: Object.entries(rewards).map(([token, emission]) => ({ token, emission })) as any,
-                tvl: tvl.toString(),
-                apy,
-                apr,
-                boostAPR: boostAPRData,
-                userPosition: (pool.positions || [])
-                    .reduce((total, { cumulativeDepositTokenAmounts, cumulativeWithdrawTokenAmounts }) => {
-                        const posHai =
-                            parseFloat(formatUnits(cumulativeDepositTokenAmounts[0], 18)) -
-                            parseFloat(formatUnits(cumulativeWithdrawTokenAmounts[0], 18))
-                        const posETH =
-                            parseFloat(formatUnits(cumulativeDepositTokenAmounts[1], 18)) -
-                            parseFloat(formatUnits(cumulativeWithdrawTokenAmounts[1], 18))
-                        return total + (posHai * prices.HAI + posETH * prices.WETH)
-                    }, 0)
-                    .toString(),
-                earnPlatform: 'uniswap',
-                earnAddress: pool.id,
-                strategyType: 'farm',
-                earnLink: `https://app.uniswap.org/explore/pools/optimism/${pool.id}`,
-            } as Strategy)
-        }
-        return temp
-    }, [uniData?.liquidityPools, prices, userLPBoostMap, userPositionValuesMap])
-
-    const veloStrategies = useMemo(() => {
-        if (!veloPrices || !veloData || !prices) return []
-        const temp: Strategy[] = []
-        // Filter out SAIL
-        for (const pool of veloData.filter((p) => p.address === '0xf2d3941b6E1cbD3616061E556Eb06986147715d1')) {
-            const rewards = REWARDS.velodrome[pool.address.toLowerCase()]
-            if (!rewards) continue // filter out any extra pools that may be fetched
-
-            // daily_rewards = Lp. emissions * velo price * 86400
-            // tv1 =(Lp. reserve * token0 _price) + (Lp.reservel * token1 _price)
-            // staked_tvl = tvl * (Lp. gauge_total_supply / Lp.total_supply)
-            // apr = (daily_rewards / staked_tv1) * 365
-            const token0 =
-                Object.values(tokensData).find(({ address }) => stringsExistAndAreEqual(address, pool.token0))
-                    ?.symbol || pool.tokenPair[0]
-            const price0 = parseFloat((veloPrices as any)[token0]?.raw || (prices as any)[token0]?.toString() || '1')
-            const tvl0 = parseFloat(formatUnits(pool.staked0, pool.decimals)) * price0
-
-            const token1 =
-                Object.values(tokensData).find(({ address }) => stringsExistAndAreEqual(address, pool.token1))
-                    ?.symbol || pool.tokenPair[1]
-            const price1 = parseFloat((veloPrices as any)[token1]?.raw || (prices as any)[token1]?.toString() || '1')
-            const tvl1 = parseFloat(formatUnits(pool.staked1, pool.decimals)) * price1
-
-            const tvl = tvl0 + tvl1
-            const veloAPR = (365 * parseFloat(formatUnits(pool.emissions, pool.decimals)) * prices.VELO * 86400) / tvl
-
-            // const apy = veloAPR === Infinity ? 0 : Math.pow(1 + veloAPR / 12, 12) - 1
-
-            temp.push({
-                pair: [token0, token1] as any,
-                rewards: Object.entries(rewards).map(([token, emission]) => ({ token, emission })) as any,
-                tvl: tvl.toString(),
-                apr: veloAPR,
-                userPosition: (veloPositions || [])
-                    .reduce((total, position) => {
-                        if (!stringsExistAndAreEqual(position.lp, pool.address)) return total
-                        return (
-                            total +
-                            parseFloat(formatUnits(position.staked0, pool.decimals)) * price0 +
-                            parseFloat(formatUnits(position.staked1, pool.decimals)) * price1
-                        )
-                    }, 0)
-                    .toString(),
-                earnPlatform: 'velodrome',
-                earnAddress: pool.address,
-                earnLink: `https://velodrome.finance/deposit?token0=${pool.token0}&token1=${pool.token1}&type=${pool.type}`,
-                strategyType: 'farm',
-            })
-        }
-        return temp
-    }, [veloData, veloPrices, veloPositions, prices, tokensData])
-
-    const haiBalance = useBalance('HAI')
-    const analytics = useAnalytics()
-    const {
-        data: { erc20Supply, annualRate, tokenAnalyticsData },
-    } = analytics
-    const rRateApr = Number(annualRate.raw)
-    const rRateApy = Math.pow(1 + rRateApr / 365, 365) - 1
-
-    const collateralStats = useCollateralStats()
-
-    const haiVeloTVL = collateralStats.rows.find((row) => row.token === 'HAIVELO')?.totalCollateral?.usdRaw ?? '0'
-
-    const myHaiVeloParticipation = useMemo(() => {
-        return (
-            (myVaults
-                .filter((vault) => vault.collateralName === 'HAIVELO')
-                .reduce((acc, vault) => {
-                    return acc + parseFloat(vault.collateral)
-                }, 0) *
-                Number(tokenAnalyticsData?.find((token) => token.symbol === 'HAIVELO')?.currentPrice || 0)) /
-            10 ** 18
-        )
-    }, [myVaults])
-
-    const calculateHaiVeloBoostAPR = useCallback(() => {
-        if (!userCollateralMapping || !usersStakingData) return null
-
-        const totalHaiVeloDeposited = Object.values(userCollateralMapping).reduce((acc, value) => {
-            return acc + Number(value)
-        }, 0)
-
-        const totalStakedAmount = Object.values(usersStakingData).reduce((acc, value) => {
-            return acc + Number(value?.stakedBalance)
-        }, 0)
-
-        const userHaiVeloBoostMap: Record<string, number> = Object.entries(userCollateralMapping).reduce(
-            (acc, [address, value]) => {
-                if (!usersStakingData[address]) return { ...acc, [address]: 1 }
-
-                return {
-                    ...acc,
-                    [address]: calculateHaiVeloBoost({
-                        userStakingAmount: Number(usersStakingData[address]?.stakedBalance),
-                        totalStakingAmount: Number(totalStakedAmount),
-                        userHaiVELODeposited: Number(value),
-                        totalHaiVELODeposited: Number(totalHaiVeloDeposited),
-                    }).haiVeloBoost,
-                }
-            },
-            {}
-        )
-
-        const calculateTotalBoostedValueParticipating = () => {
-            return Object.entries(userCollateralMapping).reduce((acc, [address, value]) => {
-                return acc + Number(value) * userHaiVeloBoostMap[address]
-            }, 0)
-        }
-
-        const totalBoostedValueParticipating = calculateTotalBoostedValueParticipating()
-
-        const baseAPR = totalBoostedValueParticipating
-            ? (HAI_VELO_DAILY_REWARDS / totalBoostedValueParticipating) * 365 * 100
-            : 0
-
-        const myBoost = address ? userHaiVeloBoostMap[address.toLowerCase()] : 1
-
-        const myValueParticipating = address ? userCollateralMapping[address.toLowerCase()] : 0
-
-        const myBoostedValueParticipating = Number(myValueParticipating) * myBoost
-
-        const myBoostedShare = totalBoostedValueParticipating
-            ? myBoostedValueParticipating / totalBoostedValueParticipating
-            : 0
-
-        // myBoost * baseAPR
-
-        const myBoostedAPR = myBoost * baseAPR //((myBoostedShare * HAI_VELO_DAILY_REWARDS) / myValueParticipating) * 365 * 100
-
-        return {
-            totalBoostedValueParticipating,
-            baseAPR,
-            myBoost,
-            myValueParticipating,
-            myBoostedValueParticipating,
-            myBoostedShare,
-            myBoostedAPR,
-            userLPBoostMap,
-            userPositionValuesMap,
-        }
-    }, [userCollateralMapping, userLPBoostMap, address, usersStakingData, totalStaked, HAI_VELO_DAILY_REWARDS])
-
-    const specialStrategies = useMemo(() => {
-        if (!prices) return []
-
-        const haiVeloBoostData = calculateHaiVeloBoostAPR()
-
-        return [
-            {
-                pair: ['HAI'],
-                rewards: [],
-                tvl: erc20Supply.raw,
-                apr: rRateApy,
-                userPosition: haiBalance?.raw,
-                strategyType: 'hold',
-            },
-            {
-                pair: ['HAIVELO'],
-                rewards: [],
-                tvl: haiVeloTVL,
-                apr: '0',
-                boostAPR: haiVeloBoostData,
-                userPosition: myHaiVeloParticipation,
-                strategyType: 'deposit',
-            },
-        ]
-    }, [
-        prices,
-        erc20Supply.raw,
-        rRateApy,
-        haiBalance?.raw,
-        haiVeloTVL,
-        myHaiVeloParticipation,
-        calculateHaiVeloBoostAPR,
-    ])
-
-    const isLoading =
-        loading ||
-        uniLoading ||
-        veloLoading ||
-        veloPositionsLoading ||
-        veloPricesLoading ||
-        !isStoreDataLoaded ||
-        !isHaiVeloDataLoaded ||
-        !prices
-
-    const strategies = useMemo(() => {
-        if (isLoading) return []
-        return [...specialStrategies, ...vaultStrategies, ...uniStrategies, ...veloStrategies]
-    }, [isLoading, specialStrategies, vaultStrategies, uniStrategies, veloStrategies])
-
-    const averageAPR = useMemo(() => {
-        if (isLoading || strategies.length === 0) {
-            return {
-                totalPosition: 0,
-                averageWeightedAPR: 0,
-                averageWeightedBoostedAPR: 0,
-                effectiveStrategiesAPR: [],
-            }
-        }
-
-        const totalPosition = strategies.reduce((acc, strategy) => {
-            return acc + Number(strategy.userPosition)
-        }, 0)
-
-        const effectiveStrategiesAPR = strategies.map((strategy) => {
-            return {
-                apr: strategy.boostAPR ? Number(strategy.boostAPR.baseAPR) : Number(strategy.apr),
-                boostedApr: strategy.boostAPR ? Number(strategy.boostAPR.myBoostedAPR) : 0,
-            }
-        })
-
-        const averageWeightedAPR = strategies.reduce((acc, strategy, i) => {
-            const strategyAPR = effectiveStrategiesAPR[i]
-            return acc + (Number(strategy.userPosition) / totalPosition) * (strategyAPR ? strategyAPR.apr : 0)
-        }, 0)
-
-        const averageWeightedBoostedAPR = strategies.reduce((acc, strategy, i) => {
-            const strategyAPR = effectiveStrategiesAPR[i]
-            return acc + (Number(strategy.userPosition) / totalPosition) * (strategyAPR ? strategyAPR.boostedApr : 0)
-        }, 0)
-
-        return {
-            totalPosition,
-            averageWeightedAPR,
-            averageWeightedBoostedAPR,
-            effectiveStrategiesAPR,
-        }
-    }, [isLoading, strategies, userCollateralMapping, usersStakingData, totalStaked])
-
-    const [filterEmpty, setFilterEmpty] = useState(false)
-
-    const filteredRows = useMemo(() => {
-        if (isLoading) return []
-        if (!filterEmpty) return strategies
-
-        return strategies.filter(({ userPosition }) => !!userPosition && userPosition !== '0')
-    }, [strategies, filterEmpty, isLoading])
+    // === State ===
+    const [vaultStrategies, setVaultStrategies] = useState<BaseStrategy[]>([])
+    const [specialStrategies, setSpecialStrategies] = useState<BaseStrategy[]>([])
+    const [veloStrategies, setVeloStrategies] = useState<BaseStrategy[]>([])
 
     const [sorting, setSorting] = useState<Sorting>({
-        key: 'My Position',
+        key: 'TVP',
         dir: 'desc',
     })
 
+    const [filterEmpty, setFilterEmpty] = useState(false)
+
+    useEffect(() => {
+        // Error boundary: halt execution if critical errors exist
+        if (dataLoadingError && shouldHaltExecution(dataLoadingError)) {
+            console.error('Critical error detected, halting strategy calculation:', dataLoadingError)
+            return
+        }
+
+        // Proceed with calculation if data is loaded or if we can continue with degraded mode
+        const canProceed =
+            (allDataLoaded && stakingDataLoaded && storeDataLoaded && !boostLoading) ||
+            (dataLoadingError && canContinueWithDegradedMode(dataLoadingError))
+
+        if (canProceed) {
+            try {
+                const vaultStrats = calculateVaultStrategies()
+                const specialStrats = calculateSpecialStrategies()
+                const veloStrats = calculateVeloStrategies()
+                setVaultStrategies(vaultStrats)
+                setSpecialStrategies(specialStrats)
+                setVeloStrategies(veloStrats)
+            } catch (calculationError) {
+                console.error('Error calculating strategies:', calculationError)
+                // Reset to empty arrays on calculation failure
+                setVaultStrategies([])
+                setSpecialStrategies([])
+                setVeloStrategies([])
+            }
+        }
+    }, [
+        allDataLoaded,
+        stakingDataLoaded,
+        storeDataLoaded,
+        boostLoading,
+        dataLoadingError,
+        userPositionsList,
+        systemStateData,
+        haiVeloSafesData,
+        address,
+        stakingApyData,
+        individualVaultBoosts,
+    ])
+
+    // === Calculate Strategies ===
+
+    const calculateVaultStrategies = (): BaseStrategy[] => {
+        // Safe fallback if data is missing
+        if (!collateralTypesData?.collateralTypes || !velodromePricesData?.HAI) {
+            return []
+        }
+
+        const collateralsWithMinterRewards = collateralTypesData.collateralTypes.filter((cType) =>
+            Object.values(RewardsModel.getVaultRewards(cType.id) || {}).some((a) => a != 0)
+        )
+
+        if (!collateralsWithMinterRewards.length) return []
+
+        const haiPrice = Number(velodromePricesData?.HAI.raw)
+
+        const strategies = collateralsWithMinterRewards.map((cType) => {
+            const assets = tokenAssets[cType.id]
+
+            const cTypeUserPosition = userPositionsList.reduce((total: number, { totalDebt, collateralName }: any) => {
+                if (collateralName.toLowerCase() !== cType.id.toLowerCase()) return total
+                return total + parseFloat(totalDebt)
+            }, 0)
+
+            const rewards = RewardsModel.getVaultRewards(cType.id) || {}
+
+            // Use vault boost data from useBoost instead of calculating it here
+            const vbr = individualVaultBoosts[cType.id] || {
+                userVaultBoostMap: {},
+                cType: cType.id,
+                totalBoostedValueParticipating: 0,
+                baseAPR: 0,
+                myBoost: 1,
+                myValueParticipating: 0,
+                myBoostedValueParticipating: 0,
+                myBoostedShare: 0,
+                myBoostedAPR: 0,
+            }
+
+            return createVaultStrategy({
+                pair: [assets?.symbol || 'HAI'],
+                collateral: cType.id,
+                rewards: Object.entries(rewards).map(([token, emission]) => ({ token, emission })),
+                tvl: parseFloat(cType.debtAmount) * haiPrice,
+                boostAPR: vbr,
+                userPosition: cTypeUserPosition * haiPrice,
+            })
+        })
+
+        return strategies
+    }
+
+    const calculateSpecialStrategies = (): BaseStrategy[] => {
+        // Safe fallback if strategy data is missing
+        if (!strategyData) {
+            return []
+        }
+
+        const haiApr = strategyData.hai?.apr || 0
+        const haiTvl = strategyData.hai?.tvl || 0
+        const haiUserPosition = strategyData.hai?.userPosition || 0
+
+        const haiVeloTvl = strategyData.haiVelo?.tvl || 0
+        const haiVeloUserPositionUsd = strategyData.haiVelo?.userPosition || 0
+        const haiVeloBoostApr = strategyData.haiVelo?.boostApr
+
+        const kiteApr = strategyData.kiteStaking?.apr || 0
+        const kiteTvl = strategyData.kiteStaking?.tvl || 0
+        const kiteUserPosition = strategyData.kiteStaking?.userPosition || 0
+
+        // Calculate HAI MINTING boost using the same logic as staking page
+        // const userHaiMinted = Number(haiUserPosition) / Number(velodromePricesData?.HAI?.raw || 1)
+        // const totalHaiMinted = Number(systemStateData?.systemStates[0]?.erc20CoinTotalSupply || 0)
+        // const userStakingAmount = address ? Number(usersStakingData[address.toLowerCase()]?.stakedBalance || 0) : 0
+        // const totalStakingAmount = Number(formatEther(totalStaked || '0'))
+
+        // const haiMintingBoostResult = calculateHaiMintingBoost({
+        //     userStakingAmount,
+        //     totalStakingAmount,
+        //     userHaiMinted,
+        //     totalHaiMinted,
+        // })
+
+        // const haiMintingBoost = {
+        //     baseAPR: haiApr * 100,
+        //     myBoost: haiMintingBoostResult.haiMintingBoost,
+        //     myBoostedAPR: haiApr * 100 * haiMintingBoostResult.haiMintingBoost,
+        // }
+
+        return [
+            createSpecialStrategy({
+                pair: ['HAI'],
+                tvl: haiTvl,
+                apr: haiApr,
+                userPosition: haiUserPosition,
+                strategyType: 'hold',
+                boostEligible: false,
+            }),
+            createSpecialStrategy({
+                pair: ['HAIVELO'],
+                tvl: haiVeloTvl,
+                apr: (haiVeloBoostApr as any)?.baseAPR / 100 || 0,
+                userPosition: haiVeloUserPositionUsd,
+                strategyType: 'deposit',
+                boostAPR: haiVeloBoostApr as BoostAPRData,
+                boostEligible: true,
+            }),
+            createSpecialStrategy({
+                pair: ['KITE'],
+                tvl: kiteTvl,
+                apr: kiteApr,
+                userPosition: kiteUserPosition,
+                strategyType: 'stake',
+                earnLink: '/stake',
+            }),
+        ]
+    }
+
+    const calculateVeloStrategies = (): BaseStrategy[] => {
+        // Safe fallback if required data is missing
+        if (!velodromePricesData || !velodromeData || !tokensData) {
+            return []
+        }
+
+        const strategies: BaseStrategy[] = []
+        for (const pool of velodromeData) {
+            if (!VELO_POOLS.includes(pool.address)) continue
+
+            // Get token symbols using utility function
+            const token0 = getTokenSymbol(pool.token0, tokensData, pool.tokenPair[0])
+            const token1 = getTokenSymbol(pool.token1, tokensData, pool.tokenPair[1])
+
+            // Get token prices using utility function
+            const price0 = calculateTokenPrice(token0, velodromePricesData as any)
+            const price1 = calculateTokenPrice(token1, velodromePricesData as any)
+
+            // Calculate pool TVL using utility function
+            const { totalTvl: tvl } = calculatePoolTVL(pool, tokensData, velodromePricesData as any)
+            const veloAPR =
+                (365 *
+                    parseFloat(formatUnits(pool.emissions, pool.decimals)) *
+                    Number(velodromePricesData.VELO.raw) *
+                    86400) /
+                tvl
+            const userPosition = (velodromePositionsData || []).reduce((total: number, position: any) => {
+                if (!stringsExistAndAreEqual(position.lp, pool.address)) return total
+                return (
+                    total +
+                    parseFloat(formatUnits(position.staked0, pool.decimals)) * price0 +
+                    parseFloat(formatUnits(position.staked1, pool.decimals)) * price1
+                )
+            }, 0)
+
+            const rewardsObj = RewardsModel.getPoolRewards(pool.address) || {}
+            const rewardsArray = Object.entries(rewardsObj).map(([token, emission]) => ({ token, emission }))
+
+            const strategy = createVeloStrategy({
+                pair: [token0, token1],
+                rewards: rewardsArray,
+                tvl: tvl,
+                apr: veloAPR || 0,
+                userPosition,
+                earnAddress: pool.address,
+                earnLink: `https://velodrome.finance/deposit?token0=${pool.token0}&token1=${pool.token1}&type=${pool.type}`,
+            })
+            strategies.push(strategy)
+        }
+        return strategies
+    }
+
+    // === Calculate Strategy Utils ===
+    // Note: calculateVaultBoostAPR and calculateVaultBoostMap functions have been removed
+    // as they are now handled by useBoost hook
+
+    const strategies = [...vaultStrategies, ...specialStrategies, ...veloStrategies]
+
+    const filteredRows = useMemo(() => {
+        if (!filterEmpty) return strategies
+
+        // Filter to only show strategies where user has a position
+        return strategies.filter((strategy) => {
+            const userPosition = Number(strategy.userPosition)
+            return userPosition > 0
+        })
+    }, [strategies, filterEmpty])
+
+    const boostEligibleStrategies = strategies.filter(({ boostEligible }: any) => boostEligible)
+
+    const totalPosition = boostEligibleStrategies.reduce((acc, { userPosition }: any) => {
+        return acc + Number(userPosition)
+    }, 0)
+
+    const effectiveStrategiesAPR = strategies.map((strategy) => getEffectiveAPR(strategy))
+
+    const averageWeightedAPR = strategies.reduce((acc, strategy, i) => {
+        const strategyAPR = effectiveStrategiesAPR[i]
+        return acc + (Number(strategy.userPosition) / totalPosition) * (strategyAPR ? strategyAPR.apr : 0)
+    }, 0)
+
+    const averageWeightedBoostedAPR = strategies.reduce((acc, strategy, i) => {
+        const strategyAPR = effectiveStrategiesAPR[i]
+        return acc + (Number(strategy.userPosition) / totalPosition) * (strategyAPR ? strategyAPR.boostedApr : 0)
+    }, 0)
+
+    const averageWeightedBoost = boostEligibleStrategies.reduce((acc, strategy) => {
+        const strategyBoost = strategy.boostAPR?.myBoost || 1 // Default to 1x if no boost
+        const userPosition = Number(strategy.userPosition)
+        return acc + (userPosition / totalPosition) * strategyBoost
+    }, 0)
+
+    // Calculate total rewards value from user's positions
+    const totalRewardsValue = useMemo(() => {
+        if (!incentivesData?.claimData) return 0
+
+        let totalValue = 0
+
+        // Calculate rewards from incentives data (same as ClaimModal)
+        const incentiveTokens = ['KITE', 'OP', 'DINERO', 'HAI'] as const
+
+        incentiveTokens.forEach((token) => {
+            const data = incentivesData.claimData[token]
+            const price = getTokenPrice(token)
+
+            if (data?.hasClaimableDistros && data?.amount) {
+                const amount = parseFloat(utils.formatEther(data.amount))
+                totalValue += amount * price
+            }
+        })
+
+        return totalValue
+    }, [incentivesData?.claimData])
+
+    // Get unique reward tokens from incentives data
+    const rewardTokens = useMemo(() => {
+        if (!incentivesData?.claimData) return []
+
+        const tokens: string[] = []
+        const incentiveTokens = ['KITE', 'OP', 'DINERO', 'HAI'] as const
+
+        incentiveTokens.forEach((token) => {
+            const data = incentivesData.claimData[token]
+            if (data?.hasClaimableDistros && data?.amount) {
+                tokens.push(token)
+            }
+        })
+
+        return tokens
+    }, [incentivesData?.claimData])
+
     const sortedRows = useMemo(() => {
-        if (isLoading) return []
+        if (!allDataLoaded) return []
 
         switch (sorting.key) {
             case 'Asset / Asset Pair':
                 return arrayToSorted(filteredRows, {
-                    getProperty: (row) => row.pair[0],
+                    getProperty: (row: any) => row.pair[0],
                     dir: sorting.dir,
                     type: 'alphabetical',
                 })
             case 'Strategy':
                 return arrayToSorted(filteredRows, {
-                    getProperty: (row) => row.strategyType,
+                    getProperty: (row: any) => row.strategyType,
                     dir: sorting.dir,
                     type: 'alphabetical',
                 })
             case 'TVP':
                 return arrayToSorted(filteredRows, {
-                    getProperty: (row) => row.tvl,
+                    getProperty: (row: any) => row.tvl,
                     dir: sorting.dir,
                     type: 'parseFloat',
                     checkValueExists: true,
                 })
-            case 'Rewards APR':
+            case 'Position':
                 return arrayToSorted(filteredRows, {
-                    getProperty: (row) => row.apr,
+                    getProperty: (row: any) => row.userPosition,
+                    dir: sorting.dir,
+                    type: 'parseFloat',
+                    checkValueExists: true,
+                })
+            case 'Boost':
+                return arrayToSorted(filteredRows, {
+                    getProperty: (row: any) => row.boostAPR?.myBoost || 1,
                     dir: sorting.dir,
                     type: 'numerical',
                 })
-            case 'My Position':
+            case 'APR':
+                return arrayToSorted(filteredRows, {
+                    getProperty: (row: any) => {
+                        const aprValue = getBestAPRValue(row)
+                        return normalizeAPRValue(aprValue, row.strategyType)
+                    },
+                    dir: sorting.dir,
+                    type: 'numerical',
+                })
             default:
                 return arrayToSorted(filteredRows, {
-                    getProperty: (row) => row.userPosition,
+                    getProperty: (row: any) => row.tvl,
                     dir: sorting.dir,
                     type: 'parseFloat',
                     checkValueExists: true,
                 })
         }
-    }, [filteredRows, sorting, isLoading])
+    }, [filteredRows, sorting, allDataLoaded])
 
     return {
+        rawData: {
+            minterVaultsData,
+            collateralTypesData,
+            myVaultsData,
+            velodromeData,
+            velodromePositionsData,
+            velodromePricesData,
+            usersStakingData,
+            totalStaked,
+        },
         headers: sortableHeaders,
-        averageAPR,
+        averageAPR: {
+            averageWeightedAPR,
+            averageWeightedBoostedAPR,
+        },
+        averageWeightedBoost,
+        totalBoostablePosition: totalPosition,
+        totalRewardsValue,
+        rewardTokens,
         rows: sortedRows,
         rowsUnmodified: strategies,
-        loading: isLoading,
-        error: error?.message,
-        uniError: uniError?.message,
-        veloError,
+        loading: !allDataLoaded || boostLoading,
+        error: dataLoadingError,
+        hasErrors,
+        uniError: null,
+        veloError: null,
         sorting,
         setSorting,
         filterEmpty,
         setFilterEmpty,
     }
-}
-
-const calculateAPR = (
-    tvl: number,
-    prices: { KITE: number; OP: number } | null | undefined,
-    rewards: { KITE: number; OP: number } = REWARDS.default
-) => {
-    if (!tvl || !prices) return 0
-    if (!prices.KITE || !prices.OP) return 0
-
-    // ((kite-daily-emission * kite-price + op-daily-emission * op-price) * 365) / (hai-debt-per-collateral * hai-redemption-price)
-    const nominal = (365 * (rewards.KITE * prices.KITE + rewards.OP * prices.OP)) / tvl
-    return nominal
-}
-
-const calculateAPY = (
-    tvl: number,
-    prices: { KITE: number; OP: number } | null | undefined,
-    rewards: { KITE: number; OP: number } = REWARDS.default
-) => {
-    if (!tvl || !prices) return 0
-    if (!prices.KITE || !prices.OP) return 0
-
-    // ((kite-daily-emission * kite-price + op-daily-emission * op-price) * 365) / (hai-debt-per-collateral * hai-redemption-price)
-    const nominal = (365 * (rewards.KITE * prices.KITE + rewards.OP * prices.OP)) / tvl
-    return nominal === Infinity ? 0 : Math.pow(1 + nominal / 12, 12) - 1
 }
