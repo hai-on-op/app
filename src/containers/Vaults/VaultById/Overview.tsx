@@ -172,7 +172,7 @@ export function Overview({ vault }: OverviewProps) {
 
                     // For VaultById, we always have an existing vault, so use weighted average
                     let netAPR: number = 0
-                    // let calculationMethod: string = ''
+                    let calculationMethod: string = ''
                     // let simulatedNetAPR: number | undefined = undefined
 
                     const collateralUsdValue =

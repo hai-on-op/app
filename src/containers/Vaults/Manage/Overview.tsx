@@ -377,7 +377,7 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
                     const stabilityFeeCost = -parseFloat(summary.stabilityFee.raw || '0') // Use raw value directly as negative cost
 
                     let netAPR: number = 0
-                    // let calculationMethod: string = ''
+                    let calculationMethod: string = ''
                     let simulatedNetAPR: number | undefined = undefined
 
                     // For new vaults, check if user has input actual values
