@@ -5,6 +5,7 @@ import { useAccount } from 'wagmi'
 
 import { usePublicProvider } from './useEthersAdapters'
 import { useContract } from './useContract'
+import { useBalance } from './useBalance'
 import { formatNumberWithStyle } from '~/utils'
 
 // Contract addresses on Optimism
@@ -41,6 +42,8 @@ export type HaiVeloV2Data = {
     totalVeloBalance: string
     totalVeloBalanceFormatted: string
     veVeloNFTs: VeVeloNFT[]
+    haiVeloV1Balance: string
+    haiVeloV1BalanceFormatted: string
 }
 
 export function useHaiVeloV2(): HaiVeloV2Data {
@@ -51,6 +54,9 @@ export function useHaiVeloV2(): HaiVeloV2Data {
     const [veloBalance, setVeloBalance] = useState<string>('0')
     const [veVeloBalance, setVeVeloBalance] = useState<string>('0')
     const [veVeloNFTs, setVeVeloNFTs] = useState<VeVeloNFT[]>([])
+
+    // haiVELO v1 (ERC20) balance via global token fetch service
+    const haiVeloV1 = useBalance('HAIVELO')
 
     // Get contract instances
     const veloContract = useContract(VELO_ADDRESS, VELO_ABI, false)
@@ -132,12 +138,16 @@ export function useHaiVeloV2(): HaiVeloV2Data {
     const formattedData = useMemo(() => {
         const veloFormatted = formatEther(veloBalance)
         const veVeloFormatted = formatEther(veVeloBalance)
-        
-        // Calculate total VELO (VELO + veVELO)
+
+        // Calculate total VELO-like (VELO + veVELO + haiVELO v1)
         const veloBN = BigNumber.from(veloBalance)
         const veVeloBN = BigNumber.from(veVeloBalance)
         const totalBN = veloBN.add(veVeloBN)
-        const totalFormatted = formatNumberWithStyle(parseFloat(formatEther(totalBN)), {
+
+        const totalVeloLike =
+            parseFloat(formatEther(totalBN)) + parseFloat(haiVeloV1?.raw || '0')
+
+        const totalFormatted = formatNumberWithStyle(totalVeloLike, {
             maxDecimals: 2,
         })
 
@@ -147,7 +157,7 @@ export function useHaiVeloV2(): HaiVeloV2Data {
             totalVeloBalance: totalBN.toString(),
             totalVeloBalanceFormatted: totalFormatted,
         }
-    }, [veloBalance, veVeloBalance])
+    }, [veloBalance, veVeloBalance, haiVeloV1?.raw])
 
     return {
         loading,
@@ -156,5 +166,7 @@ export function useHaiVeloV2(): HaiVeloV2Data {
         veVeloBalance,
         veVeloNFTs,
         ...formattedData,
+        haiVeloV1Balance: haiVeloV1?.e18 || '0',
+        haiVeloV1BalanceFormatted: haiVeloV1?.raw || '0',
     }
 } 

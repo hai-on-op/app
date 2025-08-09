@@ -16,12 +16,13 @@ export function MintHaiVeloActions() {
     const [selectedVeVeloNFTs, setSelectedVeVeloNFTs] = useState<string[]>([])
 
     // Use the new hook to fetch VELO and veVELO balances
-    const { 
-        loading, 
-        error, 
-        veloBalanceFormatted, 
+    const {
+        loading,
+        error,
+        veloBalanceFormatted,
         veVeloBalanceFormatted,
         veVeloNFTs,
+        haiVeloV1BalanceFormatted,
     } = useHaiVeloV2()
 
     // Token options for the select dropdown
@@ -99,7 +100,7 @@ export function MintHaiVeloActions() {
                     maxDecimals: 2,
                 })
             case 'haiVELO_v1':
-                return '0.00' // TODO: Add haiVELO v1 balance hook
+                return formatNumberWithStyle(haiVeloV1BalanceFormatted, { maxDecimals: 2 })
             default:
                 return '0.00'
         }
