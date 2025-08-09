@@ -1,14 +1,28 @@
 import { useMemo } from 'react'
-import { formatNumberWithStyle } from '~/utils'
+import { formatNumberWithStyle, Status } from '~/utils'
 
 import styled from 'styled-components'
-import { type DashedContainerProps, DashedContainerStyle, Flex, Grid, Text } from '~/styles'
+import { type DashedContainerProps, DashedContainerStyle, Flex, Grid, Text, CenteredFlex } from '~/styles'
 import { OverviewProgressStat, OverviewStat } from './OverviewStat'
 import { useHaiVeloV2 } from '~/hooks'
+import { useHaiVelo } from '~/providers/HaiVeloProvider'
+import { StatusLabel } from '~/components/StatusLabel'
+import { Swirl } from '~/components/Icons/Swirl'
 
 export function HaiVeloOverview() {
     // Use the new hook to fetch VELO and veVELO balances
-    const { loading, error, veloBalanceFormatted, veVeloBalanceFormatted, totalVeloBalanceFormatted } = useHaiVeloV2()
+    const {
+        loading,
+        error,
+        veloBalanceFormatted,
+        veVeloBalanceFormatted,
+        totalVeloBalanceFormatted,
+        haiVeloV1BalanceFormatted,
+    } = useHaiVeloV2()
+
+    // Simulation amount from haiVELO context (user input), used to show simulated values
+    const { simulatedAmount } = useHaiVelo()
+
 
 
 
@@ -16,8 +30,8 @@ export function HaiVeloOverview() {
     const placeholderData = {
         myVelo: veloBalanceFormatted,
         myVeVelo: veVeloBalanceFormatted,
-        myTotalVelo: totalVeloBalanceFormatted, // Sum of VELO + veVELO
-        myHaiVeloV1: '0.00', // TODO: Add haiVELO v1 balance hook
+        myTotalVelo: totalVeloBalanceFormatted, // Sum of VELO + veVELO (+ haiVELO v1 in hook formatting)
+        myHaiVeloV1: haiVeloV1BalanceFormatted,
         myHaiVelo: '0.00', // TODO: Add haiVELO balance hook
         veloTVL: '1,234,567.89',
         netRewardsAPR: '12.34',
@@ -30,24 +44,55 @@ export function HaiVeloOverview() {
         pegPercentage: '99.8',
     }
 
-    // Calculate progress for hai velo deposited
-    const haiVeloProgress = useMemo(() => {
+    // Calculate progress for hai velo deposited (with simulation overlay)
+    const progressProps = useMemo(() => {
         const deposited = parseFloat(placeholderData.totalHaiVeloDeposited.replace(/,/g, ''))
         const capacity = parseFloat(placeholderData.totalHaiVeloCapacity.replace(/,/g, ''))
-        const progress = capacity > 0 ? deposited / capacity : 0
-        const progressPercentage = Math.min(progress * 100, 100)
+
+        const baseProgress = capacity > 0 ? Math.min(deposited / capacity, 1) : 0
+        const baseLabel = `${(baseProgress * 100).toFixed(1)}%`
+
+        const withSimDeposited = deposited + (simulatedAmount > 0 ? simulatedAmount : 0)
+        const simProgress = capacity > 0 ? Math.min(withSimDeposited / capacity, 1) : 0
+        const simLabel = `${(simProgress * 100).toFixed(1)}%`
 
         return {
-            simpleProgress: Math.min(progress, 1),
-            progressPercentage: progressPercentage.toFixed(1),
+            progress: { progress: baseProgress, label: baseLabel },
+            simulatedProgress: simulatedAmount > 0 ? { 
+                progress: simProgress, 
+                label: `${(simProgress * 100).toFixed(1)}% After Tx` 
+            } : undefined,
+            colorLimits: [0, 0.5, 1] as [number, number, number],
+            labels: [] // Empty labels for simple progress bar
         }
-    }, [placeholderData.totalHaiVeloDeposited, placeholderData.totalHaiVeloCapacity])
+    }, [placeholderData.totalHaiVeloDeposited, placeholderData.totalHaiVeloCapacity, simulatedAmount])
+
+    // Simulated first section (My VELO, veVELO, haiVELO v1): current - simulatedAmount
+    const simulatedMyTotalVelo = useMemo(() => {
+        const base = parseFloat(String(placeholderData.myTotalVelo).replace(/[$,]/g, '')) || 0
+        const after = Math.max(base - (simulatedAmount > 0 ? simulatedAmount : 0), 0)
+        return formatNumberWithStyle(after, { maxDecimals: 2 })
+    }, [placeholderData.myTotalVelo, simulatedAmount])
+
+
+
+
 
     return (
         <Container>
             <Header>
                 <Flex $justify="flex-start" $align="center" $gap={12}>
                     <Text $fontWeight={700}>haiVELO Overview</Text>
+                    {simulatedAmount > 0 && (
+                        <StatusLabel status={Status.CUSTOM} background="gradientCooler">
+                            <CenteredFlex $gap={8}>
+                                <Swirl size={14} />
+                                <Text $fontSize="0.67rem" $fontWeight={700}>
+                                    Simulation
+                                </Text>
+                            </CenteredFlex>
+                        </StatusLabel>
+                    )}
                     {loading && (
                         <Text $color="rgba(0,0,0,0.5)" $fontSize="0.8em">
                             Loading balances...
@@ -109,18 +154,19 @@ export function HaiVeloOverview() {
                     tokenLabel="VELO"
                     label="My VELO, veVELO, haiVELO v1"
                     convertedValue="$0.00"
+                    simulatedValue={simulatedAmount > 0 ? simulatedMyTotalVelo : undefined}
                     labelOnTop
                 />
 
                 {/* My haiVELO section */}
                 <OverviewStat
-                    value={formatNumberWithStyle(placeholderData.myHaiVelo, {
-                        style: 'currency',
+                    value={formatNumberWithStyle(parseFloat(placeholderData.myHaiVelo), {
                         maxDecimals: 2,
                     })}
                     token="HAIVELO"
                     label="My haiVELO"
                     convertedValue="$0.00"
+                    simulatedValue={simulatedAmount > 0 ? formatNumberWithStyle(parseFloat(placeholderData.myHaiVelo) + simulatedAmount, { maxDecimals: 2 }) : undefined}
                     labelOnTop
                 />
 
@@ -152,12 +198,11 @@ export function HaiVeloOverview() {
                     tooltip="Fee charged on performance"
                 />
 
-                {/* Progress bar section */}
+                {/* Progress bar section with simulation overlay */}
                 <OverviewProgressStat
-                    value={`${haiVeloProgress.progressPercentage}%`}
+                    value={progressProps.progress.label}
                     label="Total haiVELO Deposited:"
-                    variant="simple"
-                    {...haiVeloProgress}
+                    {...progressProps}
                     fullWidth
                 />
             </Inner>

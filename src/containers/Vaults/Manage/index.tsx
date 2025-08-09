@@ -11,6 +11,7 @@ import { RewardsTokenArray } from '~/components/TokenArray'
 import { ProxyPrompt } from '~/components/ProxyPrompt'
 import { Overview } from './Overview'
 import { HaiVeloOverview } from "./HaiVeloOverview"
+import { HaiVeloProvider } from '~/providers/HaiVeloProvider'
 import { VaultActions } from './VaultActions'
 import { MintHaiVeloActions } from './MintHaiVeloActions'
 import { ManageDropdown } from './ManageDropdown'
@@ -56,10 +57,12 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
             // Mint HAI Velo tab content
             return (
                 <ProxyPrompt>
-                    <BodyGrid>
-                        <HaiVeloOverview />
-                        <MintHaiVeloActions />
-                    </BodyGrid>
+                    <HaiVeloProvider>
+                        <BodyGrid>
+                            <HaiVeloOverview />
+                            <MintHaiVeloActions />
+                        </BodyGrid>
+                    </HaiVeloProvider>
                 </ProxyPrompt>
             )
         } else if (

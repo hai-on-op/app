@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useMemo } from 'react'
 
 import { formatNumberWithStyle } from '~/utils'
 import styled from 'styled-components'
@@ -7,14 +7,19 @@ import { NumberInput } from '~/components/NumberInput'
 import { SelectInput, type SelectOption } from '~/components/SelectInput'
 import { MultiSelectInput, type MultiSelectOption } from '~/components/MultiSelectInput'
 import { useHaiVeloV2 } from '~/hooks'
-
-type SelectedToken = 'VELO' | 'veVELO' | 'haiVELO_v1'
+import { useHaiVelo } from '~/providers/HaiVeloProvider'
 
 export function MintHaiVeloActions() {
-    const [selectedToken, setSelectedToken] = useState<SelectedToken>('VELO')
-    const [convertAmountVelo, setConvertAmountVelo] = useState<string>('')
-    const [convertAmountHaiVeloV1, setConvertAmountHaiVeloV1] = useState<string>('')
-    const [selectedVeVeloNFTs, setSelectedVeVeloNFTs] = useState<string[]>([])
+    const {
+        selectedToken,
+        setSelectedToken,
+        convertAmountVelo,
+        setConvertAmountVelo,
+        convertAmountHaiVeloV1,
+        setConvertAmountHaiVeloV1,
+        selectedVeVeloNFTs,
+        setSelectedVeVeloNFTs,
+    } = useHaiVelo()
 
     // Use the new hook to fetch VELO and veVELO balances
     const {
@@ -27,14 +32,14 @@ export function MintHaiVeloActions() {
     } = useHaiVeloV2()
 
     // Token options for the select dropdown
-    const tokenOptions: SelectOption<SelectedToken>[] = [
+    const tokenOptions: SelectOption<'VELO' | 'veVELO' | 'haiVELO_v1'>[] = [
         { label: 'VELO', value: 'VELO' },
         { label: 'veVELO', value: 'veVELO' },
         { label: 'haiVELO v1', value: 'haiVELO_v1' },
     ]
 
     // Handle token selection change (persist inputs across tokens)
-    const handleTokenChange = (token: SelectedToken) => {
+    const handleTokenChange = (token: 'VELO' | 'veVELO' | 'haiVELO_v1') => {
         setSelectedToken(token)
     }
 
@@ -57,7 +62,7 @@ export function MintHaiVeloActions() {
     }, [convertAmountVelo, convertAmountHaiVeloV1, selectedVeVeloNFTs, veVeloNFTs])
 
     // Get token label for display
-    const getTokenLabel = (token: SelectedToken): string => {
+    const getTokenLabel = (token: 'VELO' | 'veVELO' | 'haiVELO_v1'): string => {
         switch (token) {
             case 'VELO':
                 return 'VELO'
@@ -82,7 +87,7 @@ export function MintHaiVeloActions() {
     }, [veVeloNFTs])
 
     // Get available balance for selected token
-    const getAvailableBalance = (token: SelectedToken): string => {
+    const getAvailableBalance = (token: 'VELO' | 'veVELO' | 'haiVELO_v1'): string => {
         switch (token) {
             case 'VELO':
                 return formatNumberWithStyle(veloBalanceFormatted, {
