@@ -48,7 +48,12 @@ export function MintHaiVeloActions() {
         const veVeloAmt = selectedNFTs.reduce((sum, nft) => sum + parseFloat(nft.balanceFormatted), 0)
 
         const total = veloAmt + haiVeloV1Amt + veVeloAmt
-        return { haiVeloReceivedTotalRaw: total, haiVeloReceivedDisplay: total ? String(total) : '0' }
+        const display = total
+            ? formatNumberWithStyle(total, {
+                  maxDecimals: 2,
+              })
+            : '0'
+        return { haiVeloReceivedTotalRaw: total, haiVeloReceivedDisplay: display }
     }, [convertAmountVelo, convertAmountHaiVeloV1, selectedVeVeloNFTs, veVeloNFTs])
 
     // Get token label for display
