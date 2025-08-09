@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { formatNumberWithStyle } from '~/utils'
 import styled from 'styled-components'
@@ -8,6 +8,14 @@ import { SelectInput, type SelectOption } from '~/components/SelectInput'
 import { MultiSelectInput, type MultiSelectOption } from '~/components/MultiSelectInput'
 import { useHaiVeloV2 } from '~/hooks'
 import { useHaiVelo } from '~/providers/HaiVeloProvider'
+import { HaiVeloTxModal } from '~/components/Modal/HaiVeloTxModal'
+import type { HaiVeloApprovalItem } from '~/components/Modal/HaiVeloTxModal/Approvals'
+import { useStoreActions, useStoreState } from '~/store'
+import { useTokenAllowance } from '~/hooks/useTokenApproval'
+import { useContract } from '~/hooks/useContract'
+import { ethers } from 'ethers'
+import { useAccount } from 'wagmi'
+import { sanitizeDecimals } from '~/utils'
 
 export function MintHaiVeloActions() {
     const {
@@ -30,6 +38,13 @@ export function MintHaiVeloActions() {
         veVeloNFTs,
         haiVeloV1BalanceFormatted,
     } = useHaiVeloV2()
+
+    const { tokensData } = useStoreState((state) => state.connectWalletModel)
+    const { toggleModal } = useStoreActions((actions) => actions.popupsModel)
+    const { address } = useAccount()
+
+    // Target contract for approvals (optimism mainnet)
+    const HAI_VELO_V2_TARGET = '0xc00843e6e7574b2a633206f78fe95941c98652ab'
 
     // Token options for the select dropdown
     const tokenOptions: SelectOption<'VELO' | 'veVELO' | 'haiVELO_v1'>[] = [
@@ -111,6 +126,89 @@ export function MintHaiVeloActions() {
     const buttonActive = useMemo(() => {
         return haiVeloReceivedTotalRaw > 0
     }, [haiVeloReceivedTotalRaw])
+
+    // Prefetch allowances
+    const veloTokenAddress = tokensData['VELO']?.address
+    const haiVeloV1TokenAddress = tokensData['HAIVELO']?.address
+    const { allowance: veloAllowance } = useTokenAllowance(veloTokenAddress, address ?? undefined, HAI_VELO_V2_TARGET)
+    const { allowance: haiVeloV1Allowance } = useTokenAllowance(
+        haiVeloV1TokenAddress,
+        address ?? undefined,
+        HAI_VELO_V2_TARGET
+    )
+
+    // Prefetch veNFT single-token approvals
+    const VE_NFT_ADDRESS = '0xFAf8FD17D9840595845582fCB047DF13f006787d'
+    const veNftContract = useContract(
+        selectedVeVeloNFTs.length > 0 ? VE_NFT_ADDRESS : undefined,
+        ['function getApproved(uint256 tokenId) view returns (address)'],
+        false
+    )
+    const [veNftApprovedMap, setVeNftApprovedMap] = useState<Record<string, boolean>>({})
+    useEffect(() => {
+        let mounted = true
+        const fetchApprovals = async () => {
+            if (!veNftContract) {
+                if (mounted) setVeNftApprovedMap({})
+                return
+            }
+            const entries: Array<[string, boolean]> = []
+            for (const tokenId of selectedVeVeloNFTs) {
+                try {
+                    const approvedFor: string = await veNftContract.getApproved(tokenId)
+                    const ok = approvedFor?.toLowerCase() === HAI_VELO_V2_TARGET.toLowerCase()
+                    entries.push([tokenId, ok])
+                } catch {
+                    entries.push([tokenId, false])
+                }
+            }
+            if (mounted) setVeNftApprovedMap(Object.fromEntries(entries))
+        }
+        fetchApprovals()
+        return () => {
+            mounted = false
+        }
+    }, [veNftContract, selectedVeVeloNFTs])
+
+    // Build required approvals list based on selections and preflight checks
+    const requiredApprovals = useMemo<HaiVeloApprovalItem[]>(() => {
+        const items: HaiVeloApprovalItem[] = []
+
+        const pushErc20IfNeeded = (label: string, symbol: string, amountStr: string, allowance?: any) => {
+            const tokenMeta = tokensData[symbol]
+            const addr = tokenMeta?.address
+            const decimals = (tokenMeta?.decimals || 18).toString()
+            const amount = String(amountStr || '0')
+            const amountNum = Number(amount)
+            if (!addr || amountNum <= 0) return
+            // Only include if we know allowance and it's insufficient
+            if (!allowance) return
+            const needed = ethers.utils.parseUnits(sanitizeDecimals(amount, Number(decimals)), Number(decimals))
+            if (allowance.lt(needed)) {
+                items.push({ kind: 'ERC20', label, amount, tokenAddress: addr, decimals, spender: HAI_VELO_V2_TARGET })
+            }
+        }
+
+        pushErc20IfNeeded('VELO', 'VELO', convertAmountVelo, veloAllowance)
+        pushErc20IfNeeded('haiVELO v1', 'HAIVELO', convertAmountHaiVeloV1, haiVeloV1Allowance)
+
+        // veVELO NFTs: include only those not approved for target
+        for (const tokenId of selectedVeVeloNFTs) {
+            if (!veNftApprovedMap[tokenId]) {
+                items.push({
+                    kind: 'ERC721_TOKEN',
+                    label: `veVELO #${tokenId}`,
+                    nftAddress: VE_NFT_ADDRESS,
+                    tokenId,
+                    spender: HAI_VELO_V2_TARGET,
+                })
+            }
+        }
+
+        return items
+    }, [tokensData, convertAmountVelo, convertAmountHaiVeloV1, selectedVeVeloNFTs, veloAllowance, haiVeloV1Allowance, veNftApprovedMap])
+
+    const [approvalsOpen, setApprovalsOpen] = useState(false)
 
     return (
         <Container>
@@ -236,19 +334,32 @@ export function MintHaiVeloActions() {
                     $justify="center"
                     disabled={!buttonActive || loading}
                     onClick={() => {
-                        // Placeholder for mint action - aggregate all selections
-                        console.log('Minting haiVELO (aggregate selections):', {
-                            details: {
-                                VELO: convertAmountVelo,
-                                veVELO_NFTs: selectedVeVeloNFTs,
-                                haiVELO_v1: convertAmountHaiVeloV1,
-                            },
-                            totalReceived: haiVeloReceivedTotalRaw,
-                        })
+                        // If any approvals needed, open approvals modal sequence first
+                        if (requiredApprovals.length > 0) {
+                            setApprovalsOpen(true)
+                            toggleModal({ modal: 'reviewTx', isOpen: true })
+                            return
+                        }
+                        // TODO: Execute mint flow (after approvals). Consider EIP-7702 bundling in future here.
+                        console.log('Proceed to mint haiVELO (no approvals needed)')
                     }}
                 >
                     {loading ? 'Loading...' : 'Convert to haiVELO'}
                 </HaiButton>
+                {approvalsOpen && (
+                    <HaiVeloTxModal
+                        items={requiredApprovals}
+                        onAllApproved={() => {
+                            setApprovalsOpen(false)
+                            toggleModal({ modal: 'reviewTx', isOpen: false })
+                            // TODO: Continue to confirmation/execute tx; placeholder until EIP-7702 bundling integration
+                        }}
+                        onClose={() => {
+                            setApprovalsOpen(false)
+                            toggleModal({ modal: 'reviewTx', isOpen: false })
+                        }}
+                    />
+                )}
             </Footer>
         </Container>
     )
