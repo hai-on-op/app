@@ -17,7 +17,7 @@ import { useAccount } from 'wagmi'
 import { sanitizeDecimals } from '~/utils'
 
 export function MintHaiVeloActions() {
-    const {
+    const { 
         selectedToken,
         setSelectedToken,
         convertAmountVelo,
@@ -27,11 +27,11 @@ export function MintHaiVeloActions() {
         selectedVeVeloNFTs,
         setSelectedVeVeloNFTs,
         data: {
-            loading,
-            error,
-            veloBalanceFormatted,
-            veVeloBalanceFormatted,
-            veVeloNFTs,
+        loading, 
+        error, 
+        veloBalanceFormatted, 
+        veVeloBalanceFormatted,
+        veVeloNFTs,
             haiVeloV1BalanceFormatted,
             haiVeloV2Balance,
             haiVeloV2BalanceFormatted,
@@ -69,8 +69,8 @@ export function MintHaiVeloActions() {
         const total = veloAmt + haiVeloV1Amt + veVeloAmt
         const display = total
             ? formatNumberWithStyle(total, {
-                  maxDecimals: 2,
-              })
+                maxDecimals: 2,
+            })
             : '0'
         return { haiVeloReceivedTotalRaw: total, haiVeloReceivedDisplay: display }
     }, [convertAmountVelo, convertAmountHaiVeloV1, selectedVeVeloNFTs, veVeloNFTs])
@@ -138,14 +138,15 @@ export function MintHaiVeloActions() {
 
     // Prefetch veNFT approvals (both single and collection)
     const VE_NFT_ADDRESS = '0xFAf8FD17D9840595845582fCB047DF13f006787d'
-    const veNftContract = useContract(
-        VE_NFT_ADDRESS,
-        [
+    const veNftContractABI = useMemo(
+        () => [
             'function getApproved(uint256 tokenId) view returns (address)',
             'function isApprovedForAll(address owner, address operator) view returns (bool)',
         ],
-        false
+        []
     )
+    const veNftContract = useContract(VE_NFT_ADDRESS, veNftContractABI, false)
+
     const [veNftApprovedMap, setVeNftApprovedMap] = useState<Record<string, boolean>>({})
     const [isApprovedForAll, setIsApprovedForAll] = useState(false)
     useEffect(() => {
@@ -153,8 +154,9 @@ export function MintHaiVeloActions() {
         const fetchApprovals = async () => {
             if (!veNftContract || !address || selectedVeVeloNFTs.length === 0) {
                 if (mounted) {
-                    setVeNftApprovedMap({})
-                    setIsApprovedForAll(false)
+                    // Only update state if it's not already cleared
+                    if (Object.keys(veNftApprovedMap).length > 0) setVeNftApprovedMap({})
+                    if (isApprovedForAll) setIsApprovedForAll(false)
                 }
                 return
             }
@@ -163,11 +165,12 @@ export function MintHaiVeloActions() {
                 // Check collection-level approval first
                 const allApproved = await veNftContract.isApprovedForAll(address, HAI_VELO_V2_TARGET)
                 if (!mounted) return
-                setIsApprovedForAll(allApproved)
+                // Only update state if it changed
+                if (allApproved !== isApprovedForAll) setIsApprovedForAll(allApproved)
 
                 // If approved for all, no need to check individuals
                 if (allApproved) {
-                    setVeNftApprovedMap({})
+                    if (Object.keys(veNftApprovedMap).length > 0) setVeNftApprovedMap({})
                     return
                 }
 
@@ -177,19 +180,20 @@ export function MintHaiVeloActions() {
                     try {
                         const approvedFor: string = await veNftContract.getApproved(tokenId)
                         const ok = approvedFor?.toLowerCase() === HAI_VELO_V2_TARGET.toLowerCase()
-                        if (mounted) setVeNftApprovedMap({ [tokenId]: ok })
+                        // Only update map if value changes
+                        if (mounted && veNftApprovedMap[tokenId] !== ok) setVeNftApprovedMap({ [tokenId]: ok })
                     } catch {
-                        if (mounted) setVeNftApprovedMap({ [tokenId]: false })
+                        if (mounted && veNftApprovedMap[tokenId] !== false) setVeNftApprovedMap({ [tokenId]: false })
                     }
                 } else {
                     // For multiple NFTs, we rely on the collection approval, so clear individual map
-                    if (mounted) setVeNftApprovedMap({})
+                    if (mounted && Object.keys(veNftApprovedMap).length > 0) setVeNftApprovedMap({})
                 }
             } catch (e) {
                 console.error('Error fetching veNFT approvals', e)
                 if (mounted) {
-                    setVeNftApprovedMap({})
-                    setIsApprovedForAll(false)
+                    if (Object.keys(veNftApprovedMap).length > 0) setVeNftApprovedMap({})
+                    if (isApprovedForAll) setIsApprovedForAll(false)
                 }
             }
         }
