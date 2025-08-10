@@ -29,6 +29,12 @@ export type HaiVeloApprovalItem =
           tokenId: string
           spender: string
       }
+    | {
+          kind: 'ERC721_COLLECTION'
+          label: string
+          nftAddress: string
+          spender: string
+      }
 
 type ApprovalsProps = {
     items: HaiVeloApprovalItem[]
@@ -38,6 +44,8 @@ type ApprovalsProps = {
 const ERC721_APPROVAL_ABI = [
     'function getApproved(uint256 tokenId) view returns (address)',
     'function approve(address to, uint256 tokenId) external',
+    'function isApprovedForAll(address owner, address operator) view returns (bool)',
+    'function setApprovalForAll(address operator, bool approved) external',
 ]
 
 export function Approvals({ items, onAllApproved }: ApprovalsProps) {
@@ -77,26 +85,38 @@ export function Approvals({ items, onAllApproved }: ApprovalsProps) {
 
     // ERC721 single-token approval handling
     const nftContract = useContract<Contract>(
-        currentItem?.kind === 'ERC721_TOKEN' ? currentItem.nftAddress : undefined,
+        currentItem?.kind === 'ERC721_TOKEN' || currentItem?.kind === 'ERC721_COLLECTION' ? currentItem.nftAddress : undefined,
         ERC721_APPROVAL_ABI,
         true
     )
     const [nftApproved, setNftApproved] = useState<boolean>(false)
+    const [collectionApproved, setCollectionApproved] = useState(false)
     const [nftPending, setNftPending] = useState<boolean>(false)
 
     const refreshNftApproval = useCallback(async () => {
-        if (currentItem?.kind !== 'ERC721_TOKEN' || !nftContract) return
-        try {
-            const approvedFor: string = await nftContract.getApproved(currentItem.tokenId)
-            setNftApproved(approvedFor?.toLowerCase() === currentItem.spender.toLowerCase())
-        } catch (e) {
-            console.error('Failed to check NFT approval', e)
-            setNftApproved(false)
+        if (!nftContract || !address) return
+        if (currentItem?.kind === 'ERC721_TOKEN') {
+            try {
+                const approvedFor: string = await nftContract.getApproved(currentItem.tokenId)
+                setNftApproved(approvedFor?.toLowerCase() === currentItem.spender.toLowerCase())
+            } catch (e) {
+                console.error('Failed to check NFT approval', e)
+                setNftApproved(false)
+            }
+        } else if (currentItem?.kind === 'ERC721_COLLECTION') {
+            try {
+                const isApproved = await nftContract.isApprovedForAll(address, currentItem.spender)
+                setCollectionApproved(isApproved)
+            } catch (e) {
+                console.error('Failed to check collection approval', e)
+                setCollectionApproved(false)
+            }
         }
-    }, [currentItem, nftContract])
+    }, [currentItem, nftContract, address])
 
     useEffect(() => {
         setNftApproved(false)
+        setCollectionApproved(false)
         setNftPending(false)
         refreshNftApproval()
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -125,6 +145,29 @@ export function Approvals({ items, onAllApproved }: ApprovalsProps) {
         }
     }, [currentItem, nftContract, popupsActions, refreshNftApproval])
 
+    const approveCollection = useCallback(async (): Promise<void> => {
+        if (currentItem?.kind !== 'ERC721_COLLECTION' || !nftContract) return
+        try {
+            setNftPending(true)
+            popupsActions.setIsWaitingModalOpen(true)
+            popupsActions.setWaitingPayload({
+                title: 'Waiting for confirmation',
+                text: 'Approve all veNFTs in your wallet',
+                status: ActionState.LOADING,
+            })
+            const gas = await nftContract.estimateGas.setApprovalForAll(currentItem.spender, true)
+            const tx = await nftContract.setApprovalForAll(currentItem.spender, true, { gasLimit: gas.mul(12).div(10) })
+            await tx.wait()
+            await refreshNftApproval()
+        } catch (e) {
+            console.error('Failed to approve collection', e)
+        } finally {
+            setNftPending(false)
+            popupsActions.setIsWaitingModalOpen(false)
+            popupsActions.setWaitingPayload({ status: ActionState.NONE })
+        }
+    }, [currentItem, nftContract, popupsActions, refreshNftApproval])
+
     // Determine whether current item is approved
     const isCurrentApproved = useMemo(() => {
         if (!currentItem) return true
@@ -133,8 +176,10 @@ export function Approvals({ items, onAllApproved }: ApprovalsProps) {
             if (currentItem.label === 'haiVELO v1') return haiVeloApprovalState === ApprovalState.APPROVED
             return false // Should not happen
         }
-        return nftApproved
-    }, [currentItem, veloApprovalState, haiVeloApprovalState, nftApproved])
+        if (currentItem.kind === 'ERC721_TOKEN') return nftApproved
+        if (currentItem.kind === 'ERC721_COLLECTION') return collectionApproved
+        return false
+    }, [currentItem, veloApprovalState, haiVeloApprovalState, nftApproved, collectionApproved])
 
     // Move to next or finish
     useEffect(() => {
@@ -158,7 +203,9 @@ export function Approvals({ items, onAllApproved }: ApprovalsProps) {
             if (currentItem.label === 'VELO' && veloApprovalState === ApprovalState.PENDING) return <Loader size={40} />
             if (currentItem.label === 'haiVELO v1' && haiVeloApprovalState === ApprovalState.PENDING) return <Loader size={40} />
         }
-        if (currentItem.kind === 'ERC721_TOKEN' && nftPending) return <Loader size={40} />
+        if ((currentItem.kind === 'ERC721_TOKEN' || currentItem.kind === 'ERC721_COLLECTION') && nftPending) {
+            return <Loader size={40} />
+        }
         return <ArrowUpCircle width={'40px'} className={'stateless'} />
     }, [currentItem, isCurrentApproved, veloApprovalState, haiVeloApprovalState, nftPending])
 
@@ -185,13 +232,36 @@ export function Approvals({ items, onAllApproved }: ApprovalsProps) {
             return null
         }
 
-        const disabled = nftPending
-        return (
-            <HaiButton $variant="yellowish" $width="100%" $justify="center" disabled={disabled} onClick={approveNft}>
-                {disabled ? 'Pending Approval..' : `Approve ${currentItem.label}`}
-            </HaiButton>
-        )
-    }, [currentItem, isCurrentApproved, veloApprovalState, haiVeloApprovalState, requestVeloApprove, requestHaiVeloApprove, nftPending, approveNft])
+        if (currentItem.kind === 'ERC721_TOKEN') {
+            const disabled = nftPending
+            return (
+                <HaiButton $variant="yellowish" $width="100%" $justify="center" disabled={disabled} onClick={approveNft}>
+                    {disabled ? 'Pending Approval..' : `Approve ${currentItem.label}`}
+                </HaiButton>
+            )
+        }
+
+        if (currentItem.kind === 'ERC721_COLLECTION') {
+            const disabled = nftPending
+            return (
+                <HaiButton $variant="yellowish" $width="100%" $justify="center" disabled={disabled} onClick={approveCollection}>
+                    {disabled ? 'Pending Approval..' : `Approve ${currentItem.label}`}
+                </HaiButton>
+            )
+        }
+
+        return null
+    }, [
+        currentItem,
+        isCurrentApproved,
+        veloApprovalState,
+        haiVeloApprovalState,
+        requestVeloApprove,
+        requestHaiVeloApprove,
+        nftPending,
+        approveNft,
+        approveCollection,
+    ])
 
     return (
         <>

@@ -136,38 +136,68 @@ export function MintHaiVeloActions() {
         HAI_VELO_V2_TARGET
     )
 
-    // Prefetch veNFT single-token approvals
+    // Prefetch veNFT approvals (both single and collection)
     const VE_NFT_ADDRESS = '0xFAf8FD17D9840595845582fCB047DF13f006787d'
     const veNftContract = useContract(
-        selectedVeVeloNFTs.length > 0 ? VE_NFT_ADDRESS : undefined,
-        ['function getApproved(uint256 tokenId) view returns (address)'],
+        VE_NFT_ADDRESS,
+        [
+            'function getApproved(uint256 tokenId) view returns (address)',
+            'function isApprovedForAll(address owner, address operator) view returns (bool)',
+        ],
         false
     )
     const [veNftApprovedMap, setVeNftApprovedMap] = useState<Record<string, boolean>>({})
+    const [isApprovedForAll, setIsApprovedForAll] = useState(false)
     useEffect(() => {
         let mounted = true
         const fetchApprovals = async () => {
-            if (!veNftContract) {
-                if (mounted) setVeNftApprovedMap({})
+            if (!veNftContract || !address || selectedVeVeloNFTs.length === 0) {
+                if (mounted) {
+                    setVeNftApprovedMap({})
+                    setIsApprovedForAll(false)
+                }
                 return
             }
-            const entries: Array<[string, boolean]> = []
-            for (const tokenId of selectedVeVeloNFTs) {
-                try {
-                    const approvedFor: string = await veNftContract.getApproved(tokenId)
-                    const ok = approvedFor?.toLowerCase() === HAI_VELO_V2_TARGET.toLowerCase()
-                    entries.push([tokenId, ok])
-                } catch {
-                    entries.push([tokenId, false])
+
+            try {
+                // Check collection-level approval first
+                const allApproved = await veNftContract.isApprovedForAll(address, HAI_VELO_V2_TARGET)
+                if (!mounted) return
+                setIsApprovedForAll(allApproved)
+
+                // If approved for all, no need to check individuals
+                if (allApproved) {
+                    setVeNftApprovedMap({})
+                    return
+                }
+
+                // If not approved for all and only one is selected, check its individual approval
+                if (selectedVeVeloNFTs.length === 1) {
+                    const tokenId = selectedVeVeloNFTs[0]
+                    try {
+                        const approvedFor: string = await veNftContract.getApproved(tokenId)
+                        const ok = approvedFor?.toLowerCase() === HAI_VELO_V2_TARGET.toLowerCase()
+                        if (mounted) setVeNftApprovedMap({ [tokenId]: ok })
+                    } catch {
+                        if (mounted) setVeNftApprovedMap({ [tokenId]: false })
+                    }
+                } else {
+                    // For multiple NFTs, we rely on the collection approval, so clear individual map
+                    if (mounted) setVeNftApprovedMap({})
+                }
+            } catch (e) {
+                console.error('Error fetching veNFT approvals', e)
+                if (mounted) {
+                    setVeNftApprovedMap({})
+                    setIsApprovedForAll(false)
                 }
             }
-            if (mounted) setVeNftApprovedMap(Object.fromEntries(entries))
         }
         fetchApprovals()
         return () => {
             mounted = false
         }
-    }, [veNftContract, selectedVeVeloNFTs])
+    }, [veNftContract, selectedVeVeloNFTs, address])
 
     // Build required approvals list based on selections and preflight checks
     const requiredApprovals = useMemo<HaiVeloApprovalItem[]>(() => {
@@ -191,9 +221,21 @@ export function MintHaiVeloActions() {
         pushErc20IfNeeded('VELO', 'VELO', convertAmountVelo, veloAllowance)
         pushErc20IfNeeded('haiVELO v1', 'HAIVELO', convertAmountHaiVeloV1, haiVeloV1Allowance)
 
-        // veVELO NFTs: include only those not approved for target
-        for (const tokenId of selectedVeVeloNFTs) {
-            if (!veNftApprovedMap[tokenId]) {
+        // veVELO NFTs logic
+        if (selectedVeVeloNFTs.length > 1) {
+            // More than one NFT: require setApprovalForAll
+            if (!isApprovedForAll) {
+                items.push({
+                    kind: 'ERC721_COLLECTION',
+                    label: `veVELO Collection`,
+                    nftAddress: VE_NFT_ADDRESS,
+                    spender: HAI_VELO_V2_TARGET,
+                })
+            }
+        } else if (selectedVeVeloNFTs.length === 1) {
+            // Single NFT: require individual approve (if not covered by collection approval)
+            const tokenId = selectedVeVeloNFTs[0]
+            if (!isApprovedForAll && !veNftApprovedMap[tokenId]) {
                 items.push({
                     kind: 'ERC721_TOKEN',
                     label: `veVELO #${tokenId}`,
@@ -205,7 +247,16 @@ export function MintHaiVeloActions() {
         }
 
         return items
-    }, [tokensData, convertAmountVelo, convertAmountHaiVeloV1, selectedVeVeloNFTs, veloAllowance, haiVeloV1Allowance, veNftApprovedMap])
+    }, [
+        tokensData,
+        convertAmountVelo,
+        convertAmountHaiVeloV1,
+        selectedVeVeloNFTs,
+        veloAllowance,
+        haiVeloV1Allowance,
+        isApprovedForAll,
+        veNftApprovedMap,
+    ])
 
     const [approvalsOpen, setApprovalsOpen] = useState(false)
     const [executionPlan, setExecutionPlan] = useState<any>(null)
