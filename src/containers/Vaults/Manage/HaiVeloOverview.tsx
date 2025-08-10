@@ -4,27 +4,24 @@ import { formatNumberWithStyle, Status } from '~/utils'
 import styled from 'styled-components'
 import { type DashedContainerProps, DashedContainerStyle, Flex, Grid, Text, CenteredFlex } from '~/styles'
 import { OverviewProgressStat, OverviewStat } from './OverviewStat'
-import { useHaiVeloV2 } from '~/hooks'
 import { useHaiVelo } from '~/providers/HaiVeloProvider'
 import { StatusLabel } from '~/components/StatusLabel'
 import { Swirl } from '~/components/Icons/Swirl'
 
 export function HaiVeloOverview() {
-    // Use the new hook to fetch VELO and veVELO balances
+    // Get all data and simulation state from the single context
     const {
-        loading,
-        error,
-        veloBalanceFormatted,
-        veVeloBalanceFormatted,
-        totalVeloBalanceFormatted,
-        haiVeloV1BalanceFormatted,
-    } = useHaiVeloV2()
-
-    // Simulation amount from haiVELO context (user input), used to show simulated values
-    const { simulatedAmount } = useHaiVelo()
-
-
-
+        data: {
+            loading,
+            error,
+            veloBalanceFormatted,
+            veVeloBalanceFormatted,
+            totalVeloBalanceFormatted,
+            haiVeloV1BalanceFormatted,
+            haiVeloV2BalanceFormatted,
+        },
+        simulatedAmount,
+    } = useHaiVelo()
 
     // Placeholder data - replace with actual hooks/data later
     const placeholderData = {
@@ -32,7 +29,7 @@ export function HaiVeloOverview() {
         myVeVelo: veVeloBalanceFormatted,
         myTotalVelo: totalVeloBalanceFormatted, // Sum of VELO + veVELO (+ haiVELO v1 in hook formatting)
         myHaiVeloV1: haiVeloV1BalanceFormatted,
-        myHaiVelo: '0.00', // TODO: Add haiVELO balance hook
+        myHaiVelo: haiVeloV2BalanceFormatted || '0.00',
         veloTVL: '1,234,567.89',
         netRewardsAPR: '12.34',
         performanceFee: '2.5',

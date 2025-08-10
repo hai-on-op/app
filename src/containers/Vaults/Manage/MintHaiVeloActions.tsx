@@ -6,7 +6,6 @@ import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
 import { NumberInput } from '~/components/NumberInput'
 import { SelectInput, type SelectOption } from '~/components/SelectInput'
 import { MultiSelectInput, type MultiSelectOption } from '~/components/MultiSelectInput'
-import { useHaiVeloV2 } from '~/hooks'
 import { useHaiVelo } from '~/providers/HaiVeloProvider'
 import { HaiVeloTxModal } from '~/components/Modal/HaiVeloTxModal'
 import type { HaiVeloApprovalItem } from '~/components/Modal/HaiVeloTxModal/Approvals'
@@ -27,17 +26,17 @@ export function MintHaiVeloActions() {
         setConvertAmountHaiVeloV1,
         selectedVeVeloNFTs,
         setSelectedVeVeloNFTs,
+        data: {
+            loading,
+            error,
+            veloBalanceFormatted,
+            veVeloBalanceFormatted,
+            veVeloNFTs,
+            haiVeloV1BalanceFormatted,
+            haiVeloV2Balance,
+            haiVeloV2BalanceFormatted,
+        },
     } = useHaiVelo()
-
-    // Use the new hook to fetch VELO and veVELO balances
-    const {
-        loading,
-        error,
-        veloBalanceFormatted,
-        veVeloBalanceFormatted,
-        veVeloNFTs,
-        haiVeloV1BalanceFormatted,
-    } = useHaiVeloV2()
 
     const { tokensData } = useStoreState((state) => state.connectWalletModel)
     const { toggleModal } = useStoreActions((actions) => actions.popupsModel)
@@ -209,6 +208,21 @@ export function MintHaiVeloActions() {
     }, [tokensData, convertAmountVelo, convertAmountHaiVeloV1, selectedVeVeloNFTs, veloAllowance, haiVeloV1Allowance, veNftApprovedMap])
 
     const [approvalsOpen, setApprovalsOpen] = useState(false)
+    const [executionPlan, setExecutionPlan] = useState<any>(null)
+
+    const handleStepDone = (step: 'depositVelo' | 'depositVeNfts' | 'migrateV1') => {
+        switch (step) {
+            case 'depositVelo':
+                setConvertAmountVelo('')
+                break
+            case 'depositVeNfts':
+                setSelectedVeVeloNFTs([])
+                break
+            case 'migrateV1':
+                setConvertAmountHaiVeloV1('')
+                break
+        }
+    }
 
     return (
         <Container>
@@ -334,30 +348,50 @@ export function MintHaiVeloActions() {
                     $justify="center"
                     disabled={!buttonActive || loading}
                     onClick={() => {
-                        // If any approvals needed, open approvals modal sequence first
-                        if (requiredApprovals.length > 0) {
-                            setApprovalsOpen(true)
-                            toggleModal({ modal: 'reviewTx', isOpen: true })
-                            return
-                        }
-                        // TODO: Execute mint flow (after approvals). Consider EIP-7702 bundling in future here.
-                        console.log('Proceed to mint haiVELO (no approvals needed)')
+                        // Always open modal. It will show Approvals (if any) then Execute.
+                        setExecutionPlan({
+                            depositVeloWei: convertAmountVelo
+                                ? ethers.utils.parseUnits((convertAmountVelo || '0').replace(/,/g, ''), 18).toString()
+                                : undefined,
+                            depositVeNftTokenIds: selectedVeVeloNFTs,
+                            depositVeNftTotalWei: (() => {
+                                try {
+                                    const selected = veVeloNFTs.filter((n) => selectedVeVeloNFTs.includes(n.tokenId))
+                                    const sum = selected.reduce(
+                                        (acc, n) => acc.add(ethers.BigNumber.from(n.balance)),
+                                        ethers.BigNumber.from(0)
+                                    )
+                                    return sum.gt(0) ? sum.toString() : undefined
+                                } catch {
+                                    return undefined
+                                }
+                            })(),
+                            migrateV1Wei: convertAmountHaiVeloV1
+                                ? ethers.utils
+                                      .parseUnits((convertAmountHaiVeloV1 || '0').replace(/,/g, ''), 18)
+                                      .toString()
+                                : undefined,
+                        })
+                        setApprovalsOpen(true)
+                        toggleModal({ modal: 'reviewTx', isOpen: true })
                     }}
                 >
                     {loading ? 'Loading...' : 'Convert to haiVELO'}
                 </HaiButton>
-                {approvalsOpen && (
+                {approvalsOpen && executionPlan && (
                     <HaiVeloTxModal
                         items={requiredApprovals}
+                        plan={executionPlan}
                         onAllApproved={() => {
+                            // After execution done, close
                             setApprovalsOpen(false)
                             toggleModal({ modal: 'reviewTx', isOpen: false })
-                            // TODO: Continue to confirmation/execute tx; placeholder until EIP-7702 bundling integration
                         }}
                         onClose={() => {
                             setApprovalsOpen(false)
                             toggleModal({ modal: 'reviewTx', isOpen: false })
                         }}
+                        onStepDone={handleStepDone}
                     />
                 )}
             </Footer>

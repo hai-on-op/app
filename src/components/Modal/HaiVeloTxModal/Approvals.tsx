@@ -46,16 +46,32 @@ export function Approvals({ items, onAllApproved }: ApprovalsProps) {
 
     // Find first item that still needs approval
     const [currentIndex, setCurrentIndex] = useState<number>(0)
-
-    // Advance to next unapproved item automatically
     const currentItem = items[currentIndex]
 
-    // ERC20 approval handling via existing hook
-    const [erc20ApprovalState, requestErc20Approve] = useTokenApproval(
-        currentItem?.kind === 'ERC20' ? currentItem.amount : '0',
-        currentItem?.kind === 'ERC20' ? currentItem.tokenAddress : undefined,
-        currentItem?.kind === 'ERC20' ? currentItem.spender : undefined,
-        currentItem?.kind === 'ERC20' ? currentItem.decimals : '18',
+    // --- Isolate state for each possible approval type to prevent stale state ---
+
+    // ERC20 Approvals (one hook per token)
+    const veloItem = useMemo(
+        () => items.find((i) => i.kind === 'ERC20' && i.label === 'VELO') as Extract<HaiVeloApprovalItem, { kind: 'ERC20' }> | undefined,
+        [items]
+    )
+    const haiVeloItem = useMemo(
+        () => items.find((i) => i.kind === 'ERC20' && i.label === 'haiVELO v1') as Extract<HaiVeloApprovalItem, { kind: 'ERC20' }> | undefined,
+        [items]
+    )
+
+    const [veloApprovalState, requestVeloApprove] = useTokenApproval(
+        veloItem?.amount || '0',
+        veloItem?.tokenAddress,
+        veloItem?.spender,
+        veloItem?.decimals || '18',
+        true
+    )
+    const [haiVeloApprovalState, requestHaiVeloApprove] = useTokenApproval(
+        haiVeloItem?.amount || '0',
+        haiVeloItem?.tokenAddress,
+        haiVeloItem?.spender,
+        haiVeloItem?.decimals || '18',
         true
     )
 
@@ -113,55 +129,69 @@ export function Approvals({ items, onAllApproved }: ApprovalsProps) {
     const isCurrentApproved = useMemo(() => {
         if (!currentItem) return true
         if (currentItem.kind === 'ERC20') {
-            return erc20ApprovalState === ApprovalState.APPROVED
+            if (currentItem.label === 'VELO') return veloApprovalState === ApprovalState.APPROVED
+            if (currentItem.label === 'haiVELO v1') return haiVeloApprovalState === ApprovalState.APPROVED
+            return false // Should not happen
         }
         return nftApproved
-    }, [currentItem, erc20ApprovalState, nftApproved])
+    }, [currentItem, veloApprovalState, haiVeloApprovalState, nftApproved])
 
     // Move to next or finish
     useEffect(() => {
-        if (!currentItem) return
-        if (isCurrentApproved) {
-            // skip already-approved items
-            let next = currentIndex
-            while (next < items.length && ((): boolean => {
-                const item = items[next]
-                if (!item) return true
-                if (item.kind === 'ERC20') return erc20ApprovalState === ApprovalState.APPROVED
-                return nftApproved
-            })()) {
-                next += 1
-            }
-            if (next < items.length) setCurrentIndex(next)
-            else onAllApproved()
+        // If there's no item, we're done
+        if (!currentItem) {
+            onAllApproved()
+            return
         }
-    }, [isCurrentApproved, currentIndex, items, onAllApproved, erc20ApprovalState, nftApproved, currentItem])
+
+        // If the current item is approved, advance to the next index
+        if (isCurrentApproved) {
+            setCurrentIndex((i) => i + 1)
+        }
+        // Otherwise, wait for user action
+    }, [currentIndex, isCurrentApproved, onAllApproved, currentItem])
 
     const statusIcon = useMemo(() => {
         if (!currentItem) return null
         if (isCurrentApproved) return <CheckCircle width="40px" className={ActionState.SUCCESS} />
-        if (currentItem.kind === 'ERC20' && erc20ApprovalState === ApprovalState.PENDING) return <Loader size={40} />
+        if (currentItem.kind === 'ERC20') {
+            if (currentItem.label === 'VELO' && veloApprovalState === ApprovalState.PENDING) return <Loader size={40} />
+            if (currentItem.label === 'haiVELO v1' && haiVeloApprovalState === ApprovalState.PENDING) return <Loader size={40} />
+        }
         if (currentItem.kind === 'ERC721_TOKEN' && nftPending) return <Loader size={40} />
         return <ArrowUpCircle width={'40px'} className={'stateless'} />
-    }, [currentItem, isCurrentApproved, erc20ApprovalState, nftPending])
+    }, [currentItem, isCurrentApproved, veloApprovalState, haiVeloApprovalState, nftPending])
 
     const actionButton = useMemo(() => {
         if (!currentItem || isCurrentApproved) return null
+
         if (currentItem.kind === 'ERC20') {
-            const disabled = erc20ApprovalState === ApprovalState.PENDING
-            return (
-                <HaiButton $variant="yellowish" $width="100%" $justify="center" disabled={disabled} onClick={requestErc20Approve}>
-                    {disabled ? 'Pending Approval..' : `Approve ${currentItem.label}`}
-                </HaiButton>
-            )
+            if (currentItem.label === 'VELO') {
+                const disabled = veloApprovalState === ApprovalState.PENDING
+                return (
+                    <HaiButton $variant="yellowish" $width="100%" $justify="center" disabled={disabled} onClick={requestVeloApprove}>
+                        {disabled ? 'Pending Approval..' : `Approve ${currentItem.label}`}
+                    </HaiButton>
+                )
+            }
+            if (currentItem.label === 'haiVELO v1') {
+                const disabled = haiVeloApprovalState === ApprovalState.PENDING
+                return (
+                    <HaiButton $variant="yellowish" $width="100%" $justify="center" disabled={disabled} onClick={requestHaiVeloApprove}>
+                        {disabled ? 'Pending Approval..' : `Approve ${currentItem.label}`}
+                    </HaiButton>
+                )
+            }
+            return null
         }
+
         const disabled = nftPending
         return (
             <HaiButton $variant="yellowish" $width="100%" $justify="center" disabled={disabled} onClick={approveNft}>
                 {disabled ? 'Pending Approval..' : `Approve ${currentItem.label}`}
             </HaiButton>
         )
-    }, [currentItem, isCurrentApproved, erc20ApprovalState, requestErc20Approve, nftPending, approveNft])
+    }, [currentItem, isCurrentApproved, veloApprovalState, haiVeloApprovalState, requestVeloApprove, requestHaiVeloApprove, nftPending, approveNft])
 
     return (
         <>
