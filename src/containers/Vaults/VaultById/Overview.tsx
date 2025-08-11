@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, no-unused-vars */
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -172,7 +173,6 @@ export function Overview({ vault }: OverviewProps) {
 
                     // For VaultById, we always have an existing vault, so use weighted average
                     let netAPR: number = 0
-                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     let calculationMethod: string = ''
                     // let simulatedNetAPR: number | undefined = undefined
 

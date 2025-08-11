@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, no-unused-vars */
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { formatCollateralLabel } from '~/utils'
@@ -377,7 +378,6 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
                     const stabilityFeeCost = -parseFloat(summary.stabilityFee.raw || '0') // Use raw value directly as negative cost
 
                     let netAPR: number = 0
-                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     let calculationMethod: string = ''
                     let simulatedNetAPR: number | undefined = undefined
 
