@@ -62,6 +62,7 @@ export function useStakeMutations(address?: Address) {
      * - Optimistically increases user's staked balance and global total
      */
     const stake = useMutation({
+        mutationKey: ['stake', 'mut', 'stake'],
         mutationFn: async (amount: string) => {
             if (!signer) throw new Error('No signer')
             return svcStake(signer, amount)
@@ -89,6 +90,7 @@ export function useStakeMutations(address?: Address) {
      * - Optimistically reduces user's staked balance and sets a pendingWithdrawal entry
      */
     const initiateWithdrawal = useMutation({
+        mutationKey: ['stake', 'mut', 'initiateWithdrawal'],
         mutationFn: async (amount: string) => {
             if (!signer) throw new Error('No signer')
             return svcInitiate(signer, amount)
@@ -121,6 +123,7 @@ export function useStakeMutations(address?: Address) {
      * - Optimistically clears pendingWithdrawal
      */
     const withdraw = useMutation({
+        mutationKey: ['stake', 'mut', 'withdraw'],
         mutationFn: async () => {
             if (!signer) throw new Error('No signer')
             return svcWithdraw(signer)
@@ -145,6 +148,7 @@ export function useStakeMutations(address?: Address) {
      * - Optimistically moves pendingWithdrawal.amount back into stakedBalance and clears pending
      */
     const cancelWithdrawal = useMutation({
+        mutationKey: ['stake', 'mut', 'cancelWithdrawal'],
         mutationFn: async () => {
             if (!signer) throw new Error('No signer')
             return svcCancel(signer)
@@ -175,6 +179,7 @@ export function useStakeMutations(address?: Address) {
      * - Optimistically clears the rewards array
      */
     const claimRewards = useMutation({
+        mutationKey: ['stake', 'mut', 'claimRewards'],
         mutationFn: async () => {
             if (!signer) throw new Error('No signer')
             return svcClaim(signer)

@@ -1,13 +1,12 @@
-import React, { PropsWithChildren, createContext, useContext } from 'react'
+import React, { PropsWithChildren } from 'react'
 import { render } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { WagmiConfig, configureChains, createConfig } from 'wagmi'
 import { optimism } from 'wagmi/chains'
 import { publicProvider } from 'wagmi/providers/public'
+import { StoreProvider } from 'easy-peasy'
+import { store } from '~/store'
 
-// Lightweight mock store context to satisfy useStoreState/useStoreActions if needed
-const DummyStoreContext = createContext<any>({})
-export const useDummyStore = () => useContext(DummyStoreContext)
 
 export function createTestQueryClient() {
     const client = new QueryClient({
@@ -30,11 +29,11 @@ export function renderWithProviders(ui: React.ReactElement, client = createTestQ
     const { publicClient } = configureChains([optimism], [publicProvider()])
     const testWagmiConfig = createConfig({ autoConnect: false, connectors: [], publicClient })
     const Wrapper: React.FC<PropsWithChildren<{}>> = ({ children }) => (
-        <DummyStoreContext.Provider value={{}}>
+        <StoreProvider store={store}>
             <QueryClientProvider client={client}>
                 <WagmiConfig config={testWagmiConfig}>{children}</WagmiConfig>
             </QueryClientProvider>
-        </DummyStoreContext.Provider>
+        </StoreProvider>
     )
     return {
         client,
