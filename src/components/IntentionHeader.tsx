@@ -181,6 +181,7 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
                         value={type}
                         onChange={(value: string) => !!value && history.push(`/${value}`)}
                         options={selectOptions}
+                        uppercase={!(location.pathname === '/vaults/open' && new URLSearchParams(location.search).get('collateral') === 'HAIVELO')}
                         $fontSize={isUpToExtraSmall ? '2.5em' : '3.2em'}
                         aria-label="Action"
                     />
