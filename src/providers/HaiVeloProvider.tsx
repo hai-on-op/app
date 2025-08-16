@@ -3,13 +3,19 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { formatEther } from '@ethersproject/units'
 import { useAccount } from 'wagmi'
 import { useContract } from '~/hooks/useContract'
+import {
+    HAI_VELO_ADDRESSES,
+    VELO_TOKEN_ADDRESS,
+    VE_NFT_CONTRACT_ADDRESS,
+    HAI_VELO_V2_TOKEN_ADDRESS,
+} from '~/services/haiVeloService'
 import { useBalance } from '~/hooks/useBalance'
 import { formatNumberWithStyle } from '~/utils'
 
-// Contract addresses on Optimism
-const VELO_ADDRESS = '0x9560e827aF36c94D2Ac33a39bCE1Fe78631088Db'
-const VE_ADDRESS = '0xFAf8FD17D9840595845582fCB047DF13f006787d'
-const HAIVELO_V2_ADDRESS = '0xc00843e6e7574b2a633206f78fe95941c98652ab'
+// Contract addresses (centralized)
+const VELO_ADDRESS = VELO_TOKEN_ADDRESS
+const VE_ADDRESS = VE_NFT_CONTRACT_ADDRESS
+const HAIVELO_V2_ADDRESS = HAI_VELO_V2_TOKEN_ADDRESS
 
 // ABIs
 const VELO_ABI = ['function balanceOf(address account) view returns (uint256)']
