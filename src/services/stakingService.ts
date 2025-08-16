@@ -1,6 +1,7 @@
 import { Contract, BigNumber, utils } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { contracts } from '~/config/contracts'
+import { parseEther } from 'ethers/lib/utils'
 
 export type Address = `0x${string}`
 export type EtherString = string
@@ -73,6 +74,55 @@ export type PendingWithdrawal = {
 // This on-chain read is not specified in the current ABI; return null for now.
 export async function getPendingWithdrawal(_address: Address, _provider: Provider): Promise<PendingWithdrawal | null> {
     return null
+}
+
+// Write operations
+export type TxResponse = { hash: string; from: string; wait: () => Promise<unknown> }
+
+async function buildManager(signerOrProvider: any) {
+    return new Contract(contracts.stakingManager.address, contracts.abis.stakingManager, signerOrProvider)
+}
+
+export async function stake(signer: any, amount: string): Promise<TxResponse> {
+    const sm = await buildManager(signer)
+    const user = await signer.getAddress()
+    const txData = await sm.populateTransaction.stake(user, parseEther(amount))
+    const tx = await signer.sendTransaction(txData)
+    await tx.wait()
+    return tx
+}
+
+export async function initiateWithdrawal(signer: any, amount: string): Promise<TxResponse> {
+    const sm = await buildManager(signer)
+    const txData = await sm.populateTransaction.initiateWithdrawal(parseEther(amount))
+    const tx = await signer.sendTransaction(txData)
+    await tx.wait()
+    return tx
+}
+
+export async function withdraw(signer: any): Promise<TxResponse> {
+    const sm = await buildManager(signer)
+    const txData = await sm.populateTransaction.withdraw()
+    const tx = await signer.sendTransaction(txData)
+    await tx.wait()
+    return tx
+}
+
+export async function cancelWithdrawal(signer: any): Promise<TxResponse> {
+    const sm = await buildManager(signer)
+    const txData = await sm.populateTransaction.cancelWithdrawal()
+    const tx = await signer.sendTransaction(txData)
+    await tx.wait()
+    return tx
+}
+
+export async function claimRewards(signer: any): Promise<TxResponse> {
+    const sm = await buildManager(signer)
+    const user = await signer.getAddress()
+    const txData = await sm.populateTransaction.getReward(user)
+    const tx = await signer.sendTransaction(txData)
+    await tx.wait()
+    return tx
 }
 
 
