@@ -162,15 +162,28 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
 
     // Adjust select options label when on haiVELO open page
     const selectOptions: BrandedSelectOption[] = useMemo(() => {
-        const isHaiVeloOpen = location.pathname === '/vaults/open' &&
-            new URLSearchParams(location.search).get('collateral') === 'HAIVELO'
-        if (!isHaiVeloOpen) return typeOptions
-        return typeOptions.map((opt) =>
-            opt.value === Intention.BORROW
-                ? { ...opt, label: 'Get haiVELO', description: 'Convert VELO to haiVELO and mint against it' }
-                : opt
-        )
-    }, [location.pathname, location.search])
+        // Always include a dedicated haiVELO option (do not replace existing Get $HAI)
+        const haiVeloOption: BrandedSelectOption = {
+            label: 'Get haiVELO',
+            value: 'vaults/open?collateral=HAIVELO',
+            icon: ['HAIVELO'],
+            description: 'Convert VELO into haiVELO and mint against it',
+        }
+
+        const extended: BrandedSelectOption[] = []
+        for (const opt of typeOptions) {
+            extended.push(opt)
+            if (opt.value === Intention.BORROW) {
+                extended.push(haiVeloOption)
+            }
+        }
+        return extended
+    }, [])
+
+    const isHaiVeloOpen = location.pathname === '/vaults/open' &&
+        new URLSearchParams(location.search).get('collateral') === 'HAIVELO'
+
+    const selectedValue = isHaiVeloOpen ? 'vaults/open?collateral=HAIVELO' : (type as unknown as string)
 
     return (
         <Container>
@@ -178,10 +191,10 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
                 <Flex $justify="flex-start" $align="center" $gap={12} $flexWrap>
                     <BrandedTitle textContent="I WANT TO" $fontSize={isUpToExtraSmall ? '2.5em' : '3.2em'} />
                     <BrandedSelect
-                        value={type}
+                        value={selectedValue}
                         onChange={(value: string) => !!value && history.push(`/${value}`)}
                         options={selectOptions}
-                        uppercase={!(location.pathname === '/vaults/open' && new URLSearchParams(location.search).get('collateral') === 'HAIVELO')}
+                        uppercase={!isHaiVeloOpen}
                         $fontSize={isUpToExtraSmall ? '2.5em' : '3.2em'}
                         aria-label="Action"
                     />
