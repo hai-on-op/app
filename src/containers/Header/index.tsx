@@ -90,6 +90,9 @@ export function Header({ tickerActive = false }: HeaderProps) {
         [isUpToExtraSmall]
     )
 
+    const isHaiVeloRoute =
+        location.pathname === '/vaults/open' && new URLSearchParams(location.search).get('collateral') === 'HAIVELO'
+
     return (
         <>
             {wrapEthActive && <WrapETHModal onClose={() => setWrapEthActive(false)} />}
@@ -182,6 +185,11 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                                 }
                                             >
                                                 GET HAI
+                                            </HeaderLink>
+                                        </Link>
+                                        <Link href="/vaults/open?collateral=HAIVELO" $textDecoration="none">
+                                            <HeaderLink $active={isHaiVeloRoute} style={{ textTransform: 'none' }}>
+                                                haiVELO
                                             </HeaderLink>
                                         </Link>
                                         <Link href="/earn" $textDecoration="none">
