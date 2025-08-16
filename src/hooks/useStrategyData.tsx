@@ -1,61 +1,20 @@
-import axios from 'axios'
 import { useState, useEffect, useMemo } from 'react'
 import { utils } from 'ethers'
 import { formatNumberWithStyle, VITE_MAINNET_PUBLIC_RPC } from '~/utils'
 
 import { useBalance } from '~/hooks'
-import { calculateHaiVeloBoost } from '~/services/boostService'
-import { useStakingSummary } from './useStakingSummary'
-import { RewardsModel } from '~/model/rewardsModel'
+import {
+    calculateHaiVeloCollateralMapping,
+    calculateHaiVeloBoostMap,
+    fetchHaiVeloLatestTransferAmount,
+} from '~/services/haiVeloService'
 
-const HAIVELO_DEPOSITER = '0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3'
-const REWARD_DISTRIBUTOR = '0xfEd2eB6325432F0bF7110DcE2CCC5fF811ac3D4D'
+// centralized in haiVeloService
 
 const HAI_TOKEN_ADDRESS = import.meta.env.VITE_HAI_ADDRESS as string
 const KITE_TOKEN_ADDRESS = import.meta.env.VITE_KITE_ADDRESS as string
 const OP_TOKEN_ADDRESS = import.meta.env.VITE_OP_ADDRESS as string
 
-const calculateHaiVeloCollateralMapping = (haiVeloSafesData: any) => {
-    const collateralMapping: Record<string, string> = {}
-    if (haiVeloSafesData?.safes && haiVeloSafesData.safes.length > 0) {
-        // Group safes by owner address and sum their collateral
-        haiVeloSafesData.safes.forEach((safe: any) => {
-            const ownerAddress = safe.owner.address.toLowerCase()
-            const collateralAmount = parseFloat(safe.collateral)
-            if (collateralMapping[ownerAddress]) {
-                // Add to existing collateral for this user
-                collateralMapping[ownerAddress] = (
-                    parseFloat(collateralMapping[ownerAddress]) + collateralAmount
-                ).toString()
-            } else {
-                // First safe for this user
-                collateralMapping[ownerAddress] = collateralAmount.toString()
-            }
-        })
-    }
-    return collateralMapping
-}
-
-const calculateHaiVeloBoostMap = (
-    haiVeloCollateralMapping: any,
-    usersStakingData: any,
-    totalStakedAmount: any,
-    totalHaiVeloDeposited: any
-) => {
-    return Object.entries(haiVeloCollateralMapping).reduce((acc, [address, value]) => {
-        if (!usersStakingData[address]) return { ...acc, [address]: 1 }
-
-        return {
-            ...acc,
-            [address]: calculateHaiVeloBoost({
-                userStakingAmount: Number(usersStakingData[address]?.stakedBalance),
-                totalStakingAmount: Number(totalStakedAmount),
-                userHaiVELODeposited: Number(value),
-                totalHaiVELODeposited: Number(totalHaiVeloDeposited),
-            }).haiVeloBoost,
-        }
-    }, {})
-}
 
 export function useStrategyData(
     systemStateData: any,
@@ -104,28 +63,24 @@ export function useStrategyData(
         return acc + Number(value?.stakedBalance)
     }, 0)
 
-    const haiVeloCollateralMapping = useMemo(() => {
-        return calculateHaiVeloCollateralMapping(haiVeloSafesData)
-    }, [haiVeloSafesData])
+    const haiVeloCollateralMapping = useMemo(() => calculateHaiVeloCollateralMapping(haiVeloSafesData), [haiVeloSafesData])
 
-    const haiVeloBoostMap = useMemo(() => {
-        return calculateHaiVeloBoostMap(
-            haiVeloCollateralMapping,
-            usersStakingData,
-            totalStakedAmount,
-            haiVeloTotalCollateralLockedInSafes
-        )
-    }, [haiVeloCollateralMapping, usersStakingData, totalStakedAmount, haiVeloTotalCollateralLockedInSafes])
+    const haiVeloBoostMap = useMemo(
+        () =>
+            calculateHaiVeloBoostMap(
+                haiVeloCollateralMapping,
+                usersStakingData,
+                Number(totalStakedAmount),
+                Number(haiVeloTotalCollateralLockedInSafes)
+            ),
+        [haiVeloCollateralMapping, usersStakingData, totalStakedAmount, haiVeloTotalCollateralLockedInSafes]
+    )
 
     useEffect(() => {
-        RewardsModel.fetchHaiVeloDailyReward({
-          haiTokenAddress: HAI_TOKEN_ADDRESS,
-          haiVeloDepositer: HAIVELO_DEPOSITER,
-          rewardDistributor: REWARD_DISTRIBUTOR,
-          rpcUrl: VITE_MAINNET_PUBLIC_RPC,
-        }).then((amount) => {
-            setHaiVeloLatestTransferAmount(amount)
-        })
+        fetchHaiVeloLatestTransferAmount({
+            rpcUrl: VITE_MAINNET_PUBLIC_RPC,
+            haiTokenAddress: HAI_TOKEN_ADDRESS,
+        }).then((amount) => setHaiVeloLatestTransferAmount(amount))
     }, [])
 
     useEffect(() => {

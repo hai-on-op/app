@@ -6,6 +6,7 @@ import {
     HAIVELO_V1_DEPOSITER_ADDRESS,
     HAI_REWARD_DISTRIBUTOR_ADDRESS,
 } from '~/services/haiVeloService'
+import { fetchHaiVeloLatestTransferAmount } from '~/services/haiVeloService'
 
 const HAIVELO_DEPOSITER = HAIVELO_V1_DEPOSITER_ADDRESS
 const REWARD_DISTRIBUTOR = HAI_REWARD_DISTRIBUTOR_ADDRESS
@@ -220,12 +221,12 @@ class YieldBearingAPRCalculator implements IUnderlyingAPRCalculator {
                 let userBoost = 1 // Default boost
 
                 try {
-                    // Get the HAI VELO daily reward using the same method as useStrategyData
-                    const haiVeloLatestTransferAmount = await RewardsModel.fetchHaiVeloDailyReward({
-                        haiTokenAddress: HAI_TOKEN_ADDRESS,
-                        haiVeloDepositer: HAIVELO_DEPOSITER,
-                        rewardDistributor: REWARD_DISTRIBUTOR,
+                    // Get the HAI VELO daily reward (centralized helper)
+                    const haiVeloLatestTransferAmount = await fetchHaiVeloLatestTransferAmount({
                         rpcUrl: VITE_MAINNET_PUBLIC_RPC,
+                        haiTokenAddress: HAI_TOKEN_ADDRESS,
+                        depositerAddress: HAIVELO_DEPOSITER,
+                        distributorAddress: REWARD_DISTRIBUTOR,
                     })
 
                     // Calculate daily reward quantity (divide by 7 as done in useStrategyData)
