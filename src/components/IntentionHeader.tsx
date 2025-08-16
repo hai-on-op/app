@@ -19,6 +19,7 @@ import { useFlags } from 'flagsmith/react'
 import uniswapLogo from '~/assets/uniswap-icon.svg'
 import { StakeStats } from '~/containers/Stake/Stats'
 import { WrapperAd, WrapperAdProps } from './WrapperAd'
+import { HaiVeloStats } from '~/containers/Vaults/HaiVeloStats'
 
 enum Intention {
     AUCTION = 'auctions',
@@ -139,10 +140,14 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
                 case '/vaults':
                 case '/vaults/manage':
                 case '/vaults/open':
-                    return {
-                        type: Intention.BORROW,
-                        stats: <BorrowStats />,
+                    // If opening haiVELO collateral, show special haiVELO stats
+                    if (new URLSearchParams(location.search).get('collateral') === 'HAIVELO') {
+                        return {
+                            type: Intention.BORROW,
+                            stats: <HaiVeloStats />,
+                        }
                     }
+                    return { type: Intention.BORROW, stats: <BorrowStats /> }
                 default:
                     return {}
             }
@@ -155,6 +160,18 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
 
     const { subtitle, cta, ctaLink } = copy[type]
 
+    // Adjust select options label when on haiVELO open page
+    const selectOptions: BrandedSelectOption[] = useMemo(() => {
+        const isHaiVeloOpen = location.pathname === '/vaults/open' &&
+            new URLSearchParams(location.search).get('collateral') === 'HAIVELO'
+        if (!isHaiVeloOpen) return typeOptions
+        return typeOptions.map((opt) =>
+            opt.value === Intention.BORROW
+                ? { ...opt, label: 'Get haiVELO', description: 'Convert VELO to haiVELO and mint against it' }
+                : opt
+        )
+    }, [location.pathname, location.search])
+
     return (
         <Container>
             <Inner>
@@ -163,7 +180,7 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
                     <BrandedSelect
                         value={type}
                         onChange={(value: string) => !!value && history.push(`/${value}`)}
-                        options={typeOptions}
+                        options={selectOptions}
                         $fontSize={isUpToExtraSmall ? '2.5em' : '3.2em'}
                         aria-label="Action"
                     />
