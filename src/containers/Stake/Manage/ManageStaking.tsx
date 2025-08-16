@@ -16,6 +16,10 @@ import { StakingTxModal } from '~/components/Modal/StakingTxModal'
 // import { Info } from '~/components/Icons/Info'
 import { useBalances, useEthersSigner } from '~/hooks'
 import { useStakingData } from '~/hooks/useStakingData'
+import { useStakeAccount } from '~/hooks/staking/useStakeAccount'
+import { useStakeStats } from '~/hooks/staking/useStakeStats'
+import { useStakeMutations } from '~/hooks/staking/useStakeMutations'
+import { useFlags } from 'flagsmith/react'
 // import { Loader } from '~/components/Loader'
 import { AvailabilityBadge } from '~/components/AvailabilityBadge'
 // import { stakingModel } from '~/model/stakingModel'
@@ -34,11 +38,20 @@ type ManageStakingProps = {
 }
 
 export function ManageStaking({ simulation }: ManageStakingProps) {
+    const flags = useFlags(['staking_refactor'])
+    const useNew = true //!!flags.staking_refactor?.enabled
     const { stakingAmount, unstakingAmount, setStakingAmount, setUnstakingAmount } = simulation
     const [, kiteBalance] = useBalances(['HAI', 'KITE'])
-    const { stakingData, cooldownPeriod, loading: stakingDataLoading, refetchAll } = useStakingData()
-    const signer = useEthersSigner()
+    const stakingCtx = useStakingData() as any
+    const stakingData = stakingCtx?.stakingData
+    const cooldownPeriod = stakingCtx?.cooldownPeriod
+    const stakingDataLoading = stakingCtx?.loading
+    const refetchAll: (args?: any) => Promise<void> = stakingCtx?.refetchAll || (async () => {})
     const { address } = useAccount()
+    const accountQuery = useStakeAccount(address as any)
+    const statsQuery = useStakeStats()
+    const mutations = useStakeMutations(address as any)
+    const signer = useEthersSigner()
 
     const { stakingModel: stakingState } = useStoreState((state) => state)
 
@@ -47,20 +60,18 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
     })
 
     const stakedKite = useMemo(() => {
-        if (stakingDataLoading) return null
-        return formatNumberWithStyle(stakingData.stakedBalance, {
+        const bal = useNew ? accountQuery.data?.stakedBalance || '0' : stakingData.stakedBalance
+        if (useNew ? accountQuery.isLoading : stakingDataLoading) return null
+        return formatNumberWithStyle(bal, {
             maxDecimals: 2,
             minDecimals: 0,
         })
-    }, [stakingData.stakedBalance, stakingDataLoading])
+    }, [useNew, accountQuery.data?.stakedBalance, accountQuery.isLoading, stakingData.stakedBalance, stakingDataLoading])
 
     const pendingWithdrawal = useMemo(() => {
         if (!address) return null
-
-        const pW = stakingState.pendingWithdrawals[address.toLowerCase()]
-
+        const pW = useNew ? accountQuery.data?.pendingWithdrawal : stakingState.pendingWithdrawals[address.toLowerCase()]
         if (!pW) return null
-
         const remainingTime = Number(pW.timestamp) + Number(cooldownPeriod) - Date.now() / 1000
 
         let availableIn
@@ -83,7 +94,7 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
             }),
             availableIn,
         }
-    }, [stakingData.pendingWithdrawal, cooldownPeriod, stakingState, address])
+    }, [useNew, accountQuery.data?.pendingWithdrawal, cooldownPeriod, stakingState, address])
 
     const isUnStaking = Number(unstakingAmount) > 0
     const isStaking = Number(stakingAmount) > 0
@@ -288,7 +299,6 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                                             isOpen: true,
                                         })
                                     } else {
-                                        if (!signer) return
                                         try {
                                             popupsActions.setIsWaitingModalOpen(true)
                                             popupsActions.setWaitingPayload({
@@ -298,9 +308,8 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                                                 status: ActionState.LOADING,
                                             })
 
-                                            await stakingActions.cancelWithdrawal({ signer })
+                                            await mutations.cancelWithdrawal.mutateAsync()
 
-                                            await refetchAll({ cancelWithdrawalAmount: pendingWithdrawal.amount })
                                             popupsActions.setIsWaitingModalOpen(false)
                                             popupsActions.setWaitingPayload({ status: ActionState.NONE })
                                         } catch (error) {

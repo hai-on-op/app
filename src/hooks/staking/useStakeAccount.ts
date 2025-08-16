@@ -1,12 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { usePublicProvider } from '~/hooks'
 import type { Address } from '~/services/stakingService'
-import {
-    getCooldown,
-    getRewards,
-    getStakedBalance,
-    getPendingWithdrawal,
-} from '~/services/stakingService'
+import { getCooldown, getRewards, getStakedBalance, getPendingWithdrawal } from '~/services/stakingService'
 
 export type StakeAccountData = {
     stakedBalance: string
@@ -35,5 +30,3 @@ export function useStakeAccount(address?: Address) {
 
     return query
 }
-
-

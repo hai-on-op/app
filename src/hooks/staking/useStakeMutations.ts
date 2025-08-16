@@ -1,3 +1,29 @@
+/**
+ * Staking mutations with optimistic updates
+ *
+ * This hook centralizes all write operations related to staking and applies
+ * optimistic updates to the React Query cache so the UI feels instant.
+ *
+ * Cache contracts
+ * - Account cache (per user): queryKey ['stake', 'account', address]
+ *   shape: {
+ *     stakedBalance: string            // human-readable (ether) string
+ *     pendingWithdrawal: { amount: string; timestamp: number } | null
+ *     rewards: Array<{ tokenAddress: Address; amount: string }>
+ *     cooldown: number                 // seconds
+ *   }
+ * - Stats cache (global): queryKey ['stake', 'stats']
+ *   shape: { totalStaked: string }
+ *
+ * Optimistic strategy
+ * - onMutate takes a snapshot of current cache (for rollback) and writes the new state immediately
+ * - onError restores the snapshot
+ * - onSuccess invalidates queries to reconcile with on-chain truth
+ *
+ * Notes
+ * - Amounts are handled as human-readable strings and converted to Number for simple arithmetic.
+ *   If sub-decimal precision beyond JS number is required, switch to a decimal library.
+ */
 import { useMemo } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEthersSigner } from '~/hooks'
@@ -31,6 +57,10 @@ export function useStakeMutations(address?: Address) {
         },
     }
 
+    /**
+     * Stake KITE
+     * - Optimistically increases user's staked balance and global total
+     */
     const stake = useMutation({
         mutationFn: async (amount: string) => {
             if (!signer) throw new Error('No signer')
@@ -54,6 +84,10 @@ export function useStakeMutations(address?: Address) {
         ...common,
     })
 
+    /**
+     * Initiate withdrawal (unstake)
+     * - Optimistically reduces user's staked balance and sets a pendingWithdrawal entry
+     */
     const initiateWithdrawal = useMutation({
         mutationFn: async (amount: string) => {
             if (!signer) throw new Error('No signer')
@@ -82,6 +116,10 @@ export function useStakeMutations(address?: Address) {
         ...common,
     })
 
+    /**
+     * Withdraw (claim unstaked tokens after cooldown)
+     * - Optimistically clears pendingWithdrawal
+     */
     const withdraw = useMutation({
         mutationFn: async () => {
             if (!signer) throw new Error('No signer')
@@ -102,6 +140,10 @@ export function useStakeMutations(address?: Address) {
         ...common,
     })
 
+    /**
+     * Cancel withdrawal (re-stake the pending amount)
+     * - Optimistically moves pendingWithdrawal.amount back into stakedBalance and clears pending
+     */
     const cancelWithdrawal = useMutation({
         mutationFn: async () => {
             if (!signer) throw new Error('No signer')
@@ -128,6 +170,10 @@ export function useStakeMutations(address?: Address) {
         ...common,
     })
 
+    /**
+     * Claim rewards
+     * - Optimistically clears the rewards array
+     */
     const claimRewards = useMutation({
         mutationFn: async () => {
             if (!signer) throw new Error('No signer')

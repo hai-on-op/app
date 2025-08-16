@@ -11,6 +11,8 @@ import { TransactionSummary } from '~/components/TransactionSummary'
 import { ModalBody, ModalFooter } from '../index'
 // import { stakingModel } from '~/model/stakingModel'
 import { useBoost } from '~/hooks/useBoost'
+import { useStakeMutations } from '~/hooks/staking/useStakeMutations'
+import { useAccount } from 'wagmi'
 
 type ConfirmProps = {
     onClose?: () => void
@@ -25,7 +27,10 @@ export function Confirm({ onClose, isStaking, amount, isWithdraw, onSuccess }: C
     const signer = useEthersSigner()
     const { popupsModel: popupsActions, stakingModel: stakingActions } = useStoreActions((actions) => actions)
     const { stakingModel: stakingStates } = useStoreState((state) => state)
-    const { refetchAll } = useStaking()
+    const stakingCtx = useStaking() as any
+    const refetchAll = stakingCtx?.refetchAll || (() => Promise.resolve())
+    const { address } = useAccount()
+    const { stake, initiateWithdrawal, withdraw, cancelWithdrawal, claimRewards } = useStakeMutations(address as any)
     // Use the effective staked amount from useStakingSummary
     // const { myStaked } = useStakingSummary()
 
@@ -50,21 +55,9 @@ export function Confirm({ onClose, isStaking, amount, isWithdraw, onSuccess }: C
 
             console.log('setTransactionState')
 
-            if (isStaking) {
-                await stakingActions.stake({
-                    signer,
-                    amount,
-                })
-            } else if (isWithdraw) {
-                await stakingActions.withdraw({
-                    signer,
-                })
-            } else {
-                await stakingActions.unstake({
-                    signer,
-                    amount,
-                })
-            }
+            if (isStaking) await stake.mutateAsync(amount)
+            else if (isWithdraw) await withdraw.mutateAsync()
+            else await initiateWithdrawal.mutateAsync(amount)
 
             stakingActions.setTransactionState(ActionState.SUCCESS)
             popupsActions.setIsWaitingModalOpen(false)
