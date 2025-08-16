@@ -8,7 +8,7 @@ function Dummy() {
 }
 
 describe('renderWithProviders', () => {
-    it('renders within QueryClientProvider', () => {
+    it('renders within providers', () => {
         renderWithProviders(<Dummy />)
         expect(screen.getByTestId('dummy').textContent).toBe('ok')
     })
