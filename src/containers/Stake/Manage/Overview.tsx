@@ -7,6 +7,7 @@ import { Status, formatNumberWithStyle } from '~/utils'
 // import { useEarnStrategies } from '~/hooks'
 // import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { useStakingSummary } from '~/hooks/useStakingSummary'
+import { useStakingSummaryV2 } from '~/hooks/staking/useStakingSummaryV2'
 import { Loader } from '~/components/Loader'
 // import { ComingSoon } from '~/components/ComingSoon'
 
@@ -18,6 +19,9 @@ import { OverviewProgressStat, OverviewStat } from './OverviewStat'
 // import { AlertTriangle, ArrowLeft, ArrowRight } from 'react-feather'
 // import { useBoost } from '~/hooks/useBoost'
 // import { BigNumber, utils } from 'ethers'
+import { useAccount } from 'wagmi'
+import { useFlags } from 'flagsmith/react'
+
 type StakingSimulation = {
     stakingAmount: string
     unstakingAmount: string
@@ -31,7 +35,9 @@ type OverviewProps = {
 
 export function Overview({ simulation }: OverviewProps) {
     const { stakingAmount, unstakingAmount } = simulation
-    // const { t } = useTranslation()
+    const { address } = useAccount()
+    const useNew = true
+
     const {
         loading,
         kitePrice,
@@ -42,7 +48,7 @@ export function Overview({ simulation }: OverviewProps) {
         boost,
         calculateSimulatedValues,
         isOptimistic,
-    } = useStakingSummary()
+    } = useStakingSummaryV2(address as any)
 
     // Calculate simulated values if simulation values are provided
     const simValues = useMemo(

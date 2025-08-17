@@ -26,6 +26,7 @@
  */
 import { useMemo } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useStoreActions } from '~/store'
 import { useEthersSigner } from '~/hooks'
 import type { Address } from '~/services/stakingService'
 import {
@@ -48,12 +49,26 @@ type StatsCache = { totalStaked: string }
 export function useStakeMutations(address?: Address) {
     const signer = useEthersSigner()
     const qc = useQueryClient()
+    const { setForceUpdateTokens } = useStoreActions((a) => a.connectWalletModel)
     const accountKey = ['stake', 'account', address?.toLowerCase() || '0x0']
     const statsKey = ['stake', 'stats']
 
     const common = {
         onSuccess: async () => {
-            await Promise.all([qc.invalidateQueries({ queryKey: accountKey }), qc.invalidateQueries({ queryKey: statsKey })])
+            await Promise.all([
+                qc.invalidateQueries({ queryKey: accountKey, refetchType: 'active' }),
+                qc.invalidateQueries({ queryKey: statsKey, refetchType: 'active' }),
+            ])
+            // Trigger wallet balances refresh
+            setForceUpdateTokens(true)
+        },
+        onSettled: async () => {
+            // As a safety net, refetch again in the background to ensure reconciliation
+            await Promise.all([
+                qc.refetchQueries({ queryKey: accountKey, type: 'active' }),
+                qc.refetchQueries({ queryKey: statsKey, type: 'active' }),
+            ])
+            setForceUpdateTokens(true)
         },
     }
 
@@ -70,10 +85,18 @@ export function useStakeMutations(address?: Address) {
         onMutate: async (amount: string) => {
             const prevAccount = qc.getQueryData<AccountCache>(accountKey)
             const prevStats = qc.getQueryData<StatsCache>(statsKey)
-            if (prevAccount && prevStats) {
-                const nextBalance = String(Number(prevAccount.stakedBalance) + Number(amount))
-                const nextTotal = String(Number(prevStats.totalStaked) + Number(amount))
-                qc.setQueryData<AccountCache>(accountKey, { ...prevAccount, stakedBalance: nextBalance })
+            const baseBal = Number(prevAccount?.stakedBalance || 0)
+            const nextBalance = String(baseBal + Number(amount))
+            // Update or seed account cache
+            qc.setQueryData<AccountCache>(accountKey, {
+                stakedBalance: nextBalance,
+                pendingWithdrawal: prevAccount?.pendingWithdrawal || null,
+                rewards: prevAccount?.rewards || [],
+                cooldown: prevAccount?.cooldown || 0,
+            })
+            // Update stats only if present
+            if (prevStats) {
+                const nextTotal = String(Number(prevStats.totalStaked || 0) + Number(amount))
                 qc.setQueryData<StatsCache>(statsKey, { totalStaked: nextTotal })
             }
             return { prevAccount, prevStats }
@@ -98,17 +121,17 @@ export function useStakeMutations(address?: Address) {
         onMutate: async (amount: string) => {
             const prevAccount = qc.getQueryData<AccountCache>(accountKey)
             const prevStats = qc.getQueryData<StatsCache>(statsKey)
-            if (prevAccount && prevStats) {
-                const nextBalance = String(Math.max(0, Number(prevAccount.stakedBalance) - Number(amount)))
-                qc.setQueryData<AccountCache>(accountKey, {
-                    ...prevAccount,
-                    stakedBalance: nextBalance,
-                    pendingWithdrawal: {
-                        amount,
-                        timestamp: Math.floor(Date.now() / 1000),
-                    },
-                })
-            }
+            const current = Number(prevAccount?.stakedBalance || 0)
+            const nextBalance = String(Math.max(0, current - Number(amount)))
+            qc.setQueryData<AccountCache>(accountKey, {
+                stakedBalance: nextBalance,
+                pendingWithdrawal: {
+                    amount,
+                    timestamp: Math.floor(Date.now() / 1000),
+                },
+                rewards: prevAccount?.rewards || [],
+                cooldown: prevAccount?.cooldown || 0,
+            })
             return { prevAccount, prevStats }
         },
         onError: (_e, _vars, ctx) => {
@@ -131,9 +154,12 @@ export function useStakeMutations(address?: Address) {
         onMutate: async () => {
             const prevAccount = qc.getQueryData<AccountCache>(accountKey)
             const prevStats = qc.getQueryData<StatsCache>(statsKey)
-            if (prevAccount) {
-                qc.setQueryData<AccountCache>(accountKey, { ...prevAccount, pendingWithdrawal: null })
-            }
+            qc.setQueryData<AccountCache>(accountKey, {
+                stakedBalance: prevAccount?.stakedBalance || '0',
+                pendingWithdrawal: null,
+                rewards: prevAccount?.rewards || [],
+                cooldown: prevAccount?.cooldown || 0,
+            })
             return { prevAccount, prevStats }
         },
         onError: (_e, _vars, ctx) => {
@@ -156,15 +182,14 @@ export function useStakeMutations(address?: Address) {
         onMutate: async () => {
             const prevAccount = qc.getQueryData<AccountCache>(accountKey)
             const prevStats = qc.getQueryData<StatsCache>(statsKey)
-            if (prevAccount) {
-                const amount = Number(prevAccount.pendingWithdrawal?.amount || 0)
-                const nextBalance = String(Number(prevAccount.stakedBalance) + amount)
-                qc.setQueryData<AccountCache>(accountKey, {
-                    ...prevAccount,
-                    stakedBalance: nextBalance,
-                    pendingWithdrawal: null,
-                })
-            }
+            const amount = Number(prevAccount?.pendingWithdrawal?.amount || 0)
+            const nextBalance = String(Number(prevAccount?.stakedBalance || 0) + amount)
+            qc.setQueryData<AccountCache>(accountKey, {
+                stakedBalance: nextBalance,
+                pendingWithdrawal: null,
+                rewards: prevAccount?.rewards || [],
+                cooldown: prevAccount?.cooldown || 0,
+            })
             return { prevAccount, prevStats }
         },
         onError: (_e, _vars, ctx) => {
@@ -187,9 +212,12 @@ export function useStakeMutations(address?: Address) {
         onMutate: async () => {
             const prevAccount = qc.getQueryData<AccountCache>(accountKey)
             const prevStats = qc.getQueryData<StatsCache>(statsKey)
-            if (prevAccount) {
-                qc.setQueryData<AccountCache>(accountKey, { ...prevAccount, rewards: [] })
-            }
+            qc.setQueryData<AccountCache>(accountKey, {
+                stakedBalance: prevAccount?.stakedBalance || '0',
+                pendingWithdrawal: prevAccount?.pendingWithdrawal || null,
+                rewards: [],
+                cooldown: prevAccount?.cooldown || 0,
+            })
             return { prevAccount, prevStats }
         },
         onError: (_e, _vars, ctx) => {
