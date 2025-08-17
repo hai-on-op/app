@@ -1,10 +1,13 @@
 import { useMemo, useCallback, useEffect } from 'react'
-import { useStoreActions, useStoreState } from '~/store'
+import { useStoreState } from '~/store'
 // import { useVault } from '~/providers/VaultProvider'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { useAccount } from 'wagmi'
 import { formatUnits, formatEther } from 'ethers/lib/utils'
-import { useLPData } from '~/providers/LPDataProvider'
+import { useLpPool } from './lp/useLpPool'
+import { useLpUserTotalLiquidity } from './lp/useLpUserTotalLiquidity'
+import { useLpUserPositionValue } from './lp/useLPUserPositionValue'
+import { useLpUserPositionsMap } from './lp/useLpUserPositionsMap'
 import { useLpBoostForUser } from './lp/useLpBoostForUser'
 import { useVelodromePositions } from './useVelodrome'
 // import { formatNumberWithStyle } from '~/utils'
@@ -27,18 +30,11 @@ import {
 
 export function useBoost() {
     const { address } = useAccount()
-    // Use LP data from our enhanced model
-    const {
-        pool,
-        // userPositions,
-        userLPPositionValue,
-        userTotalLiquidity,
-        loading: lpDataLoading,
-        // NEW - Get boost data from LP data model
-        userLPBoostMap,
-        userKiteRatioMap,
-        userPositionsMap,
-    } = useLPData()
+    const { data: pool } = useLpPool()
+    const { value: userTotalLiquidity, loading: userTotalLiquidityLoading } = useLpUserTotalLiquidity(address as any)
+    const { loading: userLPValueLoading, value: calculatedUserLPPositionValue } = useLpUserPositionValue(address as any)
+    const { data: userPositionsMap } = useLpUserPositionsMap()
+    const lpDataLoading = userTotalLiquidityLoading || userLPValueLoading
     const { lpBoost: lpBoostFromHook, kiteRatio: kiteRatioFromHook } = useLpBoostForUser(address as any)
     const { loading: positionsLoading } = useVelodromePositions()
     const { prices: veloPrices } = useVelodromePrices()
@@ -64,11 +60,6 @@ export function useBoost() {
         data: { tokenAnalyticsData },
     } = useAnalytics()
 
-    // Get token price actions for updating the LP data model
-    const { updateTokenPrices, calculateAllPositionValues, calculateAllUserLiquidity } = useStoreActions(
-        (actions) => actions.lpDataModel
-    )
-
     // Get HAI and WETH prices from analytics provider
     const haiPrice = useMemo(() => parseFloat(haiMarketPrice.raw || '0'), [haiMarketPrice])
 
@@ -79,29 +70,7 @@ export function useBoost() {
         return wethData ? parseFloat(formatUnits(wethData.currentPrice.toString(), 18)) : 0
     }, [tokenAnalyticsData])
 
-    // Update token prices in the model when they change
-    useEffect(() => {
-        if (haiPrice && wethPrice) {
-            updateTokenPrices({
-                token0UsdPrice: haiPrice,
-                token1UsdPrice: wethPrice,
-            })
-
-            // Calculate position values for all users once prices are set
-            calculateAllPositionValues()
-
-            // Also calculate total liquidity (this doesn't need prices, but we can run it here)
-            calculateAllUserLiquidity()
-        }
-    }, [
-        haiPrice,
-        wethPrice,
-        updateTokenPrices,
-        userPositionsMap,
-        pool,
-        calculateAllPositionValues,
-        calculateAllUserLiquidity,
-    ])
+    // No store writes: pricing is consumed directly for calculations
 
     // KITE staking data
     const userKITEStaked = useMemo(() => {
@@ -112,10 +81,10 @@ export function useBoost() {
         return stakingLoading ? '0' : stakingStats.totalStaked
     }, [stakingStats, stakingLoading])
 
-    // LP Position data - now using values from the model
+    // LP Position data from hooks
     const userLPPosition = userTotalLiquidity
     const totalPoolLiquidity = pool?.liquidity || '0'
-    const calculatedUserLPPositionValue = userLPPositionValue
+    // calculatedUserLPPositionValue already provided by hook
 
     // Calculate haiVELO position value in USD using VELO price
     const haiVeloPositionValue = useMemo(() => {
@@ -127,16 +96,10 @@ export function useBoost() {
     }, [userHaiVELODeposited, veloPrices])
 
     // Get LP boost from the model if available, or calculate it using boostService
-    const lpBoostValue = useMemo(() => {
-        if (address && userLPBoostMap[address.toLowerCase()]) return userLPBoostMap[address.toLowerCase()]
-        return lpBoostFromHook
-    }, [address, userLPBoostMap, lpBoostFromHook])
+    const lpBoostValue = useMemo(() => lpBoostFromHook, [lpBoostFromHook])
 
     // Get KITE ratio from the model if available, or calculate it
-    const kiteRatio = useMemo(() => {
-        if (address && userKiteRatioMap[address.toLowerCase()]) return userKiteRatioMap[address.toLowerCase()]
-        return kiteRatioFromHook
-    }, [address, userKiteRatioMap, kiteRatioFromHook])
+    const kiteRatio = useMemo(() => kiteRatioFromHook, [kiteRatioFromHook])
 
     // Calculate haiVELO boost values
     const haiVeloBoostResult = useMemo(
