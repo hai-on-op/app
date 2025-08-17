@@ -11,7 +11,9 @@ import { useLpUserPositionsMap } from './lp/useLpUserPositionsMap'
 import { useLpBoostForUser } from './lp/useLpBoostForUser'
 import { useVelodromePositions } from './useVelodrome'
 // import { formatNumberWithStyle } from '~/utils'
-import { useStaking } from '~/providers/StakingProvider'
+// Replace legacy provider with react-query staking hooks
+import { useStakeAccount } from '~/hooks/staking/useStakeAccount'
+import { useStakeStats } from '~/hooks/staking/useStakeStats'
 import { useHaiVeloData } from './useHaiVeloData'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { useQuery } from '@apollo/client'
@@ -38,8 +40,9 @@ export function useBoost() {
     const { lpBoost: lpBoostFromHook, kiteRatio: kiteRatioFromHook } = useLpBoostForUser(address as any)
     const { loading: positionsLoading } = useVelodromePositions()
     const { prices: veloPrices } = useVelodromePrices()
-    const stakingContext = useStaking()
-    const { stakingData = { stakedBalance: '0' }, stakingStats = { totalStaked: '0' }, loading: stakingLoading = false } = stakingContext || {}
+    const { data: stakingAccount, isLoading: stakingAccountLoading } = useStakeAccount(address as any)
+    const { data: stakingStatsData, isLoading: stakingStatsLoading } = useStakeStats()
+    const stakingLoading = stakingAccountLoading || stakingStatsLoading
     const { userHaiVELODeposited, totalHaiVELODeposited } = useHaiVeloData()
 
     // Load vault-specific data for vault boost calculation (similar to useEarnStrategies)
@@ -74,12 +77,12 @@ export function useBoost() {
 
     // KITE staking data
     const userKITEStaked = useMemo(() => {
-        return stakingLoading ? '0' : stakingData.stakedBalance
-    }, [stakingData, stakingLoading])
+        return stakingLoading ? '0' : (stakingAccount?.stakedBalance || '0')
+    }, [stakingAccount, stakingLoading])
 
     const totalKITEStaked = useMemo(() => {
-        return stakingLoading ? '0' : stakingStats.totalStaked
-    }, [stakingStats, stakingLoading])
+        return stakingLoading ? '0' : (stakingStatsData?.totalStaked || '0')
+    }, [stakingStatsData, stakingLoading])
 
     // LP Position data from hooks
     const userLPPosition = userTotalLiquidity
