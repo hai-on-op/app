@@ -48,7 +48,7 @@ export function Overview({ simulation }: OverviewProps) {
         boost,
         calculateSimulatedValues,
         isOptimistic,
-    } = useStakingSummaryV2(address as any)
+    } = useNew ? (useStakingSummaryV2(address as any) as any) : useStakingSummary()
 
     // Calculate simulated values if simulation values are provided
     const simValues = useMemo(

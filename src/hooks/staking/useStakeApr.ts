@@ -4,6 +4,7 @@ import { useStakingApy } from './useStakingApy'
 import { useStakeStats } from './useStakeStats'
 import { useStakePrices } from './useStakePrices'
 import { formatNumberWithStyle } from '~/utils'
+import { contracts } from '~/config/contracts'
 
 export function useStakeApr() {
     const { data: apyList, isLoading: apyLoading } = useStakingApy()
@@ -20,7 +21,11 @@ export function useStakeApr() {
 
         // Sum annualized reward value in 18 decimals
         const totalRewardsPerSec = (apyList || []).reduce((acc: BigNumber, item) => {
-            const price = item.rpToken in prices ? (prices as any)[item.rpToken] : 0
+            const tokenAddr = String(item.rpToken || '').toLowerCase()
+            const haiAddr = contracts.tokens.hai.toLowerCase()
+            const kiteAddr = contracts.tokens.kite.toLowerCase()
+            const opAddr = contracts.tokens.op.toLowerCase()
+            const price = tokenAddr === haiAddr ? prices.haiPrice : tokenAddr === kiteAddr ? prices.kitePrice : tokenAddr === opAddr ? prices.opPrice : 0
             const scaledPrice = utils.parseUnits(String(price || 0), 18)
             const perSecValue = item.rpRate.mul(scaledPrice)
             return acc.add(perSecValue)
