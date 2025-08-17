@@ -5,6 +5,7 @@ import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { useAccount } from 'wagmi'
 import { formatUnits, formatEther } from 'ethers/lib/utils'
 import { useLPData } from '~/providers/LPDataProvider'
+import { useLpBoostForUser } from './lp/useLpBoostForUser'
 import { useVelodromePositions } from './useVelodrome'
 // import { formatNumberWithStyle } from '~/utils'
 import { useStaking } from '~/providers/StakingProvider'
@@ -38,6 +39,7 @@ export function useBoost() {
         userKiteRatioMap,
         userPositionsMap,
     } = useLPData()
+    const { lpBoost: lpBoostFromHook, kiteRatio: kiteRatioFromHook } = useLpBoostForUser(address as any)
     const { loading: positionsLoading } = useVelodromePositions()
     const { prices: veloPrices } = useVelodromePrices()
     const stakingContext = useStaking()
@@ -126,32 +128,15 @@ export function useBoost() {
 
     // Get LP boost from the model if available, or calculate it using boostService
     const lpBoostValue = useMemo(() => {
-        if (address && userLPBoostMap[address.toLowerCase()]) {
-            return userLPBoostMap[address.toLowerCase()]
-        }
-
-        // Fallback to direct calculation if not available in the model
-        // Use the exact boostService function for consistency
-        const result = calculateLPBoost({
-            userStakingAmount: Number(userKITEStaked),
-            totalStakingAmount: Number(totalKITEStaked),
-            userLPPosition,
-            totalPoolLiquidity,
-        })
-
-        return result.lpBoost
-    }, [address, userLPBoostMap, userKITEStaked, totalKITEStaked, userLPPosition, totalPoolLiquidity])
+        if (address && userLPBoostMap[address.toLowerCase()]) return userLPBoostMap[address.toLowerCase()]
+        return lpBoostFromHook
+    }, [address, userLPBoostMap, lpBoostFromHook])
 
     // Get KITE ratio from the model if available, or calculate it
     const kiteRatio = useMemo(() => {
-        if (address && userKiteRatioMap[address.toLowerCase()]) {
-            return userKiteRatioMap[address.toLowerCase()]
-        }
-
-        // Fallback to same calculation as in boostService
-        const totalStakingAmount = Number(totalKITEStaked)
-        return isNaN(totalStakingAmount) || totalStakingAmount === 0 ? 0 : Number(userKITEStaked) / totalStakingAmount
-    }, [address, userKiteRatioMap, userKITEStaked, totalKITEStaked])
+        if (address && userKiteRatioMap[address.toLowerCase()]) return userKiteRatioMap[address.toLowerCase()]
+        return kiteRatioFromHook
+    }, [address, userKiteRatioMap, kiteRatioFromHook])
 
     // Calculate haiVELO boost values
     const haiVeloBoostResult = useMemo(
