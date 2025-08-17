@@ -1,6 +1,14 @@
 import { useMemo } from 'react'
 import type { Address } from '~/services/stakingService'
-import type { CurrentUserPosition } from '~/model/lpDataModel'
+export type CurrentUserPosition = {
+	id: string
+	liquidity: string
+	currentToken0: string
+	currentToken1: string
+	tickLower: { tickIdx: string }
+	tickUpper: { tickIdx: string }
+	owner: string
+}
 import { useLpPool } from './useLpPool'
 import { useLpUserPositions } from './useLpUserPositions'
 import { calculateCurrentPositionComposition } from '~/services/lpData'

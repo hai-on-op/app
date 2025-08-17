@@ -10,7 +10,6 @@ import { VelodromePriceProvider } from './providers/VelodromePriceProvider'
 import { AnalyticsProvider } from '~/providers/AnalyticsProvider'
 import { EffectsProvider } from './providers/EffectsProvider'
 import { ClaimsProvider } from './providers/ClaimsProvider'
-import { LPDataProvider } from './providers/LPDataProvider'
 import { StakingProvider } from './providers/StakingProvider'
 
 import { GlobalStyle } from '~/styles'
@@ -47,7 +46,6 @@ const App = () => {
                 <ErrorBoundary>
                     <ApolloProvider client={client}>
                         <VelodromePriceProvider>
-                            <LPDataProvider>
                                 <StakingProvider>
                                     <AnalyticsProvider>
                                         <EffectsProvider>
@@ -134,7 +132,6 @@ const App = () => {
                                         </EffectsProvider>
                                     </AnalyticsProvider>
                                 </StakingProvider>
-                            </LPDataProvider>
                         </VelodromePriceProvider>
                     </ApolloProvider>
                 </ErrorBoundary>

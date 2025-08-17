@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import type { UserPosition } from '~/model/lpDataModel'
+import type { UserPosition } from './useLpUserPositionsMap'
 import { fetchAllActivePositions } from '~/services/lpData'
 
 const FIVE_MINUTES_MS = 5 * 60 * 1000

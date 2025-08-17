@@ -1,5 +1,15 @@
 import { useMemo } from 'react'
-import type { UserPosition } from '~/model/lpDataModel'
+export type UserPosition = {
+	id: string
+	liquidity: string
+	depositedToken0: string
+	depositedToken1: string
+	withdrawnToken0: string
+	withdrawnToken1: string
+	tickLower: { tickIdx: string }
+	tickUpper: { tickIdx: string }
+	owner: string
+}
 import { useLpAllPositions } from './useLpAllPositions'
 import { groupPositionsByUser } from '~/services/lpData'
 
