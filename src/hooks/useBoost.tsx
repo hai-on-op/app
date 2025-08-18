@@ -14,7 +14,8 @@ import { useVelodromePositions } from './useVelodrome'
 // Replace legacy provider with react-query staking hooks
 import { useStakeAccount } from '~/hooks/staking/useStakeAccount'
 import { useStakeStats } from '~/hooks/staking/useStakeStats'
-import { useHaiVeloData } from './useHaiVeloData'
+import { useHaiVeloCollateralMapping } from './haivelo/useHaiVeloCollateralMapping'
+import { useHaiVeloBoostMap } from './haivelo/useHaiVeloBoostMap'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { useQuery } from '@apollo/client'
 import { ALL_COLLATERAL_TYPES_QUERY } from '~/utils/graphql/queries'
@@ -43,7 +44,7 @@ export function useBoost() {
     const { data: stakingAccount, isLoading: stakingAccountLoading } = useStakeAccount(address as any)
     const { data: stakingStatsData, isLoading: stakingStatsLoading } = useStakeStats()
     const stakingLoading = stakingAccountLoading || stakingStatsLoading
-    const { userHaiVELODeposited, totalHaiVELODeposited } = useHaiVeloData()
+    const { mapping: hvMapping } = useHaiVeloCollateralMapping()
 
     // Load vault-specific data for vault boost calculation (similar to useEarnStrategies)
     const { data: minterVaultsData, loading: minterVaultsLoading } = useMinterVaults(address)
@@ -93,10 +94,9 @@ export function useBoost() {
     const haiVeloPositionValue = useMemo(() => {
         // Use the same price as VELO for haiVELO
         const veloPrice = parseFloat(veloPrices?.VELO?.raw || '0')
-        const haiVeloAmount = parseFloat(userHaiVELODeposited || '0')
-
+        const haiVeloAmount = Object.values(hvMapping || {}).reduce((acc, v) => acc + Number(v), 0)
         return (haiVeloAmount * veloPrice).toString()
-    }, [userHaiVELODeposited, veloPrices])
+    }, [hvMapping, veloPrices])
 
     // Get LP boost from the model if available, or calculate it using boostService
     const lpBoostValue = useMemo(() => lpBoostFromHook, [lpBoostFromHook])
@@ -105,16 +105,15 @@ export function useBoost() {
     const kiteRatio = useMemo(() => kiteRatioFromHook, [kiteRatioFromHook])
 
     // Calculate haiVELO boost values
-    const haiVeloBoostResult = useMemo(
-        () =>
-            calculateHaiVeloBoost({
-                userStakingAmount: Number(userKITEStaked),
-                totalStakingAmount: Number(totalKITEStaked),
-                userHaiVELODeposited,
-                totalHaiVELODeposited,
-            }),
-        [userKITEStaked, totalKITEStaked, userHaiVELODeposited, totalHaiVELODeposited]
-    )
+    const hvBoostMap = useHaiVeloBoostMap({
+        mapping: hvMapping,
+        usersStakingData: usersStakingData as any,
+        totalStaked: Number(formatEther(totalStaked || '0')),
+    })
+    const haiVeloBoostResult = useMemo(() => {
+        const boost = address ? hvBoostMap[address.toLowerCase()] || 1 : 1
+        return { kiteRatio: 0, haiVeloBoost: boost }
+    }, [hvBoostMap, address])
 
     // Calculate vault boost values (replacing HAI minting boost)
     const vaultBoostResult = useMemo(() => {
@@ -286,12 +285,8 @@ export function useBoost() {
             })
 
             // Calculate haiVELO boost with simulated staking amounts
-            const haiVeloBoostResult = calculateHaiVeloBoost({
-                userStakingAmount: userAfterStakingAmount,
-                totalStakingAmount: totalAfterStakingAmount,
-                userHaiVELODeposited,
-                totalHaiVELODeposited,
-            })
+            const boost = address ? hvBoostMap[address.toLowerCase()] || 1 : 1
+            const haiVeloBoostResult = { haiVeloBoost: boost }
 
             // Calculate vault boost with simulated staking amounts
             let simulatedVaultBoost = 1
@@ -344,8 +339,7 @@ export function useBoost() {
         [
             userLPPosition,
             totalPoolLiquidity,
-            userHaiVELODeposited,
-            totalHaiVELODeposited,
+            hvBoostMap,
             haiVeloPositionValue,
             minterVaultsData,
             collateralTypesData,
@@ -367,8 +361,6 @@ export function useBoost() {
 
     return {
         // HaiVELO data
-        userHaiVELODeposited,
-        totalHaiVELODeposited,
         haiVeloPositionValue,
 
         // KITE staking data

@@ -1,29 +1,11 @@
-import { createContext, useContext, useMemo, useState, type ReactNode, useCallback, useEffect } from 'react'
-import { BigNumber } from '@ethersproject/bignumber'
-import { formatEther } from '@ethersproject/units'
+import { createContext, useContext, useMemo, useState, type ReactNode, useCallback } from 'react'
 import { useAccount } from 'wagmi'
-import { useContract } from '~/hooks/useContract'
-import {
-    HAI_VELO_ADDRESSES,
-    VELO_TOKEN_ADDRESS,
-    VE_NFT_CONTRACT_ADDRESS,
-    HAI_VELO_V2_TOKEN_ADDRESS,
-} from '~/services/haiVeloService'
 import { useBalance } from '~/hooks/useBalance'
 import { formatNumberWithStyle } from '~/utils'
+import { useHaiVeloAccount } from '~/hooks/haivelo/useHaiVeloAccount'
+import { useQueryClient } from '@tanstack/react-query'
 
-// Contract addresses (centralized)
-const VELO_ADDRESS = VELO_TOKEN_ADDRESS
-const VE_ADDRESS = VE_NFT_CONTRACT_ADDRESS
-const HAIVELO_V2_ADDRESS = HAI_VELO_V2_TOKEN_ADDRESS
-
-// ABIs
-const VELO_ABI = ['function balanceOf(address account) view returns (uint256)']
-const VE_ABI = [
-    'function balanceOf(address _owner) view returns (uint256)',
-    'function ownerToNFTokenIdList(address _owner, uint256 _index) view returns (uint256)',
-    'function balanceOfNFT(uint256 _tokenId) view returns (uint256)',
-]
+// This provider now delegates all balance reads to react-query hooks.
 
 export type VeVeloNFT = {
     tokenId: string
@@ -78,112 +60,42 @@ export function HaiVeloProvider({ children }: { children: ReactNode }) {
     const [convertAmountHaiVeloV1, setConvertAmountHaiVeloV1] = useState<string>('')
     const [selectedVeVeloNFTs, setSelectedVeVeloNFTs] = useState<string[]>([])
 
-    // balance fetching
+    // balance fetching moved to hooks
     const { address } = useAccount()
-    const [loading, setLoading] = useState<boolean>(false)
-    const [error, setError] = useState<Error | undefined>(undefined)
-    const [veloBalance, setVeloBalance] = useState<string>('0')
-    const [veVeloBalance, setVeVeloBalance] = useState<string>('0')
-    const [veVeloNFTs, setVeVeloNFTs] = useState<VeVeloNFT[]>([])
-    const [haiVeloV2Balance, setHaiVeloV2Balance] = useState<string>('0')
-
+    const addressLower = address?.toLowerCase()
+    const queryClient = useQueryClient()
     const haiVeloV1 = useBalance('HAIVELO')
-
-    const veloContract = useContract(VELO_ADDRESS, VELO_ABI, false)
-    const veContract = useContract(VE_ADDRESS, VE_ABI, false)
-    const haiVeloV2Contract = useContract(HAIVELO_V2_ADDRESS, VELO_ABI, false)
-
-    const fetchBalances = useCallback(async () => {
-        if (!address || !veloContract || !veContract || !haiVeloV2Contract) {
-            setVeloBalance('0')
-            setVeVeloBalance('0')
-            setHaiVeloV2Balance('0')
-            return
-        }
-
-        setLoading(true)
-        setError(undefined)
-
-        try {
-            const [veloBalanceBN, haiVeloV2BalanceBN, numNFTs] = await Promise.all([
-                veloContract.balanceOf(address),
-                haiVeloV2Contract.balanceOf(address),
-                veContract.balanceOf(address),
-            ])
-
-            setVeloBalance(veloBalanceBN.toString())
-            setHaiVeloV2Balance(haiVeloV2BalanceBN.toString())
-
-            let veVeloBalanceBN = BigNumber.from(0)
-            if (numNFTs.gt(0)) {
-                const nftCount = numNFTs.toNumber()
-                const tokenIdPromises = []
-                for (let i = 0; i < nftCount; i++) {
-                    tokenIdPromises.push(veContract.ownerToNFTokenIdList(address, i))
-                }
-                const tokenIds = await Promise.all(tokenIdPromises)
-
-                const balancePromises = tokenIds.map((tokenId) => veContract.balanceOfNFT(tokenId))
-                const nftBalances = await Promise.all(balancePromises)
-
-                const nftData: VeVeloNFT[] = tokenIds.map((tokenId, index) => ({
-                    tokenId: tokenId.toString(),
-                    balance: nftBalances[index].toString(),
-                    balanceFormatted: formatEther(nftBalances[index]),
-                }))
-                setVeVeloNFTs(nftData)
-
-                veVeloBalanceBN = nftBalances.reduce((total, balance) => total.add(balance), BigNumber.from(0))
-            } else {
-                setVeVeloNFTs([])
-            }
-            setVeVeloBalance(veVeloBalanceBN.toString())
-        } catch (err) {
-            console.error('Error fetching VELO/veVELO/haiVELO v2 balances:', err)
-            setError(err instanceof Error ? err : new Error('Failed to fetch balances'))
-            setVeloBalance('0')
-            setVeVeloBalance('0')
-            setHaiVeloV2Balance('0')
-        } finally {
-            setLoading(false)
-        }
-    }, [address, veloContract, veContract, haiVeloV2Contract])
-
-    useEffect(() => {
-        fetchBalances()
-    }, [fetchBalances])
+    const { v2Balance, velo, veNft, isLoading, isError } = useHaiVeloAccount(addressLower)
 
     const formattedData = useMemo(() => {
-        const veloFormatted = formatEther(veloBalance)
-        const veVeloFormatted = formatEther(veVeloBalance)
-
-        const veloBN = BigNumber.from(veloBalance)
-        const veVeloBN = BigNumber.from(veVeloBalance)
-        const totalBN = veloBN.add(veVeloBN)
-
-        const totalVeloLike = parseFloat(formatEther(totalBN)) + parseFloat(haiVeloV1?.raw || '0')
+        const veloFormatted = velo.formatted || '0'
+        const veVeloFormatted = veNft.totalFormatted || '0'
+        const totalVeloLike = parseFloat(veloFormatted) + parseFloat(veVeloFormatted) + parseFloat(haiVeloV1?.raw || '0')
         const totalFormatted = formatNumberWithStyle(totalVeloLike, { maxDecimals: 2 })
 
         return {
             veloBalanceFormatted: veloFormatted,
             veVeloBalanceFormatted: veVeloFormatted,
-            totalVeloBalance: totalBN.toString(),
+            totalVeloBalance: String(totalVeloLike),
             totalVeloBalanceFormatted: totalFormatted,
         }
-    }, [veloBalance, veVeloBalance, haiVeloV1?.raw])
+    }, [velo.formatted, veNft.totalFormatted, haiVeloV1?.raw])
 
     const data: HaiVeloData = {
-        loading,
-        error,
-        veloBalance,
-        veVeloBalance,
-        veVeloNFTs,
+        loading: isLoading,
+        error: isError ? new Error('Failed to load haiVELO account') : undefined,
+        veloBalance: velo.raw || '0',
+        veVeloBalance: veNft.totalRaw || '0',
+        veVeloNFTs: (veNft.nfts || []).map((n) => ({ tokenId: n.tokenId, balance: n.balance, balanceFormatted: n.balanceFormatted })),
         ...formattedData,
         haiVeloV1Balance: haiVeloV1?.e18 || '0',
         haiVeloV1BalanceFormatted: haiVeloV1?.raw || '0',
-        haiVeloV2Balance: haiVeloV2Balance,
-        haiVeloV2BalanceFormatted: formatEther(haiVeloV2Balance),
-        refetch: fetchBalances,
+        haiVeloV2Balance: v2Balance.raw || '0',
+        haiVeloV2BalanceFormatted: v2Balance.formatted || '0',
+        refetch: async () => {
+            if (!addressLower) return
+            await queryClient.invalidateQueries({ queryKey: ['haivelo', 'account', addressLower] })
+        },
     }
 
     const simulatedAmount = useMemo(() => {
@@ -191,11 +103,13 @@ export function HaiVeloProvider({ children }: { children: ReactNode }) {
         const veloAmt = sanitize(convertAmountVelo)
         const haiVeloV1Amt = sanitize(convertAmountHaiVeloV1)
 
-        const selectedNFTs = veVeloNFTs.filter((nft) => selectedVeVeloNFTs.includes(nft.tokenId))
-        const veVeloAmt = selectedNFTs.reduce((sum, nft) => sum + parseFloat(nft.balanceFormatted), 0)
+        const selectedNFTs: Array<{ tokenId: string; balanceFormatted: string }> = (veNft.nfts || []).filter((n) =>
+            selectedVeVeloNFTs.includes(n.tokenId)
+        )
+        const veVeloAmt = selectedNFTs.reduce((sum: number, nft) => sum + parseFloat(nft.balanceFormatted), 0)
 
         return veloAmt + haiVeloV1Amt + veVeloAmt
-    }, [convertAmountVelo, convertAmountHaiVeloV1, selectedVeVeloNFTs, veVeloNFTs])
+    }, [convertAmountVelo, convertAmountHaiVeloV1, selectedVeVeloNFTs, veNft.nfts])
 
     const clearAll = () => {
         setConvertAmountVelo('')

@@ -3,11 +3,10 @@ import { utils } from 'ethers'
 import { formatNumberWithStyle, VITE_MAINNET_PUBLIC_RPC } from '~/utils'
 
 import { useBalance } from '~/hooks'
-import {
-    calculateHaiVeloCollateralMapping,
-    calculateHaiVeloBoostMap,
-    fetchHaiVeloLatestTransferAmount,
-} from '~/services/haiVeloService'
+import { fetchHaiVeloLatestTransferAmount } from '~/services/haiVeloService'
+import { useHaiVeloCollateralMapping } from './haivelo/useHaiVeloCollateralMapping'
+import { useHaiVeloBoostMap } from './haivelo/useHaiVeloBoostMap'
+import { useHaiVeloBoostApr } from './haivelo/useHaiVeloBoostApr'
 
 // centralized in haiVeloService
 
@@ -63,18 +62,12 @@ export function useStrategyData(
         return acc + Number(value?.stakedBalance)
     }, 0)
 
-    const haiVeloCollateralMapping = useMemo(() => calculateHaiVeloCollateralMapping(haiVeloSafesData), [haiVeloSafesData])
-
-    const haiVeloBoostMap = useMemo(
-        () =>
-            calculateHaiVeloBoostMap(
-                haiVeloCollateralMapping,
-                usersStakingData,
-                Number(totalStakedAmount),
-                Number(haiVeloTotalCollateralLockedInSafes)
-            ),
-        [haiVeloCollateralMapping, usersStakingData, totalStakedAmount, haiVeloTotalCollateralLockedInSafes]
-    )
+    const { mapping: haiVeloCollateralMapping } = useHaiVeloCollateralMapping()
+    const haiVeloBoostMap = useHaiVeloBoostMap({
+        mapping: haiVeloCollateralMapping,
+        usersStakingData,
+        totalStaked: Number(totalStakedAmount),
+    })
 
     useEffect(() => {
         fetchHaiVeloLatestTransferAmount({
@@ -84,46 +77,17 @@ export function useStrategyData(
     }, [])
 
     useEffect(() => {
-        // Don't calculate if we don't have the daily reward value yet
         if (haiVeloLatestTransferAmount === 0) return
-
-        const haiVeloDailyRewardQuantity = haiVeloLatestTransferAmount / 7 || 0
-        const haiVeloDailyRewardValue = haiVeloDailyRewardQuantity * haiPrice || 0
-
-        const totalHaiVeloBoostedQuantityParticipating = Object.entries(haiVeloCollateralMapping).reduce(
-            (acc, [address, value]) => {
-                return acc + Number(value) * haiVeloBoostMap[address as keyof typeof haiVeloBoostMap]
-            },
-            0
-        )
-        const totalHaiVeloBoostedValueParticipating = totalHaiVeloBoostedQuantityParticipating * haiVeloPrice
-
-        const myBoost = address ? haiVeloBoostMap[address.toLowerCase() as keyof typeof haiVeloBoostMap] : 1
-        const myValueParticipating = address ? haiVeloCollateralMapping[address.toLowerCase()] : 0
-        const myBoostedValueParticipating = Number(myValueParticipating) * myBoost
-        const myBoostedShare = totalHaiVeloBoostedValueParticipating
-            ? myBoostedValueParticipating / totalHaiVeloBoostedValueParticipating
-            : 0
-
-        const haiVeloBaseApr =
-            totalHaiVeloBoostedValueParticipating > 0
-                ? (haiVeloDailyRewardValue / totalHaiVeloBoostedValueParticipating) * 365 * 100
-                : 0
-
-        const myBoostedAPR = myBoost * haiVeloBaseApr
-
-        const totalHaiVeloBoostData = {
-            haiVeloDailyRewardValue,
-            totalBoostedValueParticipating: totalHaiVeloBoostedValueParticipating,
-            baseAPR: haiVeloBaseApr,
-            myBoost: myBoost,
-            myValueParticipating: myValueParticipating,
-            myBoostedValueParticipating,
-            myBoostedShare,
-            myBoostedAPR,
-        }
-
-        setHaiVeloBoostApr(totalHaiVeloBoostData)
+        const apr = useHaiVeloBoostApr({
+            mapping: haiVeloCollateralMapping,
+            boostMap: haiVeloBoostMap,
+            prices: { haiVeloPriceUsd: haiVeloPrice || 0, haiPriceUsd: haiPrice || 0 },
+            latestTransferAmount: haiVeloLatestTransferAmount,
+            userAddress: address,
+        })
+        setHaiVeloBoostApr(apr)
+        // We intentionally ignore deps on apr hook (not a hook here; computed value pattern)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [haiVeloCollateralMapping, haiVeloBoostMap, haiVeloPrice, haiPrice, haiVeloLatestTransferAmount, address])
 
     // // === Staking Strategy ===

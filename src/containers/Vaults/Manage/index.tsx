@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import type { ReactChildren } from '~/types'
 import { VaultAction } from '~/utils'
@@ -14,6 +14,8 @@ import { HaiVeloOverview } from "./HaiVeloOverview"
 import { HaiVeloProvider } from '~/providers/HaiVeloProvider'
 import { VaultActions } from './VaultActions'
 import { MintHaiVeloActions } from './MintHaiVeloActions'
+import { useAccount } from 'wagmi'
+import { useHaiVeloAccount } from '~/hooks/haivelo/useHaiVeloAccount'
 import { ManageDropdown } from './ManageDropdown'
 import { NavContainer } from '~/components/NavContainer'
 import { ActivityTable } from '../VaultById/ActivityTable'
