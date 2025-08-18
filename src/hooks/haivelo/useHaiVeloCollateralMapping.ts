@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { fetchV1Safes } from '~/services/haivelo/dataSources'
 import { calculateHaiVeloCollateralMapping } from '~/services/haiVeloService'
@@ -19,7 +20,10 @@ export function useHaiVeloCollateralMapping(): UseHaiVeloCollateralMappingResult
         refetchInterval: FIVE_MINUTES_MS,
     })
 
-    const mapping = data ? calculateHaiVeloCollateralMapping({ safes: data.safes } as any) : {}
+    const mapping = useMemo(() => {
+        if (!data) return {}
+        return calculateHaiVeloCollateralMapping({ safes: data.safes } as any)
+    }, [data])
 
     return { mapping, isLoading, isError, error }
 }

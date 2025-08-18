@@ -31,8 +31,8 @@ export function HaiVeloStats() {
     const { underlyingAPR, isLoading: aprLoading } = useUnderlyingAPR({ collateralType: 'HAIVELO' })
 
     const aprFormatted = useMemo(() => {
-        const value = aprLoading ? 0 : underlyingAPR
-        return formatNumberWithStyle(value, { style: 'percent', suffixed: true, maxDecimals: 2, scalingFactor: 1 })
+        const value = aprLoading ? undefined : underlyingAPR
+        return value === undefined ? '...' : formatNumberWithStyle(value, { style: 'percent', suffixed: true, maxDecimals: 2, scalingFactor: 1 })
     }, [underlyingAPR, aprLoading])
 
     const myRewardsHeader = useMemo(() => {
@@ -43,11 +43,11 @@ export function HaiVeloStats() {
 
     const stats: StatProps[] = [
         {
-            header: tvlFormatted,
+            header: loading ? '...' : tvlFormatted,
             label: 'haiVELO TVL',
         },
         {
-            header: debtCapacityFormatted,
+            header: loading ? '...' : debtCapacityFormatted,
             label: 'Debt Capacity',
         },
         {

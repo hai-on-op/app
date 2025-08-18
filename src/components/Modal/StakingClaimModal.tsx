@@ -25,7 +25,9 @@ export function StakingClaimModal() {
         stakingModel: stakingActions,
     } = useStoreActions((actions) => actions)
 
-    const { userRewards, refetchAll } = useStakingData()
+    const stakingCtx = (useStakingData() as any) || {}
+    const userRewards = (stakingCtx.userRewards as any[]) || []
+    const refetchAll: (args?: any) => Promise<void> = stakingCtx.refetchAll || (async () => {})
 
     const [claiming, setClaiming] = useState(false)
 

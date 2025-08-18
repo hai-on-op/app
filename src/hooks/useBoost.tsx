@@ -94,9 +94,10 @@ export function useBoost() {
     const haiVeloPositionValue = useMemo(() => {
         // Use the same price as VELO for haiVELO
         const veloPrice = parseFloat(veloPrices?.VELO?.raw || '0')
-        const haiVeloAmount = Object.values(hvMapping || {}).reduce((acc, v) => acc + Number(v), 0)
-        return (haiVeloAmount * veloPrice).toString()
-    }, [hvMapping, veloPrices])
+        const userAddr = address?.toLowerCase()
+        const userHaiVeloAmount = userAddr ? Number(hvMapping?.[userAddr] || 0) : 0
+        return (userHaiVeloAmount * veloPrice).toString()
+    }, [hvMapping, veloPrices, address])
 
     // Get LP boost from the model if available, or calculate it using boostService
     const lpBoostValue = useMemo(() => lpBoostFromHook, [lpBoostFromHook])

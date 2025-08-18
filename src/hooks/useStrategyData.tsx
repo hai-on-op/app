@@ -3,10 +3,9 @@ import { utils } from 'ethers'
 import { formatNumberWithStyle, VITE_MAINNET_PUBLIC_RPC } from '~/utils'
 
 import { useBalance } from '~/hooks'
-import { fetchHaiVeloLatestTransferAmount } from '~/services/haiVeloService'
+import { fetchHaiVeloLatestTransferAmount, computeHaiVeloBoostApr } from '~/services/haiVeloService'
 import { useHaiVeloCollateralMapping } from './haivelo/useHaiVeloCollateralMapping'
 import { useHaiVeloBoostMap } from './haivelo/useHaiVeloBoostMap'
-import { useHaiVeloBoostApr } from './haivelo/useHaiVeloBoostApr'
 
 // centralized in haiVeloService
 
@@ -70,25 +69,33 @@ export function useStrategyData(
     })
 
     useEffect(() => {
+        let mounted = true
         fetchHaiVeloLatestTransferAmount({
             rpcUrl: VITE_MAINNET_PUBLIC_RPC,
             haiTokenAddress: HAI_TOKEN_ADDRESS,
-        }).then((amount) => setHaiVeloLatestTransferAmount(amount))
+        }).then((amount) => {
+            if (mounted) setHaiVeloLatestTransferAmount(amount)
+        })
+        return () => {
+            mounted = false
+        }
     }, [])
 
     useEffect(() => {
-        if (haiVeloLatestTransferAmount === 0) return
-        const apr = useHaiVeloBoostApr({
+        // Avoid re-compute until inputs are ready
+        if (!haiVeloCollateralMapping || !haiVeloBoostMap || haiVeloLatestTransferAmount === 0) return
+        const apr = computeHaiVeloBoostApr({
             mapping: haiVeloCollateralMapping,
-            boostMap: haiVeloBoostMap,
-            prices: { haiVeloPriceUsd: haiVeloPrice || 0, haiPriceUsd: haiPrice || 0 },
+            boostMap: haiVeloBoostMap as any,
+            haiVeloPrice: haiVeloPrice || 0,
+            haiPrice: haiPrice || 0,
             latestTransferAmount: haiVeloLatestTransferAmount,
             userAddress: address,
         })
         setHaiVeloBoostApr(apr)
-        // We intentionally ignore deps on apr hook (not a hook here; computed value pattern)
+        // Only re-run when stable inputs change
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [haiVeloCollateralMapping, haiVeloBoostMap, haiVeloPrice, haiPrice, haiVeloLatestTransferAmount, address])
+    }, [haiVeloCollateralMapping, haiVeloBoostMap, haiVeloLatestTransferAmount, address, haiVeloPrice, haiPrice])
 
     // // === Staking Strategy ===
     const kitePrice = Number(velodromePricesData?.KITE?.raw)
