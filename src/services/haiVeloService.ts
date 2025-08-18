@@ -233,4 +233,55 @@ export function computeHaiVeloBoostApr(params: {
     }
 }
 
+// ===== Aggregation helpers (v1 + v2) =====
+export function aggregateDeposits(params: {
+    v1Safes: Array<{ owner: { address: string }; collateral: string }>
+    v2BalancesByUser?: Record<string, string>
+    haiVeloPriceUsd?: number
+}): {
+    mappingCombined: Record<string, string>
+    v1Total: number
+    v2Total: number
+    totals: {
+        v1TvlUsd: number
+        v2TvlUsd: number
+        totalTvlUsd: number
+        v1TotalDeposited: number
+        v2TotalDeposited: number
+    }
+} {
+    const mappingCombined: Record<string, string> = {}
+    let v1Total = 0
+    let v2Total = 0
+
+    for (const safe of params.v1Safes || []) {
+        const owner = safe.owner.address.toLowerCase()
+        const amt = Number(safe.collateral || '0')
+        v1Total += amt
+        mappingCombined[owner] = (Number(mappingCombined[owner] || '0') + amt).toString()
+    }
+
+    if (params.v2BalancesByUser) {
+        for (const [ownerRaw, raw] of Object.entries(params.v2BalancesByUser)) {
+            const owner = ownerRaw.toLowerCase()
+            const amt = Number(raw || '0')
+            v2Total += amt
+            mappingCombined[owner] = (Number(mappingCombined[owner] || '0') + amt).toString()
+        }
+    }
+
+    const price = Number(params.haiVeloPriceUsd || 0)
+    const v1TvlUsd = v1Total * price
+    const v2TvlUsd = v2Total * price
+    const totals = {
+        v1TvlUsd,
+        v2TvlUsd,
+        totalTvlUsd: v1TvlUsd + v2TvlUsd,
+        v1TotalDeposited: v1Total,
+        v2TotalDeposited: v2Total,
+    }
+
+    return { mappingCombined, v1Total, v2Total, totals }
+}
+
 
