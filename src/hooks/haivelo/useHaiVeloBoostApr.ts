@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { computeHaiVeloBoostApr } from '~/services/haiVeloService'
+import { computeHaiVeloBoostApr } from '~/services/rewards/boostService'
 
 export type UseHaiVeloBoostAprParams = {
     mapping: Record<string, string>
@@ -14,8 +14,8 @@ export function useHaiVeloBoostApr({ mapping, boostMap, prices, latestTransferAm
         const result = computeHaiVeloBoostApr({
             mapping,
             boostMap,
-            haiVeloPrice: prices.haiVeloPriceUsd || 0,
-            haiPrice: prices.haiPriceUsd || 0,
+            haiVeloPriceUsd: prices.haiVeloPriceUsd || 0,
+            haiPriceUsd: prices.haiPriceUsd || 0,
             latestTransferAmount,
             userAddress,
         })
