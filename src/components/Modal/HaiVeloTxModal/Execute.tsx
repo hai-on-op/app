@@ -7,6 +7,7 @@ import { ActionState, formatNumberWithStyle } from '~/utils'
 import { useContract } from '~/hooks/useContract'
 
 import HAI_VELO_V2_ABI from '~/abis/haiVELO_v2.json'
+import { HAI_VELO_V2_TOKEN_ADDRESS } from '~/services/haiVeloService'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
@@ -48,7 +49,7 @@ export function Execute({ plan, onDone, onStepDone }: Props) {
         },
     } = useHaiVelo()
 
-    const CONTRACT_ADDRESS = '0xc00843e6e7574b2a633206f78fe95941c98652ab'
+    const CONTRACT_ADDRESS = HAI_VELO_V2_TOKEN_ADDRESS
     const contract = useContract(CONTRACT_ADDRESS, HAI_VELO_V2_ABI as any, true)
 
     const [currentIndex, setCurrentIndex] = useState(0)

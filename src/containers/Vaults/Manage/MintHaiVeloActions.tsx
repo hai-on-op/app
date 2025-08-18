@@ -15,6 +15,7 @@ import { useContract } from '~/hooks/useContract'
 import { ethers } from 'ethers'
 import { useAccount } from 'wagmi'
 import { sanitizeDecimals } from '~/utils'
+import { HAI_VELO_V2_TOKEN_ADDRESS, VE_NFT_CONTRACT_ADDRESS } from '~/services/haiVeloService'
 
 export function MintHaiVeloActions() {
     const { 
@@ -43,7 +44,8 @@ export function MintHaiVeloActions() {
     const { address } = useAccount()
 
     // Target contract for approvals (optimism mainnet)
-    const HAI_VELO_V2_TARGET = '0xc00843e6e7574b2a633206f78fe95941c98652ab'
+    // Centralized in haiVeloService
+    const HAI_VELO_V2_TARGET = HAI_VELO_V2_TOKEN_ADDRESS
 
     // Token options for the select dropdown
     const tokenOptions: SelectOption<'VELO' | 'veVELO' | 'haiVELO_v1'>[] = [
@@ -137,7 +139,7 @@ export function MintHaiVeloActions() {
     )
 
     // Prefetch veNFT approvals (both single and collection)
-    const VE_NFT_ADDRESS = '0xFAf8FD17D9840595845582fCB047DF13f006787d'
+    const VE_NFT_ADDRESS = VE_NFT_CONTRACT_ADDRESS
     const veNftContractABI = useMemo(
         () => [
             'function getApproved(uint256 tokenId) view returns (address)',

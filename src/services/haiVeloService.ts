@@ -18,7 +18,14 @@
  * - Version switching/aggregation policy (e.g., how to blend v1/v2 TVL). Expose data so policy can live in provider/hooks.
  */
 
-export type HaiVeloVersion = 'v1' | 'v2'
+import type {
+    HaiVeloVersion,
+    HaiVeloAddresses,
+    HaiVeloBalances,
+    HaiVeloTotals,
+    HaiVeloBoost,
+    HaiVeloAPR,
+} from '~/types/haivelo'
 
 // Token and contract addresses used across the app
 // Note: Keep these as a single source of truth
@@ -37,26 +44,6 @@ export const HAI_VELO_V2_TOKEN_ADDRESS: `0x${string}` = '0xc00843e6e7574b2a63320
  */
 export const HAIVELO_V1_DEPOSITER_ADDRESS: `0x${string}` = '0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3'
 export const HAI_REWARD_DISTRIBUTOR_ADDRESS: `0x${string}` = '0xfEd2eB6325432F0bF7110DcE2CCC5fF811ac3D4D'
-
-export type HaiVeloAddresses = {
-    v1: {
-        tokenSymbol: 'HAIVELO'
-    }
-    v2: {
-        tokenAddress: `0x${string}`
-    }
-    reward: {
-        depositerV1: `0x${string}`
-        distributorV1: `0x${string}`
-        // Future-proof placeholders for v2 if/when they differ
-        depositerV2?: `0x${string}`
-        distributorV2?: `0x${string}`
-    }
-    other: {
-        veloToken: `0x${string}`
-        veNft: `0x${string}`
-    }
-}
 
 export const HAI_VELO_ADDRESSES: HaiVeloAddresses = {
     v1: {
@@ -88,36 +75,7 @@ export function getHaiVeloCollateralIds(): string[] {
     return ['HAIVELO']
 }
 
-export type HaiVeloBalances = {
-    v1: { raw: string; formatted: string }
-    v2: { raw: string; formatted: string }
-    totalFormatted: string
-}
-
-// Placeholder types for future phases
-/**
- * Structured totals for TVL/Deposits. These are placeholders for
- * future phases when we aggregate v1/v2 and/or fetch v2 on-chain.
- */
-export type HaiVeloTotals = {
-    v1TvlUsd: number
-    v2TvlUsd: number
-    totalTvlUsd: number
-    v1TotalDeposited: number
-    v2TotalDeposited: number
-}
-
-export type HaiVeloBoost = {
-    myBoost: number
-    myShare: number
-    totalBoostedValueUsd: number
-}
-
-export type HaiVeloAPR = {
-    baseApr: number
-    boostedApr: number
-    breakdown: Array<{ source: string; apr: number; description?: string }>
-}
+// Types moved to ~/types/haivelo
 
 /**
  * ===== Calculation helpers (stateless) =====
@@ -171,6 +129,27 @@ export function calculateHaiVeloBoostMap(
         const boost = Math.min(boostRaw, 2)
         return { ...acc, [address]: boost }
     }, {} as Record<string, number>)
+}
+
+/**
+ * Single-user haiVELO boost calculator (centralized definition)
+ * Mirrors the logic used in calculateHaiVeloBoostMap for parity.
+ */
+export function calculateHaiVeloBoost(params: {
+    userStakingAmount: number
+    totalStakingAmount: number
+    userHaiVELODeposited: string | number
+    totalHaiVELODeposited: string | number
+}): { kiteRatio: number; haiVeloBoost: number } {
+    const { userStakingAmount, totalStakingAmount, userHaiVELODeposited, totalHaiVELODeposited } = params
+    if (userStakingAmount <= 0) return { kiteRatio: 0, haiVeloBoost: 1 }
+    if (Number(totalHaiVELODeposited) <= 0) return { kiteRatio: 0, haiVeloBoost: 1 }
+
+    const kiteRatio = isNaN(totalStakingAmount) || totalStakingAmount === 0 ? 0 : userStakingAmount / totalStakingAmount
+    const hvRatio = Number(userHaiVELODeposited) / Number(totalHaiVELODeposited)
+    const boostRaw = hvRatio === 0 ? 1 : kiteRatio / hvRatio + 1
+    const haiVeloBoost = Math.min(boostRaw, 2)
+    return { kiteRatio, haiVeloBoost }
 }
 
 /**
