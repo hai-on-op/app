@@ -61,6 +61,41 @@ export async function fetchV1Safes(collateralId: 'HAIVELO' = 'HAIVELO', limit = 
     }
 }
 
+export type V2Safe = V1Safe
+export type FetchV2SafesResult = FetchV1SafesResult
+
+export async function fetchV2Safes(collateralId: 'HAIVELO_V2' = 'HAIVELO_V2', limit = 1000): Promise<FetchV2SafesResult> {
+    const QUERY = gql`
+        query GetV2HaiVelo($collateralTypeId: ID!, $limit: Int!) {
+            collateralType(id: $collateralTypeId) {
+                id
+                totalCollateral
+            }
+            safes(
+                where: { collateralType_: { id: $collateralTypeId } }
+                orderBy: collateral
+                orderDirection: desc
+                first: $limit
+            ) {
+                id
+                collateral
+                owner { address }
+            }
+        }
+    `
+
+    const { data } = await client.query<{ collateralType: { id: string; totalCollateral: string }; safes: V2Safe[] }>({
+        query: QUERY,
+        variables: { collateralTypeId: collateralId, limit },
+        fetchPolicy: 'network-only',
+    })
+
+    return {
+        totalCollateral: data?.collateralType?.totalCollateral || '0',
+        safes: data?.safes || [],
+    }
+}
+
 function getProvider(rpcUrl?: string) {
     return new ethers.providers.JsonRpcProvider(rpcUrl || VITE_MAINNET_PUBLIC_RPC)
 }
