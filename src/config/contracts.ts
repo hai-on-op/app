@@ -17,6 +17,11 @@ export const contracts = Object.freeze({
         address: requireEnv('VITE_STAKING_MANAGER') as Address,
         abi: StakingManagerABI,
     },
+    rewardDistributor: {
+        address: requireEnv('VITE_REWARD_DISTRIBUTOR_ADDRESS') as Address,
+        // ABI intentionally provided by incentives service until moved here
+        abi: undefined as unknown as Record<string, unknown>,
+    },
     tokens: {
         kite: requireEnv('VITE_KITE_ADDRESS') as Address,
         stKite: requireEnv('VITE_STAKING_TOKEN_ADDRESS') as Address,
