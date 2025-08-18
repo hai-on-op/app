@@ -13,6 +13,7 @@ import { TokenArray } from '../TokenArray'
 import { useStakingData } from '~/hooks/useStakingData'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { ethers } from 'ethers'
+import { claimRewards } from '~/services/rewards/stakingRewardsService'
 
 export function StakingClaimModal() {
     const signer = useEthersSigner()
@@ -76,7 +77,7 @@ export function StakingClaimModal() {
             })
 
             stakingActions.setTransactionState(ActionState.LOADING)
-            await stakingActions.getReward({ signer })
+            await claimRewards(signer)
 
             stakingActions.setTransactionState(ActionState.SUCCESS)
             setIsWaitingModalOpen(false)

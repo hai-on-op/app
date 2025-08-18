@@ -9,6 +9,7 @@ import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { handleTransactionError, useEthersSigner, useGeb } from '~/hooks'
 import { utils } from 'ethers'
 import { useDistributorContract } from '~/hooks/useContract'
+import { useRewards } from '~/providers/RewardsProvider'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
@@ -354,7 +355,8 @@ export function ClaimModal(props: ModalProps) {
 
     const geb = useGeb()
 
-    const { activeAuctions, internalBalances, incentivesData, refetchIncentives } = useClaims()
+    const { activeAuctions, internalBalances } = useClaims()
+    const { incentives } = useRewards()
 
     const { prices, total } = useMemo(() => {
         if (!liquidationData)
@@ -401,8 +403,17 @@ export function ClaimModal(props: ModalProps) {
 
     // Process all incentive tokens
     const incentiveTokens = INCENTIVE_TOKENS.reduce((acc, token) => {
-        const data = incentivesData?.claimData?.[token]
+        const raw = incentives?.claims.data?.[token]
         const price = getTokenPrice(token)
+        // Normalize to legacy shape expected by UI pieces
+        const data = raw
+            ? {
+                  ...raw,
+                  hasClaimableDistros: Boolean(raw.hasClaimable),
+                  amount: raw.amountWei ? utils.parseEther(utils.formatEther(raw.amountWei)) : undefined,
+                  claimIt: raw.claim,
+              }
+            : undefined
 
         console.log(`Processing ${token}:`, data, 'price:', price)
         acc[token] = { data, price }
@@ -410,24 +421,27 @@ export function ClaimModal(props: ModalProps) {
     }, {} as Record<IncentiveToken, { data: any; price: number }>)
 
     // Check if distributor is paused from any available incentive data
-    const isDistributorPaused = incentivesData?.timerData?.isPaused
+    const isDistributorPaused = incentives?.timer.data?.paused
 
+    const isIncentivesLoading = Boolean(incentives?.claims.loading)
     // Generate content for each token
-    const incentivesContent = INCENTIVE_TOKENS.flatMap((token) => {
-        const { data, price } = incentiveTokens[token]
-        if (!data?.hasClaimableDistros) return []
+    const incentivesContent = isIncentivesLoading || !incentives?.claims.data
+        ? []
+        : INCENTIVE_TOKENS.flatMap((token) => {
+              const { data, price } = incentiveTokens[token]
+              if (!data?.hasClaimableDistros) return []
 
-        console.log(`${token} has claimable distros:`, data.hasClaimableDistros)
-        return [
-            <ClaimableIncentive
-                key={`${token}-Daily-rewards`}
-                asset={token}
-                claim={{ ...data }}
-                price={price}
-                onSuccess={refetchIncentives}
-            />,
-        ]
-    })
+              console.log(`${token} has claimable distros:`, data.hasClaimableDistros)
+              return [
+                  <ClaimableIncentive
+                      key={`${token}-Daily-rewards`}
+                      asset={token}
+                      claim={{ ...data }}
+                      price={price}
+                      onSuccess={() => incentives.claims.refetch()}
+                  />,
+              ]
+          })
 
     // Direct calculation for each token's incentive value
     // This is more reliable than the generic function
@@ -523,7 +537,7 @@ export function ClaimModal(props: ModalProps) {
     )
 
     // Get timer data from incentives data
-    const timerData = incentivesData?.timerData
+    const timerData = incentives?.timer.data
 
     const onClaimAll = async () => {
         const formatted = isFormattedAddress(account)
@@ -548,7 +562,7 @@ export function ClaimModal(props: ModalProps) {
                     hash: txResponse?.hash,
                     status: ActionState.SUCCESS,
                 })
-                await refetchIncentives()
+                await incentives.claims.refetch()
                 popupsActions.setIsWaitingModalOpen(false)
                 popupsActions.setWaitingPayload({ status: ActionState.NONE })
             } else {
@@ -594,7 +608,7 @@ export function ClaimModal(props: ModalProps) {
                         </HaiButton>
                     </Flex>
 
-                    {timerData?.isPaused ? (
+                    {timerData?.paused ? (
                         <Flex $width="100%" $justify="flex-start" $align="center">
                             <Text style={{ color: '#ff6b6b', textAlign: 'left', width: '100%' }}>
                                 Distributor is currently paused to update rewards. <br />
@@ -643,9 +657,9 @@ export function ClaimModal(props: ModalProps) {
             </Text>
             <ScrollableBody>
                 <ContentWithStatus
-                    loading={false}
+                    loading={isIncentivesLoading}
                     error={undefined}
-                    isEmpty={!content.filter((c) => !!c).length}
+                    isEmpty={!isIncentivesLoading && !content.filter((c) => !!c).length}
                     emptyContent="No rewards available to claim"
                 >
                     {content}

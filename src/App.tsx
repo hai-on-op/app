@@ -9,6 +9,7 @@ import { ChainId, NETWORK_ID, client, VITE_FLAGSMITH_API_KEY } from '~/utils'
 import { VelodromePriceProvider } from './providers/VelodromePriceProvider'
 import { AnalyticsProvider } from '~/providers/AnalyticsProvider'
 import { EffectsProvider } from './providers/EffectsProvider'
+import { RewardsProvider } from './providers/RewardsProvider'
 import { ClaimsProvider } from './providers/ClaimsProvider'
 import { StakingProvider } from './providers/StakingProvider'
 
@@ -46,10 +47,11 @@ const App = () => {
                 <ErrorBoundary>
                     <ApolloProvider client={client}>
                         <VelodromePriceProvider>
-                                <StakingProvider>
-                                    <AnalyticsProvider>
-                                        <EffectsProvider>
-                                            <ClaimsProvider>
+                                <RewardsProvider>
+                                    <StakingProvider>
+                                        <AnalyticsProvider>
+                                            <EffectsProvider>
+                                                <ClaimsProvider>
                                                 <Shared>
                                                     <Suspense fallback={null}>
                                                         <Route />
@@ -128,10 +130,11 @@ const App = () => {
                                                         </>
                                                     </Suspense>
                                                 </Shared>
-                                            </ClaimsProvider>
-                                        </EffectsProvider>
-                                    </AnalyticsProvider>
-                                </StakingProvider>
+                                                </ClaimsProvider>
+                                            </EffectsProvider>
+                                        </AnalyticsProvider>
+                                    </StakingProvider>
+                                </RewardsProvider>
                         </VelodromePriceProvider>
                     </ApolloProvider>
                 </ErrorBoundary>
