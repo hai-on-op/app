@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { formatNumberWithStyle, Status } from '~/utils'
 
 import styled from 'styled-components'
@@ -7,6 +7,10 @@ import { OverviewProgressStat, OverviewStat } from './OverviewStat'
 import { useHaiVelo } from '~/providers/HaiVeloProvider'
 import { StatusLabel } from '~/components/StatusLabel'
 import { Swirl } from '~/components/Icons/Swirl'
+import { useBoost } from '~/hooks/useBoost'
+import { useUnderlyingAPR } from '~/hooks/useUnderlyingAPR'
+import { useStoreState } from '~/store'
+import { getRatePercentage } from '~/utils'
 
 export function HaiVeloOverview() {
     // Get all data and simulation state from the single context
@@ -22,6 +26,29 @@ export function HaiVeloOverview() {
         },
         simulatedAmount,
     } = useHaiVelo()
+
+    // Net Rewards APR (haiVELO vault): mirror calculation used in Overview.tsx
+    const { individualVaultBoosts } = useBoost()
+    const haiVeloBoostData = individualVaultBoosts['HAIVELO']
+    const { underlyingAPR } = useUnderlyingAPR({ collateralType: 'HAIVELO' })
+    const { vaultModel } = useStoreState((state) => state)
+    const haiveloLiqData = vaultModel?.liquidationData?.collateralLiquidationData?.['HAIVELO']
+    const stabilityFeeCost = haiveloLiqData
+        ? -getRatePercentage(haiveloLiqData.totalAnnualizedStabilityFee || '1', 4, true)
+        : 0
+    const mintingIncentivesAPR = haiVeloBoostData?.myBoostedAPR ? haiVeloBoostData.myBoostedAPR / 100 : 0
+
+    // Estimate Net APR using assumed 200% collateral ratio (same approach as Manage/Overview fallback)
+    const assumedCollateralRatio = 2.0
+    const assumedCollateralValue = assumedCollateralRatio
+    const assumedDebtValue = 1
+    const collateralYield = assumedCollateralValue * underlyingAPR
+    const debtNetAPR = mintingIncentivesAPR + stabilityFeeCost
+    const debtNetYield = assumedDebtValue * debtNetAPR
+    const netAprDecimal =
+        assumedCollateralValue > 0
+            ? (collateralYield + debtNetYield) / assumedCollateralValue
+            : underlyingAPR + mintingIncentivesAPR + stabilityFeeCost
 
     // Placeholder data - replace with actual hooks/data later
     const placeholderData = {
@@ -46,7 +73,7 @@ export function HaiVeloOverview() {
         const deposited = parseFloat(placeholderData.totalHaiVeloDeposited.replace(/,/g, ''))
         const capacity = parseFloat(placeholderData.totalHaiVeloCapacity.replace(/,/g, ''))
 
-        const baseProgress = capacity > 0 ? Math.min(deposited / capacity, 1) : 0
+        const baseProgress = 0 //capacity > 0 ? Math.min(deposited / capacity, 1) : 0
         const baseLabel = `${(baseProgress * 100).toFixed(1)}%`
 
         const withSimDeposited = deposited + (simulatedAmount > 0 ? simulatedAmount : 0)
@@ -55,12 +82,15 @@ export function HaiVeloOverview() {
 
         return {
             progress: { progress: baseProgress, label: baseLabel },
-            simulatedProgress: simulatedAmount > 0 ? { 
-                progress: simProgress, 
-                label: `${(simProgress * 100).toFixed(1)}% After Tx` 
-            } : undefined,
+            simulatedProgress:
+                simulatedAmount > 0
+                    ? {
+                          progress: simProgress,
+                          label: `${(simProgress * 100).toFixed(1)}% After Tx`,
+                      }
+                    : undefined,
             colorLimits: [0, 0.5, 1] as [number, number, number],
-            labels: [] // Empty labels for simple progress bar
+            labels: [], // Empty labels for simple progress bar
         }
     }, [placeholderData.totalHaiVeloDeposited, placeholderData.totalHaiVeloCapacity, simulatedAmount])
 
@@ -70,10 +100,6 @@ export function HaiVeloOverview() {
         const after = Math.max(base - (simulatedAmount > 0 ? simulatedAmount : 0), 0)
         return formatNumberWithStyle(after, { maxDecimals: 2 })
     }, [placeholderData.myTotalVelo, simulatedAmount])
-
-
-
-
 
     return (
         <Container>
@@ -163,24 +189,22 @@ export function HaiVeloOverview() {
                     token="HAIVELO"
                     label="My haiVELO"
                     convertedValue="$0.00"
-                    simulatedValue={simulatedAmount > 0 ? formatNumberWithStyle(parseFloat(placeholderData.myHaiVelo) + simulatedAmount, { maxDecimals: 2 }) : undefined}
+                    simulatedValue={
+                        simulatedAmount > 0
+                            ? formatNumberWithStyle(parseFloat(placeholderData.myHaiVelo) + simulatedAmount, {
+                                  maxDecimals: 2,
+                              })
+                            : undefined
+                    }
                     labelOnTop
                 />
 
                 {/* Middle section - VELO TVL, Net Rewards APR, Performance Fee */}
+                <OverviewStat value={'N/A'} label="VELO TVL" tooltip="Total Value Locked in VELO" />
                 <OverviewStat
-                    value={formatNumberWithStyle(placeholderData.veloTVL, {
-                        style: 'currency',
-                        maxDecimals: 0,
-                    })}
-                    label="VELO TVL"
-                    tooltip="Total Value Locked in VELO"
-                />
-                <OverviewStat
-                    value={formatNumberWithStyle(placeholderData.netRewardsAPR, {
+                    value={formatNumberWithStyle(netAprDecimal || 0, {
                         style: 'percent',
                         maxDecimals: 2,
-                        scalingFactor: 0.01,
                     })}
                     label="Net Rewards APR"
                     tooltip="Annual Percentage Return from rewards after fees"
@@ -196,12 +220,7 @@ export function HaiVeloOverview() {
                 />
 
                 {/* Progress bar section with simulation overlay */}
-                <OverviewProgressStat
-                    value={progressProps.progress.label}
-                    label="Total haiVELO Deposited:"
-                    {...progressProps}
-                    fullWidth
-                />
+                <OverviewProgressStat value={0} label="Total haiVELO Deposited:" {...progressProps} fullWidth />
             </Inner>
         </Container>
     )

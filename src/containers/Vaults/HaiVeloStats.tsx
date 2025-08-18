@@ -8,6 +8,7 @@ import { formatNumberWithStyle } from '~/utils'
 import { RewardsTokenArray } from '~/components/TokenArray'
 import { Stats, type StatProps } from '~/components/Stats'
 import { HaiButton } from '~/styles'
+import { ComingSoon } from '~/components/ComingSoon'
 
 export function HaiVeloStats() {
     const { graphSummary, graphData } = useAnalytics()
@@ -32,7 +33,7 @@ export function HaiVeloStats() {
 
     const aprFormatted = useMemo(() => {
         const value = aprLoading ? undefined : underlyingAPR
-        return value === undefined ? '...' : formatNumberWithStyle(value, { style: 'percent', suffixed: true, maxDecimals: 2, scalingFactor: 1 })
+        return value === undefined ? '...' : formatNumberWithStyle(value * 100, { style: 'percent', suffixed: true, maxDecimals: 2 })
     }, [underlyingAPR, aprLoading])
 
     const myRewardsHeader = useMemo(() => {
@@ -43,11 +44,11 @@ export function HaiVeloStats() {
 
     const stats: StatProps[] = [
         {
-            header: loading ? '...' : tvlFormatted,
+            header: loading ? '...' : "N/A", //tvlFormatted,
             label: 'haiVELO TVL',
         },
         {
-            header: loading ? '...' : debtCapacityFormatted,
+            header: loading ? '...' : "N/A", //debtCapacityFormatted,
             label: 'Debt Capacity',
         },
         {
