@@ -158,11 +158,9 @@ export function useEarnStrategies() {
         if (!collateralTypesData?.collateralTypes || !velodromePricesData?.HAI) {
             return []
         }
-
         const collateralsWithMinterRewards = collateralTypesData.collateralTypes.filter((cType) =>
             Object.values(RewardsModel.getVaultRewards(cType.id) || {}).some((a) => a != 0)
         )
-
         if (!collateralsWithMinterRewards.length) return []
 
         const haiPrice = Number(velodromePricesData?.HAI.raw)
