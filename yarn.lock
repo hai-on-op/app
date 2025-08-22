@@ -2502,10 +2502,10 @@
     forge-std "https://github.com/foundry-rs/forge-std.git#155d547c449afa8715f538d69454b83944117811"
     typechain "^8.3.2"
 
-"@hai-on-op/sdk@1.2.27":
-  version "1.2.27"
-  resolved "https://registry.yarnpkg.com/@hai-on-op/sdk/-/sdk-1.2.27.tgz#3302717421d512f8b8afe47fb8411ee552c8d0f7"
-  integrity sha512-3wE7rzYIEkg2Gb3Ksbsvh5CmB/nLFoNNGMUaW1DjqeflpQtXXYW2Y9vO7XCKbLe9YMUKeT7xLXzbeIvHQRSFpg==
+"@hai-on-op/sdk@1.2.29":
+  version "1.2.29"
+  resolved "https://registry.yarnpkg.com/@hai-on-op/sdk/-/sdk-1.2.29.tgz#490f91fc0631d244489274f583d721de0d9346af"
+  integrity sha512-d2pdw+KravAs0MrtXlVjBGHR5lnw/yyZbzNpBB92YKEMtFU1ysSNSlzFl1KixkxHxZTyebKhw9S4p8DxAmLGPA==
   dependencies:
     "@hai-on-op/abis" "1.0.7"
     ethers "5.4.7"
@@ -6804,7 +6804,6 @@ dotenv@^14.2.0:
 
 "ds-test@https://github.com/dapphub/ds-test":
   version "1.0.0"
-  uid e282159d5170298eb2455a6c05280ab5a73a4ef0
   resolved "https://github.com/dapphub/ds-test#e282159d5170298eb2455a6c05280ab5a73a4ef0"
 
 "ds-test@https://github.com/dapphub/ds-test.git#e282159d5170298eb2455a6c05280ab5a73a4ef0":

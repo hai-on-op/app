@@ -84,7 +84,6 @@ function parseTokenLiquidationData(redemptionPrice: BigNumber, tokenLiquidationD
 // Returns list of user vaults
 const getUserVaultsRpc = async (config: UserListConfig): Promise<IUserVaultList> => {
     const [userCoinBalance, vaultsData] = await fetchUserSafes(config.geb, config.address)
-
     const vaults = vaultsData.map((vault) => ({
         collateral: parseWad(vault.lockedCollateral),
         freeCollateral: parseWad(vault.freeCollateral),
