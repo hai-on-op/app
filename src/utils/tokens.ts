@@ -28,6 +28,7 @@ import dineroImg from '~/assets/dinero-img.svg'
 import haiVeloImg from '~/assets/hai-velo.png'
 import yvVeloAlethWethImg from '~/assets/yv-velo-aleth-weth-img.png'
 import alusdImg from '~/assets/alusd-img.svg'
+import msethImg from '~/assets/mseth-img.svg'
 
 export type Tokens = {
     [key: string]: {
@@ -71,6 +72,7 @@ export const TOKEN_LOGOS = {
     HAIVELO: haiVeloImg,
     'YV-VELO-ALETH-WETH': yvVeloAlethWethImg,
     ALUSD: alusdImg,
+    MSETH: msethImg,
 }
 
 export const tokenMap: Record<string, string> = {
