@@ -104,6 +104,16 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                                                 )}
                                                             </>
                                                         )}
+                                                        {collateralName === 'MSETH' && (
+                                                            <>
+                                                                <RewardsTokenArray
+                                                                    tokens={['KITE']}
+                                                                    label="EARN"
+                                                                    tooltip="Earn KITE rewards for borrowing HAI against this asset. See earn page for details."
+                                                                />
+                                                            </>
+                                                        )}
+
                                                         {collateralName === 'YV-VELO-ALETH-WETH' && (
                                                             <>
                                                                 <RewardsTokenArray
@@ -139,7 +149,7 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                                             />
                                                         )}
                                                         {/* Default behavior for other collaterals */}
-                                                        {!['ALETH', 'YV-VELO-ALETH-WETH', 'HAIVELO'].includes(
+                                                        {!['ALETH', 'YV-VELO-ALETH-WETH', 'HAIVELO', 'MSETH'].includes(
                                                             collateralName
                                                         ) && (
                                                             <RewardsTokenArray
