@@ -11,6 +11,11 @@ import { useBoost } from '~/hooks/useBoost'
 import { useUnderlyingAPR } from '~/hooks/useUnderlyingAPR'
 import { useStoreState } from '~/store'
 import { getRatePercentage } from '~/utils'
+import { useAccount } from 'wagmi'
+import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
+import { useHaiVeloAccount } from '~/hooks/haivelo/useHaiVeloAccount'
+import { fetchV2Totals, fetchV2Safes } from '~/services/haivelo/dataSources'
+import { useQuery } from '@tanstack/react-query'
 
 export function HaiVeloOverview() {
     // Get all data and simulation state from the single context
@@ -50,35 +55,80 @@ export function HaiVeloOverview() {
             ? (collateralYield + debtNetYield) / assumedCollateralValue
             : underlyingAPR + mintingIncentivesAPR + stabilityFeeCost
 
-    // Placeholder data - replace with actual hooks/data later
-    const placeholderData = {
-        myVelo: veloBalanceFormatted,
-        myVeVelo: veVeloBalanceFormatted,
-        myTotalVelo: totalVeloBalanceFormatted, // Sum of VELO + veVELO (+ haiVELO v1 in hook formatting)
-        myHaiVeloV1: haiVeloV1BalanceFormatted,
-        myHaiVelo: haiVeloV2BalanceFormatted || '0.00',
-        veloTVL: '1,234,567.89',
-        netRewardsAPR: '12.34',
-        performanceFee: '2.5',
-        totalHaiVeloDeposited: '456,789.12',
-        totalHaiVeloCapacity: '1,000,000.00',
-        // Price data
-        veloPrice: '0.1234',
-        haiVeloPrice: '0.9876',
-        pegPercentage: '99.8',
-    }
+    const { address } = useAccount()
+    const addrLower = address?.toLowerCase()
+    const { prices: veloPrices } = useVelodromePrices()
+    const veloPrice = useMemo(() => Number(veloPrices?.VELO?.raw || 0), [veloPrices])
+    const { v1Balance, v2Balance, velo, veNft } = useHaiVeloAccount(address || undefined)
+    const { data: v2Safes } = useQuery({
+        queryKey: ['haivelo', 'v2', 'safes-summary'],
+        queryFn: async () => fetchV2Safes('HAIVELO_V2'),
+        staleTime: 5 * 60 * 1000,
+        refetchInterval: 5 * 60 * 1000,
+    })
+
+    // My convertible VELO total (VELO + veVELO + haiVELO v1)
+    const myConvertibleVeloTotal = useMemo(() => {
+        const veloAmt = Number(velo?.formatted || '0')
+        const veVeloAmt = Number(veNft?.totalFormatted || '0')
+        const hv1Amt = Number(v1Balance || '0')
+        return veloAmt + veVeloAmt + hv1Amt
+    }, [velo?.formatted, veNft?.totalFormatted, v1Balance])
+
+    // My haiVELO v2 in wallet (not deposited)
+    const myHaiVeloV2Wallet = useMemo(() => Number(v2Balance?.formatted || '0'), [v2Balance?.formatted])
+
+    // My deposit across all vaults (value): v2-only deposits * VELO price
+    const myDepositValueUsd = useMemo(() => {
+        if (!addrLower || !v2Safes?.safes) return 0
+        const qty = v2Safes.safes
+            .filter((s) => s.owner?.address?.toLowerCase() === addrLower)
+            .reduce((acc, s) => acc + Number(s.collateral || '0'), 0)
+        return qty * veloPrice
+    }, [v2Safes, addrLower, veloPrice])
+
+    // Deposit TVL (total value deposited as collateral)
+    const depositTvlUsd = useMemo(() => {
+        const totalQty = Number(v2Safes?.totalCollateral || '0')
+        return totalQty * veloPrice
+    }, [v2Safes, veloPrice])
+
+    // Percent of v2 supply deposited as collateral
+    const [v2Supply, setV2Supply] = useState<number>(0)
+    useEffect(() => {
+        let mounted = true
+        const run = async () => {
+            try {
+                const totals = await fetchV2Totals()
+                if (!mounted) return
+                setV2Supply(Number(totals.totalSupplyFormatted || '0'))
+            } catch {
+                if (!mounted) return
+                setV2Supply(0)
+            }
+        }
+        run()
+        return () => {
+            mounted = false
+        }
+    }, [])
+    const percentOfV2Deposited = useMemo(() => {
+        const totalQty = Number(v2Safes?.totalCollateral || '0')
+        if (!v2Supply || v2Supply <= 0) return '--%'
+        const pct = (totalQty * 100) / v2Supply
+        return formatNumberWithStyle(pct, { style: 'percent', suffixed: true, maxDecimals: 2 })
+    }, [v2Safes, v2Supply])
 
     // Calculate progress for hai velo deposited (with simulation overlay)
     const progressProps = useMemo(() => {
-        const deposited = parseFloat(placeholderData.totalHaiVeloDeposited.replace(/,/g, ''))
-        const capacity = parseFloat(placeholderData.totalHaiVeloCapacity.replace(/,/g, ''))
+        const totalDepositedQty = Number(v2Safes?.totalCollateral || '0')
+        const supplyQty = v2Supply
 
-        const baseProgress = 0 //capacity > 0 ? Math.min(deposited / capacity, 1) : 0
-        const baseLabel = `${(baseProgress * 100).toFixed(1)}%`
+        const baseProgress = supplyQty > 0 ? Math.min(totalDepositedQty / supplyQty, 1) : 0
+        const baseLabel = formatNumberWithStyle(baseProgress * 100, { style: 'percent', suffixed: true, maxDecimals: 2 })
 
-        const withSimDeposited = deposited + (simulatedAmount > 0 ? simulatedAmount : 0)
-        const simProgress = capacity > 0 ? Math.min(withSimDeposited / capacity, 1) : 0
-        const simLabel = `${(simProgress * 100).toFixed(1)}%`
+        const withSimQty = totalDepositedQty + (simulatedAmount > 0 ? simulatedAmount : 0)
+        const simProgress = supplyQty > 0 ? Math.min(withSimQty / supplyQty, 1) : 0
 
         return {
             progress: { progress: baseProgress, label: baseLabel },
@@ -90,16 +140,16 @@ export function HaiVeloOverview() {
                       }
                     : undefined,
             colorLimits: [0, 0.5, 1] as [number, number, number],
-            labels: [], // Empty labels for simple progress bar
+            labels: [],
         }
-    }, [placeholderData.totalHaiVeloDeposited, placeholderData.totalHaiVeloCapacity, simulatedAmount])
+    }, [v2Safes, v2Supply, simulatedAmount])
 
     // Simulated first section (My VELO, veVELO, haiVELO v1): current - simulatedAmount
     const simulatedMyTotalVelo = useMemo(() => {
-        const base = parseFloat(String(placeholderData.myTotalVelo).replace(/[$,]/g, '')) || 0
+        const base = Number(myConvertibleVeloTotal || 0)
         const after = Math.max(base - (simulatedAmount > 0 ? simulatedAmount : 0), 0)
         return formatNumberWithStyle(after, { maxDecimals: 2 })
-    }, [placeholderData.myTotalVelo, simulatedAmount])
+    }, [myConvertibleVeloTotal, simulatedAmount])
 
     return (
         <Container>
@@ -127,97 +177,48 @@ export function HaiVeloOverview() {
                         </Text>
                     )}
                 </Flex>
-                <Flex $justify="flex-end" $align="center" $gap={12} $fontSize="0.8em">
-                    <Text>
-                        VELO:&nbsp;
-                        <strong>
-                            {placeholderData.veloPrice
-                                ? formatNumberWithStyle(placeholderData.veloPrice, {
-                                      minDecimals: 4,
-                                      maxDecimals: 4,
-                                      style: 'currency',
-                                  })
-                                : '--'}
-                        </strong>
-                    </Text>
-                    <Text>
-                        haiVELO:&nbsp;
-                        <strong>
-                            {placeholderData.haiVeloPrice
-                                ? formatNumberWithStyle(placeholderData.haiVeloPrice, {
-                                      minDecimals: 4,
-                                      maxDecimals: 4,
-                                      style: 'currency',
-                                  })
-                                : '--'}
-                        </strong>
-                    </Text>
-                    <Text>
-                        Peg:&nbsp;
-                        <strong>
-                            {placeholderData.pegPercentage
-                                ? formatNumberWithStyle(placeholderData.pegPercentage, {
-                                      minDecimals: 1,
-                                      maxDecimals: 1,
-                                      style: 'percent',
-                                      scalingFactor: 0.01,
-                                  })
-                                : '--'}
-                        </strong>
-                    </Text>
-                </Flex>
             </Header>
             <Inner $borderOpacity={0.2}>
                 {/* Top section - My VELO/veVELO/haiVELO v1 details */}
                 <OverviewStat
-                    value={formatNumberWithStyle(placeholderData.myTotalVelo, {
-                        maxDecimals: 2,
-                    })}
+                    value={formatNumberWithStyle(myConvertibleVeloTotal, { maxDecimals: 2 })}
                     token="VELO"
                     tokenLabel="VELO"
                     label="My VELO, veVELO, haiVELO v1"
-                    convertedValue="$0.00"
+                    convertedValue={formatNumberWithStyle(myConvertibleVeloTotal * veloPrice, { style: 'currency' })}
                     simulatedValue={simulatedAmount > 0 ? simulatedMyTotalVelo : undefined}
                     labelOnTop
                 />
 
                 {/* My haiVELO section */}
                 <OverviewStat
-                    value={formatNumberWithStyle(parseFloat(placeholderData.myHaiVelo), {
-                        maxDecimals: 2,
-                    })}
+                    value={formatNumberWithStyle(myHaiVeloV2Wallet, { maxDecimals: 2 })}
                     token="HAIVELO"
-                    label="My haiVELO"
-                    convertedValue="$0.00"
-                    simulatedValue={
-                        simulatedAmount > 0
-                            ? formatNumberWithStyle(parseFloat(placeholderData.myHaiVelo) + simulatedAmount, {
-                                  maxDecimals: 2,
-                              })
-                            : undefined
-                    }
+                    label="My haiVELO v2 In Wallet"
+                    convertedValue={formatNumberWithStyle(myHaiVeloV2Wallet * veloPrice, { style: 'currency' })}
                     labelOnTop
                 />
 
                 {/* Middle section - VELO TVL, Net Rewards APR, Performance Fee */}
-                <OverviewStat value={'N/A'} label="VELO TVL" tooltip="Total Value Locked in VELO" />
                 <OverviewStat
-                    value={formatNumberWithStyle(netAprDecimal || 0, {
+                    value={formatNumberWithStyle(myDepositValueUsd, { style: 'currency' })}
+                    label="My Deposit"
+                    tooltip="Value of your haiVELO v2 deposited across all vaults"
+                />
+                <OverviewStat
+                    value={formatNumberWithStyle(depositTvlUsd, { style: 'currency' })}
+                    label="Deposit TVL"
+                    tooltip="Total value of all haiVELO v2 deposited as collateral"
+                />
+                <OverviewStat
+                    value={formatNumberWithStyle(haiVeloBoostData?.myBoostedAPR || 0, {
                         style: 'percent',
                         maxDecimals: 2,
                     })}
-                    label="Net Rewards APR"
-                    tooltip="Annual Percentage Return from rewards after fees"
+                    label="Deposit APR"
+                    tooltip="Your boosted APR on haiVELO rewards"
                 />
-                <OverviewStat
-                    value={formatNumberWithStyle(placeholderData.performanceFee, {
-                        style: 'percent',
-                        maxDecimals: 1,
-                        scalingFactor: 0.01,
-                    })}
-                    label="Performance Fee"
-                    tooltip="Fee charged on performance"
-                />
+                {/* Removed duplicate panel for Total haiVELO Deposited; represented by progress bar below */}
 
                 {/* Progress bar section with simulation overlay */}
                 <OverviewProgressStat value={0} label="Total haiVELO Deposited:" {...progressProps} fullWidth />

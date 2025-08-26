@@ -38,7 +38,8 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
     // clear form inputs when unmounting
     useEffect(() => () => updateForm('clear'), [updateForm])
 
-    const [tab, setTab] = useState(0)
+    // Default to Manage tab for existing haiVELO vaults; Mint tab for CREATE/new
+    const [tab, setTab] = useState(() => (isHAIVELO ? (action === VaultAction.CREATE ? 0 : 1) : 0))
 
     // Create navItems array based on vault type and action
     const getNavItems = () => {
