@@ -3,6 +3,8 @@ import { useStoreActions } from '~/store'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { useUnderlyingAPR } from '~/hooks/useUnderlyingAPR'
 import { useEarnStrategies } from '~/hooks'
+import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
+import { useHaiVeloStats as useHaiVeloStatsHook } from '~/hooks/haivelo/useHaiVeloStats'
 
 import { formatNumberWithStyle } from '~/utils'
 import { RewardsTokenArray } from '~/components/TokenArray'
@@ -11,23 +13,30 @@ import { HaiButton } from '~/styles'
 import { ComingSoon } from '~/components/ComingSoon'
 
 export function HaiVeloStats() {
-    const { graphSummary, graphData } = useAnalytics()
+    const { graphSummary, graphData, data: analytics } = useAnalytics()
     const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
     const { totalRewardsValue, rewardTokens, loading } = useEarnStrategies()
+    const { prices: veloPrices, loading: veloLoading } = useVelodromePrices()
+
+    const veloPriceUsd = useMemo(() => Number(veloPrices?.VELO?.raw || 0), [veloPrices])
+    const { combined, isLoading: hvLoading } = useHaiVeloStatsHook(veloPriceUsd)
 
     const redemptionPrice = graphData?.systemStates?.[0]?.currentRedemptionPrice?.value
 
     const tvlFormatted = useMemo(() => {
-        const total = graphSummary?.collateralStats?.['HAIVELO']?.totalCollateral?.formatted
-        return total || '$0'
-    }, [graphSummary])
+        if (hvLoading || veloLoading) return '...'
+        return formatNumberWithStyle(String(combined?.tvlUsd || 0), {
+            style: 'currency',
+            minDecimals: 0,
+            maxDecimals: 2,
+        })
+    }, [combined, hvLoading, veloLoading])
 
     const debtCapacityFormatted = useMemo(() => {
-        const debt = graphSummary?.collateralStats?.['HAIVELO']?.debt
-        if (!debt || !redemptionPrice) return '$0'
-        const remaining = (parseFloat(debt.debtCeiling || '0') - parseFloat(debt.debtAmount || '0')) * parseFloat(redemptionPrice)
-        return formatNumberWithStyle(remaining.toString(), { style: 'currency', minDecimals: 0, maxDecimals: 2 })
-    }, [graphSummary, redemptionPrice])
+        const pct = graphSummary?.collateralStats?.['HAIVELO']?.debt?.ceilingPercent
+        if (pct === undefined || pct === null || isNaN(pct as any)) return '...'
+        return formatNumberWithStyle(pct, { style: 'percent', suffixed: true, maxDecimals: 2 })
+    }, [graphSummary])
 
     const { underlyingAPR, isLoading: aprLoading } = useUnderlyingAPR({ collateralType: 'HAIVELO' })
 
@@ -44,11 +53,11 @@ export function HaiVeloStats() {
 
     const stats: StatProps[] = [
         {
-            header: loading ? '...' : "N/A", //tvlFormatted,
+            header: loading ? '...' : tvlFormatted,
             label: 'haiVELO TVL',
         },
         {
-            header: loading ? '...' : "N/A", //debtCapacityFormatted,
+            header: loading ? '...' : debtCapacityFormatted,
             label: 'Debt Capacity',
         },
         {
