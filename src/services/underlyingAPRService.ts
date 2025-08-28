@@ -178,6 +178,25 @@ class LPTokenAPRCalculator implements IUnderlyingAPRCalculator {
                     console.warn('Error fetching Yearn vault APY:', error)
                 }
             }
+            // For YV-VELO-MSETH-WETH, fetch real APY from Yearn's yDaemon API
+            else if (data.collateralType.toUpperCase() === 'YV-VELO-MSETH-WETH') {
+                try {
+                    const response = await fetch(
+                        'https://ydaemon.yearn.fi/10/vaults/0xd0d2Ac44Cc842079e978bB11b094764f7D0dec6A'
+                    )
+                    if (response.ok) {
+                        const vaultData = await response.json()
+                        const netAPY = vaultData.apr?.netAPR || 0
+                        underlyingAPR = netAPY // Already in decimal format (e.g., 0.025 for 2.5%)
+                        source = 'Yearn Vault Yield'
+                        description = `Net APY from Yearn vault strategy (${(netAPY * 100).toFixed(2)}%)`
+                    } else {
+                        console.warn('Failed to fetch Yearn vault data (msETH/WETH), using 0%')
+                    }
+                } catch (error) {
+                    console.warn('Error fetching Yearn vault APY (msETH/WETH):', error)
+                }
+            }
 
             return {
                 collateralType: data.collateralType,
@@ -337,6 +356,7 @@ export class UnderlyingAPRService {
         this.calculators.set('ALETH', liquidStakingCalculator)
 
         this.calculators.set('YV-VELO-ALETH-WETH', lpTokenCalculator)
+        this.calculators.set('YV-VELO-MSETH-WETH', lpTokenCalculator)
         this.calculators.set('HAIVELO', yieldBearingCalculator)
 
         // Standard tokens (no underlying yield)
