@@ -130,9 +130,14 @@ export function Numbers() {
         for (const pool of pools.veloPools) {
             if (!pool.tokenPair.includes('HAI')) continue
 
-            // Only include pools that are configured in REWARDS
             const poolAddress = pool.address.toLowerCase()
-            if (!REWARDS.velodrome[poolAddress]) continue
+            const isWhitelisted = !!REWARDS.velodrome[poolAddress]
+            const isHaiMsEthPair =
+                (pool.tokenPair[0] === 'HAI' && pool.tokenPair[1] === 'MSETH') ||
+                (pool.tokenPair[0] === 'MSETH' && pool.tokenPair[1] === 'HAI')
+
+            // Include if whitelisted in rewards OR if it's the HAI/msETH pair we want to track
+            if (!isWhitelisted && !isHaiMsEthPair) continue
 
             const hai = parseFloat(
                 formatUnits(pool.tokenPair[0] === 'HAI' ? pool.reserve0 : pool.reserve1, pool.decimals)
