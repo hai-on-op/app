@@ -178,10 +178,14 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
 
     if (!type) return null
 
-    const { subtitle, cta, ctaLink } = copy[type]
+    const isHaiVeloOpen =
+        location.pathname === '/vaults/open' && new URLSearchParams(location.search).get('collateral') === 'HAIVELO'
 
-    const isHaiVeloOpen = location.pathname === '/vaults/open' &&
-        new URLSearchParams(location.search).get('collateral') === 'HAIVELO'
+    const baseCopy = copy[type]
+    const subtitle = isHaiVeloOpen
+        ? 'Convert your VELO & veVELO into haiVELO to use as collateral while earning veVELO rewards. '
+        : baseCopy.subtitle
+    const { cta, ctaLink } = baseCopy
 
     const selectedValue = isHaiVeloOpen ? 'vaults/open?collateral=HAIVELO' : (type as unknown as string)
 
