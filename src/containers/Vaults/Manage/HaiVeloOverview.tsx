@@ -80,9 +80,9 @@ export function HaiVeloOverview() {
     const myHaiVeloV2Wallet = useMemo(() => Number(v2Balance?.formatted || '0'), [v2Balance?.formatted])
 
     const simulatedMyHaiVeloV2Wallet = useMemo(() => {
-        if (!simulatedDepositAmount || simulatedDepositAmount <= 0) return undefined
-        return formatNumberWithStyle(simulatedDepositAmount, { maxDecimals: 2 })
-    }, [simulatedDepositAmount])
+        if (!(simulatedAmount > 0)) return undefined
+        return formatNumberWithStyle(simulatedDepositAmount || 0, { maxDecimals: 2 })
+    }, [simulatedDepositAmount, simulatedAmount])
 
     // My deposit across all vaults (value): v2-only deposits * VELO price
     const myDepositValueUsd = useMemo(() => {
@@ -139,7 +139,7 @@ export function HaiVeloOverview() {
         return {
             progress: { progress: baseProgress, label: baseLabel },
             simulatedProgress:
-                simulatedDepositAmount > 0
+                simulatedAmount > 0
                     ? {
                           progress: simProgress,
                           label: `${(simProgress * 100).toFixed(1)}% After Tx`,
@@ -148,7 +148,7 @@ export function HaiVeloOverview() {
             colorLimits: [0, 0.5, 1] as [number, number, number],
             labels: [],
         }
-    }, [v2Safes, v2Supply, simulatedDepositAmount])
+    }, [v2Safes, v2Supply, simulatedDepositAmount, simulatedAmount])
 
     // Simulated first section (My VELO, veVELO, haiVELO v1): current - simulatedAmount
     const simulatedMyTotalVelo = useMemo(() => {
