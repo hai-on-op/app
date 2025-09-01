@@ -156,10 +156,6 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
         return {}
     }, [location.pathname])
 
-    if (!type) return null
-
-    const { subtitle, cta, ctaLink } = copy[type]
-
     // Adjust select options label when on haiVELO open page
     const selectOptions: BrandedSelectOption[] = useMemo(() => {
         // Always include a dedicated haiVELO option (do not replace existing Get $HAI)
@@ -179,6 +175,10 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
         }
         return extended
     }, [])
+
+    if (!type) return null
+
+    const { subtitle, cta, ctaLink } = copy[type]
 
     const isHaiVeloOpen = location.pathname === '/vaults/open' &&
         new URLSearchParams(location.search).get('collateral') === 'HAIVELO'
