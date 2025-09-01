@@ -45,7 +45,7 @@ export function NumberInput({
                     value={value || ''}
                     step="0.01"
                     {...props}
-                    type="number"
+                    type={disabled ? 'text' : 'number'}
                     disabled={disabled}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.currentTarget.value)}
                 />

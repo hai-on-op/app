@@ -16,6 +16,7 @@ import { ethers } from 'ethers'
 import { useAccount } from 'wagmi'
 import { sanitizeDecimals } from '~/utils'
 import { HAI_VELO_V2_TOKEN_ADDRESS, VE_NFT_CONTRACT_ADDRESS } from '~/services/haiVeloService'
+import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 
 export function MintHaiVeloActions() {
     const { 
@@ -40,6 +41,7 @@ export function MintHaiVeloActions() {
     } = useHaiVelo()
 
     const { tokensData } = useStoreState((state) => state.connectWalletModel)
+    const { prices } = useVelodromePrices()
     const { toggleModal } = useStoreActions((actions) => actions.popupsModel)
     const { address } = useAccount()
 
@@ -102,25 +104,26 @@ export function MintHaiVeloActions() {
         }))
     }, [veVeloNFTs])
 
-    // Get available balance for selected token
-    const getAvailableBalance = (token: 'VELO' | 'veVELO' | 'haiVELO_v1'): string => {
+    // Get available balance for selected token (raw string, not formatted)
+    const getAvailableBalanceRaw = (token: 'VELO' | 'veVELO' | 'haiVELO_v1'): string => {
         switch (token) {
             case 'VELO':
-                return formatNumberWithStyle(veloBalanceFormatted, {
-                    maxDecimals: 2,
-                })
+                return String(veloBalanceFormatted || '0')
             case 'veVELO':
                 // Calculate total from selected NFTs
                 const selectedNFTs = veVeloNFTs.filter(nft => selectedVeVeloNFTs.includes(nft.tokenId))
                 const totalBalance = selectedNFTs.reduce((sum, nft) => sum + parseFloat(nft.balanceFormatted), 0)
-                return formatNumberWithStyle(totalBalance, {
-                    maxDecimals: 2,
-                })
+                return String(totalBalance)
             case 'haiVELO_v1':
-                return formatNumberWithStyle(haiVeloV1BalanceFormatted, { maxDecimals: 2 })
+                return String(haiVeloV1BalanceFormatted || '0')
             default:
                 return '0.00'
         }
+    }
+
+    const getAvailableBalanceDisplay = (token: 'VELO' | 'veVELO' | 'haiVELO_v1'): string => {
+        const raw = Number((getAvailableBalanceRaw(token) || '0').toString())
+        return formatNumberWithStyle(raw, { maxDecimals: 2 })
     }
 
     // Button active if there is any amount selected across any token type
@@ -352,7 +355,7 @@ export function MintHaiVeloActions() {
                 ) : (
                     <NumberInput
                         label="Convert"
-                        subLabel={`Available: ${getAvailableBalance(selectedToken)} ${getTokenLabel(selectedToken)}`}
+                        subLabel={`Available: ${getAvailableBalanceDisplay(selectedToken)} ${getTokenLabel(selectedToken)}`}
                         placeholder="Amount to Convert"
                         unitLabel={getTokenLabel(selectedToken)}
                         onChange={(value: string) => {
@@ -361,20 +364,19 @@ export function MintHaiVeloActions() {
                         }}
                         value={selectedToken === 'VELO' ? convertAmountVelo : convertAmountHaiVeloV1}
                         onMax={() => {
-                            if (selectedToken === 'VELO') setConvertAmountVelo(getAvailableBalance(selectedToken))
-                            if (selectedToken === 'haiVELO_v1') setConvertAmountHaiVeloV1(getAvailableBalance(selectedToken))
+                            if (selectedToken === 'VELO') setConvertAmountVelo(getAvailableBalanceRaw(selectedToken))
+                            if (selectedToken === 'haiVELO_v1') setConvertAmountHaiVeloV1(getAvailableBalanceRaw(selectedToken))
                         }}
                         conversion={
-                            ((selectedToken === 'VELO' && Number((convertAmountVelo || '0').replace(/,/g, '')) > 0) ||
-                            (selectedToken === 'haiVELO_v1' &&
-                                Number((convertAmountHaiVeloV1 || '0').replace(/,/g, '')) > 0))
-                                ? `~${formatNumberWithStyle(
-                                      (selectedToken === 'VELO'
-                                          ? Number((convertAmountVelo || '0').replace(/,/g, ''))
-                                          : Number((convertAmountHaiVeloV1 || '0').replace(/,/g, ''))) * 1,
-                                      { style: 'currency' }
-                                  )}`
-                                : ''
+                            (() => {
+                                const rawAmt = selectedToken === 'VELO'
+                                    ? Number((convertAmountVelo || '0').replace(/,/g, ''))
+                                    : Number((convertAmountHaiVeloV1 || '0').replace(/,/g, ''))
+                                if (rawAmt <= 0) return ''
+                                const price = prices?.VELO?.raw ? Number(prices.VELO.raw) : 0
+                                const usd = rawAmt * (isFinite(price) ? price : 0)
+                                return `~${formatNumberWithStyle(usd, { style: 'currency' })}`
+                            })()
                         }
                     />
                 )}
@@ -389,12 +391,11 @@ export function MintHaiVeloActions() {
                     value={haiVeloReceivedDisplay}
                     disabled={true}
                     conversion={
-                        haiVeloReceivedTotalRaw > 0
-                            ? `~${formatNumberWithStyle(
-                                  haiVeloReceivedTotalRaw * 1, // Placeholder price
-                                  { style: 'currency' }
-                              )}`
-                            : ''
+                        (() => {
+                            const price = prices?.VELO?.raw ? Number(prices.VELO.raw) : 0
+                            const usd = haiVeloReceivedTotalRaw * (isFinite(price) ? price : 0)
+                            return haiVeloReceivedTotalRaw > 0 ? `~${formatNumberWithStyle(usd, { style: 'currency' })}` : ''
+                        })()
                     }
                 />
             </Body>

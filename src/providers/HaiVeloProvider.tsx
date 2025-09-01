@@ -45,6 +45,7 @@ type HaiVeloContextValue = {
     selectedVeVeloNFTs: string[]
     setSelectedVeVeloNFTs: (values: string[]) => void
     simulatedAmount: number
+    simulatedDepositAmount: number
     clearAll: () => void
 
     // balance data
@@ -111,6 +112,12 @@ export function HaiVeloProvider({ children }: { children: ReactNode }) {
         return veloAmt + haiVeloV1Amt + veVeloAmt
     }, [convertAmountVelo, convertAmountHaiVeloV1, selectedVeVeloNFTs, veNft.nfts])
 
+    // Include current haiVELO v2 wallet balance in the deposit simulation
+    const simulatedDepositAmount = useMemo(() => {
+        const v2Wallet = Number(data.haiVeloV2BalanceFormatted || '0')
+        return simulatedAmount + (isFinite(v2Wallet) ? v2Wallet : 0)
+    }, [simulatedAmount, data.haiVeloV2BalanceFormatted])
+
     const clearAll = () => {
         setConvertAmountVelo('')
         setConvertAmountHaiVeloV1('')
@@ -127,6 +134,7 @@ export function HaiVeloProvider({ children }: { children: ReactNode }) {
         selectedVeVeloNFTs,
         setSelectedVeVeloNFTs,
         simulatedAmount,
+        simulatedDepositAmount,
         clearAll,
         data,
     }

@@ -30,6 +30,7 @@ export function HaiVeloOverview() {
             haiVeloV2BalanceFormatted,
         },
         simulatedAmount,
+        simulatedDepositAmount,
     } = useHaiVelo()
 
     // Net Rewards APR (haiVELO vault): mirror calculation used in Overview.tsx
@@ -77,6 +78,11 @@ export function HaiVeloOverview() {
 
     // My haiVELO v2 in wallet (not deposited)
     const myHaiVeloV2Wallet = useMemo(() => Number(v2Balance?.formatted || '0'), [v2Balance?.formatted])
+
+    const simulatedMyHaiVeloV2Wallet = useMemo(() => {
+        if (!simulatedDepositAmount || simulatedDepositAmount <= 0) return undefined
+        return formatNumberWithStyle(simulatedDepositAmount, { maxDecimals: 2 })
+    }, [simulatedDepositAmount])
 
     // My deposit across all vaults (value): v2-only deposits * VELO price
     const myDepositValueUsd = useMemo(() => {
@@ -127,13 +133,13 @@ export function HaiVeloOverview() {
         const baseProgress = supplyQty > 0 ? Math.min(totalDepositedQty / supplyQty, 1) : 0
         const baseLabel = formatNumberWithStyle(baseProgress * 100, { style: 'percent', suffixed: true, maxDecimals: 2 })
 
-        const withSimQty = totalDepositedQty + (simulatedAmount > 0 ? simulatedAmount : 0)
+        const withSimQty = totalDepositedQty + (simulatedDepositAmount > 0 ? simulatedDepositAmount : 0)
         const simProgress = supplyQty > 0 ? Math.min(withSimQty / supplyQty, 1) : 0
 
         return {
             progress: { progress: baseProgress, label: baseLabel },
             simulatedProgress:
-                simulatedAmount > 0
+                simulatedDepositAmount > 0
                     ? {
                           progress: simProgress,
                           label: `${(simProgress * 100).toFixed(1)}% After Tx`,
@@ -142,7 +148,7 @@ export function HaiVeloOverview() {
             colorLimits: [0, 0.5, 1] as [number, number, number],
             labels: [],
         }
-    }, [v2Safes, v2Supply, simulatedAmount])
+    }, [v2Safes, v2Supply, simulatedDepositAmount])
 
     // Simulated first section (My VELO, veVELO, haiVELO v1): current - simulatedAmount
     const simulatedMyTotalVelo = useMemo(() => {
@@ -196,6 +202,7 @@ export function HaiVeloOverview() {
                     token="HAIVELO"
                     label="My haiVELO v2 In Wallet"
                     convertedValue={formatNumberWithStyle(myHaiVeloV2Wallet * veloPrice, { style: 'currency' })}
+                    simulatedValue={simulatedMyHaiVeloV2Wallet}
                     labelOnTop
                 />
 
