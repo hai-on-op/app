@@ -181,7 +181,8 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                             <HeaderLink
                                                 $active={
                                                     location.pathname.startsWith('/vaults') &&
-                                                    !location.pathname.includes('explore')
+                                                    !location.pathname.includes('explore') &&
+                                                    !isHaiVeloRoute
                                                 }
                                             >
                                                 GET HAI
@@ -213,7 +214,9 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                 showWrapEth={() => setWrapEthActive(true)}
                             />
                         )}
-                        <MusicButton />
+                        <VisuallyHidden>
+                            <MusicButton id="music-toggle-button" />
+                        </VisuallyHidden>
                         {isSplash ? (
                             <Link href="/vaults" $textDecoration="none">
                                 <HaiButton $variant="yellowish">
@@ -379,4 +382,12 @@ const RightSide = styled(CenteredFlex)`
     ${({ theme }) => theme.mediaWidth.upToExtraSmall`
         gap: 12px;
     `}
+`
+
+const VisuallyHidden = styled.div`
+    position: absolute;
+    width: 0px;
+    height: 0px;
+    overflow: hidden;
+    opacity: 0;
 `

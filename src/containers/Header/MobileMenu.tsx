@@ -15,6 +15,7 @@ import {
     NETWORK_ID,
 } from '~/utils'
 import { useEffects } from '~/providers/EffectsProvider'
+import { useStoreState } from '~/store'
 import { useMediaQuery, useOutsideClick } from '~/hooks'
 
 import styled from 'styled-components'
@@ -44,6 +45,7 @@ import { Telegram } from '~/components/Icons/Telegram'
 import { Discord } from '~/components/Icons/Discord'
 import { HaiFace } from '~/components/Icons/HaiFace'
 import { Caret } from '~/components/Icons/Caret'
+import { Sound } from '~/components/Icons/Sound'
 
 type MobileMenuProps = {
     active: boolean
@@ -52,12 +54,17 @@ type MobileMenuProps = {
 }
 export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) {
     const { toggleScreensaver } = useEffects()
+    const {
+        settingsModel: { isPlayingMusic },
+    } = useStoreState((s) => s)
 
     const isUpToSmall = useMediaQuery('upToSmall')
     const isUpToMedium = useMediaQuery('upToMedium')
     const isUpToLarge = useMediaQuery('upToLarge')
 
     const { isConnected } = useAccount()
+    const isHaiVeloRoute =
+        location.pathname === '/vaults/open' && new URLSearchParams(location.search).get('collateral') === 'HAIVELO'
 
     const [button, setButton] = useState<HTMLElement | null>(null)
 
@@ -91,10 +98,18 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
                                     icon={<Database size={18} />}
                                     active={
                                         location.pathname.startsWith('/vaults') &&
-                                        !location.pathname.includes('explore')
+                                        !location.pathname.includes('explore') &&
+                                        !isHaiVeloRoute
                                     }
                                 >
                                     Get HAI
+                                </BrandedDropdown.Item>
+                                <BrandedDropdown.Item
+                                    href="/vaults/open?collateral=HAIVELO"
+                                    icon={<Database size={18} />}
+                                    active={isHaiVeloRoute}
+                                >
+                                    haiVELO
                                 </BrandedDropdown.Item>
                                 <BrandedDropdown.Item
                                     href="/earn"
@@ -167,6 +182,15 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
                         )}
                         <BrandedDropdown.Item onClick={showWrapEth} icon={<Repeat size={18} />}>
                             Wrap ETH
+                        </BrandedDropdown.Item>
+                        <BrandedDropdown.Item
+                            onClick={() => {
+                                const btn = document.getElementById('music-toggle-button')
+                                if (btn) btn.click()
+                            }}
+                            icon={<Sound muted={!isPlayingMusic} size={18} />}
+                        >
+                            {isPlayingMusic ? 'Pause Music' : 'Play Music'}
                         </BrandedDropdown.Item>
                         <BrandedDropdown.Item
                             href={`${LINK_TO_DOCS}detailed/intro/hai.html`}

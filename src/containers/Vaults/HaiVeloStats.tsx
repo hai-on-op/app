@@ -54,7 +54,7 @@ export function HaiVeloStats() {
     const stats: StatProps[] = [
         {
             header: loading ? '...' : tvlFormatted,
-            label: 'haiVELO TVL',
+            label: 'veVELO TVL',
         },
         {
             header: loading ? '...' : debtCapacityFormatted,
