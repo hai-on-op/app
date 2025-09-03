@@ -212,13 +212,20 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
                 </Text>
                 {stats}
                 {children}
-                {haiVeloEnabled && (
-                    <>
-                        {wrappers.map((wrapper, i) => (
-                            <WrapperAd key={i} bgVariant={i} {...wrapper} />
-                        ))}
-                    </>
-                )}
+                {(() => {
+                    // Hide haiVELO banner while on haiVELO routes
+                    const isHaiVeloRoute =
+                        location.pathname.startsWith('/vaults') &&
+                        new URLSearchParams(location.search).get('collateral') === 'HAIVELO'
+
+                    return haiVeloEnabled && !isHaiVeloRoute ? (
+                        <>
+                            {wrappers.map((wrapper, i) => (
+                                <WrapperAd key={i} bgVariant={i} {...wrapper} />
+                            ))}
+                        </>
+                    ) : null
+                })()}
             </Inner>
         </Container>
     )
