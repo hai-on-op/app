@@ -217,8 +217,8 @@ class YieldBearingAPRCalculator implements IUnderlyingAPRCalculator {
             // For HAI VELO, get the APR from the deposit strategy calculation
             if (data.collateralType.toUpperCase() === 'HAIVELO') {
 
-                let baseAPR = 0.05 // Default fallback
-                let userBoost = 1 // Default boost
+                let baseAPR = 0.05 // Default fallback (decimal)
+                let userBoost = 1 // Default boost multiplier
 
                 try {
                     // Get the HAI VELO daily reward (centralized helper)
@@ -240,18 +240,15 @@ class YieldBearingAPRCalculator implements IUnderlyingAPRCalculator {
                     const haiVeloBoostApr = data.externalProtocolData?.haiVeloBoostApr
                     const actualTVL = haiVeloBoostApr?.totalBoostedValueParticipating || 1000000 // Fallback to $1M
 
-                    // Calculate base APR using the exact same formula as useStrategyData:
-                    // (haiVeloDailyRewardValue / totalHaiVeloBoostedValueParticipating) * 365 * 100
-                    // But convert to decimal by dividing by 100 (like in useEarnStrategies line 261)
+                    // Calculate base APR using the same formula as strategy data, but return BASE only:
+                    // baseAPR (decimal) = (dailyRewardValue / totalBoostedValueParticipating) * 365
                     const baseAPRPercentage = actualTVL > 0 ? (haiVeloDailyRewardValue / actualTVL) * 365 * 100 : 0
                     const baseAPRDecimal = baseAPRPercentage / 100 // Convert percentage to decimal
-                    
-                    // For underlying APR, we want the boosted deposit strategy APR, not the base APR
-                    // Get the user's boost multiplier from the boost APR data
+
+                    // Keep user's boost for breakdown message only, do NOT apply to underlying APR
                     userBoost = haiVeloBoostApr?.myBoost || 1
-                    const userBoostedAPR = baseAPRDecimal * userBoost
-                    
-                    baseAPR = userBoostedAPR
+
+                    baseAPR = baseAPRDecimal
                 } catch (error) {
                     console.error('🔥 Error calculating HAI VELO APR:', error)
                     baseAPR = 0.05 // Fallback to 5%
@@ -262,9 +259,9 @@ class YieldBearingAPRCalculator implements IUnderlyingAPRCalculator {
                     underlyingAPR: baseAPR,
                     breakdown: [
                         {
-                            source: 'HAI VELO Deposit Strategy (Boosted)',
+                            source: 'HAI VELO Deposit Strategy (Base)',
                             apr: baseAPR,
-                            description: `Boosted yield from HAI VELO deposit strategy (${userBoost?.toFixed(2)}x boost)`
+                            description: `Base yield before boost; your boost is ~${userBoost?.toFixed(2)}x`
                         }
                     ],
                     lastUpdated: new Date()
