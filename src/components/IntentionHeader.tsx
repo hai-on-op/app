@@ -140,8 +140,8 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
                 case '/vaults':
                 case '/vaults/manage':
                 case '/vaults/open':
-                    // If opening haiVELO collateral, show special haiVELO stats
-                    if (new URLSearchParams(location.search).get('collateral') === 'HAIVELO') {
+                    // If opening haiVELO(v2) collateral, show special haiVELO stats
+                    if (['HAIVELO', 'HAIVELOV2'].includes(new URLSearchParams(location.search).get('collateral') || '')) {
                         return {
                             type: Intention.BORROW,
                             stats: <HaiVeloStats />,
@@ -161,8 +161,8 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
         // Always include a dedicated haiVELO option (do not replace existing Get $HAI)
         const haiVeloOption: BrandedSelectOption = {
             label: 'Get haiVELO',
-            value: 'vaults/open?collateral=HAIVELO',
-            icon: ['HAIVELO'],
+            value: 'vaults/open?collateral=HAIVELOV2',
+            icon: ['HAIVELOV2'],
             description: 'Convert VELO into haiVELO and mint against it',
         }
 
@@ -179,7 +179,7 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
     if (!type) return null
 
     const isHaiVeloOpen =
-        location.pathname === '/vaults/open' && new URLSearchParams(location.search).get('collateral') === 'HAIVELO'
+        location.pathname === '/vaults/open' && ['HAIVELO', 'HAIVELOV2'].includes(new URLSearchParams(location.search).get('collateral') || '')
 
     const baseCopy = copy[type]
     const subtitle = isHaiVeloOpen
@@ -187,7 +187,7 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
         : baseCopy.subtitle
     const { cta, ctaLink } = baseCopy
 
-    const selectedValue = isHaiVeloOpen ? 'vaults/open?collateral=HAIVELO' : (type as unknown as string)
+    const selectedValue = isHaiVeloOpen ? 'vaults/open?collateral=HAIVELOV2' : (type as unknown as string)
 
     return (
         <Container>
@@ -216,7 +216,7 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
                     // Hide haiVELO banner while on haiVELO routes
                     const isHaiVeloRoute =
                         location.pathname.startsWith('/vaults') &&
-                        new URLSearchParams(location.search).get('collateral') === 'HAIVELO'
+                        ['HAIVELO', 'HAIVELOV2'].includes(new URLSearchParams(location.search).get('collateral') || '')
 
                     return haiVeloEnabled && !isHaiVeloRoute ? (
                         <>

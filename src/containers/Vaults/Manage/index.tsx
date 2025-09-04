@@ -6,7 +6,9 @@ import { useVault } from '~/providers/VaultProvider'
 import { useMediaQuery, useVaultById } from '~/hooks'
 
 import styled, { css } from 'styled-components'
-import { CenteredFlex, Flex, Grid } from '~/styles'
+import { CenteredFlex, Flex, Grid, HaiButton } from '~/styles'
+import { Link } from '~/components/Link'
+import { MigrateHaiVeloV2Modal } from '~/components/Modal/MigrateHaiVeloV2Modal'
 import { RewardsTokenArray } from '~/components/TokenArray'
 import { ProxyPrompt } from '~/components/ProxyPrompt'
 import { Overview } from './Overview'
@@ -27,6 +29,10 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
     const { action, vault, updateForm } = useVault()
 
     const isHAIVELO =
+        vault?.collateralName === 'HAIVELOV2' ||
+        new URLSearchParams(window.location.search).get('collateral') === 'HAIVELOV2'
+
+    const isHAIVELO_V1 =
         vault?.collateralName === 'HAIVELO' ||
         new URLSearchParams(window.location.search).get('collateral') === 'HAIVELO'
 
@@ -34,6 +40,7 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
 
     const isUpToExtraSmall = useMediaQuery('upToExtraSmall')
     const isUpToSmall = useMediaQuery('upToSmall')
+    const [showMigrate, setShowMigrate] = useState(false)
 
     // clear form inputs when unmounting
     useEffect(() => () => updateForm('clear'), [updateForm])
@@ -95,13 +102,23 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
             onSelect={setTab}
             stackHeader
             headerContent={
-                <Header $removePadding={action === VaultAction.CREATE}>
-                    {headerContent}
-                    <CenteredFlex $gap={12}>
-                        {isHAIVELO ? <RewardsTokenArray tokens={['HAI']} hideLabel={isUpToExtraSmall} /> : null}
-                        <ManageDropdown $width={isUpToSmall ? '100%' : undefined} />
-                    </CenteredFlex>
-                </Header>
+                <>
+                    <Header $removePadding={action === VaultAction.CREATE}>
+                        <Flex $align="center" $gap={8}>
+                            {headerContent}
+                            {isHAIVELO_V1 && (
+                                <HaiButton $variant="yellowish" onClick={() => setShowMigrate(true)}>
+                                    Migrate to haiVELO v2
+                                </HaiButton>
+                            )}
+                        </Flex>
+                        <CenteredFlex $gap={12}>
+                            {isHAIVELO ? <RewardsTokenArray tokens={['HAI']} hideLabel={isUpToExtraSmall} /> : null}
+                            <ManageDropdown $width={isUpToSmall ? '100%' : undefined} />
+                        </CenteredFlex>
+                    </Header>
+                    {showMigrate && <MigrateHaiVeloV2Modal onClose={() => setShowMigrate(false)} />}
+                </>
             }
         >
             {renderTabContent()}

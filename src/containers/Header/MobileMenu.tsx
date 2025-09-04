@@ -64,7 +64,7 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
 
     const { isConnected } = useAccount()
     const isHaiVeloRoute =
-        location.pathname === '/vaults/open' && new URLSearchParams(location.search).get('collateral') === 'HAIVELO'
+        location.pathname === '/vaults/open' && ['HAIVELO', 'HAIVELOV2'].includes(new URLSearchParams(location.search).get('collateral') || '')
 
     const [button, setButton] = useState<HTMLElement | null>(null)
 
@@ -105,7 +105,7 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
                                     Get HAI
                                 </BrandedDropdown.Item>
                                 <BrandedDropdown.Item
-                                    href="/vaults/open?collateral=HAIVELO"
+                                    href="/vaults/open?collateral=HAIVELOV2"
                                     icon={<Database size={18} />}
                                     active={isHaiVeloRoute}
                                 >
