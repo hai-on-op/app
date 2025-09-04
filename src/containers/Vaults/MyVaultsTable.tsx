@@ -60,7 +60,7 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                 } = vault
 
                 const hasFreeCollateral = freeCollateral !== '0.0'
-                const HAS_REWARDS = ['HAIVELO', 'ALETH', 'YV-VELO-ALETH-WETH']
+                const HAS_REWARDS = ['HAIVELO', 'HAIVELOV2', 'ALETH', 'YV-VELO-ALETH-WETH']
                 const collateralLabel = formatCollateralLabel(collateralName)
                 const tooltip =
                     collateralName === 'HAIVELO'
@@ -82,7 +82,7 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                                         </CenteredFlex>
                                         {HAS_REWARDS.includes(collateralName) && (
                                             <RewardsTokenArray
-                                                tokens={collateralName === 'HAIVELO' ? ['HAI', 'KITE'] : ['KITE']}
+                                                tokens={(collateralName === 'HAIVELO' || collateralName === 'HAIVELOV2') ? ['HAI', 'KITE'] : ['KITE']}
                                                 label="EARN"
                                                 tooltip={tooltip}
                                             />

@@ -69,6 +69,7 @@ export const TOKEN_LOGOS = {
     PXETH: pxethImg,
     ALETH: alethImg,
     HAIVELO: haiVeloImg,
+    HAIVELOV2: haiVeloImg,
     'YV-VELO-ALETH-WETH': yvVeloAlethWethImg,
     ALUSD: alusdImg,
 }
@@ -138,6 +139,11 @@ export const tokenAssets: Record<string, Token> = {
     HAIVELO: {
         symbol: 'HAIVELO',
         name: 'HAIVELO',
+        icon: haiVeloImg,
+    },
+    HAIVELOV2: {
+        symbol: 'HAIVELOV2',
+        name: 'HAIVELOV2',
         icon: haiVeloImg,
     },
     APXETH: {

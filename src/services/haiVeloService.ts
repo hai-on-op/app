@@ -35,7 +35,7 @@ import type {
  */
 export const VELO_TOKEN_ADDRESS: `0x${string}` = '0x9560e827aF36c94D2Ac33a39bCE1Fe78631088Db'
 export const VE_NFT_CONTRACT_ADDRESS: `0x${string}` = '0xFAf8FD17D9840595845582fCB047DF13f006787d'
-export const HAI_VELO_V2_TOKEN_ADDRESS: `0x${string}` = '0xc00843e6e7574b2a633206f78fe95941c98652ab'
+export const HAI_VELO_V2_TOKEN_ADDRESS: `0x${string}` = '0x20A7EaF4a922DF50b312ef61AeA8B6E1deb5DdD6' // 0xc00843e6e7574b2a633206f78fe95941c98652ab
 
 // Reward distribution infra (currently v1 references)
 /**

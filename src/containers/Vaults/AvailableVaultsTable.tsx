@@ -53,10 +53,10 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                         eligibleBalance,
                         myVaults: existingVaults,
                     }) => {
-                        const rewardOverride = collateralName == 'HAIVELO'
+                        const rewardOverride = collateralName == 'HAIVELO' || collateralName == 'HAIVELOV2'
 
                         const tooltip =
-                            collateralName == 'HAIVELO'
+                            collateralName == 'HAIVELO' || collateralName == 'HAIVELOV2'
                                 ? 'haiVELO depositors receive rewards in HAI based off the rewards the protocol receives from voting on Velodrome propotional to their amount of haiVELO deposited.'
                                 : 'Earn OP by providing Liquitity'
                         return (
@@ -131,7 +131,7 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                                                 )}
                                                             </>
                                                         )}
-                                                        {collateralName === 'HAIVELO' && (
+                                                        {(collateralName === 'HAIVELO' || collateralName === 'HAIVELOV2') && (
                                                             <RewardsTokenArray
                                                                 tokens={['HAI', 'KITE']}
                                                                 label="EARN"
@@ -139,7 +139,7 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                                             />
                                                         )}
                                                         {/* Default behavior for other collaterals */}
-                                                        {!['ALETH', 'YV-VELO-ALETH-WETH', 'HAIVELO'].includes(
+                                                        {!['ALETH', 'YV-VELO-ALETH-WETH', 'HAIVELO', 'HAIVELOV2'].includes(
                                                             collateralName
                                                         ) && (
                                                             <RewardsTokenArray
