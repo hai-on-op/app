@@ -36,6 +36,8 @@ export function useAvailableVaults() {
         () =>
             Object.values(tokensData || {})
                 .filter(({ isCollateral }) => isCollateral)
+                // Hide haiVELO v1 from available list (no new v1 vaults)
+                .filter(({ symbol }) => symbol !== 'HAIVELO')
                 .map((collateral) => collateral),
         [tokensData]
     )

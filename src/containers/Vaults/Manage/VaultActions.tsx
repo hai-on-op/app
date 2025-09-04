@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { ActionState, VaultAction, formatNumberWithStyle } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
+import { useGeb } from '~/hooks'
+import { useAccount } from 'wagmi'
 import { useVault } from '~/providers/VaultProvider'
 import { formatCollateralLabel } from '~/utils'
 import styled from 'styled-components'
@@ -16,10 +18,13 @@ export function VaultActions() {
     const { vaultModel: vaultState } = useStoreState((state) => state)
     const {
         vaultModel: vaultActions,
+        connectWalletModel: connectWalletActions,
         popupsModel: { toggleModal },
     } = useStoreActions((actions) => actions)
 
     const { vault, action, setAction, formState, updateForm, collateral, debt, summary, error } = useVault()
+    const geb = useGeb()
+    const { address } = useAccount()
 
     const isWithdraw = action === VaultAction.WITHDRAW_REPAY || action === VaultAction.WITHDRAW_BORROW
     const isRepay = action === VaultAction.WITHDRAW_REPAY || action === VaultAction.DEPOSIT_REPAY
@@ -38,6 +43,15 @@ export function VaultActions() {
             isOpen: wrapEthActive,
         })
     }, [wrapEthActive, toggleModal])
+
+    // Ensure balances are fresh when switching to Create tab (e.g., after migrating haiVELO v2)
+    useEffect(() => {
+        if (action === VaultAction.CREATE && address) {
+            try {
+                connectWalletActions.fetchTokenData({ geb, user: address })
+            } catch {}
+        }
+    }, [action, collateral.name, address])
 
     const [buttonActive, buttonLabel] = useMemo(() => {
         let label = ''

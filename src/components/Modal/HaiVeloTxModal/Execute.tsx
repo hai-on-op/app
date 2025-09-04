@@ -5,6 +5,7 @@ import { useAccount } from 'wagmi'
 import { useStoreActions } from '~/store'
 import { ActionState, formatNumberWithStyle } from '~/utils'
 import { useContract } from '~/hooks/useContract'
+import { useGeb } from '~/hooks'
 
 import HAI_VELO_V2_ABI from '~/abis/haiVELO_v2.json'
 import { HAI_VELO_V2_TOKEN_ADDRESS } from '~/services/haiVeloService'
@@ -16,6 +17,7 @@ import { ArrowRightCircle, Check } from 'react-feather'
 import { Loader } from '~/components/Loader'
 import { TransactionSummary } from '~/components/TransactionSummary'
 import { useHaiVelo } from '~/providers/HaiVeloProvider'
+import { useVault } from '~/providers/VaultProvider'
 
 type ExecutionPlan = {
     depositVeloWei?: string
@@ -37,7 +39,8 @@ type Props = {
 
 export function Execute({ plan, onDone, onStepDone }: Props) {
     const { address } = useAccount()
-    const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
+    const { popupsModel: popupsActions, connectWalletModel: connectWalletActions } = useStoreActions((actions) => actions)
+    const geb = useGeb()
     const {
         data: {
             veloBalanceFormatted,
@@ -51,6 +54,7 @@ export function Execute({ plan, onDone, onStepDone }: Props) {
 
     const CONTRACT_ADDRESS = HAI_VELO_V2_TOKEN_ADDRESS
     const contract = useContract(CONTRACT_ADDRESS, HAI_VELO_V2_ABI as any, true)
+    const { refreshVault } = useVault()
 
     const [currentIndex, setCurrentIndex] = useState(0)
     const [pending, setPending] = useState(false)
@@ -129,7 +133,10 @@ export function Execute({ plan, onDone, onStepDone }: Props) {
             if (hasClosedRef.current) return
 
             setDone((d) => ({ ...d, [step.key]: true }))
+            // Refresh haiVELO provider balances (v2 etc.)
             await refetch()
+            // Also refresh VaultProvider collateral balances (and tokens) for the Create tab
+            await refreshVault()
             if (hasClosedRef.current) return
 
             onStepDone(step.key)
