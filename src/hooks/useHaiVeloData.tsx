@@ -113,7 +113,7 @@ export function useHaiVeloData(): HaiVeloData {
     const { address } = useAccount()
     //const address = '0x328cace41eadf6df6e693b8e4810bf97aac4f5ee'
 
-    // Query the GraphQL API for HAIVELO collateral data
+    // Query the GraphQL API for HAIVELO collateral data (v1)
     const { data, loading, error } = useQuery<HaiVeloCollateralData>(HAIVELO_COLLATERAL_QUERY, {
         variables: {
             collateralTypeId: 'HAIVELO',
@@ -121,7 +121,19 @@ export function useHaiVeloData(): HaiVeloData {
         fetchPolicy: 'cache-and-network',
     })
 
-    // Query user's HAIVELO safes if address is available
+    // Query the GraphQL API for HAIVELO v2 collateral data
+    const {
+        data: dataV2,
+        loading: loadingV2,
+        error: errorV2,
+    } = useQuery<HaiVeloCollateralData>(HAIVELO_COLLATERAL_QUERY, {
+        variables: {
+            collateralTypeId: 'HAIVELOV2',
+        },
+        fetchPolicy: 'cache-and-network',
+    })
+
+    // Query user's HAIVELO safes if address is available (v1)
     const { data: userSafesData, loading: userSafesLoading } = useQuery<UserSafesData>(USER_SAFES_QUERY, {
         variables: {
             collateralTypeId: 'HAIVELO',
@@ -131,7 +143,20 @@ export function useHaiVeloData(): HaiVeloData {
         fetchPolicy: 'cache-and-network',
     })
 
-    // Query all HAIVELO safes
+    // Query user's HAIVELO v2 safes if address is available
+    const {
+        data: userSafesDataV2,
+        loading: userSafesLoadingV2,
+    } = useQuery<UserSafesData>(USER_SAFES_QUERY, {
+        variables: {
+            collateralTypeId: 'HAIVELOV2',
+            ownerId: address?.toLowerCase() || '',
+        },
+        skip: !address,
+        fetchPolicy: 'cache-and-network',
+    })
+
+    // Query all HAIVELO safes (v1)
     const { data: allSafesData, loading: allSafesLoading } = useQuery<AllSafesData>(ALL_SAFES_QUERY, {
         variables: {
             collateralTypeId: 'HAIVELO',
@@ -139,9 +164,17 @@ export function useHaiVeloData(): HaiVeloData {
         fetchPolicy: 'cache-and-network',
     })
 
+    // Query all HAIVELO v2 safes
+    const { data: allSafesDataV2, loading: allSafesLoadingV2 } = useQuery<AllSafesData>(ALL_SAFES_QUERY, {
+        variables: {
+            collateralTypeId: 'HAIVELOV2',
+        },
+        fetchPolicy: 'cache-and-network',
+    })
+
     // Format and extract the data using useMemo to prevent unnecessary recalculations
     const formattedData = useMemo(() => {
-        if (!data) {
+        if (!data && !dataV2) {
             return {
                 totalHaiVELODeposited: '0',
                 userHaiVELODeposited: '0',
@@ -149,8 +182,10 @@ export function useHaiVeloData(): HaiVeloData {
             }
         }
 
-        // Extract the total collateral amount
-        const { totalCollateral } = data.collateralType
+        // Extract total collateral amounts (v1 and v2)
+        const totalCollateralV1 = parseFloat(data?.collateralType.totalCollateral || '0')
+        const totalCollateralV2 = parseFloat(dataV2?.collateralType.totalCollateral || '0')
+        const combinedTotalCollateral = (totalCollateralV1 + totalCollateralV2).toString()
 
         // Format the values for display
         // const formattedTotal = formatSummaryValue(totalCollateral, {
@@ -159,53 +194,55 @@ export function useHaiVeloData(): HaiVeloData {
 
         // Calculate user's total HAIVELO deposits if user data is available
         let userDeposited = '0'
-        if (userSafesData?.safes && userSafesData.safes.length > 0) {
-            // Sum up all collateral from user's safes
-            const totalUserCollateral = userSafesData.safes
-                .reduce((total, safe) => total + parseFloat(safe.collateral), 0)
-                .toString()
-
-            // // Format user's total
-            // const formattedUserTotal = formatSummaryValue(totalUserCollateral, {
-            //   maxDecimals: 2
-            // }) || { formatted: '0' }
-
-            // userDeposited = formattedUserTotal.formatted
-            userDeposited = totalUserCollateral
-        }
+        const userCollateralV1 = (userSafesData?.safes || []).reduce(
+            (total, safe) => total + parseFloat(safe.collateral),
+            0
+        )
+        const userCollateralV2 = (userSafesDataV2?.safes || []).reduce(
+            (total, safe) => total + parseFloat(safe.collateral),
+            0
+        )
+        userDeposited = (userCollateralV1 + userCollateralV2).toString()
 
         // Create mapping of user addresses to their collateral amounts
         const userCollateralMapping: UserCollateralMapping = {}
 
-        if (allSafesData?.safes && allSafesData.safes.length > 0) {
-            // Group safes by owner address and sum their collateral
-            allSafesData.safes.forEach((safe) => {
+        const addToMapping = (safes?: UserSafe[]) => {
+            if (!safes || safes.length === 0) return
+            safes.forEach((safe) => {
                 const ownerAddress = safe.owner.address.toLowerCase()
                 const collateralAmount = parseFloat(safe.collateral)
-
                 if (userCollateralMapping[ownerAddress]) {
-                    // Add to existing collateral for this user
                     userCollateralMapping[ownerAddress] = (
                         parseFloat(userCollateralMapping[ownerAddress]) + collateralAmount
                     ).toString()
                 } else {
-                    // First safe for this user
                     userCollateralMapping[ownerAddress] = collateralAmount.toString()
                 }
             })
         }
 
+        // Group safes by owner address and sum their collateral across v1 and v2
+        addToMapping(allSafesData?.safes)
+        addToMapping(allSafesDataV2?.safes)
+
         return {
-            totalHaiVELODeposited: totalCollateral || '0',
+            totalHaiVELODeposited: combinedTotalCollateral || '0',
             userHaiVELODeposited: userDeposited || '0',
             userCollateralMapping,
         }
-    }, [data, userSafesData, allSafesData])
+    }, [data, dataV2, userSafesData, userSafesDataV2, allSafesData, allSafesDataV2])
 
     // Return the data object with loading and error states
     return {
-        loading: loading || userSafesLoading || allSafesLoading,
-        error,
+        loading:
+            loading ||
+            userSafesLoading ||
+            allSafesLoading ||
+            loadingV2 ||
+            userSafesLoadingV2 ||
+            allSafesLoadingV2,
+        error: error || errorV2,
         data,
         ...formattedData,
     }

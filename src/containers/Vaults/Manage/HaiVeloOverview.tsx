@@ -35,7 +35,7 @@ export function HaiVeloOverview() {
 
     // Net Rewards APR (haiVELO vault): mirror calculation used in Overview.tsx
     const { individualVaultBoosts } = useBoost()
-    const haiVeloBoostData = individualVaultBoosts['HAIVELO']
+    const haiVeloBoostData = individualVaultBoosts['HAIVELOV2'] || individualVaultBoosts['HAIVELO']
     const { underlyingAPR } = useUnderlyingAPR({ collateralType: 'HAIVELO' })
     const { vaultModel } = useStoreState((state) => state)
     const haiveloLiqData = vaultModel?.liquidationData?.collateralLiquidationData?.['HAIVELO']
@@ -63,7 +63,7 @@ export function HaiVeloOverview() {
     const { v1Balance, v2Balance, velo, veNft } = useHaiVeloAccount(address || undefined)
     const { data: v2Safes } = useQuery({
         queryKey: ['haivelo', 'v2', 'safes-summary'],
-        queryFn: async () => fetchV2Safes('HAIVELO_V2'),
+        queryFn: async () => fetchV2Safes('HAIVELOV2'),
         staleTime: 5 * 60 * 1000,
         refetchInterval: 5 * 60 * 1000,
     })
@@ -218,7 +218,7 @@ export function HaiVeloOverview() {
                     tooltip="Total value of all haiVELO v2 deposited as collateral"
                 />
                 <OverviewStat
-                    value={formatNumberWithStyle(haiVeloBoostData?.myBoostedAPR || 0, {
+                    value={formatNumberWithStyle((haiVeloBoostData?.myBoostedAPR || 0) / 100, {
                         style: 'percent',
                         maxDecimals: 2,
                     })}

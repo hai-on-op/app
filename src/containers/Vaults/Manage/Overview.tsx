@@ -369,133 +369,178 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
                         tooltip={`Minimum collateral ratio below which, this vault is at risk of being liquidated`}
                     />
                 )}
-                
+
                 {/* Calculate Net APR: (underlying APR + minting incentives APR) - stability fee */}
                 {(() => {
                     const { underlyingAPR } = useUnderlyingAPR({ collateralType: collateral.name })
-                    const mintingIncentivesAPR = boostData?.myBoostedAPR ? boostData.myBoostedAPR / 100 : 0;
-                    const stabilityFeeCost = -parseFloat(summary.stabilityFee.raw || '0'); // Use raw value directly as negative cost
-                    
-                    let netAPR: number = 0;
-                    let calculationMethod: string = '';
-                    let simulatedNetAPR: number | undefined = undefined;
-                    
+                    const mintingIncentivesAPR = boostData?.myBoostedAPR ? boostData.myBoostedAPR / 100 : 0
+                    const stabilityFeeCost = -parseFloat(summary.stabilityFee.raw || '0') // Use raw value directly as negative cost
+
+                    let netAPR: number = 0
+                    let calculationMethod: string = ''
+                    let simulatedNetAPR: number | undefined = undefined
+
                     // For new vaults, check if user has input actual values
                     if (action === VaultAction.CREATE || !vault?.id) {
                         // Check if user has entered actual deposit and borrow amounts
-                        const hasUserInputs = formState.deposit && formState.borrow && 
-                                             Number(formState.deposit) > 0 && Number(formState.borrow) > 0;
-                        
+                        const hasUserInputs =
+                            formState.deposit &&
+                            formState.borrow &&
+                            Number(formState.deposit) > 0 &&
+                            Number(formState.borrow) > 0
+
                         if (hasUserInputs) {
                             // Use actual user inputs to calculate Net APR
-                            const collateralUsdValue = parseFloat(summary.collateral.after?.usdFormatted?.replace(/[$,]/g, '') || '0');
-                            const debtUsdValue = parseFloat(summary.debt.after?.usdFormatted?.replace(/[$,]/g, '') || '0');
-                            
+                            const collateralUsdValue = parseFloat(
+                                summary.collateral.after?.usdFormatted?.replace(/[$,]/g, '') || '0'
+                            )
+                            const debtUsdValue = parseFloat(
+                                summary.debt.after?.usdFormatted?.replace(/[$,]/g, '') || '0'
+                            )
+
                             if (collateralUsdValue > 0) {
                                 // Collateral side: earns underlying APR
-                                const collateralYield = collateralUsdValue * underlyingAPR;
-                                
+                                const collateralYield = collateralUsdValue * underlyingAPR
+
                                 // Debt side: earns minting incentives but pays stability fee
-                                const debtNetAPR = mintingIncentivesAPR + stabilityFeeCost;
-                                const debtNetYield = debtUsdValue * debtNetAPR;
-                                
+                                const debtNetAPR = mintingIncentivesAPR + stabilityFeeCost
+                                const debtNetYield = debtUsdValue * debtNetAPR
+
                                 // Total annual yield from the position
-                                const totalYield = collateralYield + debtNetYield;
-                                
+                                const totalYield = collateralYield + debtNetYield
+
                                 // Net APR based on collateral value (what user is risking)
-                                netAPR = totalYield / collateralUsdValue;
-                                calculationMethod = `Based on your inputs - Collateral yield: $${collateralYield.toFixed(2)}/year + Debt net yield: $${debtNetYield.toFixed(2)}/year = $${totalYield.toFixed(2)}/year on $${collateralUsdValue.toLocaleString()} collateral`;
+                                netAPR = totalYield / collateralUsdValue
+                                calculationMethod = `Based on your inputs - Collateral yield: $${collateralYield.toFixed(
+                                    2
+                                )}/year + Debt net yield: $${debtNetYield.toFixed(2)}/year = $${totalYield.toFixed(
+                                    2
+                                )}/year on $${collateralUsdValue.toLocaleString()} collateral`
                             } else {
                                 // Fallback to simple addition if no USD values available
-                                netAPR = underlyingAPR + mintingIncentivesAPR + stabilityFeeCost;
-                                calculationMethod = 'Simple addition (fallback)';
+                                netAPR = underlyingAPR + mintingIncentivesAPR + stabilityFeeCost
+                                calculationMethod = 'Simple addition (fallback)'
                             }
                         } else {
                             // No user inputs yet, use assumed typical ratio
-                            const assumedCollateralRatio = 2.0; // 200%
-                            const assumedCollateralValue = assumedCollateralRatio; // e.g., $2
-                            const assumedDebtValue = 1; // e.g., $1
-                            
+                            const assumedCollateralRatio = 2.0 // 200%
+                            const assumedCollateralValue = assumedCollateralRatio // e.g., $2
+                            const assumedDebtValue = 1 // e.g., $1
+
                             // Calculate yields based on assumed position
-                            const collateralYield = assumedCollateralValue * underlyingAPR;
-                            const debtNetAPR = mintingIncentivesAPR + stabilityFeeCost;
-                            const debtNetYield = assumedDebtValue * debtNetAPR;
-                            const totalYield = collateralYield + debtNetYield;
-                            
+                            const collateralYield = assumedCollateralValue * underlyingAPR
+                            const debtNetAPR = mintingIncentivesAPR + stabilityFeeCost
+                            const debtNetYield = assumedDebtValue * debtNetAPR
+                            const totalYield = collateralYield + debtNetYield
+
                             // Net APR based on collateral (what user invests)
-                            netAPR = totalYield / assumedCollateralValue;
-                            calculationMethod = `Estimated for 200% collateral ratio: $${collateralYield.toFixed(2)} collateral yield + $${debtNetYield.toFixed(2)} debt net yield = $${totalYield.toFixed(2)} per $${assumedCollateralValue} collateral`;
+                            netAPR = totalYield / assumedCollateralValue
+                            calculationMethod = `Estimated for 200% collateral ratio: $${collateralYield.toFixed(
+                                2
+                            )} collateral yield + $${debtNetYield.toFixed(2)} debt net yield = $${totalYield.toFixed(
+                                2
+                            )} per $${assumedCollateralValue} collateral`
                         }
                     } else {
                         // For existing vaults, use weighted average based on USD values
-                        const collateralUsdValue = parseFloat(summary.collateral.current?.usdFormatted?.replace(/[$,]/g, '') || '0');
-                        const debtUsdValue = parseFloat(summary.debt.current?.usdFormatted?.replace(/[$,]/g, '') || '0');
+                        const collateralUsdValue = parseFloat(
+                            summary.collateral.current?.usdFormatted?.replace(/[$,]/g, '') || '0'
+                        )
+                        const debtUsdValue = parseFloat(summary.debt.current?.usdFormatted?.replace(/[$,]/g, '') || '0')
                         if (collateralUsdValue > 0) {
                             // Collateral side: earns underlying APR
-                            const collateralYield = collateralUsdValue * underlyingAPR;
-                            
+                            const collateralYield = collateralUsdValue * underlyingAPR
+
                             // Debt side: earns minting incentives but pays stability fee
-                            const debtNetAPR = mintingIncentivesAPR + stabilityFeeCost; // Note: stabilityFeeCost is already negative
-                            const debtNetYield = debtUsdValue * debtNetAPR;
-                            
+                            const debtNetAPR = mintingIncentivesAPR + stabilityFeeCost // Note: stabilityFeeCost is already negative
+                            const debtNetYield = debtUsdValue * debtNetAPR
+
                             // Total annual yield from the position
-                            const totalYield = collateralYield + debtNetYield;
-                            
+                            const totalYield = collateralYield + debtNetYield
+
                             // Net APR based on collateral value (what user is risking)
-                            netAPR = totalYield / collateralUsdValue;
-                            calculationMethod = `Collateral yield: $${collateralYield.toFixed(2)}/year + Debt net yield: $${debtNetYield.toFixed(2)}/year = $${totalYield.toFixed(2)}/year on $${collateralUsdValue.toLocaleString()} collateral`;
-                            
+                            netAPR = totalYield / collateralUsdValue
+                            calculationMethod = `Collateral yield: $${collateralYield.toFixed(
+                                2
+                            )}/year + Debt net yield: $${debtNetYield.toFixed(2)}/year = $${totalYield.toFixed(
+                                2
+                            )}/year on $${collateralUsdValue.toLocaleString()} collateral`
+
                             // Calculate simulated Net APR if there's an active simulation
                             if (simulation && (simulation.collateral || simulation.debt)) {
                                 // Calculate simulated USD values after the transaction
-                                const simulatedCollateralUsdValue = parseFloat(summary.collateral.after?.usdFormatted?.replace(/[$,]/g, '') || '0');
-                                const simulatedDebtUsdValue = parseFloat(summary.debt.after?.usdFormatted?.replace(/[$,]/g, '') || '0');
-                                
+                                const simulatedCollateralUsdValue = parseFloat(
+                                    summary.collateral.after?.usdFormatted?.replace(/[$,]/g, '') || '0'
+                                )
+                                const simulatedDebtUsdValue = parseFloat(
+                                    summary.debt.after?.usdFormatted?.replace(/[$,]/g, '') || '0'
+                                )
+
                                 if (simulatedCollateralUsdValue > 0) {
                                     // For simulation, the amounts affect the net APR calculation but not the individual APR percentages
                                     // The underlying APR doesn't change based on amount (it's a percentage)
-                                    // The minting incentives APR also doesn't change based on amount (it's a percentage) 
+                                    // The minting incentives APR also doesn't change based on amount (it's a percentage)
                                     // What changes is the weighted calculation based on new collateral and debt amounts
-                                    
-                                    const simulatedCollateralYield = simulatedCollateralUsdValue * underlyingAPR;
-                                    const simulatedDebtNetYield = simulatedDebtUsdValue * debtNetAPR;
-                                    const simulatedTotalYield = simulatedCollateralYield + simulatedDebtNetYield;
-                                    
-                                    simulatedNetAPR = simulatedTotalYield / simulatedCollateralUsdValue;
+
+                                    const simulatedCollateralYield = simulatedCollateralUsdValue * underlyingAPR
+                                    const simulatedDebtNetYield = simulatedDebtUsdValue * debtNetAPR
+                                    const simulatedTotalYield = simulatedCollateralYield + simulatedDebtNetYield
+
+                                    simulatedNetAPR = simulatedTotalYield / simulatedCollateralUsdValue
                                 }
                             }
                         } else {
                             // Fallback to simple addition if no position values
-                            netAPR = underlyingAPR + mintingIncentivesAPR + stabilityFeeCost;
-                            calculationMethod = 'Simple addition (fallback)';
+                            netAPR = underlyingAPR + mintingIncentivesAPR + stabilityFeeCost
+                            calculationMethod = 'Simple addition (fallback)'
                         }
                     }
-                    
+
                     // Check if this collateral type should show Net APR (has underlying yield or minting incentives)
-                    const hasUnderlyingYield = underlyingAPR > 0;
-                    const hasMintingIncentives = mintingIncentivesAPR > 0;
-                    const shouldShowNetAPR = hasUnderlyingYield || hasMintingIncentives;
-                    
+                    const hasUnderlyingYield = underlyingAPR > 0
+                    const hasMintingIncentives = mintingIncentivesAPR > 0
+                    const shouldShowNetAPR = hasUnderlyingYield || hasMintingIncentives
+
                     const tooltipText = shouldShowNetAPR ? (
                         <Flex $column $gap={4}>
-                            <Text>Underlying APR: {formatNumberWithStyle(underlyingAPR, { style: 'percent', maxDecimals: 2 })}</Text>
-                            <Text>Minting Incentives: {formatNumberWithStyle(mintingIncentivesAPR, { style: 'percent', maxDecimals: 2 })}</Text>
-                            <Text>Stability Fee Cost: {formatNumberWithStyle(stabilityFeeCost, { style: 'percent', maxDecimals: 2 })}</Text>
-                            <Text $fontWeight={700}>Net APR: {formatNumberWithStyle(netAPR, { style: 'percent', maxDecimals: 2 })}</Text>
-                            <Text $fontSize="12px" $color="black">Net APR is expressed in terms of your collateral value.</Text>
+                            <Text>
+                                Underlying APR:{' '}
+                                {formatNumberWithStyle(underlyingAPR, { style: 'percent', maxDecimals: 2 })}
+                            </Text>
+                            <Text>
+                                Minting Incentives:{' '}
+                                {formatNumberWithStyle(mintingIncentivesAPR, { style: 'percent', maxDecimals: 2 })}
+                            </Text>
+                            <Text>
+                                Stability Fee Cost:{' '}
+                                {formatNumberWithStyle(stabilityFeeCost, { style: 'percent', maxDecimals: 2 })}
+                            </Text>
+                            <Text $fontWeight={700}>
+                                Net APR: {formatNumberWithStyle(netAPR, { style: 'percent', maxDecimals: 2 })}
+                            </Text>
+                            <Text $fontSize="12px" $color="black">
+                                Net APR is expressed in terms of your collateral value.
+                            </Text>
                         </Flex>
-                    ) : `Stability Fee: ${formatNumberWithStyle(stabilityFeeCost, { style: 'percent', maxDecimals: 2 })}`;
-                     
+                    ) : (
+                        `Stability Fee: ${formatNumberWithStyle(stabilityFeeCost, {
+                            style: 'percent',
+                            maxDecimals: 2,
+                        })}`
+                    )
+
                     return (
                         <OverviewStat
                             value={formatNumberWithStyle(shouldShowNetAPR ? netAPR : stabilityFeeCost, {
                                 style: 'percent',
                                 maxDecimals: 2,
                             })}
-                            label={shouldShowNetAPR ? "Net APR" : "Stability Fee"}
+                            label={shouldShowNetAPR ? 'Net APR' : 'Stability Fee'}
                             tooltip={tooltipText}
                             simulatedValue={
-                                shouldShowNetAPR && simulatedNetAPR !== undefined && Math.abs(simulatedNetAPR - netAPR) > 0.0001
+                                shouldShowNetAPR &&
+                                simulatedNetAPR !== undefined &&
+                                Math.abs(simulatedNetAPR - netAPR) > 0.0001
                                     ? formatNumberWithStyle(simulatedNetAPR, {
                                           style: 'percent',
                                           maxDecimals: 2,
@@ -503,9 +548,9 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
                                     : undefined
                             }
                         />
-                    );
+                    )
                 })()}
-                
+
                 <OverviewProgressStat
                     value={summary.collateralRatio.current?.formatted || summary.collateralRatio.after.formatted}
                     label="My Collateral Ratio:"

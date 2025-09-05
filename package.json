@@ -25,7 +25,7 @@
         "@apollo/client": "3.8.8",
         "@ethersproject/experimental": "5.4.0",
         "@ethersproject/providers": "5.4.5",
-        "@hai-on-op/sdk": "/Users/ajand/Projects/hai/sdk/hai-on-op-sdk-1.2.32-haivelo-v2-pr123.0.tgz",
+        "@hai-on-op/sdk": "/Users/ajand/Projects/hai/sdk/hai-on-op-sdk-1.2.32-haivelo-v2-pr97.0.tgz",
         "@nivo/core": "0.84.0",
         "@nivo/line": "0.84.0",
         "@nivo/pie": "0.84.0",
