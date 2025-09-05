@@ -70,7 +70,12 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
 
     const pendingWithdrawal = useMemo(() => {
         if (!address) return null
-        const pW = useNew ? accountQuery.data?.pendingWithdrawal : stakingState.pendingWithdrawals[address.toLowerCase()]
+        // Prefer React Query account data when available; fallback to StakingProvider model/indexer data
+        const rqPending = useNew ? accountQuery.data?.pendingWithdrawal : null
+        const modelPending = stakingState.pendingWithdrawals[address.toLowerCase()]
+        const pW = rqPending || (stakingData?.pendingWithdrawal
+            ? { amount: stakingData.pendingWithdrawal.amount, timestamp: stakingData.pendingWithdrawal.timestamp }
+            : modelPending)
         if (!pW) return null
         const remainingTime = Number(pW.timestamp) + Number(cooldownPeriod) - Date.now() / 1000
 
@@ -78,10 +83,8 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
         if (remainingTime <= 0) {
             availableIn = 'now'
         } else if (remainingTime < 3600) {
-            // less than 1 hour
             availableIn = `${Math.ceil(remainingTime / 60)} mins `
         } else if (remainingTime < 86400) {
-            // less than 1 day
             availableIn = `${Math.ceil(remainingTime / 3600)} hours`
         } else {
             availableIn = `${Math.ceil(remainingTime / 86400)} days`
@@ -94,7 +97,7 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
             }),
             availableIn,
         }
-    }, [useNew, accountQuery.data?.pendingWithdrawal, cooldownPeriod, stakingState, address])
+    }, [useNew, accountQuery.data?.pendingWithdrawal, cooldownPeriod, stakingState, stakingData?.pendingWithdrawal, address])
 
     const isUnStaking = Number(unstakingAmount) > 0
     const isStaking = Number(stakingAmount) > 0
