@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, no-unused-vars */
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { formatCollateralLabel } from '~/utils'

@@ -82,13 +82,7 @@ export function createVaultStrategy(params: VaultStrategyParams): BaseStrategy {
  * Create a special strategy (HAI hold, HAIVELO deposit, KITE stake)
  */
 export function createSpecialStrategy(params: SpecialStrategyParams): BaseStrategy {
-    const strategy = createBaseStrategy(
-        params.pair,
-        params.tvl,
-        params.apr,
-        params.userPosition,
-        params.strategyType
-    )
+    const strategy = createBaseStrategy(params.pair, params.tvl, params.apr, params.userPosition, params.strategyType)
 
     return {
         ...strategy,
@@ -110,4 +104,4 @@ export function createVeloStrategy(params: VeloStrategyParams): BaseStrategy {
         earnAddress: params.earnAddress,
         earnLink: params.earnLink,
     }
-} 
+}

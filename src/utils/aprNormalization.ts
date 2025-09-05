@@ -46,16 +46,16 @@ export function normalizeAPRValue(aprValue: number, strategyType: string): numbe
 export function getEffectiveAPR(strategy: Strategy): EffectiveAPR {
     const apr = strategy.boostAPR ? Number(strategy.boostAPR.baseAPR) : Number(strategy.apr)
     const boostedApr = strategy.boostAPR ? Number(strategy.boostAPR.myBoostedAPR) : 0
-    
+
     return {
         apr,
-        boostedApr
+        boostedApr,
     }
 }
 
 /**
  * Get the best APR value for a strategy, prioritizing boosted APR if available
- * @param strategy - The strategy object  
+ * @param strategy - The strategy object
  * @returns The best available APR value
  */
 export function getBestAPRValue(strategy: Strategy): number {
@@ -66,4 +66,4 @@ export function getBestAPRValue(strategy: Strategy): number {
         // For other strategies, use the apr field
         return Number(strategy.apr)
     }
-} 
+}

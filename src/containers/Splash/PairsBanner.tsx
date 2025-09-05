@@ -21,7 +21,9 @@ const pairs: [string, string][] = [
     // ['WBTC', TOKEN_LOGOS['WBTC']],
     ['APXETH', TOKEN_LOGOS['APXETH']],
     ['ALETH', TOKEN_LOGOS['ALETH']],
+    ['MSETH', TOKEN_LOGOS['MSETH']],
     ['YV-VELO-ALETH-WETH', TOKEN_LOGOS['YV-VELO-ALETH-WETH']],
+    ['YV-VELO-MSETH-WETH', TOKEN_LOGOS['YV-VELO-MSETH-WETH']],
     // ['Beefy Vaults', TOKEN_LOGOS['MOO']],
 ]
 

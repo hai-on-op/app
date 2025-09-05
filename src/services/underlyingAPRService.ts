@@ -137,17 +137,17 @@ class LiquidStakingAPRCalculator implements IUnderlyingAPRCalculator {
                     {
                         source,
                         apr: underlyingAPR,
-                        description
-                    }
+                        description,
+                    },
                 ],
-                lastUpdated: new Date()
+                lastUpdated: new Date(),
             }
         } catch (error) {
             return {
                 collateralType: data.collateralType,
                 underlyingAPR: 0,
                 lastUpdated: new Date(),
-                error: error instanceof Error ? error.message : 'Unknown error'
+                error: error instanceof Error ? error.message : 'Unknown error',
             }
         }
     }
@@ -167,20 +167,41 @@ class LPTokenAPRCalculator implements IUnderlyingAPRCalculator {
 
             // For YV-VELO-ALETH-WETH, fetch real APY from Yearn's yDaemon API
             if (data.collateralType.toUpperCase() === 'YV-VELO-ALETH-WETH') {
-              try {
-                const response = await fetch('https://ydaemon.yearn.fi/10/vaults/0xf7D66b41Cd4241eae450fd9D2d6995754634D9f3')
-                if (response.ok) {
-                  const vaultData = await response.json()
-                  const netAPY = vaultData.apr?.netAPR || 0
-                  underlyingAPR = netAPY // Already in decimal format (e.g., 0.025 for 2.5%)
-                  source = 'Yearn Vault Yield'
-                  description = `Net APY from Yearn vault strategy (${(netAPY * 100).toFixed(2)}%)`
-                } else {
-                  console.warn('Failed to fetch Yearn vault data, using 0%')
+                try {
+                    const response = await fetch(
+                        'https://ydaemon.yearn.fi/10/vaults/0xf7D66b41Cd4241eae450fd9D2d6995754634D9f3'
+                    )
+                    if (response.ok) {
+                        const vaultData = await response.json()
+                        const netAPY = vaultData.apr?.netAPR || 0
+                        underlyingAPR = netAPY // Already in decimal format (e.g., 0.025 for 2.5%)
+                        source = 'Yearn Vault Yield'
+                        description = `Net APY from Yearn vault strategy (${(netAPY * 100).toFixed(2)}%)`
+                    } else {
+                        console.warn('Failed to fetch Yearn vault data, using 0%')
+                    }
+                } catch (error) {
+                    console.warn('Error fetching Yearn vault APY:', error)
                 }
-              } catch (error) {
-                console.warn('Error fetching Yearn vault APY:', error)
-              }
+            }
+            // For YV-VELO-MSETH-WETH, fetch real APY from Yearn's yDaemon API
+            else if (data.collateralType.toUpperCase() === 'YV-VELO-MSETH-WETH') {
+                try {
+                    const response = await fetch(
+                        'https://ydaemon.yearn.fi/10/vaults/0xd0d2Ac44Cc842079e978bB11b094764f7D0dec6A'
+                    )
+                    if (response.ok) {
+                        const vaultData = await response.json()
+                        const netAPY = vaultData.apr?.netAPR || 0
+                        underlyingAPR = netAPY // Already in decimal format (e.g., 0.025 for 2.5%)
+                        source = 'Yearn Vault Yield'
+                        description = `Net APY from Yearn vault strategy (${(netAPY * 100).toFixed(2)}%)`
+                    } else {
+                        console.warn('Failed to fetch Yearn vault data (msETH/WETH), using 0%')
+                    }
+                } catch (error) {
+                    console.warn('Error fetching Yearn vault APY (msETH/WETH):', error)
+                }
             }
 
             return {
@@ -190,17 +211,17 @@ class LPTokenAPRCalculator implements IUnderlyingAPRCalculator {
                     {
                         source,
                         apr: underlyingAPR,
-                        description
-                    }
+                        description,
+                    },
                 ],
-                lastUpdated: new Date()
+                lastUpdated: new Date(),
             }
         } catch (error) {
             return {
                 collateralType: data.collateralType,
                 underlyingAPR: 0,
                 lastUpdated: new Date(),
-                error: error instanceof Error ? error.message : 'Unknown error'
+                error: error instanceof Error ? error.message : 'Unknown error',
             }
         }
     }
@@ -337,6 +358,7 @@ export class UnderlyingAPRService {
         this.calculators.set('ALETH', liquidStakingCalculator)
 
         this.calculators.set('YV-VELO-ALETH-WETH', lpTokenCalculator)
+        this.calculators.set('YV-VELO-MSETH-WETH', lpTokenCalculator)
         this.calculators.set('HAIVELO', yieldBearingCalculator)
 
         // Standard tokens (no underlying yield)

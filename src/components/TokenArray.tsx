@@ -104,7 +104,7 @@ export function TokenArray({ tokens, size = 32, label, hideLabel = false }: Toke
                     </div>
                 </div>
             )}
-            {tokens[0] == 'YV-VELO-ALETH-WETH' ? (
+            {tokens[0] == 'YV-VELO-ALETH-WETH' || tokens[0] == 'YV-VELO-MSETH-WETH' ? (
                 <>{containerContent}</>
             ) : (
                 <IconContainer $size={size}>{containerContent}</IconContainer>
@@ -113,6 +113,8 @@ export function TokenArray({ tokens, size = 32, label, hideLabel = false }: Toke
                 <Text $fontWeight={700}>
                     {tokens[0] == 'YV-VELO-ALETH-WETH'
                         ? 'yvVelo-alETH-WETH'
+                        : tokens[0] == 'YV-VELO-MSETH-WETH'
+                        ? 'yvVelo-msETH-WETH'
                         : label || (tokens.length === 1 ? tokens[0] : `${tokens[0]}/${tokens[1]}`)}
                 </Text>
             )}

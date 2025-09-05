@@ -8,6 +8,11 @@ import { useHaiVeloCollateralMapping } from './haivelo/useHaiVeloCollateralMappi
 import { useHaiVeloBoostMap } from './haivelo/useHaiVeloBoostMap'
 
 // centralized in haiVeloService
+import { calculateHaiVeloBoost } from '~/services/boostService'
+import { RewardsModel } from '~/model/rewardsModel'
+
+const HAIVELO_DEPOSITER = '0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3'
+const REWARD_DISTRIBUTOR = '0xfEd2eB6325432F0bF7110DcE2CCC5fF811ac3D4D'
 
 const HAI_TOKEN_ADDRESS = import.meta.env.VITE_HAI_ADDRESS as string
 const KITE_TOKEN_ADDRESS = import.meta.env.VITE_KITE_ADDRESS as string
@@ -112,16 +117,19 @@ export function useStrategyData(
         [OP_TOKEN_ADDRESS]: opPrice,
     }
     const stakingApyRewardsTotal = useMemo(() => {
-        return stakingApyData.reduce((acc: any, item: any) => {
-            const price = rewardsDataMap[item.rpToken as string] || 0
-            if (isNaN(price)) {
-                return acc
-            }
-            const scaledPrice = utils.parseUnits(price.toString(), 18)
-            const amount = item.rpRate.mul(scaledPrice)
-            const nextAcc = acc.add(amount)
-            return nextAcc
-        }, utils.parseUnits('0', 18))
+        return stakingApyData.reduce(
+            (acc: any, item: any) => {
+                const price = rewardsDataMap[item.rpToken as string] || 0
+                if (isNaN(price)) {
+                    return acc
+                }
+                const scaledPrice = utils.parseUnits(price.toString(), 18)
+                const amount = item.rpRate.mul(scaledPrice)
+                const nextAcc = acc.add(amount)
+                return nextAcc
+            },
+            utils.parseUnits('0', 18)
+        )
     }, [stakingApyData, rewardsDataMap])
 
     const stakingApr = useMemo(() => {

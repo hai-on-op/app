@@ -182,7 +182,6 @@ export function useEarnStrategies() {
             }, 0)
 
             const rewards = RewardsModel.getVaultRewards(cType.id) || {}
-            
             // Use vault boost data from useBoost instead of calculating it here
             const vbr = individualVaultBoosts[cType.id] || {
                 userVaultBoostMap: {},
@@ -280,21 +279,21 @@ export function useEarnStrategies() {
         if (!velodromePricesData || !velodromeData || !tokensData) {
             return []
         }
-        
+
         const strategies: BaseStrategy[] = []
         for (const pool of velodromeData) {
             if (!VELO_POOLS.includes(pool.address)) continue
-            
+
             // Get token symbols using utility function
             const token0 = getTokenSymbol(pool.token0, tokensData, pool.tokenPair[0])
             const token1 = getTokenSymbol(pool.token1, tokensData, pool.tokenPair[1])
-            
+
             // Get token prices using utility function
             const price0 = calculateTokenPrice(token0, velodromePricesData as any)
             const price1 = calculateTokenPrice(token1, velodromePricesData as any)
-            
+
             // Calculate pool TVL using utility function
-            const { tvl0, tvl1, totalTvl: tvl } = calculatePoolTVL(pool, tokensData, velodromePricesData as any)
+            const { totalTvl: tvl } = calculatePoolTVL(pool, tokensData, velodromePricesData as any)
             const veloAPR =
                 (365 *
                     parseFloat(formatUnits(pool.emissions, pool.decimals)) *
@@ -312,7 +311,6 @@ export function useEarnStrategies() {
 
             const rewardsObj = RewardsModel.getPoolRewards(pool.address) || {}
             const rewardsArray = Object.entries(rewardsObj).map(([token, emission]) => ({ token, emission }))
-            
             const strategy = createVeloStrategy({
                 pair: [token0, token1],
                 rewards: rewardsArray,
@@ -375,11 +373,11 @@ export function useEarnStrategies() {
 
         // Calculate rewards from incentives data (same as ClaimModal)
         const incentiveTokens = ['KITE', 'OP', 'DINERO', 'HAI'] as const
-        
+
         incentiveTokens.forEach((token) => {
             const data = incentivesData.claimData[token]
             const price = getTokenPrice(token)
-            
+
             if (data?.hasClaimableDistros && data?.amount) {
                 const amount = parseFloat(utils.formatEther(data.amount))
                 totalValue += amount * price
@@ -392,17 +390,16 @@ export function useEarnStrategies() {
     // Get unique reward tokens from incentives data
     const rewardTokens = useMemo(() => {
         if (!incentivesData?.claimData) return []
-        
+
         const tokens: string[] = []
         const incentiveTokens = ['KITE', 'OP', 'DINERO', 'HAI'] as const
-        
+
         incentiveTokens.forEach((token) => {
             const data = incentivesData.claimData[token]
             if (data?.hasClaimableDistros && data?.amount) {
                 tokens.push(token)
             }
         })
-        
         return tokens
     }, [incentivesData?.claimData])
 

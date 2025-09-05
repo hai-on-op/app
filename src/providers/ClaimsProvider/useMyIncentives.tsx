@@ -579,7 +579,7 @@ function formatDistro<T extends Record<string, Record<string, any>>>(obj: T): Pa
     return result
 }
 
-const fetchTokenDistroClaims = async (account: string, chainId: ChainId, token: string) => {
+const fetchTokenDistroClaims = async (account: string) => {
     const formatted = isFormattedAddress(account)
     if (!formatted) return Promise.reject(new Error('Invalid address'))
     // const baseNetwork = chainId === 10 ? 'optimism' : 'optimism-sepolia'

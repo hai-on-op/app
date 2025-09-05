@@ -31,6 +31,14 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
         vaultModel: { liquidationData },
     } = useStoreState((state) => state)
 
+    // Get boost data for net APR calculation
+    // const { individualVaultBoosts } = useBoost()
+
+    // Get liquidation data for price calculations
+    // const {
+    //     vaultModel: { liquidationData },
+    // } = useStoreState((state) => state)
+
     return (
         <Table
             headers={headers}
@@ -60,7 +68,7 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                 } = vault
 
                 const hasFreeCollateral = freeCollateral !== '0.0'
-                const HAS_REWARDS = ['HAIVELO', 'HAIVELOV2', 'ALETH', 'YV-VELO-ALETH-WETH']
+                const HAS_REWARDS = ['HAIVELO', 'HAIVELOV2', 'ALETH', 'YV-VELO-ALETH-WETH', 'YV-VELO-MSETH-WETH', 'MSETH']
                 const collateralLabel = formatCollateralLabel(collateralName)
                 const tooltip =
                     collateralName === 'HAIVELO'

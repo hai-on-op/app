@@ -29,6 +29,7 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
     // Define external links for specific collaterals
     const EXTERNAL_LINKS: Record<string, string> = {
         'YV-VELO-ALETH-WETH': 'https://yearn.fi/vaults/10/0xf7D66b41Cd4241eae450fd9D2d6995754634D9f3',
+        'YV-VELO-MSETH-WETH': 'https://yearn.fi/vaults/10/0xd0d2Ac44Cc842079e978bB11b094764f7D0dec6A',
         // Add more as needed
     }
 
@@ -104,7 +105,18 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                                                 )}
                                                             </>
                                                         )}
-                                                        {collateralName === 'YV-VELO-ALETH-WETH' && (
+                                                        {collateralName === 'MSETH' && (
+                                                            <>
+                                                                <RewardsTokenArray
+                                                                    tokens={['KITE']}
+                                                                    label="EARN"
+                                                                    tooltip="Earn KITE rewards for borrowing HAI against this asset. See earn page for details."
+                                                                />
+                                                            </>
+                                                        )}
+
+                                                        {(collateralName === 'YV-VELO-ALETH-WETH' ||
+                                                            collateralName === 'YV-VELO-MSETH-WETH') && (
                                                             <>
                                                                 <RewardsTokenArray
                                                                     tokens={['KITE']}
@@ -121,7 +133,7 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                                                             display: 'inline-flex',
                                                                             alignItems: 'center',
                                                                         }}
-                                                                        title="Get YV-VELO-ALETH-WETH"
+                                                                        title={`Get ${collateralName}`}
                                                                     >
                                                                         <ExternalLink
                                                                             size={14}
@@ -131,7 +143,8 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                                                 )}
                                                             </>
                                                         )}
-                                                        {(collateralName === 'HAIVELO' || collateralName === 'HAIVELOV2') && (
+                                                        {(collateralName === 'HAIVELO' ||
+                                                            collateralName === 'HAIVELOV2') && (
                                                             <RewardsTokenArray
                                                                 tokens={['HAI', 'KITE']}
                                                                 label="EARN"
@@ -139,9 +152,14 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                                             />
                                                         )}
                                                         {/* Default behavior for other collaterals */}
-                                                        {!['ALETH', 'YV-VELO-ALETH-WETH', 'HAIVELO', 'HAIVELOV2'].includes(
-                                                            collateralName
-                                                        ) && (
+                                                        {![
+                                                            'ALETH',
+                                                            'YV-VELO-ALETH-WETH',
+                                                            'YV-VELO-MSETH-WETH',
+                                                            'HAIVELO',
+                                                            'MSETH',
+                                                            'HAIVELOV2',
+                                                        ].includes(collateralName) && (
                                                             <RewardsTokenArray
                                                                 tokens={[]}
                                                                 label="EARN"
