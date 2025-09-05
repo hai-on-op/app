@@ -24,6 +24,10 @@ export const REWARDS = {
             KITE: 25,
             OP: 0,
         },
+        MSETH: {
+            KITE: 25,
+            OP: 0,
+        },
 
         RETH: {
             KITE: 0,
