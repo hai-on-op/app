@@ -21,7 +21,7 @@ export function useHaiVeloCollateralMapping(): UseHaiVeloCollateralMappingResult
     })
     const { data: v2, isLoading: l2, isError: e2, error: err2 } = useQuery({
         queryKey: ['haivelo', 'mapping', 'v2'],
-        queryFn: async () => fetchV2Safes('HAIVELO_V2'),
+        queryFn: async () => fetchV2Safes('HAIVELOV2'),
         staleTime: FIVE_MINUTES_MS,
         refetchInterval: FIVE_MINUTES_MS,
     })

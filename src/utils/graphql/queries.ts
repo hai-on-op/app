@@ -253,7 +253,7 @@ export const ALL_COLLATERAL_TYPES_QUERY = gql`
 // Query for HAI minting collateral types (ALETH, YV-VELO-ALETH-WETH, HAIVELO)
 export const HAI_MINTING_COLLATERAL_TYPES_QUERY = gql`
     query GetHaiMintingCollateralTypes {
-        collateralTypes(where: { id_in: ["ALETH", "YV-VELO-ALETH-WETH", "HAIVELO"] }) {
+        collateralTypes(where: { id_in: ["ALETH", "YV-VELO-ALETH-WETH", "HAIVELO", "HAIVELOV2"] }) {
             id
             debtAmount
             totalCollateral

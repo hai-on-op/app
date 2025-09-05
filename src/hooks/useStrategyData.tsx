@@ -44,24 +44,26 @@ export function useStrategyData(
     const haiApr = redemptionRate
     const haiTvl = systemStateData?.systemStates[0]?.erc20CoinTotalSupply * haiPrice
 
-    // === HAI VELO Deposit Strategy ===
-    const haiVeloUserPosition = userPositionsList
-        .reduce((total: any, { collateral, collateralName }: any) => {
-            if (collateralName.toLowerCase() !== 'haivelo') return total
-            return total + parseFloat(collateral)
-        }, 0)
-        .toString()
+    // === HAI VELO Deposit Strategy (combined v1 + v2) ===
     const haiVeloData = systemStateData?.collateralTypes.find((collateral: any) => collateral.id === 'HAIVELO')
     const haiVeloPrice = haiVeloData?.currentPrice.value
-    const haiVeloUserPositionUsd = haiVeloUserPosition * haiVeloPrice
-    const haiVeloTotalCollateralLockedInSafes = haiVeloData?.totalCollateralLockedInSafes
-    const haiVeloTVL = haiVeloTotalCollateralLockedInSafes * haiVeloPrice
+    const { mapping: haiVeloCollateralMapping } = useHaiVeloCollateralMapping()
+
+    const combinedHaiVeloQtyTotal = useMemo(
+        () => Object.values(haiVeloCollateralMapping || {}).reduce((acc: number, v: any) => acc + Number(v), 0),
+        [haiVeloCollateralMapping]
+    )
+    const userHaiVeloQty = useMemo(
+        () => (address ? Number(haiVeloCollateralMapping?.[address.toLowerCase()] || 0) : 0),
+        [haiVeloCollateralMapping, address]
+    )
+    const haiVeloUserPositionUsd = userHaiVeloQty * (haiVeloPrice || 0)
+    const haiVeloTVL = combinedHaiVeloQtyTotal * (haiVeloPrice || 0)
 
     const totalStakedAmount = Object.values(usersStakingData).reduce((acc: any, value: any) => {
         return acc + Number(value?.stakedBalance)
     }, 0)
 
-    const { mapping: haiVeloCollateralMapping } = useHaiVeloCollateralMapping()
     const haiVeloBoostMap = useHaiVeloBoostMap({
         mapping: haiVeloCollateralMapping,
         usersStakingData,

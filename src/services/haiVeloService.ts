@@ -67,7 +67,7 @@ export const HAI_VELO_ADDRESSES: HaiVeloAddresses = {
  */
 export function isHaiVeloCollateralId(id: string): boolean {
     const upper = id.toUpperCase()
-    return upper === 'HAIVELO' || upper === 'HAIVELO_V2'
+    return upper === 'HAIVELO' || upper === 'HAIVELO_V2' || upper === 'HAIVELOV2'
 }
 
 export function getHaiVeloCollateralIds(): string[] {
