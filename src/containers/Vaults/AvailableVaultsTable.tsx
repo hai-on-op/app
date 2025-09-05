@@ -178,9 +178,9 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                                 <Text>
                                                     {collateralizationFactor
                                                         ? formatNumberWithStyle(collateralizationFactor, {
-                                                              maxDecimals: 0,
-                                                              style: 'percent',
-                                                          })
+                                                            maxDecimals: 0,
+                                                            style: 'percent',
+                                                        })
                                                         : '--%'}
                                                 </Text>
                                             </Flex>
@@ -191,9 +191,9 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                             <Text>
                                                 {stabilityFee
                                                     ? formatNumberWithStyle(-parseFloat(stabilityFee), {
-                                                          maxDecimals: 2,
-                                                          style: 'percent',
-                                                      })
+                                                        maxDecimals: 2,
+                                                        style: 'percent',
+                                                    })
                                                     : '--%'}
                                             </Text>
                                         ),
@@ -204,8 +204,8 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                                 <Text>
                                                     {eligibleBalance && eligibleBalance !== '0'
                                                         ? formatNumberWithStyle(formatEther(eligibleBalance), {
-                                                              maxDecimals: 4,
-                                                          })
+                                                            maxDecimals: 4,
+                                                        })
                                                         : '-'}
                                                 </Text>
                                                 {!!eligibleBalance && eligibleBalance !== '0' && (

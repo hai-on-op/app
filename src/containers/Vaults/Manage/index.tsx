@@ -12,7 +12,7 @@ import { MigrateHaiVeloV2Modal } from '~/components/Modal/MigrateHaiVeloV2Modal'
 import { RewardsTokenArray } from '~/components/TokenArray'
 import { ProxyPrompt } from '~/components/ProxyPrompt'
 import { Overview } from './Overview'
-import { HaiVeloOverview } from "./HaiVeloOverview"
+import { HaiVeloOverview } from './HaiVeloOverview'
 import { HaiVeloProvider } from '~/providers/HaiVeloProvider'
 import { VaultActions } from './VaultActions'
 import { MintHaiVeloActions } from './MintHaiVeloActions'
@@ -150,11 +150,11 @@ const Header = styled(Flex).attrs((props) => ({
             width: 100%;
         }
         ${
-            $removePadding &&
+    $removePadding &&
             css`
                 padding-bottom: 0px;
             `
-        }}
+}}
     `}
 
     z-index: 1;

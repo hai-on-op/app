@@ -43,7 +43,7 @@ export function renderWithProviders(ui: React.ReactElement, client = createTestQ
             onchange: null,
         })
     }
-    const Wrapper: React.FC<PropsWithChildren<{}>> = ({ children }) => (
+    const Wrapper: React.FC<PropsWithChildren<Record<string, never>>> = ({ children }) => (
         <StoreProvider store={store}>
             <ThemeProvider theme={darkTheme}>
                 <QueryClientProvider client={client}>

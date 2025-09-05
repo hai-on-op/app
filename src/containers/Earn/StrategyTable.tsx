@@ -124,10 +124,10 @@ export function StrategyTable({
                         strategyType === 'borrow'
                             ? ['KITE']
                             : earnPlatform === 'velodrome'
-                            ? ['VELO']
-                            : strategyType === 'stake'
-                            ? ['HAI', 'KITE', 'OP']
-                            : ['OP']
+                                ? ['VELO']
+                                : strategyType === 'stake'
+                                    ? ['HAI', 'KITE', 'OP']
+                                    : ['OP']
 
                     return (
                         <Table.Row
@@ -173,10 +173,10 @@ export function StrategyTable({
                                             <Text $fontWeight={700}>
                                                 {tvl
                                                     ? formatNumberWithStyle(tvl, {
-                                                          style: 'currency',
-                                                          maxDecimals: 1,
-                                                          suffixed: true,
-                                                      })
+                                                        style: 'currency',
+                                                        maxDecimals: 1,
+                                                        suffixed: true,
+                                                    })
                                                     : '-'}
                                             </Text>
                                         </ComingSoon>
@@ -188,10 +188,10 @@ export function StrategyTable({
                                             <Text $fontWeight={700}>
                                                 {userPosition && userPosition !== '0'
                                                     ? formatNumberWithStyle(userPosition, {
-                                                          style: 'currency',
-                                                          maxDecimals: 1,
-                                                          suffixed: true,
-                                                      })
+                                                        style: 'currency',
+                                                        maxDecimals: 1,
+                                                        suffixed: true,
+                                                    })
                                                     : '-'}
                                             </Text>
                                         </ComingSoon>
@@ -203,9 +203,9 @@ export function StrategyTable({
                                             <Text $fontWeight={700}>
                                                 {!!boostAPR && boostAPR.myBoost > 0
                                                     ? formatNumberWithStyle(boostAPR.myBoost, {
-                                                          maxDecimals: 2,
-                                                          suffixed: false,
-                                                      }) + 'x'
+                                                        maxDecimals: 2,
+                                                        suffixed: false,
+                                                    }) + 'x'
                                                     : '-'}
                                             </Text>
                                             {!!boostAPR && boostAPR.myBoost > 0 && (

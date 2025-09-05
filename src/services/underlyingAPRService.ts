@@ -5,8 +5,7 @@ import {
     HAI_VELO_ADDRESSES,
     HAIVELO_V1_DEPOSITER_ADDRESS,
     HAI_REWARD_DISTRIBUTOR_ADDRESS,
-} from '~/services/haiVeloService'
-import { fetchHaiVeloLatestTransferAmount } from '~/services/haiVeloService'
+ fetchHaiVeloLatestTransferAmount } from '~/services/haiVeloService'
 
 const HAIVELO_DEPOSITER = HAIVELO_V1_DEPOSITER_ADDRESS
 const REWARD_DISTRIBUTOR = HAI_REWARD_DISTRIBUTOR_ADDRESS
@@ -282,10 +281,10 @@ class YieldBearingAPRCalculator implements IUnderlyingAPRCalculator {
                         {
                             source: 'HAI VELO Deposit Strategy (Base)',
                             apr: baseAPR,
-                            description: `Base yield before boost; your boost is ~${userBoost?.toFixed(2)}x`
-                        }
+                            description: `Base yield before boost; your boost is ~${userBoost?.toFixed(2)}x`,
+                        },
                     ],
-                    lastUpdated: new Date()
+                    lastUpdated: new Date(),
                 }
             }
 

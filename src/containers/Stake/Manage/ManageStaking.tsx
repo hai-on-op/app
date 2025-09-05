@@ -158,10 +158,10 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                         isUnStaking
                             ? unstakingAmount
                             : isStaking
-                            ? stakingAmount
-                            : pendingWithdrawal
-                            ? pendingWithdrawal.amount
-                            : ''
+                                ? stakingAmount
+                                : pendingWithdrawal
+                                    ? pendingWithdrawal.amount
+                                    : ''
                     }
                     stakedAmount={stakingData.stakedBalance}
                     onClose={() => {
@@ -183,10 +183,10 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                         isUnStaking
                             ? unstakingAmount
                             : isStaking
-                            ? stakingAmount
-                            : pendingWithdrawal
-                            ? pendingWithdrawal.amount
-                            : ''
+                                ? stakingAmount
+                                : pendingWithdrawal
+                                    ? pendingWithdrawal.amount
+                                    : ''
                     }
                     stakedAmount={stakingData.stakedBalance}
                     onClose={() => {
@@ -240,9 +240,9 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                         conversion={
                             stakingAmount && Number(stakingAmount) > 0
                                 ? `~${formatNumberWithStyle(
-                                      parseFloat(collateral.priceInUSD || '0') * parseFloat(stakingAmount),
-                                      { style: 'currency' }
-                                  )}`
+                                    parseFloat(collateral.priceInUSD || '0') * parseFloat(stakingAmount),
+                                    { style: 'currency' }
+                                )}`
                                 : ''
                         }
                         style={!isWithdraw ? undefined : { opacity: 0.4 }}
@@ -269,9 +269,9 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                         conversion={
                             formState.deposit && Number(formState.deposit) > 0
                                 ? `~${formatNumberWithStyle(
-                                      parseFloat(collateral.priceInUSD || '0') * parseFloat(formState.deposit),
-                                      { style: 'currency' }
-                                  )}`
+                                    parseFloat(collateral.priceInUSD || '0') * parseFloat(formState.deposit),
+                                    { style: 'currency' }
+                                )}`
                                 : ''
                         }
                         style={!isWithdraw ? undefined : { opacity: 0.4 }}

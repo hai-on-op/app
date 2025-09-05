@@ -1,8 +1,7 @@
 import React, { createContext, useContext, useMemo } from 'react'
 import { useAccount, useNetwork } from 'wagmi'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { usePublicProvider } from '~/hooks'
-import { useEthersSigner } from '~/hooks'
+import { usePublicProvider , useEthersSigner } from '~/hooks'
 import { getTotalStaked } from '~/services/stakingService'
 import { getApy, getUserRewards } from '~/services/rewards/stakingRewardsService'
 import { getDistributorTimer, getUserIncentives } from '~/services/rewards/incentivesDistributorService'
@@ -41,15 +40,15 @@ type RewardsContextValue = {
 const RewardsContext = createContext<RewardsContextValue | undefined>(undefined)
 
 export function RewardsProvider({ children }: { children: React.ReactNode }) {
-	const { address } = useAccount()
-	const { chain } = useNetwork()
-	const chainId = chain?.id || 10
+    const { address } = useAccount()
+    const { chain } = useNetwork()
+    const chainId = chain?.id || 10
 
-	const provider = usePublicProvider()
-	const signer = useEthersSigner()
-	const queryClient = useQueryClient()
+    const provider = usePublicProvider()
+    const signer = useEthersSigner()
+    const queryClient = useQueryClient()
 
-	const apyQuery = useQuery<StakingApyItem[]>({
+    const apyQuery = useQuery<StakingApyItem[]>({
  		queryKey: ['rewards', 'staking', 'apy'],
  		enabled: Boolean(provider),
  		queryFn: async () => {
@@ -59,7 +58,7 @@ export function RewardsProvider({ children }: { children: React.ReactNode }) {
  		staleTime: 30_000,
  	})
 
-	const tvlQuery = useQuery<string>({
+    const tvlQuery = useQuery<string>({
  		queryKey: ['rewards', 'staking', 'tvl'],
  		enabled: Boolean(provider),
  		queryFn: async () => {

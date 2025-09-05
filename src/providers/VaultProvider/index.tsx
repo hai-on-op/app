@@ -173,7 +173,9 @@ export function VaultProvider({ action, setAction, children }: Props) {
         if (action === VaultAction.CREATE && address) {
             try {
                 connectWalletActions.fetchTokenData({ geb, user: address })
-            } catch {}
+            } catch (e) {
+                // swallow
+            }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [action, collateral.name, address])
@@ -182,7 +184,9 @@ export function VaultProvider({ action, setAction, children }: Props) {
         if (!address) return
         try {
             await connectWalletActions.fetchTokenData({ geb, user: address })
-        } catch {}
+        } catch (e) {
+            // swallow
+        }
     }, [address, connectWalletActions, geb])
 
     const liquidationPrice = useMemo(() => {

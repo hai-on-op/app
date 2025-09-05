@@ -20,6 +20,9 @@ export function Overview({ vault }: OverviewProps) {
     const { t } = useTranslation()
 
     const { vaultModel: vaultState } = useStoreState((state) => state)
+    // Top-level APR hook (use current vault collateralToken if available)
+    const underlyingAprHook = useUnderlyingAPR({ collateralType: vault?.collateralToken || '' })
+    const underlyingAPRValue = underlyingAprHook.underlyingAPR
 
     const haiPrice = parseFloat(vaultState.liquidationData?.currentRedemptionPrice || '1')
     const collateralPrice = parseFloat(vault?.collateralType.currentPrice.value || '0')
@@ -122,8 +125,8 @@ export function Overview({ vault }: OverviewProps) {
                     convertedValue={
                         vault && collateralPrice
                             ? formatNumberWithStyle(parseFloat(vault.collateral) * collateralPrice, {
-                                  style: 'currency',
-                              })
+                                style: 'currency',
+                            })
                             : '$--'
                     }
                     labelOnTop
@@ -143,9 +146,9 @@ export function Overview({ vault }: OverviewProps) {
                     value={
                         vault
                             ? formatNumberWithStyle(vault.collateralRatio, {
-                                  scalingFactor: 0.01,
-                                  style: 'percent',
-                              })
+                                scalingFactor: 0.01,
+                                style: 'percent',
+                            })
                             : '--%'
                     }
                     label="Collateral Ratio:"
@@ -167,46 +170,46 @@ export function Overview({ vault }: OverviewProps) {
                             label="Net APR"
                             tooltip="Net APR calculation unavailable"
                         />
-                    );
+                    )
                     
-                    const { underlyingAPR } = useUnderlyingAPR({ collateralType: vault.collateralToken })
-                    const mintingIncentivesAPR = boostData?.myBoostedAPR ? boostData.myBoostedAPR / 100 : 0;
-                    const stabilityFeeCost = -getRatePercentage(vault.liquidationData.totalAnnualizedStabilityFee || '1', 4, true);
+                    const underlyingAPR = underlyingAPRValue
+                    const mintingIncentivesAPR = boostData?.myBoostedAPR ? boostData.myBoostedAPR / 100 : 0
+                    const stabilityFeeCost = -getRatePercentage(vault.liquidationData.totalAnnualizedStabilityFee || '1', 4, true)
                     
                     // For VaultById, we always have an existing vault, so use weighted average
-                    let netAPR: number = 0;
-                    let calculationMethod: string = '';
-                    let simulatedNetAPR: number | undefined = undefined;
+                    let netAPR: number = 0
+                    let calculationMethod: string = ''
+                    const simulatedNetAPR: number | undefined = undefined
                     
-                    const collateralUsdValue = parseFloat(vault.collateral || '0') * parseFloat(vault.liquidationData.currentPrice?.value || '0');
-                    const debtUsdValue = parseFloat(vault.debt || '0'); // HAI is approximately $1
+                    const collateralUsdValue = parseFloat(vault.collateral || '0') * parseFloat(vault.liquidationData.currentPrice?.value || '0')
+                    const debtUsdValue = parseFloat(vault.debt || '0') // HAI is approximately $1
                     if (collateralUsdValue > 0) {
                         // Collateral side: earns underlying APR
-                        const collateralYield = collateralUsdValue * underlyingAPR;
+                        const collateralYield = collateralUsdValue * underlyingAPR
                         
                         // Debt side: earns minting incentives but pays stability fee
-                        const debtNetAPR = mintingIncentivesAPR + stabilityFeeCost; // Note: stabilityFeeCost is already negative
-                        const debtNetYield = debtUsdValue * debtNetAPR;
+                        const debtNetAPR = mintingIncentivesAPR + stabilityFeeCost // Note: stabilityFeeCost is already negative
+                        const debtNetYield = debtUsdValue * debtNetAPR
                         
                         // Total annual yield from the position
-                        const totalYield = collateralYield + debtNetYield;
+                        const totalYield = collateralYield + debtNetYield
                         
                         // Net APR based on collateral value (what user is risking)
-                        netAPR = totalYield / collateralUsdValue;
-                        calculationMethod = `Collateral yield: $${collateralYield.toFixed(2)}/year + Debt net yield: $${debtNetYield.toFixed(2)}/year = $${totalYield.toFixed(2)}/year on $${collateralUsdValue.toLocaleString()} collateral`;
+                        netAPR = totalYield / collateralUsdValue
+                        calculationMethod = `Collateral yield: $${collateralYield.toFixed(2)}/year + Debt net yield: $${debtNetYield.toFixed(2)}/year = $${totalYield.toFixed(2)}/year on $${collateralUsdValue.toLocaleString()} collateral`
                         
                         // Note: VaultById page is read-only, so no simulation needed here
                         // Simulation is only relevant in the Manage view where users can input amounts
                     } else {
                         // Fallback to simple addition if no position values
-                        netAPR = underlyingAPR + mintingIncentivesAPR + stabilityFeeCost;
-                        calculationMethod = 'Simple addition (fallback)';
+                        netAPR = underlyingAPR + mintingIncentivesAPR + stabilityFeeCost
+                        calculationMethod = 'Simple addition (fallback)'
                     }
                     
                     // Check if this collateral type should show Net APR (has underlying yield or minting incentives)
-                    const hasUnderlyingYield = underlyingAPR > 0;
-                    const hasMintingIncentives = mintingIncentivesAPR > 0;
-                    const shouldShowNetAPR = hasUnderlyingYield || hasMintingIncentives;
+                    const hasUnderlyingYield = underlyingAPR > 0
+                    const hasMintingIncentives = mintingIncentivesAPR > 0
+                    const shouldShowNetAPR = hasUnderlyingYield || hasMintingIncentives
                     
                     const tooltipText = shouldShowNetAPR ? (
                         <Flex $column $gap={4}>
@@ -216,7 +219,7 @@ export function Overview({ vault }: OverviewProps) {
                             <Text $fontWeight={700}>Net APR: {formatNumberWithStyle(netAPR, { style: 'percent', maxDecimals: 2 })}</Text>
                             <Text $fontSize="12px" $color="black">Net APR is expressed in terms of your collateral value.</Text>
                         </Flex>
-                    ) : `Stability Fee: ${formatNumberWithStyle(stabilityFeeCost, { style: 'percent', maxDecimals: 2 })}`;
+                    ) : `Stability Fee: ${formatNumberWithStyle(stabilityFeeCost, { style: 'percent', maxDecimals: 2 })}`
                     
                     return (
                         <OverviewStat
@@ -224,10 +227,10 @@ export function Overview({ vault }: OverviewProps) {
                                 style: 'percent',
                                 maxDecimals: 2,
                             })}
-                            label={shouldShowNetAPR ? "Net APR" : "Stability Fee"}
+                            label={shouldShowNetAPR ? 'Net APR' : 'Stability Fee'}
                             tooltip={tooltipText}
                         />
-                    );
+                    )
                 })()}
             </Inner>
         </Container>

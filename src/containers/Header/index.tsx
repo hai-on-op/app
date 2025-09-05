@@ -9,11 +9,10 @@ import {
     LINK_TO_TELEGRAM,
     LINK_TO_TWITTER,
     formatDataNumber,
-} from '~/utils'
+ formatCollateralLabel } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { useMediaQuery, useOutsideClick } from '~/hooks'
-import { formatCollateralLabel } from '~/utils'
 import styled, { css } from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Popout, Title } from '~/styles'
 import { Twitter } from '~/components/Icons/Twitter'

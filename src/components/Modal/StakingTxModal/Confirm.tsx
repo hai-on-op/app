@@ -111,8 +111,8 @@ export function Confirm({ onClose, isStaking, amount, isWithdraw, onSuccess }: C
                                     isStaking
                                         ? (Number(effectiveStakedAmount) + Number(amount)).toString()
                                         : isWithdraw
-                                        ? effectiveStakedAmount
-                                        : (Number(effectiveStakedAmount) - Number(amount)).toString(),
+                                            ? effectiveStakedAmount
+                                            : (Number(effectiveStakedAmount) - Number(amount)).toString(),
                                     {
                                         maxDecimals: 2,
                                         minDecimals: 0,
@@ -127,26 +127,26 @@ export function Confirm({ onClose, isStaking, amount, isWithdraw, onSuccess }: C
                                 current: `${
                                     !isWithdraw
                                         ? `${formatNumberWithStyle(
-                                              simulateNetBoost(Number(effectiveStakedAmount), Number(totalStaked)),
-                                              {
-                                                  maxDecimals: 2,
-                                                  minDecimals: 0,
-                                              }
-                                          )}x`
+                                            simulateNetBoost(Number(effectiveStakedAmount), Number(totalStaked)),
+                                            {
+                                                maxDecimals: 2,
+                                                minDecimals: 0,
+                                            }
+                                        )}x`
                                         : ''
                                 }`,
                                 after: `${
                                     !isWithdraw
                                         ? `${formatNumberWithStyle(
-                                              simulateNetBoost(
-                                                  Number(effectiveStakedAmount) + (isStaking ? 1 : -1) * Number(amount),
-                                                  Number(totalStaked + (isStaking ? 1 : -1) * Number(amount))
-                                              ),
-                                              {
-                                                  maxDecimals: 2,
-                                                  minDecimals: 0,
-                                              }
-                                          )}x`
+                                            simulateNetBoost(
+                                                Number(effectiveStakedAmount) + (isStaking ? 1 : -1) * Number(amount),
+                                                Number(totalStaked + (isStaking ? 1 : -1) * Number(amount))
+                                            ),
+                                            {
+                                                maxDecimals: 2,
+                                                minDecimals: 0,
+                                            }
+                                        )}x`
                                         : ''
                                 }`,
                                 label: '',

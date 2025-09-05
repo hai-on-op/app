@@ -47,18 +47,18 @@ const Container = styled(CenteredFlex)<{
         width: ${({ $popoutWidth }) => $popoutWidth};
         padding: 18px;
         ${({ $float = 'center' }) => {
-            switch ($float) {
-                case 'left':
-                    return css`
+        switch ($float) {
+            case 'left':
+                return css`
                         right: -44px;
                     `
-                case 'right':
-                    return css`
+            case 'right':
+                return css`
                         left: -44px;
                     `
-                default:
-                    return ''
-            }
-        }}
+            default:
+                return ''
+        }
+    }}
     }
 `

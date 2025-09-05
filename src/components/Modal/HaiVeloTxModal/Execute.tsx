@@ -150,8 +150,9 @@ export function Execute({ plan, onDone, onStepDone }: Props) {
         } catch (e) {
             console.error('Failed execution step', e)
         } finally {
-            if (hasClosedRef.current) return
-            setPending(false)
+            if (!hasClosedRef.current) {
+                setPending(false)
+            }
         }
     }, [steps, currentIndex, onDone, popupsActions, refetch, onStepDone])
 

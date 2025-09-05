@@ -319,9 +319,9 @@ export function Numbers() {
                                 stat={{
                                     header: convertPieToUSD
                                         ? formatNumberWithStyle(totalHaiInPools * parseFloat(redemptionPrice.raw), {
-                                              maxDecimals: 0,
-                                              style: 'currency',
-                                          })
+                                            maxDecimals: 0,
+                                            style: 'currency',
+                                        })
                                         : formatNumberWithStyle(totalHaiInPools, { maxDecimals: 0 }),
                                     label: 'HAI in Liquidity Pools',
                                     tooltip: `Amount of HAI locked in tracked liquidity pools`,
@@ -355,14 +355,14 @@ export function Numbers() {
                             valueFormat={
                                 convertPieToUSD
                                     ? (value) => {
-                                          return formatNumberWithStyle(value * parseFloat(redemptionPrice.raw), {
-                                              maxDecimals: 2,
-                                              style: 'currency',
-                                          })
-                                      }
+                                        return formatNumberWithStyle(value * parseFloat(redemptionPrice.raw), {
+                                            maxDecimals: 2,
+                                            style: 'currency',
+                                        })
+                                    }
                                     : (value) => {
-                                          return `${formatNumberWithStyle(value, { maxDecimals: 0 })} HAI`
-                                      }
+                                        return `${formatNumberWithStyle(value, { maxDecimals: 0 })} HAI`
+                                    }
                             }
                         />
                         <Legend $column data={poolPieData} style={{ top: 'calc(50% - 96px)' }} />

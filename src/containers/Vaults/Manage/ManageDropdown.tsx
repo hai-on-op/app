@@ -42,7 +42,7 @@ export function ManageDropdown(props: FlexProps) {
                     <Text style={{ 
                         wordBreak: 'break-word',
                         whiteSpace: 'normal',
-                        lineHeight: '1.2'
+                        lineHeight: '1.2',
                     }}>{collateral.name}</Text>
                     {!!vault && <Text $fontWeight={400}>#{vault.id}</Text>}
                     <Text>•</Text>

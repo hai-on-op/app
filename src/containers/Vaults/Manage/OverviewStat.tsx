@@ -1,7 +1,6 @@
-import type { TokenKey } from '~/types'
+import type { TokenKey , ReactChildren } from '~/types'
 import { Status } from '~/utils'
 import { useMediaQuery } from '~/hooks'
-import type { ReactChildren } from '~/types'
 
 import styled, { css } from 'styled-components'
 import { CenteredFlex, type DashedContainerProps, DashedContainerStyle, Flex, Text } from '~/styles'
@@ -53,7 +52,7 @@ export function OverviewStat({
                     <Text $fontSize="0.8em" style={{ 
                         wordBreak: 'break-word',
                         whiteSpace: 'normal',
-                        lineHeight: '1.2'
+                        lineHeight: '1.2',
                     }}>
                         {label}
                     </Text>
@@ -78,7 +77,7 @@ export function OverviewStat({
                     <Text $fontSize="0.8em" style={{ 
                         wordBreak: 'break-word',
                         whiteSpace: 'normal',
-                        lineHeight: '1.2'
+                        lineHeight: '1.2',
                     }}>
                         {label}
                     </Text>

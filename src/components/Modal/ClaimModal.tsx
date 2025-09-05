@@ -137,19 +137,20 @@ type ClaimableAssetProps = {
       }
 )
 
-const ClaimableIncentive = ({
-    asset,
-    claim,
-    price,
-    onSuccess,
-}: {
+const ClaimableIncentive: React.FC<{
     asset: string
     claim: IncentiveClaim
     price: number
     onSuccess?: () => void
+}> = ({
+    asset,
+    claim,
+    price,
+    onSuccess,
 }) => {
     console.log(`ClaimableIncentive for ${asset}:`, claim)
     console.log('--------------------------------')
+    const distributor = useDistributorContract(claim.distributorAddress)
     if (!claim || claim.isClaimed) return null
 
     // Make sure we have the correct amount/value for display
@@ -158,7 +159,6 @@ const ClaimableIncentive = ({
         amount = typeof claim.amount === 'object' ? utils.formatEther(claim.amount) : claim.amount.toString()
     }
 
-    const distributor = useDistributorContract(claim.distributorAddress)
     return (
         <ClaimableAsset
             key={`distributor-${claim.distributorAddress}`}
@@ -373,8 +373,8 @@ export function ClaimModal(props: ModalProps) {
                     token === 'HAI'
                         ? parseFloat(currentRedemptionPrice || '1')
                         : token === 'KITE'
-                        ? Number(kitePrice || 0)
-                        : parseFloat(collateralLiquidationData?.[token]?.currentPrice.value || '0')
+                            ? Number(kitePrice || 0)
+                            : parseFloat(collateralLiquidationData?.[token]?.currentPrice.value || '0')
                 acc.prices[token] = price || 0 // Ensure price is never undefined
                 acc.total += parseFloat(sellAmount) * (price || 0) // Safely handle undefined price
                 return acc
@@ -408,11 +408,11 @@ export function ClaimModal(props: ModalProps) {
         // Normalize to legacy shape expected by UI pieces
         const data = raw
             ? {
-                  ...raw,
-                  hasClaimableDistros: Boolean(raw.hasClaimable),
-                  amount: raw.amountWei ? utils.parseEther(utils.formatEther(raw.amountWei)) : undefined,
-                  claimIt: raw.claim,
-              }
+                ...raw,
+                hasClaimableDistros: Boolean(raw.hasClaimable),
+                amount: raw.amountWei ? utils.parseEther(utils.formatEther(raw.amountWei)) : undefined,
+                claimIt: raw.claim,
+            }
             : undefined
 
         console.log(`Processing ${token}:`, data, 'price:', price)
@@ -428,20 +428,20 @@ export function ClaimModal(props: ModalProps) {
     const incentivesContent = isIncentivesLoading || !incentives?.claims.data
         ? []
         : INCENTIVE_TOKENS.flatMap((token) => {
-              const { data, price } = incentiveTokens[token]
-              if (!data?.hasClaimableDistros) return []
+            const { data, price } = incentiveTokens[token]
+            if (!data?.hasClaimableDistros) return []
 
-              console.log(`${token} has claimable distros:`, data.hasClaimableDistros)
-              return [
-                  <ClaimableIncentive
-                      key={`${token}-Daily-rewards`}
-                      asset={token}
-                      claim={{ ...data }}
-                      price={price}
-                      onSuccess={() => incentives.claims.refetch()}
-                  />,
-              ]
-          })
+            console.log(`${token} has claimable distros:`, data.hasClaimableDistros)
+            return [
+                <ClaimableIncentive
+                    key={`${token}-Daily-rewards`}
+                    asset={token}
+                    claim={{ ...data }}
+                    price={price}
+                    onSuccess={() => incentives.claims.refetch()}
+                />,
+            ]
+        })
 
     // Direct calculation for each token's incentive value
     // This is more reliable than the generic function
@@ -505,29 +505,29 @@ export function ClaimModal(props: ModalProps) {
         }),
         ...(parseFloat(internalBalances.HAI?.raw || '0') > 0
             ? [
-                  <ClaimableAsset
-                      key="internalHai"
-                      asset="COIN"
-                      amount={internalBalances.HAI?.raw || '0'}
-                      price={parseFloat(liquidationData?.currentRedemptionPrice || '1')}
-                      internal={true}
-                      incentive={false}
-                      onSuccess={internalBalances.refetch}
-                  />,
-              ]
+                <ClaimableAsset
+                    key="internalHai"
+                    asset="COIN"
+                    amount={internalBalances.HAI?.raw || '0'}
+                    price={parseFloat(liquidationData?.currentRedemptionPrice || '1')}
+                    internal={true}
+                    incentive={false}
+                    onSuccess={internalBalances.refetch}
+                />,
+            ]
             : []),
         ...(parseFloat(internalBalances.KITE?.raw || '0') > 0
             ? [
-                  <ClaimableAsset
-                      key="internalKITE"
-                      asset="PROTOCOL_TOKEN"
-                      amount={internalBalances.KITE?.raw || '0'}
-                      price={10}
-                      internal={true}
-                      incentive={false}
-                      onSuccess={internalBalances.refetch}
-                  />,
-              ]
+                <ClaimableAsset
+                    key="internalKITE"
+                    asset="PROTOCOL_TOKEN"
+                    amount={internalBalances.KITE?.raw || '0'}
+                    price={10}
+                    internal={true}
+                    incentive={false}
+                    onSuccess={internalBalances.refetch}
+                />,
+            ]
             : []),
     ]
 

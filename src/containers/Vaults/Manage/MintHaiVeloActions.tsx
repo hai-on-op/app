@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 
-import { formatNumberWithStyle } from '~/utils'
+import { formatNumberWithStyle , sanitizeDecimals } from '~/utils'
 import styled from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
 import { NumberInput } from '~/components/NumberInput'
@@ -14,7 +14,6 @@ import { useTokenAllowance } from '~/hooks/useTokenApproval'
 import { useContract } from '~/hooks/useContract'
 import { ethers } from 'ethers'
 import { useAccount } from 'wagmi'
-import { sanitizeDecimals } from '~/utils'
 import { HAI_VELO_V2_TOKEN_ADDRESS, VE_NFT_CONTRACT_ADDRESS } from '~/services/haiVeloService'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 
@@ -29,11 +28,11 @@ export function MintHaiVeloActions() {
         selectedVeVeloNFTs,
         setSelectedVeVeloNFTs,
         data: {
-        loading, 
-        error, 
-        veloBalanceFormatted, 
-        veVeloBalanceFormatted,
-        veVeloNFTs,
+            loading, 
+            error, 
+            veloBalanceFormatted, 
+            veVeloBalanceFormatted,
+            veVeloNFTs,
             haiVeloV1BalanceFormatted,
             haiVeloV2Balance,
             haiVeloV2BalanceFormatted,
@@ -107,17 +106,21 @@ export function MintHaiVeloActions() {
     // Get available balance for selected token (raw string, not formatted)
     const getAvailableBalanceRaw = (token: 'VELO' | 'veVELO' | 'haiVELO_v1'): string => {
         switch (token) {
-            case 'VELO':
+            case 'VELO': {
                 return String(veloBalanceFormatted || '0')
-            case 'veVELO':
+            }
+            case 'veVELO': {
                 // Calculate total from selected NFTs
                 const selectedNFTs = veVeloNFTs.filter(nft => selectedVeVeloNFTs.includes(nft.tokenId))
                 const totalBalance = selectedNFTs.reduce((sum, nft) => sum + parseFloat(nft.balanceFormatted), 0)
                 return String(totalBalance)
-            case 'haiVELO_v1':
+            }
+            case 'haiVELO_v1': {
                 return String(haiVeloV1BalanceFormatted || '0')
-            default:
+            }
+            default: {
                 return '0.00'
+            }
         }
     }
 
@@ -426,8 +429,8 @@ export function MintHaiVeloActions() {
                             })(),
                             migrateV1Wei: convertAmountHaiVeloV1
                                 ? ethers.utils
-                                      .parseUnits((convertAmountHaiVeloV1 || '0').replace(/,/g, ''), 18)
-                                      .toString()
+                                    .parseUnits((convertAmountHaiVeloV1 || '0').replace(/,/g, ''), 18)
+                                    .toString()
                                 : undefined,
                         })
                         setApprovalsOpen(true)

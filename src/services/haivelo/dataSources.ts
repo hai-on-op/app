@@ -18,7 +18,7 @@ export type FetchV1SafesResult = {
 const HAI_VELO_V2_MINIMAL_ERC20_ABI = [
     'function balanceOf(address) view returns (uint256)',
     'function totalSupply() view returns (uint256)',
-    'function decimals() view returns (uint8)'
+    'function decimals() view returns (uint8)',
 ]
 
 const ERC20_MIN_ABI = HAI_VELO_V2_MINIMAL_ERC20_ABI
@@ -26,7 +26,7 @@ const ERC20_MIN_ABI = HAI_VELO_V2_MINIMAL_ERC20_ABI
 const VE_NFT_ABI = [
     'function balanceOf(address _owner) view returns (uint256)',
     'function ownerToNFTokenIdList(address _owner, uint256 _index) view returns (uint256)',
-    'function balanceOfNFT(uint256 _tokenId) view returns (uint256)'
+    'function balanceOfNFT(uint256 _tokenId) view returns (uint256)',
 ]
 
 export async function fetchV1Safes(collateralId: 'HAIVELO' = 'HAIVELO', limit = 1000): Promise<FetchV1SafesResult> {

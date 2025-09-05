@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { formatNumberWithStyle, Status } from '~/utils'
+import { formatNumberWithStyle, Status , getRatePercentage } from '~/utils'
 
 import styled from 'styled-components'
 import { type DashedContainerProps, DashedContainerStyle, Flex, Grid, Text, CenteredFlex } from '~/styles'
@@ -10,7 +10,6 @@ import { Swirl } from '~/components/Icons/Swirl'
 import { useBoost } from '~/hooks/useBoost'
 import { useUnderlyingAPR } from '~/hooks/useUnderlyingAPR'
 import { useStoreState } from '~/store'
-import { getRatePercentage } from '~/utils'
 import { useAccount } from 'wagmi'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { useHaiVeloAccount } from '~/hooks/haivelo/useHaiVeloAccount'
@@ -141,9 +140,9 @@ export function HaiVeloOverview() {
             simulatedProgress:
                 simulatedAmount > 0
                     ? {
-                          progress: simProgress,
-                          label: `${(simProgress * 100).toFixed(1)}% After Tx`,
-                      }
+                        progress: simProgress,
+                        label: `${(simProgress * 100).toFixed(1)}% After Tx`,
+                    }
                     : undefined,
             colorLimits: [0, 0.5, 1] as [number, number, number],
             labels: [],

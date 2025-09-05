@@ -47,11 +47,11 @@ const App = () => {
                 <ErrorBoundary>
                     <ApolloProvider client={client}>
                         <VelodromePriceProvider>
-                                <RewardsProvider>
-                                    <StakingProvider>
-                                        <AnalyticsProvider>
-                                            <EffectsProvider>
-                                                <ClaimsProvider>
+                            <RewardsProvider>
+                                <StakingProvider>
+                                    <AnalyticsProvider>
+                                        <EffectsProvider>
+                                            <ClaimsProvider>
                                                 <Shared>
                                                     <Suspense fallback={null}>
                                                         <Route />
@@ -130,11 +130,11 @@ const App = () => {
                                                         </>
                                                     </Suspense>
                                                 </Shared>
-                                                </ClaimsProvider>
-                                            </EffectsProvider>
-                                        </AnalyticsProvider>
-                                    </StakingProvider>
-                                </RewardsProvider>
+                                            </ClaimsProvider>
+                                        </EffectsProvider>
+                                    </AnalyticsProvider>
+                                </StakingProvider>
+                            </RewardsProvider>
                         </VelodromePriceProvider>
                     </ApolloProvider>
                 </ErrorBoundary>

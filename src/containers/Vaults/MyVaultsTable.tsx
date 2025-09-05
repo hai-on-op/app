@@ -106,9 +106,9 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                                         <Text $textAlign="right">
                                             {collateralRatio
                                                 ? formatNumberWithStyle(collateralRatio, {
-                                                      scalingFactor: 0.01,
-                                                      style: 'percent',
-                                                  })
+                                                    scalingFactor: 0.01,
+                                                    style: 'percent',
+                                                })
                                                 : '--%'}
                                         </Text>
                                         <Flex $justify="flex-start" $align="center">
@@ -140,12 +140,12 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                             },
                             {
                                 content: (
-                                  <Text>
-                                      {formatNumberWithStyle(-getRatePercentage(totalAnnualizedStabilityFee || '1', 4, true), {
-                                          style: 'percent',
-                                          maxDecimals: 2,
-                                      })}
-                                  </Text>
+                                    <Text>
+                                        {formatNumberWithStyle(-getRatePercentage(totalAnnualizedStabilityFee || '1', 4, true), {
+                                            style: 'percent',
+                                            maxDecimals: 2,
+                                        })}
+                                    </Text>
                                 ),
                             },
                             {

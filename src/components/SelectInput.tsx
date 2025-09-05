@@ -147,7 +147,7 @@ const SelectButton = styled.div<{ $disabled: boolean; $isOpen: boolean }>`
     
     &:hover {
         ${({ $disabled, theme }) =>
-            !$disabled &&
+        !$disabled &&
             css`
                 border-color: ${theme.colors.primary};
             `}
@@ -229,7 +229,7 @@ const DropdownOption = styled.div<{ $isSelected: boolean }>`
     
     &:hover {
         background: ${({ theme, $isSelected }) => 
-            $isSelected ? theme.colors.yellowish + '60' : theme.colors.yellowish + '80'};
+        $isSelected ? theme.colors.yellowish + '60' : theme.colors.yellowish + '80'};
     }
     
   
