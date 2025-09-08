@@ -3,6 +3,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { formatNumberWithStyle , sanitizeDecimals } from '~/utils'
 import styled from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
+import { StatusLabel } from '~/components/StatusLabel'
+import { Status } from '~/utils'
 import { NumberInput } from '~/components/NumberInput'
 import { SelectInput, type SelectOption } from '~/components/SelectInput'
 import { MultiSelectInput, type MultiSelectOption } from '~/components/MultiSelectInput'
@@ -401,6 +403,100 @@ export function MintHaiVeloActions() {
                         })()
                     }
                 />
+
+                {/* Selected for Conversion Summary (moved below inputs) */}
+                <Flex $column $gap={8} $width="100%">
+                    <Text $fontWeight={700}>Selected for Conversion</Text>
+                    {(() => {
+                        const veloAmt = Number((convertAmountVelo || '0').replace(/,/g, ''))
+                        const hv1Amt = Number((convertAmountHaiVeloV1 || '0').replace(/,/g, ''))
+                        const selected = veVeloNFTs.filter((n) => selectedVeVeloNFTs.includes(n.tokenId))
+                        const hasAny = veloAmt > 0 || hv1Amt > 0 || selected.length > 0
+                        if (!hasAny) {
+                            return (
+                                <Text $color="rgba(0,0,0,0.5)" $fontSize="0.9em">
+                                    Nothing selected yet. Choose VELO, haiVELO v1, or veVELO NFTs to convert.
+                                </Text>
+                            )
+                        }
+                        return (
+                            <Flex $column $gap={8}>
+                                {veloAmt > 0 && (
+                                    <Flex $justify="space-between" $align="center">
+                                        <Text>
+                                            VELO: <strong>{formatNumberWithStyle(veloAmt, { maxDecimals: 2 })}</strong>
+                                        </Text>
+                                        <Text
+                                            $textDecoration="underline"
+                                            $color="rgba(0,0,0,0.6)"
+                                            style={{ cursor: 'pointer' }}
+                                            onClick={() => setConvertAmountVelo('')}
+                                        >
+                                            Clear
+                                        </Text>
+                                    </Flex>
+                                )}
+                                {hv1Amt > 0 && (
+                                    <Flex $justify="space-between" $align="center">
+                                        <Text>
+                                            haiVELO v1: <strong>{formatNumberWithStyle(hv1Amt, { maxDecimals: 2 })}</strong>
+                                        </Text>
+                                        <Text
+                                            $textDecoration="underline"
+                                            $color="rgba(0,0,0,0.6)"
+                                            style={{ cursor: 'pointer' }}
+                                            onClick={() => setConvertAmountHaiVeloV1('')}
+                                        >
+                                            Clear
+                                        </Text>
+                                    </Flex>
+                                )}
+                                {selected.length > 0 && (
+                                    <Flex $column $gap={6}>
+                                        {selected.map((n) => (
+                                            <Flex key={n.tokenId} $justify="space-between" $align="center">
+                                                <Text>
+                                                    veVELO #{n.tokenId}:{' '}
+                                                    <strong>
+                                                        {formatNumberWithStyle(parseFloat(n.balanceFormatted), { maxDecimals: 2 })}
+                                                    </strong>
+                                                </Text>
+                                                <Text
+                                                    $textDecoration="underline"
+                                                    $color="rgba(0,0,0,0.6)"
+                                                    style={{ cursor: 'pointer' }}
+                                                    onClick={() => setSelectedVeVeloNFTs(selectedVeVeloNFTs.filter((id) => id !== n.tokenId))}
+                                                >
+                                                    Clear
+                                                </Text>
+                                            </Flex>
+                                        ))}
+                                        {selected.length > 1 && (
+                                            <Flex $justify="flex-end">
+                                                <Text
+                                                    $textDecoration="underline"
+                                                    $color="rgba(0,0,0,0.6)"
+                                                    style={{ cursor: 'pointer' }}
+                                                    onClick={() => setSelectedVeVeloNFTs([])}
+                                                >
+                                                    Clear all NFTs
+                                                </Text>
+                                            </Flex>
+                                        )}
+                                    </Flex>
+                                )}
+                            </Flex>
+                        )
+                    })()}
+                </Flex>
+
+                {/* Conversion Warning */}
+                <WarningLabel status={Status.CUSTOM} background="gradientCooler">
+                    <Text $fontSize="0.8em">
+                        ⚠️ VELO and haiVELO v1 converted here are permanently max locked into veVELO with
+                        haiVELO v2 issued at a 1:1 ratio.
+                    </Text>
+                </WarningLabel>
             </Body>
             <Footer>
                 <HaiButton
@@ -519,4 +615,9 @@ const Footer = styled(CenteredFlex).attrs((props) => ({
     width: 100%;
     padding: 24px;
     border-top: ${({ theme }) => theme.border.thin};
+`
+
+// Reduce radius for the warning label specifically
+const WarningLabel = styled(StatusLabel)`
+    border-radius: 12px;
 `
