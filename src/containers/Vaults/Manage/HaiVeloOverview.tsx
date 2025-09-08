@@ -227,7 +227,14 @@ export function HaiVeloOverview() {
                 {/* Removed duplicate panel for Total haiVELO Deposited; represented by progress bar below */}
 
                 {/* Progress bar section with simulation overlay */}
-                <OverviewProgressStat value={0} label="Total haiVELO Deposited:" {...progressProps} fullWidth />
+                <OverviewProgressStat
+                    value={progressProps.progress?.label || '--%'}
+                    label="Total haiVELO Deposited:"
+                    progress={progressProps.progress}
+                    colorLimits={progressProps.colorLimits}
+                    labels={progressProps.labels}
+                    fullWidth
+                />
             </Inner>
         </Container>
     )
