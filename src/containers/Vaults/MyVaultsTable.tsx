@@ -85,7 +85,7 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                                 content: (
                                     <Grid $columns="2fr min-content 1fr" $align="center" $gap={12}>
                                         <CenteredFlex $width="fit-content" $gap={4}>
-                                            <TokenArray tokens={[collateralName as any]} />
+                                            <TokenArray tokens={[collateralName as any]} label={formatCollateralLabel(collateralName)} />
                                             <Text>#{id}</Text>
                                         </CenteredFlex>
                                         {HAS_REWARDS.includes(collateralName) && (
