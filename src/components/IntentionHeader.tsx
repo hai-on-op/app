@@ -185,7 +185,12 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
     const subtitle = isHaiVeloOpen
         ? 'Convert your VELO & veVELO into haiVELO to use as collateral while earning veVELO rewards. '
         : baseCopy.subtitle
-    const { cta, ctaLink } = baseCopy
+    let cta = baseCopy.cta
+    let ctaLink = baseCopy.ctaLink
+    if (isHaiVeloOpen) {
+        cta = 'Read more about haiVELO →'
+        ctaLink = 'https://docs.letsgethai.com/using-haivelo'
+    }
 
     const selectedValue = isHaiVeloOpen ? 'vaults/open?collateral=HAIVELOV2' : (type as unknown as string)
 
