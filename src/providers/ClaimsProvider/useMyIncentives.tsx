@@ -428,14 +428,15 @@ export const fetchIncentivesData = async (geb: any, account: string, chainId: Ch
             )?.value
 
             if (accountClaim) {
+                
                 //      console.log('Account Claim =======', accountClaim)
                 const hasClaimableDistros = accountClaim && ethers.BigNumber.from(accountClaim[1]).gt(0) && !isClaimed
                 const claimableAmount = accountClaim ? ethers.BigNumber.from(accountClaim[1]) : ethers.BigNumber.from(0)
                 //        console.log('here===================?? ds fvsdv')
 
-                const claimingData = [account, claimableAmount]
+                // const claimingData = [account, claimableAmount]
+                const claimingData: [string, bigint] = [account, BigInt(claimableAmount.toString())]
 
-                //console.log('claimingData', claimingData)
 
                 const proof = tokenTree.getProof(claimingData)
 
