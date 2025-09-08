@@ -142,7 +142,11 @@ export function StrategyTable({
                                             <Flex $justify="flex-start" $align="center" $gap={8}>
                                                 <TokenArray tokens={pair} hideLabel />
                                                 <Text $fontWeight={700}>
-                                                    {pair.join('/')}
+                                                    {pair
+                                                        .map((t) =>
+                                                            strategyType === 'borrow' && t === 'HAIVELO' ? 'HAIVELOV1' : t
+                                                        )
+                                                        .join('/')}
                                                 </Text>
                                             </Flex>
                                             <RewardsTokenArray

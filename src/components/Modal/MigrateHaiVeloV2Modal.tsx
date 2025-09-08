@@ -1,6 +1,7 @@
 import { Modal, type ModalProps } from '~/components/Modal'
 import styled from 'styled-components'
 import { Flex, HaiButton, Text } from '~/styles'
+import { Link } from '~/components/Link'
 
 export function MigrateHaiVeloV2Modal(props: ModalProps) {
     return (
@@ -30,7 +31,10 @@ export function MigrateHaiVeloV2Modal(props: ModalProps) {
                     <Text $fontSize="16px"><strong>Step 02:</strong> Withdraw haiVELO v1 collateral</Text>
                 </StepCard>
                 <StepCard>
-                    <Text $fontSize="16px"><strong>Step 03:</strong> Convert haiVELO v1 to haiVELO v2 in the new user interface</Text>
+                    <Text $fontSize="16px">
+                        <strong>Step 03:</strong> Convert haiVELO v1 to haiVELO v2 in the{' '}
+                        <Link href="/vaults/open?collateral=HAIVELOV2" onClick={props.onClose}>new user interface</Link>
+                    </Text>
                 </StepCard>
                 <StepCard>
                     <Text $fontSize="16px"><strong>Step 04:</strong> Deposit haiVELO v2 as collateral and mint HAI</Text>
