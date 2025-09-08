@@ -17,7 +17,7 @@
         "format:check": "yarn run prettier && yarn run lint"
     },
     "engines": {
-        "node": ">=22.15.0"
+        "node": ">=20.19.4"
     },
     "peerDependencies": {
         "@babel/runtime": "7.17.0",
