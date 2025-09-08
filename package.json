@@ -16,6 +16,9 @@
         "format": "yarn run prettier:fix && yarn run lint:fix",
         "format:check": "yarn run prettier && yarn run lint"
     },
+    "engines": {
+        "node": ">=22.15.0"
+    },
     "peerDependencies": {
         "@babel/runtime": "7.17.0",
         "react": "17.0.1",
