@@ -165,7 +165,7 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
         // Always include a dedicated haiVELO option (do not replace existing Get $HAI)
         const haiVeloOption: BrandedSelectOption = {
             label: 'Get haiVELO',
-            value: 'vaults/open?collateral=HAIVELOV2',
+            value: 'haiVELO',
             icon: ['HAIVELOV2'],
             description: 'Convert VELO into haiVELO and mint against it',
         }

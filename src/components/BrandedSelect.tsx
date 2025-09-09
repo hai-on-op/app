@@ -115,7 +115,8 @@ const Select = styled(Title)`
     left: 12px;
     appearance: none;
     -webkit-appearance: none;
-    width: 100%;
+    width: auto;
+    min-width: 340px;
     background-color: transparent;
     outline: none;
     border: none;
