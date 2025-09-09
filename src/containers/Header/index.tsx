@@ -90,7 +90,8 @@ export function Header({ tickerActive = false }: HeaderProps) {
     )
 
     const isHaiVeloRoute =
-        location.pathname === '/vaults/open' && ['HAIVELO', 'HAIVELOV2'].includes(new URLSearchParams(location.search).get('collateral') || '')
+        location.pathname === '/haiVELO' ||
+        (location.pathname === '/vaults/open' && ['HAIVELO', 'HAIVELOV2'].includes(new URLSearchParams(location.search).get('collateral') || ''))
 
     return (
         <>
@@ -187,7 +188,7 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                                 GET HAI
                                             </HeaderLink>
                                         </Link>
-                                        <Link href="/vaults/open?collateral=HAIVELOV2" $textDecoration="none">
+                                        <Link href="/haiVELO" $textDecoration="none">
                                             <HeaderLink $active={isHaiVeloRoute} style={{ textTransform: 'none' }}>
                                                 haiVELO
                                             </HeaderLink>

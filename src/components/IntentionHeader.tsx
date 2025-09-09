@@ -135,13 +135,17 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
                 stats: <StakeStats />,
             }
         }
-        if (location.pathname.startsWith('/vaults')) {
+        if (location.pathname.startsWith('/vaults') || location.pathname === '/haiVELO') {
             switch (location.pathname) {
                 case '/vaults':
                 case '/vaults/manage':
                 case '/vaults/open':
+                case '/haiVELO':
                     // If opening haiVELO(v2) collateral, show special haiVELO stats
-                    if (['HAIVELO', 'HAIVELOV2'].includes(new URLSearchParams(location.search).get('collateral') || '')) {
+                    if (
+                        location.pathname === '/haiVELO' ||
+                        ['HAIVELO', 'HAIVELOV2'].includes(new URLSearchParams(location.search).get('collateral') || '')
+                    ) {
                         return {
                             type: Intention.BORROW,
                             stats: <HaiVeloStats />,
@@ -179,7 +183,8 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
     if (!type) return null
 
     const isHaiVeloOpen =
-        location.pathname === '/vaults/open' && ['HAIVELO', 'HAIVELOV2'].includes(new URLSearchParams(location.search).get('collateral') || '')
+        location.pathname === '/haiVELO' ||
+        (location.pathname === '/vaults/open' && ['HAIVELO', 'HAIVELOV2'].includes(new URLSearchParams(location.search).get('collateral') || ''))
 
     const baseCopy = copy[type]
     const subtitle = isHaiVeloOpen
@@ -192,7 +197,7 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
         ctaLink = 'https://docs.letsgethai.com/using-haivelo'
     }
 
-    const selectedValue = isHaiVeloOpen ? 'vaults/open?collateral=HAIVELOV2' : (type as unknown as string)
+    const selectedValue = isHaiVeloOpen ? 'haiVELO' : (type as unknown as string)
 
     return (
         <Container>

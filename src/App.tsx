@@ -24,6 +24,7 @@ import { Vaults } from '~/containers/Vaults'
 import { Contracts } from '~/containers/Contracts'
 import { Learn } from './containers/Learn'
 import { VaultExplorer } from './containers/Vaults/Explore'
+import { HaiVeloPage } from './containers/HaiVeloPage'
 import { TestClaim } from './containers/TestClaim'
 import { Stake } from './containers/Stake'
 import { TestClaimVelo } from './containers/TestClaimVelo'
@@ -113,6 +114,7 @@ const App = () => {
                                                                     component={Vaults}
                                                                     path={'/vaults/open'}
                                                                 />
+                                                                <Route exact strict component={HaiVeloPage} path={'/haiVELO'} />
                                                                 <Route
                                                                     exact
                                                                     component={Vaults}

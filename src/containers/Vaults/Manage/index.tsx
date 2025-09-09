@@ -30,7 +30,8 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
 
     const isHAIVELO =
         vault?.collateralName === 'HAIVELOV2' ||
-        new URLSearchParams(window.location.search).get('collateral') === 'HAIVELOV2'
+        new URLSearchParams(window.location.search).get('collateral') === 'HAIVELOV2' ||
+        window.location.pathname === '/haiVELO'
 
     const isHAIVELO_V1 =
         vault?.collateralName === 'HAIVELO' ||
