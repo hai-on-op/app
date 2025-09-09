@@ -44,6 +44,10 @@ export const REWARDS = {
             KITE: 50,
             OP: 0,
         },
+        HAIVELOV2: {
+            KITE: 0,
+            OP: 0,
+        },
         MSETH: {
             KITE: 25,
             OP: 0,
