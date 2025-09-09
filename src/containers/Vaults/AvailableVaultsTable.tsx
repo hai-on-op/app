@@ -143,7 +143,8 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                                                 )}
                                                             </>
                                                         )}
-                                                        {(collateralName === 'HAIVELO' || collateralName === 'HAIVELOV2') && (
+                                                        {(collateralName === 'HAIVELO' ||
+                                                            collateralName === 'HAIVELOV2') && (
                                                             <RewardsTokenArray
                                                                 tokens={['HAI', 'KITE']}
                                                                 label="EARN"
