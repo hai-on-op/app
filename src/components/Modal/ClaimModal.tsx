@@ -334,6 +334,7 @@ function ClaimableAsset({
 
 export function ClaimModal(props: ModalProps) {
     const { address: account } = useAccount()
+    const parentSigner = useEthersSigner()
 
     const { popupsModel: popupsActions, transactionsModel: transactionsActions } = useStoreActions((actions) => actions)
 
@@ -541,8 +542,8 @@ export function ClaimModal(props: ModalProps) {
 
     const onClaimAll = async () => {
         const formatted = isFormattedAddress(account)
-        if (!formatted || !tokenWithClaimAll) {
-            console.debug('wrong address or no token with claimAll')
+        if (!formatted || !tokenWithClaimAll || !parentSigner) {
+            console.debug('wrong address or no token with claimAll or no signer')
             return false
         }
         try {
@@ -573,7 +574,7 @@ export function ClaimModal(props: ModalProps) {
         }
     }
 
-    const isClaimAllDisabled = !tokenWithClaimAll
+    const isClaimAllDisabled = !tokenWithClaimAll || !parentSigner
 
     return (
         <Modal

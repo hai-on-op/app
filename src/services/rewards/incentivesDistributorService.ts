@@ -39,6 +39,26 @@ function isFormattedAddress(addr: string | undefined | null): addr is Address {
     return Boolean(addr && /^0x[a-fA-F0-9]{40}$/.test(addr))
 }
 
+function resolveSigner(
+    signerOrProvider: ethers.Signer | ethers.providers.Provider,
+    fallbackProvider?: any
+): ethers.Signer {
+    // If a signer is already provided, use it
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((signerOrProvider as any)?._isSigner) {
+        return signerOrProvider as ethers.Signer
+    }
+    // Try to construct a signer from an injected wallet provider (e.g. wagmi wallet client / window.ethereum)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const anyGlobal = (globalThis as any) || {}
+    const injected = anyGlobal.ethereum || fallbackProvider
+    if (!injected) {
+        throw new Error('Wallet not connected: no signer available')
+    }
+    const web3 = new ethers.providers.Web3Provider(injected)
+    return web3.getSigner()
+}
+
 export async function getDistributorTimer(
     signerOrProvider: ethers.Signer | ethers.providers.Provider,
     options?: { contract?: any }
@@ -108,7 +128,7 @@ export async function getUserIncentives(
 
         const claim = async (): Promise<TransactionResponseLike | null> => {
             if (!hasClaimable) return null
-            const connected = (signerOrProvider as ethers.Signer)._isSigner ? (signerOrProvider as ethers.Signer) : (new ethers.providers.Web3Provider((rewardDistributor.provider as any).provider).getSigner())
+            const connected = resolveSigner(signerOrProvider, (rewardDistributor.provider as any)?.provider)
             const tx = await rewardDistributor.connect(connected).claim(TOKENS_ADDRESSES[token], accountClaim[1], proof)
             await tx.wait()
             return tx
@@ -121,7 +141,7 @@ export async function getUserIncentives(
     const hasAny = Object.values(result).some((r) => r?.hasClaimable)
     if (hasAny) {
         const claimAll = async (): Promise<TransactionResponseLike | null> => {
-            const connected = (signerOrProvider as ethers.Signer)._isSigner ? (signerOrProvider as ethers.Signer) : (new ethers.providers.Web3Provider((rewardDistributor.provider as any).provider).getSigner())
+            const connected = resolveSigner(signerOrProvider, (rewardDistributor.provider as any)?.provider)
             const fetched = await fetchClaimsBlob()
             if (!fetched) return null
             const tokens = Object.keys(TOKENS_ADDRESSES) as RewardToken[]
