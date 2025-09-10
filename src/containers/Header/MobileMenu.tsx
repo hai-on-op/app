@@ -194,10 +194,16 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
                             {isPlayingMusic ? 'Pause Music' : 'Play Music'}
                         </BrandedDropdown.Item>
                         <BrandedDropdown.Item
-                            href={`${LINK_TO_DOCS}detailed/intro/hai.html`}
+                            href={LINK_TO_DOCS}
                             icon={<FileText size={18} />}
                         >
                             Docs
+                        </BrandedDropdown.Item>
+                        <BrandedDropdown.Item
+                            href={'https://dev-docs.letsgethai.com/detailed/intro/index.html'}
+                            icon={<FileText size={18} />}
+                        >
+                            Dev Docs
                         </BrandedDropdown.Item>
                         <BrandedDropdown.Item href={LINK_TO_GOVERNANCE} icon={<Clipboard size={18} />}>
                             Governance

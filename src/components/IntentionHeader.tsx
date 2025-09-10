@@ -39,22 +39,22 @@ const copy: Record<
     [Intention.AUCTION]: {
         subtitle: 'Buy your favorite crypto assets from auctions at a potential discount. ',
         cta: 'Read more about auctions →',
-        ctaLink: `${LINK_TO_DOCS}detailed/auctions/index.html`,
+        ctaLink: `${LINK_TO_DOCS}`,
     },
     [Intention.BORROW]: {
         subtitle: 'Mint & borrow HAI against your preferred collateral. ',
         cta: 'Read more about borrowing →',
-        ctaLink: `${LINK_TO_DOCS}detailed/intro/hai.html`,
+        ctaLink: `${LINK_TO_DOCS}`,
     },
     [Intention.EARN]: {
         subtitle: 'Participate in DAO incentive campaigns to earn rewards. ',
         cta: 'Read more about earning opportunities →',
-        ctaLink: `${LINK_TO_DOCS}detailed/intro/hai.html`,
+        ctaLink: `${LINK_TO_DOCS}`,
     },
     [Intention.STAKE]: {
         subtitle: 'Stake KITE to earn protocol revenue and boost your incentives. ',
         cta: 'Read more about staking →',
-        ctaLink: `${LINK_TO_DOCS}detailed/intro/hai.html`,
+        ctaLink: `${LINK_TO_DOCS}`,
     },
 }
 
@@ -194,7 +194,7 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
     let ctaLink = baseCopy.ctaLink
     if (isHaiVeloOpen) {
         cta = 'Read more about haiVELO →'
-        ctaLink = 'https://docs.letsgethai.com/using-haivelo'
+        ctaLink = `${LINK_TO_DOCS}`
     }
 
     const selectedValue = isHaiVeloOpen ? 'haiVELO' : (type as unknown as string)

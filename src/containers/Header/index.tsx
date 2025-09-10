@@ -133,7 +133,7 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                     >
                                         Learn
                                     </HeaderLink>
-                                    <Link href={`${LINK_TO_DOCS}detailed/intro/hai.html`} $textDecoration="none">
+                                    <Link href={LINK_TO_DOCS} $textDecoration="none">
                                         <HeaderLink>Docs</HeaderLink>
                                     </Link>
                                     <CommunityDropdownContainer
