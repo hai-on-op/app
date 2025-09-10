@@ -16,6 +16,9 @@
         "format": "yarn run prettier:fix && yarn run lint:fix",
         "format:check": "yarn run prettier && yarn run lint"
     },
+    "engines": {
+        "node": ">=20.19.4"
+    },
     "peerDependencies": {
         "@babel/runtime": "7.17.0",
         "react": "17.0.1",
@@ -25,7 +28,7 @@
         "@apollo/client": "3.8.8",
         "@ethersproject/experimental": "5.4.0",
         "@ethersproject/providers": "5.4.5",
-        "@hai-on-op/sdk": "1.2.30",
+        "@hai-on-op/sdk": "1.2.31",
         "@nivo/core": "0.84.0",
         "@nivo/line": "0.84.0",
         "@nivo/pie": "0.84.0",
@@ -106,6 +109,13 @@
         ]
     },
     "resolutions": {
+        "chalk": "4.1.2",
+        "strip-ansi": "6.0.0",
+        "color-convert": "2.0.1",
+        "color-name": "1.1.4",
+        "is-core-module": "2.13.1",
+        "error-ex": "1.3.2",
+        "has-ansi": "5.0.1",
         "@types/react": "17.0.2",
         "@types/react-dom": "17.0.2",
         "react-error-overlay": "6.0.9"
