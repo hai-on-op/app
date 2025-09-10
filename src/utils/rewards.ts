@@ -21,7 +21,7 @@ export const REWARDS = {
             OP: 0,
         },
         'YV-VELO-MSETH-WETH': {
-            KITE: 25,
+            KITE: 50,
             OP: 0,
         },
         MSETH: {
