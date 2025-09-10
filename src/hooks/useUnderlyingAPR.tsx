@@ -42,10 +42,11 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
         const collateralLiquidationData = liquidationData.collateralLiquidationData?.[collateralType]
         const tokenData = Object.values(tokensData).find(token => token.symbol === collateralType)
    
-        // For HAI VELO, we need HAI price and the actual strategy data
+        // For HAI VELO (v1/v2), we need HAI price and the actual strategy data
         const haiPrice = Number(velodromePricesData?.HAI?.raw || 1)
         // Only pass the specific values we need to avoid dependency issues
-        const haiVeloBoostApr = collateralType === 'HAIVELO' ? strategyData?.haiVelo?.boostApr : undefined
+        const isHaiVelo = collateralType === 'HAIVELO' || collateralType === 'HAIVELOV2' || collateralType === 'HAIVELO_V2'
+        const haiVeloBoostApr = isHaiVelo ? strategyData?.haiVelo?.boostApr : undefined
 
         return {
             collateralType,
@@ -57,7 +58,7 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
                 tokenData,
                 haiPrice,
                 // Only pass the specific values we need to avoid dependency issues
-                haiVeloBoostApr: collateralType === 'HAIVELO' ? strategyData?.haiVelo?.boostApr : undefined,
+                haiVeloBoostApr: isHaiVelo ? strategyData?.haiVelo?.boostApr : undefined,
             },
         }
     }, [
@@ -65,8 +66,10 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
         liquidationData, 
         tokensData, 
         velodromePricesData?.HAI?.raw,
-        // For HAIVELO, depend on a stringified version of the boost data to avoid object reference issues
-        collateralType === 'HAIVELO' ? JSON.stringify(strategyData?.haiVelo?.boostApr) : null,
+        // For HAIVELO v1/v2, depend on a stringified version of the boost data to avoid object reference issues
+        (collateralType === 'HAIVELO' || collateralType === 'HAIVELOV2' || collateralType === 'HAIVELO_V2')
+            ? JSON.stringify(strategyData?.haiVelo?.boostApr)
+            : null,
     ])
 
     // Fetch underlying APR

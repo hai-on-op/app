@@ -234,8 +234,8 @@ class YieldBearingAPRCalculator implements IUnderlyingAPRCalculator {
 
     async calculateAPR(data: UnderlyingAPRData): Promise<UnderlyingAPRResult> {
         try {
-            // For HAI VELO, get the APR from the deposit strategy calculation
-            if (data.collateralType.toUpperCase() === 'HAIVELO') {
+            // For HAI VELO (v1 and v2), get the APR from the deposit strategy calculation
+            if (['HAIVELO', 'HAIVELOV2', 'HAIVELO_V2'].includes(data.collateralType.toUpperCase())) {
 
                 let baseAPR = 0.05 // Default fallback (decimal)
                 let userBoost = 1 // Default boost multiplier
@@ -359,6 +359,8 @@ export class UnderlyingAPRService {
         this.calculators.set('YV-VELO-ALETH-WETH', lpTokenCalculator)
         this.calculators.set('YV-VELO-MSETH-WETH', lpTokenCalculator)
         this.calculators.set('HAIVELO', yieldBearingCalculator)
+        this.calculators.set('HAIVELOV2', yieldBearingCalculator)
+        this.calculators.set('HAIVELO_V2', yieldBearingCalculator)
 
         // Standard tokens (no underlying yield)
         this.calculators.set('WETH', standardTokenCalculator)

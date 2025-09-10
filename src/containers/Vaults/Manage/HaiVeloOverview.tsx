@@ -217,7 +217,7 @@ export function HaiVeloOverview() {
                     tooltip="Total value of all haiVELO v2 deposited as collateral"
                 />
                 <OverviewStat
-                    value={formatNumberWithStyle((haiVeloBoostData?.myBoostedAPR || 0) / 100, {
+                    value={formatNumberWithStyle(underlyingAPR * (haiVeloBoostData?.myBoost || 1), {
                         style: 'percent',
                         maxDecimals: 2,
                     })}
