@@ -32,16 +32,15 @@ export function HaiVeloOverview() {
         simulatedDepositAmount,
     } = useHaiVelo()
 
-    // Net Rewards APR (haiVELO vault): mirror calculation used in Overview.tsx
-    const { individualVaultBoosts } = useBoost()
-    const haiVeloBoostData = individualVaultBoosts['HAIVELOV2'] || individualVaultBoosts['HAIVELO']
-    const { underlyingAPR } = useUnderlyingAPR({ collateralType: 'HAIVELO' })
+    // Net Rewards APR (haiVELO vault): use combined haiVELO boost (v1+v2)
+    const { hvBoost } = useBoost()
+    const { underlyingAPR } = useUnderlyingAPR({ collateralType: 'HAIVELOV2' })
     const { vaultModel } = useStoreState((state) => state)
-    const haiveloLiqData = vaultModel?.liquidationData?.collateralLiquidationData?.['HAIVELO']
+    const haiveloLiqData = vaultModel?.liquidationData?.collateralLiquidationData?.['HAIVELOV2']
     const stabilityFeeCost = haiveloLiqData
         ? -getRatePercentage(haiveloLiqData.totalAnnualizedStabilityFee || '1', 4, true)
         : 0
-    const mintingIncentivesAPR = haiVeloBoostData?.myBoostedAPR ? haiVeloBoostData.myBoostedAPR / 100 : 0
+    const mintingIncentivesAPR = 0
 
     // Estimate Net APR using assumed 200% collateral ratio (same approach as Manage/Overview fallback)
     const assumedCollateralRatio = 2.0
@@ -53,7 +52,7 @@ export function HaiVeloOverview() {
     const netAprDecimal =
         assumedCollateralValue > 0
             ? (collateralYield + debtNetYield) / assumedCollateralValue
-            : underlyingAPR + mintingIncentivesAPR + stabilityFeeCost
+            : underlyingAPR + stabilityFeeCost
 
     const { address } = useAccount()
     const addrLower = address?.toLowerCase()
@@ -156,6 +155,8 @@ export function HaiVeloOverview() {
         return formatNumberWithStyle(after, { maxDecimals: 2 })
     }, [myConvertibleVeloTotal, simulatedAmount])
 
+    
+
     return (
         <Container>
             <Header>
@@ -217,7 +218,7 @@ export function HaiVeloOverview() {
                     tooltip="Total value of all haiVELO v2 deposited as collateral"
                 />
                 <OverviewStat
-                    value={formatNumberWithStyle(underlyingAPR * (haiVeloBoostData?.myBoost || 1), {
+                    value={formatNumberWithStyle(underlyingAPR * (hvBoost || 1), {
                         style: 'percent',
                         maxDecimals: 2,
                     })}

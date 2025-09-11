@@ -39,7 +39,7 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
     const underlyingAPRValue = underlyingAPRHook.underlyingAPR
 
     // --- Generalized boost logic for all boostable vaults ---
-    const { individualVaultBoosts } = useBoost()
+    const { individualVaultBoosts, hvBoost } = useBoost()
     const boostData = individualVaultBoosts[collateral.name]
     const rewards = RewardsModel.getVaultRewards(collateral.name)
     const isBoostable = Object.values(rewards).some((v) => v > 0)
@@ -375,7 +375,8 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
 
                 {/* Calculate Net APR: (underlying APR + minting incentives APR) - stability fee */}
                 {(() => {
-                    const underlyingAPR = underlyingAPRValue
+                    const isHaiVelo = collateral.name === 'HAIVELO' || collateral.name === 'HAIVELOV2'
+                    const underlyingAPR = isHaiVelo ? underlyingAPRValue * (hvBoost || 1) : underlyingAPRValue
                     const mintingIncentivesAPR = boostData?.myBoostedAPR ? boostData.myBoostedAPR / 100 : 0
                     const stabilityFeeCost = -parseFloat(summary.stabilityFee.raw || '0') // Use raw value directly as negative cost
 

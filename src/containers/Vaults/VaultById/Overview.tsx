@@ -172,7 +172,10 @@ export function Overview({ vault }: OverviewProps) {
                         />
                     )
                     
-                    const underlyingAPR = underlyingAPRValue
+                    const isHaiVelo = vault.collateralToken === 'HAIVELO' || vault.collateralToken === 'HAIVELOV2'
+                    const underlyingAPR = isHaiVelo
+                        ? underlyingAPRValue * (Number(individualVaultBoosts?.[vault.collateralToken]?.myBoost) || Number(boostData?.myBoost) || 1)
+                        : underlyingAPRValue
                     const mintingIncentivesAPR = boostData?.myBoostedAPR ? boostData.myBoostedAPR / 100 : 0
                     const stabilityFeeCost = -getRatePercentage(vault.liquidationData.totalAnnualizedStabilityFee || '1', 4, true)
                     
