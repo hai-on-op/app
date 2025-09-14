@@ -157,6 +157,7 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                                             'YV-VELO-ALETH-WETH',
                                                             'YV-VELO-MSETH-WETH',
                                                             'HAIVELO',
+                                                            'HAIVELOV2',
                                                             'MSETH',
                                                             'HAIVELOV2',
                                                         ].includes(collateralName) && (

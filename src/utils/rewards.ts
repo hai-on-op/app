@@ -50,10 +50,9 @@ export const REWARDS = {
             OP: 0,
         },
         HAIVELOV2: {
-            KITE: 25,
+            KITE: 0,
             OP: 0,
         },
-
         // Testnet
         WBTC: {
             KITE: 0,
