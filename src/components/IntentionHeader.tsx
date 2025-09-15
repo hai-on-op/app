@@ -225,8 +225,11 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
                 {(() => {
                     // Hide haiVELO banner while on haiVELO routes
                     const isHaiVeloRoute =
-                        location.pathname.startsWith('/vaults') &&
-                        ['HAIVELO', 'HAIVELOV2'].includes(new URLSearchParams(location.search).get('collateral') || '')
+                        location.pathname === '/haiVELO' ||
+                        (location.pathname.startsWith('/vaults') &&
+                            ['HAIVELO', 'HAIVELOV2'].includes(
+                                new URLSearchParams(location.search).get('collateral') || ''
+                            ))
 
                     return haiVeloEnabled && !isHaiVeloRoute ? (
                         <>
