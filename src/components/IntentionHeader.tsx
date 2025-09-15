@@ -194,7 +194,7 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
     let ctaLink = baseCopy.ctaLink
     if (isHaiVeloOpen) {
         cta = 'Read more about haiVELO →'
-        ctaLink = `${LINK_TO_DOCS}`
+        ctaLink = 'https://docs.letsgethai.com/using-haivelo'
     }
 
     const selectedValue = isHaiVeloOpen ? 'haiVELO' : (type as unknown as string)
