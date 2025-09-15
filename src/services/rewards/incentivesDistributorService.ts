@@ -124,7 +124,9 @@ export async function getUserIncentives(
         const isClaimed = await rewardDistributor.isClaimed(tree.root, account)
         const hasClaimable = Boolean(accountClaim && ethers.BigNumber.from(accountClaim[1]).gt(0) && !isClaimed)
         const amountWei = accountClaim ? ethers.BigNumber.from(accountClaim[1]).toString() : '0'
-        const proof = accountClaim ? tree.getProof([account, ethers.BigNumber.from(accountClaim[1])]) : []
+        const proof = accountClaim
+            ? tree.getProof([account, BigInt(ethers.BigNumber.from(accountClaim[1]).toString())])
+            : []
 
         const claim = async (): Promise<TransactionResponseLike | null> => {
             if (!hasClaimable) return null
@@ -160,7 +162,9 @@ export async function getUserIncentives(
                 if (hasClaimable) {
                     targetTokens.push(TOKENS_ADDRESSES[token])
                     wads.push(ethers.BigNumber.from(accountClaim[1]))
-                    proofs.push(tree.getProof([account, ethers.BigNumber.from(accountClaim[1])]))
+                    proofs.push(
+                        tree.getProof([account, BigInt(ethers.BigNumber.from(accountClaim[1]).toString())])
+                    )
                 }
             }
             if (targetTokens.length === 0) return null
@@ -191,7 +195,7 @@ export async function claim(token: RewardToken, account: Address, signer: ethers
     const isClaimed = await rewardDistributor.isClaimed(tree.root, account)
     const hasClaimable = ethers.BigNumber.from(accountClaim[1]).gt(0) && !isClaimed
     if (!hasClaimable) return null
-    const proof = tree.getProof([account, ethers.BigNumber.from(accountClaim[1])])
+    const proof = tree.getProof([account, BigInt(ethers.BigNumber.from(accountClaim[1]).toString())])
     const tx = await rewardDistributor.connect(signer).claim(TOKENS_ADDRESSES[token], accountClaim[1], proof)
     await tx.wait()
     return tx
@@ -217,7 +221,9 @@ export async function claimAll(account: Address, signer: ethers.Signer): Promise
         if (hasClaimable) {
             targetTokens.push(TOKENS_ADDRESSES[token])
             wads.push(ethers.BigNumber.from(accountClaim[1]))
-            proofs.push(tree.getProof([account, ethers.BigNumber.from(accountClaim[1])]))
+            proofs.push(
+                tree.getProof([account, BigInt(ethers.BigNumber.from(accountClaim[1]).toString())])
+            )
         }
     }
     if (targetTokens.length === 0) return null
