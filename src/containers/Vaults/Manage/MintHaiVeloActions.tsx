@@ -363,9 +363,20 @@ export function MintHaiVeloActions() {
                         subLabel={`Available: ${getAvailableBalanceDisplay(selectedToken)} ${getTokenLabel(selectedToken)}`}
                         placeholder="Amount to Convert"
                         unitLabel={getTokenLabel(selectedToken)}
+                        min="0"
+                        max={getAvailableBalanceRaw(selectedToken)}
                         onChange={(value: string) => {
-                            if (selectedToken === 'VELO') setConvertAmountVelo(value || '')
-                            if (selectedToken === 'haiVELO_v1') setConvertAmountHaiVeloV1(value || '')
+                            const maxStr = getAvailableBalanceRaw(selectedToken)
+                            const maxNum = Number((maxStr || '0').toString())
+                            const nextValue = value === ''
+                                ? ''
+                                : (() => {
+                                      const n = Number(value)
+                                      if (!isFinite(n)) return ''
+                                      return n > maxNum ? maxStr : value
+                                  })()
+                            if (selectedToken === 'VELO') setConvertAmountVelo(nextValue || '')
+                            if (selectedToken === 'haiVELO_v1') setConvertAmountHaiVeloV1(nextValue || '')
                         }}
                         value={selectedToken === 'VELO' ? convertAmountVelo : convertAmountHaiVeloV1}
                         onMax={() => {
