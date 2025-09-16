@@ -27,25 +27,25 @@ export function HaiVeloPage() {
     useEffect(() => {
         if (!userVaults || userVaults.length === 0) return
 
-        // Prefer haiVELO v2 vaults; fallback to v1 if none
+        // Only switch to manage if the user has a haiVELO v2 vault
         const haiVeloV2Vaults = userVaults.filter((v: any) => v.collateralName === 'HAIVELOV2')
-        const haiVeloV1Vaults = userVaults.filter((v: any) => v.collateralName === 'HAIVELO')
-
-        const candidates = haiVeloV2Vaults.length > 0 ? haiVeloV2Vaults : haiVeloV1Vaults
-        if (candidates.length === 0) return
+        if (haiVeloV2Vaults.length === 0) return
 
         const getSize = (v: any) => {
             const col = parseFloat(v.collateral || '0')
             const debt = parseFloat(v.totalDebt || '0')
             return isFinite(col) && col > 0 ? col : debt
         }
-        const largest = candidates.reduce((max: any, v: any) => (getSize(v) > getSize(max) ? v : max), candidates[0])
+        const largest = haiVeloV2Vaults.reduce(
+            (max: any, v: any) => (getSize(v) > getSize(max) ? v : max),
+            haiVeloV2Vaults[0]
+        )
 
-        // Switch to manage mode with the largest vault selected
+        // Switch to manage mode with the largest v2 vault selected
         vaultActions.setSingleVault(largest)
         vaultActions.setVaultData({
             ...DEFAULT_VAULT_DATA,
-            collateral: largest.collateralName || 'HAIVELOV2',
+            collateral: 'HAIVELOV2',
         })
         setAction(VaultAction.DEPOSIT_BORROW)
     }, [userVaults, vaultActions])
