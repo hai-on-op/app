@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { formatEther, formatUnits } from 'ethers/lib/utils'
 
 import { formatNumberWithStyle, getRatePercentage } from '~/utils'
-import { REWARDS } from '~/utils/rewards'
+import { REWARDS, HAI_ADDRESS } from '~/utils/rewards'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { useMediaQuery } from '~/hooks'
 
@@ -129,11 +129,21 @@ export function Numbers() {
         const veloLabel = isUpToSmall ? 'Velo' : 'Velodrome Pool'
         for (const pool of pools.veloPools) {
             if (!pool.tokenPair.includes('HAI')) continue
-           
-            // Only include pools that are configured in REWARDS
+
             const poolAddress = pool.address.toLowerCase()
-            if (!REWARDS.velodrome[poolAddress]) continue
-            
+            const whitelisted = !!REWARDS.velodrome[poolAddress]
+
+            // Explicitly include the HAI/<0x1610e3...> volatile v2 pool from the provided link
+            const OTHER_TOKEN = '0x1610e3c85dd44af31ed7f33a63642012dca0c5a5'
+            const includeByTokens =
+                Number(pool.type) === -1 &&
+                ((pool.token0?.toLowerCase?.() === HAI_ADDRESS.toLowerCase() &&
+                    pool.token1?.toLowerCase?.() === OTHER_TOKEN) ||
+                    (pool.token1?.toLowerCase?.() === HAI_ADDRESS.toLowerCase() &&
+                        pool.token0?.toLowerCase?.() === OTHER_TOKEN))
+
+            if (!whitelisted && !includeByTokens) continue
+
             const hai = parseFloat(
                 formatUnits(pool.tokenPair[0] === 'HAI' ? pool.reserve0 : pool.reserve1, pool.decimals)
             )

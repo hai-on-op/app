@@ -46,11 +46,11 @@ export const REWARDS = {
             OP: 0,
         },
         HAIVELO: {
-            KITE: 25,
+            KITE: 10,
             OP: 0,
         },
         HAIVELOV2: {
-            KITE: 25,
+            KITE: 40,
             OP: 0,
         },
         // Testnet
