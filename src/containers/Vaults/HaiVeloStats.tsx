@@ -33,7 +33,9 @@ export function HaiVeloStats() {
     }, [combined, hvLoading, veloLoading])
 
     const debtCapacityFormatted = useMemo(() => {
-        const pct = graphSummary?.collateralStats?.['HAIVELO']?.debt?.ceilingPercent
+        // Prefer haiVELO v2; fallback to v1 if v2 data is unavailable
+        const v2Pct = graphSummary?.collateralStats?.['HAIVELOV2']?.debt?.ceilingPercent
+        const pct = v2Pct ?? graphSummary?.collateralStats?.['HAIVELO']?.debt?.ceilingPercent
         if (pct === undefined || pct === null || isNaN(pct as any)) return '...'
         return formatNumberWithStyle(pct, { style: 'percent', suffixed: true, maxDecimals: 2 })
     }, [graphSummary])
