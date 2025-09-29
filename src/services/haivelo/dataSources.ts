@@ -162,30 +162,180 @@ export async function fetchV2SafesAtBlock(collateralId: 'HAIVELOV2' = 'HAIVELOV2
     }
 }
 
+// Cache for timestamp -> block number resolutions to avoid repeated lookups
+const __blockByTsCache: Map<number, number> = new Map()
+const __blockByTsInflight: Map<number, Promise<number | null>> = new Map()
+
 export async function findBlockNumberByTimestamp(targetTimestamp: number, rpcUrl?: string): Promise<number | null> {
     const provider = getProvider(rpcUrl)
     try {
-        // Start with latest block and do an exponential/backoff search to bound, then binary search
-        const latest = await provider.getBlock('latest')
-        let low = 1
-        let high = latest.number
+        const start = Date.now()
+        try { console.log('[haiVELO][findBlockByTs] start', { targetTimestamp }) } catch {}
 
-        // Quick check
-        if (latest.timestamp < targetTimestamp) return latest.number
-
-        // Binary search for closest block <= targetTimestamp
-        while (low <= high) {
-            const mid = Math.floor((low + high) / 2)
-            const b = await provider.getBlock(mid)
-            if (!b) return null
-            if (b.timestamp === targetTimestamp) return b.number
-            if (b.timestamp < targetTimestamp) {
-                low = mid + 1
-            } else {
-                high = mid - 1
-            }
+        // Exact cache hit
+        if (__blockByTsCache.has(targetTimestamp)) {
+            const cached = __blockByTsCache.get(targetTimestamp) as number
+            try { console.log('[haiVELO][findBlockByTs] cache hit', { targetTimestamp, block: cached }) } catch {}
+            return cached
         }
-        return Math.max(high, 1)
+
+        // Coalesce concurrent requests for same timestamp
+        const inflight = __blockByTsInflight.get(targetTimestamp)
+        if (inflight) return inflight
+
+        const promise = (async () => {
+            // Get latest block
+            const latest = await provider.getBlock('latest')
+            if (latest.timestamp <= targetTimestamp) return latest.number
+
+            // Heuristic: Optimism avg ~2s/block
+            const AVG_BLOCK_TIME_SEC = 2
+            const deltaSec = Math.max(0, latest.timestamp - targetTimestamp)
+            let estimate = latest.number - Math.floor(deltaSec / AVG_BLOCK_TIME_SEC)
+            estimate = Math.max(1, Math.min(estimate, latest.number))
+
+            // Refine with a few iterations using proportional step based on timestamp delta
+            let blockNum = estimate
+            let iterations = 0
+            for (; iterations < 6; iterations += 1) {
+                const blk = await provider.getBlock(blockNum)
+                if (!blk) break
+                const diff = blk.timestamp - targetTimestamp
+                const absDiff = Math.abs(diff)
+                if (absDiff <= AVG_BLOCK_TIME_SEC) break
+                // Compute step in blocks, clamp to at least 1 and at most 100_000 to avoid overshoot
+                let step = Math.floor(absDiff / AVG_BLOCK_TIME_SEC)
+                step = Math.max(1, Math.min(step, 100000))
+                if (diff > 0) {
+                    // We are too far in the future → go back
+                    blockNum = Math.max(1, blockNum - step)
+                } else {
+                    // We are too far in the past → go forward
+                    blockNum = Math.min(latest.number, blockNum + step)
+                }
+            }
+
+            // Final sanity fetch to ensure we return a block at or before targetTimestamp
+            let finalBlock = await provider.getBlock(blockNum)
+            if (!finalBlock) return null
+            if (finalBlock.timestamp > targetTimestamp && blockNum > 1) {
+                // Step back to ensure <= targetTimestamp
+                const backStep = Math.ceil((finalBlock.timestamp - targetTimestamp) / AVG_BLOCK_TIME_SEC)
+                const candidateNum = Math.max(1, blockNum - backStep)
+                const candidate = await provider.getBlock(candidateNum)
+                if (candidate) {
+                    finalBlock = candidate
+                    blockNum = candidateNum
+                }
+            }
+
+            const end = Date.now()
+            try { console.log('[haiVELO][findBlockByTs]', { targetTimestamp, latest: latest.number, estimate, result: blockNum, iterations, durationMs: end - start }) } catch {}
+
+            __blockByTsCache.set(targetTimestamp, blockNum)
+            return blockNum
+        })()
+
+        __blockByTsInflight.set(targetTimestamp, promise)
+        try {
+            const res = await promise
+            return res
+        } finally {
+            __blockByTsInflight.delete(targetTimestamp)
+        }
+    } catch {
+        return null
+    }
+}
+
+export async function fetchHaiVeloTotalsAtBlock(blockNumber: number): Promise<{ v1Total: number; v2Total: number }> {
+    const t0 = Date.now()
+    try {
+        console.log('[haiVELO][fetchHaiVeloTotalsAtBlock] start', { blockNumber })
+    } catch {}
+    const QUERY = gql`
+        query GetHaiVeloTotalsAtBlock($block: Block_height) {
+            v1: collateralType(id: "HAIVELO", block: $block) { totalCollateral }
+            v2: collateralType(id: "HAIVELOV2", block: $block) { totalCollateral }
+        }
+    `
+
+    const { data } = await client.query<{ v1?: { totalCollateral?: string }; v2?: { totalCollateral?: string } }>({
+        query: QUERY,
+        variables: { block: { number: blockNumber } },
+        fetchPolicy: 'network-only',
+    })
+    const v1Total = Number(data?.v1?.totalCollateral || '0')
+    const v2Total = Number(data?.v2?.totalCollateral || '0')
+    const t1 = Date.now()
+    try {
+        console.log('[haiVELO][fetchHaiVeloTotalsAtBlock]', { blockNumber, v1Total, v2Total, durationMs: t1 - t0 })
+    } catch {}
+    return { v1Total, v2Total }
+}
+
+const __hvEpochCache: Map<string, { ts: number; block: number; tvlUsd: number; fetchedAt: number }> = new Map()
+
+export async function getLastEpochHaiVeloTvlUsd(haiVeloPriceUsd: number, rpcUrl?: string): Promise<number | null> {
+    const cacheKey = 'haivelo:lastEpochTvl'
+    const cached = __hvEpochCache.get(cacheKey)
+    const now = Date.now()
+    try {
+        console.log('[haiVELO][lastEpochTvl] start', { haiVeloPriceUsd, rpcUrl })
+    } catch {}
+    if (cached && now - cached.fetchedAt < 5 * 60 * 1000) {
+        try {
+            console.log('[haiVELO][lastEpochTvl] cache hit', { tvlUsd: cached.tvlUsd, block: cached.block, updatedAt: cached.ts })
+        } catch {}
+        return cached.tvlUsd
+    }
+
+    // Fetch latest merkle root timestamp (ordered desc, minimal payload)
+    const MERKLE_ROOTS_QUERY = gql`
+        query GetLatestMerkleRoot { merkleRoots(orderBy: updatedAt, orderDirection: desc, first: 1) { updatedAt } }
+    `
+    try {
+        const tStart = Date.now()
+        const tMerkle0 = Date.now()
+        try {
+            console.log('[haiVELO][lastEpochTvl] fetching latest merkle root')
+        } catch {}
+        const { data } = await client.query<{ merkleRoots: Array<{ updatedAt: string }> }>({ query: MERKLE_ROOTS_QUERY, fetchPolicy: 'network-only' })
+        const tMerkle1 = Date.now()
+        const ts = Number(data?.merkleRoots?.[0]?.updatedAt || 0)
+        if (!ts) return null
+        const tFind0 = Date.now()
+        try {
+            console.log('[haiVELO][lastEpochTvl] resolving block by timestamp', { ts })
+        } catch {}
+        const blockNumber = await findBlockNumberByTimestamp(ts, rpcUrl)
+        const tFind1 = Date.now()
+        if (!blockNumber || blockNumber <= 0) return null
+        const tTotals0 = Date.now()
+        try {
+            console.log('[haiVELO][lastEpochTvl] fetching totals at block', { blockNumber })
+        } catch {}
+        const { v1Total, v2Total } = await fetchHaiVeloTotalsAtBlock(blockNumber)
+        const tTotals1 = Date.now()
+        const tvlUsd = (v1Total + v2Total) * (haiVeloPriceUsd || 0)
+        __hvEpochCache.set(cacheKey, { ts, block: blockNumber, tvlUsd, fetchedAt: now })
+        const tEnd = Date.now()
+        try {
+            console.log('[haiVELO][lastEpochTvl] built', {
+                ts,
+                blockNumber,
+                v1Total,
+                v2Total,
+                tvlUsd,
+                durations: {
+                    totalMs: tEnd - tStart,
+                    merkleMs: tMerkle1 - tMerkle0,
+                    findBlockMs: tFind1 - tFind0,
+                    totalsMs: tTotals1 - tTotals0,
+                },
+            })
+        } catch {}
+        return tvlUsd
     } catch {
         return null
     }

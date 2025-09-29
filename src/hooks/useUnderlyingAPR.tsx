@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo } from 'react'
 import { underlyingAPRService, type UnderlyingAPRResult, type UnderlyingAPRData } from '~/services/underlyingAPRService'
 import { useStoreState } from '~/store'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
+import { getLastEpochHaiVeloTvlUsd } from '~/services/haivelo/dataSources'
+import { VITE_MAINNET_PUBLIC_RPC } from '~/utils'
 import { useEarnData } from '~/hooks/useEarnData'
 
 interface UseUnderlyingAPRProps {
@@ -81,7 +83,22 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
 
         const fetchAPR = async () => {
             try {
-                const aprResult = await underlyingAPRService.getUnderlyingAPR(collateralType, aprData)
+                // Enrich with last-epoch TVL for haiVELO types to avoid service-side fetching
+                let enriched = aprData
+                const isHaiVelo = collateralType === 'HAIVELO' || collateralType === 'HAIVELOV2' || collateralType === 'HAIVELO_V2'
+                if (isHaiVelo) {
+                    const haiVeloPrice = aprData?.price ? Number(aprData.price) : 0
+                    const lastEpochTvlUsd = await getLastEpochHaiVeloTvlUsd(haiVeloPrice, VITE_MAINNET_PUBLIC_RPC)
+                    enriched = {
+                        ...aprData,
+                        externalProtocolData: {
+                            ...(aprData.externalProtocolData || {}),
+                            lastEpochHaiVeloTvlUsd: lastEpochTvlUsd ?? undefined,
+                        },
+                    }
+                }
+
+                const aprResult = await underlyingAPRService.getUnderlyingAPR(collateralType, enriched)
         
                 if (!isCancelled) {
                     setResult(aprResult)

@@ -2,7 +2,7 @@ import { BigNumber } from 'ethers'
 import { RewardsModel } from '~/model/rewardsModel'
 import { client } from '~/utils/graphql/client'
 import { gql } from '@apollo/client'
-import { findBlockNumberByTimestamp, fetchV1SafesAtBlock, fetchV2SafesAtBlock } from '~/services/haivelo/dataSources'
+import { findBlockNumberByTimestamp, fetchHaiVeloTotalsAtBlock } from '~/services/haivelo/dataSources'
 import { VITE_MAINNET_PUBLIC_RPC } from '~/utils'
 import {
     HAI_VELO_ADDRESSES,
@@ -16,6 +16,9 @@ const REWARD_DISTRIBUTOR = HAI_REWARD_DISTRIBUTOR_ADDRESS
 const HAI_TOKEN_ADDRESS = import.meta.env.VITE_HAI_ADDRESS as string
 const KITE_TOKEN_ADDRESS = import.meta.env.VITE_KITE_ADDRESS as string
 const OP_TOKEN_ADDRESS = import.meta.env.VITE_OP_ADDRESS as string
+
+// Cache last-epoch TVL to avoid repeated binary searches and subgraph queries
+const __hvEpochCache: Map<string, { ts: number; block: number; tvlUsd: number; fetchedAt: number }> = new Map()
 
 // Interface for underlying APR calculation data requirements
 export interface UnderlyingAPRData {
@@ -261,40 +264,9 @@ class YieldBearingAPRCalculator implements IUnderlyingAPRCalculator {
                     const haiPrice = data.externalProtocolData?.haiPrice || 1
                     const haiVeloDailyRewardValue = haiVeloDailyRewardQuantity * haiPrice
 
-                    // Get the actual totalBoostedValueParticipating from strategy data
+                    // Prefer last-epoch TVL if provided, else fallback to current boosted TVL from strategy data
                     const haiVeloBoostApr = data.externalProtocolData?.haiVeloBoostApr
-
-                    // Attempt to compute last-epoch TVL (unboosted) by snapshotting deposits at last merkle root timestamp
-                    // 1) Fetch latest merkle root timestamp from GraphQL
-                    let lastEpochTvlUsd: number | null = null
-                    try {
-                        const MERKLE_ROOTS_QUERY = gql`
-                            query GetMerkleRoots {
-                                merkleRoots { id updatedAt }
-                            }
-                        `
-                        const { data: rootsData } = await client.query({ query: MERKLE_ROOTS_QUERY, fetchPolicy: 'network-only' })
-                        const roots = rootsData?.merkleRoots || []
-                        if (roots.length > 0) {
-                            const latest = roots.reduce((acc: any, cur: any) => (Number(cur.updatedAt) > Number(acc.updatedAt) ? cur : acc))
-                            const ts = Number(latest.updatedAt)
-                            // 2) Resolve block number for that timestamp
-                            const blockNumber = await findBlockNumberByTimestamp(ts, VITE_MAINNET_PUBLIC_RPC)
-                            if (blockNumber && blockNumber > 0) {
-                                // 3) Fetch v1 and v2 safes at block
-                                const [v1At, v2At] = await Promise.all([
-                                    fetchV1SafesAtBlock('HAIVELO', blockNumber),
-                                    fetchV2SafesAtBlock('HAIVELOV2', blockNumber),
-                                ])
-                                const haiVeloPrice = Number(data.price || 0)
-                                const v1TotalQty = Number(v1At?.totalCollateral || '0')
-                                const v2TotalQty = Number(v2At?.totalCollateral || '0')
-                                lastEpochTvlUsd = (v1TotalQty + v2TotalQty) * haiVeloPrice
-
-                                console.log('lastEpochTvlUsd', lastEpochTvlUsd)
-                            }
-                        }
-                    } catch {}
+                    const lastEpochTvlUsd = data.externalProtocolData?.lastEpochHaiVeloTvlUsd as number | undefined
 
                     const actualTVL = (lastEpochTvlUsd && lastEpochTvlUsd > 0)
                         ? lastEpochTvlUsd
