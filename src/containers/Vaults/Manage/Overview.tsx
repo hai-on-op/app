@@ -413,8 +413,9 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
                                 // Total annual yield from the position
                                 const totalYield = collateralYield + debtNetYield
 
-                                // Net APR based on collateral value (what user is risking)
-                                netAPR = totalYield / collateralUsdValue
+                                // Net APR weighted by total position value (collateral + debt)
+                                const totalPositionValue = collateralUsdValue + debtUsdValue
+                                netAPR = totalPositionValue > 0 ? totalYield / totalPositionValue : 0
                                 calculationMethod = `Based on your inputs - Collateral yield: $${collateralYield.toFixed(
                                     2
                                 )}/year + Debt net yield: $${debtNetYield.toFixed(2)}/year = $${totalYield.toFixed(
@@ -437,8 +438,9 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
                             const debtNetYield = assumedDebtValue * debtNetAPR
                             const totalYield = collateralYield + debtNetYield
 
-                            // Net APR based on collateral (what user invests)
-                            netAPR = totalYield / assumedCollateralValue
+                            // Net APR weighted by total position value (collateral + debt)
+                            const assumedTotalPositionValue = assumedCollateralValue + assumedDebtValue
+                            netAPR = assumedTotalPositionValue > 0 ? totalYield / assumedTotalPositionValue : 0
                             calculationMethod = `Estimated for 200% collateral ratio: $${collateralYield.toFixed(
                                 2
                             )} collateral yield + $${debtNetYield.toFixed(2)} debt net yield = $${totalYield.toFixed(
@@ -462,8 +464,9 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
                             // Total annual yield from the position
                             const totalYield = collateralYield + debtNetYield
 
-                            // Net APR based on collateral value (what user is risking)
-                            netAPR = totalYield / collateralUsdValue
+                            // Net APR weighted by total position value (collateral + debt)
+                            const totalPositionValue = collateralUsdValue + debtUsdValue
+                            netAPR = totalPositionValue > 0 ? totalYield / totalPositionValue : 0
                             calculationMethod = `Collateral yield: $${collateralYield.toFixed(
                                 2
                             )}/year + Debt net yield: $${debtNetYield.toFixed(2)}/year = $${totalYield.toFixed(
@@ -490,7 +493,12 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
                                     const simulatedDebtNetYield = simulatedDebtUsdValue * debtNetAPR
                                     const simulatedTotalYield = simulatedCollateralYield + simulatedDebtNetYield
 
-                                    simulatedNetAPR = simulatedTotalYield / simulatedCollateralUsdValue
+                                    const simulatedTotalPositionValue =
+                                        simulatedCollateralUsdValue + simulatedDebtUsdValue
+                                    simulatedNetAPR =
+                                        simulatedTotalPositionValue > 0
+                                            ? simulatedTotalYield / simulatedTotalPositionValue
+                                            : 0
                                 }
                             }
                         } else {
@@ -523,7 +531,7 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
                                 Net APR: {formatNumberWithStyle(netAPR, { style: 'percent', maxDecimals: 2 })}
                             </Text>
                             <Text $fontSize="12px" $color="black">
-                                Net APR is expressed in terms of your collateral value.
+                                Net APR is weighted by your total position value (collateral + debt).
                             </Text>
                         </Flex>
                     ) : (

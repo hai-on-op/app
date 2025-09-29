@@ -197,8 +197,9 @@ export function Overview({ vault }: OverviewProps) {
                         // Total annual yield from the position
                         const totalYield = collateralYield + debtNetYield
                         
-                        // Net APR based on collateral value (what user is risking)
-                        netAPR = totalYield / collateralUsdValue
+                        // Net APR weighted by total position value (collateral + debt)
+                        const totalPositionValue = collateralUsdValue + debtUsdValue
+                        netAPR = totalPositionValue > 0 ? totalYield / totalPositionValue : 0
                         calculationMethod = `Collateral yield: $${collateralYield.toFixed(2)}/year + Debt net yield: $${debtNetYield.toFixed(2)}/year = $${totalYield.toFixed(2)}/year on $${collateralUsdValue.toLocaleString()} collateral`
                         
                         // Note: VaultById page is read-only, so no simulation needed here
@@ -220,7 +221,7 @@ export function Overview({ vault }: OverviewProps) {
                             <Text>Minting Incentives: {formatNumberWithStyle(mintingIncentivesAPR, { style: 'percent', maxDecimals: 2 })}</Text>
                             <Text>Stability Fee Cost: {formatNumberWithStyle(stabilityFeeCost, { style: 'percent', maxDecimals: 2 })}</Text>
                             <Text $fontWeight={700}>Net APR: {formatNumberWithStyle(netAPR, { style: 'percent', maxDecimals: 2 })}</Text>
-                            <Text $fontSize="12px" $color="black">Net APR is expressed in terms of your collateral value.</Text>
+                            <Text $fontSize="12px" $color="black">Net APR is weighted by your total position value (collateral + debt).</Text>
                         </Flex>
                     ) : `Stability Fee: ${formatNumberWithStyle(stabilityFeeCost, { style: 'percent', maxDecimals: 2 })}`
                     

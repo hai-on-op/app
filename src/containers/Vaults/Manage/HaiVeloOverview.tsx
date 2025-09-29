@@ -50,8 +50,8 @@ export function HaiVeloOverview() {
     const debtNetAPR = mintingIncentivesAPR + stabilityFeeCost
     const debtNetYield = assumedDebtValue * debtNetAPR
     const netAprDecimal =
-        assumedCollateralValue > 0
-            ? (collateralYield + debtNetYield) / assumedCollateralValue
+        assumedCollateralValue + assumedDebtValue > 0
+            ? (collateralYield + debtNetYield) / (assumedCollateralValue + assumedDebtValue)
             : underlyingAPR + stabilityFeeCost
 
     const { address } = useAccount()
