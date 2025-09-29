@@ -124,7 +124,8 @@ export function useEarnStrategies() {
         }
 
         // Proceed with calculation if data is loaded or if we can continue with degraded mode
-        const canProceed = (allDataLoaded && stakingDataLoaded && storeDataLoaded && !boostLoading) || 
+        // Proceed earlier: require core data (allDataLoaded) but do not block on user-specific extras
+        const canProceed = (allDataLoaded && storeDataLoaded && !boostLoading) || 
                           (dataLoadingError && canContinueWithDegradedMode(dataLoadingError))
 
         if (canProceed) {

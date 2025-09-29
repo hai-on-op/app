@@ -94,7 +94,13 @@ export function useEarnData(): EarnDataState {
     } = useStoreState((state) => state)
 
     // 1. Load system state data
-    const { data: systemStateData, loading: systemStateLoading, error: systemStateError } = useQuery(SYSTEMSTATE_QUERY)
+    const { data: systemStateData, loading: systemStateLoading, error: systemStateError } = useQuery<{
+        systemStates: Array<{ erc20CoinTotalSupply: string; [key: string]: unknown }>
+    }>(SYSTEMSTATE_QUERY, {
+        fetchPolicy: 'cache-first',
+        nextFetchPolicy: 'cache-first',
+        errorPolicy: 'ignore',
+    })
 
     // 2. Load minter vaults data for collaterals with minting rewards
     const { data: minterVaultsData, loading: minterVaultsLoading, error: minterVaultsError } = useMinterVaults(address)
@@ -104,7 +110,11 @@ export function useEarnData(): EarnDataState {
         data: collateralTypesData,
         loading: collateralTypesLoading,
         error: collateralTypesError,
-    } = useQuery<{ collateralTypes: QueryCollateralType[] }>(ALL_COLLATERAL_TYPES_QUERY)
+    } = useQuery<{ collateralTypes: QueryCollateralType[] }>(ALL_COLLATERAL_TYPES_QUERY, {
+        fetchPolicy: 'cache-first',
+        nextFetchPolicy: 'cache-first',
+        errorPolicy: 'ignore',
+    })
 
     // 4. Load user vaults data
     const myVaultsData = useMyVaults()
@@ -131,10 +141,13 @@ export function useEarnData(): EarnDataState {
         data: haiVeloSafesData,
         loading: haiVeloSafesLoading,
         error: haiVeloSafesError,
-    } = useQuery<any>(ALL_SAFES_QUERY, {
+    } = useQuery<{ safes: Array<{ owner: { address: string }; collateral: string }> }>(ALL_SAFES_QUERY, {
         variables: {
             collateralTypeId: 'HAIVELO',
         },
+        fetchPolicy: 'cache-first',
+        nextFetchPolicy: 'cache-first',
+        errorPolicy: 'ignore',
     })
 
     // 9. Load strategy specific data (hold hai, deposit haiVelo)
@@ -152,15 +165,15 @@ export function useEarnData(): EarnDataState {
     const stakingDataLoaded = Object.keys(usersStakingData).length > 0 && Number(totalStaked) > 0
     const storeDataLoaded = usersStakingData && userPositionsList && !!tokensFetchedData
 
+    // Core data excludes user-specific velodrome positions and HAIVELO safes
     const allDataLoaded =
         !minterVaultsLoading &&
         !collateralTypesLoading &&
         !velodromeLoading &&
-        !velodromePositionsLoading &&
         !velodromePricesLoading &&
-        !systemStateLoading &&
-        !haiVeloSafesLoading
+        !systemStateLoading
 
+    // Initial render should not be blocked by user-specific data
     const loading = !allDataLoaded || !stakingDataLoaded || !storeDataLoaded
 
     // Calculate error states using error handling utilities
