@@ -96,6 +96,101 @@ export async function fetchV2Safes(collateralId: 'HAIVELOV2' = 'HAIVELOV2', limi
     }
 }
 
+export async function fetchV1SafesAtBlock(collateralId: 'HAIVELO' = 'HAIVELO', blockNumber: number, limit = 1000): Promise<FetchV1SafesResult> {
+    const QUERY = gql`
+        query GetV1HaiVeloAtBlock($collateralTypeId: ID!, $limit: Int!, $block: Block_height) {
+            collateralType(id: $collateralTypeId, block: $block) {
+                id
+                totalCollateral
+            }
+            safes(
+                block: $block
+                where: { collateralType_: { id: $collateralTypeId } }
+                orderBy: collateral
+                orderDirection: desc
+                first: $limit
+            ) {
+                id
+                collateral
+                owner { address }
+            }
+        }
+    `
+
+    const { data } = await client.query<{ collateralType: { id: string; totalCollateral: string }; safes: V1Safe[] }>({
+        query: QUERY,
+        variables: { collateralTypeId: collateralId, limit, block: { number: blockNumber } },
+        fetchPolicy: 'network-only',
+    })
+
+    return {
+        totalCollateral: data?.collateralType?.totalCollateral || '0',
+        safes: data?.safes || [],
+    }
+}
+
+export async function fetchV2SafesAtBlock(collateralId: 'HAIVELOV2' = 'HAIVELOV2', blockNumber: number, limit = 1000): Promise<FetchV2SafesResult> {
+    const QUERY = gql`
+        query GetV2HaiVeloAtBlock($collateralTypeId: ID!, $limit: Int!, $block: Block_height) {
+            collateralType(id: $collateralTypeId, block: $block) {
+                id
+                totalCollateral
+            }
+            safes(
+                block: $block
+                where: { collateralType_: { id: $collateralTypeId } }
+                orderBy: collateral
+                orderDirection: desc
+                first: $limit
+            ) {
+                id
+                collateral
+                owner { address }
+            }
+        }
+    `
+
+    const { data } = await client.query<{ collateralType: { id: string; totalCollateral: string }; safes: V2Safe[] }>({
+        query: QUERY,
+        variables: { collateralTypeId: collateralId, limit, block: { number: blockNumber } },
+        fetchPolicy: 'network-only',
+    })
+
+    return {
+        totalCollateral: data?.collateralType?.totalCollateral || '0',
+        safes: data?.safes || [],
+    }
+}
+
+export async function findBlockNumberByTimestamp(targetTimestamp: number, rpcUrl?: string): Promise<number | null> {
+    const provider = getProvider(rpcUrl)
+    try {
+        // Start with latest block and do an exponential/backoff search to bound, then binary search
+        const latest = await provider.getBlock('latest')
+        let low = 1
+        let high = latest.number
+
+        // Quick check
+        if (latest.timestamp < targetTimestamp) return latest.number
+
+        // Binary search for closest block <= targetTimestamp
+        while (low <= high) {
+            const mid = Math.floor((low + high) / 2)
+            const b = await provider.getBlock(mid)
+            if (!b) return null
+            if (b.timestamp === targetTimestamp) return b.number
+            if (b.timestamp < targetTimestamp) {
+                low = mid + 1
+            } else {
+                high = mid - 1
+            }
+        }
+        return Math.max(high, 1)
+    } catch {
+        return null
+    }
+}
+
 function getProvider(rpcUrl?: string) {
     return new ethers.providers.JsonRpcProvider(rpcUrl || VITE_MAINNET_PUBLIC_RPC)
 }

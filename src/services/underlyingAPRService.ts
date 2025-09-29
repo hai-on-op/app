@@ -1,5 +1,8 @@
 import { BigNumber } from 'ethers'
 import { RewardsModel } from '~/model/rewardsModel'
+import { client } from '~/utils/graphql/client'
+import { gql } from '@apollo/client'
+import { findBlockNumberByTimestamp, fetchV1SafesAtBlock, fetchV2SafesAtBlock } from '~/services/haivelo/dataSources'
 import { VITE_MAINNET_PUBLIC_RPC } from '~/utils'
 import {
     HAI_VELO_ADDRESSES,
@@ -233,6 +236,8 @@ class YieldBearingAPRCalculator implements IUnderlyingAPRCalculator {
     }
 
     async calculateAPR(data: UnderlyingAPRData): Promise<UnderlyingAPRResult> {
+
+        console.log('data', data)
         try {
             // For HAI VELO (v1 and v2), get the APR from the deposit strategy calculation
             if (['HAIVELO', 'HAIVELOV2', 'HAIVELO_V2'].includes(data.collateralType.toUpperCase())) {
@@ -258,7 +263,42 @@ class YieldBearingAPRCalculator implements IUnderlyingAPRCalculator {
 
                     // Get the actual totalBoostedValueParticipating from strategy data
                     const haiVeloBoostApr = data.externalProtocolData?.haiVeloBoostApr
-                    const actualTVL = haiVeloBoostApr?.totalBoostedValueParticipating || 1000000 // Fallback to $1M
+
+                    // Attempt to compute last-epoch TVL (unboosted) by snapshotting deposits at last merkle root timestamp
+                    // 1) Fetch latest merkle root timestamp from GraphQL
+                    let lastEpochTvlUsd: number | null = null
+                    try {
+                        const MERKLE_ROOTS_QUERY = gql`
+                            query GetMerkleRoots {
+                                merkleRoots { id updatedAt }
+                            }
+                        `
+                        const { data: rootsData } = await client.query({ query: MERKLE_ROOTS_QUERY, fetchPolicy: 'network-only' })
+                        const roots = rootsData?.merkleRoots || []
+                        if (roots.length > 0) {
+                            const latest = roots.reduce((acc: any, cur: any) => (Number(cur.updatedAt) > Number(acc.updatedAt) ? cur : acc))
+                            const ts = Number(latest.updatedAt)
+                            // 2) Resolve block number for that timestamp
+                            const blockNumber = await findBlockNumberByTimestamp(ts, VITE_MAINNET_PUBLIC_RPC)
+                            if (blockNumber && blockNumber > 0) {
+                                // 3) Fetch v1 and v2 safes at block
+                                const [v1At, v2At] = await Promise.all([
+                                    fetchV1SafesAtBlock('HAIVELO', blockNumber),
+                                    fetchV2SafesAtBlock('HAIVELOV2', blockNumber),
+                                ])
+                                const haiVeloPrice = Number(data.price || 0)
+                                const v1TotalQty = Number(v1At?.totalCollateral || '0')
+                                const v2TotalQty = Number(v2At?.totalCollateral || '0')
+                                lastEpochTvlUsd = (v1TotalQty + v2TotalQty) * haiVeloPrice
+
+                                console.log('lastEpochTvlUsd', lastEpochTvlUsd)
+                            }
+                        }
+                    } catch {}
+
+                    const actualTVL = (lastEpochTvlUsd && lastEpochTvlUsd > 0)
+                        ? lastEpochTvlUsd
+                        : (haiVeloBoostApr?.totalBoostedValueParticipating || 1000000) // Fallback to current boosted TVL or $1M
 
                     // Calculate base APR using the same formula as strategy data, but return BASE only:
                     // baseAPR (decimal) = (dailyRewardValue / totalBoostedValueParticipating) * 365
