@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { underlyingAPRService, type UnderlyingAPRResult, type UnderlyingAPRData } from '~/services/underlyingAPRService'
 import { useStoreState } from '~/store'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
-import { getLastEpochHaiVeloTvlUsd } from '~/services/haivelo/dataSources'
+import { getLastEpochHaiVeloTotals } from '~/services/haivelo/dataSources'
 import { VITE_MAINNET_PUBLIC_RPC } from '~/utils'
 import { useEarnData } from '~/hooks/useEarnData'
 
@@ -88,7 +88,8 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
                 const isHaiVelo = collateralType === 'HAIVELO' || collateralType === 'HAIVELOV2' || collateralType === 'HAIVELO_V2'
                 if (isHaiVelo) {
                     const haiVeloPrice = aprData?.price ? Number(aprData.price) : 0
-                    const lastEpochTvlUsd = await getLastEpochHaiVeloTvlUsd(haiVeloPrice, VITE_MAINNET_PUBLIC_RPC)
+                    const totals = await getLastEpochHaiVeloTotals(VITE_MAINNET_PUBLIC_RPC)
+                    const lastEpochTvlUsd = totals ? (Number(totals.v1Total || 0) + Number(totals.v2Total || 0)) * (haiVeloPrice || 0) : undefined
                     enriched = {
                         ...aprData,
                         externalProtocolData: {

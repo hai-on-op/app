@@ -4,6 +4,7 @@ import { formatNumberWithStyle, VITE_MAINNET_PUBLIC_RPC } from '~/utils'
 
 import { useBalance } from '~/hooks'
 import { fetchHaiVeloLatestTransferAmount, computeHaiVeloBoostApr } from '~/services/haiVeloService'
+import { getLastEpochHaiVeloTotals } from '~/services/haivelo/dataSources'
 import { useHaiVeloCollateralMapping } from './haivelo/useHaiVeloCollateralMapping'
 import { useHaiVeloBoostMap } from './haivelo/useHaiVeloBoostMap'
 
@@ -50,8 +51,9 @@ export function useStrategyData(
     const haiTvl = systemStateData?.systemStates[0]?.erc20CoinTotalSupply * haiPrice
 
     // === HAI VELO Deposit Strategy (combined v1 + v2) ===
-    const haiVeloData = systemStateData?.collateralTypes.find((collateral: any) => collateral.id === 'HAIVELO')
-    const haiVeloPrice = haiVeloData?.currentPrice.value
+    const haiVeloV1Data = systemStateData?.collateralTypes.find((collateral: any) => collateral.id === 'HAIVELO')
+    const haiVeloV2Data = systemStateData?.collateralTypes.find((collateral: any) => collateral.id === 'HAIVELOV2' || collateral.id === 'HAIVELO_V2')
+    const haiVeloPrice = (haiVeloV2Data?.currentPrice?.value) ?? (haiVeloV1Data?.currentPrice?.value)
     const { mapping: haiVeloCollateralMapping } = useHaiVeloCollateralMapping()
 
     const combinedHaiVeloQtyTotal = useMemo(
@@ -91,15 +93,34 @@ export function useStrategyData(
     useEffect(() => {
         // Avoid re-compute until inputs are ready
         if (!haiVeloCollateralMapping || !haiVeloBoostMap || haiVeloLatestTransferAmount === 0) return
-        const apr = computeHaiVeloBoostApr({
-            mapping: haiVeloCollateralMapping,
-            boostMap: haiVeloBoostMap as any,
-            haiVeloPrice: haiVeloPrice || 0,
-            haiPrice: haiPrice || 0,
-            latestTransferAmount: haiVeloLatestTransferAmount,
-            userAddress: address,
-        })
-        setHaiVeloBoostApr(apr)
+        ;(async () => {
+            const apr = computeHaiVeloBoostApr({
+                mapping: haiVeloCollateralMapping,
+                boostMap: haiVeloBoostMap as any,
+                haiVeloPrice: haiVeloPrice || 0,
+                haiPrice: haiPrice || 0,
+                latestTransferAmount: haiVeloLatestTransferAmount,
+                userAddress: address,
+            })
+
+            // Recompute base APR using last-epoch TVL to mirror underlying APR
+            try {
+                const totals = await getLastEpochHaiVeloTotals(VITE_MAINNET_PUBLIC_RPC)
+                if (totals && (Number(haiVeloPrice || 0) > 0)) {
+                    const lastEpochTvlUsd = (totals.v1Total + totals.v2Total) * Number(haiVeloPrice || 0)
+                    const baseAprPercent = lastEpochTvlUsd > 0 ? (apr.haiVeloDailyRewardValue / lastEpochTvlUsd) * 365 * 100 : 0
+                    const updated = {
+                        ...apr,
+                        baseAPR: baseAprPercent,
+                        myBoostedAPR: (apr.myBoost || 1) * baseAprPercent,
+                    }
+                    setHaiVeloBoostApr(updated)
+                    return
+                }
+            } catch {}
+
+            setHaiVeloBoostApr(apr)
+        })()
         // Only re-run when stable inputs change
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [haiVeloCollateralMapping, haiVeloBoostMap, haiVeloLatestTransferAmount, address, haiVeloPrice, haiPrice])

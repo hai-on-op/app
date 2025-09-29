@@ -18,6 +18,7 @@ import { useClaims } from '~/providers/ClaimsProvider'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { useStoreState } from '~/store'
 import { utils } from 'ethers'
+import { useUnderlyingAPR } from '~/hooks/useUnderlyingAPR'
 
 // Import the BaseStrategy type for state management
 type BaseStrategy = ReturnType<typeof createVaultStrategy>
@@ -42,8 +43,6 @@ const sortableHeaders: SortableHeader[] = [
         tooltip: `Variable based upon participation and value of campaign emissions`,
     },
 ]
-
-
 
 export function useEarnStrategies() {
     const { address } = useAccount()
@@ -76,10 +75,7 @@ export function useEarnStrategies() {
     } = useEarnData()
 
     // === Get vault boost data from useBoost ===
-    const {
-        individualVaultBoosts,
-        loading: boostLoading,
-    } = useBoost()
+    const { individualVaultBoosts, loading: boostLoading } = useBoost()
 
     // === Get incentives data for rewards calculation ===
     const { incentivesData } = useClaims()
@@ -87,6 +83,9 @@ export function useEarnStrategies() {
     const {
         vaultModel: { liquidationData },
     } = useStoreState((state) => state)
+
+    // Ensure haiVELO deposit strategy APR matches underlying APR
+    const { underlyingAPR: haiVeloUnderlyingAPR } = useUnderlyingAPR({ collateralType: 'HAIVELOV2' })
 
     // Get token prices for rewards calculation
     const getTokenPrice = (token: string): number => {
@@ -125,8 +124,9 @@ export function useEarnStrategies() {
 
         // Proceed with calculation if data is loaded or if we can continue with degraded mode
         // Proceed earlier: require core data (allDataLoaded) but do not block on user-specific extras
-        const canProceed = (allDataLoaded && storeDataLoaded && !boostLoading) || 
-                          (dataLoadingError && canContinueWithDegradedMode(dataLoadingError))
+        const canProceed =
+            (allDataLoaded && storeDataLoaded && !boostLoading) ||
+            (dataLoadingError && canContinueWithDegradedMode(dataLoadingError))
 
         if (canProceed) {
             try {
@@ -258,7 +258,7 @@ export function useEarnStrategies() {
             createSpecialStrategy({
                 pair: ['HAIVELO'],
                 tvl: haiVeloTvl,
-                apr: (haiVeloBoostApr as any)?.baseAPR / 100 || 0,
+                apr: haiVeloUnderlyingAPR || 0,
                 userPosition: haiVeloUserPositionUsd,
                 strategyType: 'deposit',
                 boostAPR: haiVeloBoostApr as BoostAPRData,

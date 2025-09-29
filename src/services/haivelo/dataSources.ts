@@ -274,20 +274,16 @@ export async function fetchHaiVeloTotalsAtBlock(blockNumber: number): Promise<{ 
     return { v1Total, v2Total }
 }
 
-const __hvEpochCache: Map<string, { ts: number; block: number; tvlUsd: number; fetchedAt: number }> = new Map()
+const __hvEpochTotalsCache: Map<string, { ts: number; block: number; v1Total: number; v2Total: number; fetchedAt: number }> = new Map()
 
-export async function getLastEpochHaiVeloTvlUsd(haiVeloPriceUsd: number, rpcUrl?: string): Promise<number | null> {
-    const cacheKey = 'haivelo:lastEpochTvl'
-    const cached = __hvEpochCache.get(cacheKey)
+export async function getLastEpochHaiVeloTotals(rpcUrl?: string): Promise<{ ts: number; blockNumber: number; v1Total: number; v2Total: number } | null> {
+    const cacheKey = 'haivelo:lastEpochTotals'
+    const cached = __hvEpochTotalsCache.get(cacheKey)
     const now = Date.now()
-    try {
-        console.log('[haiVELO][lastEpochTvl] start', { haiVeloPriceUsd, rpcUrl })
-    } catch {}
+    try { console.log('[haiVELO][lastEpochTotals] start', { rpcUrl }) } catch {}
     if (cached && now - cached.fetchedAt < 5 * 60 * 1000) {
-        try {
-            console.log('[haiVELO][lastEpochTvl] cache hit', { tvlUsd: cached.tvlUsd, block: cached.block, updatedAt: cached.ts })
-        } catch {}
-        return cached.tvlUsd
+        try { console.log('[haiVELO][lastEpochTotals] cache hit', { v1Total: cached.v1Total, v2Total: cached.v2Total, block: cached.block, updatedAt: cached.ts }) } catch {}
+        return { ts: cached.ts, blockNumber: cached.block, v1Total: cached.v1Total, v2Total: cached.v2Total }
     }
 
     // Fetch latest merkle root timestamp (ordered desc, minimal payload)
@@ -297,36 +293,28 @@ export async function getLastEpochHaiVeloTvlUsd(haiVeloPriceUsd: number, rpcUrl?
     try {
         const tStart = Date.now()
         const tMerkle0 = Date.now()
-        try {
-            console.log('[haiVELO][lastEpochTvl] fetching latest merkle root')
-        } catch {}
+        try { console.log('[haiVELO][lastEpochTotals] fetching latest merkle root') } catch {}
         const { data } = await client.query<{ merkleRoots: Array<{ updatedAt: string }> }>({ query: MERKLE_ROOTS_QUERY, fetchPolicy: 'network-only' })
         const tMerkle1 = Date.now()
         const ts = Number(data?.merkleRoots?.[0]?.updatedAt || 0)
         if (!ts) return null
         const tFind0 = Date.now()
-        try {
-            console.log('[haiVELO][lastEpochTvl] resolving block by timestamp', { ts })
-        } catch {}
+        try { console.log('[haiVELO][lastEpochTotals] resolving block by timestamp', { ts }) } catch {}
         const blockNumber = await findBlockNumberByTimestamp(ts, rpcUrl)
         const tFind1 = Date.now()
         if (!blockNumber || blockNumber <= 0) return null
         const tTotals0 = Date.now()
-        try {
-            console.log('[haiVELO][lastEpochTvl] fetching totals at block', { blockNumber })
-        } catch {}
+        try { console.log('[haiVELO][lastEpochTotals] fetching totals at block', { blockNumber }) } catch {}
         const { v1Total, v2Total } = await fetchHaiVeloTotalsAtBlock(blockNumber)
         const tTotals1 = Date.now()
-        const tvlUsd = (v1Total + v2Total) * (haiVeloPriceUsd || 0)
-        __hvEpochCache.set(cacheKey, { ts, block: blockNumber, tvlUsd, fetchedAt: now })
+        __hvEpochTotalsCache.set(cacheKey, { ts, block: blockNumber, v1Total, v2Total, fetchedAt: now })
         const tEnd = Date.now()
         try {
-            console.log('[haiVELO][lastEpochTvl] built', {
+            console.log('[haiVELO][lastEpochTotals] built', {
                 ts,
                 blockNumber,
                 v1Total,
                 v2Total,
-                tvlUsd,
                 durations: {
                     totalMs: tEnd - tStart,
                     merkleMs: tMerkle1 - tMerkle0,
@@ -335,7 +323,7 @@ export async function getLastEpochHaiVeloTvlUsd(haiVeloPriceUsd: number, rpcUrl?
                 },
             })
         } catch {}
-        return tvlUsd
+        return { ts, blockNumber, v1Total, v2Total }
     } catch {
         return null
     }
