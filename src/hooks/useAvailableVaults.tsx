@@ -42,7 +42,7 @@ export function useAvailableVaults() {
         [tokensData]
     )
 
-    const HAS_REWARDS = ['HAIVELO', 'HAIVELOV2', 'ALETH', 'YV-VELO-ALETH-WETH', 'YV-VELO-MSETH-WETH', 'MSETH']
+    const HAS_REWARDS = ['HAIVELO', 'HAIVELOV2', 'ALETH', 'YV-VELO-ALETH-WETH', 'YV-VELO-MSETH-WETH', 'MSETH', 'MOO-VELO-BOLD-LUSD']
 
     const availableVaults: AvailableVaultPair[] = useMemo(() => {
         return collaterals

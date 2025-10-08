@@ -30,6 +30,7 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
     const EXTERNAL_LINKS: Record<string, string> = {
         'YV-VELO-ALETH-WETH': 'https://yearn.fi/vaults/10/0xf7D66b41Cd4241eae450fd9D2d6995754634D9f3',
         'YV-VELO-MSETH-WETH': 'https://yearn.fi/vaults/10/0xd0d2Ac44Cc842079e978bB11b094764f7D0dec6A',
+        'MOO-VELO-BOLD-LUSD': 'https://app.beefy.com/vault/velodrome-v2-bold-lusd-new',
         // Add more as needed
     }
 
@@ -116,7 +117,7 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                                         )}
 
                                                         {(collateralName === 'YV-VELO-ALETH-WETH' ||
-                                                            collateralName === 'YV-VELO-MSETH-WETH') && (
+                                                            collateralName === 'YV-VELO-MSETH-WETH' || collateralName === 'MOO-VELO-BOLD-LUSD') && (
                                                             <>
                                                                 <RewardsTokenArray
                                                                     tokens={['KITE']}
@@ -156,6 +157,7 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                                             'ALETH',
                                                             'YV-VELO-ALETH-WETH',
                                                             'YV-VELO-MSETH-WETH',
+                                                            'MOO-VELO-BOLD-LUSD',
                                                             'HAIVELO',
                                                             'HAIVELOV2',
                                                             'MSETH',

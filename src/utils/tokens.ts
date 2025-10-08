@@ -28,6 +28,7 @@ import dineroImg from '~/assets/dinero-img.svg'
 import haiVeloImg from '~/assets/hai-velo.png'
 import yvVeloAlethWethImg from '~/assets/yv-velo-aleth-weth-img.png'
 import yvVeloMsethWethImg from '~/assets/yv-velo-mseth-weth-img.png'
+import mooVeloBoldLusdImg from '~/assets/moo-velo-bold-lusd.png'
 import alusdImg from '~/assets/alusd-img.svg'
 import msethImg from '~/assets/mseth-logo.svg'
 
@@ -74,6 +75,7 @@ export const TOKEN_LOGOS = {
     HAIVELOV2: haiVeloImg,
     'YV-VELO-ALETH-WETH': yvVeloAlethWethImg,
     'YV-VELO-MSETH-WETH': yvVeloMsethWethImg,
+    'MOO-VELO-BOLD-LUSD': mooVeloBoldLusdImg,
     ALUSD: alusdImg,
     MSETH: msethImg,
 }
@@ -244,6 +246,11 @@ export const tokenAssets: Record<string, Token> = {
         symbol: 'YV-VELO-MSETH-WETH',
         name: 'YV-VELO-MSETH-WETH',
         icon: yvVeloMsethWethImg,
+    },
+    'MOO-VELO-BOLD-LUSD': {
+        symbol: 'MOO-VELO-BOLD-LUSD',
+        name: 'MOO-VELO-BOLD-LUSD',
+        icon: mooVeloBoldLusdImg,
     },
     ALUSD: {
         symbol: 'ALUSD',
