@@ -208,6 +208,53 @@ class LPTokenAPRCalculator implements IUnderlyingAPRCalculator {
                     console.warn('Error fetching Yearn vault APY (msETH/WETH):', error)
                 }
             }
+            // For MOO-VELO-BOLD-LUSD, fetch APY/APR from Beefy API and convert to APR (decimal)
+            else if (data.collateralType.toUpperCase() === 'MOO-VELO-BOLD-LUSD') {
+                try {
+                    // Beefy breakdown includes vaultApr (auto-compounding base APR) and tradingApr; both are APRs (decimals)
+                    // We prefer summing APR components rather than APY to align with our APR model
+                    type BeefyBreakdownItem = {
+                        vaultApr?: number
+                        tradingApr?: number
+                        totalApy?: number
+                        compoundingsPerYear?: number
+                        beefyPerformanceFee?: number
+                    }
+                    const response = await fetch('https://api.beefy.finance/apy/breakdown')
+                    if (response.ok) {
+                        const breakdown = (await response.json()) as Record<string, BeefyBreakdownItem>
+                        const key = 'velodrome-v2-bold-lusd-new'
+                        const item = breakdown[key]
+                        if (item) {
+                            const aprFromComponents = (item.vaultApr || 0) + (item.tradingApr || 0)
+                            // Fallback: if only APY is present, approximate APR via ln(1+APY)
+                            const aprApproxFromApy = item.totalApy ? Math.log(1 + (item.totalApy || 0)) : 0
+                            underlyingAPR = aprFromComponents > 0 ? aprFromComponents : aprApproxFromApy
+                            source = 'Beefy Vault Yield'
+                            const pct = (underlyingAPR * 100).toFixed(2)
+                            description = `Beefy APR (vault + trading) ≈ ${pct}%`
+                        } else {
+                            // Secondary fallback: simpler APY endpoint
+                            const apyRes = await fetch('https://api.beefy.finance/apy')
+                            if (apyRes.ok) {
+                                const apyMap = (await apyRes.json()) as Record<string, number>
+                                const apy = apyMap['velodrome-v2-bold-lusd-new'] || 0
+                                // Convert APY to APR approximation for consistency
+                                underlyingAPR = apy > 0 ? Math.log(1 + apy) : 0
+                                source = 'Beefy Vault Yield'
+                                const pct = (underlyingAPR * 100).toFixed(2)
+                                description = `Beefy APY approximated to APR ≈ ${pct}%`
+                            } else {
+                                console.warn('Failed to fetch Beefy APY, using 0%')
+                            }
+                        }
+                    } else {
+                        console.warn('Failed to fetch Beefy breakdown, using 0%')
+                    }
+                } catch (error) {
+                    console.warn('Error fetching Beefy APY/APR:', error)
+                }
+            }
 
             return {
                 collateralType: data.collateralType,
@@ -370,6 +417,7 @@ export class UnderlyingAPRService {
 
         this.calculators.set('YV-VELO-ALETH-WETH', lpTokenCalculator)
         this.calculators.set('YV-VELO-MSETH-WETH', lpTokenCalculator)
+        this.calculators.set('MOO-VELO-BOLD-LUSD', lpTokenCalculator)
         this.calculators.set('HAIVELO', yieldBearingCalculator)
         this.calculators.set('HAIVELOV2', yieldBearingCalculator)
         this.calculators.set('HAIVELO_V2', yieldBearingCalculator)
