@@ -26,7 +26,10 @@ const ERC20_MIN_ABI = HAI_VELO_V2_MINIMAL_ERC20_ABI
 const VE_NFT_ABI = [
     'function balanceOf(address _owner) view returns (uint256)',
     'function ownerToNFTokenIdList(address _owner, uint256 _index) view returns (uint256)',
+    // Voting power (decaying) — previously used, but not for locked value calculations
     'function balanceOfNFT(uint256 _tokenId) view returns (uint256)',
+    // Locked VELO info — use amount for minting calculations
+    'function locked(uint256 _tokenId) view returns (int128 amount, uint256 end)',
 ]
 
 export async function fetchV1Safes(collateralId: 'HAIVELO' = 'HAIVELO', limit = 1000): Promise<FetchV1SafesResult> {
@@ -377,12 +380,25 @@ export async function fetchVeNftsForOwner(address: string, rpcUrl?: string): Pro
     if (count.isZero()) return { totalRaw: '0', totalFormatted: '0', nfts: [] }
     const size = count.toNumber()
     const tokenIds: BigNumber[] = await Promise.all(Array.from({ length: size }, (_, i) => contract.ownerToNFTokenIdList(address, i)))
-    const balances: BigNumber[] = await Promise.all(tokenIds.map((id) => contract.balanceOfNFT(id)))
-    const total = balances.reduce((acc, bn) => acc.add(bn), BigNumber.from(0))
+    // Use locked amount (VELO locked in the veNFT), not voting power
+    const lockedInfos: Array<{ amount: BigNumber; end: BigNumber }> = await Promise.all(
+        tokenIds.map(async (id) => {
+            const locked = await contract.locked(id)
+            // Ethers returns tuple with both array indices and named keys; access by key for clarity
+            const amountBn: BigNumber = BigNumber.from(locked.amount)
+            const endBn: BigNumber = BigNumber.from(locked.end)
+            return { amount: amountBn, end: endBn }
+        })
+    )
+    const total = lockedInfos.reduce((acc, info) => acc.add(info.amount), BigNumber.from(0))
     return {
         totalRaw: total.toString(),
         totalFormatted: ethers.utils.formatUnits(total, 18),
-        nfts: tokenIds.map((id, i) => ({ tokenId: id.toString(), balance: balances[i].toString(), balanceFormatted: ethers.utils.formatUnits(balances[i], 18) })),
+        nfts: tokenIds.map((id, i) => ({
+            tokenId: id.toString(),
+            balance: lockedInfos[i].amount.toString(),
+            balanceFormatted: ethers.utils.formatUnits(lockedInfos[i].amount, 18),
+        })),
     }
 }
 
