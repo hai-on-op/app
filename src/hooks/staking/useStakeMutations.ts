@@ -46,12 +46,12 @@ type AccountCache = {
 
 type StatsCache = { totalStaked: string }
 
-export function useStakeMutations(address?: Address) {
+export function useStakeMutations(address?: Address, namespace: string = 'kite') {
     const signer = useEthersSigner()
     const qc = useQueryClient()
     const { setForceUpdateTokens } = useStoreActions((a) => a.connectWalletModel)
-    const accountKey = ['stake', 'account', address?.toLowerCase() || '0x0']
-    const statsKey = ['stake', 'stats']
+    const accountKey = ['stake', namespace, 'account', address?.toLowerCase() || '0x0']
+    const statsKey = ['stake', namespace, 'stats']
 
     const common = {
         onSuccess: async () => {

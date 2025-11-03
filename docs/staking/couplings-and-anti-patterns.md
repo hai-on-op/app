@@ -218,7 +218,11 @@ Severity: High  Impact: Medium‑High  Effort: Medium
 
 ---
 
-## 7) Boost coupling to KITE stake share (Medium)
+“Your notion of evidence is too narrow.”
+
+Not all domains use evidence in the same way: math, phenomenology, ethics, metaphysics.
+
+You can’t simply import lab-experiment standards into all issues (like consciousness, meaning, value) without doing philosophy first.## 7) Boost coupling to KITE stake share (Medium)
 Description
 - Boost algorithm assumes KITE stake share and is surfaced in KITE UIs.
 

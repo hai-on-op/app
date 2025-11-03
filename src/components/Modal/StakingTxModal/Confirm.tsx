@@ -13,6 +13,7 @@ import { ModalBody, ModalFooter } from '../index'
 import { useBoost } from '~/hooks/useBoost'
 import { useStakeMutations } from '~/hooks/staking/useStakeMutations'
 import { useAccount } from 'wagmi'
+import type { StakingConfig } from '~/types/stakingConfig'
 
 type ConfirmProps = {
     onClose?: () => void
@@ -21,9 +22,10 @@ type ConfirmProps = {
     stakedAmount: string
     isWithdraw?: boolean
     onSuccess?: () => void
+    config?: StakingConfig
 }
 
-export function Confirm({ onClose, isStaking, amount, isWithdraw, onSuccess }: ConfirmProps) {
+export function Confirm({ onClose, isStaking, amount, isWithdraw, onSuccess, config }: ConfirmProps) {
     const signer = useEthersSigner()
     const { popupsModel: popupsActions, stakingModel: stakingActions } = useStoreActions((actions) => actions)
     const { stakingModel: stakingStates } = useStoreState((state) => state)
@@ -39,13 +41,21 @@ export function Confirm({ onClose, isStaking, amount, isWithdraw, onSuccess }: C
     // Use ref to prevent reopening modal after completion
     const hasCompletedRef = useRef(false)
 
+    const tokenLabel = config?.labels.token || 'KITE'
+    const stTokenLabel = config?.labels.stToken || 'stKITE'
+    const stakeVerb = config?.labels.stakeVerb || 'Stake'
+
     const handleConfirm = async () => {
         if (!signer) return
 
         popupsActions.setIsWaitingModalOpen(true)
         popupsActions.setWaitingPayload({
             title: 'Waiting For Confirmation',
-            text: isStaking ? 'Stake KITE' : isWithdraw ? 'Withdraw KITE' : 'Unstake KITE',
+            text: isStaking
+                ? `${stakeVerb} ${tokenLabel}`
+                : isWithdraw
+                ? `Withdraw ${tokenLabel}`
+                : `Unstake ${tokenLabel}`,
             hint: 'Confirm this transaction in your wallet',
             status: ActionState.LOADING,
         })
@@ -89,9 +99,8 @@ export function Confirm({ onClose, isStaking, amount, isWithdraw, onSuccess }: C
         <>
             <ModalBody>
                 <Description>
-                    Stake KITE for a boosted HAI and revenue share. stKITE can be claimed 21 days after unstaking.
-                    Additional unstaking requests are combined with the previous request and the cooldown period is
-                    reset.
+                    {stakeVerb} {tokenLabel}. {stTokenLabel} can be claimed after the cooldown period. Additional
+                    unstaking requests are combined with the previous request and the cooldown period is reset.
                 </Description>
                 <TransactionSummary
                     items={[
@@ -118,7 +127,7 @@ export function Confirm({ onClose, isStaking, amount, isWithdraw, onSuccess }: C
                                         minDecimals: 0,
                                     }
                                 )}`,
-                                label: 'stKITE',
+                                label: stTokenLabel,
                             },
                         },
                         {
@@ -156,7 +165,7 @@ export function Confirm({ onClose, isStaking, amount, isWithdraw, onSuccess }: C
                 />
                 {!isStaking && (
                     <Text $fontSize="0.8em" $color="rgba(0,0,0,0.4)">
-                        Note: Unstaked KITE has a {formatTimeFromSeconds(Number(stakingStates.cooldownPeriod))} cooldown
+                        Note: Unstaked {tokenLabel} has a {formatTimeFromSeconds(Number(stakingStates.cooldownPeriod))} cooldown
                         period before it can be claimed
                     </Text>
                 )}

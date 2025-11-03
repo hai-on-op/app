@@ -10,11 +10,11 @@ export type StakeAccountData = {
     cooldown: number
 }
 
-export function useStakeAccount(address?: Address) {
+export function useStakeAccount(address?: Address, namespace: string = 'kite') {
     const provider = usePublicProvider()
 
     const query = useQuery<StakeAccountData>({
-        queryKey: ['stake', 'account', address?.toLowerCase() || '0x0'],
+        queryKey: ['stake', namespace, 'account', address?.toLowerCase() || '0x0'],
         enabled: !!provider && !!address,
         queryFn: async () => {
             if (!provider || !address) throw new Error('No provider or address')

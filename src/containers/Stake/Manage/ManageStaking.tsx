@@ -25,6 +25,7 @@ import { AvailabilityBadge } from '~/components/AvailabilityBadge'
 // import { stakingModel } from '~/model/stakingModel'
 import { formatTimeFromSeconds } from '~/utils/time'
 import { useAccount } from 'wagmi'
+import type { StakingConfig } from '~/types/stakingConfig'
 
 type StakingSimulation = {
     stakingAmount: string
@@ -35,9 +36,10 @@ type StakingSimulation = {
 
 type ManageStakingProps = {
     simulation: StakingSimulation
+    config?: StakingConfig
 }
 
-export function ManageStaking({ simulation }: ManageStakingProps) {
+export function ManageStaking({ simulation, config }: ManageStakingProps) {
     const flags = useFlags(['staking_refactor'])
     const useNew = true //!!flags.staking_refactor?.enabled
     const { stakingAmount, unstakingAmount, setStakingAmount, setUnstakingAmount } = simulation
@@ -54,6 +56,9 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
     const signer = useEthersSigner()
 
     const { stakingModel: stakingState } = useStoreState((state) => state)
+
+    const tokenLabel = config?.labels.token || 'KITE'
+    const stTokenLabel = config?.labels.stToken || 'stKITE'
 
     const availableKite = formatNumberWithStyle(kiteBalance.raw, {
         maxDecimals: 0,
@@ -203,7 +208,7 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
             <Container>
                 <Header>
                     <Flex $width="100%" $justify="space-between" $align="center">
-                        <Text $fontWeight={700}>Manage KITE Staking</Text>
+                        <Text $fontWeight={700}>{`Manage ${tokenLabel} Staking`}</Text>
                         {(Number(stakingAmount) > 0 || Number(unstakingAmount) > 0) && (
                             <Text
                                 $color="rgba(0,0,0,0.5)"
@@ -225,9 +230,9 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                                 <Text>Stake</Text>
                             </CenteredFlex>
                         }
-                        subLabel={`Max ${availableKite} KITE`}
+                        subLabel={`Max ${availableKite} ${tokenLabel}`}
                         placeholder="Staking Amount"
-                        unitLabel={'KITE'}
+                        unitLabel={tokenLabel}
                         onChange={(value: string) => {
                             setUnstakingAmount('0')
                             setStakingAmount(value)
@@ -254,9 +259,9 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                                 <Text>Unstake</Text>
                             </CenteredFlex>
                         }
-                        subLabel={`Max ${stakedKite} KITE`}
+                        subLabel={`Max ${stakedKite} ${tokenLabel}`}
                         placeholder="Unstaking Amount"
-                        unitLabel={'stKITE'}
+                        unitLabel={stTokenLabel}
                         onChange={(value: string) => {
                             setStakingAmount('0')
                             setUnstakingAmount(value)
@@ -277,8 +282,8 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                         style={!isWithdraw ? undefined : { opacity: 0.4 }}
                     />
                     <Text $fontSize="0.85em" $color="rgba(0,0,0,0.85)">
-                        stKITE has a {formatTimeFromSeconds(Number(stakingStates.cooldownPeriod))} cooldown period after
-                        unstaking.
+                        {stTokenLabel} has a {formatTimeFromSeconds(Number(stakingStates.cooldownPeriod))} cooldown
+                        period after unstaking.
                     </Text>
                     {pendingWithdrawal && (
                         <div
@@ -289,7 +294,7 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                                 width: '100%',
                             }}
                         >
-                            <Text $fontSize="0.85em">{`${pendingWithdrawal.amount} KITE available to claim in`}</Text>
+                            <Text $fontSize="0.85em">{`${pendingWithdrawal.amount} ${tokenLabel} available to claim in`}</Text>
                             <AvailabilityBadge>{`${pendingWithdrawal.availableIn}`}</AvailabilityBadge>
                             <HaiButton
                                 $variant="yellowish"

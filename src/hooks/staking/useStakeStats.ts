@@ -7,11 +7,11 @@ export type StakeStats = {
     totalStakers?: number
 }
 
-export function useStakeStats() {
+export function useStakeStats(namespace: string = 'kite') {
     const provider = usePublicProvider()
 
     return useQuery<StakeStats>({
-        queryKey: ['stake', 'stats'],
+        queryKey: ['stake', namespace, 'stats'],
         enabled: !!provider,
         queryFn: async () => {
             if (!provider) throw new Error('No provider')

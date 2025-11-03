@@ -21,6 +21,9 @@ import { OverviewProgressStat, OverviewStat } from './OverviewStat'
 // import { BigNumber, utils } from 'ethers'
 import { useAccount } from 'wagmi'
 import { useFlags } from 'flagsmith/react'
+import { TOKEN_LOGOS } from '~/utils/tokens'
+import type { TokenKey } from '~/types'
+import type { StakingConfig } from '~/types/stakingConfig'
 
 type StakingSimulation = {
     stakingAmount: string
@@ -31,12 +34,19 @@ type StakingSimulation = {
 
 type OverviewProps = {
     simulation: StakingSimulation
+    config?: StakingConfig
 }
 
-export function Overview({ simulation }: OverviewProps) {
+export function Overview({ simulation, config }: OverviewProps) {
     const { stakingAmount, unstakingAmount } = simulation
     const { address } = useAccount()
     const useNew = true
+
+    const tokenLabel = config?.labels.token || 'KITE'
+    const stTokenLabel = config?.labels.stToken || 'stKITE'
+    const tokenKey: TokenKey | undefined = (TOKEN_LOGOS as Record<string, unknown>)[tokenLabel]
+        ? (tokenLabel as TokenKey)
+        : undefined
 
     const {
         loading,
@@ -127,7 +137,7 @@ export function Overview({ simulation }: OverviewProps) {
 
                 <Flex $justify="flex-end" $align="center" $gap={12} $fontSize="0.8em">
                     <Text>
-                        KITE: &nbsp;
+                        {tokenLabel}: &nbsp;
                         <strong>
                             {formatNumberWithStyle(kitePrice, {
                                 minDecimals: 2,
@@ -142,10 +152,10 @@ export function Overview({ simulation }: OverviewProps) {
                 <OverviewStat
                     loading={loading}
                     value={totalStaked.amountFormatted}
-                    token="KITE"
-                    tokenLabel={'stKITE'}
-                    simulatedToken="stKITE"
-                    label="Total Staked KITE"
+                    token={tokenKey}
+                    tokenLabel={stTokenLabel}
+                    simulatedToken={stTokenLabel}
+                    label={`Total Staked ${tokenLabel}`}
                     convertedValue={totalStaked.usdValueFormatted}
                     simulatedValue={
                         simValues.totalStakedAfterTx !== totalStaked.amount
@@ -160,10 +170,10 @@ export function Overview({ simulation }: OverviewProps) {
                 <OverviewStat
                     loading={loading}
                     value={myStaked.effectiveAmountFormatted}
-                    token="KITE"
-                    tokenLabel={'stKITE'}
-                    simulatedToken="stKITE"
-                    label="My Staked KITE"
+                    token={tokenKey}
+                    tokenLabel={stTokenLabel}
+                    simulatedToken={stTokenLabel}
+                    label={`My Staked ${tokenLabel}`}
                     convertedValue={myStaked.usdValueFormatted}
                     simulatedValue={
                         simValues.myStakedAfterTx !== myStaked.effectiveAmount
@@ -181,7 +191,7 @@ export function Overview({ simulation }: OverviewProps) {
                         minDecimals: 2,
                         maxDecimals: 2,
                     })}%`}
-                    label="My stKITE Share"
+                    label={`My ${stTokenLabel} Share`}
                     simulatedValue={
                         simValues.myShareAfterTx !== myShare.value
                             ? `${formatNumberWithStyle(simValues.myShareAfterTx, {
@@ -198,57 +208,60 @@ export function Overview({ simulation }: OverviewProps) {
                     label="Staking APR"
                     tooltip={`The base staking APR is determined by protocol fees accrued in system surplus and the stream rate set by the DAO.`}
                 />
-
-                <OverviewStat
-                    isComingSoon={false}
-                    loading={loading}
-                    value={boost.boostedValueFormatted}
-                    label="My Boosted Value"
-                    tooltip={myBoostedValueToolTip as any}
-                />
-                <OverviewProgressStat
-                    loading={loading}
-                    isComingSoon={false}
-                    value={boost.netBoostValue}
-                    label="My Net Boost:"
-                    simulatedValue={
-                        boost.netBoostValue !== simValues.netBoostAfterTx
-                            ? `${formatNumberWithStyle(simValues.netBoostAfterTx, {
-                                minDecimals: 2,
-                                maxDecimals: 2,
-                            })}x`
-                            : undefined
-                    }
-                    alert={{ value: 'BOOST', status: Status.POSITIVE }}
-                    fullWidth
-                    progress={{
-                        progress: boost.netBoostValue - 1,
-                        label: `${formatNumberWithStyle(boost.netBoostValue, {
-                            minDecimals: 2,
-                            maxDecimals: 2,
-                        })}x`,
-                    }}
-                    simulatedProgress={
-                        boost.netBoostValue !== simValues.netBoostAfterTx
-                            ? {
-                                progress: simValues.netBoostAfterTx - 1,
-                                label: `${formatNumberWithStyle(simValues.netBoostAfterTx, {
+                {config?.affectsBoost !== false && (
+                    <>
+                        <OverviewStat
+                            isComingSoon={false}
+                            loading={loading}
+                            value={boost.boostedValueFormatted}
+                            label="My Boosted Value"
+                            tooltip={myBoostedValueToolTip as any}
+                        />
+                        <OverviewProgressStat
+                            loading={loading}
+                            isComingSoon={false}
+                            value={boost.netBoostValue}
+                            label="My Net Boost:"
+                            simulatedValue={
+                                boost.netBoostValue !== simValues.netBoostAfterTx
+                                    ? `${formatNumberWithStyle(simValues.netBoostAfterTx, {
+                                        minDecimals: 2,
+                                        maxDecimals: 2,
+                                    })}x`
+                                    : undefined
+                            }
+                            alert={{ value: 'BOOST', status: Status.POSITIVE }}
+                            fullWidth
+                            progress={{
+                                progress: boost.netBoostValue - 1,
+                                label: `${formatNumberWithStyle(boost.netBoostValue, {
                                     minDecimals: 2,
                                     maxDecimals: 2,
                                 })}x`,
+                            }}
+                            simulatedProgress={
+                                boost.netBoostValue !== simValues.netBoostAfterTx
+                                    ? {
+                                        progress: simValues.netBoostAfterTx - 1,
+                                        label: `${formatNumberWithStyle(simValues.netBoostAfterTx, {
+                                            minDecimals: 2,
+                                            maxDecimals: 2,
+                                        })}x`,
+                                    }
+                                    : undefined
                             }
-                            : undefined
-                    }
-                    colorLimits={[0.25, 0.5, 0.75]}
-                    labels={[
-                        { progress: 0, label: '1x' },
-                        { progress: 0.25, label: '1.25x' },
-                        { progress: 0.5, label: '1.5x' },
-                        { progress: 0.75, label: '1.75x' },
-                        { progress: 1, label: '2x' },
-                    ]}
-                    tooltip={`Max Net Boost is achieved when your KITE staking share is equal to or greater than the weighted average proportions of your incentivized positions.`}
-                />
+                            colorLimits={[0.25, 0.5, 0.75]}
+                            labels={[
+                                { progress: 0, label: '1x' },
+                                { progress: 0.25, label: '1.25x' },
+                                { progress: 0.5, label: '1.5x' },
+                                { progress: 0.75, label: '1.75x' },
+                                { progress: 1, label: '2x' },
+                            ]}
+                            tooltip={`Max Net Boost is achieved when your ${tokenLabel} staking share is equal to or greater than the weighted average proportions of your incentivized positions.`}
+                        />
+                    </>
+                )}
             </Inner>
         </Container>
     )

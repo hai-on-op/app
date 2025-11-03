@@ -8,14 +8,16 @@ import { CenteredFlex, HaiButton, Text } from '~/styles'
 import { ModalBody, ModalFooter } from '../index'
 import { ArrowUpCircle, CheckCircle } from 'react-feather'
 import { Loader } from '~/components/Loader'
+import type { StakingConfig } from '~/types/stakingConfig'
 
 type ApprovalsProps = {
     onNext: () => void
     isStaking: boolean
     amount: string
+    config?: StakingConfig
 }
 
-export function Approvals({ onNext, isStaking, amount }: ApprovalsProps) {
+export function Approvals({ onNext, isStaking, amount, config }: ApprovalsProps) {
     // const {
     //     connectWalletModel: { proxyAddress },
     // } = useStoreState((state) => state)
@@ -29,6 +31,9 @@ export function Approvals({ onNext, isStaking, amount }: ApprovalsProps) {
     )
 
     // debugger
+
+    const tokenLabel = config?.labels.token || 'KITE'
+    const stTokenLabel = config?.labels.stToken || 'stKITE'
 
     const { isApproved, button } = useMemo(() => {
         if (!isStaking && !amount) {
@@ -51,7 +56,7 @@ export function Approvals({ onNext, isStaking, amount }: ApprovalsProps) {
                         >
                             {kiteApproval === ApprovalState.PENDING
                                 ? 'Pending Approval..'
-                                : `Approve ${isStaking ? 'KITE' : 'stKITE'}`}
+                                : `Approve ${isStaking ? tokenLabel : stTokenLabel}`}
                         </HaiButton>
                     ),
                 }
@@ -62,7 +67,7 @@ export function Approvals({ onNext, isStaking, amount }: ApprovalsProps) {
                     button: null,
                 }
         }
-    }, [kiteApproval, approveKite, isStaking, amount])
+    }, [kiteApproval, approveKite, isStaking, amount, tokenLabel, stTokenLabel])
 
     useEffect(() => {
         if (isApproved) onNext()
@@ -83,7 +88,7 @@ export function Approvals({ onNext, isStaking, amount }: ApprovalsProps) {
             <ModalBody>
                 <ImageContainer>{statusIcon}</ImageContainer>
                 <Text $fontWeight={700}>Token Approvals</Text>
-                <Text>Allow Staking Manager to manage your {isStaking ? 'KITE' : 'stKITE'} tokens</Text>
+                <Text>Allow Staking Manager to manage your {isStaking ? tokenLabel : stTokenLabel} tokens</Text>
             </ModalBody>
             <ModalFooter $gap={24}>{button}</ModalFooter>
         </>
