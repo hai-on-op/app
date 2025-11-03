@@ -32,15 +32,39 @@ export function useVelodrome() {
         ['velodrome', 'pools'],
         async () => {
             if (!velodromeSugarContract) throw new Error('No contract')
-            // Single targeted call to avoid overlapping scans
-            const lps = (await velodromeSugarContract.all(
-                BigNumber.from(500),
-                BigNumber.from(800)
-            )) as any[]
+            // Paginate over multiple windows to ensure HAI/KITE pools are included
+            const PAGE_SIZE = BigNumber.from(500)
+            const OFFSETS = [0, 500, 1000, 1500, 2000, 2500].map((o) => BigNumber.from(o))
+
+            const pages: any[][] = []
+            for (const offset of OFFSETS) {
+                // Sequential calls to avoid RPC throttling
+                const page = (await velodromeSugarContract.all(PAGE_SIZE, offset)) as any[]
+                pages.push(page)
+            }
+
+            const lps = pages.flat()
+
+            // Dedupe by LP address first (favor earliest occurrence)
+            const byAddress: Record<string, any> = {}
+            for (const lp of lps) {
+                const addr = (lp.lp ?? lp[0]).toLowerCase()
+                if (!byAddress[addr]) byAddress[addr] = lp
+            }
+
             const targetTokens = [getAddress(HAI_ADDRESS), getAddress(KITE_ADDRESS)]
-            const filtered = lps.filter((lp) => targetTokens.includes(lp[7]) || targetTokens.includes(lp[10]))
-            const lpData = filtered.map((lp) => ({
-                tokenPair: lp[1].split('/').map((token: string) => token.replace(/^[v|s]AMMV2-/gi, '').toUpperCase()),
+
+            // Filter to pools that include HAI or KITE by token address
+            const filtered = Object.values(byAddress).filter((lp) => {
+                const token0 = getAddress(lp[7])
+                const token1 = getAddress(lp[10])
+                return targetTokens.includes(token0) || targetTokens.includes(token1)
+            })
+
+            const lpData = filtered.map((lp: any) => ({
+                tokenPair: lp[1]
+                    .split('/')
+                    .map((token: string) => token.replace(/^[v|s]AMMV2-/gi, '').toUpperCase()),
                 address: lp.lp,
                 symbol: lp.symbol,
                 decimals: lp.decimals,
