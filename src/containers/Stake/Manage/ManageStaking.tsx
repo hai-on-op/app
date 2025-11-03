@@ -166,6 +166,7 @@ export function ManageStaking({ simulation, config }: ManageStakingProps) {
                         })
                     }}
                     onSuccess={clearInputs}
+                    config={config}
                     isWithdraw={true}
                 />
             )}
@@ -190,6 +191,7 @@ export function ManageStaking({ simulation, config }: ManageStakingProps) {
                         })
                     }}
                     onSuccess={clearInputs}
+                    config={config}
                     isWithdraw={false}
                 />
             )}

@@ -13,8 +13,9 @@ import { useStoreState } from 'easy-peasy'
 import { useStakingData } from '~/hooks/useStakingData'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { ethers } from 'ethers'
+import type { StakingConfig } from '~/types/stakingConfig'
 
-export function StakeStats() {
+export function StakeStats({ config }: { config?: StakingConfig }) {
     const {
         vaultModel: { liquidationData },
         // popupsModel: { isStakeClaimPopupOpen },
@@ -65,7 +66,7 @@ export function StakeStats() {
             })
         }
 
-        return [
+        const base: StatProps[] = [
             {
                 header: totalStaked.usdValueFormatted,
                 label: 'Staking TVL',
@@ -96,16 +97,6 @@ export function StakeStats() {
                 ),
             },
             {
-                header: isNaN(boost.netBoostValue) ? '...' : boost.netBoostFormatted,
-                label: 'My Net Boost',
-                tooltip: (
-                    <Text>
-                        Your current boost multiplier based on your staked KITE. Check out the{' '}
-                        <Link href="/earn">earn page</Link> for more information.
-                    </Text>
-                ),
-            },
-            {
                 header: formatNumberWithStyle(
                     userRewards.reduce((acc, reward) => {
                         const amount = parseFloat(ethers.utils.formatEther(reward.amount))
@@ -131,7 +122,19 @@ export function StakeStats() {
                 ),
             },
         ]
-    }, [loading, totalStaked, myStaked, myShare, boost, stakingData, popupsActions])
+
+        const boostRow: StatProps = {
+            header: isNaN(boost.netBoostValue) ? '...' : boost.netBoostFormatted,
+            label: 'My Net Boost',
+            tooltip: (
+                <Text>
+                    Your current boost multiplier based on your staked KITE. Check out the <Link href="/earn">earn page</Link> for more information.
+                </Text>
+            ),
+        }
+
+        return config?.affectsBoost === false ? base : [...base.slice(0, 3), boostRow, ...base.slice(3)]
+    }, [loading, totalStaked, myStaked, myShare, boost, stakingData, popupsActions, config?.affectsBoost])
 
     return <Stats stats={stats} columns="repeat(4, 1fr) 1.6fr" fun />
 }

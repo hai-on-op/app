@@ -130,37 +130,45 @@ export function Confirm({ onClose, isStaking, amount, isWithdraw, onSuccess, con
                                 label: stTokenLabel,
                             },
                         },
-                        {
-                            label: 'Net Boost',
-                            value: {
-                                current: `${
-                                    !isWithdraw
-                                        ? `${formatNumberWithStyle(
-                                            simulateNetBoost(Number(effectiveStakedAmount), Number(totalStaked)),
-                                            {
-                                                maxDecimals: 2,
-                                                minDecimals: 0,
-                                            }
-                                        )}x`
-                                        : ''
-                                }`,
-                                after: `${
-                                    !isWithdraw
-                                        ? `${formatNumberWithStyle(
-                                            simulateNetBoost(
-                                                Number(effectiveStakedAmount) + (isStaking ? 1 : -1) * Number(amount),
-                                                Number(totalStaked + (isStaking ? 1 : -1) * Number(amount))
-                                            ),
-                                            {
-                                                maxDecimals: 2,
-                                                minDecimals: 0,
-                                            }
-                                        )}x`
-                                        : ''
-                                }`,
-                                label: '',
-                            },
-                        },
+                        ...(config?.affectsBoost === false
+                            ? []
+                            : ([
+                                  {
+                                      label: 'Net Boost',
+                                      value: {
+                                          current: `${
+                                              !isWithdraw
+                                                  ? `${formatNumberWithStyle(
+                                                        simulateNetBoost(
+                                                            Number(effectiveStakedAmount),
+                                                            Number(totalStaked)
+                                                        ),
+                                                        {
+                                                            maxDecimals: 2,
+                                                            minDecimals: 0,
+                                                        }
+                                                    )}x`
+                                                  : ''
+                                          }`,
+                                          after: `${
+                                              !isWithdraw
+                                                  ? `${formatNumberWithStyle(
+                                                        simulateNetBoost(
+                                                            Number(effectiveStakedAmount) +
+                                                                (isStaking ? 1 : -1) * Number(amount),
+                                                            Number(totalStaked + (isStaking ? 1 : -1) * Number(amount))
+                                                        ),
+                                                        {
+                                                            maxDecimals: 2,
+                                                            minDecimals: 0,
+                                                        }
+                                                    )}x`
+                                                  : ''
+                                          }`,
+                                          label: '',
+                                      },
+                                  },
+                              ] as const)),
                     ]}
                 />
                 {!isStaking && (

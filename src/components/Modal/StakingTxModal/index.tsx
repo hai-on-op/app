@@ -4,6 +4,7 @@ import { Approvals } from './Approvals'
 import { Confirm } from './Confirm'
 import { Modal, type ModalProps } from '../index'
 import { BrandedTitle } from '~/components/BrandedTitle'
+import type { StakingConfig } from '~/types/stakingConfig'
 import { X } from '~/components/Icons/X'
 
 enum StakingTxStep {
@@ -17,6 +18,7 @@ type StakingTxModalProps = ModalProps & {
     stakedAmount: string
     isWithdraw?: boolean
     onSuccess?: () => void
+    config?: StakingConfig
 }
 
 export function StakingTxModal({
@@ -25,6 +27,7 @@ export function StakingTxModal({
     stakedAmount,
     isWithdraw = false,
     onSuccess,
+    config,
     ...props
 }: StakingTxModalProps) {
     const [step, setStep] = useState(StakingTxStep.APPROVE)
@@ -51,11 +54,14 @@ export function StakingTxModal({
                     stakedAmount={stakedAmount}
                     isWithdraw={isWithdraw}
                     onSuccess={onSuccess}
+                    config={config}
                 />
             )
         switch (step) {
             case StakingTxStep.APPROVE:
-                return <Approvals onNext={() => setStep(StakingTxStep.CONFIRM)} isStaking={isStaking} amount={amount} />
+                return (
+                    <Approvals onNext={() => setStep(StakingTxStep.CONFIRM)} isStaking={isStaking} amount={amount} config={config} />
+                )
             case StakingTxStep.CONFIRM:
                 return (
                     <Confirm
@@ -65,6 +71,7 @@ export function StakingTxModal({
                         stakedAmount={stakedAmount}
                         isWithdraw={isWithdraw}
                         onSuccess={onSuccess}
+                        config={config}
                     />
                 )
         }

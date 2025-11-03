@@ -44,8 +44,8 @@ export function StakingExperience({ config, client }: StakingExperienceProps) {
         >
             {navIndex === 0 ? (
                 <BodyGrid>
-                    <Overview simulation={simulation} />
-                    <ManageStaking simulation={simulation} />
+                    <Overview simulation={simulation} config={config} />
+                    <ManageStaking simulation={simulation} config={config} />
                 </BodyGrid>
             ) : (
                 <StakeActivity />
