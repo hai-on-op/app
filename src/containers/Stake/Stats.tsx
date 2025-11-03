@@ -8,7 +8,8 @@ import { Stats, type StatProps } from '~/components/Stats'
 import { Link } from '~/components/Link'
 import { Loader } from '~/components/Loader'
 // import { RefreshCw } from 'react-feather'
-import { useStakingSummary } from '~/hooks/useStakingSummary'
+import { useAccount } from 'wagmi'
+import { useStakingSummaryV2 } from '~/hooks/staking/useStakingSummaryV2'
 import { useStoreState } from 'easy-peasy'
 import { useStakingData } from '~/hooks/useStakingData'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
@@ -16,13 +17,13 @@ import { ethers } from 'ethers'
 import type { StakingConfig } from '~/types/stakingConfig'
 
 export function StakeStats({ config }: { config?: StakingConfig }) {
+    const { address } = useAccount()
     const {
         vaultModel: { liquidationData },
         // popupsModel: { isStakeClaimPopupOpen },
     } = useStoreState((state) => state)
     const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
-    const { loading, totalStaked, myStaked, myShare, boost, stakingData } = useStakingSummary()
-
+    const { loading, totalStaked, myStaked, myShare, boost } = useStakingSummaryV2(address as any)
     const { userRewards } = useStakingData()
 
     // const [claiming, setClaiming] = useState(false)
@@ -134,7 +135,7 @@ export function StakeStats({ config }: { config?: StakingConfig }) {
         }
 
         return config?.affectsBoost === false ? base : [...base.slice(0, 3), boostRow, ...base.slice(3)]
-    }, [loading, totalStaked, myStaked, myShare, boost, stakingData, popupsActions, config?.affectsBoost])
+    }, [loading, totalStaked, myStaked, myShare, boost, popupsActions, config?.affectsBoost])
 
     return <Stats stats={stats} columns="repeat(4, 1fr) 1.6fr" fun />
 }

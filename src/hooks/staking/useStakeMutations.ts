@@ -29,6 +29,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useStoreActions } from '~/store'
 import { useEthersSigner } from '~/hooks'
 import type { Address } from '~/services/stakingService'
+import { client as apolloClient } from '~/utils/graphql/client'
 import { defaultStakingService } from '~/services/stakingService'
 
 type AccountCache = {
@@ -99,6 +100,18 @@ export function useStakeMutations(address?: Address, namespace: string = 'kite',
             if (ctx?.prevAccount) qc.setQueryData(accountKey, ctx.prevAccount)
             if (ctx?.prevStats) qc.setQueryData(statsKey, ctx.prevStats)
         },
+        onSuccess: async () => {
+            await qc.invalidateQueries({ queryKey: ['stake', namespace, 'pending'] })
+            await qc.invalidateQueries({ queryKey: ['stake', namespace, 'pending', (address || '').toLowerCase()] })
+            await qc.refetchQueries({ queryKey: ['stake', namespace, 'pending'], type: 'active' })
+            await qc.refetchQueries({
+                queryKey: ['stake', namespace, 'pending', (address || '').toLowerCase()],
+                type: 'active',
+            })
+            try {
+                await apolloClient.refetchQueries({ include: ['GetStakingUser', 'GetAllStakingUsers'] })
+            } catch {}
+        },
         ...common,
     })
 
@@ -115,10 +128,8 @@ export function useStakeMutations(address?: Address, namespace: string = 'kite',
         onMutate: async (amount: string) => {
             const prevAccount = qc.getQueryData<AccountCache>(accountKey)
             const prevStats = qc.getQueryData<StatsCache>(statsKey)
-            const current = Number(prevAccount?.stakedBalance || 0)
-            const nextBalance = String(Math.max(0, current - Number(amount)))
             qc.setQueryData<AccountCache>(accountKey, {
-                stakedBalance: nextBalance,
+                stakedBalance: prevAccount?.stakedBalance || '0',
                 pendingWithdrawal: {
                     amount,
                     timestamp: Math.floor(Date.now() / 1000),
@@ -131,6 +142,18 @@ export function useStakeMutations(address?: Address, namespace: string = 'kite',
         onError: (_e, _vars, ctx) => {
             if (ctx?.prevAccount) qc.setQueryData(accountKey, ctx.prevAccount)
             if (ctx?.prevStats) qc.setQueryData(statsKey, ctx.prevStats)
+        },
+        onSuccess: async () => {
+            await qc.invalidateQueries({ queryKey: ['stake', namespace, 'pending'] })
+            await qc.invalidateQueries({ queryKey: ['stake', namespace, 'pending', (address || '').toLowerCase()] })
+            await qc.refetchQueries({ queryKey: ['stake', namespace, 'pending'], type: 'active' })
+            await qc.refetchQueries({
+                queryKey: ['stake', namespace, 'pending', (address || '').toLowerCase()],
+                type: 'active',
+            })
+            try {
+                await apolloClient.refetchQueries({ include: ['GetStakingUser', 'GetAllStakingUsers'] })
+            } catch {}
         },
         ...common,
     })
@@ -176,10 +199,8 @@ export function useStakeMutations(address?: Address, namespace: string = 'kite',
         onMutate: async () => {
             const prevAccount = qc.getQueryData<AccountCache>(accountKey)
             const prevStats = qc.getQueryData<StatsCache>(statsKey)
-            const amount = Number(prevAccount?.pendingWithdrawal?.amount || 0)
-            const nextBalance = String(Number(prevAccount?.stakedBalance || 0) + amount)
             qc.setQueryData<AccountCache>(accountKey, {
-                stakedBalance: nextBalance,
+                stakedBalance: prevAccount?.stakedBalance || '0',
                 pendingWithdrawal: null,
                 rewards: prevAccount?.rewards || [],
                 cooldown: prevAccount?.cooldown || 0,
@@ -189,6 +210,18 @@ export function useStakeMutations(address?: Address, namespace: string = 'kite',
         onError: (_e, _vars, ctx) => {
             if (ctx?.prevAccount) qc.setQueryData(accountKey, ctx.prevAccount)
             if (ctx?.prevStats) qc.setQueryData(statsKey, ctx.prevStats)
+        },
+        onSuccess: async () => {
+            await qc.invalidateQueries({ queryKey: ['stake', namespace, 'pending'] })
+            await qc.invalidateQueries({ queryKey: ['stake', namespace, 'pending', (address || '').toLowerCase()] })
+            await qc.refetchQueries({ queryKey: ['stake', namespace, 'pending'], type: 'active' })
+            await qc.refetchQueries({
+                queryKey: ['stake', namespace, 'pending', (address || '').toLowerCase()],
+                type: 'active',
+            })
+            try {
+                await apolloClient.refetchQueries({ include: ['GetStakingUser', 'GetAllStakingUsers'] })
+            } catch {}
         },
         ...common,
     })

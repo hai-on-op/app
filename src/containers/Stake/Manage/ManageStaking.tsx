@@ -42,7 +42,9 @@ export function ManageStaking({ simulation, config }: ManageStakingProps) {
     const useRQ = (flags.staking_refactor as any)?.enabled ?? true
     const { stakingAmount, unstakingAmount, setStakingAmount, setUnstakingAmount } = simulation
     const [, kiteBalance] = useBalances(['HAI', 'KITE'])
-    const rq = useStakeDataScoped('kite')
+    const rq = useStakeDataScoped(config?.namespace || 'kite', {
+        poolKey: config?.subgraph.poolKey,
+    })
     const { address } = useAccount()
     const mutations = useStakeMutations(address as any)
     const signer = useEthersSigner()
