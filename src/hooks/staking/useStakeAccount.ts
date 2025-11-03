@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { usePublicProvider } from '~/hooks'
 import type { Address } from '~/services/stakingService'
-import { getCooldown, getRewards, getStakedBalance, getPendingWithdrawal } from '~/services/stakingService'
+import { defaultStakingService } from '~/services/stakingService'
 
 export type StakeAccountData = {
     stakedBalance: string
@@ -10,7 +10,7 @@ export type StakeAccountData = {
     cooldown: number
 }
 
-export function useStakeAccount(address?: Address, namespace: string = 'kite') {
+export function useStakeAccount(address?: Address, namespace: string = 'kite', service = defaultStakingService) {
     const provider = usePublicProvider()
 
     const query = useQuery<StakeAccountData>({
@@ -19,10 +19,10 @@ export function useStakeAccount(address?: Address, namespace: string = 'kite') {
         queryFn: async () => {
             if (!provider || !address) throw new Error('No provider or address')
             const [stakedBalance, pendingWithdrawal, rewards, cooldown] = await Promise.all([
-                getStakedBalance(address, provider),
-                getPendingWithdrawal(address, provider),
-                getRewards(address, provider),
-                getCooldown(provider),
+                service.getStakedBalance(address, provider),
+                service.getPendingWithdrawal(address, provider),
+                service.getRewards(address, provider),
+                service.getCooldown(provider),
             ])
             return { stakedBalance, pendingWithdrawal, rewards, cooldown }
         },

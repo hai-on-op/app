@@ -29,13 +29,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useStoreActions } from '~/store'
 import { useEthersSigner } from '~/hooks'
 import type { Address } from '~/services/stakingService'
-import {
-    stake as svcStake,
-    initiateWithdrawal as svcInitiate,
-    withdraw as svcWithdraw,
-    cancelWithdrawal as svcCancel,
-    claimRewards as svcClaim,
-} from '~/services/stakingService'
+import { defaultStakingService } from '~/services/stakingService'
 
 type AccountCache = {
     stakedBalance: string
@@ -46,7 +40,7 @@ type AccountCache = {
 
 type StatsCache = { totalStaked: string }
 
-export function useStakeMutations(address?: Address, namespace: string = 'kite') {
+export function useStakeMutations(address?: Address, namespace: string = 'kite', service = defaultStakingService) {
     const signer = useEthersSigner()
     const qc = useQueryClient()
     const { setForceUpdateTokens } = useStoreActions((a) => a.connectWalletModel)
@@ -80,7 +74,7 @@ export function useStakeMutations(address?: Address, namespace: string = 'kite')
         mutationKey: ['stake', 'mut', 'stake'],
         mutationFn: async (amount: string) => {
             if (!signer) throw new Error('No signer')
-            return svcStake(signer, amount)
+            return service.stake(signer, amount)
         },
         onMutate: async (amount: string) => {
             const prevAccount = qc.getQueryData<AccountCache>(accountKey)
@@ -116,7 +110,7 @@ export function useStakeMutations(address?: Address, namespace: string = 'kite')
         mutationKey: ['stake', 'mut', 'initiateWithdrawal'],
         mutationFn: async (amount: string) => {
             if (!signer) throw new Error('No signer')
-            return svcInitiate(signer, amount)
+            return service.initiateWithdrawal(signer, amount)
         },
         onMutate: async (amount: string) => {
             const prevAccount = qc.getQueryData<AccountCache>(accountKey)
@@ -149,7 +143,7 @@ export function useStakeMutations(address?: Address, namespace: string = 'kite')
         mutationKey: ['stake', 'mut', 'withdraw'],
         mutationFn: async () => {
             if (!signer) throw new Error('No signer')
-            return svcWithdraw(signer)
+            return service.withdraw(signer)
         },
         onMutate: async () => {
             const prevAccount = qc.getQueryData<AccountCache>(accountKey)
@@ -177,7 +171,7 @@ export function useStakeMutations(address?: Address, namespace: string = 'kite')
         mutationKey: ['stake', 'mut', 'cancelWithdrawal'],
         mutationFn: async () => {
             if (!signer) throw new Error('No signer')
-            return svcCancel(signer)
+            return service.cancelWithdrawal(signer)
         },
         onMutate: async () => {
             const prevAccount = qc.getQueryData<AccountCache>(accountKey)
@@ -207,7 +201,7 @@ export function useStakeMutations(address?: Address, namespace: string = 'kite')
         mutationKey: ['stake', 'mut', 'claimRewards'],
         mutationFn: async () => {
             if (!signer) throw new Error('No signer')
-            return svcClaim(signer)
+            return service.claimRewards(signer)
         },
         onMutate: async () => {
             const prevAccount = qc.getQueryData<AccountCache>(accountKey)

@@ -1,13 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
 import { usePublicProvider } from '~/hooks'
-import { getTotalStaked } from '~/services/stakingService'
+import { defaultStakingService } from '~/services/stakingService'
 
 export type StakeStats = {
     totalStaked: string
     totalStakers?: number
 }
 
-export function useStakeStats(namespace: string = 'kite') {
+export function useStakeStats(namespace: string = 'kite', service = defaultStakingService) {
     const provider = usePublicProvider()
 
     return useQuery<StakeStats>({
@@ -15,7 +15,7 @@ export function useStakeStats(namespace: string = 'kite') {
         enabled: !!provider,
         queryFn: async () => {
             if (!provider) throw new Error('No provider')
-            const totalStaked = await getTotalStaked(provider)
+            const totalStaked = await service.getTotalStaked(provider)
             return { totalStaked }
         },
         staleTime: 15_000,

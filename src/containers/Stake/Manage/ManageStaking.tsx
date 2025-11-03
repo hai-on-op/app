@@ -15,9 +15,7 @@ import { StakingTxModal } from '~/components/Modal/StakingTxModal'
 
 // import { Info } from '~/components/Icons/Info'
 import { useBalances, useEthersSigner } from '~/hooks'
-import { useStakingData } from '~/hooks/useStakingData'
-import { useStakeAccount } from '~/hooks/staking/useStakeAccount'
-import { useStakeStats } from '~/hooks/staking/useStakeStats'
+import { useStakeDataScoped } from '~/hooks/staking/useStakeDataScoped'
 import { useStakeMutations } from '~/hooks/staking/useStakeMutations'
 import { useFlags } from 'flagsmith/react'
 // import { Loader } from '~/components/Loader'
@@ -41,17 +39,11 @@ type ManageStakingProps = {
 
 export function ManageStaking({ simulation, config }: ManageStakingProps) {
     const flags = useFlags(['staking_refactor'])
-    const useNew = true //!!flags.staking_refactor?.enabled
+    const useRQ = (flags.staking_refactor as any)?.enabled ?? true
     const { stakingAmount, unstakingAmount, setStakingAmount, setUnstakingAmount } = simulation
     const [, kiteBalance] = useBalances(['HAI', 'KITE'])
-    const stakingCtx = useStakingData() as any
-    const stakingData = stakingCtx?.stakingData
-    const cooldownPeriod = stakingCtx?.cooldownPeriod
-    const stakingDataLoading = stakingCtx?.loading
-    const refetchAll: (args?: any) => Promise<void> = stakingCtx?.refetchAll || (async () => {})
+    const rq = useStakeDataScoped('kite')
     const { address } = useAccount()
-    const accountQuery = useStakeAccount(address as any)
-    const statsQuery = useStakeStats()
     const mutations = useStakeMutations(address as any)
     const signer = useEthersSigner()
 
@@ -65,24 +57,20 @@ export function ManageStaking({ simulation, config }: ManageStakingProps) {
     })
 
     const stakedKite = useMemo(() => {
-        const bal = useNew ? accountQuery.data?.stakedBalance || '0' : stakingData.stakedBalance
-        if (useNew ? accountQuery.isLoading : stakingDataLoading) return null
+        const bal = rq.stakedBalance || '0'
+        if (rq.loading) return null
         return formatNumberWithStyle(bal, {
             maxDecimals: 2,
             minDecimals: 0,
         })
-    }, [useNew, accountQuery.data?.stakedBalance, accountQuery.isLoading, stakingData.stakedBalance, stakingDataLoading])
+    }, [rq.stakedBalance, rq.loading])
 
     const pendingWithdrawal = useMemo(() => {
         if (!address) return null
-        // Prefer React Query account data when available; fallback to StakingProvider model/indexer data
-        const rqPending = useNew ? accountQuery.data?.pendingWithdrawal : null
-        const modelPending = stakingState.pendingWithdrawals[address.toLowerCase()]
-        const pW = rqPending || (stakingData?.pendingWithdrawal
-            ? { amount: stakingData.pendingWithdrawal.amount, timestamp: stakingData.pendingWithdrawal.timestamp }
-            : modelPending)
+        const rqPending = rq.pendingWithdrawal
+        const pW = rqPending || null
         if (!pW) return null
-        const remainingTime = Number(pW.timestamp) + Number(cooldownPeriod) - Date.now() / 1000
+        const remainingTime = Number(pW.timestamp) + Number(rq.cooldownPeriod || 0) - Date.now() / 1000
 
         let availableIn
         if (remainingTime <= 0) {
@@ -102,7 +90,7 @@ export function ManageStaking({ simulation, config }: ManageStakingProps) {
             }),
             availableIn,
         }
-    }, [useNew, accountQuery.data?.pendingWithdrawal, cooldownPeriod, stakingState, stakingData?.pendingWithdrawal, address])
+    }, [rq.pendingWithdrawal, rq.cooldownPeriod, address])
 
     const isUnStaking = Number(unstakingAmount) > 0
     const isStaking = Number(stakingAmount) > 0
@@ -168,7 +156,7 @@ export function ManageStaking({ simulation, config }: ManageStakingProps) {
                                     ? pendingWithdrawal.amount
                                     : ''
                     }
-                    stakedAmount={stakingData.stakedBalance}
+                    stakedAmount={rq.stakedBalance}
                     onClose={() => {
                         clearInputs()
                         setWithdrawActive(false)
@@ -193,7 +181,7 @@ export function ManageStaking({ simulation, config }: ManageStakingProps) {
                                     ? pendingWithdrawal.amount
                                     : ''
                     }
-                    stakedAmount={stakingData.stakedBalance}
+                    stakedAmount={rq.stakedBalance}
                     onClose={() => {
                         setReviewActive(false)
                         toggleModal({
@@ -269,7 +257,7 @@ export function ManageStaking({ simulation, config }: ManageStakingProps) {
                         value={unstakingAmount}
                         onMax={() => {
                             setStakingAmount('0')
-                            setUnstakingAmount(stakingData.stakedBalance)
+                            setUnstakingAmount(rq.stakedBalance)
                         }}
                         conversion={
                             formState.deposit && Number(formState.deposit) > 0
@@ -282,8 +270,8 @@ export function ManageStaking({ simulation, config }: ManageStakingProps) {
                         style={!isWithdraw ? undefined : { opacity: 0.4 }}
                     />
                     <Text $fontSize="0.85em" $color="rgba(0,0,0,0.85)">
-                        {stTokenLabel} has a {formatTimeFromSeconds(Number(stakingStates.cooldownPeriod))} cooldown
-                        period after unstaking.
+                        {stTokenLabel} has a {formatTimeFromSeconds(Number(rq.cooldownPeriod || 0))} cooldown period
+                        after unstaking.
                     </Text>
                     {pendingWithdrawal && (
                         <div
@@ -340,7 +328,7 @@ export function ManageStaking({ simulation, config }: ManageStakingProps) {
                         disabled={
                             (Number(stakingAmount) <= 0 && Number(unstakingAmount) <= 0) ||
                             Number(stakingAmount) > Number(kiteBalance.raw) ||
-                            Number(unstakingAmount) > Number(stakingData.stakedBalance)
+                            Number(unstakingAmount) > Number(rq.stakedBalance)
                         }
                         onClick={() => {
                             setReviewActive(true)
