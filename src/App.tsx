@@ -28,6 +28,7 @@ import { HaiVeloPage } from './containers/HaiVeloPage'
 import { TestClaim } from './containers/TestClaim'
 import KiteStakePage from './containers/Stake/KiteStakePage'
 import HaiVeloVeloLpStakePage from './containers/Stake/HaiVeloVeloLpStakePage'
+import HaiBoldCurveLpStakePage from './containers/Stake/HaiBoldCurveLpStakePage'
 import { TestClaimVelo } from './containers/TestClaimVelo'
 import flagsmith from 'flagsmith'
 import { FlagsmithProvider } from 'flagsmith/react'
@@ -102,6 +103,12 @@ const App = () => {
                                                                     component={HaiVeloVeloLpStakePage}
                                                                     path={'/stake/hai-velo-velo-lp'}
                                                                 />
+                                                            <Route
+                                                                exact
+                                                                strict
+                                                                component={HaiBoldCurveLpStakePage}
+                                                                path={'/stake/hai-bold-curve-lp'}
+                                                            />
                                                                 <Route exact strict component={Earn} path={'/earn'} />
                                                                 <Route
                                                                     exact
