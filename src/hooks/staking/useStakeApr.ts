@@ -6,9 +6,9 @@ import { useStakePrices } from './useStakePrices'
 import { formatNumberWithStyle } from '~/utils'
 import { contracts } from '~/config/contracts'
 
-export function useStakeApr() {
+export function useStakeApr(namespace?: string, service?: any) {
     const { data: apyList, isLoading: apyLoading } = useStakingApy()
-    const { data: stats, isLoading: statsLoading } = useStakeStats()
+    const { data: stats, isLoading: statsLoading } = useStakeStats(namespace, service)
     const { data: prices, loading: pricesLoading } = useStakePrices()
 
     const loading = apyLoading || statsLoading || pricesLoading

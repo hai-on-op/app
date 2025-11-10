@@ -58,7 +58,7 @@ export function Overview({ simulation, config }: OverviewProps) {
         boost,
         calculateSimulatedValues,
         isOptimistic,
-    } = useStakingSummaryV2(address as any)
+    } = useStakingSummaryV2(address as any, config as any)
 
     // Calculate simulated values if simulation values are provided
     const simValues = useMemo(
@@ -135,18 +135,20 @@ export function Overview({ simulation, config }: OverviewProps) {
                     )}
                 </Flex>
 
-                <Flex $justify="flex-end" $align="center" $gap={12} $fontSize="0.8em">
-                    <Text>
-                        {tokenLabel}: &nbsp;
-                        <strong>
-                            {formatNumberWithStyle(kitePrice, {
-                                minDecimals: 2,
-                                maxDecimals: 2,
-                                style: 'currency',
-                            })}
-                        </strong>
-                    </Text>
-                </Flex>
+                {config?.affectsBoost !== false && (
+                    <Flex $justify="flex-end" $align="center" $gap={12} $fontSize="0.8em">
+                        <Text>
+                            {tokenLabel}: &nbsp;
+                            <strong>
+                                {formatNumberWithStyle(kitePrice, {
+                                    minDecimals: 2,
+                                    maxDecimals: 2,
+                                    style: 'currency',
+                                })}
+                            </strong>
+                        </Text>
+                    </Flex>
+                )}
             </Header>
             <Inner $borderOpacity={0.2}>
                 <OverviewStat

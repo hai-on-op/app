@@ -5,12 +5,12 @@ import { useStakeAccount } from '~/hooks/staking/useStakeAccount'
 import { useStakeStats } from '~/hooks/staking/useStakeStats'
 import { useStakePendingWithdrawalQuery } from '~/hooks/staking/useStakePendingWithdrawalQuery'
 
-export function useStakeDataScoped(namespace: string = 'kite', options?: { poolKey?: string }) {
+export function useStakeDataScoped(namespace: string = 'kite', options?: { poolKey?: string; service?: any }) {
     const { address } = useAccount()
     const qc = useQueryClient()
 
-    const account = useStakeAccount(address as any, namespace)
-    const stats = useStakeStats(namespace)
+    const account = useStakeAccount(address as any, namespace, options?.service)
+    const stats = useStakeStats(namespace, options?.service)
 
     // Subgraph-backed pending withdrawal sync
     const pendingQuery = useStakePendingWithdrawalQuery(namespace, address)

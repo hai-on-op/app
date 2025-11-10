@@ -9,6 +9,8 @@ import { useStakeEffectiveBalance } from './useStakeEffectiveBalance'
 import { useStakeShare } from './useStakeShare'
 import { useBoost } from '~/hooks/useBoost'
 import type { Address } from '~/services/stakingService'
+import type { StakingConfig } from '~/types/stakingConfig'
+import { buildStakingService } from '~/services/stakingService'
 
 export type StakingSummaryDataV2 = {
     loading: boolean
@@ -56,10 +58,14 @@ export type StakingSummaryDataV2 = {
     }
 }
 
-export function useStakingSummaryV2(address?: Address): StakingSummaryDataV2 {
-    const { data: stats, isLoading: statsLoading } = useStakeStats()
-    const { data: account, isLoading: accountLoading } = useStakeAccount(address)
-    const { loading: aprLoading, value: aprValue, formatted: aprFormatted } = useStakeApr()
+export function useStakingSummaryV2(address?: Address, config?: StakingConfig): StakingSummaryDataV2 {
+    const service = config
+        ? buildStakingService(config.addresses.manager as any, undefined, config.decimals)
+        : undefined
+    const namespace = config?.namespace
+    const { data: stats, isLoading: statsLoading } = useStakeStats(namespace, service)
+    const { data: account, isLoading: accountLoading } = useStakeAccount(address, namespace, service)
+    const { loading: aprLoading, value: aprValue, formatted: aprFormatted } = useStakeApr(namespace, service)
     const { data: prices, loading: pricesLoading } = useStakePrices()
     const { loading: effLoading, value: effectiveStaked } = useStakeEffectiveBalance(address)
     const { loading: shareLoading, value: shareValue, percentage } = useStakeShare(address)

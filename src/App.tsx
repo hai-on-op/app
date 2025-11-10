@@ -27,6 +27,7 @@ import { VaultExplorer } from './containers/Vaults/Explore'
 import { HaiVeloPage } from './containers/HaiVeloPage'
 import { TestClaim } from './containers/TestClaim'
 import KiteStakePage from './containers/Stake/KiteStakePage'
+import HaiVeloVeloLpStakePage from './containers/Stake/HaiVeloVeloLpStakePage'
 import { TestClaimVelo } from './containers/TestClaimVelo'
 import flagsmith from 'flagsmith'
 import { FlagsmithProvider } from 'flagsmith/react'
@@ -95,6 +96,12 @@ const App = () => {
                                                                 />
                                                                 <Route exact strict component={Learn} path={'/learn'} />
                                                                 <Route exact strict component={KiteStakePage} path={'/stake'} />
+                                                                <Route
+                                                                    exact
+                                                                    strict
+                                                                    component={HaiVeloVeloLpStakePage}
+                                                                    path={'/stake/hai-velo-velo-lp'}
+                                                                />
                                                                 <Route exact strict component={Earn} path={'/earn'} />
                                                                 <Route
                                                                     exact

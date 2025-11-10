@@ -14,7 +14,8 @@ import { CheckBox } from '~/components/CheckBox'
 import { StakingTxModal } from '~/components/Modal/StakingTxModal'
 
 // import { Info } from '~/components/Icons/Info'
-import { useBalances, useEthersSigner } from '~/hooks'
+import { useEthersSigner } from '~/hooks'
+import { useErc20BalanceQuery } from '~/hooks/useErc20BalanceQuery'
 import { useStakeDataScoped } from '~/hooks/staking/useStakeDataScoped'
 import { useStakeMutations } from '~/hooks/staking/useStakeMutations'
 import { useFlags } from 'flagsmith/react'
@@ -24,6 +25,7 @@ import { AvailabilityBadge } from '~/components/AvailabilityBadge'
 import { formatTimeFromSeconds } from '~/utils/time'
 import { useAccount } from 'wagmi'
 import type { StakingConfig } from '~/types/stakingConfig'
+import { buildStakingService } from '~/services/stakingService'
 
 type StakingSimulation = {
     stakingAmount: string
@@ -41,12 +43,25 @@ export function ManageStaking({ simulation, config }: ManageStakingProps) {
     const flags = useFlags(['staking_refactor'])
     const useRQ = (flags.staking_refactor as any)?.enabled ?? true
     const { stakingAmount, unstakingAmount, setStakingAmount, setUnstakingAmount } = simulation
-    const [, kiteBalance] = useBalances(['HAI', 'KITE'])
+    const service = useMemo(
+        () =>
+            config
+                ? buildStakingService(config.addresses.manager as any, undefined, config.decimals)
+                : undefined,
+        [config]
+    )
+    const { data: stakeTokenBalance } = useErc20BalanceQuery(
+        config?.addresses.stakeToken as string,
+        (useAccount().address as any) || undefined,
+        config?.decimals ?? 18
+    )
+
     const rq = useStakeDataScoped(config?.namespace || 'kite', {
         poolKey: config?.subgraph.poolKey,
+        service,
     })
     const { address } = useAccount()
-    const mutations = useStakeMutations(address as any)
+    const mutations = useStakeMutations(address as any, config?.namespace, service)
     const signer = useEthersSigner()
 
     const { stakingModel: stakingState } = useStoreState((state) => state)
@@ -54,7 +69,7 @@ export function ManageStaking({ simulation, config }: ManageStakingProps) {
     const tokenLabel = config?.labels.token || 'KITE'
     const stTokenLabel = config?.labels.stToken || 'stKITE'
 
-    const availableKite = formatNumberWithStyle(kiteBalance.raw, {
+    const availableKite = formatNumberWithStyle(stakeTokenBalance.raw, {
         maxDecimals: 0,
     })
 
@@ -232,7 +247,7 @@ export function ManageStaking({ simulation, config }: ManageStakingProps) {
                         value={stakingAmount}
                         onMax={() => {
                             setUnstakingAmount('0')
-                            setStakingAmount(kiteBalance.raw.toString())
+                            setStakingAmount(stakeTokenBalance.raw.toString())
                         }}
                         conversion={
                             stakingAmount && Number(stakingAmount) > 0
@@ -331,7 +346,7 @@ export function ManageStaking({ simulation, config }: ManageStakingProps) {
                         $justify="center"
                         disabled={
                             (Number(stakingAmount) <= 0 && Number(unstakingAmount) <= 0) ||
-                            Number(stakingAmount) > Number(kiteBalance.raw) ||
+                            Number(stakingAmount) > Number(stakeTokenBalance.raw) ||
                             Number(unstakingAmount) > Number(rq.stakedBalance)
                         }
                         onClick={() => {

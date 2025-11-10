@@ -14,6 +14,7 @@ import { useBoost } from '~/hooks/useBoost'
 import { useStakeMutations } from '~/hooks/staking/useStakeMutations'
 import { useAccount } from 'wagmi'
 import type { StakingConfig } from '~/types/stakingConfig'
+import { buildStakingService } from '~/services/stakingService'
 
 type ConfirmProps = {
     onClose?: () => void
@@ -32,7 +33,14 @@ export function Confirm({ onClose, isStaking, amount, isWithdraw, onSuccess, con
     const stakingCtx = useStaking() as any
     const refetchAll = stakingCtx?.refetchAll || (() => Promise.resolve())
     const { address } = useAccount()
-    const { stake, initiateWithdrawal, withdraw, cancelWithdrawal, claimRewards } = useStakeMutations(address as any)
+    const service = config
+        ? buildStakingService(config.addresses.manager as any, undefined, config.decimals)
+        : undefined
+    const { stake, initiateWithdrawal, withdraw, cancelWithdrawal, claimRewards } = useStakeMutations(
+        address as any,
+        config?.namespace,
+        service
+    )
     // Use the effective staked amount from useStakingSummary
     // const { myStaked } = useStakingSummary()
 

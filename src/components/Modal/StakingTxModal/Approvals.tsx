@@ -22,13 +22,12 @@ export function Approvals({ onNext, isStaking, amount, config }: ApprovalsProps)
     //     connectWalletModel: { proxyAddress },
     // } = useStoreState((state) => state)
 
-    const [kiteApproval, approveKite] = useTokenApproval(
-        amount,
-        isStaking ? import.meta.env.VITE_KITE_ADDRESS : import.meta.env.VITE_STAKING_TOKEN_ADDRESS,
-        import.meta.env.VITE_STAKING_MANAGER,
-        '18',
-        true
-    )
+    const stakeToken = isStaking
+        ? config?.addresses.stakeToken || (import.meta.env.VITE_KITE_ADDRESS as string)
+        : config?.addresses.stToken || (import.meta.env.VITE_STAKING_TOKEN_ADDRESS as string)
+    const manager = config?.addresses.manager || (import.meta.env.VITE_STAKING_MANAGER as string)
+    const decimals = String(config?.decimals ?? 18)
+    const [kiteApproval, approveKite] = useTokenApproval(amount, stakeToken, manager, decimals, true)
 
     // debugger
 
