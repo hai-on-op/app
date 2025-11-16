@@ -67,8 +67,8 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
     const { data: account, isLoading: accountLoading } = useStakeAccount(address, namespace, service)
     const { loading: aprLoading, value: aprValue, formatted: aprFormatted } = useStakeApr(namespace, service)
     const { data: prices, loading: pricesLoading } = useStakePrices()
-    const { loading: effLoading, value: effectiveStaked } = useStakeEffectiveBalance(address)
-    const { loading: shareLoading, value: shareValue, percentage } = useStakeShare(address)
+    const { loading: effLoading, value: effectiveStaked } = useStakeEffectiveBalance(address, namespace, service)
+    const { loading: shareLoading, value: shareValue, percentage } = useStakeShare(address, namespace, service)
     const {
         userLPPositionValue,
         lpBoostValue,

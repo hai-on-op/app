@@ -9,6 +9,16 @@ export type RewardTokenMeta = {
 
 export type ClaimMap = Array<{ tokenAddress: Address; amount: string }>
 
+export type StakingUserEntity =
+    | 'stakingUser'
+    | 'haiBoldCurveLPStakingUser'
+    | 'haiVeloVeloLPStakingUser'
+
+export type StakingStatsEntity =
+    | 'stakingStatistic'
+    | 'haiBoldCurveLPStakingStatistic'
+    | 'haiVeloVeloLPStakingStatistic'
+
 export type RewardModule = {
     getClaims: (p: { account: Address; provider: any }) => Promise<ClaimMap>
     getTimer?: (p: { provider: any }) => Promise<{ endTime: number; paused: boolean }>
@@ -34,8 +44,8 @@ export type StakingConfig = {
     affectsBoost: boolean
     subgraph: {
         poolKey: string
-        userEntity: 'stakingUser'
-        statsEntity: 'stakingStatistic'
+        userEntity: StakingUserEntity
+        statsEntity: StakingStatsEntity
         idForUser: (addr: string) => string
         idForStats: () => string
     }

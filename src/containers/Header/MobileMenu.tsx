@@ -19,7 +19,7 @@ import { useStoreState } from '~/store'
 import { useMediaQuery, useOutsideClick } from '~/hooks'
 
 import styled from 'styled-components'
-import { CenteredFlex, Flex, HaiButton, Popout } from '~/styles'
+import { CenteredFlex, Flex, HaiButton, Popout, Text } from '~/styles'
 import { Hamburger } from '~/components/Icons/Hamburger'
 import { ConnectButton } from '~/components/ConnectButton'
 import { BrandedDropdown } from '~/components/BrandedDropdown'
@@ -119,13 +119,32 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
                                 >
                                     Earn
                                 </BrandedDropdown.Item>
-                                <BrandedDropdown.Item
-                                    href="/stake"
-                                    icon={<Lock size={18} />}
-                                    active={location.pathname === '/stake'}
-                                >
-                                    Stake
-                                </BrandedDropdown.Item>
+                                <Text $fontSize={12} $fontWeight={700} $textTransform="uppercase" $letterSpacing="0.05rem" $padding="0 8px">
+                                    Staking
+                                </Text>
+                                <NestedGroup>
+                                    <BrandedDropdown.Item
+                                        href="/stake"
+                                        icon={<Lock size={18} />}
+                                        active={location.pathname === '/stake'}
+                                    >
+                                        KITE Staking
+                                    </BrandedDropdown.Item>
+                                    <BrandedDropdown.Item
+                                        href="/stake/hai-velo-velo-lp"
+                                        icon={<Lock size={18} />}
+                                        active={location.pathname === '/stake/hai-velo-velo-lp'}
+                                    >
+                                        HAI/VELO LP
+                                    </BrandedDropdown.Item>
+                                    <BrandedDropdown.Item
+                                        href="/stake/hai-bold-curve-lp"
+                                        icon={<Lock size={18} />}
+                                        active={location.pathname === '/stake/hai-bold-curve-lp'}
+                                    >
+                                        HAI/BOLD LP
+                                    </BrandedDropdown.Item>
+                                </NestedGroup>
                             </>
                         )}
                         <BrandedDropdown.Item
@@ -298,4 +317,14 @@ const Inner = styled(Flex).attrs((props) => ({
     ${({ theme }) => theme.mediaWidth.upToMedium`
         gap: 6px;
     `}
+`
+const NestedGroup = styled(Flex).attrs((props) => ({
+    $column: true,
+    $justify: 'flex-start',
+    $align: 'flex-start',
+    $gap: 8,
+    ...props,
+}))`
+    width: 100%;
+    padding-left: 12px;
 `

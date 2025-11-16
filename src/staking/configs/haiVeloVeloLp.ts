@@ -18,10 +18,10 @@ export const haiVeloVeloLpConfig: StakingConfig = {
     affectsBoost: false,
     subgraph: {
         poolKey: 'lp-hai-velo-velo',
-        userEntity: 'stakingUser',
-        statsEntity: 'stakingStatistic',
-        idForUser: (a: string) => `lp-hai-velo-velo-${a.toLowerCase()}`,
-        idForStats: () => 'lp-hai-velo-velo',
+        userEntity: 'haiVeloVeloLPStakingUser',
+        statsEntity: 'haiVeloVeloLPStakingStatistic',
+        idForUser: (a: string) => a.toLowerCase(),
+        idForStats: () => 'singleton',
     },
     rewards,
 }

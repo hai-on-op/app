@@ -18,7 +18,7 @@ import { CenteredFlex, Flex, HaiButton, Popout, Title } from '~/styles'
 import { Twitter } from '~/components/Icons/Twitter'
 import { Telegram } from '~/components/Icons/Telegram'
 import { Discord } from '~/components/Icons/Discord'
-import { Send } from 'react-feather'
+import { Send, Lock } from 'react-feather'
 import { Marquee, MarqueeChunk } from '~/components/Marquee'
 import { Link } from '~/components/Link'
 import { ConnectButton } from '~/components/ConnectButton'
@@ -62,6 +62,10 @@ export function Header({ tickerActive = false }: HeaderProps) {
     const [communityContainer, setCommunityContainer] = useState<HTMLElement | null>(null)
     const [communityDropdownActive, setCommunityDropdownActive] = useState(false)
     useOutsideClick(communityContainer, () => setCommunityDropdownActive(false))
+
+    const [stakeContainer, setStakeContainer] = useState<HTMLElement | null>(null)
+    const [stakeDropdownActive, setStakeDropdownActive] = useState(false)
+    useOutsideClick(stakeContainer, () => setStakeDropdownActive(false))
 
     const [wrapEthActive, setWrapEthActive] = useState(false)
     useEffect(() => {
@@ -196,9 +200,40 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                         <Link href="/earn" $textDecoration="none">
                                             <HeaderLink $active={location.pathname === '/earn'}>EARN</HeaderLink>
                                         </Link>
-                                        <Link href="/stake" $textDecoration="none">
-                                            <HeaderLink $active={location.pathname === '/stake'}>STAKE</HeaderLink>
-                                        </Link>
+                                        <StakeDropdownContainer
+                                            ref={setStakeContainer}
+                                            onClick={() => setStakeDropdownActive((a) => !a)}
+                                        >
+                                            <HeaderLink $active={location.pathname.startsWith('/stake')}>STAKE</HeaderLink>
+                                            <StakeDropdown
+                                                $anchor="top"
+                                                $float="left"
+                                                $width="auto"
+                                                hidden={!stakeDropdownActive}
+                                            >
+                                                <BrandedDropdown.Item
+                                                    href="/stake"
+                                                    icon={<Lock size={18} />}
+                                                    active={location.pathname === '/stake'}
+                                                >
+                                                    KITE Staking
+                                                </BrandedDropdown.Item>
+                                                <BrandedDropdown.Item
+                                                    href="/stake/hai-velo-velo-lp"
+                                                    icon={<Lock size={18} />}
+                                                    active={location.pathname === '/stake/hai-velo-velo-lp'}
+                                                >
+                                                    HAI/VELO LP
+                                                </BrandedDropdown.Item>
+                                                <BrandedDropdown.Item
+                                                    href="/stake/hai-bold-curve-lp"
+                                                    icon={<Lock size={18} />}
+                                                    active={location.pathname === '/stake/hai-bold-curve-lp'}
+                                                >
+                                                    HAI/BOLD LP
+                                                </BrandedDropdown.Item>
+                                            </StakeDropdown>
+                                        </StakeDropdownContainer>
                                         {/* <Link href="/learn" $textDecoration="none">
                                             <HeaderLink $active={location.pathname === '/learn'}>LEARN</HeaderLink>
                                         </Link> */}
@@ -346,6 +381,29 @@ const CommunityDropdown = styled(Popout)`
     z-index: 2;
     font-size: unset;
     font-weight: 700;
+
+    text-align: left;
+
+    & > * {
+        width: 100%;
+    }
+    & svg {
+        flex-shrink: 0;
+    }
+`
+const StakeDropdownContainer = styled(CenteredFlex)`
+    position: relative;
+    & > *:first-child {
+        cursor: pointer;
+    }
+`
+const StakeDropdown = styled(Popout)`
+    padding: 24px;
+    gap: 12px;
+    margin-top: 20px;
+    z-index: 2;
+    font-size: 14px;
+    font-weight: 500;
 
     text-align: left;
 

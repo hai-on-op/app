@@ -18,10 +18,10 @@ export const haiBoldCurveLpConfig: StakingConfig = {
     affectsBoost: false,
     subgraph: {
         poolKey: 'lp-hai-bold-curve',
-        userEntity: 'stakingUser',
-        statsEntity: 'stakingStatistic',
-        idForUser: (a: string) => `lp-hai-bold-curve-${a.toLowerCase()}`,
-        idForStats: () => 'lp-hai-bold-curve',
+        userEntity: 'haiBoldCurveLPStakingUser',
+        statsEntity: 'haiBoldCurveLPStakingStatistic',
+        idForUser: (a: string) => a.toLowerCase(),
+        idForStats: () => 'singleton',
     },
     rewards,
 }
