@@ -15,6 +15,11 @@ export const exampleLpConfig: StakingConfig = {
     },
     decimals: 18,
     affectsBoost: false,
+    tvl: {
+        source: 'velodrome',
+        poolAddress: '0x0000000000000000000000000000000000000000' as Address,
+        label: 'LP TVL',
+    },
     subgraph: {
         poolKey: 'lp-demo',
         userEntity: 'stakingUser',

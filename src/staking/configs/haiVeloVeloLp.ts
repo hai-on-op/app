@@ -16,6 +16,11 @@ export const haiVeloVeloLpConfig: StakingConfig = {
     },
     decimals: 18,
     affectsBoost: true,
+    tvl: {
+        source: 'velodrome',
+        poolAddress: '0x5535Cdc333FC8f08f6183e7064202C3917E9346C' as Address,
+        label: 'haiVELO/VELO LP TVL',
+    },
     subgraph: {
         poolKey: 'lp-hai-velo-velo',
         userEntity: 'haiVeloVeloLPStakingUser',

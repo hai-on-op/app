@@ -16,6 +16,11 @@ export const haiBoldCurveLpConfig: StakingConfig = {
     },
     decimals: 18,
     affectsBoost: true,
+    tvl: {
+        source: 'curve',
+        poolAddress: '0xC4ea2ED83bC9207398fa5dB31Ee4E7477dC34fd5' as Address,
+        label: 'Curve LP TVL',
+    },
     subgraph: {
         poolKey: 'lp-hai-bold-curve',
         userEntity: 'haiBoldCurveLPStakingUser',

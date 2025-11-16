@@ -27,6 +27,26 @@ export type RewardModule = {
     Panel?: React.ComponentType<{ config: StakingConfig; account?: Address }>
 }
 
+export type LpTvlSource = 'curve' | 'velodrome'
+
+export type LpTvlMetadata = {
+    source: LpTvlSource
+    /**
+     * Optional on-chain pool address (Curve/Velodrome LP token or pool).
+     * This is reserved for future TVL integrations.
+     */
+    poolAddress?: Address
+    /**
+     * Optional protocol-specific pool identifier (e.g. Curve pool id).
+     * This is reserved for future TVL integrations.
+     */
+    poolId?: string
+    /**
+     * Optional label override for the LP TVL stat.
+     */
+    label?: string
+}
+
 export type StakingConfig = {
     namespace: string
     labels: {
@@ -42,6 +62,10 @@ export type StakingConfig = {
     decimals: number
     cooldownSeconds?: number
     affectsBoost: boolean
+    /**
+     * Optional metadata describing the underlying LP pool for TVL calculations.
+     */
+    tvl?: LpTvlMetadata
     subgraph: {
         poolKey: string
         userEntity: StakingUserEntity

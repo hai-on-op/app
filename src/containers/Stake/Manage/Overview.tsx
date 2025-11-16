@@ -6,8 +6,8 @@ import { Status, formatNumberWithStyle } from '~/utils'
 // import { useVault } from '~/providers/VaultProvider'
 // import { useEarnStrategies } from '~/hooks'
 // import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
-import { useStakingSummary } from '~/hooks/useStakingSummary'
 import { useStakingSummaryV2 } from '~/hooks/staking/useStakingSummaryV2'
+import { useLpTvl } from '~/hooks/staking/useLpTvl'
 import { Loader } from '~/components/Loader'
 // import { ComingSoon } from '~/components/ComingSoon'
 
@@ -60,6 +60,8 @@ export function Overview({ simulation, config }: OverviewProps) {
         isOptimistic,
     } = useStakingSummaryV2(address as any, config as any)
 
+    const { loading: lpTvlLoading, tvlUsdFormatted } = useLpTvl(config)
+
     // Calculate simulated values if simulation values are provided
     const simValues = useMemo(
         () => calculateSimulatedValues(stakingAmount, unstakingAmount),
@@ -67,6 +69,9 @@ export function Overview({ simulation, config }: OverviewProps) {
     )
 
     const isKitePool = !config || config.namespace === 'kite'
+    const showLpTvl = Boolean(config?.tvl)
+    const lpTvlLabel =
+        config?.tvl?.label || (config?.tvl?.source === 'curve' ? 'Curve LP TVL' : 'haiVELO/VELO LP TVL')
 
     // Tooltip content for boosted value (KITE only)
     const myBoostedValueToolTip = (
@@ -205,6 +210,19 @@ export function Overview({ simulation, config }: OverviewProps) {
                             : undefined
                     }
                 />
+                {showLpTvl && (
+                    <OverviewStat
+                        loading={loading || lpTvlLoading}
+                        value={tvlUsdFormatted}
+                        label={lpTvlLabel}
+                        tooltip={
+                            <Text>
+                                Total value locked in the underlying {config?.labels.token || 'LP'} pool. This reflects
+                                the combined value of all liquidity provider tokens in the pool.
+                            </Text>
+                        }
+                    />
+                )}
                 <OverviewStat
                     isComingSoon={false}
                     loading={loading}
@@ -320,6 +338,9 @@ const Inner = styled(Grid).attrs((props) => ({
         }
         &:nth-child(5) {
             grid-column: 5 / -1;
+        }
+        &:nth-child(6) {
+            grid-column: 1 / -1;
         }
     }
     &::after {
