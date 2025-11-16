@@ -22,8 +22,8 @@ export const kiteConfig: StakingConfig = {
         poolKey: 'kite',
         userEntity: 'stakingUser',
         statsEntity: 'stakingStatistic',
-        idForUser: (a: string) => `kite-${a.toLowerCase()}`,
-        idForStats: () => 'kite',
+        idForUser: (a: string) => a.toLowerCase(),
+        idForStats: () => 'singleton',
     },
     rewards,
 }

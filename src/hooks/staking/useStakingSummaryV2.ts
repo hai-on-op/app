@@ -7,7 +7,7 @@ import { useStakeApr } from './useStakeApr'
 import { useStakePrices } from './useStakePrices'
 import { useStakeEffectiveBalance } from './useStakeEffectiveBalance'
 import { useStakeShare } from './useStakeShare'
-import { useBoost } from '~/hooks/useBoost'
+import { useStakingBoost } from '~/hooks/staking/useStakingBoost'
 import type { Address } from '~/services/stakingService'
 import type { StakingConfig } from '~/types/stakingConfig'
 import { buildStakingService } from '~/services/stakingService'
@@ -80,7 +80,7 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
         netBoostValue,
         haiVeloPositionValue,
         loading: boostLoading,
-    } = useBoost()
+    } = useStakingBoost(config)
     // Derive optimistic state from active staking-related mutations
     const mutStake = useIsMutating({ mutationKey: ['stake', 'mut', 'stake'] })
     const mutInit = useIsMutating({ mutationKey: ['stake', 'mut', 'initiateWithdrawal'] })

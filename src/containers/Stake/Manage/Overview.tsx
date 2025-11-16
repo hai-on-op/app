@@ -66,7 +66,9 @@ export function Overview({ simulation, config }: OverviewProps) {
         [stakingAmount, unstakingAmount, calculateSimulatedValues]
     )
 
-    // Tooltip content for boosted value
+    const isKitePool = !config || config.namespace === 'kite'
+
+    // Tooltip content for boosted value (KITE only)
     const myBoostedValueToolTip = (
         <div style={{ width: '100%' }}>
             <div style={{ marginBottom: '10px' }}>
@@ -135,7 +137,7 @@ export function Overview({ simulation, config }: OverviewProps) {
                     )}
                 </Flex>
 
-                {config?.affectsBoost !== false && (
+                {config?.affectsBoost !== false && isKitePool && (
                     <Flex $justify="flex-end" $align="center" $gap={12} $fontSize="0.8em">
                         <Text>
                             {tokenLabel}: &nbsp;
@@ -212,13 +214,15 @@ export function Overview({ simulation, config }: OverviewProps) {
                 />
                 {config?.affectsBoost !== false && (
                     <>
-                        <OverviewStat
-                            isComingSoon={false}
-                            loading={loading}
-                            value={boost.boostedValueFormatted}
-                            label="My Boosted Value"
-                            tooltip={myBoostedValueToolTip as any}
-                        />
+                        {isKitePool && (
+                            <OverviewStat
+                                isComingSoon={false}
+                                loading={loading}
+                                value={boost.boostedValueFormatted}
+                                label="My Boosted Value"
+                                tooltip={myBoostedValueToolTip as any}
+                            />
+                        )}
                         <OverviewProgressStat
                             loading={loading}
                             isComingSoon={false}
@@ -227,9 +231,9 @@ export function Overview({ simulation, config }: OverviewProps) {
                             simulatedValue={
                                 boost.netBoostValue !== simValues.netBoostAfterTx
                                     ? `${formatNumberWithStyle(simValues.netBoostAfterTx, {
-                                        minDecimals: 2,
-                                        maxDecimals: 2,
-                                    })}x`
+                                          minDecimals: 2,
+                                          maxDecimals: 2,
+                                      })}x`
                                     : undefined
                             }
                             alert={{ value: 'BOOST', status: Status.POSITIVE }}
@@ -244,12 +248,12 @@ export function Overview({ simulation, config }: OverviewProps) {
                             simulatedProgress={
                                 boost.netBoostValue !== simValues.netBoostAfterTx
                                     ? {
-                                        progress: simValues.netBoostAfterTx - 1,
-                                        label: `${formatNumberWithStyle(simValues.netBoostAfterTx, {
-                                            minDecimals: 2,
-                                            maxDecimals: 2,
-                                        })}x`,
-                                    }
+                                          progress: simValues.netBoostAfterTx - 1,
+                                          label: `${formatNumberWithStyle(simValues.netBoostAfterTx, {
+                                              minDecimals: 2,
+                                              maxDecimals: 2,
+                                          })}x`,
+                                      }
                                     : undefined
                             }
                             colorLimits={[0.25, 0.5, 0.75]}

@@ -16,6 +16,8 @@ type StakingTxModalProps = ModalProps & {
     isStaking: boolean
     amount: string
     stakedAmount: string
+    totalStaked: string
+    cooldownPeriod: number
     isWithdraw?: boolean
     onSuccess?: () => void
     config?: StakingConfig
@@ -25,6 +27,8 @@ export function StakingTxModal({
     isStaking,
     amount,
     stakedAmount,
+    totalStaked,
+    cooldownPeriod,
     isWithdraw = false,
     onSuccess,
     config,
@@ -52,6 +56,8 @@ export function StakingTxModal({
                     isStaking={isStaking}
                     amount={amount}
                     stakedAmount={stakedAmount}
+                    totalStaked={totalStaked}
+                    cooldownPeriod={cooldownPeriod}
                     isWithdraw={isWithdraw}
                     onSuccess={onSuccess}
                     config={config}
@@ -69,13 +75,15 @@ export function StakingTxModal({
                         isStaking={isStaking}
                         amount={amount}
                         stakedAmount={stakedAmount}
+                        totalStaked={totalStaked}
+                        cooldownPeriod={cooldownPeriod}
                         isWithdraw={isWithdraw}
                         onSuccess={onSuccess}
                         config={config}
                     />
                 )
         }
-    }, [step, handleClose, isStaking, amount, stakedAmount, isWithdraw, onSuccess])
+    }, [step, handleClose, isStaking, amount, stakedAmount, totalStaked, cooldownPeriod, isWithdraw, onSuccess, config])
 
     return (
         <Modal

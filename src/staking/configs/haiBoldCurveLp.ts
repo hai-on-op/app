@@ -15,7 +15,7 @@ export const haiBoldCurveLpConfig: StakingConfig = {
         manager: '0xD8417Eb963361d7b80648Fd9f153c4ff9CA2a9Cf' as Address, // stakingManagerHaiBoldCurveLP
     },
     decimals: 18,
-    affectsBoost: false,
+    affectsBoost: true,
     subgraph: {
         poolKey: 'lp-hai-bold-curve',
         userEntity: 'haiBoldCurveLPStakingUser',

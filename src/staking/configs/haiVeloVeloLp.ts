@@ -15,7 +15,7 @@ export const haiVeloVeloLpConfig: StakingConfig = {
         manager: '0xfFf582CE7353026B20264F27770fa7Bdd4Aa6d0E' as Address, // stakingManagerHaiVeloVeloLP
     },
     decimals: 18,
-    affectsBoost: false,
+    affectsBoost: true,
     subgraph: {
         poolKey: 'lp-hai-velo-velo',
         userEntity: 'haiVeloVeloLPStakingUser',

@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import { ActionState, formatNumberWithStyle, formatTimeFromSeconds } from '~/utils'
-import { useStoreActions, useStoreState } from '~/store'
+import { useStoreActions } from '~/store'
 import { handleTransactionError, useEthersSigner } from '~/hooks'
 import { useStaking } from '~/providers/StakingProvider'
 // import { useStakingSummary } from '~/hooks/useStakingSummary'
@@ -10,7 +10,7 @@ import { HaiButton, Text } from '~/styles'
 import { TransactionSummary } from '~/components/TransactionSummary'
 import { ModalBody, ModalFooter } from '../index'
 // import { stakingModel } from '~/model/stakingModel'
-import { useBoost } from '~/hooks/useBoost'
+import { useStakingBoost } from '~/hooks/staking/useStakingBoost'
 import { useStakeMutations } from '~/hooks/staking/useStakeMutations'
 import { useAccount } from 'wagmi'
 import type { StakingConfig } from '~/types/stakingConfig'
@@ -21,15 +21,26 @@ type ConfirmProps = {
     isStaking: boolean
     amount: string
     stakedAmount: string
+    totalStaked: string
+    cooldownPeriod: number
     isWithdraw?: boolean
     onSuccess?: () => void
     config?: StakingConfig
 }
 
-export function Confirm({ onClose, isStaking, amount, isWithdraw, onSuccess, config }: ConfirmProps) {
+export function Confirm({
+    onClose,
+    isStaking,
+    amount,
+    stakedAmount,
+    totalStaked,
+    cooldownPeriod,
+    isWithdraw,
+    onSuccess,
+    config,
+}: ConfirmProps) {
     const signer = useEthersSigner()
     const { popupsModel: popupsActions, stakingModel: stakingActions } = useStoreActions((actions) => actions)
-    const { stakingModel: stakingStates } = useStoreState((state) => state)
     const stakingCtx = useStaking() as any
     const refetchAll = stakingCtx?.refetchAll || (() => Promise.resolve())
     const { address } = useAccount()
@@ -38,13 +49,13 @@ export function Confirm({ onClose, isStaking, amount, isWithdraw, onSuccess, con
         : undefined
     const { stake, initiateWithdrawal, withdraw, cancelWithdrawal, claimRewards } = useStakeMutations(
         address as any,
-        config?.namespace,
+        config?.namespace ?? 'kite',
         service
     )
     // Use the effective staked amount from useStakingSummary
     // const { myStaked } = useStakingSummary()
 
-    const { simulateNetBoost } = useBoost()
+    const { simulateNetBoost } = useStakingBoost(config)
 
     // Use ref to prevent reopening modal after completion
     const hasCompletedRef = useRef(false)
@@ -98,10 +109,9 @@ export function Confirm({ onClose, isStaking, amount, isWithdraw, onSuccess, con
         }
     }
 
-    // Use effective amount from useStakingSummary
-    const effectiveStakedAmount = stakingStates.stakedBalance
-
-    const totalStaked = Number(stakingStates.totalStaked) > 0 ? Number(stakingStates.totalStaked) / 10 ** 18 : 0
+    // Use effective amount from props (already scoped to the active staking pool)
+    const effectiveStakedAmount = stakedAmount
+    const totalStakedNumber = Number(totalStaked || 0)
 
     return (
         <>
@@ -128,8 +138,8 @@ export function Confirm({ onClose, isStaking, amount, isWithdraw, onSuccess, con
                                     isStaking
                                         ? (Number(effectiveStakedAmount) + Number(amount)).toString()
                                         : isWithdraw
-                                            ? effectiveStakedAmount
-                                            : (Number(effectiveStakedAmount) - Number(amount)).toString(),
+                                        ? effectiveStakedAmount
+                                        : (Number(effectiveStakedAmount) - Number(amount)).toString(),
                                     {
                                         maxDecimals: 2,
                                         minDecimals: 0,
@@ -149,7 +159,7 @@ export function Confirm({ onClose, isStaking, amount, isWithdraw, onSuccess, con
                                                   ? `${formatNumberWithStyle(
                                                         simulateNetBoost(
                                                             Number(effectiveStakedAmount),
-                                                            Number(totalStaked)
+                                                            totalStakedNumber
                                                         ),
                                                         {
                                                             maxDecimals: 2,
@@ -163,8 +173,8 @@ export function Confirm({ onClose, isStaking, amount, isWithdraw, onSuccess, con
                                                   ? `${formatNumberWithStyle(
                                                         simulateNetBoost(
                                                             Number(effectiveStakedAmount) +
-                                                                (isStaking ? 1 : -1) * Number(amount),
-                                                            Number(totalStaked + (isStaking ? 1 : -1) * Number(amount))
+                                                            (isStaking ? 1 : -1) * Number(amount),
+                                                            totalStakedNumber + (isStaking ? 1 : -1) * Number(amount)
                                                         ),
                                                         {
                                                             maxDecimals: 2,
@@ -181,8 +191,8 @@ export function Confirm({ onClose, isStaking, amount, isWithdraw, onSuccess, con
                 />
                 {!isStaking && (
                     <Text $fontSize="0.8em" $color="rgba(0,0,0,0.4)">
-                        Note: Unstaked {tokenLabel} has a {formatTimeFromSeconds(Number(stakingStates.cooldownPeriod))} cooldown
-                        period before it can be claimed
+                        Note: Unstaked {tokenLabel} has a {formatTimeFromSeconds(Number(cooldownPeriod))} cooldown period
+                        before it can be claimed
                     </Text>
                 )}
             </ModalBody>

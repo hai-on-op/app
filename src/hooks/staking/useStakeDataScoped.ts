@@ -4,8 +4,18 @@ import { useAccount } from 'wagmi'
 import { useStakeAccount } from '~/hooks/staking/useStakeAccount'
 import { useStakeStats } from '~/hooks/staking/useStakeStats'
 import { useStakePendingWithdrawalQuery } from '~/hooks/staking/useStakePendingWithdrawalQuery'
+import type { StakingUserEntity } from '~/types/stakingConfig'
 
-export function useStakeDataScoped(namespace: string = 'kite', options?: { poolKey?: string; service?: any }) {
+type StakeDataScopedOptions = {
+    poolKey?: string
+    service?: any
+    subgraph?: {
+        userEntity: StakingUserEntity
+        idForUser: (addr: string) => string
+    }
+}
+
+export function useStakeDataScoped(namespace: string = 'kite', options?: StakeDataScopedOptions) {
     const { address } = useAccount()
     const qc = useQueryClient()
 
@@ -13,7 +23,7 @@ export function useStakeDataScoped(namespace: string = 'kite', options?: { poolK
     const stats = useStakeStats(namespace, options?.service)
 
     // Subgraph-backed pending withdrawal sync
-    const pendingQuery = useStakePendingWithdrawalQuery(namespace, address)
+    const pendingQuery = useStakePendingWithdrawalQuery(namespace, address, options?.subgraph)
 
     const loading = account.isLoading || stats.isLoading
 
@@ -24,7 +34,13 @@ export function useStakeDataScoped(namespace: string = 'kite', options?: { poolK
             cooldownPeriod: account.data?.cooldown ?? 0,
             totalStaked: stats.data?.totalStaked || '0',
         }
-    }, [account.data?.stakedBalance, pendingQuery.data, account.data?.pendingWithdrawal, account.data?.cooldown, stats.data?.totalStaked])
+    }, [
+        account.data?.stakedBalance,
+        pendingQuery.data,
+        account.data?.pendingWithdrawal,
+        account.data?.cooldown,
+        stats.data?.totalStaked,
+    ])
 
     const refetchAll = useCallback(async () => {
         await Promise.all([

@@ -8,18 +8,18 @@ import { useQueryClient } from '@tanstack/react-query'
 
 function Comp({ address }: { address: `0x${string}` }) {
     const qc = useQueryClient()
-    const { stake, initiateWithdrawal, withdraw, cancelWithdrawal, claimRewards } = useStakeMutations(address)
+    const { stake, initiateWithdrawal, withdraw, cancelWithdrawal, claimRewards } = useStakeMutations(address, 'kite')
     return (
         <div>
             <button
                 onClick={() => {
-                    qc.setQueryData(['stake', 'account', address.toLowerCase()], {
+                    qc.setQueryData(['stake', 'kite', 'account', address.toLowerCase()], {
                         stakedBalance: '1',
                         pendingWithdrawal: null,
                         rewards: [{ tokenAddress: '0x'.padEnd(42, '1') as any, amount: '1' }],
                         cooldown: 86400,
                     })
-                    qc.setQueryData(['stake', 'stats'], { totalStaked: '100' })
+                    qc.setQueryData(['stake', 'kite', 'stats'], { totalStaked: '100' })
                 }}
             >
                 seed
@@ -46,7 +46,7 @@ describe('useStakeMutations', () => {
         vi.spyOn(svc, 'claimRewards').mockResolvedValue({} as any)
     })
 
-    it('applies optimistic updates and rollbacks on error', async () => {
+    it('applies optimistic updates across all mutations without errors', async () => {
         renderWithProviders(<Comp address={addr} />)
         await act(async () => screen.getByText('seed').click())
         // stake
@@ -61,6 +61,35 @@ describe('useStakeMutations', () => {
         await act(async () => screen.getByText('claim').click())
 
         await waitFor(() => expect(screen.getByTestId('done')).toBeTruthy())
+    })
+
+    it('invalidates pending withdrawal queries on withdraw', async () => {
+        const invalidateSpy = vi.fn()
+        const refetchSpy = vi.fn()
+
+        vi.spyOn(require('@tanstack/react-query'), 'useQueryClient').mockReturnValue({
+            setQueryData: vi.fn(),
+            getQueryData: vi.fn(),
+            invalidateQueries: invalidateSpy,
+            refetchQueries: refetchSpy,
+        } as any)
+
+        renderWithProviders(<Comp address={addr} />)
+
+        await act(async () => screen.getByText('withdraw').click())
+
+        await waitFor(() => {
+            expect(
+                invalidateSpy.mock.calls.some((call) =>
+                    JSON.stringify(call[0]?.queryKey || call[0]).includes('"pending"')
+                )
+            ).toBe(true)
+            expect(
+                refetchSpy.mock.calls.some((call) =>
+                    JSON.stringify(call[0]?.queryKey || call[0]).includes('"pending"')
+                )
+            ).toBe(true)
+        })
     })
 })
 

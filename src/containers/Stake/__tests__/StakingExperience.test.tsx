@@ -19,10 +19,10 @@ describe('StakingExperience labels', () => {
         expect(screen.queryByText('My Net Boost:')).not.toBeInTheDocument()
     })
 
-    it('renders haiVELOVELO LP copy and hides boost surfaces', () => {
+    it('renders haiVELOVELO LP copy and shows boost surfaces', () => {
         renderWithProviders(<StakingExperience config={haiVeloVeloLpConfig} />)
         expect(screen.getByText('Manage HAI/VELO LP Staking')).toBeInTheDocument()
-        expect(screen.queryByText('My Net Boost:')).not.toBeInTheDocument()
+        expect(screen.getByText('My Net Boost:')).toBeInTheDocument()
     })
 })
 

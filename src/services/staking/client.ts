@@ -16,7 +16,7 @@ export function createStakingClient(config: StakingConfig) {
         keys,
         useAccount: () => useStakeAccount(undefined, config.namespace, service),
         useStats: () => useStakeStats(config.namespace, service),
-        useMutations: () => useStakeMutations(undefined, config.namespace, service),
+        useMutations: () => useStakeMutations(undefined, config.namespace ?? 'kite', service),
         useSummary: () => useStakingSummary(),
         service,
     }

@@ -1,6 +1,6 @@
 # Staking Abstraction Spec (KITE + LP pools)
 
-This document defines a reusable staking abstraction to support multiple staking instances (KITE + future LP tokens) using the same UI with per-staking configuration, subgraph scoping, and pluggable rewards. LP stakings do not affect boost.
+This document defines a reusable staking abstraction to support multiple staking instances (KITE + future LP tokens) using the same UI with per-staking configuration, subgraph scoping, and pluggable rewards. Some LP stakings can also participate in boost, using the same KITE-based ratio formula as earn strategies.
 
 ## Subgraph scoping (same subgraph)
 
@@ -43,7 +43,7 @@ export type StakingConfig = {
   };
   decimals: number;                 // stake token decimals
   cooldownSeconds?: number;         // optional fixed; else read on-chain
-  affectsBoost: boolean;            // true only for KITE staking
+  affectsBoost: boolean;            // true for KITE staking and any LP staking that should affect boost
   subgraph: {
     poolKey: string;                // used in id composition
     userEntity: 'stakingUser';
@@ -66,7 +66,7 @@ export type RewardModule = {
 ```
 
 Notes:
-- `affectsBoost=false` suppresses all boost UI and calculations for LP stakings.
+- `affectsBoost=false` suppresses all boost UI and calculations for that staking config.
 - All user-facing copy comes from `labels`.
 
 ## Hook and service factory (namespaced)

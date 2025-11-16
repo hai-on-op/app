@@ -59,9 +59,15 @@ export function ManageStaking({ simulation, config }: ManageStakingProps) {
     const rq = useStakeDataScoped(config?.namespace || 'kite', {
         poolKey: config?.subgraph.poolKey,
         service,
+        subgraph: config
+            ? {
+                  userEntity: config.subgraph.userEntity,
+                  idForUser: config.subgraph.idForUser,
+              }
+            : undefined,
     })
     const { address } = useAccount()
-    const mutations = useStakeMutations(address as any, config?.namespace, service)
+    const mutations = useStakeMutations(address as any, config?.namespace ?? 'kite', service)
     const signer = useEthersSigner()
 
     const { stakingModel: stakingState } = useStoreState((state) => state)
@@ -111,6 +117,8 @@ export function ManageStaking({ simulation, config }: ManageStakingProps) {
 
     const isUnStaking = Number(unstakingAmount) > 0
     const isStaking = Number(stakingAmount) > 0
+
+    const cooldownSeconds = Number(config?.cooldownSeconds ?? rq.cooldownPeriod ?? 0)
 
     const {
         // vaultModel: vaultActions,
@@ -174,6 +182,8 @@ export function ManageStaking({ simulation, config }: ManageStakingProps) {
                                     : ''
                     }
                     stakedAmount={rq.stakedBalance}
+                    totalStaked={rq.totalStaked}
+                    cooldownPeriod={cooldownSeconds}
                     onClose={() => {
                         clearInputs()
                         setWithdrawActive(false)
@@ -200,6 +210,8 @@ export function ManageStaking({ simulation, config }: ManageStakingProps) {
                                     : ''
                     }
                     stakedAmount={rq.stakedBalance}
+                    totalStaked={rq.totalStaked}
+                    cooldownPeriod={cooldownSeconds}
                     onClose={() => {
                         setReviewActive(false)
                         toggleModal({
@@ -289,8 +301,7 @@ export function ManageStaking({ simulation, config }: ManageStakingProps) {
                         style={!isWithdraw ? undefined : { opacity: 0.4 }}
                     />
                     <Text $fontSize="0.85em" $color="rgba(0,0,0,0.85)">
-                        {stTokenLabel} has a {formatTimeFromSeconds(Number(rq.cooldownPeriod || 0))} cooldown period
-                        after unstaking.
+                        {stTokenLabel} has a {formatTimeFromSeconds(cooldownSeconds)} cooldown period after unstaking.
                     </Text>
                     {pendingWithdrawal && (
                         <div

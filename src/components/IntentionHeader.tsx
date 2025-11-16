@@ -20,6 +20,9 @@ import uniswapLogo from '~/assets/uniswap-icon.svg'
 import { StakeStats } from '~/containers/Stake/Stats'
 import { WrapperAd, WrapperAdProps } from './WrapperAd'
 import { HaiVeloStats } from '~/containers/Vaults/HaiVeloStats'
+import { kiteConfig } from '~/staking/configs/kite'
+import { haiBoldCurveLpConfig } from '~/staking/configs/haiBoldCurveLp'
+import { haiVeloVeloLpConfig } from '~/staking/configs/haiVeloVeloLp'
 
 enum Intention {
     AUCTION = 'auctions',
@@ -130,9 +133,17 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
             }
         }
         if (location.pathname.startsWith('/stake')) {
+            let stakeConfig
+            if (location.pathname === '/stake') {
+                stakeConfig = kiteConfig
+            } else if (location.pathname === '/stake/hai-bold-curve-lp') {
+                stakeConfig = haiBoldCurveLpConfig
+            } else if (location.pathname === '/stake/hai-velo-velo-lp') {
+                stakeConfig = haiVeloVeloLpConfig
+            }
             return {
                 type: Intention.STAKE,
-                stats: <StakeStats />,
+                stats: <StakeStats config={stakeConfig} />,
             }
         }
         if (location.pathname.startsWith('/vaults') || location.pathname === '/haiVELO') {

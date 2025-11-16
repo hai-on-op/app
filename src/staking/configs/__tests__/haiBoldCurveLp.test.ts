@@ -23,7 +23,7 @@ describe('haiBoldCurveLpConfig', () => {
 
     it('has expected decimals and subgraph metadata', () => {
         expect(haiBoldCurveLpConfig.decimals).toBe(18)
-        expect(haiBoldCurveLpConfig.affectsBoost).toBe(false)
+        expect(haiBoldCurveLpConfig.affectsBoost).toBe(true)
         expect(haiBoldCurveLpConfig.subgraph.poolKey).toBe('lp-hai-bold-curve')
         expect(haiBoldCurveLpConfig.subgraph.userEntity).toBe('haiBoldCurveLPStakingUser')
         expect(haiBoldCurveLpConfig.subgraph.statsEntity).toBe('haiBoldCurveLPStakingStatistic')

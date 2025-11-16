@@ -23,7 +23,7 @@ describe('haiVeloVeloLpConfig', () => {
 
     it('has expected decimals and subgraph metadata', () => {
         expect(haiVeloVeloLpConfig.decimals).toBe(18)
-        expect(haiVeloVeloLpConfig.affectsBoost).toBe(false)
+        expect(haiVeloVeloLpConfig.affectsBoost).toBe(true)
         expect(haiVeloVeloLpConfig.subgraph.poolKey).toBe('lp-hai-velo-velo')
         expect(haiVeloVeloLpConfig.subgraph.userEntity).toBe('haiVeloVeloLPStakingUser')
         expect(haiVeloVeloLpConfig.subgraph.statsEntity).toBe('haiVeloVeloLPStakingStatistic')

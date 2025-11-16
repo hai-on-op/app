@@ -48,23 +48,20 @@ export function useStakeMutations(address?: Address, namespace: string = 'kite',
     const accountKey = ['stake', namespace, 'account', address?.toLowerCase() || '0x0']
     const statsKey = ['stake', namespace, 'stats']
 
-    const common = {
-        onSuccess: async () => {
-            await Promise.all([
-                qc.invalidateQueries({ queryKey: accountKey, refetchType: 'active' }),
-                qc.invalidateQueries({ queryKey: statsKey, refetchType: 'active' }),
-            ])
-            // Trigger wallet balances refresh
-            setForceUpdateTokens(true)
-        },
-        onSettled: async () => {
-            // As a safety net, refetch again in the background to ensure reconciliation
-            await Promise.all([
-                qc.refetchQueries({ queryKey: accountKey, type: 'active' }),
-                qc.refetchQueries({ queryKey: statsKey, type: 'active' }),
-            ])
-            setForceUpdateTokens(true)
-        },
+    const handleCommonSuccess = async () => {
+        await Promise.all([
+            qc.invalidateQueries({ queryKey: accountKey, refetchType: 'active' }),
+            qc.invalidateQueries({ queryKey: statsKey, refetchType: 'active' }),
+        ])
+        setForceUpdateTokens(true)
+    }
+
+    const handleCommonSettled = async () => {
+        await Promise.all([
+            qc.refetchQueries({ queryKey: accountKey, type: 'active' }),
+            qc.refetchQueries({ queryKey: statsKey, type: 'active' }),
+        ])
+        setForceUpdateTokens(true)
     }
 
     /**
@@ -111,8 +108,9 @@ export function useStakeMutations(address?: Address, namespace: string = 'kite',
             try {
                 await apolloClient.refetchQueries({ include: ['GetStakingUser', 'GetAllStakingUsers'] })
             } catch {}
+            await handleCommonSuccess()
         },
-        ...common,
+        onSettled: handleCommonSettled,
     })
 
     /**
@@ -154,8 +152,9 @@ export function useStakeMutations(address?: Address, namespace: string = 'kite',
             try {
                 await apolloClient.refetchQueries({ include: ['GetStakingUser', 'GetAllStakingUsers'] })
             } catch {}
+            await handleCommonSuccess()
         },
-        ...common,
+        onSettled: handleCommonSettled,
     })
 
     /**
@@ -183,7 +182,20 @@ export function useStakeMutations(address?: Address, namespace: string = 'kite',
             if (ctx?.prevAccount) qc.setQueryData(accountKey, ctx.prevAccount)
             if (ctx?.prevStats) qc.setQueryData(statsKey, ctx.prevStats)
         },
-        ...common,
+        onSuccess: async () => {
+            await qc.invalidateQueries({ queryKey: ['stake', namespace, 'pending'] })
+            await qc.invalidateQueries({ queryKey: ['stake', namespace, 'pending', (address || '').toLowerCase()] })
+            await qc.refetchQueries({ queryKey: ['stake', namespace, 'pending'], type: 'active' })
+            await qc.refetchQueries({
+                queryKey: ['stake', namespace, 'pending', (address || '').toLowerCase()],
+                type: 'active',
+            })
+            try {
+                await apolloClient.refetchQueries({ include: ['GetStakingUser', 'GetAllStakingUsers'] })
+            } catch {}
+            await handleCommonSuccess()
+        },
+        onSettled: handleCommonSettled,
     })
 
     /**
@@ -222,8 +234,9 @@ export function useStakeMutations(address?: Address, namespace: string = 'kite',
             try {
                 await apolloClient.refetchQueries({ include: ['GetStakingUser', 'GetAllStakingUsers'] })
             } catch {}
+            await handleCommonSuccess()
         },
-        ...common,
+        onSettled: handleCommonSettled,
     })
 
     /**
@@ -251,7 +264,8 @@ export function useStakeMutations(address?: Address, namespace: string = 'kite',
             if (ctx?.prevAccount) qc.setQueryData(accountKey, ctx.prevAccount)
             if (ctx?.prevStats) qc.setQueryData(statsKey, ctx.prevStats)
         },
-        ...common,
+        onSuccess: handleCommonSuccess,
+        onSettled: handleCommonSettled,
     })
 
     return useMemo(() => ({ stake, initiateWithdrawal, withdraw, cancelWithdrawal, claimRewards }), [
