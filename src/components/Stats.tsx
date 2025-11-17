@@ -19,14 +19,18 @@ export type StatProps = {
 type StatsProps = FlexProps & {
     stats?: StatProps[]
     columns?: string
-    children?: ReactNode[]
+    children?: ReactNode | ReactNode[]
     fun?: boolean
 }
 export function Stats({ stats, columns, children, fun = false, ...props }: StatsProps) {
+    // Ensure robust column calculation even if stats/children are not arrays
+    const statCount = Array.isArray(stats) ? stats.length : stats ? 1 : 0
+    const childCount = Array.isArray(children) ? children.length : children ? 1 : 0
+
     return (
         <Container
             $borderOpacity={0.2}
-            $columns={columns || `repeat(${(stats || []).length + (children || []).length}, 1fr)`}
+            $columns={columns || `repeat(${statCount + childCount}, 1fr)`}
             $fun={fun}
         >
             {stats?.map((stat, i) => (

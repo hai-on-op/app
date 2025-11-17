@@ -119,31 +119,34 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
 
     const isUpToExtraSmall = useMediaQuery('upToExtraSmall')
 
-    const { type, stats } = useMemo(() => {
+    const { type, stats, stakeConfig } = useMemo(() => {
         if (location.pathname.startsWith('/auctions')) {
             return {
                 type: Intention.AUCTION,
                 stats: <AuctionStats />,
+                stakeConfig: undefined,
             }
         }
         if (location.pathname.startsWith('/earn')) {
             return {
                 type: Intention.EARN,
                 stats: <EarnStats />,
+                stakeConfig: undefined,
             }
         }
         if (location.pathname.startsWith('/stake')) {
-            let stakeConfig
+            let currentStakeConfig
             if (location.pathname === '/stake') {
-                stakeConfig = kiteConfig
+                currentStakeConfig = kiteConfig
             } else if (location.pathname === '/stake/hai-bold-curve-lp') {
-                stakeConfig = haiBoldCurveLpConfig
+                currentStakeConfig = haiBoldCurveLpConfig
             } else if (location.pathname === '/stake/hai-velo-velo-lp') {
-                stakeConfig = haiVeloVeloLpConfig
+                currentStakeConfig = haiVeloVeloLpConfig
             }
             return {
                 type: Intention.STAKE,
-                stats: <StakeStats config={stakeConfig} />,
+                stats: <StakeStats config={currentStakeConfig} />,
+                stakeConfig: currentStakeConfig,
             }
         }
         if (location.pathname.startsWith('/vaults') || location.pathname === '/haiVELO') {
@@ -160,18 +163,19 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
                         return {
                             type: Intention.BORROW,
                             stats: <HaiVeloStats />,
+                            stakeConfig: undefined,
                         }
                     }
-                    return { type: Intention.BORROW, stats: <BorrowStats /> }
+                    return { type: Intention.BORROW, stats: <BorrowStats />, stakeConfig: undefined }
                 default:
-                    return {}
+                    return { type: undefined, stats: undefined, stakeConfig: undefined }
             }
         }
 
-        return {}
+        return { type: undefined, stats: undefined, stakeConfig: undefined }
     }, [location.pathname])
 
-    // Adjust select options label when on haiVELO open page
+    // Adjust select options label when on haiVELO open page or staking LP pages
     const selectOptions: BrandedSelectOption[] = useMemo(() => {
         // Always include a dedicated haiVELO option (do not replace existing Get $HAI)
         const haiVeloOption: BrandedSelectOption = {
@@ -182,14 +186,27 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
         }
 
         const extended: BrandedSelectOption[] = []
+        const isKiteStakeConfig = !stakeConfig || stakeConfig.namespace === 'kite'
+        const lpStakeLabel = stakeConfig?.labels.token
+
         for (const opt of typeOptions) {
-            extended.push(opt)
+            let option = opt
+
+            // On LP staking pages, update the STAKE option label to match the current LP token
+            if (opt.value === Intention.STAKE && stakeConfig && !isKiteStakeConfig && lpStakeLabel) {
+                option = {
+                    ...opt,
+                    label: `STAKE ${lpStakeLabel}`,
+                }
+            }
+
+            extended.push(option)
             if (opt.value === Intention.BORROW) {
                 extended.push(haiVeloOption)
             }
         }
         return extended
-    }, [])
+    }, [stakeConfig])
 
     if (!type) return null
 

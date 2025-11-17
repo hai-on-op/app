@@ -24,34 +24,20 @@ type StakingBoostResult = {
 export function useStakingBoost(config?: StakingConfig): StakingBoostResult {
     const isKitePool = !config || config.namespace === 'kite'
 
-    // KITE staking (existing aggregated boost behaviour)
-    if (isKitePool) {
-        const {
-            userLPPositionValue,
-            lpBoostValue,
-            userTotalValue,
-            hvBoost,
-            haiMintingBoost,
-            haiMintingPositionValue,
-            simulateNetBoost,
-            netBoostValue,
-            haiVeloPositionValue,
-            loading,
-        } = useBoost()
-
-        return {
-            loading,
-            netBoostValue,
-            lpBoostValue,
-            hvBoost,
-            haiMintingBoost,
-            haiMintingPositionValue,
-            haiVeloPositionValue,
-            userLPPositionValue,
-            userTotalValue,
-            simulateNetBoost,
-        }
-    }
+    // Always compute the aggregated KITE staking boost via useBoost
+    // (used directly for the KITE pool, and ignored for LP pools).
+    const {
+        userLPPositionValue: kiteUserLPPositionValue,
+        lpBoostValue: kiteLpBoostValue,
+        userTotalValue,
+        hvBoost,
+        haiMintingBoost,
+        haiMintingPositionValue,
+        simulateNetBoost: kiteSimulateNetBoost,
+        netBoostValue,
+        haiVeloPositionValue,
+        loading: kiteLoading,
+    } = useBoost()
 
     // LP staking boost – per‑pool, using KITE stake vs LP stake
     const { address } = useAccount()
@@ -62,13 +48,11 @@ export function useStakingBoost(config?: StakingConfig): StakingBoostResult {
     )
 
     const lpService = useMemo(
-        () =>
-            buildStakingService(
-                config.addresses.manager as any,
-                undefined,
-                config.decimals
-            ),
-        [config.addresses.manager, config.decimals]
+        () => {
+            if (!config) return undefined
+            return buildStakingService(config.addresses.manager as any, undefined, config.decimals)
+        },
+        [config]
     )
 
     // Global KITE staking data
@@ -82,19 +66,22 @@ export function useStakingBoost(config?: StakingConfig): StakingBoostResult {
     } = useStakeStats(kiteConfig.namespace, kiteService)
 
     // This LP staking pool data
+    const lpNamespace = config?.namespace ?? 'kite'
+    const lpServiceForHooks = lpService ?? kiteService
+
     const {
         data: lpAccount,
         isLoading: lpAccountLoading,
-    } = useStakeAccount(address as any, config.namespace, lpService)
+    } = useStakeAccount(address as any, lpNamespace, lpServiceForHooks)
     const {
         data: lpStats,
         isLoading: lpStatsLoading,
-    } = useStakeStats(config.namespace, lpService)
+    } = useStakeStats(lpNamespace, lpServiceForHooks)
 
     const loading = kiteAccountLoading || kiteStatsLoading || lpAccountLoading || lpStatsLoading
 
     const { lpBoost, userLPPositionValue } = useMemo(() => {
-        if (loading) {
+        if (!config || loading) {
             return { lpBoost: 1, userLPPositionValue: '0' }
         }
 
@@ -115,6 +102,7 @@ export function useStakingBoost(config?: StakingConfig): StakingBoostResult {
             userLPPositionValue: userLPPosition,
         }
     }, [
+        config,
         loading,
         kiteAccount?.stakedBalance,
         kiteStats?.totalStaked,
@@ -122,7 +110,7 @@ export function useStakingBoost(config?: StakingConfig): StakingBoostResult {
         lpStats?.totalStaked,
     ])
 
-    const simulateNetBoost = useCallback(
+    const simulateNetBoostLp = useCallback(
         (userAfterStakingAmount: number, totalAfterStakingAmount: number) => {
             const userStakingAmount = Number(kiteAccount?.stakedBalance || 0)
             const totalStakingAmount = Number(kiteStats?.totalStaked || 0)
@@ -139,6 +127,21 @@ export function useStakingBoost(config?: StakingConfig): StakingBoostResult {
         [kiteAccount?.stakedBalance, kiteStats?.totalStaked]
     )
 
+    if (isKitePool) {
+        return {
+            loading: kiteLoading,
+            netBoostValue,
+            lpBoostValue: kiteLpBoostValue,
+            hvBoost,
+            haiMintingBoost,
+            haiMintingPositionValue,
+            haiVeloPositionValue,
+            userLPPositionValue: kiteUserLPPositionValue,
+            userTotalValue,
+            simulateNetBoost: kiteSimulateNetBoost,
+        }
+    }
+
     return {
         loading,
         netBoostValue: lpBoost,
@@ -149,7 +152,7 @@ export function useStakingBoost(config?: StakingConfig): StakingBoostResult {
         haiVeloPositionValue: 0,
         userLPPositionValue,
         userTotalValue: 0,
-        simulateNetBoost,
+        simulateNetBoost: simulateNetBoostLp,
     }
 }
 
