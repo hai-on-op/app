@@ -81,13 +81,24 @@ const typeOptions: BrandedSelectOption[] = [
         description: 'Stake KITE to earn revenue share and boost your HAI minting incentives.',
     },
     {
+        label: `STAKE ${haiBoldCurveLpConfig.labels.token}`,
+        value: 'stake/hai-bold-curve-lp',
+        icon: ['HAI'],
+        description: `Stake ${haiBoldCurveLpConfig.labels.token} to earn rewards.`,
+    },
+    {
+        label: `STAKE ${haiVeloVeloLpConfig.labels.token}`,
+        value: 'stake/hai-velo-velo-lp',
+        icon: ['HAIVELOV2', "VELO"],
+        description: `Stake ${haiVeloVeloLpConfig.labels.token} to earn rewards.`,
+    },
+    {
         label: 'Buy $HAI',
         value: '',
         icon: <img src={uniswapLogo} alt="" />,
         description: 'Market buy $HAI from various pairs on Uniswap',
         href: 'https://swap.defillama.com/?chain=optimism&from=&to=0x10398abc267496e49106b07dd6be13364d10dc71',
     },
-
     {
         label: 'Buy Auctioned Assets',
         value: Intention.AUCTION,
@@ -175,9 +186,8 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
         return { type: undefined, stats: undefined, stakeConfig: undefined }
     }, [location.pathname])
 
-    // Adjust select options label when on haiVELO open page or staking LP pages
+    // Build select options, including a dedicated haiVELO entry after the primary borrow option
     const selectOptions: BrandedSelectOption[] = useMemo(() => {
-        // Always include a dedicated haiVELO option (do not replace existing Get $HAI)
         const haiVeloOption: BrandedSelectOption = {
             label: 'Get haiVELO',
             value: 'haiVELO',
@@ -186,27 +196,16 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
         }
 
         const extended: BrandedSelectOption[] = []
-        const isKiteStakeConfig = !stakeConfig || stakeConfig.namespace === 'kite'
-        const lpStakeLabel = stakeConfig?.labels.token
 
         for (const opt of typeOptions) {
-            let option = opt
-
-            // On LP staking pages, update the STAKE option label to match the current LP token
-            if (opt.value === Intention.STAKE && stakeConfig && !isKiteStakeConfig && lpStakeLabel) {
-                option = {
-                    ...opt,
-                    label: `STAKE ${lpStakeLabel}`,
-                }
-            }
-
-            extended.push(option)
+            extended.push(opt)
             if (opt.value === Intention.BORROW) {
                 extended.push(haiVeloOption)
             }
         }
+
         return extended
-    }, [stakeConfig])
+    }, [])
 
     if (!type) return null
 
@@ -225,7 +224,18 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
         ctaLink = 'https://docs.letsgethai.com/using-haivelo'
     }
 
-    const selectedValue = isHaiVeloOpen ? 'haiVELO' : (type as unknown as string)
+    const selectedValue =
+        isHaiVeloOpen ||
+        (location.pathname === '/vaults/open' &&
+            ['HAIVELO', 'HAIVELOV2'].includes(new URLSearchParams(location.search).get('collateral') || ''))
+            ? 'haiVELO'
+            : location.pathname === '/stake'
+            ? 'stake'
+            : location.pathname === '/stake/hai-bold-curve-lp'
+            ? 'stake/hai-bold-curve-lp'
+            : location.pathname === '/stake/hai-velo-velo-lp'
+            ? 'stake/hai-velo-velo-lp'
+            : ((type as unknown as string) || '')
 
     return (
         <Container>
