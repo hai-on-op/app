@@ -1,5 +1,7 @@
 import { useMemo, useCallback } from 'react'
 import { useIsMutating } from '@tanstack/react-query'
+import { BigNumber } from 'ethers'
+import { formatUnits } from 'ethers/lib/utils'
 import { formatNumberWithStyle } from '~/utils'
 import { useStakeStats } from './useStakeStats'
 import { useStakeAccount } from './useStakeAccount'
@@ -11,6 +13,10 @@ import { useStakingBoost } from '~/hooks/staking/useStakingBoost'
 import type { Address } from '~/services/stakingService'
 import type { StakingConfig } from '~/types/stakingConfig'
 import { buildStakingService } from '~/services/stakingService'
+import { useVelodrome } from '~/hooks/useVelodrome'
+import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
+import { calculateVelodromePoolTvlUsd } from '~/services/lpTvl'
+import type { VelodromeLpData } from '~/hooks/useVelodrome'
 
 export type StakingSummaryDataV2 = {
     loading: boolean
@@ -81,6 +87,51 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
         haiVeloPositionValue,
         loading: boostLoading,
     } = useStakingBoost(config)
+
+    const isVelodromeLp = Boolean(config?.tvl && config.tvl.source === 'velodrome')
+
+    // Velodrome pool + prices for LP valuation
+    const { data: velodromePools, loading: velodromePoolsLoading } = useVelodrome()
+    const { prices: veloPrices, loading: velodromePricesLoading } = useVelodromePrices()
+
+    const velodromePricesBySymbol: Record<string, number> = useMemo(() => {
+        if (!veloPrices) return {}
+
+        const entries = Object.entries(veloPrices) as [string, { raw: string }][]
+        return entries.reduce<Record<string, number>>((acc, [symbol, value]) => {
+            const numeric = parseFloat(value.raw)
+            if (!Number.isNaN(numeric)) {
+                acc[symbol.toUpperCase()] = numeric
+            }
+            return acc
+        }, {})
+    }, [veloPrices])
+
+    const velodromePool = useMemo<VelodromeLpData | undefined>(() => {
+        if (!config?.tvl?.poolAddress || !velodromePools?.length) return undefined
+        const target = config.tvl.poolAddress.toLowerCase()
+        return velodromePools.find((p) => p.address.toLowerCase() === target)
+    }, [config?.tvl?.poolAddress, velodromePools])
+
+    const lpPriceUsd = useMemo(() => {
+        if (!isVelodromeLp || !velodromePool) return prices.kitePrice || 0
+
+        const tvlUsd = calculateVelodromePoolTvlUsd(velodromePool, velodromePricesBySymbol)
+        if (!tvlUsd || !Number.isFinite(tvlUsd) || tvlUsd <= 0) {
+            return prices.kitePrice || 0
+        }
+
+        try {
+            const supply = parseFloat(formatUnits(BigNumber.from(velodromePool.liquidity), velodromePool.decimals))
+            if (!supply || !Number.isFinite(supply) || supply <= 0) {
+                return prices.kitePrice || 0
+            }
+            const perLp = tvlUsd / supply
+            return perLp > 0 && Number.isFinite(perLp) ? perLp : prices.kitePrice || 0
+        } catch {
+            return prices.kitePrice || 0
+        }
+    }, [isVelodromeLp, velodromePool, velodromePricesBySymbol, prices.kitePrice])
     // Derive optimistic state from active staking-related mutations
     const mutStake = useIsMutating({ mutationKey: ['stake', 'mut', 'stake'] })
     const mutInit = useIsMutating({ mutationKey: ['stake', 'mut', 'initiateWithdrawal'] })
@@ -89,13 +140,25 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
     const mutClaim = useIsMutating({ mutationKey: ['stake', 'mut', 'claimRewards'] })
     const isOptimistic = (mutStake + mutInit + mutWdraw + mutCancel + mutClaim) > 0
 
-    const loading = statsLoading || accountLoading || aprLoading || pricesLoading || effLoading || shareLoading || boostLoading
+    const velodromeLoading = isVelodromeLp && (velodromePoolsLoading || velodromePricesLoading)
+
+    const loading =
+        statsLoading ||
+        accountLoading ||
+        aprLoading ||
+        pricesLoading ||
+        effLoading ||
+        shareLoading ||
+        boostLoading ||
+        velodromeLoading
 
     const totalStakedAmount = Number(stats?.totalStaked || 0)
     const myAmount = Number(account?.stakedBalance || 0)
 
-    const totalStakedUSD = totalStakedAmount * (prices.kitePrice || 0)
-    const myStakedUSD = effectiveStaked * (prices.kitePrice || 0)
+    const perUnitPrice = isVelodromeLp ? lpPriceUsd : prices.kitePrice || 0
+
+    const totalStakedUSD = totalStakedAmount * perUnitPrice
+    const myStakedUSD = effectiveStaked * perUnitPrice
 
     const stakingApr = { value: aprValue, formatted: aprFormatted }
 

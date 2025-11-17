@@ -8,7 +8,7 @@ const rewards: RewardModule = {
 
 export const haiVeloVeloLpConfig: StakingConfig = {
     namespace: 'lp-hai-velo-velo',
-    labels: { token: 'HAI/VELO LP', stToken: 'stHAI/VELO LP', stakeVerb: 'Stake' },
+    labels: { token: 'haiVELO/VELO LP', stToken: 'sthaiVELO/VELO LP', stakeVerb: 'Stake' },
     addresses: {
         stakeToken: '0x5535Cdc333FC8f08f6183e7064202C3917E9346C' as Address, // haiVeloVeloLPToken
         stToken: '0xFEFE14e370c3Cd9F7e1810b25ECF00d553FD625b' as Address, // stakingTokenHaiVeloVeloLP
