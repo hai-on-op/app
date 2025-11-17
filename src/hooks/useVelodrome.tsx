@@ -38,22 +38,48 @@ export function useVelodrome() {
                 BigNumber.from(800)
             )) as any[]
             const targetTokens = [getAddress(HAI_ADDRESS), getAddress(KITE_ADDRESS)]
-            const filtered = lps.filter((lp) => targetTokens.includes(lp[7]) || targetTokens.includes(lp[10]))
-            const lpData = filtered.map((lp) => ({
-                tokenPair: lp[1].split('/').map((token: string) => token.replace(/^[v|s]AMMV2-/gi, '').toUpperCase()),
-                address: lp.lp,
-                symbol: lp.symbol,
-                decimals: lp.decimals,
-                liquidity: lp.liquidity,
-                type: lp.type,
-                token0: lp.token0,
-                reserve0: lp.reserve0,
-                staked0: lp.staked0,
-                token1: lp.token1,
-                reserve1: lp.reserve1,
-                staked1: lp.staked1,
-                gauge_liquidity: lp.gauge_liquidity,
-                emissions: lp.emissions,
+
+            // Base filter: pools that involve HAI or KITE by address (existing behavior)
+            const addressFiltered = lps.filter(
+                (lp) => targetTokens.includes(lp[7]) || targetTokens.includes(lp[10])
+            )
+
+            // Additional filter: include haiVELO pools by symbol (e.g. HAIVELO/VELO, HAIVELOV2/VELO)
+            const haiVeloSymbolFiltered = lps.filter((lp) => {
+                const symbol: string = lp[1]
+                const upper = symbol.toUpperCase()
+                return upper.includes('HAIVELO')
+            })
+
+            // Merge and dedupe by LP address
+            const merged: any[] = [...addressFiltered, ...haiVeloSymbolFiltered]
+            const uniqueByAddress: any[] = []
+            const seen = new Set<string>()
+            for (const lp of merged) {
+                const key = (lp.lp as string).toLowerCase()
+                if (!seen.has(key)) {
+                    seen.add(key)
+                    uniqueByAddress.push(lp)
+                }
+            }
+
+            const lpData: VelodromeLpData[] = uniqueByAddress.map((lp) => ({
+                tokenPair: lp[1]
+                    .split('/')
+                    .map((token: string) => token.replace(/^[v|s]AMMV2-/gi, '').toUpperCase()) as [string, string],
+                address: lp.lp as string,
+                symbol: lp.symbol as string,
+                decimals: lp.decimals as number,
+                liquidity: lp.liquidity as string,
+                type: lp.type as string,
+                token0: lp.token0 as string,
+                reserve0: lp.reserve0 as string,
+                staked0: lp.staked0 as string,
+                token1: lp.token1 as string,
+                reserve1: lp.reserve1 as string,
+                staked1: lp.staked1 as string,
+                gauge_liquidity: lp.gauge_liquidity as string,
+                emissions: lp.emissions as string,
             }))
             return lpData
         },

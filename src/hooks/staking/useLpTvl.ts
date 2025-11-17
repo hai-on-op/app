@@ -1,14 +1,70 @@
+import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import type { StakingConfig } from '~/types/stakingConfig'
-import { buildLpTvlService, formatLpTvlUsd } from '~/services/lpTvl'
-import type { LpTvlHookResult, LpTvlValue } from '~/services/lpTvl'
+import {
+    buildLpTvlService,
+    calculateVelodromePoolTvlUsd,
+    formatLpTvlUsd,
+    type LpTvlHookResult,
+    type LpTvlTokenPriceMap,
+    type LpTvlValue,
+} from '~/services/lpTvl'
+import { useVelodrome } from '~/hooks/useVelodrome'
+import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 
 export function useLpTvl(config?: StakingConfig): LpTvlHookResult {
-    const enabled = Boolean(config?.tvl)
 
+
+    const hasTvlConfig = Boolean(config?.tvl)
+    const isVelodrome = config?.tvl?.source === 'velodrome'
+
+    console.log('config =====', config)
+
+
+    // Velodrome data sources (Sugar + price oracle)
+    const { data: velodromePools, loading: poolsLoading } = useVelodrome()
+    const { prices: veloPrices, loading: veloPricesLoading } = useVelodromePrices()
+
+    console.log('veloPrices =====', veloPrices)
+    console.log('veloPricesLoading =====', veloPricesLoading)
+
+    const velodromePricesBySymbol: LpTvlTokenPriceMap = useMemo(() => {
+        if (!veloPrices) return {}
+
+        const entries = Object.entries(veloPrices) as [string, { raw: string }][]
+        return entries.reduce<LpTvlTokenPriceMap>((acc, [symbol, value]) => {
+            const numeric = parseFloat(value.raw)
+            if (!Number.isNaN(numeric)) {
+                acc[symbol.toUpperCase()] = numeric
+            }
+            return acc
+        }, {})
+    }, [veloPrices])
+
+    console.log('velodromePools =====', velodromePools)
+
+    const velodromePool = useMemo(() => {
+        if (!config?.tvl?.poolAddress || !velodromePools?.length) return undefined
+        const target = config.tvl.poolAddress.toLowerCase()
+        return velodromePools.find((p) => p.address.toLowerCase() === target)
+    }, [config?.tvl?.poolAddress, velodromePools])
+
+    const velodromeTvlUsd: number | null = useMemo(() => {
+        if (!isVelodrome || !velodromePool) return null
+        const tvl = calculateVelodromePoolTvlUsd(velodromePool, velodromePricesBySymbol)
+        return tvl === 0 ? null : tvl
+    }, [isVelodrome, velodromePool, velodromePricesBySymbol])
+
+    console.log('velodromePricesBySymbol =====', velodromePricesBySymbol)
+    console.log('velodromePool =====', velodromePool)
+    console.log('velodromeTvlUsd =====', velodromeTvlUsd)
+
+    const velodromeLoading = isVelodrome && hasTvlConfig && (poolsLoading || veloPricesLoading)
+
+    // Default (non‑Velodrome) TVL source – currently placeholder, suitable for Curve or others later.
     const { data, isLoading } = useQuery<LpTvlValue | null>({
         queryKey: ['stake', config?.namespace, 'lpTvl'],
-        enabled,
+        enabled: hasTvlConfig && !isVelodrome,
         queryFn: async () => {
             if (!config) return null
 
@@ -20,14 +76,15 @@ export function useLpTvl(config?: StakingConfig): LpTvlHookResult {
         staleTime: 60_000,
     })
 
-    const tvlUsd = data?.usd ?? null
+    const serviceTvlUsd = data?.usd ?? null
+    const tvlUsd = isVelodrome ? velodromeTvlUsd : serviceTvlUsd
+    const loading = isVelodrome ? velodromeLoading : isLoading && hasTvlConfig
     const tvlUsdFormatted = formatLpTvlUsd(tvlUsd)
 
     return {
-        loading: isLoading && enabled,
+        loading,
         tvlUsd,
         tvlUsdFormatted,
     }
 }
-
 
