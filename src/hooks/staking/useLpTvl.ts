@@ -13,20 +13,12 @@ import { useVelodrome } from '~/hooks/useVelodrome'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 
 export function useLpTvl(config?: StakingConfig): LpTvlHookResult {
-
-
     const hasTvlConfig = Boolean(config?.tvl)
     const isVelodrome = config?.tvl?.source === 'velodrome'
-
-    console.log('config =====', config)
-
 
     // Velodrome data sources (Sugar + price oracle)
     const { data: velodromePools, loading: poolsLoading } = useVelodrome()
     const { prices: veloPrices, loading: veloPricesLoading } = useVelodromePrices()
-
-    console.log('veloPrices =====', veloPrices)
-    console.log('veloPricesLoading =====', veloPricesLoading)
 
     const velodromePricesBySymbol: LpTvlTokenPriceMap = useMemo(() => {
         if (!veloPrices) return {}
@@ -41,8 +33,6 @@ export function useLpTvl(config?: StakingConfig): LpTvlHookResult {
         }, {})
     }, [veloPrices])
 
-    console.log('velodromePools =====', velodromePools)
-
     const velodromePool = useMemo(() => {
         if (!config?.tvl?.poolAddress || !velodromePools?.length) return undefined
         const target = config.tvl.poolAddress.toLowerCase()
@@ -54,10 +44,6 @@ export function useLpTvl(config?: StakingConfig): LpTvlHookResult {
         const tvl = calculateVelodromePoolTvlUsd(velodromePool, velodromePricesBySymbol)
         return tvl === 0 ? null : tvl
     }, [isVelodrome, velodromePool, velodromePricesBySymbol])
-
-    console.log('velodromePricesBySymbol =====', velodromePricesBySymbol)
-    console.log('velodromePool =====', velodromePool)
-    console.log('velodromeTvlUsd =====', velodromeTvlUsd)
 
     const velodromeLoading = isVelodrome && hasTvlConfig && (poolsLoading || veloPricesLoading)
 
@@ -87,4 +73,3 @@ export function useLpTvl(config?: StakingConfig): LpTvlHookResult {
         tvlUsdFormatted,
     }
 }
-

@@ -3,6 +3,7 @@ import { formatUnits } from 'ethers/lib/utils'
 import { formatNumberWithStyle } from '~/utils'
 import type { LpTvlMetadata, StakingConfig } from '~/types/stakingConfig'
 import type { VelodromeLpData } from '~/hooks/useVelodrome'
+import { fetchCurveLpTvlForOptimismLp } from '~/services/curveLpTvl'
 
 export type LpTvlValue = {
     usd: number
@@ -64,14 +65,23 @@ export function buildLpTvlService(config: StakingConfig): LpTvlService | null {
 
     const { source } = tvlMeta
 
+    console.log('tvlMeta =====', tvlMeta, source)
+
     return {
         async getTvl(): Promise<LpTvlValue | null> {
-            // Placeholder TVL values; replace with real Curve / Velodrome API calls later.
             switch (source) {
                 case 'curve':
-                    return { usd: 2_000_000 }
-                case 'velodrome':
-                    return { usd: 1_500_000 }
+                    if (!tvlMeta.poolAddress) {
+                        return null
+                    }
+                    {
+                        const curveData = await fetchCurveLpTvlForOptimismLp(tvlMeta.poolAddress)
+                        
+                        console.log(curveData)
+                        
+                        if (!curveData) return null
+                        return { usd: curveData.tvlUsd }
+                    }
                 default:
                     return null
             }

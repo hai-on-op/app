@@ -19,7 +19,7 @@ export const haiBoldCurveLpConfig: StakingConfig = {
     tvl: {
         source: 'curve',
         poolAddress: '0xC4ea2ED83bC9207398fa5dB31Ee4E7477dC34fd5' as Address,
-        label: 'Curve LP TVL',
+        label: 'HAI/BOLD LP TVL',
     },
     subgraph: {
         poolKey: 'lp-hai-bold-curve',

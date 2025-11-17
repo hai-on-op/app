@@ -1,5 +1,5 @@
 import { useMemo, useCallback } from 'react'
-import { useIsMutating } from '@tanstack/react-query'
+import { useIsMutating, useQuery } from '@tanstack/react-query'
 import { BigNumber } from 'ethers'
 import { formatUnits } from 'ethers/lib/utils'
 import { formatNumberWithStyle } from '~/utils'
@@ -17,6 +17,7 @@ import { useVelodrome } from '~/hooks/useVelodrome'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { calculateVelodromePoolTvlUsd } from '~/services/lpTvl'
 import type { VelodromeLpData } from '~/hooks/useVelodrome'
+import { fetchCurveLpTvlForOptimismLp, type CurveLpTvlResult } from '~/services/curveLpTvl'
 
 export type StakingSummaryDataV2 = {
     loading: boolean
@@ -89,10 +90,25 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
     } = useStakingBoost(config)
 
     const isVelodromeLp = Boolean(config?.tvl && config.tvl.source === 'velodrome')
+    const isCurveLp = Boolean(config?.tvl && config.tvl.source === 'curve')
 
     // Velodrome pool + prices for LP valuation
     const { data: velodromePools, loading: velodromePoolsLoading } = useVelodrome()
     const { prices: veloPrices, loading: velodromePricesLoading } = useVelodromePrices()
+
+    // Curve LP price (e.g. HAI/BOLD LP on Optimism) via Curve API
+    const {
+        data: curveLpData,
+        isLoading: curveLpLoading,
+    } = useQuery<CurveLpTvlResult | null>({
+        queryKey: ['curve', 'lpTvl', config?.tvl?.poolAddress],
+        enabled: isCurveLp && Boolean(config?.tvl?.poolAddress),
+        staleTime: 60_000,
+        queryFn: async () => {
+            if (!config?.tvl?.poolAddress) return null
+            return fetchCurveLpTvlForOptimismLp(config.tvl.poolAddress)
+        },
+    })
 
     const velodromePricesBySymbol: Record<string, number> = useMemo(() => {
         if (!veloPrices) return {}
@@ -141,6 +157,7 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
     const isOptimistic = (mutStake + mutInit + mutWdraw + mutCancel + mutClaim) > 0
 
     const velodromeLoading = isVelodromeLp && (velodromePoolsLoading || velodromePricesLoading)
+    const curveLoading = isCurveLp && curveLpLoading
 
     const loading =
         statsLoading ||
@@ -150,12 +167,17 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
         effLoading ||
         shareLoading ||
         boostLoading ||
-        velodromeLoading
+        velodromeLoading ||
+        curveLoading
 
     const totalStakedAmount = Number(stats?.totalStaked || 0)
     const myAmount = Number(account?.stakedBalance || 0)
 
-    const perUnitPrice = isVelodromeLp ? lpPriceUsd : prices.kitePrice || 0
+    const perUnitPrice = isVelodromeLp
+        ? lpPriceUsd
+        : isCurveLp
+        ? curveLpData?.lpPriceUsd ?? 0
+        : prices.kitePrice || 0
 
     const totalStakedUSD = totalStakedAmount * perUnitPrice
     const myStakedUSD = effectiveStaked * perUnitPrice
