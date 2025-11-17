@@ -31,6 +31,8 @@ import { useEthersSigner } from '~/hooks'
 import type { Address } from '~/services/stakingService'
 import { client as apolloClient } from '~/utils/graphql/client'
 import { defaultStakingService } from '~/services/stakingService'
+import { stakeQueryKeys } from '~/hooks/staking/stakeQueryKeys'
+import type { StakingUserEntity } from '~/types/stakingConfig'
 
 type AccountCache = {
     stakedBalance: string
@@ -45,13 +47,26 @@ export function useStakeMutations(address?: Address, namespace: string = 'kite',
     const signer = useEthersSigner()
     const qc = useQueryClient()
     const { setForceUpdateTokens } = useStoreActions((a) => a.connectWalletModel)
-    const accountKey = ['stake', namespace, 'account', address?.toLowerCase() || '0x0']
-    const statsKey = ['stake', namespace, 'stats']
+    const accountKey = stakeQueryKeys.account(namespace, address)
+    const statsKey = stakeQueryKeys.stats(namespace)
+
+    // Default to the canonical single-token staking user entity for KITE.
+    // LP pools can override this by passing a different subgraph user entity
+    // via the options object in useStakePendingWithdrawalQuery; for invalidation
+    // we broadly target by namespace and address, so the specific entity string
+    // is not required here.
+    const defaultUserEntity: StakingUserEntity = 'stakingUser'
 
     const handleCommonSuccess = async () => {
         await Promise.all([
             qc.invalidateQueries({ queryKey: accountKey, refetchType: 'active' }),
             qc.invalidateQueries({ queryKey: statsKey, refetchType: 'active' }),
+            // Pending-withdrawal queries (all addresses in namespace + this address)
+            qc.invalidateQueries({ queryKey: stakeQueryKeys.pendingBase(namespace), refetchType: 'active' }),
+            qc.invalidateQueries({
+                queryKey: stakeQueryKeys.pendingForAddress(namespace, address),
+                refetchType: 'active',
+            }),
         ])
         setForceUpdateTokens(true)
     }
@@ -60,6 +75,11 @@ export function useStakeMutations(address?: Address, namespace: string = 'kite',
         await Promise.all([
             qc.refetchQueries({ queryKey: accountKey, type: 'active' }),
             qc.refetchQueries({ queryKey: statsKey, type: 'active' }),
+            qc.refetchQueries({ queryKey: stakeQueryKeys.pendingBase(namespace), type: 'active' }),
+            qc.refetchQueries({
+                queryKey: stakeQueryKeys.pendingForAddress(namespace, address),
+                type: 'active',
+            }),
         ])
         setForceUpdateTokens(true)
     }
@@ -98,11 +118,11 @@ export function useStakeMutations(address?: Address, namespace: string = 'kite',
             if (ctx?.prevStats) qc.setQueryData(statsKey, ctx.prevStats)
         },
         onSuccess: async () => {
-            await qc.invalidateQueries({ queryKey: ['stake', namespace, 'pending'] })
-            await qc.invalidateQueries({ queryKey: ['stake', namespace, 'pending', (address || '').toLowerCase()] })
-            await qc.refetchQueries({ queryKey: ['stake', namespace, 'pending'], type: 'active' })
+            await qc.invalidateQueries({ queryKey: stakeQueryKeys.pendingBase(namespace) })
+            await qc.invalidateQueries({ queryKey: stakeQueryKeys.pendingForAddress(namespace, address) })
+            await qc.refetchQueries({ queryKey: stakeQueryKeys.pendingBase(namespace), type: 'active' })
             await qc.refetchQueries({
-                queryKey: ['stake', namespace, 'pending', (address || '').toLowerCase()],
+                queryKey: stakeQueryKeys.pendingForAddress(namespace, address),
                 type: 'active',
             })
             try {
@@ -126,10 +146,14 @@ export function useStakeMutations(address?: Address, namespace: string = 'kite',
         onMutate: async (amount: string) => {
             const prevAccount = qc.getQueryData<AccountCache>(accountKey)
             const prevStats = qc.getQueryData<StatsCache>(statsKey)
+            const previousPendingAmount = prevAccount?.pendingWithdrawal?.amount
+            const basePending = previousPendingAmount ? Number(previousPendingAmount) : 0
+            const nextPendingAmount = String(basePending + Number(amount))
+
             qc.setQueryData<AccountCache>(accountKey, {
                 stakedBalance: prevAccount?.stakedBalance || '0',
                 pendingWithdrawal: {
-                    amount,
+                    amount: nextPendingAmount,
                     timestamp: Math.floor(Date.now() / 1000),
                 },
                 rewards: prevAccount?.rewards || [],
@@ -142,11 +166,11 @@ export function useStakeMutations(address?: Address, namespace: string = 'kite',
             if (ctx?.prevStats) qc.setQueryData(statsKey, ctx.prevStats)
         },
         onSuccess: async () => {
-            await qc.invalidateQueries({ queryKey: ['stake', namespace, 'pending'] })
-            await qc.invalidateQueries({ queryKey: ['stake', namespace, 'pending', (address || '').toLowerCase()] })
-            await qc.refetchQueries({ queryKey: ['stake', namespace, 'pending'], type: 'active' })
+            await qc.invalidateQueries({ queryKey: stakeQueryKeys.pendingBase(namespace) })
+            await qc.invalidateQueries({ queryKey: stakeQueryKeys.pendingForAddress(namespace, address) })
+            await qc.refetchQueries({ queryKey: stakeQueryKeys.pendingBase(namespace), type: 'active' })
             await qc.refetchQueries({
-                queryKey: ['stake', namespace, 'pending', (address || '').toLowerCase()],
+                queryKey: stakeQueryKeys.pendingForAddress(namespace, address),
                 type: 'active',
             })
             try {
@@ -183,11 +207,11 @@ export function useStakeMutations(address?: Address, namespace: string = 'kite',
             if (ctx?.prevStats) qc.setQueryData(statsKey, ctx.prevStats)
         },
         onSuccess: async () => {
-            await qc.invalidateQueries({ queryKey: ['stake', namespace, 'pending'] })
-            await qc.invalidateQueries({ queryKey: ['stake', namespace, 'pending', (address || '').toLowerCase()] })
-            await qc.refetchQueries({ queryKey: ['stake', namespace, 'pending'], type: 'active' })
+            await qc.invalidateQueries({ queryKey: stakeQueryKeys.pendingBase(namespace) })
+            await qc.invalidateQueries({ queryKey: stakeQueryKeys.pendingForAddress(namespace, address) })
+            await qc.refetchQueries({ queryKey: stakeQueryKeys.pendingBase(namespace), type: 'active' })
             await qc.refetchQueries({
-                queryKey: ['stake', namespace, 'pending', (address || '').toLowerCase()],
+                queryKey: stakeQueryKeys.pendingForAddress(namespace, address),
                 type: 'active',
             })
             try {
@@ -224,11 +248,11 @@ export function useStakeMutations(address?: Address, namespace: string = 'kite',
             if (ctx?.prevStats) qc.setQueryData(statsKey, ctx.prevStats)
         },
         onSuccess: async () => {
-            await qc.invalidateQueries({ queryKey: ['stake', namespace, 'pending'] })
-            await qc.invalidateQueries({ queryKey: ['stake', namespace, 'pending', (address || '').toLowerCase()] })
-            await qc.refetchQueries({ queryKey: ['stake', namespace, 'pending'], type: 'active' })
+            await qc.invalidateQueries({ queryKey: stakeQueryKeys.pendingBase(namespace) })
+            await qc.invalidateQueries({ queryKey: stakeQueryKeys.pendingForAddress(namespace, address) })
+            await qc.refetchQueries({ queryKey: stakeQueryKeys.pendingBase(namespace), type: 'active' })
             await qc.refetchQueries({
-                queryKey: ['stake', namespace, 'pending', (address || '').toLowerCase()],
+                queryKey: stakeQueryKeys.pendingForAddress(namespace, address),
                 type: 'active',
             })
             try {

@@ -5,6 +5,7 @@ import { useStakeAccount } from '~/hooks/staking/useStakeAccount'
 import { useStakeStats } from '~/hooks/staking/useStakeStats'
 import { useStakePendingWithdrawalQuery } from '~/hooks/staking/useStakePendingWithdrawalQuery'
 import type { StakingUserEntity } from '~/types/stakingConfig'
+import { stakeQueryKeys } from '~/hooks/staking/stakeQueryKeys'
 
 type StakeDataScopedOptions = {
     poolKey?: string
@@ -44,10 +45,12 @@ export function useStakeDataScoped(namespace: string = 'kite', options?: StakeDa
 
     const refetchAll = useCallback(async () => {
         await Promise.all([
-            qc.invalidateQueries({ queryKey: ['stake', namespace, 'account'] }),
-            qc.invalidateQueries({ queryKey: ['stake', namespace, 'stats'] }),
+            qc.invalidateQueries({ queryKey: stakeQueryKeys.account(namespace, address as any) }),
+            qc.invalidateQueries({ queryKey: stakeQueryKeys.stats(namespace) }),
+            qc.invalidateQueries({ queryKey: stakeQueryKeys.pendingBase(namespace) }),
+            qc.invalidateQueries({ queryKey: stakeQueryKeys.pendingForAddress(namespace, address) }),
         ])
-    }, [qc, namespace])
+    }, [qc, namespace, address])
 
     return { loading, ...data, refetchAll }
 }

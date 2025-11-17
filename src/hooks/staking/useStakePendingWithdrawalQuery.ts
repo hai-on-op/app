@@ -4,6 +4,7 @@ import { BigNumber } from 'ethers'
 import { formatEther } from 'ethers/lib/utils'
 import { client as apolloClient } from '~/utils/graphql/client'
 import type { StakingUserEntity } from '~/types/stakingConfig'
+import { stakeQueryKeys } from '~/hooks/staking/stakeQueryKeys'
 
 type RawPendingWithdrawal = {
     amount?: string | number
@@ -78,18 +79,13 @@ export function useStakePendingWithdrawalQuery(
     address?: string,
     options?: UseStakePendingWithdrawalOptions
 ) {
-    const addrLower = address?.toLowerCase() || ''
     const userEntity: StakingUserEntity = options?.userEntity ?? 'stakingUser'
 
-    console.log('userEntity', userEntity)
-    console.log('namespace', namespace)
-    console.log('addrLower', addrLower)
-    console.log('options', options)
-
     return useQuery<PendingWithdrawal>({
-        queryKey: ['stake', namespace, 'pending', addrLower, userEntity],
-        enabled: Boolean(addrLower),
+        queryKey: stakeQueryKeys.pendingForAddressAndEntity(namespace, address, userEntity),
+        enabled: Boolean(address),
         queryFn: async () => {
+            const addrLower = address?.toLowerCase()
             if (!addrLower) return null
 
             const id = options?.idForUser ? options.idForUser(addrLower) : addrLower

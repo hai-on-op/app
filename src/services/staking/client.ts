@@ -4,12 +4,13 @@ import { useStakeStats } from '~/hooks/staking/useStakeStats'
 import { useStakeMutations } from '~/hooks/staking/useStakeMutations'
 import { useStakingSummary } from '~/hooks/useStakingSummary'
 import { buildStakingService } from '~/services/stakingService'
+import { stakeQueryKeys } from '~/hooks/staking/stakeQueryKeys'
 
 export function createStakingClient(config: StakingConfig) {
     const service = buildStakingService(config.addresses.manager as any, undefined, config.decimals)
     const keys = {
-        account: (addr?: Address) => ['stake', config.namespace, 'account', (addr || '0x0').toLowerCase()] as const,
-        stats: ['stake', config.namespace, 'stats'] as const,
+        account: (addr?: Address) => stakeQueryKeys.account(config.namespace, addr),
+        stats: stakeQueryKeys.stats(config.namespace),
     }
 
     return {
