@@ -100,6 +100,18 @@ export const REWARDS = {
     },
 }
 
+/**
+ * Staking rewards configuration for LP staking pools.
+ * Maps pool namespace to daily reward amounts.
+ */
+export const STAKING_REWARDS = {
+    // HAI/BOLD Curve LP Staking - 25 KITE per day
+    'lp-hai-bold-curve': {
+        KITE: 25,
+        OP: 0,
+    },
+} as const
+
 // export const VELO_SUGAR_ADDRESS = '0xC8229d65581afE8f04344A6706FF45faECC426f9'
 export const VELO_SUGAR_ADDRESS = '0x3b919747b46b13cffd9f16629cff951c0b7ea1e2'
 

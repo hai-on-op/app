@@ -55,6 +55,7 @@ export function Overview({ simulation, config }: OverviewProps) {
         myStaked,
         myShare,
         stakingApr,
+        aprBreakdown,
         boost,
         calculateSimulatedValues,
         isOptimistic,
@@ -69,9 +70,46 @@ export function Overview({ simulation, config }: OverviewProps) {
     )
 
     const isKitePool = !config || config.namespace === 'kite'
+    const isCurveLp = config?.tvl?.source === 'curve'
     const showLpTvl = Boolean(config?.tvl)
     const lpTvlLabel =
         config?.tvl?.label || (config?.tvl?.source === 'curve' ? 'Curve LP TVL' : 'haiVELO/VELO LP TVL')
+
+    // Tooltip content for LP staking APR breakdown
+    const lpAprBreakdownTooltip = aprBreakdown ? (
+        <div style={{ width: '100%' }}>
+            <div style={{ marginBottom: '8px' }}>
+                <Text $fontSize=".9rem" $fontWeight={700}>
+                    Underlying LP APY
+                </Text>
+                <Text $fontSize=".9rem">
+                    {aprBreakdown.underlyingAprFormatted}
+                </Text>
+                <Text $fontSize=".75rem" style={{ opacity: 0.7 }}>
+                    Trading fees from the Curve pool
+                </Text>
+            </div>
+            <div style={{ marginBottom: '8px' }}>
+                <Text $fontSize=".9rem" $fontWeight={700}>
+                    KITE Incentives APR
+                </Text>
+                <Text $fontSize=".9rem">
+                    {aprBreakdown.incentivesAprFormatted}
+                </Text>
+                <Text $fontSize=".75rem" style={{ opacity: 0.7 }}>
+                    25 KITE/day distributed to stakers
+                </Text>
+            </div>
+            <div style={{ borderTop: '1px solid rgba(255,255,255,0.2)', paddingTop: '8px', marginTop: '8px' }}>
+                <Text $fontSize=".9rem" $fontWeight={700}>
+                    Net APR
+                </Text>
+                <Text $fontSize="1rem" $fontWeight={700}>
+                    {aprBreakdown.netAprFormatted}
+                </Text>
+            </div>
+        </div>
+    ) : null
 
     // Tooltip content for boosted value (KITE only)
     const myBoostedValueToolTip = (
@@ -227,8 +265,12 @@ export function Overview({ simulation, config }: OverviewProps) {
                     isComingSoon={false}
                     loading={loading}
                     value={stakingApr.formatted}
-                    label="Staking APR"
-                    tooltip={`The base staking APR is determined by protocol fees accrued in system surplus and the stream rate set by the DAO.`}
+                    label={isCurveLp ? 'Net APR' : 'Staking APR'}
+                    tooltip={
+                        isCurveLp && lpAprBreakdownTooltip
+                            ? lpAprBreakdownTooltip
+                            : `The base staking APR is determined by protocol fees accrued in system surplus and the stream rate set by the DAO.`
+                    }
                 />
                 {config?.affectsBoost !== false && (
                     <>

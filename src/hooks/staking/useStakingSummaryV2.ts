@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from 'react'
+import { useMemo } from 'react'
 import { useIsMutating, useQuery } from '@tanstack/react-query'
 import { BigNumber } from 'ethers'
 import { formatUnits } from 'ethers/lib/utils'
@@ -10,6 +10,7 @@ import { useStakePrices } from './useStakePrices'
 import { useStakeEffectiveBalance } from './useStakeEffectiveBalance'
 import { useStakeShare } from './useStakeShare'
 import { useStakingBoost } from '~/hooks/staking/useStakingBoost'
+import { useLpStakingApr } from './useLpStakingApr'
 import type { Address } from '~/services/stakingService'
 import type { StakingConfig } from '~/types/stakingConfig'
 import { buildStakingService } from '~/services/stakingService'
@@ -39,6 +40,15 @@ export type StakingSummaryDataV2 = {
     }
     myShare: { value: number; percentage: string }
     stakingApr: { value: number; formatted: string }
+    // APR breakdown for LP staking pools (Curve, etc.)
+    aprBreakdown?: {
+        underlyingApr: number
+        underlyingAprFormatted: string
+        incentivesApr: number
+        incentivesAprFormatted: string
+        netApr: number
+        netAprFormatted: string
+    }
     boost: {
         netBoostValue: number
         netBoostFormatted: string
@@ -72,7 +82,11 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
     const namespace = config?.namespace
     const { data: stats, isLoading: statsLoading } = useStakeStats(namespace, service)
     const { data: account, isLoading: accountLoading } = useStakeAccount(address, namespace, service)
-    const { loading: aprLoading, value: aprValue, formatted: aprFormatted } = useStakeApr(namespace, service)
+    // Use standard APR for non-LP pools
+    const { loading: standardAprLoading, value: standardAprValue, formatted: standardAprFormatted } = useStakeApr(namespace, service)
+    
+    // Use LP-specific APR for Curve LP pools
+    const lpApr = useLpStakingApr(config)
     const { data: prices, loading: pricesLoading } = useStakePrices()
     const { loading: effLoading, value: effectiveStaked } = useStakeEffectiveBalance(address, namespace, service)
     const { loading: shareLoading, value: shareValue, percentage } = useStakeShare(address, namespace, service)
@@ -159,6 +173,9 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
     const velodromeLoading = isVelodromeLp && (velodromePoolsLoading || velodromePricesLoading)
     const curveLoading = isCurveLp && curveLpLoading
 
+    // Use LP APR loading for Curve pools, standard APR loading otherwise
+    const aprLoading = isCurveLp ? lpApr.loading : standardAprLoading
+
     const loading =
         statsLoading ||
         accountLoading ||
@@ -182,7 +199,24 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
     const totalStakedUSD = totalStakedAmount * perUnitPrice
     const myStakedUSD = effectiveStaked * perUnitPrice
 
-    const stakingApr = { value: aprValue, formatted: aprFormatted }
+    // For Curve LP pools, use net APR (underlying + incentives); otherwise use standard APR
+    // APR value is in basis points for standard APR (100 = 1%) but decimal for LP APR
+    const stakingApr = isCurveLp 
+        ? { 
+            value: lpApr.netApr * 10000, // Convert decimal to basis points for consistency
+            formatted: lpApr.formatted.net 
+          }
+        : { value: standardAprValue, formatted: standardAprFormatted }
+
+    // APR breakdown for LP pools (used in tooltip)
+    const aprBreakdown = isCurveLp ? {
+        underlyingApr: lpApr.underlyingApr,
+        underlyingAprFormatted: lpApr.formatted.underlying,
+        incentivesApr: lpApr.incentivesApr,
+        incentivesAprFormatted: lpApr.formatted.incentives,
+        netApr: lpApr.netApr,
+        netAprFormatted: lpApr.formatted.net,
+    } : undefined
 
     const summary = useMemo(() => {
         return {
@@ -205,6 +239,7 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
             },
             myShare: { value: shareValue, percentage },
             stakingApr,
+            aprBreakdown,
             boost: {
                 netBoostValue,
                 netBoostFormatted: formatNumberWithStyle(netBoostValue, { minDecimals: 0, maxDecimals: 2 }) + 'x',
@@ -242,6 +277,7 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
         shareValue,
         percentage,
         stakingApr,
+        aprBreakdown,
         netBoostValue,
         userTotalValue,
         hvBoost,
