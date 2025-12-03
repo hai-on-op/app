@@ -2,6 +2,7 @@ import { useMemo, useState, useRef } from 'react'
 
 import { Approvals } from './Approvals'
 import { Confirm } from './Confirm'
+import { InstantWithdrawExecute } from './InstantWithdrawExecute'
 import { Modal, type ModalProps } from '../index'
 import { BrandedTitle } from '~/components/BrandedTitle'
 import type { StakingConfig } from '~/types/stakingConfig'
@@ -10,6 +11,7 @@ import { X } from '~/components/Icons/X'
 enum StakingTxStep {
     APPROVE,
     CONFIRM,
+    INSTANT_WITHDRAW,
 }
 
 type StakingTxModalProps = ModalProps & {
@@ -34,7 +36,13 @@ export function StakingTxModal({
     config,
     ...props
 }: StakingTxModalProps) {
-    const [step, setStep] = useState(StakingTxStep.APPROVE)
+    // Determine if this is a zero-cooldown unstake scenario (two-step instant withdraw)
+    const isInstantWithdraw = !isStaking && !isWithdraw && cooldownPeriod === 0
+
+    const [step, setStep] = useState(() => {
+        if (isInstantWithdraw) return StakingTxStep.INSTANT_WITHDRAW
+        return StakingTxStep.APPROVE
+    })
     // Track if transaction is completed to prevent reopening
     const hasClosedRef = useRef(false)
 
@@ -49,6 +57,19 @@ export function StakingTxModal({
     }
 
     const content = useMemo(() => {
+        // Zero-cooldown unstaking: show two-step instant withdraw flow
+        if (step === StakingTxStep.INSTANT_WITHDRAW) {
+            return (
+                <InstantWithdrawExecute
+                    amount={amount}
+                    stakedAmount={stakedAmount}
+                    onClose={handleClose}
+                    onSuccess={onSuccess}
+                    config={config}
+                />
+            )
+        }
+
         if (isWithdraw)
             return (
                 <Confirm

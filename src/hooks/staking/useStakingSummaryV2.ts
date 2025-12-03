@@ -40,14 +40,17 @@ export type StakingSummaryDataV2 = {
     }
     myShare: { value: number; percentage: string }
     stakingApr: { value: number; formatted: string }
-    // APR breakdown for LP staking pools (Curve, etc.)
+    // APR breakdown for LP staking pools (Curve, Velodrome)
     aprBreakdown?: {
         underlyingApr: number
         underlyingAprFormatted: string
+        haiRewardsApr: number // HAI rewards for Velodrome pools
+        haiRewardsAprFormatted: string
         incentivesApr: number
         incentivesAprFormatted: string
         netApr: number
         netAprFormatted: string
+        underlyingLabel?: string // "Underlying LP APY" for Curve, "Trading Fees APR" for Velodrome
     }
     boost: {
         netBoostValue: number
@@ -173,8 +176,9 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
     const velodromeLoading = isVelodromeLp && (velodromePoolsLoading || velodromePricesLoading)
     const curveLoading = isCurveLp && curveLpLoading
 
-    // Use LP APR loading for Curve pools, standard APR loading otherwise
-    const aprLoading = isCurveLp ? lpApr.loading : standardAprLoading
+    // Use LP APR loading for LP pools (Curve or Velodrome), standard APR loading otherwise
+    const isLpPool = isCurveLp || isVelodromeLp
+    const aprLoading = isLpPool ? lpApr.loading : standardAprLoading
 
     const loading =
         statsLoading ||
@@ -199,9 +203,9 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
     const totalStakedUSD = totalStakedAmount * perUnitPrice
     const myStakedUSD = effectiveStaked * perUnitPrice
 
-    // For Curve LP pools, use net APR (underlying + incentives); otherwise use standard APR
+    // For LP pools (Curve or Velodrome), use net APR (underlying + incentives); otherwise use standard APR
     // APR value is in basis points for standard APR (100 = 1%) but decimal for LP APR
-    const stakingApr = isCurveLp 
+    const stakingApr = isLpPool 
         ? { 
             value: lpApr.netApr * 10000, // Convert decimal to basis points for consistency
             formatted: lpApr.formatted.net 
@@ -209,13 +213,17 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
         : { value: standardAprValue, formatted: standardAprFormatted }
 
     // APR breakdown for LP pools (used in tooltip)
-    const aprBreakdown = isCurveLp ? {
+    // For Velodrome pools, underlyingLabel is "Trading Fees APR" and haiRewardsApr is separate
+    const aprBreakdown = isLpPool ? {
         underlyingApr: lpApr.underlyingApr,
         underlyingAprFormatted: lpApr.formatted.underlying,
+        haiRewardsApr: lpApr.haiRewardsApr,
+        haiRewardsAprFormatted: lpApr.formatted.haiRewards,
         incentivesApr: lpApr.incentivesApr,
         incentivesAprFormatted: lpApr.formatted.incentives,
         netApr: lpApr.netApr,
         netAprFormatted: lpApr.formatted.net,
+        underlyingLabel: lpApr.underlyingLabel, // "Underlying LP APY" for Curve, "Trading Fees APR" for Velodrome
     } : undefined
 
     const summary = useMemo(() => {

@@ -110,6 +110,12 @@ export const STAKING_REWARDS = {
         KITE: 25,
         OP: 0,
     },
+    // haiVELO/VELO LP Staking - 25 KITE per day + HAI rewards (shared with haiVELO depositors)
+    'lp-hai-velo-velo': {
+        KITE: 25,
+        OP: 0,
+        HAI_SHARED: true, // Indicates HAI rewards are shared proportionally by TVL
+    },
 } as const
 
 // export const VELO_SUGAR_ADDRESS = '0xC8229d65581afE8f04344A6706FF45faECC426f9'

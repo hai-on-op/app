@@ -13,7 +13,7 @@ import { ApolloClient, InMemoryCache } from '@apollo/client'
 
 const uri =
     NETWORK_ID === 10
-        ? 'https://subgraph.satsuma-prod.com/ea4569e42b10/duuvf2ayrz8e0yxg0udnic--151680/hai-mainnet-v2/version/v1.0.7/api'
+        ? 'https://optimism.graph-eu.p2pify.com/05d687a01b1a9939ca4b88d438ee44b6/sgr-742-111-180'
         : 'https://subgraph.satsuma-prod.com/ea4569e42b10/duuvf2ayrz8e0yxg0udnic--151680/hai-sepolia-redeploy/api'
 
 // force rebuild

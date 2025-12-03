@@ -12,9 +12,10 @@ export const haiBoldCurveLpConfig: StakingConfig = {
     addresses: {
         stakeToken: '0xC4ea2ED83bC9207398fa5dB31Ee4E7477dC34fd5' as Address, // haiBoldCurveLPToken
         stToken: '0x8999eE7089172331Dd5fB3BCa255EdCa52c8b856' as Address, // stakingTokenHaiBoldCurveLP
-        manager: '0xD8417Eb963361d7b80648Fd9f153c4ff9CA2a9Cf' as Address, // stakingManagerHaiBoldCurveLP
+        manager: '0x70bf153870e405097eeec57d0b800fe7ee279e93' as Address, // stakingManagerHaiBoldCurveLP
     },
     decimals: 18,
+    cooldownSeconds: 0,
     affectsBoost: true,
     tvl: {
         source: 'curve',

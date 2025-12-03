@@ -86,12 +86,12 @@ const typeOptions: BrandedSelectOption[] = [
         icon: ['HAI'],
         description: `Stake ${haiBoldCurveLpConfig.labels.token} to earn rewards.`,
     },
-    {
-        label: `STAKE ${haiVeloVeloLpConfig.labels.token}`,
-        value: 'stake/hai-velo-velo-lp',
-        icon: ['HAIVELOV2', "VELO"],
-        description: `Stake ${haiVeloVeloLpConfig.labels.token} to earn rewards.`,
-    },
+    // {
+    //     label: `STAKE ${haiVeloVeloLpConfig.labels.token}`,
+    //     value: 'stake/hai-velo-velo-lp',
+    //     icon: ['HAIVELOV2', "VELO"],
+    //     description: `Stake ${haiVeloVeloLpConfig.labels.token} to earn rewards.`,
+    // },
     {
         label: 'Buy $HAI',
         value: '',

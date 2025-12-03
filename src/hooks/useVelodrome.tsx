@@ -23,6 +23,11 @@ export type VelodromeLpData = {
     staked1: string
     gauge_liquidity: string
     emissions: string
+    // Fee-related fields for trading fee APR calculation
+    pool_fee: string // Fee rate in basis points (e.g., 5 = 0.05%)
+    unstaked_fee: string // Fee rate for unstaked LPs
+    token0_fees: string // Accumulated fees in token0
+    token1_fees: string // Accumulated fees in token1
 }
 
 export function useVelodrome() {
@@ -80,6 +85,11 @@ export function useVelodrome() {
                 staked1: lp.staked1 as string,
                 gauge_liquidity: lp.gauge_liquidity as string,
                 emissions: lp.emissions as string,
+                // Fee-related fields
+                pool_fee: lp.pool_fee?.toString() ?? '0',
+                unstaked_fee: lp.unstaked_fee?.toString() ?? '0',
+                token0_fees: lp.token0_fees?.toString() ?? '0',
+                token1_fees: lp.token1_fees?.toString() ?? '0',
             }))
             return lpData
         },
