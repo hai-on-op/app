@@ -301,7 +301,9 @@ export function ManageStaking({ simulation, config }: ManageStakingProps) {
                         style={!isWithdraw ? undefined : { opacity: 0.4 }}
                     />
                     <Text $fontSize="0.85em" $color="rgba(0,0,0,0.85)">
-                        {stTokenLabel} has a {formatTimeFromSeconds(cooldownSeconds)} cooldown period after unstaking.
+                        {cooldownSeconds === 0
+                            ? 'There are no lockups, you can withdraw anytime.'
+                            : `${stTokenLabel} has a ${formatTimeFromSeconds(cooldownSeconds)} cooldown period after unstaking.`}
                     </Text>
                     {pendingWithdrawal && (
                         <div
