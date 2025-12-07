@@ -9,8 +9,16 @@ import { useHaiVeloCollateralMapping } from './haivelo/useHaiVeloCollateralMappi
 import { useHaiVeloBoostMap } from './haivelo/useHaiVeloBoostMap'
 
 // centralized in haiVeloService
-import { calculateHaiVeloBoost } from '~/services/boostService'
+import { calculateHaiVeloBoost, calculateLPBoost } from '~/services/boostService'
 import { RewardsModel } from '~/model/rewardsModel'
+
+// HAI-BOLD LP staking imports
+import { haiBoldCurveLpConfig } from '~/staking/configs/haiBoldCurveLp'
+import { useStakeAccount } from './staking/useStakeAccount'
+import { useStakeStats } from './staking/useStakeStats'
+import { useLpStakingApr } from './staking/useLpStakingApr'
+import { useLpTvl } from './staking/useLpTvl'
+import { buildStakingService } from '~/services/stakingService'
 
 const HAIVELO_DEPOSITER = '0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3'
 const REWARD_DISTRIBUTOR = '0xfEd2eB6325432F0bF7110DcE2CCC5fF811ac3D4D'
@@ -131,6 +139,61 @@ export function useStrategyData(
     const kiteStakingUserQuantity = usersStakingData[address?.toLowerCase()]?.stakedBalance || 0
     const kiteStakingUserPosition = kiteStakingUserQuantity * kitePrice
 
+    // === HAI-BOLD LP Staking Strategy ===
+    const haiBoldLpService = useMemo(
+        () => buildStakingService(
+            haiBoldCurveLpConfig.addresses.manager as `0x${string}`,
+            undefined,
+            haiBoldCurveLpConfig.decimals
+        ),
+        []
+    )
+
+    const { data: haiBoldLpAccount } = useStakeAccount(
+        address as `0x${string}`,
+        haiBoldCurveLpConfig.namespace,
+        haiBoldLpService
+    )
+    const { data: haiBoldLpStats } = useStakeStats(
+        haiBoldCurveLpConfig.namespace,
+        haiBoldLpService
+    )
+    const haiBoldLpAprData = useLpStakingApr(haiBoldCurveLpConfig)
+    const { tvlUsd: haiBoldLpTvlUsd, loading: haiBoldLpTvlLoading } = useLpTvl(haiBoldCurveLpConfig)
+
+    // Calculate user's LP staked value in USD
+    const haiBoldLpUserStaked = Number(haiBoldLpAccount?.stakedBalance || 0)
+    const haiBoldLpTotalStaked = Number(haiBoldLpStats?.totalStaked || 0)
+    // Use TVL / total staked to get LP price, then multiply by user staked
+    const haiBoldLpPriceUsd = haiBoldLpTotalStaked > 0 ? haiBoldLpTvlUsd / haiBoldLpTotalStaked : 0
+    const haiBoldLpUserPositionUsd = haiBoldLpUserStaked * haiBoldLpPriceUsd
+
+    // Calculate boost for HAI-BOLD LP staking
+    const userKiteStaked = Number(usersStakingData[address?.toLowerCase()]?.stakedBalance || 0)
+    const haiBoldLpBoostResult = useMemo(() => {
+        if (haiBoldLpUserStaked <= 0 || haiBoldLpTotalStaked <= 0) {
+            return { lpBoost: 1, kiteRatio: 0 }
+        }
+        return calculateLPBoost({
+            userStakingAmount: userKiteStaked,
+            totalStakingAmount: totalStakedAmount,
+            userLPPosition: haiBoldLpUserStaked,
+            totalPoolLiquidity: haiBoldLpTotalStaked,
+        })
+    }, [userKiteStaked, totalStakedAmount, haiBoldLpUserStaked, haiBoldLpTotalStaked])
+
+    const haiBoldLpBoostApr = useMemo(() => {
+        const baseApr = haiBoldLpAprData.netApr * 100 // Convert to percentage
+        const myBoost = haiBoldLpBoostResult.lpBoost ?? 1
+        return {
+            baseAPR: baseApr,
+            myBoost,
+            myBoostedAPR: baseApr * myBoost,
+            myValueParticipating: haiBoldLpUserPositionUsd,
+            totalBoostedValueParticipating: haiBoldLpTvlUsd,
+        }
+    }, [haiBoldLpAprData.netApr, haiBoldLpBoostResult.lpBoost, haiBoldLpUserPositionUsd, haiBoldLpTvlUsd])
+
     const opPrice = Number(velodromePricesData?.OP?.raw)
     const rewardsDataMap: Record<string, number> = {
         [HAI_TOKEN_ADDRESS]: haiPrice,
@@ -190,6 +253,13 @@ export function useStrategyData(
             tvl: kiteStakingTvl,
             userPosition: kiteStakingUserPosition,
             apr: stakingApr?.value / 10000,
+        },
+        haiBoldLp: {
+            tvl: haiBoldLpTvlUsd,
+            userPosition: haiBoldLpUserPositionUsd,
+            apr: haiBoldLpAprData.netApr,
+            boostApr: haiBoldLpBoostApr,
+            loading: haiBoldLpAprData.loading || haiBoldLpTvlLoading,
         },
     }
 }

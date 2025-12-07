@@ -61,6 +61,7 @@ interface EarnDataState {
         hai?: { apr: number; tvl: number; userPosition: number }
         haiVelo?: { tvl: number; userPosition: number; boostApr: unknown }
         kiteStaking?: { tvl: number; userPosition: number; apr: number }
+        haiBoldLp?: { tvl: number; userPosition: number; apr: number; boostApr: unknown; loading: boolean }
     } | undefined
     
     // Store state data

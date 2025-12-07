@@ -6,7 +6,7 @@ import * as ethers from 'ethers'
 
 import { type StoreModel } from './index'
 import { ActionState } from '~/utils'
-import { handlePreTxGasEstimate } from '~/hooks'
+import { handlePreTxGasEstimate } from '~/hooks/TransactionHooks'
 import StakingManagerABI from '~/abis/StakingManager.json'
 import RewardPoolABI from '~/abis/RewardPool.json'
 import { RewardsModel } from '~/model/rewardsModel'

@@ -246,6 +246,12 @@ export function useEarnStrategies() {
             myBoostedAPR: haiApr * 100 * haiMintingBoostResult.haiMintingBoost,
         }
 
+        // HAI-BOLD LP staking data
+        const haiBoldLpApr = strategyData.haiBoldLp?.apr || 0
+        const haiBoldLpTvl = strategyData.haiBoldLp?.tvl || 0
+        const haiBoldLpUserPosition = strategyData.haiBoldLp?.userPosition || 0
+        const haiBoldLpBoostApr = strategyData.haiBoldLp?.boostApr
+
         return [
             createSpecialStrategy({
                 pair: ['HAI'],
@@ -271,6 +277,17 @@ export function useEarnStrategies() {
                 userPosition: kiteUserPosition,
                 strategyType: 'stake',
                 earnLink: '/stake',
+            }),
+            createSpecialStrategy({
+                pair: ['HAI', 'BOLD'],
+                tvl: haiBoldLpTvl,
+                apr: haiBoldLpApr,
+                userPosition: haiBoldLpUserPosition,
+                strategyType: 'stake',
+                boostAPR: haiBoldLpBoostApr as BoostAPRData,
+                boostEligible: true,
+                earnLink: '/stake/hai-bold-curve-lp',
+                rewards: [{ token: 'KITE', emission: 25 }],
             }),
         ]
     }

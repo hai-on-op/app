@@ -78,6 +78,7 @@ export const TOKEN_LOGOS = {
     'MOO-VELO-BOLD-LUSD': mooVeloBoldLusdImg,
     ALUSD: alusdImg,
     MSETH: msethImg,
+    BOLD: '/icons/BOLD_logo.webp',
 }
 
 export const tokenMap: Record<string, string> = {
@@ -261,6 +262,11 @@ export const tokenAssets: Record<string, Token> = {
         symbol: 'MSETH',
         name: 'MSETH',
         icon: msethImg,
+    },
+    BOLD: {
+        symbol: 'BOLD',
+        name: 'BOLD',
+        icon: '/icons/BOLD_logo.webp',
     },
 }
 

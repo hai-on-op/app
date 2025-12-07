@@ -40,7 +40,7 @@ export function StakingTxModal({
     const isInstantWithdraw = !isStaking && !isWithdraw && cooldownPeriod === 0
 
     const [step, setStep] = useState(() => {
-        if (isInstantWithdraw) return StakingTxStep.INSTANT_WITHDRAW
+        // Always start at APPROVE step - even for instant withdraw, we need stToken approval
         return StakingTxStep.APPROVE
     })
     // Track if transaction is completed to prevent reopening
@@ -87,7 +87,12 @@ export function StakingTxModal({
         switch (step) {
             case StakingTxStep.APPROVE:
                 return (
-                    <Approvals onNext={() => setStep(StakingTxStep.CONFIRM)} isStaking={isStaking} amount={amount} config={config} />
+                    <Approvals
+                        onNext={() => setStep(isInstantWithdraw ? StakingTxStep.INSTANT_WITHDRAW : StakingTxStep.CONFIRM)}
+                        isStaking={isStaking}
+                        amount={amount}
+                        config={config}
+                    />
                 )
             case StakingTxStep.CONFIRM:
                 return (
@@ -104,7 +109,7 @@ export function StakingTxModal({
                     />
                 )
         }
-    }, [step, handleClose, isStaking, amount, stakedAmount, totalStaked, cooldownPeriod, isWithdraw, onSuccess, config])
+    }, [step, handleClose, isStaking, isInstantWithdraw, amount, stakedAmount, totalStaked, cooldownPeriod, isWithdraw, onSuccess, config])
 
     return (
         <Modal
