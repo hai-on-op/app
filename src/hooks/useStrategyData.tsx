@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { utils } from 'ethers'
+import { formatEther } from 'ethers/lib/utils'
 import { formatNumberWithStyle, VITE_MAINNET_PUBLIC_RPC } from '~/utils'
 
 import { useBalance } from '~/hooks'
@@ -35,7 +36,8 @@ export function useStrategyData(
     usersStakingData: any,
     haiVeloSafesData: any,
     address: any,
-    stakingApyData: any
+    stakingApyData: any,
+    totalStaked: string
 ) {
     // === State ===
     const [haiVeloLatestTransferAmount, setHaiVeloLatestTransferAmount] = useState(0)
@@ -75,9 +77,9 @@ export function useStrategyData(
     const haiVeloUserPositionUsd = userHaiVeloQty * (haiVeloPrice || 0)
     const haiVeloTVL = combinedHaiVeloQtyTotal * (haiVeloPrice || 0)
 
-    const totalStakedAmount = Object.values(usersStakingData).reduce((acc: any, value: any) => {
-        return acc + Number(value?.stakedBalance)
-    }, 0)
+    // Use the global totalStaked value from the store (formatted from wei to ether)
+    // instead of manually summing usersStakingData which may be incomplete
+    const totalStakedAmount = Number(formatEther(totalStaked || '0'))
 
     const haiVeloBoostMap = useHaiVeloBoostMap({
         mapping: haiVeloCollateralMapping,

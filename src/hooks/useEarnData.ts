@@ -159,7 +159,8 @@ export function useEarnData(): EarnDataState {
         usersStakingData,
         haiVeloSafesData,
         address,
-        stakingApyData
+        stakingApyData,
+        totalStaked
     )
 
     // Calculate loading states
