@@ -115,19 +115,44 @@ export function useTokenApproval(
 
     // check the current approval status
     const approvalState: ApprovalState = useMemo(() => {
+        console.log('=== useTokenApproval DEBUG ===')
+        console.log('amount:', amount)
+        console.log('tokenAddress:', tokenAddress)
+        console.log('spender:', spender)
+        console.log('geb:', !!geb)
+        console.log('currentAllowance:', currentAllowance?.toString())
+        console.log('approvalAmount:', approvalAmount?.toString())
+        console.log('pendingAllowance:', pendingAllowance)
+        console.log('loading:', loading)
+
         if (!amount || !tokenAddress || !spender || !geb) {
+            console.log('RESULT: UNKNOWN (missing params)')
             return ApprovalState.UNKNOWN
         }
 
         // we might not have enough data to know whether or not we need to approve
-        if (!currentAllowance) return ApprovalState.UNKNOWN
+        if (!currentAllowance) {
+            console.log('RESULT: UNKNOWN (no currentAllowance yet)')
+            return ApprovalState.UNKNOWN
+        }
 
         // amountToApprove will be defined if currentAllowance is
-        return currentAllowance.lt(approvalAmount)
-            ? pendingAllowance || loading
-                ? ApprovalState.PENDING
-                : ApprovalState.NOT_APPROVED
-            : ApprovalState.APPROVED
+        const needsApproval = currentAllowance.lt(approvalAmount)
+        console.log('currentAllowance.lt(approvalAmount):', needsApproval)
+        console.log('currentAllowance:', currentAllowance.toString())
+        console.log('approvalAmount:', approvalAmount.toString())
+        
+        if (needsApproval) {
+            if (pendingAllowance || loading) {
+                console.log('RESULT: PENDING')
+                return ApprovalState.PENDING
+            }
+            console.log('RESULT: NOT_APPROVED')
+            return ApprovalState.NOT_APPROVED
+        }
+        
+        console.log('RESULT: APPROVED (allowance >= amount needed)')
+        return ApprovalState.APPROVED
     }, [amount, tokenAddress, spender, geb, currentAllowance, approvalAmount, pendingAllowance, loading])
 
     const tokenContract = useTokenContract(tokenAddress)

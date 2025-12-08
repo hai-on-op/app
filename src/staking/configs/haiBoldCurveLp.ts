@@ -11,7 +11,7 @@ export const haiBoldCurveLpConfig: StakingConfig = {
     labels: { token: 'HAI/BOLD LP', stToken: 'stHAI/BOLD LP', stakeVerb: 'Stake' },
     addresses: {
         stakeToken: '0xC4ea2ED83bC9207398fa5dB31Ee4E7477dC34fd5' as Address, // haiBoldCurveLPToken
-        stToken: '0x8999eE7089172331Dd5fB3BCa255EdCa52c8b856' as Address, // stakingTokenHaiBoldCurveLP
+        stToken: '0xcB7E5bb21b714991bdc6B07Be36Cb897cdd1980F' as Address, // stakingTokenHaiBoldCurveLP
         manager: '0x70bf153870e405097eeec57d0b800fe7ee279e93' as Address, // stakingManagerHaiBoldCurveLP
     },
     decimals: 18,

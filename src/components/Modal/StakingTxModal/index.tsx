@@ -70,26 +70,13 @@ export function StakingTxModal({
             )
         }
 
-        if (isWithdraw)
-            return (
-                <Confirm
-                    onClose={handleClose}
-                    isStaking={isStaking}
-                    amount={amount}
-                    stakedAmount={stakedAmount}
-                    totalStaked={totalStaked}
-                    cooldownPeriod={cooldownPeriod}
-                    isWithdraw={isWithdraw}
-                    onSuccess={onSuccess}
-                    config={config}
-                />
-            )
         switch (step) {
             case StakingTxStep.APPROVE:
                 return (
                     <Approvals
                         onNext={() => setStep(isInstantWithdraw ? StakingTxStep.INSTANT_WITHDRAW : StakingTxStep.CONFIRM)}
                         isStaking={isStaking}
+                        isWithdraw={isWithdraw}
                         amount={amount}
                         config={config}
                     />

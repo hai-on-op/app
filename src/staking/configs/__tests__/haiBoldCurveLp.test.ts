@@ -14,7 +14,7 @@ describe('haiBoldCurveLpConfig', () => {
             '0xc4ea2ed83bc9207398fa5db31ee4e7477dc34fd5'
         )
         expect(haiBoldCurveLpConfig.addresses.stToken.toLowerCase()).toBe(
-            '0x8999ee7089172331dd5fb3bca255edca52c8b856'
+            '0xcB7E5bb21b714991bdc6B07Be36Cb897cdd1980F'
         )
         expect(haiBoldCurveLpConfig.addresses.manager.toLowerCase()).toBe(
             '0xd8417eb963361d7b80648fd9f153c4ff9ca2a9cf'
