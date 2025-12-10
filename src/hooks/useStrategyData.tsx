@@ -186,16 +186,24 @@ export function useStrategyData(
     }, [userKiteStaked, totalStakedAmount, haiBoldLpUserStaked, haiBoldLpTotalStaked])
 
     const haiBoldLpBoostApr = useMemo(() => {
-        const baseApr = haiBoldLpAprData.netApr * 100 // Convert to percentage
+        // Get individual APR components
+        const underlyingApr = haiBoldLpAprData.underlyingApr * 100 // Convert to percentage
+        const incentivesApr = haiBoldLpAprData.incentivesApr * 100 // Convert to percentage
+        const baseApr = haiBoldLpAprData.netApr * 100 // Total base APR
         const myBoost = haiBoldLpBoostResult.lpBoost ?? 1
+        
+        // Only apply boost to KITE incentives, not underlying APY
+        const boostedIncentivesApr = incentivesApr * myBoost
+        const myBoostedAPR = underlyingApr + boostedIncentivesApr
+        
         return {
             baseAPR: baseApr,
             myBoost,
-            myBoostedAPR: baseApr * myBoost,
+            myBoostedAPR,
             myValueParticipating: haiBoldLpUserPositionUsd,
             totalBoostedValueParticipating: haiBoldLpStakedTvlUsd,
         }
-    }, [haiBoldLpAprData.netApr, haiBoldLpBoostResult.lpBoost, haiBoldLpUserPositionUsd, haiBoldLpStakedTvlUsd])
+    }, [haiBoldLpAprData, haiBoldLpBoostResult.lpBoost, haiBoldLpUserPositionUsd, haiBoldLpStakedTvlUsd])
 
     const opPrice = Number(velodromePricesData?.OP?.raw)
     const rewardsDataMap: Record<string, number> = {

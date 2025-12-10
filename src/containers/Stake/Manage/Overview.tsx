@@ -143,6 +143,19 @@ export function Overview({ simulation, config }: OverviewProps) {
                     {aprBreakdown.boostFormatted}
                 </Text>
             </div>
+            {hasBoost && (
+                <div style={{ marginTop: '8px' }}>
+                    <Text $fontSize=".9rem" $fontWeight={700}>
+                        Boosted KITE Incentives
+                    </Text>
+                    <Text $fontSize=".9rem">
+                        {aprBreakdown.boostedIncentivesAprFormatted}
+                    </Text>
+                    <Text $fontSize=".75rem" style={{ opacity: 0.7 }}>
+                        {aprBreakdown.incentivesAprFormatted} × {aprBreakdown.boostFormatted}
+                    </Text>
+                </div>
+            )}
             <div style={{ borderTop: '1px solid rgba(255,255,255,0.2)', paddingTop: '8px', marginTop: '8px' }}>
                 <Text $fontSize=".9rem" $fontWeight={700}>
                     Boosted Net APR
@@ -152,7 +165,7 @@ export function Overview({ simulation, config }: OverviewProps) {
                 </Text>
                 {hasBoost && (
                     <Text $fontSize=".75rem" style={{ opacity: 0.7 }}>
-                        {aprBreakdown.netAprFormatted} x {aprBreakdown.boostFormatted}
+                        {aprBreakdown.underlyingAprFormatted} + {aprBreakdown.boostedIncentivesAprFormatted}
                     </Text>
                 )}
             </div>

@@ -208,11 +208,12 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
     const totalStakedUSD = totalStakedAmount * perUnitPrice
     const myStakedUSD = effectiveStaked * perUnitPrice
 
-    // For LP pools (Curve or Velodrome), use boosted net APR (net APR * boost); otherwise use standard APR
+    // For LP pools (Curve or Velodrome), use boosted net APR; otherwise use standard APR
     // APR value is in basis points for standard APR (100 = 1%) but decimal for LP APR
-    // Apply the LP boost to the net APR for LP pools (matching earn page behavior)
+    // Only apply the LP boost to KITE incentives, not the underlying APY
     const lpBoost = lpBoostValue ?? 1
-    const boostedNetApr = lpApr.netApr * lpBoost
+    const boostedIncentivesApr = lpApr.incentivesApr * lpBoost
+    const boostedNetApr = lpApr.underlyingApr + lpApr.haiRewardsApr + boostedIncentivesApr
     const boostedNetAprFormatted = formatNumberWithStyle(boostedNetApr * 100, { minDecimals: 2, maxDecimals: 2 }) + '%'
     
     const stakingApr = isLpPool 
@@ -224,6 +225,7 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
 
     // APR breakdown for LP pools (used in tooltip)
     // For Velodrome pools, underlyingLabel is "Trading Fees APR" and haiRewardsApr is separate
+    const boostedIncentivesAprFormatted = formatNumberWithStyle(boostedIncentivesApr * 100, { minDecimals: 2, maxDecimals: 2 }) + '%'
     const aprBreakdown = isLpPool ? {
         underlyingApr: lpApr.underlyingApr,
         underlyingAprFormatted: lpApr.formatted.underlying,
@@ -237,6 +239,8 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
         // Boost-related fields
         boost: lpBoost,
         boostFormatted: formatNumberWithStyle(lpBoost, { minDecimals: 2, maxDecimals: 2 }) + 'x',
+        boostedIncentivesApr,
+        boostedIncentivesAprFormatted,
         boostedNetApr,
         boostedNetAprFormatted,
     } : undefined
