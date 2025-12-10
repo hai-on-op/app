@@ -7,6 +7,7 @@ import { fetchCurveLpTvlForOptimismLp } from '~/services/curveLpTvl'
 
 export type LpTvlValue = {
     usd: number
+    lpPriceUsd?: number
 }
 
 export type LpTvlService = {
@@ -77,10 +78,8 @@ export function buildLpTvlService(config: StakingConfig): LpTvlService | null {
                     {
                         const curveData = await fetchCurveLpTvlForOptimismLp(tvlMeta.poolAddress)
                         
-                        console.log(curveData)
-                        
                         if (!curveData) return null
-                        return { usd: curveData.tvlUsd }
+                        return { usd: curveData.tvlUsd, lpPriceUsd: curveData.lpPriceUsd }
                     }
                 default:
                     return null
@@ -93,6 +92,7 @@ export type LpTvlHookResult = {
     loading: boolean
     tvlUsd: number | null
     tvlUsdFormatted: string
+    lpPriceUsd: number | null
 }
 
 /**

@@ -21,6 +21,7 @@ import { OverviewProgressStat, OverviewStat } from './OverviewStat'
 // import { BigNumber, utils } from 'ethers'
 import { useAccount } from 'wagmi'
 import { useFlags } from 'flagsmith/react'
+import { ExternalLink } from 'react-feather'
 import { TOKEN_LOGOS } from '~/utils/tokens'
 import type { TokenKey } from '~/types'
 import type { StakingConfig } from '~/types/stakingConfig'
@@ -86,6 +87,7 @@ export function Overview({ simulation, config }: OverviewProps) {
         : 'Underlying pool yield'
 
     // Tooltip content for LP staking APR breakdown
+    const hasBoost = aprBreakdown && aprBreakdown.boost > 1
     const lpAprBreakdownTooltip = aprBreakdown ? (
         <div style={{ width: '100%' }}>
             <div style={{ marginBottom: '8px' }}>
@@ -126,11 +128,33 @@ export function Overview({ simulation, config }: OverviewProps) {
             </div>
             <div style={{ borderTop: '1px solid rgba(255,255,255,0.2)', paddingTop: '8px', marginTop: '8px' }}>
                 <Text $fontSize=".9rem" $fontWeight={700}>
-                    Net APR
+                    Base Net APR
                 </Text>
-                <Text $fontSize="1rem" $fontWeight={700}>
+                <Text $fontSize=".9rem">
                     {aprBreakdown.netAprFormatted}
                 </Text>
+            </div>
+            {/* Boost breakdown - show boost multiplier and boosted APR */}
+            <div style={{ marginTop: '8px' }}>
+                <Text $fontSize=".9rem" $fontWeight={700}>
+                    My Boost
+                </Text>
+                <Text $fontSize=".9rem">
+                    {aprBreakdown.boostFormatted}
+                </Text>
+            </div>
+            <div style={{ borderTop: '1px solid rgba(255,255,255,0.2)', paddingTop: '8px', marginTop: '8px' }}>
+                <Text $fontSize=".9rem" $fontWeight={700}>
+                    Boosted Net APR
+                </Text>
+                <Text $fontSize="1rem" $fontWeight={700} style={{ color: hasBoost ? '#00AC11' : undefined }}>
+                    {aprBreakdown.boostedNetAprFormatted}
+                </Text>
+                {hasBoost && (
+                    <Text $fontSize=".75rem" style={{ opacity: 0.7 }}>
+                        {aprBreakdown.netAprFormatted} x {aprBreakdown.boostFormatted}
+                    </Text>
+                )}
             </div>
         </div>
     ) : null
@@ -217,6 +241,17 @@ export function Overview({ simulation, config }: OverviewProps) {
                             </strong>
                         </Text>
                     </Flex>
+                )}
+
+                {isCurveLp && (
+                    <GetLpButton
+                        href="https://www.curve.finance/dex/optimism/pools/factory-stable-ng-81/deposit"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        Get {tokenLabel}
+                        <ExternalLink size={14} />
+                    </GetLpButton>
                 )}
             </Header>
             <Inner $borderOpacity={0.2}>
@@ -379,6 +414,27 @@ const Header = styled(Flex).attrs((props) => ({
         justify-content: flex-start;
         align-items: flex-start;
     `}
+`
+
+const GetLpButton = styled.a`
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    font-size: 0.9em;
+    font-weight: 700;
+    color: ${({ theme }) => theme.colors.primary};
+    background: transparent;
+    border: 2px solid ${({ theme }) => theme.colors.primary};
+    border-radius: 999px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: ${({ theme }) => theme.colors.primary};
+        color: white;
+    }
 `
 
 const Inner = styled(Grid).attrs((props) => ({

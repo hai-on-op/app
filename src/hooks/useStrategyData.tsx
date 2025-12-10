@@ -161,14 +161,15 @@ export function useStrategyData(
         haiBoldLpService
     )
     const haiBoldLpAprData = useLpStakingApr(haiBoldCurveLpConfig)
-    const { tvlUsd: haiBoldLpTvlUsd, loading: haiBoldLpTvlLoading } = useLpTvl(haiBoldCurveLpConfig)
+    const { tvlUsd: haiBoldLpPoolTvlUsd, lpPriceUsd: haiBoldLpPriceUsd, loading: haiBoldLpTvlLoading } = useLpTvl(haiBoldCurveLpConfig)
 
     // Calculate user's LP staked value in USD
     const haiBoldLpUserStaked = Number(haiBoldLpAccount?.stakedBalance || 0)
     const haiBoldLpTotalStaked = Number(haiBoldLpStats?.totalStaked || 0)
-    // Use TVL / total staked to get LP price, then multiply by user staked
-    const haiBoldLpPriceUsd = haiBoldLpTotalStaked > 0 ? haiBoldLpTvlUsd / haiBoldLpTotalStaked : 0
-    const haiBoldLpUserPositionUsd = haiBoldLpUserStaked * haiBoldLpPriceUsd
+    // Use LP token price from Curve API to calculate staked values
+    const haiBoldLpUserPositionUsd = haiBoldLpUserStaked * (haiBoldLpPriceUsd || 0)
+    // Campaign TVL = total staked LP tokens * LP token price
+    const haiBoldLpStakedTvlUsd = haiBoldLpTotalStaked * (haiBoldLpPriceUsd || 0)
 
     // Calculate boost for HAI-BOLD LP staking
     const userKiteStaked = Number(usersStakingData[address?.toLowerCase()]?.stakedBalance || 0)
@@ -192,9 +193,9 @@ export function useStrategyData(
             myBoost,
             myBoostedAPR: baseApr * myBoost,
             myValueParticipating: haiBoldLpUserPositionUsd,
-            totalBoostedValueParticipating: haiBoldLpTvlUsd,
+            totalBoostedValueParticipating: haiBoldLpStakedTvlUsd,
         }
-    }, [haiBoldLpAprData.netApr, haiBoldLpBoostResult.lpBoost, haiBoldLpUserPositionUsd, haiBoldLpTvlUsd])
+    }, [haiBoldLpAprData.netApr, haiBoldLpBoostResult.lpBoost, haiBoldLpUserPositionUsd, haiBoldLpStakedTvlUsd])
 
     const opPrice = Number(velodromePricesData?.OP?.raw)
     const rewardsDataMap: Record<string, number> = {
@@ -257,7 +258,7 @@ export function useStrategyData(
             apr: stakingApr?.value / 10000,
         },
         haiBoldLp: {
-            tvl: haiBoldLpTvlUsd,
+            tvl: haiBoldLpStakedTvlUsd,
             userPosition: haiBoldLpUserPositionUsd,
             apr: haiBoldLpAprData.netApr,
             boostApr: haiBoldLpBoostApr,

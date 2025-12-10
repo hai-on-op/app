@@ -129,9 +129,9 @@ export function StrategyTable({
                                 ? ['VELO']
                                 : isHaiBoldLp
                                     ? ['KITE']
-                                    : strategyType === 'stake'
-                                        ? ['HAI', 'KITE', 'OP']
-                                        : ['OP']
+                                : strategyType === 'stake'
+                                    ? ['HAI', 'KITE', 'OP']
+                                    : ['OP']
 
                     return (
                         <Table.Row

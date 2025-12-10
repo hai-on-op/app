@@ -51,6 +51,11 @@ export type StakingSummaryDataV2 = {
         netApr: number
         netAprFormatted: string
         underlyingLabel?: string // "Underlying LP APY" for Curve, "Trading Fees APR" for Velodrome
+        // Boost-related fields for LP pools
+        boost: number // The user's boost multiplier (1x to 2x)
+        boostFormatted: string
+        boostedNetApr: number // netApr * boost
+        boostedNetAprFormatted: string
     }
     boost: {
         netBoostValue: number
@@ -203,12 +208,17 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
     const totalStakedUSD = totalStakedAmount * perUnitPrice
     const myStakedUSD = effectiveStaked * perUnitPrice
 
-    // For LP pools (Curve or Velodrome), use net APR (underlying + incentives); otherwise use standard APR
+    // For LP pools (Curve or Velodrome), use boosted net APR (net APR * boost); otherwise use standard APR
     // APR value is in basis points for standard APR (100 = 1%) but decimal for LP APR
+    // Apply the LP boost to the net APR for LP pools (matching earn page behavior)
+    const lpBoost = lpBoostValue ?? 1
+    const boostedNetApr = lpApr.netApr * lpBoost
+    const boostedNetAprFormatted = formatNumberWithStyle(boostedNetApr * 100, { minDecimals: 2, maxDecimals: 2 }) + '%'
+    
     const stakingApr = isLpPool 
         ? { 
-            value: lpApr.netApr * 10000, // Convert decimal to basis points for consistency
-            formatted: lpApr.formatted.net 
+            value: boostedNetApr * 10000, // Convert decimal to basis points for consistency
+            formatted: boostedNetAprFormatted 
           }
         : { value: standardAprValue, formatted: standardAprFormatted }
 
@@ -224,6 +234,11 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
         netApr: lpApr.netApr,
         netAprFormatted: lpApr.formatted.net,
         underlyingLabel: lpApr.underlyingLabel, // "Underlying LP APY" for Curve, "Trading Fees APR" for Velodrome
+        // Boost-related fields
+        boost: lpBoost,
+        boostFormatted: formatNumberWithStyle(lpBoost, { minDecimals: 2, maxDecimals: 2 }) + 'x',
+        boostedNetApr,
+        boostedNetAprFormatted,
     } : undefined
 
     const summary = useMemo(() => {

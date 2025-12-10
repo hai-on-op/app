@@ -63,7 +63,10 @@ export function useLpTvl(config?: StakingConfig): LpTvlHookResult {
     })
 
     const serviceTvlUsd = data?.usd ?? null
+    const serviceLpPriceUsd = data?.lpPriceUsd ?? null
     const tvlUsd = isVelodrome ? velodromeTvlUsd : serviceTvlUsd
+    // For Velodrome, we don't have LP price yet (would need additional calculation)
+    const lpPriceUsd = isVelodrome ? null : serviceLpPriceUsd
     const loading = isVelodrome ? velodromeLoading : isLoading && hasTvlConfig
     const tvlUsdFormatted = formatLpTvlUsd(tvlUsd)
 
@@ -71,5 +74,6 @@ export function useLpTvl(config?: StakingConfig): LpTvlHookResult {
         loading,
         tvlUsd,
         tvlUsdFormatted,
+        lpPriceUsd,
     }
 }
