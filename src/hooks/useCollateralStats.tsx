@@ -29,6 +29,11 @@ const collateralHeaders: SortableHeader[] = [
         label: 'Next Price',
         tooltip: `Next system price of the collateral, this value is already quoted, and will impact the system on the next price update`,
     },
+    {
+        label: 'Next Update',
+        tooltip: `Next time that the price of the collateral will update within the system`,
+        unsortable: true,
+    },
 ]
 
 export function useCollateralInfo() {

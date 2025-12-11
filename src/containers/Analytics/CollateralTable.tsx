@@ -49,6 +49,9 @@ export function CollateralTable({ headers, rows, sorting, setSorting }: Collater
                         {
                             content: <Text>{formatDataNumber(nextPrice?.toString() || '0', 18, 2, true)}</Text>,
                         },
+                        {
+                            content: <Text>{'Nothing here (yet)'}</Text>,
+                        },
                     ]}
                 />
             ))}
@@ -57,7 +60,7 @@ export function CollateralTable({ headers, rows, sorting, setSorting }: Collater
 }
 
 const TableHeader = styled(Grid)`
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(7, 1fr);
     align-items: center;
     padding: 4px;
     font-size: 0.8rem;
