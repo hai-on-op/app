@@ -1,10 +1,15 @@
-import { useStakingData } from '~/hooks/useStakingData'
+import { useStakingActivity } from '~/hooks/staking/useStakingActivity'
 import { StakingActivityTable } from './StakingActivityTable'
 import styled from 'styled-components'
 import { Loader } from '~/components/Loader'
+import type { StakingConfig } from '~/types/stakingConfig'
 
-export function StakeActivity() {
-    const { stakingData, loading } = useStakingData()
+type StakeActivityProps = {
+    config?: StakingConfig
+}
+
+export function StakeActivity({ config }: StakeActivityProps) {
+    const { positions, loading } = useStakingActivity(config)
 
     if (loading) {
         return (
@@ -16,7 +21,7 @@ export function StakeActivity() {
 
     return (
         <Container>
-            <StakingActivityTable positions={stakingData.stakingPositions} loading={loading} />
+            <StakingActivityTable positions={positions} loading={loading} config={config} />
         </Container>
     )
 }

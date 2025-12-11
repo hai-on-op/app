@@ -39,15 +39,11 @@ export function ManageDropdown(props: FlexProps) {
         return {
             label: (
                 <CenteredFlex $gap={8}>
-                    <Text
-                        style={{
-                            wordBreak: 'break-word',
-                            whiteSpace: 'normal',
-                            lineHeight: '1.2',
-                        }}
-                    >
-                        {collateral.name}
-                    </Text>
+                    <Text style={{ 
+                        wordBreak: 'break-word',
+                        whiteSpace: 'normal',
+                        lineHeight: '1.2',
+                    }}>{collateral.name}</Text>
                     {!!vault && <Text $fontWeight={400}>#{vault.id}</Text>}
                     <Text>•</Text>
                     {vault ? (

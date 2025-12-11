@@ -120,14 +120,18 @@ export function StrategyTable({
                     },
                     i
                 ) => {
+                    // HAI-BOLD LP staking only rewards KITE
+                    const isHaiBoldLp = strategyType === 'stake' && pair.includes('BOLD')
                     const tokens: TokenKey[] =
                         strategyType === 'borrow'
                             ? ['KITE']
                             : earnPlatform === 'velodrome'
-                            ? ['VELO']
-                            : strategyType === 'stake'
-                            ? ['HAI', 'KITE', 'OP']
-                            : ['OP']
+                                ? ['VELO']
+                                : isHaiBoldLp
+                                    ? ['KITE']
+                                : strategyType === 'stake'
+                                    ? ['HAI', 'KITE', 'OP']
+                                    : ['OP']
 
                     return (
                         <Table.Row
@@ -141,7 +145,13 @@ export function StrategyTable({
                                         <Grid $columns="1fr min-content 12px" $align="center" $gap={12}>
                                             <Flex $justify="flex-start" $align="center" $gap={8}>
                                                 <TokenArray tokens={pair} hideLabel />
-                                                <Text $fontWeight={700}>{pair.join('/')}</Text>
+                                                <Text $fontWeight={700}>
+                                                    {pair
+                                                        .map((t) =>
+                                                            strategyType === 'borrow' && t === 'HAIVELO' ? 'HAIVELOV1' : t
+                                                        )
+                                                        .join('/')}
+                                                </Text>
                                             </Flex>
                                             <RewardsTokenArray
                                                 tokens={
@@ -155,6 +165,7 @@ export function StrategyTable({
                                                         earnPlatform={earnPlatform}
                                                         earnLink={earnLink}
                                                         strategyType={strategyType}
+                                                        pair={pair}
                                                     />
                                                 }
                                             />
@@ -171,10 +182,10 @@ export function StrategyTable({
                                             <Text $fontWeight={700}>
                                                 {tvl
                                                     ? formatNumberWithStyle(tvl, {
-                                                          style: 'currency',
-                                                          maxDecimals: 1,
-                                                          suffixed: true,
-                                                      })
+                                                        style: 'currency',
+                                                        maxDecimals: 1,
+                                                        suffixed: true,
+                                                    })
                                                     : '-'}
                                             </Text>
                                         </ComingSoon>
@@ -186,10 +197,10 @@ export function StrategyTable({
                                             <Text $fontWeight={700}>
                                                 {userPosition && userPosition !== '0'
                                                     ? formatNumberWithStyle(userPosition, {
-                                                          style: 'currency',
-                                                          maxDecimals: 1,
-                                                          suffixed: true,
-                                                      })
+                                                        style: 'currency',
+                                                        maxDecimals: 1,
+                                                        suffixed: true,
+                                                    })
                                                     : '-'}
                                             </Text>
                                         </ComingSoon>
@@ -201,9 +212,9 @@ export function StrategyTable({
                                             <Text $fontWeight={700}>
                                                 {!!boostAPR && boostAPR.myBoost > 0
                                                     ? formatNumberWithStyle(boostAPR.myBoost, {
-                                                          maxDecimals: 2,
-                                                          suffixed: false,
-                                                      }) + 'x'
+                                                        maxDecimals: 2,
+                                                        suffixed: false,
+                                                    }) + 'x'
                                                     : '-'}
                                             </Text>
                                             {!!boostAPR && boostAPR.myBoost > 0 && (
@@ -373,8 +384,9 @@ type EarnEmissionTooltipProps = {
     earnPlatform: Strategy['earnPlatform']
     earnLink: Strategy['earnLink']
     strategyType: Strategy['strategyType']
+    pair: Strategy['pair']
 }
-function EarnEmissionTooltip({ rewards, earnPlatform, earnLink, strategyType }: EarnEmissionTooltipProps) {
+function EarnEmissionTooltip({ rewards, earnPlatform, earnLink, strategyType, pair }: EarnEmissionTooltipProps) {
     if (earnPlatform === 'velodrome')
         return (
             <Flex $width="140px" $column $justify="flex-end" $align="flex-start" $gap={4}>
@@ -418,9 +430,14 @@ function EarnEmissionTooltip({ rewards, earnPlatform, earnLink, strategyType }: 
     }
 
     if (strategyType == 'stake') {
+        const isHaiBoldLp = pair.includes('BOLD')
         return (
             <Flex $width="140px" $column $justify="flex-end" $align="flex-start" $gap={4}>
-                <Text $fontWeight={700}>Stake KITE to earn protocol fees and boost your incentives.</Text>
+                <Text $fontWeight={700}>
+                    {isHaiBoldLp
+                        ? 'Stake HAI/BOLD LP tokens to earn KITE rewards.'
+                        : 'Stake KITE to earn protocol fees and boost your incentives.'}
+                </Text>
             </Flex>
         )
     }

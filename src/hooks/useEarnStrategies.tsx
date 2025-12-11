@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useAccount } from 'wagmi'
-import { formatUnits } from 'ethers/lib/utils'
+import { formatEther, formatUnits } from 'ethers/lib/utils'
 import type { SortableHeader, Sorting } from '~/types'
 
-import { arrayToSorted, stringsExistAndAreEqual, tokenAssets } from '~/utils'
+import { arrayToSorted, stringsExistAndAreEqual, tokenAssets, type QueryCollateralType } from '~/utils'
 import { RewardsModel } from '~/model/rewardsModel'
+import { calculateHaiMintingBoost } from '~/services/boostService'
 import type { BoostAPRData } from '~/types/system'
 import { calculateTokenPrice, calculatePoolTVL, getTokenSymbol } from '~/utils/priceCalculations'
-import { VELO_POOLS } from '~/utils/constants'
+import { VELODROME_POOLS, VELO_POOLS } from '~/utils/constants'
 import { normalizeAPRValue, getEffectiveAPR, getBestAPRValue } from '~/utils/aprNormalization'
 import { createVaultStrategy, createSpecialStrategy, createVeloStrategy } from '~/utils/strategyFactory'
 import { useEarnData } from './useEarnData'
@@ -17,6 +18,7 @@ import { useClaims } from '~/providers/ClaimsProvider'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { useStoreState } from '~/store'
 import { utils } from 'ethers'
+import { useUnderlyingAPR } from '~/hooks/useUnderlyingAPR'
 
 // Import the BaseStrategy type for state management
 type BaseStrategy = ReturnType<typeof createVaultStrategy>
@@ -64,6 +66,7 @@ export function useEarnStrategies() {
         totalStaked,
         stakingApyData,
         // Loading/error states
+        loading,
         allDataLoaded,
         stakingDataLoaded,
         storeDataLoaded,
@@ -80,6 +83,9 @@ export function useEarnStrategies() {
     const {
         vaultModel: { liquidationData },
     } = useStoreState((state) => state)
+
+    // Ensure haiVELO deposit strategy APR matches underlying APR
+    const { underlyingAPR: haiVeloUnderlyingAPR } = useUnderlyingAPR({ collateralType: 'HAIVELOV2' })
 
     // Get token prices for rewards calculation
     const getTokenPrice = (token: string): number => {
@@ -117,8 +123,9 @@ export function useEarnStrategies() {
         }
 
         // Proceed with calculation if data is loaded or if we can continue with degraded mode
+        // Proceed earlier: require core data (allDataLoaded) but do not block on user-specific extras
         const canProceed =
-            (allDataLoaded && stakingDataLoaded && storeDataLoaded && !boostLoading) ||
+            (allDataLoaded && storeDataLoaded && !boostLoading) ||
             (dataLoadingError && canContinueWithDegradedMode(dataLoadingError))
 
         if (canProceed) {
@@ -158,9 +165,11 @@ export function useEarnStrategies() {
         if (!collateralTypesData?.collateralTypes || !velodromePricesData?.HAI) {
             return []
         }
+
         const collateralsWithMinterRewards = collateralTypesData.collateralTypes.filter((cType) =>
             Object.values(RewardsModel.getVaultRewards(cType.id) || {}).some((a) => a != 0)
         )
+
         if (!collateralsWithMinterRewards.length) return []
 
         const haiPrice = Number(velodromePricesData?.HAI.raw)
@@ -174,7 +183,6 @@ export function useEarnStrategies() {
             }, 0)
 
             const rewards = RewardsModel.getVaultRewards(cType.id) || {}
-
             // Use vault boost data from useBoost instead of calculating it here
             const vbr = individualVaultBoosts[cType.id] || {
                 userVaultBoostMap: {},
@@ -220,23 +228,29 @@ export function useEarnStrategies() {
         const kiteUserPosition = strategyData.kiteStaking?.userPosition || 0
 
         // Calculate HAI MINTING boost using the same logic as staking page
-        // const userHaiMinted = Number(haiUserPosition) / Number(velodromePricesData?.HAI?.raw || 1)
-        // const totalHaiMinted = Number(systemStateData?.systemStates[0]?.erc20CoinTotalSupply || 0)
-        // const userStakingAmount = address ? Number(usersStakingData[address.toLowerCase()]?.stakedBalance || 0) : 0
-        // const totalStakingAmount = Number(formatEther(totalStaked || '0'))
+        const userHaiMinted = Number(haiUserPosition) / Number(velodromePricesData?.HAI?.raw || 1)
+        const totalHaiMinted = Number(systemStateData?.systemStates[0]?.erc20CoinTotalSupply || 0)
+        const userStakingAmount = address ? Number(usersStakingData[address.toLowerCase()]?.stakedBalance || 0) : 0
+        const totalStakingAmount = Number(formatEther(totalStaked || '0'))
 
-        // const haiMintingBoostResult = calculateHaiMintingBoost({
-        //     userStakingAmount,
-        //     totalStakingAmount,
-        //     userHaiMinted,
-        //     totalHaiMinted,
-        // })
+        const haiMintingBoostResult = calculateHaiMintingBoost({
+            userStakingAmount,
+            totalStakingAmount,
+            userHaiMinted,
+            totalHaiMinted,
+        })
 
-        // const haiMintingBoost = {
-        //     baseAPR: haiApr * 100,
-        //     myBoost: haiMintingBoostResult.haiMintingBoost,
-        //     myBoostedAPR: haiApr * 100 * haiMintingBoostResult.haiMintingBoost,
-        // }
+        const haiMintingBoost = {
+            baseAPR: haiApr * 100,
+            myBoost: haiMintingBoostResult.haiMintingBoost,
+            myBoostedAPR: haiApr * 100 * haiMintingBoostResult.haiMintingBoost,
+        }
+
+        // HAI-BOLD LP staking data
+        const haiBoldLpApr = strategyData.haiBoldLp?.apr || 0
+        const haiBoldLpTvl = strategyData.haiBoldLp?.tvl || 0
+        const haiBoldLpUserPosition = strategyData.haiBoldLp?.userPosition || 0
+        const haiBoldLpBoostApr = strategyData.haiBoldLp?.boostApr
 
         return [
             createSpecialStrategy({
@@ -250,7 +264,7 @@ export function useEarnStrategies() {
             createSpecialStrategy({
                 pair: ['HAIVELO'],
                 tvl: haiVeloTvl,
-                apr: (haiVeloBoostApr as any)?.baseAPR / 100 || 0,
+                apr: haiVeloUnderlyingAPR || 0,
                 userPosition: haiVeloUserPositionUsd,
                 strategyType: 'deposit',
                 boostAPR: haiVeloBoostApr as BoostAPRData,
@@ -263,6 +277,17 @@ export function useEarnStrategies() {
                 userPosition: kiteUserPosition,
                 strategyType: 'stake',
                 earnLink: '/stake',
+            }),
+            createSpecialStrategy({
+                pair: ['HAI', 'BOLD'],
+                tvl: haiBoldLpTvl,
+                apr: haiBoldLpApr,
+                userPosition: haiBoldLpUserPosition,
+                strategyType: 'stake',
+                boostAPR: haiBoldLpBoostApr as BoostAPRData,
+                boostEligible: true,
+                earnLink: '/stake/hai-bold-curve-lp',
+                rewards: [{ token: 'KITE', emission: 25 }],
             }),
         ]
     }
@@ -304,7 +329,6 @@ export function useEarnStrategies() {
 
             const rewardsObj = RewardsModel.getPoolRewards(pool.address) || {}
             const rewardsArray = Object.entries(rewardsObj).map(([token, emission]) => ({ token, emission }))
-
             const strategy = createVeloStrategy({
                 pair: [token0, token1],
                 rewards: rewardsArray,
@@ -394,7 +418,6 @@ export function useEarnStrategies() {
                 tokens.push(token)
             }
         })
-
         return tokens
     }, [incentivesData?.claimData])
 

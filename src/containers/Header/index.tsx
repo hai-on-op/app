@@ -9,17 +9,16 @@ import {
     LINK_TO_TELEGRAM,
     LINK_TO_TWITTER,
     formatDataNumber,
-} from '~/utils'
+ formatCollateralLabel } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { useMediaQuery, useOutsideClick } from '~/hooks'
-import { formatCollateralLabel } from '~/utils'
 import styled, { css } from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Popout, Title } from '~/styles'
 import { Twitter } from '~/components/Icons/Twitter'
 import { Telegram } from '~/components/Icons/Telegram'
 import { Discord } from '~/components/Icons/Discord'
-import { Send } from 'react-feather'
+import { Send, Lock } from 'react-feather'
 import { Marquee, MarqueeChunk } from '~/components/Marquee'
 import { Link } from '~/components/Link'
 import { ConnectButton } from '~/components/ConnectButton'
@@ -64,6 +63,10 @@ export function Header({ tickerActive = false }: HeaderProps) {
     const [communityDropdownActive, setCommunityDropdownActive] = useState(false)
     useOutsideClick(communityContainer, () => setCommunityDropdownActive(false))
 
+    const [stakeContainer, setStakeContainer] = useState<HTMLElement | null>(null)
+    const [stakeDropdownActive, setStakeDropdownActive] = useState(false)
+    useOutsideClick(stakeContainer, () => setStakeDropdownActive(false))
+
     const [wrapEthActive, setWrapEthActive] = useState(false)
     useEffect(() => {
         toggleModal({
@@ -89,6 +92,10 @@ export function Header({ tickerActive = false }: HeaderProps) {
             isUpToExtraSmall ? <HaiFace filled size={56} /> : <Logo src={haiLogo} alt="HAI" width={701} height={264} />,
         [isUpToExtraSmall]
     )
+
+    const isHaiVeloRoute =
+        location.pathname === '/haiVELO' ||
+        (location.pathname === '/vaults/open' && ['HAIVELO', 'HAIVELOV2'].includes(new URLSearchParams(location.search).get('collateral') || ''))
 
     return (
         <>
@@ -130,7 +137,7 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                     >
                                         Learn
                                     </HeaderLink>
-                                    <Link href={`${LINK_TO_DOCS}detailed/intro/hai.html`} $textDecoration="none">
+                                    <Link href={LINK_TO_DOCS} $textDecoration="none">
                                         <HeaderLink>Docs</HeaderLink>
                                     </Link>
                                     <CommunityDropdownContainer
@@ -178,18 +185,55 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                             <HeaderLink
                                                 $active={
                                                     location.pathname.startsWith('/vaults') &&
-                                                    !location.pathname.includes('explore')
+                                                    !location.pathname.includes('explore') &&
+                                                    !isHaiVeloRoute
                                                 }
                                             >
                                                 GET HAI
                                             </HeaderLink>
                                         </Link>
+                                        <Link href="/haiVELO" $textDecoration="none">
+                                            <HeaderLink $active={isHaiVeloRoute} style={{ textTransform: 'none' }}>
+                                                haiVELO
+                                            </HeaderLink>
+                                        </Link>
                                         <Link href="/earn" $textDecoration="none">
                                             <HeaderLink $active={location.pathname === '/earn'}>EARN</HeaderLink>
                                         </Link>
-                                        <Link href="/stake" $textDecoration="none">
-                                            <HeaderLink $active={location.pathname === '/stake'}>STAKE</HeaderLink>
-                                        </Link>
+                                        <StakeDropdownContainer
+                                            ref={setStakeContainer}
+                                            onClick={() => setStakeDropdownActive((a) => !a)}
+                                        >
+                                            <HeaderLink $active={location.pathname.startsWith('/stake')}>STAKE</HeaderLink>
+                                            <StakeDropdown
+                                                $anchor="top"
+                                                $float="left"
+                                                $width="auto"
+                                                hidden={!stakeDropdownActive}
+                                            >
+                                                <BrandedDropdown.Item
+                                                    href="/stake"
+                                                    icon={<Lock size={18} />}
+                                                    active={location.pathname === '/stake'}
+                                                >
+                                                    KITE Staking
+                                                </BrandedDropdown.Item>
+                                                {/* <BrandedDropdown.Item
+                                                    href="/stake/hai-velo-velo-lp"
+                                                    icon={<Lock size={18} />}
+                                                    active={location.pathname === '/stake/hai-velo-velo-lp'}
+                                                >
+                                                    HAI/VELO LP
+                                                </BrandedDropdown.Item> */}
+                                                <BrandedDropdown.Item
+                                                    href="/stake/hai-bold-curve-lp"
+                                                    icon={<Lock size={18} />}
+                                                    active={location.pathname === '/stake/hai-bold-curve-lp'}
+                                                >
+                                                    HAI/BOLD LP
+                                                </BrandedDropdown.Item>
+                                            </StakeDropdown>
+                                        </StakeDropdownContainer>
                                         {/* <Link href="/learn" $textDecoration="none">
                                             <HeaderLink $active={location.pathname === '/learn'}>LEARN</HeaderLink>
                                         </Link> */}
@@ -205,7 +249,9 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                 showWrapEth={() => setWrapEthActive(true)}
                             />
                         )}
-                        <MusicButton />
+                        <VisuallyHidden>
+                            <MusicButton id="music-toggle-button" />
+                        </VisuallyHidden>
                         {isSplash ? (
                             <Link href="/vaults" $textDecoration="none">
                                 <HaiButton $variant="yellowish">
@@ -345,6 +391,29 @@ const CommunityDropdown = styled(Popout)`
         flex-shrink: 0;
     }
 `
+const StakeDropdownContainer = styled(CenteredFlex)`
+    position: relative;
+    & > *:first-child {
+        cursor: pointer;
+    }
+`
+const StakeDropdown = styled(Popout)`
+    padding: 24px;
+    gap: 12px;
+    margin-top: 20px;
+    z-index: 2;
+    font-size: 14px;
+    font-weight: 500;
+
+    text-align: left;
+
+    & > * {
+        width: 100%;
+    }
+    & svg {
+        flex-shrink: 0;
+    }
+`
 const HeaderLink = styled(Title).attrs((props) => ({
     $fontSize: '1.6em',
     $letterSpacing: '0.2rem',
@@ -371,4 +440,12 @@ const RightSide = styled(CenteredFlex)`
     ${({ theme }) => theme.mediaWidth.upToExtraSmall`
         gap: 12px;
     `}
+`
+
+const VisuallyHidden = styled.div`
+    position: absolute;
+    width: 0px;
+    height: 0px;
+    overflow: hidden;
+    opacity: 0;
 `

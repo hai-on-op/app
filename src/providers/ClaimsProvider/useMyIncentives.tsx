@@ -337,7 +337,7 @@ interface IncentivesData {
     timerData: TimerData
 }
 
-export const fetchIncentivesData = async (geb: any, account: string, chainId: ChainId): Promise<IncentivesData> => {
+export const fetchIncentivesData = async (geb: any, account: string, _chainId: ChainId): Promise<IncentivesData> => {
     //const factories: { [key: string]: any } = {
     //    KITE: geb?.contracts?.merkleDistributorFactoryKite,
     //    OP: geb?.contracts?.merkleDistributorFactoryOp,
@@ -403,7 +403,7 @@ export const fetchIncentivesData = async (geb: any, account: string, chainId: Ch
     for (let i = 0; i < tokens.length; i++) {
         const token = tokens[i]
 
-        const tokenDistroClaims = await fetchTokenDistroClaims(account, chainId, token)
+        const tokenDistroClaims = await fetchTokenDistroClaims(account)
 
         try {
             // Skip if no claims data for this token
@@ -433,7 +433,7 @@ export const fetchIncentivesData = async (geb: any, account: string, chainId: Ch
                 const claimableAmount = accountClaim ? ethers.BigNumber.from(accountClaim[1]) : ethers.BigNumber.from(0)
                 //        console.log('here===================?? ds fvsdv')
 
-                // const claimingData = [account, claimableAmount]
+                //const claimingData = [account, claimableAmount]
                 const claimingData: [string, bigint] = [account, BigInt(claimableAmount.toString())]
 
                 const proof = tokenTree.getProof(claimingData)
@@ -461,7 +461,7 @@ export const fetchIncentivesData = async (geb: any, account: string, chainId: Ch
                     const claimableAmounts: ethers.BigNumber[] = []
                     const allProofs: string[][] = []
 
-                    const tokenDistroClaims = await fetchTokenDistroClaims(account, chainId, 'whatever')
+                    const tokenDistroClaims = await fetchTokenDistroClaims(account)
 
                     for (let i = 0; i < Object.keys(tokenDistroClaims).length; i++) {
                         const tokenKey = Object.keys(tokenDistroClaims)[i].toUpperCase() as keyof typeof tokensAddresses
@@ -482,7 +482,6 @@ export const fetchIncentivesData = async (geb: any, account: string, chainId: Ch
 
                         if (hasClaimableDistros) {
                             const claimableAmount = ethers.BigNumber.from(accountClaim[1])
-                            // const claimingData = [account, claimableAmount]
                             const claimingData: [string, bigint] = [account, BigInt(claimableAmount.toString())]
 
                             // BigInt(claimableAmount.toString())

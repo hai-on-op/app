@@ -280,7 +280,9 @@ export function Shared({ children }: Props) {
                     $padBottom={!isSplash ? (haiAlertActive ? '240px' : '168px') : undefined}
                     $maxWidth={!isSplash ? 'min(1200px, calc(100vw - 48px))' : undefined}
                 >
-                    <IntentionHeader>{location.pathname === '/auctions' && <StartAuction />}</IntentionHeader>
+                    {!isSplash && (
+                        <IntentionHeader>{location.pathname === '/auctions' && <StartAuction />}</IntentionHeader>
+                    )}
                     {children}
                 </Content>
             )}

@@ -24,6 +24,7 @@ const pairs: [string, string][] = [
     ['MSETH', TOKEN_LOGOS['MSETH']],
     ['YV-VELO-ALETH-WETH', TOKEN_LOGOS['YV-VELO-ALETH-WETH']],
     ['YV-VELO-MSETH-WETH', TOKEN_LOGOS['YV-VELO-MSETH-WETH']],
+    ['MOO-VELO-BOLD-LUSD', TOKEN_LOGOS['MOO-VELO-BOLD-LUSD']],
     // ['Beefy Vaults', TOKEN_LOGOS['MOO']],
 ]
 

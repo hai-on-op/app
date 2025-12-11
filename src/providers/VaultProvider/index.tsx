@@ -1,4 +1,5 @@
 import { type Dispatch, createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef } from 'react'
+import { useAccount } from 'wagmi'
 import { useHistory } from 'react-router-dom'
 
 import type { Collateral, Debt, FormState, IVault, ReactChildren, SetState } from '~/types'
@@ -15,6 +16,7 @@ import {
     vaultInfoErrors,
 } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
+import { useGeb } from '~/hooks'
 
 import { useCollateral } from './useCollateral'
 import { useDebt } from './useDebt'
@@ -41,6 +43,7 @@ type VaultContext = {
     setAction: SetState<VaultAction>
     formState: FormState
     updateForm: Dispatch<Partial<FormState> | 'clear'>
+    refreshVault: () => Promise<void>
     collateral: Collateral
     debt: Debt
     simulation?: Simulation
@@ -61,6 +64,7 @@ const defaultState: VaultContext = {
     setAction: () => undefined,
     formState: {},
     updateForm: () => {},
+    refreshVault: async () => {},
     collateral: {
         name: 'WETH',
         total: {
@@ -112,9 +116,11 @@ type Props = {
 }
 export function VaultProvider({ action, setAction, children }: Props) {
     const history = useHistory()
+    const { address } = useAccount()
+    const geb = useGeb()
 
     const { liquidationData, vaultData, singleVault } = useStoreState(({ vaultModel }) => vaultModel)
-    const { vaultModel: vaultActions } = useStoreActions((actions) => actions)
+    const { vaultModel: vaultActions, connectWalletModel: connectWalletActions } = useStoreActions((actions) => actions)
 
     const dataRef = useRef(vaultData)
     dataRef.current = vaultData
@@ -161,6 +167,27 @@ export function VaultProvider({ action, setAction, children }: Props) {
 
     const collateral = useCollateral(action, formState, vaultData.collateral)
     const debt = useDebt(action, formState, collateral.liquidationData)
+
+    // When entering Create flow or changing collateral, refresh balances so deposit max reflects latest wallet state
+    useEffect(() => {
+        if (action === VaultAction.CREATE && address) {
+            try {
+                connectWalletActions.fetchTokenData({ geb, user: address })
+            } catch (e) {
+                // swallow
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [action, collateral.name, address])
+
+    const refreshVault = useCallback(async () => {
+        if (!address) return
+        try {
+            await connectWalletActions.fetchTokenData({ geb, user: address })
+        } catch (e) {
+            // swallow
+        }
+    }, [address, connectWalletActions, geb])
 
     const liquidationPrice = useMemo(() => {
         if (!liquidationData?.currentRedemptionPrice || !collateral.liquidationData?.liquidationCRatio) return ''
@@ -260,6 +287,7 @@ export function VaultProvider({ action, setAction, children }: Props) {
                 setAction,
                 formState,
                 updateForm,
+                refreshVault,
                 collateral,
                 debt,
                 simulation,

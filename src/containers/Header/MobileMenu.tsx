@@ -15,10 +15,11 @@ import {
     NETWORK_ID,
 } from '~/utils'
 import { useEffects } from '~/providers/EffectsProvider'
+import { useStoreState } from '~/store'
 import { useMediaQuery, useOutsideClick } from '~/hooks'
 
 import styled from 'styled-components'
-import { CenteredFlex, Flex, HaiButton, Popout } from '~/styles'
+import { CenteredFlex, Flex, HaiButton, Popout, Text } from '~/styles'
 import { Hamburger } from '~/components/Icons/Hamburger'
 import { ConnectButton } from '~/components/ConnectButton'
 import { BrandedDropdown } from '~/components/BrandedDropdown'
@@ -44,6 +45,7 @@ import { Telegram } from '~/components/Icons/Telegram'
 import { Discord } from '~/components/Icons/Discord'
 import { HaiFace } from '~/components/Icons/HaiFace'
 import { Caret } from '~/components/Icons/Caret'
+import { Sound } from '~/components/Icons/Sound'
 
 type MobileMenuProps = {
     active: boolean
@@ -52,12 +54,18 @@ type MobileMenuProps = {
 }
 export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) {
     const { toggleScreensaver } = useEffects()
+    const {
+        settingsModel: { isPlayingMusic },
+    } = useStoreState((s) => s)
 
     const isUpToSmall = useMediaQuery('upToSmall')
     const isUpToMedium = useMediaQuery('upToMedium')
     const isUpToLarge = useMediaQuery('upToLarge')
 
     const { isConnected } = useAccount()
+    const isHaiVeloRoute =
+        location.pathname === '/haiVELO' ||
+        (location.pathname === '/vaults/open' && ['HAIVELO', 'HAIVELOV2'].includes(new URLSearchParams(location.search).get('collateral') || ''))
 
     const [button, setButton] = useState<HTMLElement | null>(null)
 
@@ -91,10 +99,18 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
                                     icon={<Database size={18} />}
                                     active={
                                         location.pathname.startsWith('/vaults') &&
-                                        !location.pathname.includes('explore')
+                                        !location.pathname.includes('explore') &&
+                                        !isHaiVeloRoute
                                     }
                                 >
                                     Get HAI
+                                </BrandedDropdown.Item>
+                                <BrandedDropdown.Item
+                                    href="/haiVELO"
+                                    icon={<Database size={18} />}
+                                    active={isHaiVeloRoute}
+                                >
+                                    haiVELO
                                 </BrandedDropdown.Item>
                                 <BrandedDropdown.Item
                                     href="/earn"
@@ -103,13 +119,32 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
                                 >
                                     Earn
                                 </BrandedDropdown.Item>
-                                <BrandedDropdown.Item
-                                    href="/stake"
-                                    icon={<Lock size={18} />}
-                                    active={location.pathname === '/stake'}
-                                >
-                                    Stake
-                                </BrandedDropdown.Item>
+                                <Text $fontSize={12} $fontWeight={700} $textTransform="uppercase" $letterSpacing="0.05rem" $padding="0 8px">
+                                    Staking
+                                </Text>
+                                <NestedGroup>
+                                    <BrandedDropdown.Item
+                                        href="/stake"
+                                        icon={<Lock size={18} />}
+                                        active={location.pathname === '/stake'}
+                                    >
+                                        KITE Staking
+                                    </BrandedDropdown.Item>
+                                    {/* <BrandedDropdown.Item
+                                        href="/stake/hai-velo-velo-lp"
+                                        icon={<Lock size={18} />}
+                                        active={location.pathname === '/stake/hai-velo-velo-lp'}
+                                    >
+                                        HAI/VELO LP
+                                    </BrandedDropdown.Item> */}
+                                    <BrandedDropdown.Item
+                                        href="/stake/hai-bold-curve-lp"
+                                        icon={<Lock size={18} />}
+                                        active={location.pathname === '/stake/hai-bold-curve-lp'}
+                                    >
+                                        HAI/BOLD LP
+                                    </BrandedDropdown.Item>
+                                </NestedGroup>
                             </>
                         )}
                         <BrandedDropdown.Item
@@ -169,10 +204,25 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
                             Wrap ETH
                         </BrandedDropdown.Item>
                         <BrandedDropdown.Item
-                            href={`${LINK_TO_DOCS}detailed/intro/hai.html`}
+                            onClick={() => {
+                                const btn = document.getElementById('music-toggle-button')
+                                if (btn) btn.click()
+                            }}
+                            icon={<Sound muted={!isPlayingMusic} size={18} />}
+                        >
+                            {isPlayingMusic ? 'Pause Music' : 'Play Music'}
+                        </BrandedDropdown.Item>
+                        <BrandedDropdown.Item
+                            href={LINK_TO_DOCS}
                             icon={<FileText size={18} />}
                         >
                             Docs
+                        </BrandedDropdown.Item>
+                        <BrandedDropdown.Item
+                            href={'https://dev-docs.letsgethai.com/detailed/intro/index.html'}
+                            icon={<FileText size={18} />}
+                        >
+                            Dev Docs
                         </BrandedDropdown.Item>
                         <BrandedDropdown.Item href={LINK_TO_GOVERNANCE} icon={<Clipboard size={18} />}>
                             Governance
@@ -267,4 +317,14 @@ const Inner = styled(Flex).attrs((props) => ({
     ${({ theme }) => theme.mediaWidth.upToMedium`
         gap: 6px;
     `}
+`
+const NestedGroup = styled(Flex).attrs((props) => ({
+    $column: true,
+    $justify: 'flex-start',
+    $align: 'flex-start',
+    $gap: 8,
+    ...props,
+}))`
+    width: 100%;
+    padding-left: 12px;
 `

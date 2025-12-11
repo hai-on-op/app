@@ -5,7 +5,6 @@ import { type VaultModel, vaultModel } from './vaultModel'
 import { type TransactionsModel, transactionsModel } from './transactionsModel'
 import { type AuctionModel, auctionModel } from './auctionModel'
 import { type StakingModel, stakingModel } from './stakingModel'
-import { type LPDataModel, lpDataModel } from './lpDataModel'
 
 export interface StoreModel {
     auctionModel: AuctionModel
@@ -15,7 +14,7 @@ export interface StoreModel {
     transactionsModel: TransactionsModel
     vaultModel: VaultModel
     stakingModel: StakingModel
-    lpDataModel: LPDataModel
+    // lpDataModel removed
 }
 
 export const model: StoreModel = {
@@ -26,5 +25,5 @@ export const model: StoreModel = {
     transactionsModel,
     vaultModel,
     stakingModel,
-    lpDataModel,
+    
 }

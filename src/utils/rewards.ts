@@ -21,9 +21,18 @@ export const REWARDS = {
             OP: 0,
         },
         'YV-VELO-MSETH-WETH': {
+            KITE: 50,
+            OP: 0,
+        },
+        'MOO-VELO-BOLD-LUSD': {
             KITE: 25,
             OP: 0,
         },
+        MSETH: {
+            KITE: 25,
+            OP: 0,
+        },
+
         RETH: {
             KITE: 0,
             OP: 0,
@@ -41,18 +50,13 @@ export const REWARDS = {
             OP: 0,
         },
         HAIVELO: {
-            KITE: 50,
-            OP: 0,
-        },
-        HAIVELOV2: {
             KITE: 0,
             OP: 0,
         },
-        MSETH: {
-            KITE: 25,
+        HAIVELOV2: {
+            KITE: 50,
             OP: 0,
         },
-
         // Testnet
         WBTC: {
             KITE: 0,
@@ -95,6 +99,24 @@ export const REWARDS = {
         KITE: 0,
     },
 }
+
+/**
+ * Staking rewards configuration for LP staking pools.
+ * Maps pool namespace to daily reward amounts.
+ */
+export const STAKING_REWARDS = {
+    // HAI/BOLD Curve LP Staking - 25 KITE per day
+    'lp-hai-bold-curve': {
+        KITE: 25,
+        OP: 0,
+    },
+    // haiVELO/VELO LP Staking - 25 KITE per day + HAI rewards (shared with haiVELO depositors)
+    'lp-hai-velo-velo': {
+        KITE: 25,
+        OP: 0,
+        HAI_SHARED: true, // Indicates HAI rewards are shared proportionally by TVL
+    },
+} as const
 
 // export const VELO_SUGAR_ADDRESS = '0xC8229d65581afE8f04344A6706FF45faECC426f9'
 export const VELO_SUGAR_ADDRESS = '0x3b919747b46b13cffd9f16629cff951c0b7ea1e2'

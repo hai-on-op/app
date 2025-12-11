@@ -36,11 +36,13 @@ export function useAvailableVaults() {
         () =>
             Object.values(tokensData || {})
                 .filter(({ isCollateral }) => isCollateral)
+                // Hide haiVELO v1 from available list (no new v1 vaults)
+                .filter(({ symbol }) => symbol !== 'HAIVELO')
                 .map((collateral) => collateral),
         [tokensData]
     )
 
-    const HAS_REWARDS = ['HAIVELO', 'HAIVELOV2', 'ALETH', 'YV-VELO-ALETH-WETH', 'YV-VELO-MSETH-WETH', 'MSETH']
+    const HAS_REWARDS = ['HAIVELO', 'HAIVELOV2', 'ALETH', 'YV-VELO-ALETH-WETH', 'YV-VELO-MSETH-WETH', 'MSETH', 'MOO-VELO-BOLD-LUSD']
 
     const availableVaults: AvailableVaultPair[] = useMemo(() => {
         return collaterals

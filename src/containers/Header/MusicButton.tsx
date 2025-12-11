@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type HTMLAttributes } from 'react'
 import Youtube from 'react-youtube'
 
 import { useStoreActions, useStoreState } from '~/store'
@@ -7,7 +7,7 @@ import styled from 'styled-components'
 import { HaiButton } from '~/styles'
 import { Sound } from '~/components/Icons/Sound'
 
-export function MusicButton() {
+export function MusicButton(props: HTMLAttributes<HTMLButtonElement>) {
     const {
         settingsModel: { isPlayingMusic },
     } = useStoreState((state) => state)
@@ -19,6 +19,7 @@ export function MusicButton() {
 
     return (
         <Container
+            {...props}
             aria-label="Toggle Music"
             onClick={() => {
                 if (!player) return

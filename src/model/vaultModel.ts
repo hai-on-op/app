@@ -225,6 +225,7 @@ export const vaultModel: VaultModel = {
     }),
     depositAndBorrow: thunk(async (actions, payload, { getStoreActions }) => {
         const storeActions = getStoreActions()
+
         const txResponse = await handleDepositAndBorrow(payload.signer, payload.vaultData, payload.vaultId)
         if (txResponse) {
             const { hash, chainId } = txResponse

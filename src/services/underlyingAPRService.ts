@@ -1,13 +1,24 @@
 import { BigNumber } from 'ethers'
 import { RewardsModel } from '~/model/rewardsModel'
+import { client } from '~/utils/graphql/client'
+import { gql } from '@apollo/client'
+import { findBlockNumberByTimestamp, fetchHaiVeloTotalsAtBlock } from '~/services/haivelo/dataSources'
 import { VITE_MAINNET_PUBLIC_RPC } from '~/utils'
+import {
+    HAI_VELO_ADDRESSES,
+    HAIVELO_V1_DEPOSITER_ADDRESS,
+    HAI_REWARD_DISTRIBUTOR_ADDRESS,
+ fetchHaiVeloLatestTransferAmount } from '~/services/haiVeloService'
 
-const HAIVELO_DEPOSITER = '0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3'
-const REWARD_DISTRIBUTOR = '0xfEd2eB6325432F0bF7110DcE2CCC5fF811ac3D4D'
+const HAIVELO_DEPOSITER = HAIVELO_V1_DEPOSITER_ADDRESS
+const REWARD_DISTRIBUTOR = HAI_REWARD_DISTRIBUTOR_ADDRESS
 
 const HAI_TOKEN_ADDRESS = import.meta.env.VITE_HAI_ADDRESS as string
-// const KITE_TOKEN_ADDRESS = import.meta.env.VITE_KITE_ADDRESS as string
-// const OP_TOKEN_ADDRESS = import.meta.env.VITE_OP_ADDRESS as string
+const KITE_TOKEN_ADDRESS = import.meta.env.VITE_KITE_ADDRESS as string
+const OP_TOKEN_ADDRESS = import.meta.env.VITE_OP_ADDRESS as string
+
+// Cache last-epoch TVL to avoid repeated binary searches and subgraph queries
+const __hvEpochCache: Map<string, { ts: number; block: number; tvlUsd: number; fetchedAt: number }> = new Map()
 
 // Interface for underlying APR calculation data requirements
 export interface UnderlyingAPRData {
@@ -197,6 +208,53 @@ class LPTokenAPRCalculator implements IUnderlyingAPRCalculator {
                     console.warn('Error fetching Yearn vault APY (msETH/WETH):', error)
                 }
             }
+            // For MOO-VELO-BOLD-LUSD, fetch APY/APR from Beefy API and convert to APR (decimal)
+            else if (data.collateralType.toUpperCase() === 'MOO-VELO-BOLD-LUSD') {
+                try {
+                    // Beefy breakdown includes vaultApr (auto-compounding base APR) and tradingApr; both are APRs (decimals)
+                    // We prefer summing APR components rather than APY to align with our APR model
+                    type BeefyBreakdownItem = {
+                        vaultApr?: number
+                        tradingApr?: number
+                        totalApy?: number
+                        compoundingsPerYear?: number
+                        beefyPerformanceFee?: number
+                    }
+                    const response = await fetch('https://api.beefy.finance/apy/breakdown')
+                    if (response.ok) {
+                        const breakdown = (await response.json()) as Record<string, BeefyBreakdownItem>
+                        const key = 'velodrome-v2-bold-lusd-new'
+                        const item = breakdown[key]
+                        if (item) {
+                            const aprFromComponents = (item.vaultApr || 0) + (item.tradingApr || 0)
+                            // Fallback: if only APY is present, approximate APR via ln(1+APY)
+                            const aprApproxFromApy = item.totalApy ? Math.log(1 + (item.totalApy || 0)) : 0
+                            underlyingAPR = aprFromComponents > 0 ? aprFromComponents : aprApproxFromApy
+                            source = 'Beefy Vault Yield'
+                            const pct = (underlyingAPR * 100).toFixed(2)
+                            description = `Beefy APR (vault + trading) ≈ ${pct}%`
+                        } else {
+                            // Secondary fallback: simpler APY endpoint
+                            const apyRes = await fetch('https://api.beefy.finance/apy')
+                            if (apyRes.ok) {
+                                const apyMap = (await apyRes.json()) as Record<string, number>
+                                const apy = apyMap['velodrome-v2-bold-lusd-new'] || 0
+                                // Convert APY to APR approximation for consistency
+                                underlyingAPR = apy > 0 ? Math.log(1 + apy) : 0
+                                source = 'Beefy Vault Yield'
+                                const pct = (underlyingAPR * 100).toFixed(2)
+                                description = `Beefy APY approximated to APR ≈ ${pct}%`
+                            } else {
+                                console.warn('Failed to fetch Beefy APY, using 0%')
+                            }
+                        }
+                    } else {
+                        console.warn('Failed to fetch Beefy breakdown, using 0%')
+                    }
+                } catch (error) {
+                    console.warn('Error fetching Beefy APY/APR:', error)
+                }
+            }
 
             return {
                 collateralType: data.collateralType,
@@ -228,19 +286,22 @@ class YieldBearingAPRCalculator implements IUnderlyingAPRCalculator {
     }
 
     async calculateAPR(data: UnderlyingAPRData): Promise<UnderlyingAPRResult> {
+
+        console.log('data', data)
         try {
-            // For HAI VELO, get the APR from the deposit strategy calculation
-            if (data.collateralType.toUpperCase() === 'HAIVELO') {
-                let baseAPR = 0.05 // Default fallback
-                let userBoost = 1 // Default boost
+            // For HAI VELO (v1 and v2), get the APR from the deposit strategy calculation
+            if (['HAIVELO', 'HAIVELOV2', 'HAIVELO_V2'].includes(data.collateralType.toUpperCase())) {
+
+                let baseAPR = 0.05 // Default fallback (decimal)
+                let userBoost = 1 // Default boost multiplier
 
                 try {
-                    // Get the HAI VELO daily reward using the same method as useStrategyData
-                    const haiVeloLatestTransferAmount = await RewardsModel.fetchHaiVeloDailyReward({
-                        haiTokenAddress: HAI_TOKEN_ADDRESS,
-                        haiVeloDepositer: HAIVELO_DEPOSITER,
-                        rewardDistributor: REWARD_DISTRIBUTOR,
+                    // Get the HAI VELO daily reward (centralized helper)
+                    const haiVeloLatestTransferAmount = await fetchHaiVeloLatestTransferAmount({
                         rpcUrl: VITE_MAINNET_PUBLIC_RPC,
+                        haiTokenAddress: HAI_TOKEN_ADDRESS,
+                        depositerAddress: HAIVELO_DEPOSITER,
+                        distributorAddress: REWARD_DISTRIBUTOR,
                     })
 
                     // Calculate daily reward quantity (divide by 7 as done in useStrategyData)
@@ -250,22 +311,23 @@ class YieldBearingAPRCalculator implements IUnderlyingAPRCalculator {
                     const haiPrice = data.externalProtocolData?.haiPrice || 1
                     const haiVeloDailyRewardValue = haiVeloDailyRewardQuantity * haiPrice
 
-                    // Get the actual totalBoostedValueParticipating from strategy data
+                    // Prefer last-epoch TVL if provided, else fallback to current boosted TVL from strategy data
                     const haiVeloBoostApr = data.externalProtocolData?.haiVeloBoostApr
-                    const actualTVL = haiVeloBoostApr?.totalBoostedValueParticipating || 1000000 // Fallback to $1M
+                    const lastEpochTvlUsd = data.externalProtocolData?.lastEpochHaiVeloTvlUsd as number | undefined
 
-                    // Calculate base APR using the exact same formula as useStrategyData:
-                    // (haiVeloDailyRewardValue / totalHaiVeloBoostedValueParticipating) * 365 * 100
-                    // But convert to decimal by dividing by 100 (like in useEarnStrategies line 261)
+                    const actualTVL = (lastEpochTvlUsd && lastEpochTvlUsd > 0)
+                        ? lastEpochTvlUsd
+                        : (haiVeloBoostApr?.totalBoostedValueParticipating || 1000000) // Fallback to current boosted TVL or $1M
+
+                    // Calculate base APR using the same formula as strategy data, but return BASE only:
+                    // baseAPR (decimal) = (dailyRewardValue / totalBoostedValueParticipating) * 365
                     const baseAPRPercentage = actualTVL > 0 ? (haiVeloDailyRewardValue / actualTVL) * 365 * 100 : 0
                     const baseAPRDecimal = baseAPRPercentage / 100 // Convert percentage to decimal
 
-                    // For underlying APR, we want the boosted deposit strategy APR, not the base APR
-                    // Get the user's boost multiplier from the boost APR data
+                    // Keep user's boost for breakdown message only, do NOT apply to underlying APR
                     userBoost = haiVeloBoostApr?.myBoost || 1
-                    const userBoostedAPR = baseAPRDecimal * userBoost
 
-                    baseAPR = userBoostedAPR
+                    baseAPR = baseAPRDecimal
                 } catch (error) {
                     console.error('🔥 Error calculating HAI VELO APR:', error)
                     baseAPR = 0.05 // Fallback to 5%
@@ -276,11 +338,9 @@ class YieldBearingAPRCalculator implements IUnderlyingAPRCalculator {
                     underlyingAPR: baseAPR,
                     breakdown: [
                         {
-                            source: 'HAI VELO Deposit Strategy (Boosted)',
+                            source: 'HAI VELO Deposit Strategy (Base)',
                             apr: baseAPR,
-                            description: `Boosted yield from HAI VELO deposit strategy (${userBoost?.toFixed(
-                                2
-                            )}x boost)`,
+                            description: `Base yield before boost; your boost is ~${userBoost?.toFixed(2)}x`,
                         },
                     ],
                     lastUpdated: new Date(),
@@ -357,7 +417,10 @@ export class UnderlyingAPRService {
 
         this.calculators.set('YV-VELO-ALETH-WETH', lpTokenCalculator)
         this.calculators.set('YV-VELO-MSETH-WETH', lpTokenCalculator)
+        this.calculators.set('MOO-VELO-BOLD-LUSD', lpTokenCalculator)
         this.calculators.set('HAIVELO', yieldBearingCalculator)
+        this.calculators.set('HAIVELOV2', yieldBearingCalculator)
+        this.calculators.set('HAIVELO_V2', yieldBearingCalculator)
 
         // Standard tokens (no underlying yield)
         this.calculators.set('WETH', standardTokenCalculator)

@@ -5,6 +5,8 @@ import { Tooltip } from './Tooltip'
 type TransactionItem = {
     label: string
     tooltip?: string
+    icon?: JSX.Element
+    isDone?: boolean
     value: {
         current?: string
         after: string
@@ -24,20 +26,23 @@ export function TransactionSummary({ heading = DEFAULT_HEADING, items }: Transac
         <Container>
             <Text $fontWeight={700}>{heading}</Text>
             <Inner>
-                {items.map(({ label, tooltip, value }, i) => (
-                    <Detail key={i}>
-                        <CenteredFlex $gap={4}>
-                            <Text>{label}</Text>
-                            {!!tooltip && (
-                                <Tooltip $width="200px" $float="right">
-                                    {tooltip}
-                                </Tooltip>
-                            )}
+                {items.map(({ label, tooltip, icon, isDone, value }, i) => (
+                    <Detail key={i} $isDone={!!isDone}>
+                        <CenteredFlex $gap={8}>
+                            {icon}
+                            <CenteredFlex $gap={4}>
+                                <Text className="label">{label}</Text>
+                                {!!tooltip && (
+                                    <Tooltip $width="200px" $float="right">
+                                        {tooltip}
+                                    </Tooltip>
+                                )}
+                            </CenteredFlex>
                         </CenteredFlex>
                         <Flex $justify="flex-end" $align="center" $gap={4}>
                             {!!value.current && (
                                 <>
-                                    <Text>{value.current}</Text>
+                                    <Text className="current-value">{value.current}</Text>
                                     <Text>→</Text>
                                 </>
                             )}
@@ -84,7 +89,14 @@ const Detail = styled(Flex).attrs((props) => ({
     $justify: 'space-between',
     $align: 'center',
     ...props,
-}))`
+}))<{ $isDone?: boolean }>`
+    .label {
+        text-decoration: ${({ $isDone }) => ($isDone ? 'line-through' : 'none')};
+    }
+    .current-value {
+        text-decoration: ${({ $isDone }) => ($isDone ? 'line-through' : 'none')};
+    }
+
     & > *:nth-child(2) {
         font-weight: 700;
     }

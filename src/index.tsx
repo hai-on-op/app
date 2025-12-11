@@ -15,6 +15,9 @@ import { HaiThemeProvider } from '~/providers/HaiThemeProvider'
 import { haiTheme } from '~/styles/themes'
 import App from '~/App'
 import { CustomAvatar } from '~/components/CustomAvatar'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
+const queryClient = new QueryClient()
 
 ReactDOM.render(
     <React.StrictMode>
@@ -24,9 +27,11 @@ ReactDOM.render(
                 <RainbowKitProvider avatar={CustomAvatar} theme={haiTheme} chains={chains}>
                     <HelmetProvider>
                         <BrowserRouter>
-                            <StoreProvider store={store}>
-                                <App />
-                            </StoreProvider>
+                            <QueryClientProvider client={queryClient}>
+                                <StoreProvider store={store}>
+                                    <App />
+                                </StoreProvider>
+                            </QueryClientProvider>
                         </BrowserRouter>
                     </HelmetProvider>
                 </RainbowKitProvider>

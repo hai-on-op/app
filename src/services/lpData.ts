@@ -3,7 +3,9 @@ import { NETWORK_ID } from '~/utils'
 import { Position, FeeAmount, Pool } from '@uniswap/v3-sdk'
 import { Token } from '@uniswap/sdk-core'
 import JSBI from 'jsbi'
-import type { PoolData, UserPosition, CurrentUserPosition } from '~/model/lpDataModel'
+import type { PoolData } from '~/hooks/lp/useLpPool'
+import type { UserPosition } from '~/hooks/lp/useLpUserPositionsMap'
+import type { CurrentUserPosition } from '~/hooks/lp/useLpCurrentPositions'
 import { calculatePositionValue } from '~/utils/uniswapV3'
 
 // Pool ID from the subgraph
