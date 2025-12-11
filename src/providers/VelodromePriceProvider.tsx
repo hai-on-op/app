@@ -76,18 +76,15 @@ export function VelodromePriceProvider({ children }: Props) {
                     10
                 )) as string[] // actually BigNumber[] but don't need to import
                 if (isStale) return
-                const formattedPrices = prices.reduce(
-                    (obj, price, i) => {
-                        ;(obj as any)[Object.keys(priceAddresses)[i]] = formatSummaryValue(formatUnits(price, 6), {
-                            style: 'currency',
-                            minDecimals: 2,
-                            maxDecimals: 2,
-                            minSigFigs: 2,
-                        })
-                        return obj
-                    },
-                    {} as VelodromePriceContext['prices']
-                )
+                const formattedPrices = prices.reduce((obj, price, i) => {
+                    ;(obj as any)[Object.keys(priceAddresses)[i]] = formatSummaryValue(formatUnits(price, 6), {
+                        style: 'currency',
+                        minDecimals: 2,
+                        maxDecimals: 2,
+                        minSigFigs: 2,
+                    })
+                    return obj
+                }, {} as VelodromePriceContext['prices'])
 
                 setPrices(formattedPrices)
             } catch (error: any) {

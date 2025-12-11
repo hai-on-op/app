@@ -8,6 +8,7 @@ import { formatNumberWithStyle } from '~/utils'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { Sorting } from '~/types'
+import type { StakingConfig } from '~/types/stakingConfig'
 
 dayjs.extend(relativeTime)
 
@@ -25,9 +26,11 @@ type StakingActivityTableProps = {
         transactionHash: string
     }>
     loading?: boolean
+    config?: StakingConfig
 }
 
-export function StakingActivityTable({ positions, loading }: StakingActivityTableProps) {
+export function StakingActivityTable({ positions, loading, config }: StakingActivityTableProps) {
+    const tokenLabel = config?.labels.token ?? '$KITE'
     const [sorting, setSorting] = useState<Sorting>({
         key: 'timestamp',
         dir: 'desc',
@@ -79,7 +82,7 @@ export function StakingActivityTable({ positions, loading }: StakingActivityTabl
                         {
                             content: (
                                 <Text>
-                                    {row.amount} <span style={{ fontWeight: 700 }}>$KITE</span>
+                                    {row.amount} <span style={{ fontWeight: 700 }}>{tokenLabel}</span>
                                 </Text>
                             ),
                         },

@@ -26,6 +26,7 @@ export const ChartTooltip = forwardRef<HTMLDivElement, ChartTooltipProps>(
         </PopoutContainer>
     )
 )
+ChartTooltip.displayName = 'ChartTooltip'
 
 const PopoutContainer = styled(CenteredFlex)<{ $size: number }>`
     width: ${({ $size }) => $size}px;

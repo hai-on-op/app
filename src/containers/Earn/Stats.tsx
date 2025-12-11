@@ -35,7 +35,7 @@ const StyledRewardsAPYWithBoost = styled.div`
 export function EarnStats() {
     const { address } = useAccount()
 
-    const { averageAPR, totalBoostablePosition, totalRewardsValue, rewardTokens, loading } = useEarnStrategies()
+    const { averageAPR, averageWeightedBoost, totalBoostablePosition, totalRewardsValue, rewardTokens, loading } = useEarnStrategies()
     const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
     const { netBoostValue } = useBoost()
     const netBoostFormatted = `${formatNumberWithStyle(netBoostValue, { minDecimals: 0, maxDecimals: 2 })}x`
@@ -98,7 +98,9 @@ export function EarnStats() {
             tooltip: 'Total eligible value participating in DAO rewards campaign activities',
         },
         {
-            header: isNaN(netBoostValue) ? '...' : netBoostFormatted,
+            header: isNaN(netBoostValue)
+                ? '...'
+                : netBoostFormatted,
             label: 'My Net HAI Boost',
             badge: 'BOOST',
             tooltip: 'Your current boost multiplier based on your staked KITE.',
@@ -119,8 +121,9 @@ export function EarnStats() {
                     maxDecimals: 2,
                 })
             ),
-            headerStatus:
-                rewardTokens.length > 0 ? <RewardsTokenArray tokens={rewardTokens as any} hideLabel /> : undefined,
+            headerStatus: rewardTokens.length > 0 ? (
+                <RewardsTokenArray tokens={rewardTokens as any} hideLabel />
+            ) : undefined,
             label: 'My Claimable Rewards',
             tooltip: 'Accumulated rewards available to claim from your participation in various strategies',
             button: (

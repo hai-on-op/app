@@ -2,32 +2,47 @@ import { useMemo, useState, useRef } from 'react'
 
 import { Approvals } from './Approvals'
 import { Confirm } from './Confirm'
+import { InstantWithdrawExecute } from './InstantWithdrawExecute'
 import { Modal, type ModalProps } from '../index'
 import { BrandedTitle } from '~/components/BrandedTitle'
+import type { StakingConfig } from '~/types/stakingConfig'
 import { X } from '~/components/Icons/X'
 
 enum StakingTxStep {
     APPROVE,
     CONFIRM,
+    INSTANT_WITHDRAW,
 }
 
 type StakingTxModalProps = ModalProps & {
     isStaking: boolean
     amount: string
     stakedAmount: string
+    totalStaked: string
+    cooldownPeriod: number
     isWithdraw?: boolean
     onSuccess?: () => void
+    config?: StakingConfig
 }
 
 export function StakingTxModal({
     isStaking,
     amount,
     stakedAmount,
+    totalStaked,
+    cooldownPeriod,
     isWithdraw = false,
     onSuccess,
+    config,
     ...props
 }: StakingTxModalProps) {
-    const [step, setStep] = useState(StakingTxStep.APPROVE)
+    // Determine if this is a zero-cooldown unstake scenario (two-step instant withdraw)
+    const isInstantWithdraw = !isStaking && !isWithdraw && cooldownPeriod === 0
+
+    const [step, setStep] = useState(() => {
+        // Always start at APPROVE step - even for instant withdraw, we need stToken approval
+        return StakingTxStep.APPROVE
+    })
     // Track if transaction is completed to prevent reopening
     const hasClosedRef = useRef(false)
 
@@ -42,20 +57,30 @@ export function StakingTxModal({
     }
 
     const content = useMemo(() => {
-        if (isWithdraw)
+        // Zero-cooldown unstaking: show two-step instant withdraw flow
+        if (step === StakingTxStep.INSTANT_WITHDRAW) {
             return (
-                <Confirm
-                    onClose={handleClose}
-                    isStaking={isStaking}
+                <InstantWithdrawExecute
                     amount={amount}
                     stakedAmount={stakedAmount}
-                    isWithdraw={isWithdraw}
+                    onClose={handleClose}
                     onSuccess={onSuccess}
+                    config={config}
                 />
             )
+        }
+
         switch (step) {
             case StakingTxStep.APPROVE:
-                return <Approvals onNext={() => setStep(StakingTxStep.CONFIRM)} isStaking={isStaking} amount={amount} />
+                return (
+                    <Approvals
+                        onNext={() => setStep(isInstantWithdraw ? StakingTxStep.INSTANT_WITHDRAW : StakingTxStep.CONFIRM)}
+                        isStaking={isStaking}
+                        isWithdraw={isWithdraw}
+                        amount={amount}
+                        config={config}
+                    />
+                )
             case StakingTxStep.CONFIRM:
                 return (
                     <Confirm
@@ -63,12 +88,15 @@ export function StakingTxModal({
                         isStaking={isStaking}
                         amount={amount}
                         stakedAmount={stakedAmount}
+                        totalStaked={totalStaked}
+                        cooldownPeriod={cooldownPeriod}
                         isWithdraw={isWithdraw}
                         onSuccess={onSuccess}
+                        config={config}
                     />
                 )
         }
-    }, [step, handleClose, isStaking, amount, stakedAmount, isWithdraw, onSuccess])
+    }, [step, handleClose, isStaking, isInstantWithdraw, amount, stakedAmount, totalStaked, cooldownPeriod, isWithdraw, onSuccess, config])
 
     return (
         <Modal

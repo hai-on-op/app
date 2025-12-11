@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import type { ReactChildren } from '~/types'
 import { VaultAction } from '~/utils'
@@ -6,11 +6,18 @@ import { useVault } from '~/providers/VaultProvider'
 import { useMediaQuery, useVaultById } from '~/hooks'
 
 import styled, { css } from 'styled-components'
-import { CenteredFlex, Flex, Grid } from '~/styles'
+import { CenteredFlex, Flex, Grid, HaiButton } from '~/styles'
+import { Link } from '~/components/Link'
+import { MigrateHaiVeloV2Modal } from '~/components/Modal/MigrateHaiVeloV2Modal'
 import { RewardsTokenArray } from '~/components/TokenArray'
 import { ProxyPrompt } from '~/components/ProxyPrompt'
 import { Overview } from './Overview'
+import { HaiVeloOverview } from './HaiVeloOverview'
+import { HaiVeloProvider } from '~/providers/HaiVeloProvider'
 import { VaultActions } from './VaultActions'
+import { MintHaiVeloActions } from './MintHaiVeloActions'
+import { useAccount } from 'wagmi'
+import { useHaiVeloAccount } from '~/hooks/haivelo/useHaiVeloAccount'
 import { ManageDropdown } from './ManageDropdown'
 import { NavContainer } from '~/components/NavContainer'
 import { ActivityTable } from '../VaultById/ActivityTable'
@@ -22,6 +29,11 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
     const { action, vault, updateForm } = useVault()
 
     const isHAIVELO =
+        vault?.collateralName === 'HAIVELOV2' ||
+        new URLSearchParams(window.location.search).get('collateral') === 'HAIVELOV2' ||
+        window.location.pathname === '/haiVELO'
+
+    const isHAIVELO_V1 =
         vault?.collateralName === 'HAIVELO' ||
         new URLSearchParams(window.location.search).get('collateral') === 'HAIVELO'
 
@@ -29,38 +41,88 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
 
     const isUpToExtraSmall = useMediaQuery('upToExtraSmall')
     const isUpToSmall = useMediaQuery('upToSmall')
+    const [showMigrate, setShowMigrate] = useState(false)
 
     // clear form inputs when unmounting
     useEffect(() => () => updateForm('clear'), [updateForm])
 
-    const [tab, setTab] = useState(0)
+    // Default to Manage tab for existing haiVELO vaults; Mint tab for CREATE/new
+    const [tab, setTab] = useState(() => (isHAIVELO ? (action === VaultAction.CREATE ? 0 : 1) : 0))
 
-    return (
-        <NavContainer
-            navItems={action === VaultAction.CREATE ? [] : [`Manage`, `Activity`]}
-            selected={tab}
-            onSelect={action === VaultAction.CREATE ? () => {} : setTab}
-            stackHeader
-            headerContent={
-                <Header $removePadding={action === VaultAction.CREATE}>
-                    {headerContent}
-                    <CenteredFlex $gap={12}>
-                        {isHAIVELO ? <RewardsTokenArray tokens={['HAI']} hideLabel={isUpToExtraSmall} /> : null}
-                        <ManageDropdown $width={isUpToSmall ? '100%' : undefined} />
-                    </CenteredFlex>
-                </Header>
-            }
-        >
-            {tab === 0 || action === VaultAction.CREATE ? (
+    // Create navItems array based on vault type and action
+    const getNavItems = () => {
+        if (action === VaultAction.CREATE) {
+            return isHAIVELO ? ['Mint haiVELO', 'Create Vault'] : []
+        } else {
+            return isHAIVELO ? ['Mint haiVELO', 'Manage', 'Activity'] : ['Manage', 'Activity']
+        }
+    }
+
+    const navItems = getNavItems()
+
+    // Determine content to show based on current tab and vault type
+    const renderTabContent = () => {
+        const isCreateMode = action === VaultAction.CREATE
+
+        if (isHAIVELO && tab === 0) {
+            // Mint HAI Velo tab content
+            return (
+                <ProxyPrompt>
+                    <HaiVeloProvider>
+                        <BodyGrid>
+                            <HaiVeloOverview />
+                            <MintHaiVeloActions />
+                        </BodyGrid>
+                    </HaiVeloProvider>
+                </ProxyPrompt>
+            )
+        } else if (
+            (!isHAIVELO && tab === 0 && isCreateMode) || // Create tab for non-HAIVELO in CREATE mode
+            (!isHAIVELO && tab === 0 && !isCreateMode) || // Manage tab for non-HAIVELO in non-CREATE mode
+            (isHAIVELO && tab === 1) // Create/Manage tab for HAIVELO
+        ) {
+            // Manage/Create content
+            return (
                 <ProxyPrompt>
                     <BodyGrid>
                         <Overview isHAIVELO={isHAIVELO} />
                         <VaultActions />
                     </BodyGrid>
                 </ProxyPrompt>
-            ) : (
-                <ActivityTable vault={vaultWithActivity} />
-            )}
+            )
+        } else {
+            // Activity tab
+            return <ActivityTable vault={vaultWithActivity} />
+        }
+    }
+
+    return (
+        <NavContainer
+            navItems={navItems}
+            selected={tab}
+            onSelect={setTab}
+            stackHeader
+            headerContent={
+                <>
+                    <Header $removePadding={action === VaultAction.CREATE}>
+                        <Flex $align="center" $gap={8}>
+                            {headerContent}
+                            {isHAIVELO_V1 && (
+                                <HaiButton $variant="yellowish" onClick={() => setShowMigrate(true)}>
+                                    Migrate to haiVELO v2
+                                </HaiButton>
+                            )}
+                        </Flex>
+                        <CenteredFlex $gap={12}>
+                            {isHAIVELO ? <RewardsTokenArray tokens={['HAI']} hideLabel={isUpToExtraSmall} /> : null}
+                            <ManageDropdown $width={isUpToSmall ? '100%' : undefined} />
+                        </CenteredFlex>
+                    </Header>
+                    {showMigrate && <MigrateHaiVeloV2Modal onClose={() => setShowMigrate(false)} />}
+                </>
+            }
+        >
+            {renderTabContent()}
         </NavContainer>
     )
 }
@@ -89,11 +151,11 @@ const Header = styled(Flex).attrs((props) => ({
             width: 100%;
         }
         ${
-            $removePadding &&
+    $removePadding &&
             css`
                 padding-bottom: 0px;
             `
-        }}
+}}
     `}
 
     z-index: 1;

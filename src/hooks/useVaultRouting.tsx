@@ -49,11 +49,21 @@ export function useVaultRouting(address?: string) {
                     .filter(({ isCollateral }) => isCollateral)
                     .map(({ symbol }) => symbol)
                 const collateral = params.get('collateral') || 'WETH'
+
+                // Redirect haiVELO v1 open route to v2
+                if (collateral === 'HAIVELO') {
+                    const search = new URLSearchParams(params as any)
+                    search.set('collateral', 'HAIVELOV2')
+                    window.history.replaceState({}, '', `/vaults/open?${search.toString()}`)
+                }
+
                 setAction(VaultAction.CREATE)
                 vaultActions.setSingleVault(undefined)
                 vaultActions.setVaultData({
                     ...DEFAULT_VAULT_DATA,
-                    collateral: symbols.includes(collateral) ? collateral : 'WETH',
+                    collateral: symbols.includes(collateral === 'HAIVELO' ? 'HAIVELOV2' : collateral)
+                        ? (collateral === 'HAIVELO' ? 'HAIVELOV2' : collateral)
+                        : 'WETH',
                 })
                 break
             }

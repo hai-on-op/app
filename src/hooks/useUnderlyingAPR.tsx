@@ -2,20 +2,22 @@ import { useState, useEffect, useMemo } from 'react'
 import { underlyingAPRService, type UnderlyingAPRResult, type UnderlyingAPRData } from '~/services/underlyingAPRService'
 import { useStoreState } from '~/store'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
+import { getLastEpochHaiVeloTotals } from '~/services/haivelo/dataSources'
+import { VITE_MAINNET_PUBLIC_RPC } from '~/utils'
 import { useEarnData } from '~/hooks/useEarnData'
 
 interface UseUnderlyingAPRProps {
-    collateralType: string
-    enabled?: boolean
+  collateralType: string
+  enabled?: boolean
 }
 
 interface UseUnderlyingAPRResult {
-    underlyingAPR: number
-    isLoading: boolean
-    error?: string
-    breakdown?: UnderlyingAPRResult['breakdown']
-    lastUpdated?: Date
-    refresh: () => void
+  underlyingAPR: number
+  isLoading: boolean
+  error?: string
+  breakdown?: UnderlyingAPRResult['breakdown']
+  lastUpdated?: Date
+  refresh: () => void
 }
 
 export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyingAPRProps): UseUnderlyingAPRResult {
@@ -31,7 +33,7 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
 
     // Get Velodrome price data
     const { prices: velodromePricesData } = useVelodromePrices()
-
+  
     // Get strategy data (includes HAI VELO boost APR with correct TVL)
     const { strategyData } = useEarnData()
 
@@ -40,12 +42,13 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
         if (!liquidationData || !tokensData) return {}
 
         const collateralLiquidationData = liquidationData.collateralLiquidationData?.[collateralType]
-        const tokenData = Object.values(tokensData).find((token) => token.symbol === collateralType)
-
-        // For HAI VELO, we need HAI price and the actual strategy data
+        const tokenData = Object.values(tokensData).find(token => token.symbol === collateralType)
+   
+        // For HAI VELO (v1/v2), we need HAI price and the actual strategy data
         const haiPrice = Number(velodromePricesData?.HAI?.raw || 1)
         // Only pass the specific values we need to avoid dependency issues
-        // const haiVeloBoostApr = collateralType === 'HAIVELO' ? strategyData?.haiVelo?.boostApr : undefined
+        const isHaiVelo = collateralType === 'HAIVELO' || collateralType === 'HAIVELOV2' || collateralType === 'HAIVELO_V2'
+        const haiVeloBoostApr = isHaiVelo ? strategyData?.haiVelo?.boostApr : undefined
 
         return {
             collateralType,
@@ -57,16 +60,18 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
                 tokenData,
                 haiPrice,
                 // Only pass the specific values we need to avoid dependency issues
-                haiVeloBoostApr: collateralType === 'HAIVELO' ? strategyData?.haiVelo?.boostApr : undefined,
+                haiVeloBoostApr: isHaiVelo ? strategyData?.haiVelo?.boostApr : undefined,
             },
         }
     }, [
-        collateralType,
-        liquidationData,
-        tokensData,
+        collateralType, 
+        liquidationData, 
+        tokensData, 
         velodromePricesData?.HAI?.raw,
-        // For HAIVELO, depend on a stringified version of the boost data to avoid object reference issues
-        collateralType === 'HAIVELO' ? JSON.stringify(strategyData?.haiVelo?.boostApr) : null,
+        // For HAIVELO v1/v2, depend on a stringified version of the boost data to avoid object reference issues
+        (collateralType === 'HAIVELO' || collateralType === 'HAIVELOV2' || collateralType === 'HAIVELO_V2')
+            ? JSON.stringify(strategyData?.haiVelo?.boostApr)
+            : null,
     ])
 
     // Fetch underlying APR
@@ -78,8 +83,24 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
 
         const fetchAPR = async () => {
             try {
-                const aprResult = await underlyingAPRService.getUnderlyingAPR(collateralType, aprData)
+                // Enrich with last-epoch TVL for haiVELO types to avoid service-side fetching
+                let enriched = aprData
+                const isHaiVelo = collateralType === 'HAIVELO' || collateralType === 'HAIVELOV2' || collateralType === 'HAIVELO_V2'
+                if (isHaiVelo) {
+                    const haiVeloPrice = aprData?.price ? Number(aprData.price) : 0
+                    const totals = await getLastEpochHaiVeloTotals(VITE_MAINNET_PUBLIC_RPC)
+                    const lastEpochTvlUsd = totals ? (Number(totals.v1Total || 0) + Number(totals.v2Total || 0)) * (haiVeloPrice || 0) : undefined
+                    enriched = {
+                        ...aprData,
+                        externalProtocolData: {
+                            ...(aprData.externalProtocolData || {}),
+                            lastEpochHaiVeloTvlUsd: lastEpochTvlUsd ?? undefined,
+                        },
+                    }
+                }
 
+                const aprResult = await underlyingAPRService.getUnderlyingAPR(collateralType, enriched)
+        
                 if (!isCancelled) {
                     setResult(aprResult)
                 }
@@ -108,7 +129,7 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
 
     const refresh = () => {
         underlyingAPRService.clearCache(collateralType)
-        setRefreshTrigger((prev) => prev + 1)
+        setRefreshTrigger(prev => prev + 1)
     }
 
     return {
@@ -123,20 +144,20 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
 
 // Hook for multiple vault types (useful for tables)
 interface UseMultipleUnderlyingAPRProps {
-    collateralTypes: string[]
-    enabled?: boolean
+  collateralTypes: string[]
+  enabled?: boolean
 }
 
 interface UseMultipleUnderlyingAPRResult {
-    aprs: Record<string, number>
-    isLoading: boolean
-    errors: Record<string, string>
-    refresh: () => void
+  aprs: Record<string, number>
+  isLoading: boolean
+  errors: Record<string, string>
+  refresh: () => void
 }
 
-export function useMultipleUnderlyingAPR({
-    collateralTypes,
-    enabled = true,
+export function useMultipleUnderlyingAPR({ 
+    collateralTypes, 
+    enabled = true, 
 }: UseMultipleUnderlyingAPRProps): UseMultipleUnderlyingAPRResult {
     const [results, setResults] = useState<Record<string, UnderlyingAPRResult>>({})
     const [isLoading, setIsLoading] = useState(false)
@@ -157,11 +178,11 @@ export function useMultipleUnderlyingAPR({
             try {
                 // Prepare data for each collateral type
                 const dataMap: Record<string, Partial<UnderlyingAPRData>> = {}
-
-                collateralTypes.forEach((type) => {
+        
+                collateralTypes.forEach(type => {
                     const collateralLiquidationData = liquidationData?.collateralLiquidationData?.[type]
-                    const tokenData = Object.values(tokensData || {}).find((token) => token.symbol === type)
-
+                    const tokenData = Object.values(tokensData || {}).find(token => token.symbol === type)
+          
                     dataMap[type] = {
                         collateralType: type,
                         price: collateralLiquidationData?.currentPrice?.value,
@@ -174,34 +195,28 @@ export function useMultipleUnderlyingAPR({
                 })
 
                 const aprResults = await underlyingAPRService.getAllUnderlyingAPRs(collateralTypes, dataMap)
-
+        
                 if (!isCancelled) {
-                    const resultsMap = aprResults.reduce(
-                        (acc, result) => {
-                            acc[result.collateralType] = result
-                            return acc
-                        },
-                        {} as Record<string, UnderlyingAPRResult>
-                    )
-
+                    const resultsMap = aprResults.reduce((acc, result) => {
+                        acc[result.collateralType] = result
+                        return acc
+                    }, {} as Record<string, UnderlyingAPRResult>)
+          
                     setResults(resultsMap)
                 }
             } catch (error) {
                 if (!isCancelled) {
                     // Set error results for all types
-                    const errorResults = collateralTypes.reduce(
-                        (acc, type) => {
-                            acc[type] = {
-                                collateralType: type,
-                                underlyingAPR: 0,
-                                lastUpdated: new Date(),
-                                error: error instanceof Error ? error.message : 'Failed to fetch underlying APR',
-                            }
-                            return acc
-                        },
-                        {} as Record<string, UnderlyingAPRResult>
-                    )
-
+                    const errorResults = collateralTypes.reduce((acc, type) => {
+                        acc[type] = {
+                            collateralType: type,
+                            underlyingAPR: 0,
+                            lastUpdated: new Date(),
+                            error: error instanceof Error ? error.message : 'Failed to fetch underlying APR',
+                        }
+                        return acc
+                    }, {} as Record<string, UnderlyingAPRResult>)
+          
                     setResults(errorResults)
                 }
             } finally {
@@ -220,27 +235,21 @@ export function useMultipleUnderlyingAPR({
 
     const refresh = () => {
         underlyingAPRService.clearCache()
-        setRefreshTrigger((prev) => prev + 1)
+        setRefreshTrigger(prev => prev + 1)
     }
 
     return {
-        aprs: Object.entries(results).reduce(
-            (acc, [type, result]) => {
-                acc[type] = result.underlyingAPR
-                return acc
-            },
-            {} as Record<string, number>
-        ),
+        aprs: Object.entries(results).reduce((acc, [type, result]) => {
+            acc[type] = result.underlyingAPR
+            return acc
+        }, {} as Record<string, number>),
         isLoading,
-        errors: Object.entries(results).reduce(
-            (acc, [type, result]) => {
-                if (result.error) {
-                    acc[type] = result.error
-                }
-                return acc
-            },
-            {} as Record<string, string>
-        ),
+        errors: Object.entries(results).reduce((acc, [type, result]) => {
+            if (result.error) {
+                acc[type] = result.error
+            }
+            return acc
+        }, {} as Record<string, string>),
         refresh,
     }
-}
+} 

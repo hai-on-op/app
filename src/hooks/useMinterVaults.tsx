@@ -61,7 +61,15 @@ export type MinterVaultsData = {
     data: Record<string, VaultData>
 }
 
-const minterVaultCollaterals = ['HAIVELO', 'ALETH', 'YV-VELO-ALETH-WETH', 'YV-VELO-MSETH-WETH', 'MSETH']
+const minterVaultCollaterals = [
+    'HAIVELO',
+    'HAIVELOV2',
+    'ALETH',
+    'YV-VELO-ALETH-WETH',
+    'YV-VELO-MSETH-WETH',
+    'MSETH',
+    'MOO-VELO-BOLD-LUSD',
+]
 
 export function useMinterVaults(address?: string): MinterVaultsData {
     const {

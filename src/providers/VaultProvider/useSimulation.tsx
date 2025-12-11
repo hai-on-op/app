@@ -96,10 +96,10 @@ export function useSimulation({ action, formState, collateral, debt }: Props): S
 
     return simulation
         ? {
-              ...simulation,
-              collateralRatio,
-              riskStatus,
-              liquidationPrice,
-          }
+            ...simulation,
+            collateralRatio,
+            riskStatus,
+            liquidationPrice,
+        }
         : undefined
 }

@@ -14,13 +14,18 @@ import { CheckBox } from '~/components/CheckBox'
 import { StakingTxModal } from '~/components/Modal/StakingTxModal'
 
 // import { Info } from '~/components/Icons/Info'
-import { useBalances, useEthersSigner } from '~/hooks'
-import { useStakingData } from '~/hooks/useStakingData'
+import { useEthersSigner } from '~/hooks'
+import { useErc20BalanceQuery } from '~/hooks/useErc20BalanceQuery'
+import { useStakeDataScoped } from '~/hooks/staking/useStakeDataScoped'
+import { useStakeMutations } from '~/hooks/staking/useStakeMutations'
+import { useFlags } from 'flagsmith/react'
 // import { Loader } from '~/components/Loader'
 import { AvailabilityBadge } from '~/components/AvailabilityBadge'
 // import { stakingModel } from '~/model/stakingModel'
 import { formatTimeFromSeconds } from '~/utils/time'
 import { useAccount } from 'wagmi'
+import type { StakingConfig } from '~/types/stakingConfig'
+import { buildStakingService } from '~/services/stakingService'
 
 type StakingSimulation = {
     stakingAmount: string
@@ -31,46 +36,71 @@ type StakingSimulation = {
 
 type ManageStakingProps = {
     simulation: StakingSimulation
+    config?: StakingConfig
 }
 
-export function ManageStaking({ simulation }: ManageStakingProps) {
+export function ManageStaking({ simulation, config }: ManageStakingProps) {
+    const flags = useFlags(['staking_refactor'])
+    const useRQ = (flags.staking_refactor as any)?.enabled ?? true
     const { stakingAmount, unstakingAmount, setStakingAmount, setUnstakingAmount } = simulation
-    const [, kiteBalance] = useBalances(['HAI', 'KITE'])
-    const { stakingData, cooldownPeriod, loading: stakingDataLoading, refetchAll } = useStakingData()
-    const signer = useEthersSigner()
+    const service = useMemo(
+        () =>
+            config
+                ? buildStakingService(config.addresses.manager as any, undefined, config.decimals)
+                : undefined,
+        [config]
+    )
+    const { data: stakeTokenBalance } = useErc20BalanceQuery(
+        config?.addresses.stakeToken as string,
+        (useAccount().address as any) || undefined,
+        config?.decimals ?? 18
+    )
+
+    const rq = useStakeDataScoped(config?.namespace || 'kite', {
+        poolKey: config?.subgraph.poolKey,
+        service,
+        subgraph: config
+            ? {
+                  userEntity: config.subgraph.userEntity,
+                  idForUser: config.subgraph.idForUser,
+              }
+            : undefined,
+    })
     const { address } = useAccount()
+    const mutations = useStakeMutations(address as any, config?.namespace ?? 'kite', service)
+    const signer = useEthersSigner()
 
     const { stakingModel: stakingState } = useStoreState((state) => state)
 
-    const availableKite = formatNumberWithStyle(kiteBalance.raw, {
+    const tokenLabel = config?.labels.token || 'KITE'
+    const stTokenLabel = config?.labels.stToken || 'stKITE'
+
+    const availableKite = formatNumberWithStyle(stakeTokenBalance.raw, {
         maxDecimals: 0,
     })
 
     const stakedKite = useMemo(() => {
-        if (stakingDataLoading) return null
-        return formatNumberWithStyle(stakingData.stakedBalance, {
+        const bal = rq.stakedBalance || '0'
+        if (rq.loading) return null
+        return formatNumberWithStyle(bal, {
             maxDecimals: 2,
             minDecimals: 0,
         })
-    }, [stakingData.stakedBalance, stakingDataLoading])
+    }, [rq.stakedBalance, rq.loading])
 
     const pendingWithdrawal = useMemo(() => {
         if (!address) return null
-
-        const pW = stakingState.pendingWithdrawals[address.toLowerCase()]
-
+        const rqPending = rq.pendingWithdrawal
+        const pW = rqPending || null
         if (!pW) return null
-
-        const remainingTime = Number(pW.timestamp) + Number(cooldownPeriod) - Date.now() / 1000
+        const remainingTime = Number(pW.timestamp) + Number(rq.cooldownPeriod || 0) - Date.now() / 1000
 
         let availableIn
         if (remainingTime <= 0) {
             availableIn = 'now'
         } else if (remainingTime < 3600) {
-            // less than 1 hour
             availableIn = `${Math.ceil(remainingTime / 60)} mins `
         } else if (remainingTime < 86400) {
-            // less than 1 day
             availableIn = `${Math.ceil(remainingTime / 3600)} hours`
         } else {
             availableIn = `${Math.ceil(remainingTime / 86400)} days`
@@ -83,10 +113,12 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
             }),
             availableIn,
         }
-    }, [stakingData.pendingWithdrawal, cooldownPeriod, stakingState, address])
+    }, [rq.pendingWithdrawal, rq.cooldownPeriod, address])
 
     const isUnStaking = Number(unstakingAmount) > 0
     const isStaking = Number(stakingAmount) > 0
+
+    const cooldownSeconds = Number(config?.cooldownSeconds ?? rq.cooldownPeriod ?? 0)
 
     const {
         // vaultModel: vaultActions,
@@ -144,12 +176,14 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                         isUnStaking
                             ? unstakingAmount
                             : isStaking
-                            ? stakingAmount
-                            : pendingWithdrawal
-                            ? pendingWithdrawal.amount
-                            : ''
+                                ? stakingAmount
+                                : pendingWithdrawal
+                                    ? pendingWithdrawal.amount
+                                    : ''
                     }
-                    stakedAmount={stakingData.stakedBalance}
+                    stakedAmount={rq.stakedBalance}
+                    totalStaked={rq.totalStaked}
+                    cooldownPeriod={cooldownSeconds}
                     onClose={() => {
                         clearInputs()
                         setWithdrawActive(false)
@@ -159,6 +193,7 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                         })
                     }}
                     onSuccess={clearInputs}
+                    config={config}
                     isWithdraw={true}
                 />
             )}
@@ -169,12 +204,14 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                         isUnStaking
                             ? unstakingAmount
                             : isStaking
-                            ? stakingAmount
-                            : pendingWithdrawal
-                            ? pendingWithdrawal.amount
-                            : ''
+                                ? stakingAmount
+                                : pendingWithdrawal
+                                    ? pendingWithdrawal.amount
+                                    : ''
                     }
-                    stakedAmount={stakingData.stakedBalance}
+                    stakedAmount={rq.stakedBalance}
+                    totalStaked={rq.totalStaked}
+                    cooldownPeriod={cooldownSeconds}
                     onClose={() => {
                         setReviewActive(false)
                         toggleModal({
@@ -183,13 +220,14 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                         })
                     }}
                     onSuccess={clearInputs}
+                    config={config}
                     isWithdraw={false}
                 />
             )}
             <Container>
                 <Header>
                     <Flex $width="100%" $justify="space-between" $align="center">
-                        <Text $fontWeight={700}>Manage KITE Staking</Text>
+                        <Text $fontWeight={700}>{`Manage ${tokenLabel} Staking`}</Text>
                         {(Number(stakingAmount) > 0 || Number(unstakingAmount) > 0) && (
                             <Text
                                 $color="rgba(0,0,0,0.5)"
@@ -211,9 +249,9 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                                 <Text>Stake</Text>
                             </CenteredFlex>
                         }
-                        subLabel={`Max ${availableKite} KITE`}
+                        subLabel={`Max ${availableKite} ${tokenLabel}`}
                         placeholder="Staking Amount"
-                        unitLabel={'KITE'}
+                        unitLabel={tokenLabel}
                         onChange={(value: string) => {
                             setUnstakingAmount('0')
                             setStakingAmount(value)
@@ -221,14 +259,14 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                         value={stakingAmount}
                         onMax={() => {
                             setUnstakingAmount('0')
-                            setStakingAmount(kiteBalance.raw.toString())
+                            setStakingAmount(stakeTokenBalance.raw.toString())
                         }}
                         conversion={
                             stakingAmount && Number(stakingAmount) > 0
                                 ? `~${formatNumberWithStyle(
-                                      parseFloat(collateral.priceInUSD || '0') * parseFloat(stakingAmount),
-                                      { style: 'currency' }
-                                  )}`
+                                    parseFloat(collateral.priceInUSD || '0') * parseFloat(stakingAmount),
+                                    { style: 'currency' }
+                                )}`
                                 : ''
                         }
                         style={!isWithdraw ? undefined : { opacity: 0.4 }}
@@ -240,9 +278,9 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                                 <Text>Unstake</Text>
                             </CenteredFlex>
                         }
-                        subLabel={`Max ${stakedKite} KITE`}
+                        subLabel={`Max ${stakedKite} ${tokenLabel}`}
                         placeholder="Unstaking Amount"
-                        unitLabel={'stKITE'}
+                        unitLabel={stTokenLabel}
                         onChange={(value: string) => {
                             setStakingAmount('0')
                             setUnstakingAmount(value)
@@ -250,21 +288,22 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                         value={unstakingAmount}
                         onMax={() => {
                             setStakingAmount('0')
-                            setUnstakingAmount(stakingData.stakedBalance)
+                            setUnstakingAmount(rq.stakedBalance)
                         }}
                         conversion={
                             formState.deposit && Number(formState.deposit) > 0
                                 ? `~${formatNumberWithStyle(
-                                      parseFloat(collateral.priceInUSD || '0') * parseFloat(formState.deposit),
-                                      { style: 'currency' }
-                                  )}`
+                                    parseFloat(collateral.priceInUSD || '0') * parseFloat(formState.deposit),
+                                    { style: 'currency' }
+                                )}`
                                 : ''
                         }
                         style={!isWithdraw ? undefined : { opacity: 0.4 }}
                     />
                     <Text $fontSize="0.85em" $color="rgba(0,0,0,0.85)">
-                        stKITE has a {formatTimeFromSeconds(Number(stakingStates.cooldownPeriod))} cooldown period after
-                        unstaking.
+                        {cooldownSeconds === 0
+                            ? 'There are no lockups, you can withdraw anytime.'
+                            : `${stTokenLabel} has a ${formatTimeFromSeconds(cooldownSeconds)} cooldown period after unstaking.`}
                     </Text>
                     {pendingWithdrawal && (
                         <div
@@ -275,7 +314,7 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                                 width: '100%',
                             }}
                         >
-                            <Text $fontSize="0.85em">{`${pendingWithdrawal.amount} KITE available to claim in`}</Text>
+                            <Text $fontSize="0.85em">{`${pendingWithdrawal.amount} ${tokenLabel} available to claim in`}</Text>
                             <AvailabilityBadge>{`${pendingWithdrawal.availableIn}`}</AvailabilityBadge>
                             <HaiButton
                                 $variant="yellowish"
@@ -288,7 +327,6 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                                             isOpen: true,
                                         })
                                     } else {
-                                        if (!signer) return
                                         try {
                                             popupsActions.setIsWaitingModalOpen(true)
                                             popupsActions.setWaitingPayload({
@@ -298,9 +336,8 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                                                 status: ActionState.LOADING,
                                             })
 
-                                            await stakingActions.cancelWithdrawal({ signer })
+                                            await mutations.cancelWithdrawal.mutateAsync()
 
-                                            await refetchAll({ cancelWithdrawalAmount: pendingWithdrawal.amount })
                                             popupsActions.setIsWaitingModalOpen(false)
                                             popupsActions.setWaitingPayload({ status: ActionState.NONE })
                                         } catch (error) {
@@ -322,8 +359,8 @@ export function ManageStaking({ simulation }: ManageStakingProps) {
                         $justify="center"
                         disabled={
                             (Number(stakingAmount) <= 0 && Number(unstakingAmount) <= 0) ||
-                            Number(stakingAmount) > Number(kiteBalance.raw) ||
-                            Number(unstakingAmount) > Number(stakingData.stakedBalance)
+                            Number(stakingAmount) > Number(stakeTokenBalance.raw) ||
+                            Number(unstakingAmount) > Number(rq.stakedBalance)
                         }
                         onClick={() => {
                             setReviewActive(true)

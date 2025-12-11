@@ -19,6 +19,10 @@ import { useFlags } from 'flagsmith/react'
 import uniswapLogo from '~/assets/uniswap-icon.svg'
 import { StakeStats } from '~/containers/Stake/Stats'
 import { WrapperAd, WrapperAdProps } from './WrapperAd'
+import { HaiVeloStats } from '~/containers/Vaults/HaiVeloStats'
+import { kiteConfig } from '~/staking/configs/kite'
+import { haiBoldCurveLpConfig } from '~/staking/configs/haiBoldCurveLp'
+import { haiVeloVeloLpConfig } from '~/staking/configs/haiVeloVeloLp'
 
 enum Intention {
     AUCTION = 'auctions',
@@ -38,22 +42,22 @@ const copy: Record<
     [Intention.AUCTION]: {
         subtitle: 'Buy your favorite crypto assets from auctions at a potential discount. ',
         cta: 'Read more about auctions →',
-        ctaLink: `${LINK_TO_DOCS}detailed/auctions/index.html`,
+        ctaLink: `${LINK_TO_DOCS}`,
     },
     [Intention.BORROW]: {
         subtitle: 'Mint & borrow HAI against your preferred collateral. ',
         cta: 'Read more about borrowing →',
-        ctaLink: `${LINK_TO_DOCS}detailed/intro/hai.html`,
+        ctaLink: `${LINK_TO_DOCS}`,
     },
     [Intention.EARN]: {
         subtitle: 'Participate in DAO incentive campaigns to earn rewards. ',
         cta: 'Read more about earning opportunities →',
-        ctaLink: `${LINK_TO_DOCS}detailed/intro/hai.html`,
+        ctaLink: `${LINK_TO_DOCS}`,
     },
     [Intention.STAKE]: {
         subtitle: 'Stake KITE to earn protocol revenue and boost your incentives. ',
         cta: 'Read more about staking →',
-        ctaLink: `${LINK_TO_DOCS}detailed/intro/hai.html`,
+        ctaLink: `${LINK_TO_DOCS}`,
     },
 }
 
@@ -77,13 +81,24 @@ const typeOptions: BrandedSelectOption[] = [
         description: 'Stake KITE to earn revenue share and boost your HAI minting incentives.',
     },
     {
+        label: `STAKE ${haiBoldCurveLpConfig.labels.token}`,
+        value: 'stake/hai-bold-curve-lp',
+        icon: ['HAI'],
+        description: `Stake ${haiBoldCurveLpConfig.labels.token} to earn rewards.`,
+    },
+    // {
+    //     label: `STAKE ${haiVeloVeloLpConfig.labels.token}`,
+    //     value: 'stake/hai-velo-velo-lp',
+    //     icon: ['HAIVELOV2', "VELO"],
+    //     description: `Stake ${haiVeloVeloLpConfig.labels.token} to earn rewards.`,
+    // },
+    {
         label: 'Buy $HAI',
         value: '',
         icon: <img src={uniswapLogo} alt="" />,
         description: 'Market buy $HAI from various pairs on Uniswap',
         href: 'https://swap.defillama.com/?chain=optimism&from=&to=0x10398abc267496e49106b07dd6be13364d10dc71',
     },
-
     {
         label: 'Buy Auctioned Assets',
         value: Intention.AUCTION,
@@ -98,8 +113,8 @@ const wrappers: WrapperAdProps[] = [
         status: 'NOW LIVE',
         description: 'Convert your VELO into haiVELO to use as collateral while earning veVELO rewards.',
         cta: 'Mint haiVELO',
-        ctaLink: '',
-        tokenImages: ['HAIVELO'],
+        ctaLink: '/vaults/open?collateral=HAIVELOV2',
+        tokenImages: ['HAIVELOV2'],
     },
 ]
 
@@ -115,45 +130,112 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
 
     const isUpToExtraSmall = useMediaQuery('upToExtraSmall')
 
-    const { type, stats } = useMemo(() => {
+    const { type, stats, stakeConfig } = useMemo(() => {
         if (location.pathname.startsWith('/auctions')) {
             return {
                 type: Intention.AUCTION,
                 stats: <AuctionStats />,
+                stakeConfig: undefined,
             }
         }
         if (location.pathname.startsWith('/earn')) {
             return {
                 type: Intention.EARN,
                 stats: <EarnStats />,
+                stakeConfig: undefined,
             }
         }
         if (location.pathname.startsWith('/stake')) {
+            let currentStakeConfig
+            if (location.pathname === '/stake') {
+                currentStakeConfig = kiteConfig
+            } else if (location.pathname === '/stake/hai-bold-curve-lp') {
+                currentStakeConfig = haiBoldCurveLpConfig
+            } else if (location.pathname === '/stake/hai-velo-velo-lp') {
+                currentStakeConfig = haiVeloVeloLpConfig
+            }
             return {
                 type: Intention.STAKE,
-                stats: <StakeStats />,
+                stats: <StakeStats config={currentStakeConfig} />,
+                stakeConfig: currentStakeConfig,
             }
         }
-        if (location.pathname.startsWith('/vaults')) {
+        if (location.pathname.startsWith('/vaults') || location.pathname === '/haiVELO') {
             switch (location.pathname) {
                 case '/vaults':
                 case '/vaults/manage':
                 case '/vaults/open':
-                    return {
-                        type: Intention.BORROW,
-                        stats: <BorrowStats />,
+                case '/haiVELO':
+                    // If opening haiVELO(v2) collateral, show special haiVELO stats
+                    if (
+                        location.pathname === '/haiVELO' ||
+                        ['HAIVELO', 'HAIVELOV2'].includes(new URLSearchParams(location.search).get('collateral') || '')
+                    ) {
+                        return {
+                            type: Intention.BORROW,
+                            stats: <HaiVeloStats />,
+                            stakeConfig: undefined,
+                        }
                     }
+                    return { type: Intention.BORROW, stats: <BorrowStats />, stakeConfig: undefined }
                 default:
-                    return {}
+                    return { type: undefined, stats: undefined, stakeConfig: undefined }
             }
         }
 
-        return {}
+        return { type: undefined, stats: undefined, stakeConfig: undefined }
     }, [location.pathname])
+
+    // Build select options, including a dedicated haiVELO entry after the primary borrow option
+    const selectOptions: BrandedSelectOption[] = useMemo(() => {
+        const haiVeloOption: BrandedSelectOption = {
+            label: 'Get haiVELO',
+            value: 'haiVELO',
+            icon: ['HAIVELOV2'],
+            description: 'Convert VELO into haiVELO and mint against it',
+        }
+
+        const extended: BrandedSelectOption[] = []
+
+        for (const opt of typeOptions) {
+            extended.push(opt)
+            if (opt.value === Intention.BORROW) {
+                extended.push(haiVeloOption)
+            }
+        }
+
+        return extended
+    }, [])
 
     if (!type) return null
 
-    const { subtitle, cta, ctaLink } = copy[type]
+    const isHaiVeloOpen =
+        location.pathname === '/haiVELO' ||
+        (location.pathname === '/vaults/open' && ['HAIVELO', 'HAIVELOV2'].includes(new URLSearchParams(location.search).get('collateral') || ''))
+
+    const baseCopy = copy[type]
+    const subtitle = isHaiVeloOpen
+        ? 'Convert your VELO & veVELO into haiVELO to use as collateral while earning veVELO rewards. '
+        : baseCopy.subtitle
+    let cta = baseCopy.cta
+    let ctaLink = baseCopy.ctaLink
+    if (isHaiVeloOpen) {
+        cta = 'Read more about haiVELO →'
+        ctaLink = 'https://docs.letsgethai.com/using-haivelo'
+    }
+
+    const selectedValue =
+        isHaiVeloOpen ||
+        (location.pathname === '/vaults/open' &&
+            ['HAIVELO', 'HAIVELOV2'].includes(new URLSearchParams(location.search).get('collateral') || ''))
+            ? 'haiVELO'
+            : location.pathname === '/stake'
+            ? 'stake'
+            : location.pathname === '/stake/hai-bold-curve-lp'
+            ? 'stake/hai-bold-curve-lp'
+            : location.pathname === '/stake/hai-velo-velo-lp'
+            ? 'stake/hai-velo-velo-lp'
+            : ((type as unknown as string) || '')
 
     return (
         <Container>
@@ -161,9 +243,10 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
                 <Flex $justify="flex-start" $align="center" $gap={12} $flexWrap>
                     <BrandedTitle textContent="I WANT TO" $fontSize={isUpToExtraSmall ? '2.5em' : '3.2em'} />
                     <BrandedSelect
-                        value={type}
+                        value={selectedValue}
                         onChange={(value: string) => !!value && history.push(`/${value}`)}
-                        options={typeOptions}
+                        options={selectOptions}
+                        uppercase={!isHaiVeloOpen}
                         $fontSize={isUpToExtraSmall ? '2.5em' : '3.2em'}
                         aria-label="Action"
                     />
@@ -177,13 +260,23 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
                 </Text>
                 {stats}
                 {children}
-                {haiVeloEnabled && (
-                    <>
-                        {wrappers.map((wrapper, i) => (
-                            <WrapperAd key={i} bgVariant={i} {...wrapper} />
-                        ))}
-                    </>
-                )}
+                {(() => {
+                    // Hide haiVELO banner while on haiVELO routes
+                    const isHaiVeloRoute =
+                        location.pathname === '/haiVELO' ||
+                        (location.pathname.startsWith('/vaults') &&
+                            ['HAIVELO', 'HAIVELOV2'].includes(
+                                new URLSearchParams(location.search).get('collateral') || ''
+                            ))
+
+                    return haiVeloEnabled && !isHaiVeloRoute ? (
+                        <>
+                            {wrappers.map((wrapper, i) => (
+                                <WrapperAd key={i} bgVariant={i} {...wrapper} />
+                            ))}
+                        </>
+                    ) : null
+                })()}
             </Inner>
         </Container>
     )

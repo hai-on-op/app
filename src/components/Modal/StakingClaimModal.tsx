@@ -1,10 +1,9 @@
 import { useStoreActions, useStoreState } from '~/store'
 import { Modal } from '.'
 import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
-import { ActionState, formatNumberWithStyle, tokenMap } from '~/utils'
+import { ActionState, formatNumberWithStyle, tokenMap , tokenAssets } from '~/utils'
 import styled from 'styled-components'
 import { ContentWithStatus } from '../ContentWithStatus'
-import { tokenAssets } from '~/utils'
 import { handleTransactionError, useEthersSigner } from '~/hooks'
 // import { useAccount } from 'wagmi'
 import { useState } from 'react'
@@ -13,6 +12,7 @@ import { TokenArray } from '../TokenArray'
 import { useStakingData } from '~/hooks/useStakingData'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { ethers } from 'ethers'
+import { claimRewards } from '~/services/rewards/stakingRewardsService'
 
 export function StakingClaimModal() {
     const signer = useEthersSigner()
@@ -25,7 +25,9 @@ export function StakingClaimModal() {
         stakingModel: stakingActions,
     } = useStoreActions((actions) => actions)
 
-    const { userRewards, refetchAll } = useStakingData()
+    const stakingCtx = (useStakingData() as any) || {}
+    const userRewards = (stakingCtx.userRewards as any[]) || []
+    const refetchAll: (args?: any) => Promise<void> = stakingCtx.refetchAll || (async () => {})
 
     const [claiming, setClaiming] = useState(false)
 
@@ -74,7 +76,7 @@ export function StakingClaimModal() {
             })
 
             stakingActions.setTransactionState(ActionState.LOADING)
-            await stakingActions.getReward({ signer })
+            await claimRewards(signer)
 
             stakingActions.setTransactionState(ActionState.SUCCESS)
             setIsWaitingModalOpen(false)

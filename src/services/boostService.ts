@@ -54,6 +54,8 @@ export function calculateLPBoost({
  * @param totalHaiVELODeposited Total haiVELO deposited
  * @returns haiVELO boost calculation values
  */
+import { calculateHaiVeloBoost as centralizedHaiVeloBoost } from '~/services/haiVeloService'
+
 export function calculateHaiVeloBoost({
     userStakingAmount,
     totalStakingAmount,
@@ -65,23 +67,13 @@ export function calculateHaiVeloBoost({
     userHaiVELODeposited: string | number
     totalHaiVELODeposited: string | number
 }) {
-    // Skip calculation if user has no stake
-    if (userStakingAmount <= 0) return { haiVeloBoost: 1 }
-    if (Number(totalHaiVELODeposited) <= 0) return { haiVeloBoost: 1 }
-
-    // Calculate KITE ratio
-    const calculatedKiteRatio =
-        isNaN(totalStakingAmount) || totalStakingAmount === 0 ? 0 : userStakingAmount / totalStakingAmount
-
-    // Calculate haiVELO boost
-    const haiVeloRatio = Number(userHaiVELODeposited) / Number(totalHaiVELODeposited)
-    const haiVeloBoostRaw = haiVeloRatio === 0 ? 1 : calculatedKiteRatio / haiVeloRatio + 1
-    const haiVeloBoost = Math.min(haiVeloBoostRaw, 2)
-
-    return {
-        kiteRatio: calculatedKiteRatio,
-        haiVeloBoost,
-    }
+    // Delegate to centralized implementation to ensure consistency
+    return centralizedHaiVeloBoost({
+        userStakingAmount,
+        totalStakingAmount,
+        userHaiVELODeposited,
+        totalHaiVELODeposited,
+    })
 }
 
 /**

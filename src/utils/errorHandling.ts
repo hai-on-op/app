@@ -75,17 +75,14 @@ export function getErrorSeverity(error: AppError): ErrorSeverity {
     if (message.includes('system') || message.includes('critical') || message.includes('fatal')) {
         return ErrorSeverity.CRITICAL
     }
-
     // High priority - data loading failures that prevent functionality
     if (error instanceof ApolloError || message.includes('failed to fetch') || message.includes('network')) {
         return ErrorSeverity.HIGH
     }
-
     // Medium priority - partial failures
     if (message.includes('timeout') || message.includes('retry')) {
         return ErrorSeverity.MEDIUM
     }
-
     // Low priority - non-critical issues
     return ErrorSeverity.LOW
 }
@@ -95,7 +92,6 @@ export function getErrorSeverity(error: AppError): ErrorSeverity {
  */
 export function createErrorInfo(error: AppError, source?: string): ErrorInfo | null {
     if (!error) return null
-
     return {
         message: getErrorMessage(error),
         severity: getErrorSeverity(error),
@@ -132,7 +128,6 @@ export function createSafeErrorHandler<T>(
     } = {}
 ): (error: AppError) => T {
     const { logError = true, source, onError } = options
-
     return (error: AppError): T => {
         if (error && logError) {
             console.error(`Error in ${source || 'unknown'}:`, error)
@@ -172,7 +167,6 @@ export async function retryWithBackoff<T>(
             return await operation()
         } catch (error) {
             lastError = error as AppError
-
             // Don't retry on last attempt or if error shouldn't be retried
             if (attempt === maxRetries || !shouldRetry(lastError)) {
                 throw lastError

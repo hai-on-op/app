@@ -9,8 +9,8 @@ import { ChainId, NETWORK_ID, client, VITE_FLAGSMITH_API_KEY } from '~/utils'
 import { VelodromePriceProvider } from './providers/VelodromePriceProvider'
 import { AnalyticsProvider } from '~/providers/AnalyticsProvider'
 import { EffectsProvider } from './providers/EffectsProvider'
+import { RewardsProvider } from './providers/RewardsProvider'
 import { ClaimsProvider } from './providers/ClaimsProvider'
-import { LPDataProvider } from './providers/LPDataProvider'
 import { StakingProvider } from './providers/StakingProvider'
 
 import { GlobalStyle } from '~/styles'
@@ -24,8 +24,11 @@ import { Vaults } from '~/containers/Vaults'
 import { Contracts } from '~/containers/Contracts'
 import { Learn } from './containers/Learn'
 import { VaultExplorer } from './containers/Vaults/Explore'
+import { HaiVeloPage } from './containers/HaiVeloPage'
 import { TestClaim } from './containers/TestClaim'
-import { Stake } from './containers/Stake'
+import KiteStakePage from './containers/Stake/KiteStakePage'
+import HaiVeloVeloLpStakePage from './containers/Stake/HaiVeloVeloLpStakePage'
+import HaiBoldCurveLpStakePage from './containers/Stake/HaiBoldCurveLpStakePage'
 import { TestClaimVelo } from './containers/TestClaimVelo'
 import flagsmith from 'flagsmith'
 import { FlagsmithProvider } from 'flagsmith/react'
@@ -47,7 +50,7 @@ const App = () => {
                 <ErrorBoundary>
                     <ApolloProvider client={client}>
                         <VelodromePriceProvider>
-                            <LPDataProvider>
+                            <RewardsProvider>
                                 <StakingProvider>
                                     <AnalyticsProvider>
                                         <EffectsProvider>
@@ -93,7 +96,19 @@ const App = () => {
                                                                     path={'/contracts'}
                                                                 />
                                                                 <Route exact strict component={Learn} path={'/learn'} />
-                                                                <Route exact strict component={Stake} path={'/stake'} />
+                                                                <Route exact strict component={KiteStakePage} path={'/stake'} />
+                                                                <Route
+                                                                    exact
+                                                                    strict
+                                                                    component={HaiVeloVeloLpStakePage}
+                                                                    path={'/stake/hai-velo-velo-lp'}
+                                                                />
+                                                            <Route
+                                                                exact
+                                                                strict
+                                                                component={HaiBoldCurveLpStakePage}
+                                                                path={'/stake/hai-bold-curve-lp'}
+                                                            />
                                                                 <Route exact strict component={Earn} path={'/earn'} />
                                                                 <Route
                                                                     exact
@@ -113,6 +128,7 @@ const App = () => {
                                                                     component={Vaults}
                                                                     path={'/vaults/open'}
                                                                 />
+                                                                <Route exact strict component={HaiVeloPage} path={'/haiVELO'} />
                                                                 <Route
                                                                     exact
                                                                     component={Vaults}
@@ -134,7 +150,7 @@ const App = () => {
                                         </EffectsProvider>
                                     </AnalyticsProvider>
                                 </StakingProvider>
-                            </LPDataProvider>
+                            </RewardsProvider>
                         </VelodromePriceProvider>
                     </ApolloProvider>
                 </ErrorBoundary>

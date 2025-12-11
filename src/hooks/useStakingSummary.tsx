@@ -132,6 +132,8 @@ export function useStakingSummary(): StakingSummaryData {
         [OP_ADDRESS]: opPrice,
     }
 
+    // DEPRECATED: Legacy APR calculation below is retained for backward compatibility.
+    // New staking UI should use V2 hooks (useStakeApr/useStakingSummaryV2) as the single APR source.
     // Calculate staking APR
     const stakingApyRewardsTotal = useMemo(() => {
         return stakingApyData.reduce(
@@ -384,10 +386,10 @@ export function useStakingSummary(): StakingSummaryData {
     // Return all necessary data and functions
     return stakingSummary
         ? {
-              ...stakingSummary,
-              stakingData,
-              simulateNetBoost,
-              calculateSimulatedValues,
-          }
+            ...stakingSummary,
+            stakingData,
+            simulateNetBoost,
+            calculateSimulatedValues,
+        }
         : defaultSummary
 }

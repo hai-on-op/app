@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 
-import { ActionState, VaultAction, formatNumberWithStyle } from '~/utils'
+import { ActionState, VaultAction, formatNumberWithStyle , formatCollateralLabel } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
+import { useGeb } from '~/hooks'
+import { useAccount } from 'wagmi'
 import { useVault } from '~/providers/VaultProvider'
-import { formatCollateralLabel } from '~/utils'
 import styled from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
 import { NumberInput } from '~/components/NumberInput'
@@ -16,10 +17,13 @@ export function VaultActions() {
     const { vaultModel: vaultState } = useStoreState((state) => state)
     const {
         vaultModel: vaultActions,
+        connectWalletModel: connectWalletActions,
         popupsModel: { toggleModal },
     } = useStoreActions((actions) => actions)
 
     const { vault, action, setAction, formState, updateForm, collateral, debt, summary, error } = useVault()
+    const geb = useGeb()
+    const { address } = useAccount()
 
     const isWithdraw = action === VaultAction.WITHDRAW_REPAY || action === VaultAction.WITHDRAW_BORROW
     const isRepay = action === VaultAction.WITHDRAW_REPAY || action === VaultAction.DEPOSIT_REPAY
@@ -38,6 +42,17 @@ export function VaultActions() {
             isOpen: wrapEthActive,
         })
     }, [wrapEthActive, toggleModal])
+
+    // Ensure balances are fresh when switching to Create tab (e.g., after migrating haiVELO v2)
+    useEffect(() => {
+        if (action === VaultAction.CREATE && address) {
+            try {
+                connectWalletActions.fetchTokenData({ geb, user: address })
+            } catch (e) {
+                // swallow
+            }
+        }
+    }, [action, collateral.name, address])
 
     const [buttonActive, buttonLabel] = useMemo(() => {
         let label = ''
@@ -144,28 +159,28 @@ export function VaultActions() {
                         conversion={
                             formState.deposit && Number(formState.deposit) > 0
                                 ? `~${formatNumberWithStyle(
-                                      parseFloat(collateral.priceInUSD || '0') * parseFloat(formState.deposit),
-                                      { style: 'currency' }
-                                  )}`
+                                    parseFloat(collateral.priceInUSD || '0') * parseFloat(formState.deposit),
+                                    { style: 'currency' }
+                                )}`
                                 : ''
                         }
                         onFocus={
                             action === VaultAction.CREATE
                                 ? undefined
                                 : () =>
-                                      setAction((a) => {
-                                          switch (a) {
-                                              case VaultAction.WITHDRAW_BORROW:
-                                                  return VaultAction.DEPOSIT_BORROW
-                                              case VaultAction.WITHDRAW_REPAY:
-                                                  return VaultAction.DEPOSIT_REPAY
-                                              // case VaultAction.DEPOSIT_BORROW:
-                                              // case VaultAction.DEPOSIT_REPAY:
-                                              // case VaultAction.CREATE:
-                                              default:
-                                                  return a
-                                          }
-                                      })
+                                    setAction((a) => {
+                                        switch (a) {
+                                            case VaultAction.WITHDRAW_BORROW:
+                                                return VaultAction.DEPOSIT_BORROW
+                                            case VaultAction.WITHDRAW_REPAY:
+                                                return VaultAction.DEPOSIT_REPAY
+                                                // case VaultAction.DEPOSIT_BORROW:
+                                                // case VaultAction.DEPOSIT_REPAY:
+                                                // case VaultAction.CREATE:
+                                            default:
+                                                return a
+                                        }
+                                    })
                         }
                         style={!isWithdraw ? undefined : { opacity: 0.4 }}
                     />
@@ -188,28 +203,28 @@ export function VaultActions() {
                         conversion={
                             formState.withdraw && Number(formState.withdraw) > 0
                                 ? `~${formatNumberWithStyle(
-                                      parseFloat(collateral.priceInUSD || '0') * parseFloat(formState.withdraw),
-                                      { style: 'currency' }
-                                  )}`
+                                    parseFloat(collateral.priceInUSD || '0') * parseFloat(formState.withdraw),
+                                    { style: 'currency' }
+                                )}`
                                 : ''
                         }
                         onFocus={
                             action === VaultAction.CREATE
                                 ? undefined
                                 : () =>
-                                      setAction((a) => {
-                                          switch (a) {
-                                              case VaultAction.DEPOSIT_BORROW:
-                                                  return VaultAction.WITHDRAW_BORROW
-                                              case VaultAction.DEPOSIT_REPAY:
-                                                  return VaultAction.WITHDRAW_REPAY
-                                              // case VaultAction.WITHDRAW_BORROW:
-                                              // case VaultAction.WITHDRAW_REPAY:
-                                              // case VaultAction.CREATE:
-                                              default:
-                                                  return a
-                                          }
-                                      })
+                                    setAction((a) => {
+                                        switch (a) {
+                                            case VaultAction.DEPOSIT_BORROW:
+                                                return VaultAction.WITHDRAW_BORROW
+                                            case VaultAction.DEPOSIT_REPAY:
+                                                return VaultAction.WITHDRAW_REPAY
+                                                // case VaultAction.WITHDRAW_BORROW:
+                                                // case VaultAction.WITHDRAW_REPAY:
+                                                // case VaultAction.CREATE:
+                                            default:
+                                                return a
+                                        }
+                                    })
                         }
                         style={isWithdraw ? undefined : { opacity: 0.4 }}
                         hidden={action === VaultAction.CREATE}
@@ -230,28 +245,28 @@ export function VaultActions() {
                         conversion={
                             formState.borrow && Number(formState.borrow) > 0
                                 ? `~${formatNumberWithStyle(
-                                      parseFloat(debt.priceInUSD) * parseFloat(formState.borrow),
-                                      { style: 'currency' }
-                                  )}`
+                                    parseFloat(debt.priceInUSD) * parseFloat(formState.borrow),
+                                    { style: 'currency' }
+                                )}`
                                 : ''
                         }
                         onFocus={
                             action === VaultAction.CREATE
                                 ? undefined
                                 : () =>
-                                      setAction((a) => {
-                                          switch (a) {
-                                              case VaultAction.DEPOSIT_REPAY:
-                                                  return VaultAction.DEPOSIT_BORROW
-                                              case VaultAction.WITHDRAW_REPAY:
-                                                  return VaultAction.WITHDRAW_BORROW
-                                              // case VaultAction.DEPOSIT_BORROW:
-                                              // case VaultAction.WITHDRAW_BORROW:
-                                              // case VaultAction.CREATE:
-                                              default:
-                                                  return a
-                                          }
-                                      })
+                                    setAction((a) => {
+                                        switch (a) {
+                                            case VaultAction.DEPOSIT_REPAY:
+                                                return VaultAction.DEPOSIT_BORROW
+                                            case VaultAction.WITHDRAW_REPAY:
+                                                return VaultAction.WITHDRAW_BORROW
+                                                // case VaultAction.DEPOSIT_BORROW:
+                                                // case VaultAction.WITHDRAW_BORROW:
+                                                // case VaultAction.CREATE:
+                                            default:
+                                                return a
+                                        }
+                                    })
                         }
                         style={!isRepay ? undefined : { opacity: 0.4 }}
                     />
@@ -272,27 +287,27 @@ export function VaultActions() {
                         conversion={
                             formState.repay && Number(formState.repay) > 0
                                 ? `~${formatNumberWithStyle(parseFloat(debt.priceInUSD) * parseFloat(formState.repay), {
-                                      style: 'currency',
-                                  })}`
+                                    style: 'currency',
+                                })}`
                                 : ''
                         }
                         onFocus={
                             action === VaultAction.CREATE
                                 ? undefined
                                 : () =>
-                                      setAction((a) => {
-                                          switch (a) {
-                                              case VaultAction.DEPOSIT_BORROW:
-                                                  return VaultAction.DEPOSIT_REPAY
-                                              case VaultAction.WITHDRAW_BORROW:
-                                                  return VaultAction.WITHDRAW_REPAY
-                                              // case VaultAction.DEPOSIT_REPAY:
-                                              // case VaultAction.WITHDRAW_REPAY:
-                                              // case VaultAction.CREATE:
-                                              default:
-                                                  return a
-                                          }
-                                      })
+                                    setAction((a) => {
+                                        switch (a) {
+                                            case VaultAction.DEPOSIT_BORROW:
+                                                return VaultAction.DEPOSIT_REPAY
+                                            case VaultAction.WITHDRAW_BORROW:
+                                                return VaultAction.WITHDRAW_REPAY
+                                                // case VaultAction.DEPOSIT_REPAY:
+                                                // case VaultAction.WITHDRAW_REPAY:
+                                                // case VaultAction.CREATE:
+                                            default:
+                                                return a
+                                        }
+                                    })
                         }
                         style={isRepay ? undefined : { opacity: 0.4 }}
                         hidden={action === VaultAction.CREATE}

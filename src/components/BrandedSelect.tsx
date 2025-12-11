@@ -24,8 +24,9 @@ type BrandedSelectProps = TextProps & {
     options: BrandedSelectOption[]
     value: string
     onChange: (value: string) => void
+    uppercase?: boolean
 }
-export function BrandedSelect({ width, options, value, onChange, ...props }: BrandedSelectProps) {
+export function BrandedSelect({ width, options, value, onChange, uppercase = true, ...props }: BrandedSelectProps) {
     const [container, setContainer] = useState<HTMLElement | null>(null)
     const [persistent, setPersistent] = useState(false)
 
@@ -34,7 +35,10 @@ export function BrandedSelect({ width, options, value, onChange, ...props }: Bra
     return (
         <Container ref={setContainer} $width={width} $gap={8} onClick={() => setPersistent((p) => !p)}>
             <HiddenText $fontSize="3.2em" $lineHeight="1" {...props}>
-                {options.find(({ value: v }) => v === value)?.label.toUpperCase()}
+                {(() => {
+                    const lbl = options.find(({ value: v }) => v === value)?.label || ''
+                    return uppercase ? lbl.toUpperCase() : lbl
+                })()}
             </HiddenText>
             <Select
                 as="select"
@@ -47,7 +51,7 @@ export function BrandedSelect({ width, options, value, onChange, ...props }: Bra
             >
                 {options.map(({ label, value: v }) => (
                     <option key={v} value={v}>
-                        {label.toUpperCase()}
+                        {uppercase ? label.toUpperCase() : label}
                     </option>
                 ))}
             </Select>
@@ -111,7 +115,8 @@ const Select = styled(Title)`
     left: 12px;
     appearance: none;
     -webkit-appearance: none;
-    width: 100%;
+    width: auto;
+    min-width: 340px;
     background-color: transparent;
     outline: none;
     border: none;

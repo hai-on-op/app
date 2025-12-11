@@ -34,6 +34,7 @@ interface SpecialStrategyParams {
     boostAPR?: BoostAPRData
     boostEligible?: boolean
     earnLink?: string
+    rewards?: Array<{ token: string; emission: number }>
 }
 
 interface VeloStrategyParams {
@@ -86,7 +87,7 @@ export function createSpecialStrategy(params: SpecialStrategyParams): BaseStrate
 
     return {
         ...strategy,
-        rewards: [],
+        rewards: params.rewards || [],
         ...(params.boostAPR && { boostAPR: params.boostAPR }),
         ...(params.boostEligible !== undefined && { boostEligible: params.boostEligible }),
         ...(params.earnLink && { earnLink: params.earnLink }),

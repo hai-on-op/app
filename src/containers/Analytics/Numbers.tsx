@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { formatEther, formatUnits } from 'ethers/lib/utils'
 
 import { formatNumberWithStyle, getRatePercentage } from '~/utils'
-import { REWARDS } from '~/utils/rewards'
+import { REWARDS, HAI_ADDRESS } from '~/utils/rewards'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { useMediaQuery } from '~/hooks'
 
@@ -28,7 +28,7 @@ import { BlockBanner } from '~/components/BlockBanner'
 
 const colors = [
     'hsl(49, 84%, 68%)', // HAI Gold - for HAI related pools
-    'hsl(115, 70%, 70%)', // KITE Green - for KITE related pools
+    'hsl(115, 70%, 70%)', // KITE Green - for KITE related pools  
     'hsl(232, 64%, 75%)', // ALETH Blue - for ALETH related pools
     'hsl(16, 100%, 75%)', // ALUSD Orange - for ALUSD related pools
     'hsl(280, 70%, 75%)', // Purple - for other pools
@@ -104,7 +104,7 @@ export function Numbers() {
         const getPoolColor = (poolTokens: string[], isUniswap = false) => {
             if (isUniswap) return colors[5] // Light Blue for Uniswap
             if (poolTokens.includes('KITE')) return colors[1] // KITE Green
-            if (poolTokens.includes('ALETH')) return colors[2] // ALETH Blue
+            if (poolTokens.includes('ALETH')) return colors[2] // ALETH Blue  
             if (poolTokens.includes('ALUSD')) return colors[3] // ALUSD Orange
             return colors[0] // HAI Gold as default
         }
@@ -115,7 +115,7 @@ export function Numbers() {
             if (indexOfToken < 0) continue // sanity check
             const hai = parseFloat(formatEther(pool.inputTokenBalances[indexOfToken]))
             total += hai
-            const poolTokens = pool.inputTokens.map((token) => token.symbol)
+            const poolTokens = pool.inputTokens.map(token => token.symbol)
             data.push({
                 id: `${uniLabel} - ${pool.inputTokens[0].symbol}/${pool.inputTokens[1].symbol} (${pool.name.slice(
                     pool.name.lastIndexOf(' ') + 1,
@@ -131,13 +131,18 @@ export function Numbers() {
             if (!pool.tokenPair.includes('HAI')) continue
 
             const poolAddress = pool.address.toLowerCase()
-            const isWhitelisted = !!REWARDS.velodrome[poolAddress]
-            const isHaiMsEthPair =
-                (pool.tokenPair[0] === 'HAI' && pool.tokenPair[1] === 'MSETH') ||
-                (pool.tokenPair[0] === 'MSETH' && pool.tokenPair[1] === 'HAI')
+            const whitelisted = !!REWARDS.velodrome[poolAddress]
 
-            // Include if whitelisted in rewards OR if it's the HAI/msETH pair we want to track
-            if (!isWhitelisted && !isHaiMsEthPair) continue
+            // Explicitly include the HAI/<0x1610e3...> volatile v2 pool from the provided link
+            const OTHER_TOKEN = '0x1610e3c85dd44af31ed7f33a63642012dca0c5a5'
+            const includeByTokens =
+                Number(pool.type) === -1 &&
+                ((pool.token0?.toLowerCase?.() === HAI_ADDRESS.toLowerCase() &&
+                    pool.token1?.toLowerCase?.() === OTHER_TOKEN) ||
+                    (pool.token1?.toLowerCase?.() === HAI_ADDRESS.toLowerCase() &&
+                        pool.token0?.toLowerCase?.() === OTHER_TOKEN))
+
+            if (!whitelisted && !includeByTokens) continue
 
             const hai = parseFloat(
                 formatUnits(pool.tokenPair[0] === 'HAI' ? pool.reserve0 : pool.reserve1, pool.decimals)
@@ -324,9 +329,9 @@ export function Numbers() {
                                 stat={{
                                     header: convertPieToUSD
                                         ? formatNumberWithStyle(totalHaiInPools * parseFloat(redemptionPrice.raw), {
-                                              maxDecimals: 0,
-                                              style: 'currency',
-                                          })
+                                            maxDecimals: 0,
+                                            style: 'currency',
+                                        })
                                         : formatNumberWithStyle(totalHaiInPools, { maxDecimals: 0 }),
                                     label: 'HAI in Liquidity Pools',
                                     tooltip: `Amount of HAI locked in tracked liquidity pools`,
@@ -360,14 +365,14 @@ export function Numbers() {
                             valueFormat={
                                 convertPieToUSD
                                     ? (value) => {
-                                          return formatNumberWithStyle(value * parseFloat(redemptionPrice.raw), {
-                                              maxDecimals: 2,
-                                              style: 'currency',
-                                          })
-                                      }
+                                        return formatNumberWithStyle(value * parseFloat(redemptionPrice.raw), {
+                                            maxDecimals: 2,
+                                            style: 'currency',
+                                        })
+                                    }
                                     : (value) => {
-                                          return `${formatNumberWithStyle(value, { maxDecimals: 0 })} HAI`
-                                      }
+                                        return `${formatNumberWithStyle(value, { maxDecimals: 0 })} HAI`
+                                    }
                             }
                         />
                         <Legend $column data={poolPieData} style={{ top: 'calc(50% - 96px)' }} />
