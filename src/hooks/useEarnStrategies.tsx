@@ -65,7 +65,7 @@ export function useEarnStrategies() {
         totalStaked,
         stakingApyData,
         // Loading/error states
-        allDataLoaded,
+        coreDataLoaded,
         stakingDataLoaded,
         storeDataLoaded,
         error: dataLoadingError,
@@ -309,9 +309,9 @@ export function useEarnStrategies() {
         }
 
         // Proceed with calculation if data is loaded or if we can continue with degraded mode
-        // Proceed earlier: require core data (allDataLoaded) but do not block on user-specific extras
+        // Proceed earlier: require core data (coreDataLoaded) but do not block on user-specific extras
         const canProceed =
-            (allDataLoaded && storeDataLoaded && !boostLoading) ||
+            (coreDataLoaded && storeDataLoaded && !boostLoading) ||
             (dataLoadingError && canContinueWithDegradedMode(dataLoadingError))
 
         if (canProceed) {
@@ -331,7 +331,7 @@ export function useEarnStrategies() {
             }
         }
     }, [
-        allDataLoaded,
+        coreDataLoaded,
         stakingDataLoaded,
         storeDataLoaded,
         boostLoading,
@@ -429,7 +429,7 @@ export function useEarnStrategies() {
     }, [incentivesData?.claimData])
 
     const sortedRows = useMemo(() => {
-        if (!allDataLoaded) return []
+        if (!coreDataLoaded) return []
 
         switch (sorting.key) {
             case 'Asset / Asset Pair':
@@ -481,7 +481,7 @@ export function useEarnStrategies() {
                     checkValueExists: true,
                 })
         }
-    }, [filteredRows, sorting, allDataLoaded])
+    }, [filteredRows, sorting, coreDataLoaded])
 
     return {
         rawData: {
@@ -505,7 +505,7 @@ export function useEarnStrategies() {
         rewardTokens,
         rows: sortedRows,
         rowsUnmodified: strategies,
-        loading: !allDataLoaded || boostLoading,
+        loading: !coreDataLoaded || boostLoading,
         error: dataLoadingError,
         hasErrors,
         uniError: null,

@@ -37,7 +37,7 @@ type VelodromePriceContext = {
 const defaultState: VelodromePriceContext = {
     prices: undefined,
     loading: false,
-    error: '',
+    error: undefined,
     refetchPrices: () => {},
 }
 
@@ -52,7 +52,7 @@ export function VelodromePriceProvider({ children }: Props) {
     const [prices, setPrices] = useState<VelodromePriceContext['prices']>()
 
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState('')
+    const [error, setError] = useState<string | undefined>(undefined)
     const [refresher, refetchPrices] = useReducer((x) => x + 1, 0)
 
     // const velodromeOracleContract = useContract(oracleContractAddress, oracleAbi)
