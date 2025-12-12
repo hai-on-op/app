@@ -35,7 +35,6 @@ const collateralHeaders: SortableHeader[] = [
     {
         label: 'Next Update',
         tooltip: `Next time that the price of the collateral will update within the system`,
-        unsortable: true,
     },
 ]
 
@@ -81,6 +80,12 @@ export function useCollateralInfo() {
                     getProperty: (row) => row.nextPrice.toString(),
                     dir: sorting.dir,
                     type: 'parseFloat',
+                })
+            case 'Next Update':
+                return arrayToSorted(rows, {
+                    getProperty: (row) => row.lastUpdateTime && row.updateDelay && (row.lastUpdateTime+row.updateDelay),
+                    dir: sorting.dir,
+                    type: 'numerical',
                 })
             case 'Collateral Asset':
             default:
