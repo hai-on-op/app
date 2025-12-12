@@ -11,7 +11,7 @@ import { useState } from 'react'
 
 type CollateralTableProps = {
     headers: SortableHeader[]
-    rows: (TokenAnalyticsData & {lastUpdateTime?: string, updateDelay?: string})[] 
+    rows: (TokenAnalyticsData & { lastUpdateTime?: string; updateDelay?: string })[]
     sorting: Sorting
     setSorting: SetState<Sorting>
 }
@@ -64,9 +64,7 @@ export function CollateralTable({ headers, rows, sorting, setSorting }: Collater
                             {
                                 content:
                                     lastUpdateTime !== undefined && updateDelay !== undefined ? (
-                                        <TimeLeft
-                                            timestamp={(Number(lastUpdateTime) + Number(updateDelay)) * 1000}
-                                        />
+                                        <TimeLeft timestamp={(Number(lastUpdateTime) + Number(updateDelay)) * 1000} />
                                     ) : (
                                         <Text>Loading...</Text>
                                     ),
