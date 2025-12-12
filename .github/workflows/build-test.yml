@@ -87,3 +87,6 @@ jobs:
 
       - name: Run Tests
         run: yarn test
+        env:
+          VITE_STAKING_MANAGER: '0x1250f2326F04ac61Ee5aEd92fEf74BcAC6E6BC90'
+          VITE_REWARD_DISTRIBUTOR_ADDRESS: '0xfEd2eB6325432F0bF7110DcE2CCC5fF811ac3D4D'
