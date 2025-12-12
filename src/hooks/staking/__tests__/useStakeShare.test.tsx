@@ -36,5 +36,3 @@ describe('useStakeShare', () => {
         expect(screen.getByTestId('pct').textContent).toBe('0%')
     })
 })
-
-

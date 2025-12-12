@@ -96,19 +96,24 @@ const App = () => {
                                                                     path={'/contracts'}
                                                                 />
                                                                 <Route exact strict component={Learn} path={'/learn'} />
-                                                                <Route exact strict component={KiteStakePage} path={'/stake'} />
+                                                                <Route
+                                                                    exact
+                                                                    strict
+                                                                    component={KiteStakePage}
+                                                                    path={'/stake'}
+                                                                />
                                                                 <Route
                                                                     exact
                                                                     strict
                                                                     component={HaiVeloVeloLpStakePage}
                                                                     path={'/stake/hai-velo-velo-lp'}
                                                                 />
-                                                            <Route
-                                                                exact
-                                                                strict
-                                                                component={HaiBoldCurveLpStakePage}
-                                                                path={'/stake/hai-bold-curve-lp'}
-                                                            />
+                                                                <Route
+                                                                    exact
+                                                                    strict
+                                                                    component={HaiBoldCurveLpStakePage}
+                                                                    path={'/stake/hai-bold-curve-lp'}
+                                                                />
                                                                 <Route exact strict component={Earn} path={'/earn'} />
                                                                 <Route
                                                                     exact
@@ -128,7 +133,12 @@ const App = () => {
                                                                     component={Vaults}
                                                                     path={'/vaults/open'}
                                                                 />
-                                                                <Route exact strict component={HaiVeloPage} path={'/haiVELO'} />
+                                                                <Route
+                                                                    exact
+                                                                    strict
+                                                                    component={HaiVeloPage}
+                                                                    path={'/haiVELO'}
+                                                                />
                                                                 <Route
                                                                     exact
                                                                     component={Vaults}

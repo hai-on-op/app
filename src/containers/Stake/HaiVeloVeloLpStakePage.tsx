@@ -6,5 +6,3 @@ export function HaiVeloVeloLpStakePage() {
 }
 
 export default HaiVeloVeloLpStakePage
-
-

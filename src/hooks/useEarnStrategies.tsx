@@ -1,14 +1,13 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { useAccount } from 'wagmi'
-import { formatEther, formatUnits } from 'ethers/lib/utils'
+import { formatUnits } from 'ethers/lib/utils'
 import type { SortableHeader, Sorting } from '~/types'
 
-import { arrayToSorted, stringsExistAndAreEqual, tokenAssets, type QueryCollateralType } from '~/utils'
+import { arrayToSorted, stringsExistAndAreEqual, tokenAssets } from '~/utils'
 import { RewardsModel } from '~/model/rewardsModel'
-import { calculateHaiMintingBoost } from '~/services/boostService'
 import type { BoostAPRData } from '~/types/system'
 import { calculateTokenPrice, calculatePoolTVL, getTokenSymbol } from '~/utils/priceCalculations'
-import { VELODROME_POOLS, VELO_POOLS } from '~/utils/constants'
+import { VELO_POOLS } from '~/utils/constants'
 import { normalizeAPRValue, getEffectiveAPR, getBestAPRValue } from '~/utils/aprNormalization'
 import { createVaultStrategy, createSpecialStrategy, createVeloStrategy } from '~/utils/strategyFactory'
 import { useEarnData } from './useEarnData'
@@ -66,7 +65,6 @@ export function useEarnStrategies() {
         totalStaked,
         stakingApyData,
         // Loading/error states
-        loading,
         allDataLoaded,
         stakingDataLoaded,
         storeDataLoaded,
@@ -88,20 +86,23 @@ export function useEarnStrategies() {
     const { underlyingAPR: haiVeloUnderlyingAPR } = useUnderlyingAPR({ collateralType: 'HAIVELOV2' })
 
     // Get token prices for rewards calculation
-    const getTokenPrice = (token: string): number => {
-        switch (token) {
-            case 'KITE':
-                return Number(veloPrices?.KITE?.raw || 0)
-            case 'OP':
-                return Number(liquidationData?.collateralLiquidationData?.OP?.currentPrice.value || 0)
-            case 'DINERO':
-                return Number(veloPrices?.DINERO?.raw || 0)
-            case 'HAI':
-                return Number(liquidationData?.currentRedemptionPrice || 1)
-            default:
-                return 0
-        }
-    }
+    const getTokenPrice = useCallback(
+        (token: string): number => {
+            switch (token) {
+                case 'KITE':
+                    return Number(veloPrices?.KITE?.raw || 0)
+                case 'OP':
+                    return Number(liquidationData?.collateralLiquidationData?.OP?.currentPrice.value || 0)
+                case 'DINERO':
+                    return Number(veloPrices?.DINERO?.raw || 0)
+                case 'HAI':
+                    return Number(liquidationData?.currentRedemptionPrice || 1)
+                default:
+                    return 0
+            }
+        },
+        [veloPrices, liquidationData]
+    )
 
     // === State ===
     const [vaultStrategies, setVaultStrategies] = useState<BaseStrategy[]>([])
@@ -115,52 +116,9 @@ export function useEarnStrategies() {
 
     const [filterEmpty, setFilterEmpty] = useState(false)
 
-    useEffect(() => {
-        // Error boundary: halt execution if critical errors exist
-        if (dataLoadingError && shouldHaltExecution(dataLoadingError)) {
-            console.error('Critical error detected, halting strategy calculation:', dataLoadingError)
-            return
-        }
-
-        // Proceed with calculation if data is loaded or if we can continue with degraded mode
-        // Proceed earlier: require core data (allDataLoaded) but do not block on user-specific extras
-        const canProceed =
-            (allDataLoaded && storeDataLoaded && !boostLoading) ||
-            (dataLoadingError && canContinueWithDegradedMode(dataLoadingError))
-
-        if (canProceed) {
-            try {
-                const vaultStrats = calculateVaultStrategies()
-                const specialStrats = calculateSpecialStrategies()
-                const veloStrats = calculateVeloStrategies()
-                setVaultStrategies(vaultStrats)
-                setSpecialStrategies(specialStrats)
-                setVeloStrategies(veloStrats)
-            } catch (calculationError) {
-                console.error('Error calculating strategies:', calculationError)
-                // Reset to empty arrays on calculation failure
-                setVaultStrategies([])
-                setSpecialStrategies([])
-                setVeloStrategies([])
-            }
-        }
-    }, [
-        allDataLoaded,
-        stakingDataLoaded,
-        storeDataLoaded,
-        boostLoading,
-        dataLoadingError,
-        userPositionsList,
-        systemStateData,
-        haiVeloSafesData,
-        address,
-        stakingApyData,
-        individualVaultBoosts,
-    ])
-
     // === Calculate Strategies ===
 
-    const calculateVaultStrategies = (): BaseStrategy[] => {
+    const calculateVaultStrategies = useCallback((): BaseStrategy[] => {
         // Safe fallback if data is missing
         if (!collateralTypesData?.collateralTypes || !velodromePricesData?.HAI) {
             return []
@@ -207,9 +165,9 @@ export function useEarnStrategies() {
         })
 
         return strategies
-    }
+    }, [collateralTypesData, velodromePricesData, userPositionsList, individualVaultBoosts])
 
-    const calculateSpecialStrategies = (): BaseStrategy[] => {
+    const calculateSpecialStrategies = useCallback((): BaseStrategy[] => {
         // Safe fallback if strategy data is missing
         if (!strategyData) {
             return []
@@ -228,23 +186,23 @@ export function useEarnStrategies() {
         const kiteUserPosition = strategyData.kiteStaking?.userPosition || 0
 
         // Calculate HAI MINTING boost using the same logic as staking page
-        const userHaiMinted = Number(haiUserPosition) / Number(velodromePricesData?.HAI?.raw || 1)
-        const totalHaiMinted = Number(systemStateData?.systemStates[0]?.erc20CoinTotalSupply || 0)
-        const userStakingAmount = address ? Number(usersStakingData[address.toLowerCase()]?.stakedBalance || 0) : 0
-        const totalStakingAmount = Number(formatEther(totalStaked || '0'))
+        // const userHaiMinted = Number(haiUserPosition) / Number(velodromePricesData?.HAI?.raw || 1)
+        // const totalHaiMinted = Number(systemStateData?.systemStates[0]?.erc20CoinTotalSupply || 0)
+        // const userStakingAmount = address ? Number(usersStakingData[address.toLowerCase()]?.stakedBalance || 0) : 0
+        // const totalStakingAmount = Number(formatEther(totalStaked || '0'))
 
-        const haiMintingBoostResult = calculateHaiMintingBoost({
-            userStakingAmount,
-            totalStakingAmount,
-            userHaiMinted,
-            totalHaiMinted,
-        })
+        // const haiMintingBoostResult = calculateHaiMintingBoost({
+        //     userStakingAmount,
+        //     totalStakingAmount,
+        //     userHaiMinted,
+        //     totalHaiMinted,
+        // })
 
-        const haiMintingBoost = {
-            baseAPR: haiApr * 100,
-            myBoost: haiMintingBoostResult.haiMintingBoost,
-            myBoostedAPR: haiApr * 100 * haiMintingBoostResult.haiMintingBoost,
-        }
+        // const haiMintingBoost = {
+        //     baseAPR: haiApr * 100,
+        //     myBoost: haiMintingBoostResult.haiMintingBoost,
+        //     myBoostedAPR: haiApr * 100 * haiMintingBoostResult.haiMintingBoost,
+        // }
 
         // HAI-BOLD LP staking data
         const haiBoldLpApr = strategyData.haiBoldLp?.apr || 0
@@ -290,9 +248,9 @@ export function useEarnStrategies() {
                 rewards: [{ token: 'KITE', emission: 25 }],
             }),
         ]
-    }
+    }, [strategyData, haiVeloUnderlyingAPR])
 
-    const calculateVeloStrategies = (): BaseStrategy[] => {
+    const calculateVeloStrategies = useCallback((): BaseStrategy[] => {
         // Safe fallback if required data is missing
         if (!velodromePricesData || !velodromeData || !tokensData) {
             return []
@@ -341,13 +299,62 @@ export function useEarnStrategies() {
             strategies.push(strategy)
         }
         return strategies
-    }
+    }, [velodromePricesData, velodromeData, tokensData, velodromePositionsData])
+
+    useEffect(() => {
+        // Error boundary: halt execution if critical errors exist
+        if (dataLoadingError && shouldHaltExecution(dataLoadingError)) {
+            console.error('Critical error detected, halting strategy calculation:', dataLoadingError)
+            return
+        }
+
+        // Proceed with calculation if data is loaded or if we can continue with degraded mode
+        // Proceed earlier: require core data (allDataLoaded) but do not block on user-specific extras
+        const canProceed =
+            (allDataLoaded && storeDataLoaded && !boostLoading) ||
+            (dataLoadingError && canContinueWithDegradedMode(dataLoadingError))
+
+        if (canProceed) {
+            try {
+                const vaultStrats = calculateVaultStrategies()
+                const specialStrats = calculateSpecialStrategies()
+                const veloStrats = calculateVeloStrategies()
+                setVaultStrategies(vaultStrats)
+                setSpecialStrategies(specialStrats)
+                setVeloStrategies(veloStrats)
+            } catch (calculationError) {
+                console.error('Error calculating strategies:', calculationError)
+                // Reset to empty arrays on calculation failure
+                setVaultStrategies([])
+                setSpecialStrategies([])
+                setVeloStrategies([])
+            }
+        }
+    }, [
+        allDataLoaded,
+        stakingDataLoaded,
+        storeDataLoaded,
+        boostLoading,
+        dataLoadingError,
+        userPositionsList,
+        systemStateData,
+        haiVeloSafesData,
+        address,
+        stakingApyData,
+        individualVaultBoosts,
+        calculateVaultStrategies,
+        calculateSpecialStrategies,
+        calculateVeloStrategies,
+    ])
 
     // === Calculate Strategy Utils ===
     // Note: calculateVaultBoostAPR and calculateVaultBoostMap functions have been removed
     // as they are now handled by useBoost hook
 
-    const strategies = [...vaultStrategies, ...specialStrategies, ...veloStrategies]
+    const strategies = useMemo(
+        () => [...vaultStrategies, ...specialStrategies, ...veloStrategies],
+        [vaultStrategies, specialStrategies, veloStrategies]
+    )
 
     const filteredRows = useMemo(() => {
         if (!filterEmpty) return strategies
@@ -403,7 +410,7 @@ export function useEarnStrategies() {
         })
 
         return totalValue
-    }, [incentivesData?.claimData])
+    }, [incentivesData, getTokenPrice])
 
     // Get unique reward tokens from incentives data
     const rewardTokens = useMemo(() => {

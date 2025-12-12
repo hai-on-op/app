@@ -6,6 +6,3 @@ export function HaiBoldCurveLpStakePage() {
 }
 
 export default HaiBoldCurveLpStakePage
-
-
-

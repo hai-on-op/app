@@ -9,7 +9,16 @@ import * as stakeStatsHook from '../useStakeStats'
 import * as boostService from '~/services/boostService'
 import { kiteConfig } from '~/staking/configs/kite'
 import { haiVeloVeloLpConfig } from '~/staking/configs/haiVeloVeloLp'
-import * as wagmi from 'wagmi'
+import { useAccount } from 'wagmi'
+
+// Mock wagmi so we can control useAccount
+vi.mock('wagmi', async () => {
+    const actual = await vi.importActual<typeof import('wagmi')>('wagmi')
+    return {
+        ...actual,
+        useAccount: vi.fn(),
+    }
+})
 
 function Comp({ config }: { config?: any }) {
     const { netBoostValue, lpBoostValue } = useStakingBoost(config)
@@ -23,7 +32,9 @@ function Comp({ config }: { config?: any }) {
 
 describe('useStakingBoost', () => {
     beforeEach(() => {
-        vi.resetAllMocks()
+        vi.restoreAllMocks()
+        // Set default behavior for useAccount
+        vi.mocked(useAccount).mockReturnValue({ address: undefined, isConnected: false } as any)
     })
 
     afterEach(() => {
@@ -53,7 +64,8 @@ describe('useStakingBoost', () => {
     })
 
     it('computes LP boost for LP staking configs using calculateLPBoost', async () => {
-        vi.spyOn(wagmi, 'useAccount').mockReturnValue({ address: '0x'.padEnd(42, 'a') } as any)
+        // Mock useAccount for this test
+        vi.mocked(useAccount).mockReturnValue({ address: '0x'.padEnd(42, 'a') } as any)
 
         vi.spyOn(stakeAccountHook, 'useStakeAccount').mockImplementation((_addr: any, namespace: string) => {
             if (namespace === kiteConfig.namespace) {
@@ -78,6 +90,4 @@ describe('useStakingBoost', () => {
             expect(screen.getByTestId('lp').textContent).toBe('1.8')
         })
     })
-}
-
-
+})

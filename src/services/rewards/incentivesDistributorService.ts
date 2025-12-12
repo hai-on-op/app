@@ -7,19 +7,81 @@ import type { Address, IncentiveClaimData, RewardToken, TransactionResponseLike 
 
 // Local ABI (could be moved to contracts.abis if desired)
 export const REWARD_DISTRIBUTOR_ABI = [
-    { inputs: [], name: 'bufferDuration', outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }], stateMutability: 'view', type: 'function' },
-    { inputs: [], name: 'startTimestamp', outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }], stateMutability: 'view', type: 'function' },
-    { inputs: [], name: 'epochDuration', outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }], stateMutability: 'view', type: 'function' },
-    { inputs: [], name: 'epochCounter', outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }], stateMutability: 'view', type: 'function' },
-    { inputs: [], name: 'paused', outputs: [{ internalType: 'bool', name: '', type: 'bool' }], stateMutability: 'view', type: 'function' },
-    { inputs: [{ internalType: 'bytes32', name: '_root', type: 'bytes32' }, { internalType: 'address', name: '_account', type: 'address' }], name: 'isClaimed', outputs: [{ internalType: 'bool', name: '_hasClaimed', type: 'bool' }], stateMutability: 'view', type: 'function' },
-    { inputs: [{ internalType: 'address', name: '_token', type: 'address' }, { internalType: 'uint256', name: '_wad', type: 'uint256' }, { internalType: 'bytes32[]', name: '_merkleProof', type: 'bytes32[]' }], name: 'claim', outputs: [], stateMutability: 'nonpayable', type: 'function' },
-    { inputs: [{ internalType: 'address[]', name: '_tokens', type: 'address[]' }, { internalType: 'uint256[]', name: '_wads', type: 'uint256[]' }, { internalType: 'bytes32[][]', name: '_merkleProofs', type: 'bytes32[][]' }], name: 'multiClaim', outputs: [], stateMutability: 'nonpayable', type: 'function' },
+    {
+        inputs: [],
+        name: 'bufferDuration',
+        outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [],
+        name: 'startTimestamp',
+        outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [],
+        name: 'epochDuration',
+        outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [],
+        name: 'epochCounter',
+        outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [],
+        name: 'paused',
+        outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [
+            { internalType: 'bytes32', name: '_root', type: 'bytes32' },
+            { internalType: 'address', name: '_account', type: 'address' },
+        ],
+        name: 'isClaimed',
+        outputs: [{ internalType: 'bool', name: '_hasClaimed', type: 'bool' }],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [
+            { internalType: 'address', name: '_token', type: 'address' },
+            { internalType: 'uint256', name: '_wad', type: 'uint256' },
+            { internalType: 'bytes32[]', name: '_merkleProof', type: 'bytes32[]' },
+        ],
+        name: 'claim',
+        outputs: [],
+        stateMutability: 'nonpayable',
+        type: 'function',
+    },
+    {
+        inputs: [
+            { internalType: 'address[]', name: '_tokens', type: 'address[]' },
+            { internalType: 'uint256[]', name: '_wads', type: 'uint256[]' },
+            { internalType: 'bytes32[][]', name: '_merkleProofs', type: 'bytes32[][]' },
+        ],
+        name: 'multiClaim',
+        outputs: [],
+        stateMutability: 'nonpayable',
+        type: 'function',
+    },
 ]
 
 const MERKLE_ROOTS_QUERY = gql`
     query GetMerkleRoots {
-        merkleRoots { id updatedAt }
+        merkleRoots {
+            id
+            updatedAt
+        }
     }
 `
 
@@ -63,7 +125,9 @@ export async function getDistributorTimer(
     signerOrProvider: ethers.Signer | ethers.providers.Provider,
     options?: { contract?: any }
 ): Promise<{ endTime: number; paused: boolean }> {
-    const rewardDistributor = options?.contract || new ethers.Contract(contracts.rewardDistributor.address, REWARD_DISTRIBUTOR_ABI, signerOrProvider)
+    const rewardDistributor =
+        options?.contract ||
+        new ethers.Contract(contracts.rewardDistributor.address, REWARD_DISTRIBUTOR_ABI, signerOrProvider)
     const bufferDuration = await rewardDistributor.bufferDuration()
     const startTimestamp = await rewardDistributor.startTimestamp()
     const epochDuration = await rewardDistributor.epochDuration()
@@ -71,16 +135,21 @@ export async function getDistributorTimer(
     const isPaused = await rewardDistributor.paused()
 
     const latestMerkleRootTimestamp = await fetchLatestMerkleRootTimestamp()
-    const lastSetMerkleRoot = latestMerkleRootTimestamp ?? (Number(startTimestamp) + Number(epochDuration) * (Number(epochCounter) - 1) + Number(bufferDuration) * (Number(epochCounter) - 1))
+    const lastSetMerkleRoot =
+        latestMerkleRootTimestamp ??
+        Number(startTimestamp) +
+            Number(epochDuration) * (Number(epochCounter) - 1) +
+            Number(bufferDuration) * (Number(epochCounter) - 1)
 
-    const provider = (rewardDistributor.provider as ethers.providers.Provider)
+    const provider = rewardDistributor.provider as ethers.providers.Provider
     const currentBlock = await provider.getBlock('latest')
     const currentTime = currentBlock.timestamp
     const distributionDuration = Number(epochDuration) + Number(bufferDuration)
 
-    const endTime = currentTime - lastSetMerkleRoot > bufferDuration
-        ? Number(lastSetMerkleRoot) + Number(distributionDuration) + Number(bufferDuration)
-        : Number(lastSetMerkleRoot) + Number(bufferDuration)
+    const endTime =
+        currentTime - lastSetMerkleRoot > bufferDuration
+            ? Number(lastSetMerkleRoot) + Number(distributionDuration) + Number(bufferDuration)
+            : Number(lastSetMerkleRoot) + Number(bufferDuration)
 
     return { endTime, paused: Boolean(isPaused) }
 }
@@ -108,7 +177,9 @@ export async function getUserIncentives(
 ): Promise<Record<RewardToken, IncentiveClaimData>> {
     if (!isFormattedAddress(account)) return {} as Record<RewardToken, IncentiveClaimData>
     // chainId reserved for future multi-network routing
-    const rewardDistributor = options?.contract || new ethers.Contract(contracts.rewardDistributor.address, REWARD_DISTRIBUTOR_ABI, signerOrProvider)
+    const rewardDistributor =
+        options?.contract ||
+        new ethers.Contract(contracts.rewardDistributor.address, REWARD_DISTRIBUTOR_ABI, signerOrProvider)
     const fetchedClaims = await fetchClaimsBlob()
     const result: Record<RewardToken, IncentiveClaimData> = {} as any
     if (!fetchedClaims) return result
@@ -155,16 +226,15 @@ export async function getUserIncentives(
                 const distro = fetched[token.toLowerCase?.() as keyof typeof fetched] || fetched[token]
                 if (!distro || !distro.values) continue
                 const tree = StandardMerkleTree.load(distro)
-                const accountClaim = distro.values.find((v: any) => v.value[0].toLowerCase() === account.toLowerCase())?.value
+                const accountClaim = distro.values.find((v: any) => v.value[0].toLowerCase() === account.toLowerCase())
+                    ?.value
                 if (!accountClaim) continue
                 const isClaimed = await rewardDistributor.isClaimed(tree.root, account)
                 const hasClaimable = ethers.BigNumber.from(accountClaim[1]).gt(0) && !isClaimed
                 if (hasClaimable) {
                     targetTokens.push(TOKENS_ADDRESSES[token])
                     wads.push(ethers.BigNumber.from(accountClaim[1]))
-                    proofs.push(
-                        tree.getProof([account, BigInt(ethers.BigNumber.from(accountClaim[1]).toString())])
-                    )
+                    proofs.push(tree.getProof([account, BigInt(ethers.BigNumber.from(accountClaim[1]).toString())]))
                 }
             }
             if (targetTokens.length === 0) return null
@@ -182,7 +252,11 @@ export async function getUserIncentives(
 }
 
 // Standalone claim helpers when you don't want to prefetch with getUserIncentives
-export async function claim(token: RewardToken, account: Address, signer: ethers.Signer): Promise<TransactionResponseLike | null> {
+export async function claim(
+    token: RewardToken,
+    account: Address,
+    signer: ethers.Signer
+): Promise<TransactionResponseLike | null> {
     const rewardDistributor = new ethers.Contract(contracts.rewardDistributor.address, REWARD_DISTRIBUTOR_ABI, signer)
     const fetched = await fetchClaimsBlob()
     if (!fetched) return null
@@ -221,9 +295,7 @@ export async function claimAll(account: Address, signer: ethers.Signer): Promise
         if (hasClaimable) {
             targetTokens.push(TOKENS_ADDRESSES[token])
             wads.push(ethers.BigNumber.from(accountClaim[1]))
-            proofs.push(
-                tree.getProof([account, BigInt(ethers.BigNumber.from(accountClaim[1]).toString())])
-            )
+            proofs.push(tree.getProof([account, BigInt(ethers.BigNumber.from(accountClaim[1]).toString())]))
         }
     }
     if (targetTokens.length === 0) return null
@@ -231,5 +303,3 @@ export async function claimAll(account: Address, signer: ethers.Signer): Promise
     await tx.wait()
     return tx
 }
-
-

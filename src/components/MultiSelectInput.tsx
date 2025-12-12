@@ -40,11 +40,9 @@ export function MultiSelectInput<T = string>({
 
     useOutsideClick(containerRef, () => setIsOpen(false))
 
-    const selectedOptions = options.filter(option => selectedValues.includes(option.value))
-
     const handleOptionClick = (optionValue: T) => {
         const newSelectedValues = selectedValues.includes(optionValue)
-            ? selectedValues.filter(value => value !== optionValue)
+            ? selectedValues.filter((value) => value !== optionValue)
             : [...selectedValues, optionValue]
         onChange(newSelectedValues)
     }
@@ -58,7 +56,7 @@ export function MultiSelectInput<T = string>({
     const getDisplayText = () => {
         if (selectedValues.length === 0) return placeholder
         if (selectedValues.length === 1) {
-            const option = options.find(opt => opt.value === selectedValues[0])
+            const option = options.find((opt) => opt.value === selectedValues[0])
             return option?.label || placeholder
         }
         return `${selectedValues.length} items selected`
@@ -70,20 +68,12 @@ export function MultiSelectInput<T = string>({
                 <Text $fontSize="0.65em" $fontWeight={700}>
                     {label}
                 </Text>
-                <Text $fontSize="0.65em">
-                    {subLabel}
-                </Text>
+                <Text $fontSize="0.65em">{subLabel}</Text>
             </Flex>
             <SelectContainer>
-                <SelectButton
-                    onClick={handleInputClick}
-                    $disabled={disabled}
-                    $isOpen={isOpen}
-                >
+                <SelectButton onClick={handleInputClick} $disabled={disabled} $isOpen={isOpen}>
                     <SelectedContent>
-                        <Text>
-                            {getDisplayText()}
-                        </Text>
+                        <Text>{getDisplayText()}</Text>
                     </SelectedContent>
                     <CaretWrapper $isOpen={isOpen}>
                         <CaretWithOutline size={12} />
@@ -103,9 +93,7 @@ export function MultiSelectInput<T = string>({
                                         {isSelected && <Checkmark>✓</Checkmark>}
                                     </Checkbox>
                                     <OptionContent>
-                                        <Text $fontWeight={isSelected ? 600 : 400}>
-                                            {option.label}
-                                        </Text>
+                                        <Text $fontWeight={isSelected ? 600 : 400}>{option.label}</Text>
                                         {option.description && (
                                             <Text $fontSize="0.8em" $color="rgba(0,0,0,0.6)">
                                                 {option.description}
@@ -152,13 +140,13 @@ const SelectButton = styled.div<{ $disabled: boolean; $isOpen: boolean }>`
     cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
     background: ${({ theme }) => theme.colors.background};
     transition: all 0.2s ease;
-    
+
     ${({ $disabled }) =>
         $disabled &&
         css`
             opacity: 0.6;
         `}
-    
+
     ${({ $isOpen, theme }) =>
         $isOpen &&
         css`
@@ -168,7 +156,7 @@ const SelectButton = styled.div<{ $disabled: boolean; $isOpen: boolean }>`
     
     &:hover {
         ${({ $disabled, theme }) =>
-        !$disabled &&
+            !$disabled &&
             css`
                 border-color: ${theme.colors.primary};
             `}
@@ -190,7 +178,7 @@ const CaretWrapper = styled.div<{ $isOpen: boolean }>`
     height: 24px;
     margin-right: 12px;
     transition: transform 0.2s ease;
-    
+
     ${({ $isOpen }) =>
         $isOpen &&
         css`
@@ -213,7 +201,7 @@ const DropdownContainer = styled.div`
     animation: slideDown 0.2s ease;
     max-height: 300px;
     overflow-y: auto;
-    
+
     @keyframes slideDown {
         from {
             opacity: 0;
@@ -233,31 +221,29 @@ const DropdownOption = styled.div<{ $isSelected: boolean }>`
     gap: 12px;
     cursor: pointer;
     transition: all 0.2s ease;
-    
+
     ${({ $isSelected, theme }) =>
         $isSelected &&
         css`
             background: ${theme.colors.yellowish}40;
         `}
-    
+
     &:hover {
-        background: ${({ theme, $isSelected }) => 
-        $isSelected ? theme.colors.yellowish + '60' : theme.colors.yellowish + '80'};
+        background: ${({ theme, $isSelected }) =>
+            $isSelected ? theme.colors.yellowish + '60' : theme.colors.yellowish + '80'};
     }
 `
 
 const Checkbox = styled.div<{ $isSelected: boolean }>`
     width: 16px;
     height: 16px;
-    border: 2px solid ${({ theme, $isSelected }) => 
-        $isSelected ? theme.colors.primary : theme.colors.text};
+    border: 2px solid ${({ theme, $isSelected }) => ($isSelected ? theme.colors.primary : theme.colors.text)};
     border-radius: 3px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    background: ${({ $isSelected, theme }) => 
-        $isSelected ? theme.colors.primary : 'transparent'};
+    background: ${({ $isSelected, theme }) => ($isSelected ? theme.colors.primary : 'transparent')};
     transition: all 0.2s ease;
 `
 
@@ -273,4 +259,4 @@ const OptionContent = styled.div`
     flex-direction: column;
     gap: 2px;
     flex: 1;
-` 
+`

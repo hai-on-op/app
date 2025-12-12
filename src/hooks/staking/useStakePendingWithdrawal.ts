@@ -30,12 +30,14 @@ export function useStakePendingWithdrawal(namespace: string, _poolKey: string, a
         fetchPolicy: 'network-only',
     })
 
-    const pending = data?.stakingUser?.pendingWithdrawal
-        ? {
-              amount: formatEther(BigNumber.from(String(data.stakingUser.pendingWithdrawal.amount || '0'))),
-              timestamp: Number(data.stakingUser.pendingWithdrawal.timestamp || 0),
-          }
-        : null
+    const pending = useMemo(() => {
+        return data?.stakingUser?.pendingWithdrawal
+            ? {
+                  amount: formatEther(BigNumber.from(String(data.stakingUser.pendingWithdrawal.amount || '0'))),
+                  timestamp: Number(data.stakingUser.pendingWithdrawal.timestamp || 0),
+              }
+            : null
+    }, [data])
 
     useEffect(() => {
         if (!addrLower) return
@@ -51,5 +53,3 @@ export function useStakePendingWithdrawal(namespace: string, _poolKey: string, a
 
     return pending
 }
-
-

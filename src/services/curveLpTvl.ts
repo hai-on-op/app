@@ -24,8 +24,7 @@ type CurvePoolsResponse = {
     }
 }
 
-const CURVE_OPTIMISM_POOLS_ENDPOINT =
-    'https://api.curve.finance/api/getPools/optimism/factory-stable-ng'
+const CURVE_OPTIMISM_POOLS_ENDPOINT = 'https://api.curve.finance/api/getPools/optimism/factory-stable-ng'
 
 function toNumber(value: string | number | undefined): number | null {
     if (value == null) return null
@@ -105,11 +104,7 @@ export async function fetchCurveLpTvlForOptimismLp(lpTokenAddress: Address): Pro
             return null
         }
 
-        const tvlUsd = pickFirstNumber(
-            pool.usdTotal,
-            pool.usdTotalExcludingBasePool,
-            pool.usdTotalLiquidity
-        )
+        const tvlUsd = pickFirstNumber(pool.usdTotal, pool.usdTotalExcludingBasePool, pool.usdTotalLiquidity)
         if (tvlUsd == null) {
             return null
         }
@@ -153,5 +148,3 @@ export async function fetchCurveLpTvlForOptimismLp(lpTokenAddress: Address): Pro
         return null
     }
 }
-
-

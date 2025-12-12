@@ -27,5 +27,3 @@ export const kiteConfig: StakingConfig = {
     },
     rewards,
 }
-
-

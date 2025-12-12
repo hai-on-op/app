@@ -32,8 +32,7 @@ export function getContract(address: string, ABI: any, signerOrProvider: JsonRpc
 // returns null on errors
 export function useContract<T extends Contract = Contract>(
     addressOrAddressMap: string | { [chainId: number]: string } | undefined,
-    ABI: any,
-    withSignerIfPossible = true
+    ABI: any
 ): T | null {
     const provider = usePublicProvider()
     const signer = useEthersSigner()
@@ -50,7 +49,7 @@ export function useContract<T extends Contract = Contract>(
             console.error('Failed to get contract', error)
             return null
         }
-    }, [addressOrAddressMap, ABI, provider, signer, withSignerIfPossible]) as T
+    }, [addressOrAddressMap, ABI, provider, signer]) as T
 }
 
 export function useTokenContract(tokenAddress?: string, withSignerIfPossible?: boolean) {

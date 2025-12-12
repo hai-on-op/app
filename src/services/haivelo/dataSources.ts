@@ -47,7 +47,9 @@ export async function fetchV1Safes(collateralId: 'HAIVELO' = 'HAIVELO', limit = 
             ) {
                 id
                 collateral
-                owner { address }
+                owner {
+                    address
+                }
             }
         }
     `
@@ -82,7 +84,9 @@ export async function fetchV2Safes(collateralId: 'HAIVELOV2' = 'HAIVELOV2', limi
             ) {
                 id
                 collateral
-                owner { address }
+                owner {
+                    address
+                }
             }
         }
     `
@@ -99,7 +103,11 @@ export async function fetchV2Safes(collateralId: 'HAIVELOV2' = 'HAIVELOV2', limi
     }
 }
 
-export async function fetchV1SafesAtBlock(collateralId: 'HAIVELO' = 'HAIVELO', blockNumber: number, limit = 1000): Promise<FetchV1SafesResult> {
+export async function fetchV1SafesAtBlock(
+    collateralId: 'HAIVELO' = 'HAIVELO',
+    blockNumber: number,
+    limit = 1000
+): Promise<FetchV1SafesResult> {
     const QUERY = gql`
         query GetV1HaiVeloAtBlock($collateralTypeId: ID!, $limit: Int!, $block: Block_height) {
             collateralType(id: $collateralTypeId, block: $block) {
@@ -115,7 +123,9 @@ export async function fetchV1SafesAtBlock(collateralId: 'HAIVELO' = 'HAIVELO', b
             ) {
                 id
                 collateral
-                owner { address }
+                owner {
+                    address
+                }
             }
         }
     `
@@ -132,7 +142,11 @@ export async function fetchV1SafesAtBlock(collateralId: 'HAIVELO' = 'HAIVELO', b
     }
 }
 
-export async function fetchV2SafesAtBlock(collateralId: 'HAIVELOV2' = 'HAIVELOV2', blockNumber: number, limit = 1000): Promise<FetchV2SafesResult> {
+export async function fetchV2SafesAtBlock(
+    collateralId: 'HAIVELOV2' = 'HAIVELOV2',
+    blockNumber: number,
+    limit = 1000
+): Promise<FetchV2SafesResult> {
     const QUERY = gql`
         query GetV2HaiVeloAtBlock($collateralTypeId: ID!, $limit: Int!, $block: Block_height) {
             collateralType(id: $collateralTypeId, block: $block) {
@@ -148,7 +162,9 @@ export async function fetchV2SafesAtBlock(collateralId: 'HAIVELOV2' = 'HAIVELOV2
             ) {
                 id
                 collateral
-                owner { address }
+                owner {
+                    address
+                }
             }
         }
     `
@@ -173,12 +189,20 @@ export async function findBlockNumberByTimestamp(targetTimestamp: number, rpcUrl
     const provider = getProvider(rpcUrl)
     try {
         const start = Date.now()
-        try { console.log('[haiVELO][findBlockByTs] start', { targetTimestamp }) } catch {}
+        try {
+            console.log('[haiVELO][findBlockByTs] start', { targetTimestamp })
+        } catch {
+            // Ignore errors
+        }
 
         // Exact cache hit
         if (__blockByTsCache.has(targetTimestamp)) {
             const cached = __blockByTsCache.get(targetTimestamp) as number
-            try { console.log('[haiVELO][findBlockByTs] cache hit', { targetTimestamp, block: cached }) } catch {}
+            try {
+                console.log('[haiVELO][findBlockByTs] cache hit', { targetTimestamp, block: cached })
+            } catch {
+                // Ignore errors
+            }
             return cached
         }
 
@@ -233,7 +257,18 @@ export async function findBlockNumberByTimestamp(targetTimestamp: number, rpcUrl
             }
 
             const end = Date.now()
-            try { console.log('[haiVELO][findBlockByTs]', { targetTimestamp, latest: latest.number, estimate, result: blockNum, iterations, durationMs: end - start }) } catch {}
+            try {
+                console.log('[haiVELO][findBlockByTs]', {
+                    targetTimestamp,
+                    latest: latest.number,
+                    estimate,
+                    result: blockNum,
+                    iterations,
+                    durationMs: end - start,
+                })
+            } catch {
+                // Ignore errors
+            }
 
             __blockByTsCache.set(targetTimestamp, blockNum)
             return blockNum
@@ -255,11 +290,17 @@ export async function fetchHaiVeloTotalsAtBlock(blockNumber: number): Promise<{ 
     const t0 = Date.now()
     try {
         console.log('[haiVELO][fetchHaiVeloTotalsAtBlock] start', { blockNumber })
-    } catch {}
+    } catch {
+        // Ignore errors
+    }
     const QUERY = gql`
         query GetHaiVeloTotalsAtBlock($block: Block_height) {
-            v1: collateralType(id: "HAIVELO", block: $block) { totalCollateral }
-            v2: collateralType(id: "HAIVELOV2", block: $block) { totalCollateral }
+            v1: collateralType(id: "HAIVELO", block: $block) {
+                totalCollateral
+            }
+            v2: collateralType(id: "HAIVELOV2", block: $block) {
+                totalCollateral
+            }
         }
     `
 
@@ -273,41 +314,80 @@ export async function fetchHaiVeloTotalsAtBlock(blockNumber: number): Promise<{ 
     const t1 = Date.now()
     try {
         console.log('[haiVELO][fetchHaiVeloTotalsAtBlock]', { blockNumber, v1Total, v2Total, durationMs: t1 - t0 })
-    } catch {}
+    } catch {
+        // Ignore errors
+    }
     return { v1Total, v2Total }
 }
 
-const __hvEpochTotalsCache: Map<string, { ts: number; block: number; v1Total: number; v2Total: number; fetchedAt: number }> = new Map()
+const __hvEpochTotalsCache: Map<
+    string,
+    { ts: number; block: number; v1Total: number; v2Total: number; fetchedAt: number }
+> = new Map()
 
-export async function getLastEpochHaiVeloTotals(rpcUrl?: string): Promise<{ ts: number; blockNumber: number; v1Total: number; v2Total: number } | null> {
+export async function getLastEpochHaiVeloTotals(
+    rpcUrl?: string
+): Promise<{ ts: number; blockNumber: number; v1Total: number; v2Total: number } | null> {
     const cacheKey = 'haivelo:lastEpochTotals'
     const cached = __hvEpochTotalsCache.get(cacheKey)
     const now = Date.now()
-    try { console.log('[haiVELO][lastEpochTotals] start', { rpcUrl }) } catch {}
+    try {
+        console.log('[haiVELO][lastEpochTotals] start', { rpcUrl })
+    } catch {
+        // Ignore errors
+    }
     if (cached && now - cached.fetchedAt < 5 * 60 * 1000) {
-        try { console.log('[haiVELO][lastEpochTotals] cache hit', { v1Total: cached.v1Total, v2Total: cached.v2Total, block: cached.block, updatedAt: cached.ts }) } catch {}
+        try {
+            console.log('[haiVELO][lastEpochTotals] cache hit', {
+                v1Total: cached.v1Total,
+                v2Total: cached.v2Total,
+                block: cached.block,
+                updatedAt: cached.ts,
+            })
+        } catch {
+            // Ignore errors
+        }
         return { ts: cached.ts, blockNumber: cached.block, v1Total: cached.v1Total, v2Total: cached.v2Total }
     }
 
     // Fetch latest merkle root timestamp (ordered desc, minimal payload)
     const MERKLE_ROOTS_QUERY = gql`
-        query GetLatestMerkleRoot { merkleRoots(orderBy: updatedAt, orderDirection: desc, first: 1) { updatedAt } }
+        query GetLatestMerkleRoot {
+            merkleRoots(orderBy: updatedAt, orderDirection: desc, first: 1) {
+                updatedAt
+            }
+        }
     `
     try {
         const tStart = Date.now()
         const tMerkle0 = Date.now()
-        try { console.log('[haiVELO][lastEpochTotals] fetching latest merkle root') } catch {}
-        const { data } = await client.query<{ merkleRoots: Array<{ updatedAt: string }> }>({ query: MERKLE_ROOTS_QUERY, fetchPolicy: 'network-only' })
+        try {
+            console.log('[haiVELO][lastEpochTotals] fetching latest merkle root')
+        } catch {
+            // Ignore errors
+        }
+        const { data } = await client.query<{ merkleRoots: Array<{ updatedAt: string }> }>({
+            query: MERKLE_ROOTS_QUERY,
+            fetchPolicy: 'network-only',
+        })
         const tMerkle1 = Date.now()
         const ts = Number(data?.merkleRoots?.[0]?.updatedAt || 0)
         if (!ts) return null
         const tFind0 = Date.now()
-        try { console.log('[haiVELO][lastEpochTotals] resolving block by timestamp', { ts }) } catch {}
+        try {
+            console.log('[haiVELO][lastEpochTotals] resolving block by timestamp', { ts })
+        } catch {
+            // Ignore errors
+        }
         const blockNumber = await findBlockNumberByTimestamp(ts, rpcUrl)
         const tFind1 = Date.now()
         if (!blockNumber || blockNumber <= 0) return null
         const tTotals0 = Date.now()
-        try { console.log('[haiVELO][lastEpochTotals] fetching totals at block', { blockNumber }) } catch {}
+        try {
+            console.log('[haiVELO][lastEpochTotals] fetching totals at block', { blockNumber })
+        } catch {
+            // Ignore errors
+        }
         const { v1Total, v2Total } = await fetchHaiVeloTotalsAtBlock(blockNumber)
         const tTotals1 = Date.now()
         __hvEpochTotalsCache.set(cacheKey, { ts, block: blockNumber, v1Total, v2Total, fetchedAt: now })
@@ -325,7 +405,9 @@ export async function getLastEpochHaiVeloTotals(rpcUrl?: string): Promise<{ ts: 
                     totalsMs: tTotals1 - tTotals0,
                 },
             })
-        } catch {}
+        } catch {
+            // Ignore errors
+        }
         return { ts, blockNumber, v1Total, v2Total }
     } catch {
         return null
@@ -336,7 +418,9 @@ function getProvider(rpcUrl?: string) {
     return new ethers.providers.JsonRpcProvider(rpcUrl || VITE_MAINNET_PUBLIC_RPC)
 }
 
-export async function fetchV2Totals(rpcUrl?: string): Promise<{ totalSupplyRaw: string; totalSupplyFormatted: string; decimals: number }> {
+export async function fetchV2Totals(
+    rpcUrl?: string
+): Promise<{ totalSupplyRaw: string; totalSupplyFormatted: string; decimals: number }> {
     const provider = getProvider(rpcUrl)
     const contract = new ethers.Contract(HAI_VELO_V2_TOKEN_ADDRESS, ERC20_MIN_ABI, provider)
     const [totalSupply, decimals]: [BigNumber, number] = await Promise.all([
@@ -350,36 +434,41 @@ export async function fetchV2Totals(rpcUrl?: string): Promise<{ totalSupplyRaw: 
     }
 }
 
-export async function fetchV2UserBalance(address: string, rpcUrl?: string): Promise<{ raw: string; formatted: string; decimals: number }> {
+export async function fetchV2UserBalance(
+    address: string,
+    rpcUrl?: string
+): Promise<{ raw: string; formatted: string; decimals: number }> {
     const provider = getProvider(rpcUrl)
     const contract = new ethers.Contract(HAI_VELO_V2_TOKEN_ADDRESS, ERC20_MIN_ABI, provider)
-    const [bal, decimals]: [BigNumber, number] = await Promise.all([
-        contract.balanceOf(address),
-        contract.decimals(),
-    ])
+    const [bal, decimals]: [BigNumber, number] = await Promise.all([contract.balanceOf(address), contract.decimals()])
     return { raw: bal.toString(), formatted: ethers.utils.formatUnits(bal, decimals), decimals }
 }
 
 // Optional helpers mirroring HaiVeloProvider on-chain reads
-export async function fetchVeloBalance(address: string, rpcUrl?: string): Promise<{ raw: string; formatted: string; decimals: number }> {
+export async function fetchVeloBalance(
+    address: string,
+    rpcUrl?: string
+): Promise<{ raw: string; formatted: string; decimals: number }> {
     const provider = getProvider(rpcUrl)
     const contract = new ethers.Contract(VELO_TOKEN_ADDRESS, ERC20_MIN_ABI, provider)
-    const [bal, decimals]: [BigNumber, number] = await Promise.all([
-        contract.balanceOf(address),
-        contract.decimals(),
-    ])
+    const [bal, decimals]: [BigNumber, number] = await Promise.all([contract.balanceOf(address), contract.decimals()])
     return { raw: bal.toString(), formatted: ethers.utils.formatUnits(bal, decimals), decimals }
 }
 
 export type VeNftInfo = { tokenId: string; balance: string; balanceFormatted: string }
 
-export async function fetchVeNftsForOwner(address: string, rpcUrl?: string): Promise<{ totalRaw: string; totalFormatted: string; nfts: VeNftInfo[] }> {
+export async function fetchVeNftsForOwner(
+    address: string,
+    rpcUrl?: string
+): Promise<{ totalRaw: string; totalFormatted: string; nfts: VeNftInfo[] }> {
     const provider = getProvider(rpcUrl)
     const contract = new ethers.Contract(VE_NFT_CONTRACT_ADDRESS, VE_NFT_ABI, provider)
     const count: BigNumber = await contract.balanceOf(address)
     if (count.isZero()) return { totalRaw: '0', totalFormatted: '0', nfts: [] }
     const size = count.toNumber()
-    const tokenIds: BigNumber[] = await Promise.all(Array.from({ length: size }, (_, i) => contract.ownerToNFTokenIdList(address, i)))
+    const tokenIds: BigNumber[] = await Promise.all(
+        Array.from({ length: size }, (_, i) => contract.ownerToNFTokenIdList(address, i))
+    )
     // Use locked amount (VELO locked in the veNFT), not voting power
     const lockedInfos: Array<{ amount: BigNumber; end: BigNumber }> = await Promise.all(
         tokenIds.map(async (id) => {
@@ -401,5 +490,3 @@ export async function fetchVeNftsForOwner(address: string, rpcUrl?: string): Pro
         })),
     }
 }
-
-

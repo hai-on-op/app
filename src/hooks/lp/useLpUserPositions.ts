@@ -1,5 +1,4 @@
 import { useMemo } from 'react'
-import { useQuery } from '@tanstack/react-query'
 import type { UserPosition } from './useLpUserPositionsMap'
 import { useLpAllPositions } from './useLpAllPositions'
 
@@ -20,5 +19,3 @@ export function useLpUserPositions(address?: string) {
         error,
     }
 }
-
-

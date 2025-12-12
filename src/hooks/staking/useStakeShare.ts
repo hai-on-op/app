@@ -5,11 +5,7 @@ import { useStakeStats } from './useStakeStats'
 import { useStakeEffectiveBalance } from './useStakeEffectiveBalance'
 import { formatNumberWithStyle } from '~/utils'
 
-export function useStakeShare(
-    address?: Address,
-    namespace: string = 'kite',
-    service = defaultStakingService
-) {
+export function useStakeShare(address?: Address, namespace: string = 'kite', service = defaultStakingService) {
     const { data: stats, isLoading: statsLoading } = useStakeStats(namespace, service)
     const { loading: effLoading, value: mine } = useStakeEffectiveBalance(address, namespace, service)
     const loading = statsLoading || effLoading
@@ -31,5 +27,3 @@ export function useStakeShare(
     )
     return { loading, value, percentage }
 }
-
-

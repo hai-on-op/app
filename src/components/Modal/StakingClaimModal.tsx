@@ -1,7 +1,7 @@
 import { useStoreActions, useStoreState } from '~/store'
 import { Modal } from '.'
 import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
-import { ActionState, formatNumberWithStyle, tokenMap , tokenAssets } from '~/utils'
+import { ActionState, formatNumberWithStyle, tokenMap, tokenAssets } from '~/utils'
 import styled from 'styled-components'
 import { ContentWithStatus } from '../ContentWithStatus'
 import { handleTransactionError, useEthersSigner } from '~/hooks'

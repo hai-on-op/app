@@ -17,7 +17,7 @@ export function ManageDropdown(props: FlexProps) {
         vaultModel: { list },
     } = useStoreState((state) => state)
 
-    const { vault, setActiveVault, updateForm, collateral } = useVault()
+    const { vault, setActiveVault, collateral } = useVault()
 
     const { label, options } = useMemo(() => {
         const symbols = Object.values(tokensData || {})
@@ -39,11 +39,15 @@ export function ManageDropdown(props: FlexProps) {
         return {
             label: (
                 <CenteredFlex $gap={8}>
-                    <Text style={{ 
-                        wordBreak: 'break-word',
-                        whiteSpace: 'normal',
-                        lineHeight: '1.2',
-                    }}>{collateral.name}</Text>
+                    <Text
+                        style={{
+                            wordBreak: 'break-word',
+                            whiteSpace: 'normal',
+                            lineHeight: '1.2',
+                        }}
+                    >
+                        {collateral.name}
+                    </Text>
                     {!!vault && <Text $fontWeight={400}>#{vault.id}</Text>}
                     <Text>•</Text>
                     {vault ? (
@@ -93,7 +97,7 @@ export function ManageDropdown(props: FlexProps) {
                 return options
             }, [] as ReactChildren[]),
         }
-    }, [vault, setActiveVault, updateForm, collateral, tokensData])
+    }, [vault, setActiveVault, collateral, tokensData, list])
 
     if (vault && !list.length) return null
 

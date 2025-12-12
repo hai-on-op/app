@@ -17,26 +17,26 @@ type TokenArrayProps = {
 }
 
 export function TokenArray({ tokens, size = 32, label, hideLabel = false }: TokenArrayProps) {
-    const tokenBg = (token: string) => {
-        switch (token) {
-            case 'MOO-VELO-V2-OP-VELO':
-                return 'white'
-            case 'VELO':
-                return 'white'
-            case 'APXETH':
-                return 'black'
-            case 'PXETH':
-                return 'black'
-            case 'TBTC':
-                return 'black'
-            case 'LINK':
-                return '#335DD2'
-            case 'ALETH':
-                return '#eecabc'
-            default:
-                return 'greenish'
-        }
-    }
+    // const tokenBg = (token: string) => {
+    //     switch (token) {
+    //         case 'MOO-VELO-V2-OP-VELO':
+    //             return 'white'
+    //         case 'VELO':
+    //             return 'white'
+    //         case 'APXETH':
+    //             return 'black'
+    //         case 'PXETH':
+    //             return 'black'
+    //         case 'TBTC':
+    //             return 'black'
+    //         case 'LINK':
+    //             return '#335DD2'
+    //         case 'ALETH':
+    //             return '#eecabc'
+    //         default:
+    //             return 'greenish'
+    //     }
+    // }
 
     const containerContent = (
         <>
@@ -104,7 +104,9 @@ export function TokenArray({ tokens, size = 32, label, hideLabel = false }: Toke
                     </div>
                 </div>
             )}
-            {tokens[0] == 'YV-VELO-ALETH-WETH' || tokens[0] == 'YV-VELO-MSETH-WETH' || tokens[0] == 'MOO-VELO-BOLD-LUSD' ? (
+            {tokens[0] == 'YV-VELO-ALETH-WETH' ||
+            tokens[0] == 'YV-VELO-MSETH-WETH' ||
+            tokens[0] == 'MOO-VELO-BOLD-LUSD' ? (
                 <>{containerContent}</>
             ) : (
                 <IconContainer $size={size}>{containerContent}</IconContainer>
@@ -114,10 +116,10 @@ export function TokenArray({ tokens, size = 32, label, hideLabel = false }: Toke
                     {tokens[0] == 'YV-VELO-ALETH-WETH'
                         ? 'yvVelo-alETH-WETH'
                         : tokens[0] == 'YV-VELO-MSETH-WETH'
-                            ? 'yvVelo-msETH-WETH'
-                            : tokens[0] == 'MOO-VELO-BOLD-LUSD'
-                                ? 'mooVelo-BOLD-LUSD'
-                            : label || (tokens.length === 1 ? tokens[0] : `${tokens[0]}/${tokens[1]}`)}
+                        ? 'yvVelo-msETH-WETH'
+                        : tokens[0] == 'MOO-VELO-BOLD-LUSD'
+                        ? 'mooVelo-BOLD-LUSD'
+                        : label || (tokens.length === 1 ? tokens[0] : `${tokens[0]}/${tokens[1]}`)}
                 </Text>
             )}
         </Flex>
@@ -191,15 +193,15 @@ export function CyclingTokenArray({ size = 32, tokens, includeProtocolTokens = f
 
     const icons = tokens
         ? tokens.map((token) => ({
-            icon: TOKEN_LOGOS[token],
-            bg: token === 'KITE' ? '#eecabc' : 'greenish',
-        }))
+              icon: TOKEN_LOGOS[token],
+              bg: token === 'KITE' ? '#eecabc' : 'greenish',
+          }))
         : Object.values(tokensData || {})
-            .filter(({ isCollateral }) => includeProtocolTokens || isCollateral)
-            .map(({ symbol }) => ({
-                icon: TOKEN_LOGOS[symbol as TokenKey],
-                bg: symbol === 'KITE' ? '#eecabc' : 'greenish',
-            }))
+              .filter(({ isCollateral }) => includeProtocolTokens || isCollateral)
+              .map(({ symbol }) => ({
+                  icon: TOKEN_LOGOS[symbol as TokenKey],
+                  bg: symbol === 'KITE' ? '#eecabc' : 'greenish',
+              }))
 
     return <IconCycler size={size} icons={icons} />
 }

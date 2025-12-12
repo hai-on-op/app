@@ -79,8 +79,7 @@ export function useTokenApproval(
     tokenAddress?: string,
     spender?: string,
     decimals: string = '18',
-    exactApproval: boolean = false,
-    isRepayAll?: boolean
+    exactApproval: boolean = false
 ): [ApprovalState, () => Promise<void>] {
     const { popupsModel: popupsActions, transactionsModel: transactionsActions } = useStoreActions((actions) => actions)
 
@@ -111,7 +110,7 @@ export function useTokenApproval(
         // } else {
         //     return approvalAmount
         // }
-    }, [amount, tokenDecimals, isRepayAll])
+    }, [amount, tokenDecimals])
 
     // check the current approval status
     const approvalState: ApprovalState = useMemo(() => {
@@ -141,7 +140,7 @@ export function useTokenApproval(
         console.log('currentAllowance.lt(approvalAmount):', needsApproval)
         console.log('currentAllowance:', currentAllowance.toString())
         console.log('approvalAmount:', approvalAmount.toString())
-        
+
         if (needsApproval) {
             if (pendingAllowance || loading) {
                 console.log('RESULT: PENDING')
@@ -150,7 +149,7 @@ export function useTokenApproval(
             console.log('RESULT: NOT_APPROVED')
             return ApprovalState.NOT_APPROVED
         }
-        
+
         console.log('RESULT: APPROVED (allowance >= amount needed)')
         return ApprovalState.APPROVED
     }, [amount, tokenAddress, spender, geb, currentAllowance, approvalAmount, pendingAllowance, loading])
@@ -231,7 +230,18 @@ export function useTokenApproval(
         } finally {
             setLoading(false)
         }
-    }, [approvalState, tokenAddress, tokenContract, amount, spender, exactApproval, approvalAmount, updateAllowance])
+    }, [
+        approvalState,
+        tokenAddress,
+        tokenContract,
+        amount,
+        spender,
+        exactApproval,
+        approvalAmount,
+        updateAllowance,
+        popupsActions,
+        transactionsActions,
+    ])
 
     return [approvalState, approve]
 }

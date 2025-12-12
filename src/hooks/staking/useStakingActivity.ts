@@ -126,4 +126,3 @@ export function useStakingActivity(config?: StakingConfig) {
         loading: query.isLoading,
     }
 }
-

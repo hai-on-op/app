@@ -13,12 +13,8 @@ describe('haiBoldCurveLpConfig', () => {
         expect(haiBoldCurveLpConfig.addresses.stakeToken.toLowerCase()).toBe(
             '0xc4ea2ed83bc9207398fa5db31ee4e7477dc34fd5'
         )
-        expect(haiBoldCurveLpConfig.addresses.stToken.toLowerCase()).toBe(
-            '0xcB7E5bb21b714991bdc6B07Be36Cb897cdd1980F'
-        )
-        expect(haiBoldCurveLpConfig.addresses.manager.toLowerCase()).toBe(
-            '0xd8417eb963361d7b80648fd9f153c4ff9ca2a9cf'
-        )
+        expect(haiBoldCurveLpConfig.addresses.stToken.toLowerCase()).toBe('0xcb7e5bb21b714991bdc6b07be36cb897cdd1980f')
+        expect(haiBoldCurveLpConfig.addresses.manager.toLowerCase()).toBe('0x70bf153870e405097eeec57d0b800fe7ee279e93')
     })
 
     it('has expected decimals and subgraph metadata', () => {
@@ -31,5 +27,3 @@ describe('haiBoldCurveLpConfig', () => {
         expect(haiBoldCurveLpConfig.subgraph.idForStats()).toBe('singleton')
     })
 })
-
-

@@ -27,9 +27,15 @@ function Comp({ address }: { address: `0x${string}` }) {
 describe('useStakingSummaryV2', () => {
     it('composes values and simulates correctly', async () => {
         vi.spyOn(statsHook, 'useStakeStats').mockReturnValue({ data: { totalStaked: '100' }, isLoading: false } as any)
-        vi.spyOn(accountHook, 'useStakeAccount').mockReturnValue({ data: { stakedBalance: '10' }, isLoading: false } as any)
+        vi.spyOn(accountHook, 'useStakeAccount').mockReturnValue({
+            data: { stakedBalance: '10' },
+            isLoading: false,
+        } as any)
         vi.spyOn(aprHook, 'useStakeApr').mockReturnValue({ loading: false, value: 1234, formatted: '12.34%' } as any)
-        vi.spyOn(pricesHook, 'useStakePrices').mockReturnValue({ data: { kitePrice: 2, haiPrice: 1, opPrice: 1 }, loading: false } as any)
+        vi.spyOn(pricesHook, 'useStakePrices').mockReturnValue({
+            data: { kitePrice: 2, haiPrice: 1, opPrice: 1 },
+            loading: false,
+        } as any)
         vi.spyOn(effHook, 'useStakeEffectiveBalance').mockReturnValue({ loading: false, value: 8 } as any)
         vi.spyOn(shareHook, 'useStakeShare').mockReturnValue({ loading: false, value: 8, percentage: '8%' } as any)
         vi.spyOn(boostHook, 'useBoost').mockReturnValue({
@@ -39,7 +45,7 @@ describe('useStakingSummaryV2', () => {
             hvBoost: 1,
             haiMintingBoost: 1,
             haiMintingPositionValue: 0,
-            simulateNetBoost: (u: number, t: number) => 1.23,
+            simulateNetBoost: () => 1.23,
             netBoostValue: 1.23,
             haiVeloPositionValue: 0,
             loading: false,
@@ -53,5 +59,3 @@ describe('useStakingSummaryV2', () => {
         expect(screen.getByTestId('share').textContent).toBe('8%')
     })
 })
-
-
