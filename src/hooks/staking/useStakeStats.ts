@@ -21,5 +21,3 @@ export function useStakeStats(namespace: string = 'kite', service = defaultStaki
         staleTime: 15_000,
     })
 }
-
-

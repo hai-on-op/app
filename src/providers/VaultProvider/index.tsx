@@ -139,7 +139,7 @@ export function VaultProvider({ action, setAction, children }: Props) {
                     : `/vaults/manage${vault?.id ? `?id=${vault.id}` : ''}`
             )
         },
-        [history.push]
+        [history]
     )
 
     const [formState, updateForm] = useReducer((previous: FormState, update: Partial<FormState> | 'clear') => {
@@ -276,7 +276,7 @@ export function VaultProvider({ action, setAction, children }: Props) {
             collateralRatio: parseFloat(collateralRatio),
             liquidationPrice: parseFloat(liquidationPrice),
         })
-    }, [collateral.total, debt.total, collateralRatio, liquidationPrice])
+    }, [collateral.total, debt.total, collateralRatio, liquidationPrice, vaultActions])
 
     return (
         <VaultContext.Provider

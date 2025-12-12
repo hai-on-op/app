@@ -9,7 +9,6 @@ import { store } from '~/store'
 import { ThemeProvider } from 'styled-components'
 import { darkTheme } from '~/styles/themes'
 
-
 export function createTestQueryClient() {
     const client = new QueryClient({
         defaultOptions: {
@@ -32,7 +31,7 @@ export function renderWithProviders(ui: React.ReactElement, client = createTestQ
     const testWagmiConfig = createConfig({ autoConnect: false, connectors: [], publicClient })
     // Polyfill matchMedia for components using useMediaQuery
     if (!(global as any).window.matchMedia) {
-        (global as any).window.matchMedia = () => ({
+        ;(global as any).window.matchMedia = () => ({
             matches: false,
             addListener: () => {},
             removeListener: () => {},
@@ -57,5 +56,3 @@ export function renderWithProviders(ui: React.ReactElement, client = createTestQ
         ...render(ui, { wrapper: Wrapper }),
     }
 }
-
-

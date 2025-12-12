@@ -41,9 +41,8 @@ export function buildStakingService(
                 if (poolData.isActive) activeIndexes.push(i)
             }
 
-            const earned: Array<{ rewardToken: Address; rewardAmount: BigNumber }> = await sm(provider).callStatic.earned(
-                address
-            )
+            const earned: Array<{ rewardToken: Address; rewardAmount: BigNumber }> =
+                await sm(provider).callStatic.earned(address)
 
             const aggregated: Record<string, BigNumber> = {}
             for (const idx of activeIndexes) {
@@ -140,10 +139,7 @@ export async function getRewards(address: Address, provider: Provider): Promise<
     return defaultStakingService.getRewards(address, provider)
 }
 
-export async function getPendingWithdrawal(
-    _address: Address,
-    _provider: Provider
-): Promise<PendingWithdrawal | null> {
+export async function getPendingWithdrawal(_address: Address, _provider: Provider): Promise<PendingWithdrawal | null> {
     return defaultStakingService.getPendingWithdrawal(_address, _provider)
 }
 
@@ -169,5 +165,3 @@ export async function cancelWithdrawal(signer: any): Promise<TxResponse> {
 export async function claimRewards(signer: any): Promise<TxResponse> {
     return defaultStakingService.claimRewards(signer)
 }
-
-

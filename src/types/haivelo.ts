@@ -44,5 +44,3 @@ export type HaiVeloAPR = {
     boostedApr: number
     breakdown: Array<{ source: string; apr: number; description?: string }>
 }
-
-

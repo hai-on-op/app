@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState, type ReactNode, useCallback } from 'react'
+import { createContext, useContext, useMemo, useState, type ReactNode } from 'react'
 import { useAccount } from 'wagmi'
 import { useBalance } from '~/hooks/useBalance'
 import { formatNumberWithStyle } from '~/utils'
@@ -71,7 +71,8 @@ export function HaiVeloProvider({ children }: { children: ReactNode }) {
     const formattedData = useMemo(() => {
         const veloFormatted = velo.formatted || '0'
         const veVeloFormatted = veNft.totalFormatted || '0'
-        const totalVeloLike = parseFloat(veloFormatted) + parseFloat(veVeloFormatted) + parseFloat(haiVeloV1?.raw || '0')
+        const totalVeloLike =
+            parseFloat(veloFormatted) + parseFloat(veVeloFormatted) + parseFloat(haiVeloV1?.raw || '0')
         const totalFormatted = formatNumberWithStyle(totalVeloLike, { maxDecimals: 2 })
 
         return {
@@ -87,7 +88,11 @@ export function HaiVeloProvider({ children }: { children: ReactNode }) {
         error: isError ? new Error('Failed to load haiVELO account') : undefined,
         veloBalance: velo.raw || '0',
         veVeloBalance: veNft.totalRaw || '0',
-        veVeloNFTs: (veNft.nfts || []).map((n) => ({ tokenId: n.tokenId, balance: n.balance, balanceFormatted: n.balanceFormatted })),
+        veVeloNFTs: (veNft.nfts || []).map((n) => ({
+            tokenId: n.tokenId,
+            balance: n.balance,
+            balanceFormatted: n.balanceFormatted,
+        })),
         ...formattedData,
         haiVeloV1Balance: haiVeloV1?.e18 || '0',
         haiVeloV1BalanceFormatted: haiVeloV1?.raw || '0',
@@ -147,4 +152,3 @@ export function useHaiVelo(): HaiVeloContextValue {
     if (!ctx) throw new Error('useHaiVelo must be used within HaiVeloProvider')
     return ctx
 }
-

@@ -6,22 +6,22 @@ import StakingManagerABI from '~/abis/StakingManager.json'
 import RewardPoolABI from '~/abis/RewardPool.json'
 
 export interface RewardEmission {
-  token: string
-  emission: number | BigNumber
+    token: string
+    emission: number | BigNumber
 }
 
 export interface VaultReward {
-  [token: string]: number
+    [token: string]: number
 }
 
 export interface PoolReward {
-  [token: string]: number
+    [token: string]: number
 }
 
 export interface StakingApy {
-  id: number
-  rpRate: BigNumber
-  rpToken: string
+    id: number
+    rpRate: BigNumber
+    rpToken: string
 }
 
 export class RewardsModel {
@@ -30,16 +30,22 @@ export class RewardsModel {
     }
 
     static getPoolRewards(poolAddress: string): PoolReward {
-        return STATIC_REWARDS.velodrome[poolAddress.toLowerCase() as keyof typeof STATIC_REWARDS.velodrome] || STATIC_REWARDS.default
+        return (
+            STATIC_REWARDS.velodrome[poolAddress.toLowerCase() as keyof typeof STATIC_REWARDS.velodrome] ||
+            STATIC_REWARDS.default
+        )
     }
 
     static getUniswapRewards(poolAddress: string): PoolReward {
-        return STATIC_REWARDS.uniswap[poolAddress.toLowerCase() as keyof typeof STATIC_REWARDS.uniswap] || STATIC_REWARDS.default
+        return (
+            STATIC_REWARDS.uniswap[poolAddress.toLowerCase() as keyof typeof STATIC_REWARDS.uniswap] ||
+            STATIC_REWARDS.default
+        )
     }
 
     static getAllVaultsWithRewards(): string[] {
-        return Object.keys(STATIC_REWARDS.vaults).filter(
-            (vault) => Object.values(STATIC_REWARDS.vaults[vault as keyof typeof STATIC_REWARDS.vaults] || {}).some((a) => a !== 0)
+        return Object.keys(STATIC_REWARDS.vaults).filter((vault) =>
+            Object.values(STATIC_REWARDS.vaults[vault as keyof typeof STATIC_REWARDS.vaults] || {}).some((a) => a !== 0)
         )
     }
 
@@ -47,9 +53,9 @@ export class RewardsModel {
         stakingManagerAddress,
         providerOrSigner,
     }: {
-    stakingManagerAddress: string
-    providerOrSigner: JsonRpcSigner | Provider
-  }): Promise<StakingApy[]> {
+        stakingManagerAddress: string
+        providerOrSigner: JsonRpcSigner | Provider
+    }): Promise<StakingApy[]> {
         const stakingManager = new Contract(stakingManagerAddress, StakingManagerABI, providerOrSigner)
         const rewardsCountBigNum: BigNumber = await stakingManager.rewards()
         const rewardsCount = rewardsCountBigNum.toNumber()
@@ -76,11 +82,11 @@ export class RewardsModel {
         haiTokenAddress,
         rpcUrl,
     }: {
-    haiVeloDepositer: string
-    rewardDistributor: string
-    haiTokenAddress: string
-    rpcUrl: string
-  }): Promise<number> {
+        haiVeloDepositer: string
+        rewardDistributor: string
+        haiTokenAddress: string
+        rpcUrl: string
+    }): Promise<number> {
         try {
             const response = await axios.post(rpcUrl, {
                 jsonrpc: '2.0',
@@ -111,4 +117,4 @@ export class RewardsModel {
             return 0
         }
     }
-} 
+}

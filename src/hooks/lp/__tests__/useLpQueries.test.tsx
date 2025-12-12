@@ -90,8 +90,28 @@ describe('LP read-only queries', () => {
 
     it('useLpUserPositions filters by owner address', async () => {
         vi.spyOn(lpService, 'fetchAllActivePositions').mockResolvedValue([
-			{ id: 'p1', liquidity: '1', depositedToken0: '0', depositedToken1: '0', withdrawnToken0: '0', withdrawnToken1: '0', tickLower: { tickIdx: '0' }, tickUpper: { tickIdx: '1' }, owner: '0xabc' } as any,
-			{ id: 'p2', liquidity: '2', depositedToken0: '0', depositedToken1: '0', withdrawnToken0: '0', withdrawnToken1: '0', tickLower: { tickIdx: '0' }, tickUpper: { tickIdx: '1' }, owner: '0xdef' } as any,
+            {
+                id: 'p1',
+                liquidity: '1',
+                depositedToken0: '0',
+                depositedToken1: '0',
+                withdrawnToken0: '0',
+                withdrawnToken1: '0',
+                tickLower: { tickIdx: '0' },
+                tickUpper: { tickIdx: '1' },
+                owner: '0xabc',
+            } as any,
+            {
+                id: 'p2',
+                liquidity: '2',
+                depositedToken0: '0',
+                depositedToken1: '0',
+                withdrawnToken0: '0',
+                withdrawnToken1: '0',
+                tickLower: { tickIdx: '0' },
+                tickUpper: { tickIdx: '1' },
+                owner: '0xdef',
+            } as any,
         ] as any)
 
         renderWithProviders(<UserPosComp address={'0xAbC'} />)
@@ -99,5 +119,3 @@ describe('LP read-only queries', () => {
         expect(screen.getByTestId('user-count').textContent).toBe('1')
     })
 })
-
-

@@ -60,11 +60,17 @@ export function Approvals({ items, onAllApproved }: ApprovalsProps) {
 
     // ERC20 Approvals (one hook per token)
     const veloItem = useMemo(
-        () => items.find((i) => i.kind === 'ERC20' && i.label === 'VELO') as Extract<HaiVeloApprovalItem, { kind: 'ERC20' }> | undefined,
+        () =>
+            items.find((i) => i.kind === 'ERC20' && i.label === 'VELO') as
+                | Extract<HaiVeloApprovalItem, { kind: 'ERC20' }>
+                | undefined,
         [items]
     )
     const haiVeloItem = useMemo(
-        () => items.find((i) => i.kind === 'ERC20' && i.label === 'haiVELO v1') as Extract<HaiVeloApprovalItem, { kind: 'ERC20' }> | undefined,
+        () =>
+            items.find((i) => i.kind === 'ERC20' && i.label === 'haiVELO v1') as
+                | Extract<HaiVeloApprovalItem, { kind: 'ERC20' }>
+                | undefined,
         [items]
     )
 
@@ -85,7 +91,9 @@ export function Approvals({ items, onAllApproved }: ApprovalsProps) {
 
     // ERC721 single-token approval handling
     const nftContract = useContract<Contract>(
-        currentItem?.kind === 'ERC721_TOKEN' || currentItem?.kind === 'ERC721_COLLECTION' ? currentItem.nftAddress : undefined,
+        currentItem?.kind === 'ERC721_TOKEN' || currentItem?.kind === 'ERC721_COLLECTION'
+            ? currentItem.nftAddress
+            : undefined,
         ERC721_APPROVAL_ABI,
         true
     )
@@ -133,7 +141,9 @@ export function Approvals({ items, onAllApproved }: ApprovalsProps) {
                 status: ActionState.LOADING,
             })
             const gas = await nftContract.estimateGas.approve(currentItem.spender, currentItem.tokenId)
-            const tx = await nftContract.approve(currentItem.spender, currentItem.tokenId, { gasLimit: gas.mul(12).div(10) })
+            const tx = await nftContract.approve(currentItem.spender, currentItem.tokenId, {
+                gasLimit: gas.mul(12).div(10),
+            })
             await tx.wait()
             await refreshNftApproval()
         } catch (e) {
@@ -201,7 +211,8 @@ export function Approvals({ items, onAllApproved }: ApprovalsProps) {
         if (isCurrentApproved) return <CheckCircle width="40px" className={ActionState.SUCCESS} />
         if (currentItem.kind === 'ERC20') {
             if (currentItem.label === 'VELO' && veloApprovalState === ApprovalState.PENDING) return <Loader size={40} />
-            if (currentItem.label === 'haiVELO v1' && haiVeloApprovalState === ApprovalState.PENDING) return <Loader size={40} />
+            if (currentItem.label === 'haiVELO v1' && haiVeloApprovalState === ApprovalState.PENDING)
+                return <Loader size={40} />
         }
         if ((currentItem.kind === 'ERC721_TOKEN' || currentItem.kind === 'ERC721_COLLECTION') && nftPending) {
             return <Loader size={40} />
@@ -216,7 +227,13 @@ export function Approvals({ items, onAllApproved }: ApprovalsProps) {
             if (currentItem.label === 'VELO') {
                 const disabled = veloApprovalState === ApprovalState.PENDING
                 return (
-                    <HaiButton $variant="yellowish" $width="100%" $justify="center" disabled={disabled} onClick={requestVeloApprove}>
+                    <HaiButton
+                        $variant="yellowish"
+                        $width="100%"
+                        $justify="center"
+                        disabled={disabled}
+                        onClick={requestVeloApprove}
+                    >
                         {disabled ? 'Pending Approval..' : `Approve ${currentItem.label}`}
                     </HaiButton>
                 )
@@ -224,7 +241,13 @@ export function Approvals({ items, onAllApproved }: ApprovalsProps) {
             if (currentItem.label === 'haiVELO v1') {
                 const disabled = haiVeloApprovalState === ApprovalState.PENDING
                 return (
-                    <HaiButton $variant="yellowish" $width="100%" $justify="center" disabled={disabled} onClick={requestHaiVeloApprove}>
+                    <HaiButton
+                        $variant="yellowish"
+                        $width="100%"
+                        $justify="center"
+                        disabled={disabled}
+                        onClick={requestHaiVeloApprove}
+                    >
                         {disabled ? 'Pending Approval..' : `Approve ${currentItem.label}`}
                     </HaiButton>
                 )
@@ -235,7 +258,13 @@ export function Approvals({ items, onAllApproved }: ApprovalsProps) {
         if (currentItem.kind === 'ERC721_TOKEN') {
             const disabled = nftPending
             return (
-                <HaiButton $variant="yellowish" $width="100%" $justify="center" disabled={disabled} onClick={approveNft}>
+                <HaiButton
+                    $variant="yellowish"
+                    $width="100%"
+                    $justify="center"
+                    disabled={disabled}
+                    onClick={approveNft}
+                >
                     {disabled ? 'Pending Approval..' : `Approve ${currentItem.label}`}
                 </HaiButton>
             )
@@ -244,7 +273,13 @@ export function Approvals({ items, onAllApproved }: ApprovalsProps) {
         if (currentItem.kind === 'ERC721_COLLECTION') {
             const disabled = nftPending
             return (
-                <HaiButton $variant="yellowish" $width="100%" $justify="center" disabled={disabled} onClick={approveCollection}>
+                <HaiButton
+                    $variant="yellowish"
+                    $width="100%"
+                    $justify="center"
+                    disabled={disabled}
+                    onClick={approveCollection}
+                >
                     {disabled ? 'Pending Approval..' : `Approve ${currentItem.label}`}
                 </HaiButton>
             )
@@ -301,4 +336,3 @@ const ImageContainer = styled(CenteredFlex).attrs((props) => ({
         }
     }
 `
-

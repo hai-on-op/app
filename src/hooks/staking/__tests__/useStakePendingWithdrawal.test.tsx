@@ -16,7 +16,7 @@ jest.mock('@apollo/client', () => {
     }
 })
 
-function TestComp({ qc }: { qc: QueryClient }) {
+function TestComp() {
     useStakePendingWithdrawal('kite', 'kite', '0xabc')
     return <div />
 }
@@ -26,7 +26,7 @@ describe('useStakePendingWithdrawal', () => {
         const qc = new QueryClient()
         render(
             <QueryClientProvider client={qc}>
-                <TestComp qc={qc} />
+                <TestComp />
             </QueryClientProvider>
         )
         await waitFor(() => {
@@ -36,5 +36,3 @@ describe('useStakePendingWithdrawal', () => {
         })
     })
 })
-
-

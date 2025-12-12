@@ -17,13 +17,29 @@ function Comp() {
 }
 
 describe('useHaiVeloAccount', () => {
-    beforeEach(() => { vi.resetAllMocks() })
-    afterEach(() => { vi.restoreAllMocks() })
+    beforeEach(() => {
+        vi.resetAllMocks()
+    })
+    afterEach(() => {
+        vi.restoreAllMocks()
+    })
 
     it('returns per-user balances across versions and assets', async () => {
-        vi.spyOn(dataSources, 'fetchV2UserBalance').mockResolvedValue({ raw: '1000000000000000000', formatted: '1', decimals: 18 } as any)
-        vi.spyOn(dataSources, 'fetchVeloBalance').mockResolvedValue({ raw: '500000000000000000', formatted: '0.5', decimals: 18 } as any)
-        vi.spyOn(dataSources, 'fetchVeNftsForOwner').mockResolvedValue({ totalRaw: '0', totalFormatted: '0', nfts: [] } as any)
+        vi.spyOn(dataSources, 'fetchV2UserBalance').mockResolvedValue({
+            raw: '1000000000000000000',
+            formatted: '1',
+            decimals: 18,
+        } as any)
+        vi.spyOn(dataSources, 'fetchVeloBalance').mockResolvedValue({
+            raw: '500000000000000000',
+            formatted: '0.5',
+            decimals: 18,
+        } as any)
+        vi.spyOn(dataSources, 'fetchVeNftsForOwner').mockResolvedValue({
+            totalRaw: '0',
+            totalFormatted: '0',
+            nfts: [],
+        } as any)
 
         renderWithProviders(<Comp />)
         await waitFor(() => expect(screen.queryByText('loading')).toBeNull())
@@ -31,5 +47,3 @@ describe('useHaiVeloAccount', () => {
         expect(screen.getByTestId('velo').textContent).toBe('0.5')
     })
 })
-
-

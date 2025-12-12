@@ -35,5 +35,3 @@ describe('boostService.computeVaultBoostApr', () => {
         expect(res.myBoostedAprPct).toBeCloseTo(res.baseAprPct * 3)
     })
 })
-
-

@@ -38,16 +38,11 @@ export function useVelodrome() {
         async () => {
             if (!velodromeSugarContract) throw new Error('No contract')
             // Single targeted call to avoid overlapping scans
-            const lps = (await velodromeSugarContract.all(
-                BigNumber.from(500),
-                BigNumber.from(800)
-            )) as any[]
+            const lps = (await velodromeSugarContract.all(BigNumber.from(500), BigNumber.from(800))) as any[]
             const targetTokens = [getAddress(HAI_ADDRESS), getAddress(KITE_ADDRESS)]
 
             // Base filter: pools that involve HAI or KITE by address (existing behavior)
-            const addressFiltered = lps.filter(
-                (lp) => targetTokens.includes(lp[7]) || targetTokens.includes(lp[10])
-            )
+            const addressFiltered = lps.filter((lp) => targetTokens.includes(lp[7]) || targetTokens.includes(lp[10]))
 
             // Additional filter: include haiVELO pools by symbol (e.g. HAIVELO/VELO, HAIVELOV2/VELO)
             const haiVeloSymbolFiltered = lps.filter((lp) => {

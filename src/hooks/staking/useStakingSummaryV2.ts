@@ -91,8 +91,12 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
     const { data: stats, isLoading: statsLoading } = useStakeStats(namespace, service)
     const { data: account, isLoading: accountLoading } = useStakeAccount(address, namespace, service)
     // Use standard APR for non-LP pools
-    const { loading: standardAprLoading, value: standardAprValue, formatted: standardAprFormatted } = useStakeApr(namespace, service)
-    
+    const {
+        loading: standardAprLoading,
+        value: standardAprValue,
+        formatted: standardAprFormatted,
+    } = useStakeApr(namespace, service)
+
     // Use LP-specific APR for Curve LP pools
     const lpApr = useLpStakingApr(config)
     const { data: prices, loading: pricesLoading } = useStakePrices()
@@ -119,10 +123,7 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
     const { prices: veloPrices, loading: velodromePricesLoading } = useVelodromePrices()
 
     // Curve LP price (e.g. HAI/BOLD LP on Optimism) via Curve API
-    const {
-        data: curveLpData,
-        isLoading: curveLpLoading,
-    } = useQuery<CurveLpTvlResult | null>({
+    const { data: curveLpData, isLoading: curveLpLoading } = useQuery<CurveLpTvlResult | null>({
         queryKey: ['curve', 'lpTvl', config?.tvl?.poolAddress],
         enabled: isCurveLp && Boolean(config?.tvl?.poolAddress),
         staleTime: 60_000,
@@ -176,7 +177,7 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
     const mutWdraw = useIsMutating({ mutationKey: ['stake', 'mut', 'withdraw'] })
     const mutCancel = useIsMutating({ mutationKey: ['stake', 'mut', 'cancelWithdrawal'] })
     const mutClaim = useIsMutating({ mutationKey: ['stake', 'mut', 'claimRewards'] })
-    const isOptimistic = (mutStake + mutInit + mutWdraw + mutCancel + mutClaim) > 0
+    const isOptimistic = mutStake + mutInit + mutWdraw + mutCancel + mutClaim > 0
 
     const velodromeLoading = isVelodromeLp && (velodromePoolsLoading || velodromePricesLoading)
     const curveLoading = isCurveLp && curveLpLoading
@@ -199,11 +200,7 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
     const totalStakedAmount = Number(stats?.totalStaked || 0)
     const myAmount = Number(account?.stakedBalance || 0)
 
-    const perUnitPrice = isVelodromeLp
-        ? lpPriceUsd
-        : isCurveLp
-        ? curveLpData?.lpPriceUsd ?? 0
-        : prices.kitePrice || 0
+    const perUnitPrice = isVelodromeLp ? lpPriceUsd : isCurveLp ? curveLpData?.lpPriceUsd ?? 0 : prices.kitePrice || 0
 
     const totalStakedUSD = totalStakedAmount * perUnitPrice
     const myStakedUSD = effectiveStaked * perUnitPrice
@@ -215,35 +212,62 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
     const boostedIncentivesApr = lpApr.incentivesApr * lpBoost
     const boostedNetApr = lpApr.underlyingApr + lpApr.haiRewardsApr + boostedIncentivesApr
     const boostedNetAprFormatted = formatNumberWithStyle(boostedNetApr * 100, { minDecimals: 2, maxDecimals: 2 }) + '%'
-    
-    const stakingApr = isLpPool 
-        ? { 
-            value: boostedNetApr * 10000, // Convert decimal to basis points for consistency
-            formatted: boostedNetAprFormatted 
-          }
-        : { value: standardAprValue, formatted: standardAprFormatted }
+
+    const stakingApr = useMemo(
+        () =>
+            isLpPool
+                ? {
+                      value: boostedNetApr * 10000, // Convert decimal to basis points for consistency
+                      formatted: boostedNetAprFormatted,
+                  }
+                : { value: standardAprValue, formatted: standardAprFormatted },
+        [isLpPool, boostedNetApr, boostedNetAprFormatted, standardAprValue, standardAprFormatted]
+    )
 
     // APR breakdown for LP pools (used in tooltip)
     // For Velodrome pools, underlyingLabel is "Trading Fees APR" and haiRewardsApr is separate
-    const boostedIncentivesAprFormatted = formatNumberWithStyle(boostedIncentivesApr * 100, { minDecimals: 2, maxDecimals: 2 }) + '%'
-    const aprBreakdown = isLpPool ? {
-        underlyingApr: lpApr.underlyingApr,
-        underlyingAprFormatted: lpApr.formatted.underlying,
-        haiRewardsApr: lpApr.haiRewardsApr,
-        haiRewardsAprFormatted: lpApr.formatted.haiRewards,
-        incentivesApr: lpApr.incentivesApr,
-        incentivesAprFormatted: lpApr.formatted.incentives,
-        netApr: lpApr.netApr,
-        netAprFormatted: lpApr.formatted.net,
-        underlyingLabel: lpApr.underlyingLabel, // "Underlying LP APY" for Curve, "Trading Fees APR" for Velodrome
-        // Boost-related fields
-        boost: lpBoost,
-        boostFormatted: formatNumberWithStyle(lpBoost, { minDecimals: 2, maxDecimals: 2 }) + 'x',
-        boostedIncentivesApr,
-        boostedIncentivesAprFormatted,
-        boostedNetApr,
-        boostedNetAprFormatted,
-    } : undefined
+    const boostedIncentivesAprFormatted =
+        formatNumberWithStyle(boostedIncentivesApr * 100, { minDecimals: 2, maxDecimals: 2 }) + '%'
+    const aprBreakdown = useMemo(
+        () =>
+            isLpPool
+                ? {
+                      underlyingApr: lpApr.underlyingApr,
+                      underlyingAprFormatted: lpApr.formatted.underlying,
+                      haiRewardsApr: lpApr.haiRewardsApr,
+                      haiRewardsAprFormatted: lpApr.formatted.haiRewards,
+                      incentivesApr: lpApr.incentivesApr,
+                      incentivesAprFormatted: lpApr.formatted.incentives,
+                      netApr: lpApr.netApr,
+                      netAprFormatted: lpApr.formatted.net,
+                      underlyingLabel: lpApr.underlyingLabel, // "Underlying LP APY" for Curve, "Trading Fees APR" for Velodrome
+                      // Boost-related fields
+                      boost: lpBoost,
+                      boostFormatted: formatNumberWithStyle(lpBoost, { minDecimals: 2, maxDecimals: 2 }) + 'x',
+                      boostedIncentivesApr,
+                      boostedIncentivesAprFormatted,
+                      boostedNetApr,
+                      boostedNetAprFormatted,
+                  }
+                : undefined,
+        [
+            isLpPool,
+            lpApr.underlyingApr,
+            lpApr.formatted.underlying,
+            lpApr.haiRewardsApr,
+            lpApr.formatted.haiRewards,
+            lpApr.incentivesApr,
+            lpApr.formatted.incentives,
+            lpApr.netApr,
+            lpApr.formatted.net,
+            lpApr.underlyingLabel,
+            lpBoost,
+            boostedIncentivesApr,
+            boostedIncentivesAprFormatted,
+            boostedNetApr,
+            boostedNetAprFormatted,
+        ]
+    )
 
     const summary = useMemo(() => {
         return {
@@ -254,7 +278,11 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
                 amount: totalStakedAmount,
                 amountFormatted: formatNumberWithStyle(totalStakedAmount, { minDecimals: 0, maxDecimals: 2 }),
                 usdValue: totalStakedUSD,
-                usdValueFormatted: formatNumberWithStyle(totalStakedUSD, { minDecimals: 0, maxDecimals: 2, style: 'currency' }),
+                usdValueFormatted: formatNumberWithStyle(totalStakedUSD, {
+                    minDecimals: 0,
+                    maxDecimals: 2,
+                    style: 'currency',
+                }),
             },
             myStaked: {
                 amount: myAmount,
@@ -262,7 +290,11 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
                 effectiveAmount: effectiveStaked,
                 effectiveAmountFormatted: formatNumberWithStyle(effectiveStaked, { minDecimals: 0, maxDecimals: 2 }),
                 usdValue: myStakedUSD,
-                usdValueFormatted: formatNumberWithStyle(myStakedUSD, { minDecimals: 0, maxDecimals: 2, style: 'currency' }),
+                usdValueFormatted: formatNumberWithStyle(myStakedUSD, {
+                    minDecimals: 0,
+                    maxDecimals: 2,
+                    style: 'currency',
+                }),
             },
             myShare: { value: shareValue, percentage },
             stakingApr,
@@ -271,12 +303,18 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
                 netBoostValue,
                 netBoostFormatted: formatNumberWithStyle(netBoostValue, { minDecimals: 0, maxDecimals: 2 }) + 'x',
                 boostedValue: userTotalValue,
-                boostedValueFormatted: formatNumberWithStyle(userTotalValue, { minDecimals: 0, maxDecimals: 2, style: 'currency' }),
+                boostedValueFormatted: formatNumberWithStyle(userTotalValue, {
+                    minDecimals: 0,
+                    maxDecimals: 2,
+                    style: 'currency',
+                }),
                 haiVeloBoost: hvBoost,
                 lpBoost: lpBoostValue,
                 haiMintingBoost,
-                haiVeloPositionValue: typeof haiVeloPositionValue === 'string' ? Number(haiVeloPositionValue) : haiVeloPositionValue || 0,
-                userLPPositionValue: typeof userLPPositionValue === 'string' ? Number(userLPPositionValue) : userLPPositionValue || 0,
+                haiVeloPositionValue:
+                    typeof haiVeloPositionValue === 'string' ? Number(haiVeloPositionValue) : haiVeloPositionValue || 0,
+                userLPPositionValue:
+                    typeof userLPPositionValue === 'string' ? Number(userLPPositionValue) : userLPPositionValue || 0,
                 haiMintingPositionValue,
             },
             stakingData: account || {},
@@ -284,7 +322,9 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
             calculateSimulatedValues: (stakingAmount: string, unstakingAmount: string) => {
                 const stakeAmountNum = Number(stakingAmount) || 0
                 const unstakeAmountNum = Number(unstakingAmount) || 0
-                const simulationMode = Boolean((stakingAmount || unstakingAmount) && (stakeAmountNum > 0 || unstakeAmountNum > 0))
+                const simulationMode = Boolean(
+                    (stakingAmount || unstakingAmount) && (stakeAmountNum > 0 || unstakeAmountNum > 0)
+                )
                 const totalStakedAfterTx = totalStakedAmount + stakeAmountNum - unstakeAmountNum
                 const myStakedAfterTx = effectiveStaked + stakeAmountNum - unstakeAmountNum
                 const myShareAfterTx = totalStakedAfterTx !== 0 ? (myStakedAfterTx / totalStakedAfterTx) * 100 : 0
@@ -319,5 +359,3 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
 
     return summary
 }
-
-

@@ -64,5 +64,3 @@ describe('buildStakingService', () => {
         expect(serviceB.decimals).toBe(18)
     })
 })
-
-

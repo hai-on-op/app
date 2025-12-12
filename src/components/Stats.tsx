@@ -28,14 +28,8 @@ export function Stats({ stats, columns, children, fun = false, ...props }: Stats
     const childCount = Array.isArray(children) ? children.length : children ? 1 : 0
 
     return (
-        <Container
-            $borderOpacity={0.2}
-            $columns={columns || `repeat(${statCount + childCount}, 1fr)`}
-            $fun={fun}
-        >
-            {stats?.map((stat, i) => (
-                <Stat key={i} stat={stat} {...props} />
-            ))}
+        <Container $borderOpacity={0.2} $columns={columns || `repeat(${statCount + childCount}, 1fr)`} $fun={fun}>
+            {stats?.map((stat, i) => <Stat key={i} stat={stat} {...props} />)}
             {children}
         </Container>
     )
@@ -97,11 +91,11 @@ const StatContainer = styled(Flex).attrs((props: FlexProps) => ({
         flex-direction: column;
         align-items: flex-start;
         ${
-    $fullWidth &&
+            $fullWidth &&
             css`
                 grid-column: 1 / -1;
             `
-}
+        }
     `}
 `
 const Container = styled(Grid)<DashedContainerProps & { $fun: boolean }>`

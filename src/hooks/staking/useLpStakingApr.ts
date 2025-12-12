@@ -49,11 +49,11 @@ export type LpStakingAprResult = {
 
 /**
  * Hook to calculate APR for LP staking pools.
- * 
+ *
  * Supports:
  * - Curve LP pools (HAI-BOLD): Underlying vAPY + KITE incentives
  * - Velodrome LP pools (haiVELO/VELO): HAI rewards (shared with haiVELO depositors) + KITE incentives
- * 
+ *
  * @param config - Staking configuration for the LP pool
  */
 export function useLpStakingApr(config?: StakingConfig): LpStakingAprResult {
@@ -75,11 +75,7 @@ export function useLpStakingApr(config?: StakingConfig): LpStakingAprResult {
     // Build staking service for this config
     const service = useMemo(() => {
         if (!config) return undefined
-        return buildStakingService(
-            config.addresses.manager as `0x${string}`,
-            undefined,
-            config.decimals
-        )
+        return buildStakingService(config.addresses.manager as `0x${string}`, undefined, config.decimals)
     }, [config])
 
     // Get total staked LP tokens
@@ -122,12 +118,7 @@ export function useLpStakingApr(config?: StakingConfig): LpStakingAprResult {
         staleTime: 60_000,
         queryFn: async () => {
             if (!config?.tvl?.poolAddress || !provider) return null
-            return fetchCurvePoolApr(
-                config.tvl.poolAddress,
-                provider,
-                curveData?.lpPriceUsd,
-                curveData?.tvlUsd
-            )
+            return fetchCurvePoolApr(config.tvl.poolAddress, provider, curveData?.lpPriceUsd, curveData?.tvlUsd)
         },
     })
 
@@ -145,7 +136,8 @@ export function useLpStakingApr(config?: StakingConfig): LpStakingAprResult {
     }, [isVelodromeLp, velodromePool, veloPrice])
 
     const curveLoading = isCurveLp && (curveDataLoading || curveAprLoading)
-    const velodromeLoading = isVelodromeLp && (velodromePoolsLoading || velodromePricesLoading || haiVeloStats.isLoading)
+    const velodromeLoading =
+        isVelodromeLp && (velodromePoolsLoading || velodromePricesLoading || haiVeloStats.isLoading)
 
     const loading = pricesLoading || statsLoading || curveLoading || velodromeLoading
 
@@ -311,6 +303,8 @@ export function useLpStakingApr(config?: StakingConfig): LpStakingAprResult {
         velodromeLpValue,
         haiVeloStats.combined.tvlUsd,
         weeklyHaiReward,
+        veloPrice,
+        velodromePool,
     ])
 
     return result

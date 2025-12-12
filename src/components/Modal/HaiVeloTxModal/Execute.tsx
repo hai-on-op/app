@@ -2,16 +2,15 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { BigNumber, ethers } from 'ethers'
 import { useAccount } from 'wagmi'
 
-import { useStoreActions } from '~/store'
+// import { useStoreActions } from '~/store'
 import { ActionState, formatNumberWithStyle } from '~/utils'
 import { useContract } from '~/hooks/useContract'
-import { useGeb } from '~/hooks'
 
 import HAI_VELO_V2_ABI from '~/abis/haiVELO_v2.json'
 import { HAI_VELO_V2_TOKEN_ADDRESS } from '~/services/haiVeloService'
 
 import styled from 'styled-components'
-import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
+import { Flex, HaiButton, Text } from '~/styles'
 import { ModalBody, ModalFooter } from '../index'
 import { ArrowRightCircle, Check } from 'react-feather'
 import { Loader } from '~/components/Loader'
@@ -39,8 +38,7 @@ type Props = {
 
 export function Execute({ plan, onDone, onStepDone }: Props) {
     const { address } = useAccount()
-    const { popupsModel: popupsActions, connectWalletModel: connectWalletActions } = useStoreActions((actions) => actions)
-    const geb = useGeb()
+    // const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
     const {
         data: {
             veloBalanceFormatted,
@@ -154,7 +152,7 @@ export function Execute({ plan, onDone, onStepDone }: Props) {
                 setPending(false)
             }
         }
-    }, [steps, currentIndex, onDone, popupsActions, refetch, onStepDone])
+    }, [steps, currentIndex, refetch, onStepDone, refreshVault])
 
     // Note: We advance steps explicitly after each confirmed tx in handleRun to avoid double-advancing
 
@@ -182,9 +180,7 @@ export function Execute({ plan, onDone, onStepDone }: Props) {
         <>
             <ModalBody>
                 <Flex $width="100%" $column $gap={12} $align="flex-start" $justify="flex-start">
-                    <Description>
-                        Convert VELO, veVELO NFTs, and migrate haiVELO v1 to haiVELO v2.
-                    </Description>
+                    <Description>Convert VELO, veVELO NFTs, and migrate haiVELO v1 to haiVELO v2.</Description>
                     <TransactionSummary
                         items={(() => {
                             const items: any[] = []
@@ -195,8 +191,8 @@ export function Execute({ plan, onDone, onStepDone }: Props) {
                                 const idx = steps.findIndex((s) => s.key === key)
                                 if (idx === -1) return null
                                 if (done[key]) return <Check width={16} className={ActionState.SUCCESS} />
-                                if (idx === currentIndex && pending) return <Loader size={16} color='#ff9d0a' />
-                                return  <ArrowRightCircle width={16} className={'stateless'} />
+                                if (idx === currentIndex && pending) return <Loader size={16} color="#ff9d0a" />
+                                return <ArrowRightCircle width={16} className={'stateless'} />
                             }
 
                             if (velo.gt(0)) {
@@ -275,11 +271,7 @@ export function Execute({ plan, onDone, onStepDone }: Props) {
                 </Flex>
             </ModalBody>
             <ModalFooter $gap={24} $justify="flex-end">
-                <HaiButton
-                    $variant="yellowish"
-                    disabled={pending}
-                    onClick={isComplete ? onDone : handleRun}
-                >
+                <HaiButton $variant="yellowish" disabled={pending} onClick={isComplete ? onDone : handleRun}>
                     {buttonLabel}
                 </HaiButton>
             </ModalFooter>
@@ -293,13 +285,12 @@ const Description = styled(Text)`
     `}
 `
 
-const SectionTitle = styled(Text).attrs((p) => ({ $fontWeight: 700, ...p }))``
+// const SectionTitle = styled(Text).attrs((p) => ({ $fontWeight: 700, ...p }))``
 
-const List = styled(CenteredFlex).attrs((p) => ({ $column: true, $gap: 12, ...p }))``
-const Row = styled(CenteredFlex)<{ $active: boolean }>`
-    width: 100%;
-    justify-content: flex-start;
-    padding: 8px 0;
-    opacity: ${({ $active }) => ($active ? 1 : 0.7)};
-`
-
+// const List = styled(CenteredFlex).attrs((p) => ({ $column: true, $gap: 12, ...p }))``
+// const Row = styled(CenteredFlex)<{ $active: boolean }>`
+//     width: 100%;
+//     justify-content: flex-start;
+//     padding: 8px 0;
+//     opacity: ${({ $active }) => ($active ? 1 : 0.7)};
+// `

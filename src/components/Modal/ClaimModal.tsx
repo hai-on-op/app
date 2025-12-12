@@ -142,12 +142,7 @@ const ClaimableIncentive: React.FC<{
     claim: IncentiveClaim
     price: number
     onSuccess?: () => void
-}> = ({
-    asset,
-    claim,
-    price,
-    onSuccess,
-}) => {
+}> = ({ asset, claim, price, onSuccess }) => {
     console.log(`ClaimableIncentive for ${asset}:`, claim)
     console.log('--------------------------------')
     const distributor = useDistributorContract(claim.distributorAddress)
@@ -374,8 +369,8 @@ export function ClaimModal(props: ModalProps) {
                     token === 'HAI'
                         ? parseFloat(currentRedemptionPrice || '1')
                         : token === 'KITE'
-                            ? Number(kitePrice || 0)
-                            : parseFloat(collateralLiquidationData?.[token]?.currentPrice.value || '0')
+                        ? Number(kitePrice || 0)
+                        : parseFloat(collateralLiquidationData?.[token]?.currentPrice.value || '0')
                 acc.prices[token] = price || 0 // Ensure price is never undefined
                 acc.total += parseFloat(sellAmount) * (price || 0) // Safely handle undefined price
                 return acc
@@ -403,46 +398,50 @@ export function ClaimModal(props: ModalProps) {
     }
 
     // Process all incentive tokens
-    const incentiveTokens = INCENTIVE_TOKENS.reduce((acc, token) => {
-        const raw = incentives?.claims.data?.[token]
-        const price = getTokenPrice(token)
-        // Normalize to legacy shape expected by UI pieces
-        const data = raw
-            ? {
-                ...raw,
-                hasClaimableDistros: Boolean(raw.hasClaimable),
-                amount: raw.amountWei ? utils.parseEther(utils.formatEther(raw.amountWei)) : undefined,
-                claimIt: raw.claim,
-            }
-            : undefined
+    const incentiveTokens = INCENTIVE_TOKENS.reduce(
+        (acc, token) => {
+            const raw = incentives?.claims.data?.[token]
+            const price = getTokenPrice(token)
+            // Normalize to legacy shape expected by UI pieces
+            const data = raw
+                ? {
+                      ...raw,
+                      hasClaimableDistros: Boolean(raw.hasClaimable),
+                      amount: raw.amountWei ? utils.parseEther(utils.formatEther(raw.amountWei)) : undefined,
+                      claimIt: raw.claim,
+                  }
+                : undefined
 
-        console.log(`Processing ${token}:`, data, 'price:', price)
-        acc[token] = { data, price }
-        return acc
-    }, {} as Record<IncentiveToken, { data: any; price: number }>)
+            console.log(`Processing ${token}:`, data, 'price:', price)
+            acc[token] = { data, price }
+            return acc
+        },
+        {} as Record<IncentiveToken, { data: any; price: number }>
+    )
 
     // Check if distributor is paused from any available incentive data
     const isDistributorPaused = incentives?.timer.data?.paused
 
     const isIncentivesLoading = Boolean(incentives?.claims.loading)
     // Generate content for each token
-    const incentivesContent = isIncentivesLoading || !incentives?.claims.data
-        ? []
-        : INCENTIVE_TOKENS.flatMap((token) => {
-            const { data, price } = incentiveTokens[token]
-            if (!data?.hasClaimableDistros) return []
+    const incentivesContent =
+        isIncentivesLoading || !incentives?.claims.data
+            ? []
+            : INCENTIVE_TOKENS.flatMap((token) => {
+                  const { data, price } = incentiveTokens[token]
+                  if (!data?.hasClaimableDistros) return []
 
-            console.log(`${token} has claimable distros:`, data.hasClaimableDistros)
-            return [
-                <ClaimableIncentive
-                    key={`${token}-Daily-rewards`}
-                    asset={token}
-                    claim={{ ...data }}
-                    price={price}
-                    onSuccess={() => incentives.claims.refetch()}
-                />,
-            ]
-        })
+                  console.log(`${token} has claimable distros:`, data.hasClaimableDistros)
+                  return [
+                      <ClaimableIncentive
+                          key={`${token}-Daily-rewards`}
+                          asset={token}
+                          claim={{ ...data }}
+                          price={price}
+                          onSuccess={() => incentives.claims.refetch()}
+                      />,
+                  ]
+              })
 
     // Direct calculation for each token's incentive value
     // This is more reliable than the generic function
@@ -506,29 +505,29 @@ export function ClaimModal(props: ModalProps) {
         }),
         ...(parseFloat(internalBalances.HAI?.raw || '0') > 0
             ? [
-                <ClaimableAsset
-                    key="internalHai"
-                    asset="COIN"
-                    amount={internalBalances.HAI?.raw || '0'}
-                    price={parseFloat(liquidationData?.currentRedemptionPrice || '1')}
-                    internal={true}
-                    incentive={false}
-                    onSuccess={internalBalances.refetch}
-                />,
-            ]
+                  <ClaimableAsset
+                      key="internalHai"
+                      asset="COIN"
+                      amount={internalBalances.HAI?.raw || '0'}
+                      price={parseFloat(liquidationData?.currentRedemptionPrice || '1')}
+                      internal={true}
+                      incentive={false}
+                      onSuccess={internalBalances.refetch}
+                  />,
+              ]
             : []),
         ...(parseFloat(internalBalances.KITE?.raw || '0') > 0
             ? [
-                <ClaimableAsset
-                    key="internalKITE"
-                    asset="PROTOCOL_TOKEN"
-                    amount={internalBalances.KITE?.raw || '0'}
-                    price={10}
-                    internal={true}
-                    incentive={false}
-                    onSuccess={internalBalances.refetch}
-                />,
-            ]
+                  <ClaimableAsset
+                      key="internalKITE"
+                      asset="PROTOCOL_TOKEN"
+                      amount={internalBalances.KITE?.raw || '0'}
+                      price={10}
+                      internal={true}
+                      incentive={false}
+                      onSuccess={internalBalances.refetch}
+                  />,
+              ]
             : []),
     ]
 

@@ -12,5 +12,3 @@ export function useLpAllPositions() {
         refetchInterval: FIVE_MINUTES_MS,
     })
 }
-
-

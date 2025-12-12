@@ -10,7 +10,9 @@ export type PriceSnapshot = {
 // Thin adapter to standardize price reads for APR math
 export function usePriceSnapshot(): { data: PriceSnapshot; loading: boolean } {
     const { prices: veloPrices, loading: veloLoading } = useVelodromePrices()
-    const { vaultModel: { liquidationData } } = useStoreState((s) => s)
+    const {
+        vaultModel: { liquidationData },
+    } = useStoreState((s) => s)
 
     const kitePrice = Number(veloPrices?.KITE?.raw || 0)
     const haiPrice = parseFloat(liquidationData?.currentRedemptionPrice || '1')
@@ -18,5 +20,3 @@ export function usePriceSnapshot(): { data: PriceSnapshot; loading: boolean } {
 
     return { data: { kitePrice, haiPrice, opPrice }, loading: Boolean(veloLoading) }
 }
-
-

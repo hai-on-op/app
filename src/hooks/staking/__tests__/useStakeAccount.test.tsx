@@ -32,5 +32,3 @@ describe('useStakeAccount', () => {
         expect(screen.getByTestId('rewards').textContent).toBe('0')
     })
 })
-
-

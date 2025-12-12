@@ -56,9 +56,9 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
         return !auctionsData
             ? [DEFAULT_BID_CHANGES.increase, DEFAULT_BID_CHANGES.decrease]
             : [
-                formatEther(auctionsData.surplusAuctionHouseParams.bidIncrease),
-                formatEther(auctionsData.debtAuctionHouseParams.bidDecrease),
-            ]
+                  formatEther(auctionsData.surplusAuctionHouseParams.bidIncrease),
+                  formatEther(auctionsData.debtAuctionHouseParams.bidDecrease),
+              ]
     }, [auctionsData])
 
     const collateralPrice = useMemo(() => {
@@ -256,6 +256,7 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
         kiteBalance,
         internalBalance,
         protInternalBalance,
+        sellToken,
     ])
 
     const hasAllowance = useCallback(() => {
@@ -273,7 +274,7 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
                 return kiteAllowanceBN.gte(parseWadAmount(amount))
             }
         }
-    }, [haiAllowance, kiteAllowance, amount, amount, auction])
+    }, [haiAllowance, kiteAllowance, amount, auction])
 
     const handleSubmit = useCallback(() => {
         if (action.includes('buy') || action.includes('bid')) {
@@ -286,18 +287,18 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
             auctionActions.setAmount(protInternalBalance)
         }
         nextStep(true)
-    }, [action, auctionActions, nextStep, passesChecks, hasAllowance])
+    }, [action, auctionActions, nextStep, passesChecks, hasAllowance, auction.englishAuctionType, protInternalBalance])
 
     const claimValues = useMemo(() => {
         return Number(protInternalBalance) > Number(internalBalance)
             ? {
-                amount: Number(protInternalBalance),
-                symbol: 'KITE',
-            }
+                  amount: Number(protInternalBalance),
+                  symbol: 'KITE',
+              }
             : {
-                amount: Number(internalBalance),
-                symbol: 'HAI',
-            }
+                  amount: Number(internalBalance),
+                  symbol: 'HAI',
+              }
     }, [internalBalance, protInternalBalance])
 
     const upperInput = useMemo(() => {
@@ -406,8 +407,8 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
                                     !action.includes('settle') && !action.includes('claim')
                                         ? lowerInput.value || '0'
                                         : action.includes('claim')
-                                            ? claimValues.amount.toLocaleString()
-                                            : auction.buyAmount,
+                                        ? claimValues.amount.toLocaleString()
+                                        : auction.buyAmount,
                             },
                         },
                     ]}

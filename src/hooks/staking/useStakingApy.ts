@@ -12,10 +12,12 @@ export function useStakingApy() {
             if (!provider) throw new Error('No provider')
             // adapt new service shape to legacy consumer shape (rpRate as BigNumber)
             const apy = await getApy(provider)
-            return apy.map((item) => ({ id: item.id, rpToken: item.rpToken, rpRate: utils.parseUnits(String(item.rpRateWei || '0'), 18) }))
+            return apy.map((item) => ({
+                id: item.id,
+                rpToken: item.rpToken,
+                rpRate: utils.parseUnits(String(item.rpRateWei || '0'), 18),
+            }))
         },
         staleTime: 30_000,
     })
 }
-
-

@@ -20,7 +20,6 @@ import { OverviewProgressStat, OverviewStat } from './OverviewStat'
 // import { useBoost } from '~/hooks/useBoost'
 // import { BigNumber, utils } from 'ethers'
 import { useAccount } from 'wagmi'
-import { useFlags } from 'flagsmith/react'
 import { ExternalLink } from 'react-feather'
 import { TOKEN_LOGOS } from '~/utils/tokens'
 import type { TokenKey } from '~/types'
@@ -41,7 +40,7 @@ type OverviewProps = {
 export function Overview({ simulation, config }: OverviewProps) {
     const { stakingAmount, unstakingAmount } = simulation
     const { address } = useAccount()
-    const useNew = true
+    // const useNew = true
 
     const tokenLabel = config?.labels.token || 'KITE'
     const stTokenLabel = config?.labels.stToken || 'stKITE'
@@ -75,14 +74,13 @@ export function Overview({ simulation, config }: OverviewProps) {
     const isVelodromeLp = config?.tvl?.source === 'velodrome'
     const isLpPool = isCurveLp || isVelodromeLp
     const showLpTvl = Boolean(config?.tvl)
-    const lpTvlLabel =
-        config?.tvl?.label || (config?.tvl?.source === 'curve' ? 'Curve LP TVL' : 'haiVELO/VELO LP TVL')
+    const lpTvlLabel = config?.tvl?.label || (config?.tvl?.source === 'curve' ? 'Curve LP TVL' : 'haiVELO/VELO LP TVL')
 
     // Dynamic descriptions based on pool type
     const underlyingLabel = aprBreakdown?.underlyingLabel || 'Underlying LP APY'
-    const underlyingDescription = isCurveLp 
+    const underlyingDescription = isCurveLp
         ? 'Trading fees from the Curve pool'
-        : isVelodromeLp 
+        : isVelodromeLp
         ? 'Trading fees from the Velodrome pool'
         : 'Underlying pool yield'
 
@@ -94,9 +92,7 @@ export function Overview({ simulation, config }: OverviewProps) {
                 <Text $fontSize=".9rem" $fontWeight={700}>
                     {underlyingLabel}
                 </Text>
-                <Text $fontSize=".9rem">
-                    {aprBreakdown.underlyingAprFormatted}
-                </Text>
+                <Text $fontSize=".9rem">{aprBreakdown.underlyingAprFormatted}</Text>
                 <Text $fontSize=".75rem" style={{ opacity: 0.7 }}>
                     {underlyingDescription}
                 </Text>
@@ -107,9 +103,7 @@ export function Overview({ simulation, config }: OverviewProps) {
                     <Text $fontSize=".9rem" $fontWeight={700}>
                         HAI Rewards APR
                     </Text>
-                    <Text $fontSize=".9rem">
-                        {aprBreakdown.haiRewardsAprFormatted}
-                    </Text>
+                    <Text $fontSize=".9rem">{aprBreakdown.haiRewardsAprFormatted}</Text>
                     <Text $fontSize=".75rem" style={{ opacity: 0.7 }}>
                         Shared with haiVELO depositors
                     </Text>
@@ -119,9 +113,7 @@ export function Overview({ simulation, config }: OverviewProps) {
                 <Text $fontSize=".9rem" $fontWeight={700}>
                     KITE Incentives APR
                 </Text>
-                <Text $fontSize=".9rem">
-                    {aprBreakdown.incentivesAprFormatted}
-                </Text>
+                <Text $fontSize=".9rem">{aprBreakdown.incentivesAprFormatted}</Text>
                 <Text $fontSize=".75rem" style={{ opacity: 0.7 }}>
                     25 KITE/day distributed to stakers
                 </Text>
@@ -130,27 +122,21 @@ export function Overview({ simulation, config }: OverviewProps) {
                 <Text $fontSize=".9rem" $fontWeight={700}>
                     Base Net APR
                 </Text>
-                <Text $fontSize=".9rem">
-                    {aprBreakdown.netAprFormatted}
-                </Text>
+                <Text $fontSize=".9rem">{aprBreakdown.netAprFormatted}</Text>
             </div>
             {/* Boost breakdown - show boost multiplier and boosted APR */}
             <div style={{ marginTop: '8px' }}>
                 <Text $fontSize=".9rem" $fontWeight={700}>
                     My Boost
                 </Text>
-                <Text $fontSize=".9rem">
-                    {aprBreakdown.boostFormatted}
-                </Text>
+                <Text $fontSize=".9rem">{aprBreakdown.boostFormatted}</Text>
             </div>
             {hasBoost && (
                 <div style={{ marginTop: '8px' }}>
                     <Text $fontSize=".9rem" $fontWeight={700}>
                         Boosted KITE Incentives
                     </Text>
-                    <Text $fontSize=".9rem">
-                        {aprBreakdown.boostedIncentivesAprFormatted}
-                    </Text>
+                    <Text $fontSize=".9rem">{aprBreakdown.boostedIncentivesAprFormatted}</Text>
                     <Text $fontSize=".75rem" style={{ opacity: 0.7 }}>
                         {aprBreakdown.incentivesAprFormatted} × {aprBreakdown.boostFormatted}
                     </Text>
@@ -279,9 +265,9 @@ export function Overview({ simulation, config }: OverviewProps) {
                     simulatedValue={
                         simValues.totalStakedAfterTx !== totalStaked.amount
                             ? formatNumberWithStyle(simValues.totalStakedAfterTx, {
-                                minDecimals: 0,
-                                maxDecimals: 2,
-                            })
+                                  minDecimals: 0,
+                                  maxDecimals: 2,
+                              })
                             : undefined
                     }
                     labelOnTop
@@ -297,9 +283,9 @@ export function Overview({ simulation, config }: OverviewProps) {
                     simulatedValue={
                         simValues.myStakedAfterTx !== myStaked.effectiveAmount
                             ? formatNumberWithStyle(simValues.myStakedAfterTx, {
-                                minDecimals: 0,
-                                maxDecimals: 2,
-                            })
+                                  minDecimals: 0,
+                                  maxDecimals: 2,
+                              })
                             : undefined
                     }
                     labelOnTop
@@ -314,9 +300,9 @@ export function Overview({ simulation, config }: OverviewProps) {
                     simulatedValue={
                         simValues.myShareAfterTx !== myShare.value
                             ? `${formatNumberWithStyle(simValues.myShareAfterTx, {
-                                minDecimals: 0,
-                                maxDecimals: 2,
-                            })}%`
+                                  minDecimals: 0,
+                                  maxDecimals: 2,
+                              })}%`
                             : undefined
                     }
                 />

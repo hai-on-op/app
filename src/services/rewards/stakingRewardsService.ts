@@ -63,5 +63,3 @@ export async function claimRewards(signer: any): Promise<TxResponse> {
     await tx.wait()
     return tx
 }
-
-

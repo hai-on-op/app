@@ -39,7 +39,7 @@ export function SelectInput<T = string>({
 
     useOutsideClick(containerRef, () => setIsOpen(false))
 
-    const selectedOption = options.find(option => option.value === value)
+    const selectedOption = options.find((option) => option.value === value)
 
     const handleOptionClick = (optionValue: T) => {
         onChange(optionValue)
@@ -58,23 +58,13 @@ export function SelectInput<T = string>({
                 <Text $fontSize="0.65em" $fontWeight={700}>
                     {label}
                 </Text>
-                <Text $fontSize="0.65em">
-                    {subLabel}
-                </Text>
+                <Text $fontSize="0.65em">{subLabel}</Text>
             </Flex>
             <SelectContainer>
-                <SelectButton
-                    onClick={handleInputClick}
-                    $disabled={disabled}
-                    $isOpen={isOpen}
-                >
+                <SelectButton onClick={handleInputClick} $disabled={disabled} $isOpen={isOpen}>
                     <SelectedContent>
-                        {selectedOption?.icon && (
-                            <IconWrapper>{selectedOption.icon}</IconWrapper>
-                        )}
-                        <Text>
-                            {selectedOption?.label || placeholder}
-                        </Text>
+                        {selectedOption?.icon && <IconWrapper>{selectedOption.icon}</IconWrapper>}
+                        <Text>{selectedOption?.label || placeholder}</Text>
                     </SelectedContent>
                     <CaretWrapper $isOpen={isOpen}>
                         <CaretWithOutline size={12} />
@@ -88,9 +78,7 @@ export function SelectInput<T = string>({
                                 onClick={() => handleOptionClick(option.value)}
                                 $isSelected={option.value === value}
                             >
-                                {option.icon && (
-                                    <IconWrapper>{option.icon}</IconWrapper>
-                                )}
+                                {option.icon && <IconWrapper>{option.icon}</IconWrapper>}
                                 <Text>{option.label}</Text>
                             </DropdownOption>
                         ))}
@@ -131,13 +119,13 @@ const SelectButton = styled.div<{ $disabled: boolean; $isOpen: boolean }>`
     cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
     background: ${({ theme }) => theme.colors.background};
     transition: all 0.2s ease;
-    
+
     ${({ $disabled }) =>
         $disabled &&
         css`
             opacity: 0.6;
         `}
-    
+
     ${({ $isOpen, theme }) =>
         $isOpen &&
         css`
@@ -147,7 +135,7 @@ const SelectButton = styled.div<{ $disabled: boolean; $isOpen: boolean }>`
     
     &:hover {
         ${({ $disabled, theme }) =>
-        !$disabled &&
+            !$disabled &&
             css`
                 border-color: ${theme.colors.primary};
             `}
@@ -178,7 +166,7 @@ const CaretWrapper = styled.div<{ $isOpen: boolean }>`
     height: 24px;
     margin-right: 12px;
     transition: transform 0.2s ease;
-    
+
     ${({ $isOpen }) =>
         $isOpen &&
         css`
@@ -199,7 +187,7 @@ const DropdownContainer = styled.div`
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     overflow: hidden;
     animation: slideDown 0.2s ease;
-    
+
     @keyframes slideDown {
         from {
             opacity: 0;
@@ -219,18 +207,16 @@ const DropdownOption = styled.div<{ $isSelected: boolean }>`
     gap: 8px;
     cursor: pointer;
     transition: all 0.2s ease;
-    
+
     ${({ $isSelected, theme }) =>
         $isSelected &&
         css`
             background: ${theme.colors.yellowish}40;
             color: ${theme.colors.primary};
         `}
-    
+
     &:hover {
-        background: ${({ theme, $isSelected }) => 
-        $isSelected ? theme.colors.yellowish + '60' : theme.colors.yellowish + '80'};
+        background: ${({ theme, $isSelected }) =>
+            $isSelected ? theme.colors.yellowish + '60' : theme.colors.yellowish + '80'};
     }
-    
-  
 `

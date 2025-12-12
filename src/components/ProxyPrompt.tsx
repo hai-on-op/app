@@ -97,7 +97,7 @@ export function ProxyPrompt({
         connectWalletActions.setIsStepLoading(false)
         connectWalletActions.setStep(2)
         localStorage.removeItem('ctHash')
-    }, [connectWalletState.ctHash, popupsActions, connectWalletActions])
+    }, [connectWalletState.ctHash, popupsActions, connectWalletActions, onSuccess])
 
     if (connectWalletState.step === PromptStep.CONNECT_WALLET)
         return (

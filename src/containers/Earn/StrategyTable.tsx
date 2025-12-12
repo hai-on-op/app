@@ -126,12 +126,12 @@ export function StrategyTable({
                         strategyType === 'borrow'
                             ? ['KITE']
                             : earnPlatform === 'velodrome'
-                                ? ['VELO']
-                                : isHaiBoldLp
-                                    ? ['KITE']
-                                : strategyType === 'stake'
-                                    ? ['HAI', 'KITE', 'OP']
-                                    : ['OP']
+                            ? ['VELO']
+                            : isHaiBoldLp
+                            ? ['KITE']
+                            : strategyType === 'stake'
+                            ? ['HAI', 'KITE', 'OP']
+                            : ['OP']
 
                     return (
                         <Table.Row
@@ -148,7 +148,9 @@ export function StrategyTable({
                                                 <Text $fontWeight={700}>
                                                     {pair
                                                         .map((t) =>
-                                                            strategyType === 'borrow' && t === 'HAIVELO' ? 'HAIVELOV1' : t
+                                                            strategyType === 'borrow' && t === 'HAIVELO'
+                                                                ? 'HAIVELOV1'
+                                                                : t
                                                         )
                                                         .join('/')}
                                                 </Text>
@@ -182,10 +184,10 @@ export function StrategyTable({
                                             <Text $fontWeight={700}>
                                                 {tvl
                                                     ? formatNumberWithStyle(tvl, {
-                                                        style: 'currency',
-                                                        maxDecimals: 1,
-                                                        suffixed: true,
-                                                    })
+                                                          style: 'currency',
+                                                          maxDecimals: 1,
+                                                          suffixed: true,
+                                                      })
                                                     : '-'}
                                             </Text>
                                         </ComingSoon>
@@ -197,10 +199,10 @@ export function StrategyTable({
                                             <Text $fontWeight={700}>
                                                 {userPosition && userPosition !== '0'
                                                     ? formatNumberWithStyle(userPosition, {
-                                                        style: 'currency',
-                                                        maxDecimals: 1,
-                                                        suffixed: true,
-                                                    })
+                                                          style: 'currency',
+                                                          maxDecimals: 1,
+                                                          suffixed: true,
+                                                      })
                                                     : '-'}
                                             </Text>
                                         </ComingSoon>
@@ -212,9 +214,9 @@ export function StrategyTable({
                                             <Text $fontWeight={700}>
                                                 {!!boostAPR && boostAPR.myBoost > 0
                                                     ? formatNumberWithStyle(boostAPR.myBoost, {
-                                                        maxDecimals: 2,
-                                                        suffixed: false,
-                                                    }) + 'x'
+                                                          maxDecimals: 2,
+                                                          suffixed: false,
+                                                      }) + 'x'
                                                     : '-'}
                                             </Text>
                                             {!!boostAPR && boostAPR.myBoost > 0 && (

@@ -6,5 +6,3 @@ export function KiteStakePage() {
 }
 
 export default KiteStakePage
-
-

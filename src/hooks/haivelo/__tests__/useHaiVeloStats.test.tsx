@@ -19,12 +19,20 @@ function Comp() {
 }
 
 describe('useHaiVeloStats', () => {
-    beforeEach(() => { vi.resetAllMocks() })
-    afterEach(() => { vi.restoreAllMocks() })
+    beforeEach(() => {
+        vi.resetAllMocks()
+    })
+    afterEach(() => {
+        vi.restoreAllMocks()
+    })
 
     it('returns combined stats from v1 subgraph and v2 chain', async () => {
         vi.spyOn(dataSources, 'fetchV1Safes').mockResolvedValue({ totalCollateral: '100', safes: [] } as any)
-        vi.spyOn(dataSources, 'fetchV2Totals').mockResolvedValue({ totalSupplyRaw: '200000000000000000000', totalSupplyFormatted: '200', decimals: 18 } as any)
+        vi.spyOn(dataSources, 'fetchV2Totals').mockResolvedValue({
+            totalSupplyRaw: '200000000000000000000',
+            totalSupplyFormatted: '200',
+            decimals: 18,
+        } as any)
 
         renderWithProviders(<Comp />)
         await waitFor(() => expect(screen.queryByText('loading')).toBeNull())
@@ -34,5 +42,3 @@ describe('useHaiVeloStats', () => {
         expect(screen.getByTestId('usd').textContent).toBe('300')
     })
 })
-
-

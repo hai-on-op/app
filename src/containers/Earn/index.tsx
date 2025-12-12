@@ -1,5 +1,4 @@
 import { useEarnStrategies, useMediaQuery } from '~/hooks'
-import { useEffect, useMemo } from 'react'
 
 import { NavContainer } from '~/components/NavContainer'
 import { StrategyTable } from './StrategyTable'
@@ -19,19 +18,8 @@ const wrappers: WrapperAdProps[] = [
 ]
 
 export function Earn() {
-    const {
-        rawData,
-        headers,
-        rows,
-        loading,
-        error,
-        uniError,
-        veloError,
-        sorting,
-        setSorting,
-        filterEmpty,
-        setFilterEmpty,
-    } = useEarnStrategies()
+    const { headers, rows, loading, error, uniError, veloError, sorting, setSorting, filterEmpty, setFilterEmpty } =
+        useEarnStrategies()
 
     const isUpToMedium = useMediaQuery('upToMedium')
 

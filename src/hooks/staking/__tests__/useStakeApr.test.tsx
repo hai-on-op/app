@@ -21,9 +21,15 @@ function Comp() {
 
 describe('useStakeApr', () => {
     it('returns 0 when total staked is zero', async () => {
-        vi.spyOn(apyHook, 'useStakingApy').mockReturnValue({ data: [{ id: 0, rpToken: 'KITE', rpRate: ({ mul: () => ({ toString: () => '0' }) } as any) } as any], isLoading: false } as any)
+        vi.spyOn(apyHook, 'useStakingApy').mockReturnValue({
+            data: [{ id: 0, rpToken: 'KITE', rpRate: { mul: () => ({ toString: () => '0' }) } as any } as any],
+            isLoading: false,
+        } as any)
         vi.spyOn(statsHook, 'useStakeStats').mockReturnValue({ data: { totalStaked: '0' }, isLoading: false } as any)
-        vi.spyOn(pricesHook, 'useStakePrices').mockReturnValue({ data: { kitePrice: 1, haiPrice: 1, opPrice: 1 }, loading: false } as any)
+        vi.spyOn(pricesHook, 'useStakePrices').mockReturnValue({
+            data: { kitePrice: 1, haiPrice: 1, opPrice: 1 },
+            loading: false,
+        } as any)
         renderWithProviders(<Comp />)
         await waitFor(() => expect(screen.queryByText('loading')).toBeNull())
         expect(Number(screen.getByTestId('val').textContent)).toBe(0)
@@ -35,11 +41,12 @@ describe('useStakeApr', () => {
             isLoading: false,
         } as any)
         vi.spyOn(statsHook, 'useStakeStats').mockReturnValue({ data: { totalStaked: '100' }, isLoading: false } as any)
-        vi.spyOn(pricesHook, 'useStakePrices').mockReturnValue({ data: { kitePrice: 2, haiPrice: 1, opPrice: 1 }, loading: false } as any)
+        vi.spyOn(pricesHook, 'useStakePrices').mockReturnValue({
+            data: { kitePrice: 2, haiPrice: 1, opPrice: 1 },
+            loading: false,
+        } as any)
         renderWithProviders(<Comp />)
         await waitFor(() => expect(screen.queryByText('loading')).toBeNull())
         expect(screen.getByTestId('fmt').textContent).toContain('%')
     })
 })
-
-

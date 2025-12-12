@@ -3,9 +3,7 @@ import { render, screen } from '@testing-library/react'
 
 vi.mock('~/containers/Stake/StakingExperience', () => {
     return {
-        StakingExperience: ({ config }: any) => (
-            <div data-testid="staking-experience">{config?.namespace}</div>
-        ),
+        StakingExperience: ({ config }: any) => <div data-testid="staking-experience">{config?.namespace}</div>,
     }
 })
 
@@ -19,5 +17,3 @@ describe('HaiBoldCurveLpStakePage', () => {
         expect(el.textContent).toBe('lp-hai-bold-curve')
     })
 })
-
-
