@@ -20,16 +20,26 @@ export function useStakeApr(namespace?: string, service?: any) {
         if (!totalStaked || !kitePrice) return 0
 
         // Sum annualized reward value in 18 decimals
-        const totalRewardsPerSec = (apyList || []).reduce((acc: BigNumber, item) => {
-            const tokenAddr = String(item.rpToken || '').toLowerCase()
-            const haiAddr = contracts.tokens.hai.toLowerCase()
-            const kiteAddr = contracts.tokens.kite.toLowerCase()
-            const opAddr = contracts.tokens.op.toLowerCase()
-            const price = tokenAddr === haiAddr ? prices.haiPrice : tokenAddr === kiteAddr ? prices.kitePrice : tokenAddr === opAddr ? prices.opPrice : 0
-            const scaledPrice = utils.parseUnits(String(price || 0), 18)
-            const perSecValue = item.rpRate.mul(scaledPrice)
-            return acc.add(perSecValue)
-        }, utils.parseUnits('0', 18))
+        const totalRewardsPerSec = (apyList || []).reduce(
+            (acc: BigNumber, item) => {
+                const tokenAddr = String(item.rpToken || '').toLowerCase()
+                const haiAddr = contracts.tokens.hai.toLowerCase()
+                const kiteAddr = contracts.tokens.kite.toLowerCase()
+                const opAddr = contracts.tokens.op.toLowerCase()
+                const price =
+                    tokenAddr === haiAddr
+                        ? prices.haiPrice
+                        : tokenAddr === kiteAddr
+                        ? prices.kitePrice
+                        : tokenAddr === opAddr
+                        ? prices.opPrice
+                        : 0
+                const scaledPrice = utils.parseUnits(String(price || 0), 18)
+                const perSecValue = item.rpRate.mul(scaledPrice)
+                return acc.add(perSecValue)
+            },
+            utils.parseUnits('0', 18)
+        )
 
         const yearly = totalRewardsPerSec.mul(31536000)
         const scaledKite = utils.parseUnits(String(kitePrice), 18)
@@ -46,5 +56,3 @@ export function useStakeApr(namespace?: string, service?: any) {
 
     return { loading, value, formatted }
 }
-
-

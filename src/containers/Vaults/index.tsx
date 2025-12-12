@@ -30,7 +30,7 @@ export function Vaults() {
         if (location.pathname === '/vaults') {
             history.replace({ pathname: '/vaults', search: `?tab=${navIndex === 0 ? 'available' : 'user'}` })
         }
-    }, [navIndex, location.pathname, history.replace])
+    }, [navIndex, location.pathname, history.replace, history])
 
     if (idOrOwner) {
         if (idOrOwner.startsWith('0x')) return <VaultsByOwner />

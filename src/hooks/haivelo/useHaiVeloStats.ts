@@ -53,5 +53,3 @@ export function useHaiVeloStats(haiVeloPriceUsd = 0): UseHaiVeloStatsResult {
 
     return result
 }
-
-

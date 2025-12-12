@@ -13,13 +13,23 @@ export type UseHaiVeloCollateralMappingResult = {
 const FIVE_MINUTES_MS = 5 * 60 * 1000
 
 export function useHaiVeloCollateralMapping(): UseHaiVeloCollateralMappingResult {
-    const { data: v1, isLoading: l1, isError: e1, error: err1 } = useQuery({
+    const {
+        data: v1,
+        isLoading: l1,
+        isError: e1,
+        error: err1,
+    } = useQuery({
         queryKey: ['haivelo', 'mapping', 'v1'],
         queryFn: async () => fetchV1Safes('HAIVELO'),
         staleTime: FIVE_MINUTES_MS,
         refetchInterval: FIVE_MINUTES_MS,
     })
-    const { data: v2, isLoading: l2, isError: e2, error: err2 } = useQuery({
+    const {
+        data: v2,
+        isLoading: l2,
+        isError: e2,
+        error: err2,
+    } = useQuery({
         queryKey: ['haivelo', 'mapping', 'v2'],
         queryFn: async () => fetchV2Safes('HAIVELOV2'),
         staleTime: FIVE_MINUTES_MS,
@@ -38,5 +48,3 @@ export function useHaiVeloCollateralMapping(): UseHaiVeloCollateralMappingResult
 
     return { mapping, isLoading: l1 || l2, isError: e1 || e2, error: err1 || err2 }
 }
-
-

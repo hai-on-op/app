@@ -52,7 +52,7 @@ export const useLoadMoreAuctions = ({ auctions }: Props) => {
             return startBlock && startBlock > 0 ? 'Load more auctions' : 'No more auctions.'
         }
         return 'Show more auctions'
-    }, [auctions, numberOfAuctions, loadingAuctionsData.loading])
+    }, [loadingAuctionsData.loading, hasMoreAuctions, startBlock])
 
     const loadNewAuctions = useCallback(async () => {
         try {
@@ -68,7 +68,7 @@ export const useLoadMoreAuctions = ({ auctions }: Props) => {
         } catch (error) {
             console.error(error)
         }
-    }, [auctions, auctionsActions, geb, type, startBlock, tokenSymbol])
+    }, [auctions, auctionsActions, geb, type, startBlock, tokenSymbol, loadingAuctionsData, proxyAddress])
 
     const handleShowMoreAuctions = () => {
         if (hasMoreAuctions && startBlock) {

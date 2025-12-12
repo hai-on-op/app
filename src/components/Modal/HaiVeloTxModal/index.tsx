@@ -64,4 +64,3 @@ export function HaiVeloTxModal({ items, plan, onAllApproved, onStepDone, ...prop
         />
     )
 }
-

@@ -1,5 +1,5 @@
 import { useAccount } from 'wagmi'
-import { useQuery, ApolloError } from '@apollo/client'
+import { useQuery } from '@apollo/client'
 import { ALL_COLLATERAL_TYPES_QUERY, SYSTEMSTATE_QUERY, ALL_SAFES_QUERY } from '~/utils/graphql/queries'
 import { useMinterVaults } from './useMinterVaults'
 import { useMyVaults } from '~/hooks'
@@ -7,7 +7,6 @@ import { useVelodrome, useVelodromePositions } from './useVelodrome'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { useStrategyData } from './useStrategyData'
 import { useStoreState } from '~/store'
-import { formatEther } from 'ethers/lib/utils'
 import { BigNumber } from 'ethers'
 import type { QueryCollateralType } from '~/utils'
 import type { TokenData, TokenFetchData } from '@hai-on-op/sdk'
@@ -57,13 +56,15 @@ interface EarnDataState {
     velodromePositionsData: VelodromePositionData[] | undefined
     velodromePricesData: Record<string, VelodromePriceData> | undefined
     haiVeloSafesData: { safes: Array<{ owner: { address: string }; collateral: string }> } | undefined
-    strategyData: {
-        hai?: { apr: number; tvl: number; userPosition: number }
-        haiVelo?: { tvl: number; userPosition: number; boostApr: unknown }
-        kiteStaking?: { tvl: number; userPosition: number; apr: number }
-        haiBoldLp?: { tvl: number; userPosition: number; apr: number; boostApr: unknown; loading: boolean }
-    } | undefined
-    
+    strategyData:
+        | {
+              hai?: { apr: number; tvl: number; userPosition: number }
+              haiVelo?: { tvl: number; userPosition: number; boostApr: unknown }
+              kiteStaking?: { tvl: number; userPosition: number; apr: number }
+              haiBoldLp?: { tvl: number; userPosition: number; apr: number; boostApr: unknown; loading: boolean }
+          }
+        | undefined
+
     // Store state data
     tokensData: Record<string, TokenData>
     userPositionsList: UserPosition[]
@@ -71,13 +72,13 @@ interface EarnDataState {
     totalStaked: string
     stakingApyData: Array<{ id: number; rpToken: string; rpRate: BigNumber }>
     tokensFetchedData: Record<string, TokenFetchData>
-    
+
     // Loading states
     loading: boolean
     allDataLoaded: boolean
     stakingDataLoaded: boolean
     storeDataLoaded: boolean
-    
+
     // Error states
     error: AppError
     dataLoadingError: AppError
@@ -95,7 +96,11 @@ export function useEarnData(): EarnDataState {
     } = useStoreState((state) => state)
 
     // 1. Load system state data
-    const { data: systemStateData, loading: systemStateLoading, error: systemStateError } = useQuery<{
+    const {
+        data: systemStateData,
+        loading: systemStateLoading,
+        error: systemStateError,
+    } = useQuery<{
         systemStates: Array<{ erc20CoinTotalSupply: string; [key: string]: unknown }>
     }>(SYSTEMSTATE_QUERY, {
         fetchPolicy: 'cache-first',
@@ -126,7 +131,7 @@ export function useEarnData(): EarnDataState {
     // 6. Load velodrome positions data
     const {
         data: velodromePositionsData,
-        loading: velodromePositionsLoading,
+        // loading: velodromePositionsLoading,
         error: velodromePositionsError,
     } = useVelodromePositions()
 
@@ -140,7 +145,7 @@ export function useEarnData(): EarnDataState {
     // 8. Load hai velo safes data
     const {
         data: haiVeloSafesData,
-        loading: haiVeloSafesLoading,
+        // loading: haiVeloSafesLoading,
         error: haiVeloSafesError,
     } = useQuery<{ safes: Array<{ owner: { address: string }; collateral: string }> }>(ALL_SAFES_QUERY, {
         variables: {
@@ -188,7 +193,7 @@ export function useEarnData(): EarnDataState {
         systemStateError,
         haiVeloSafesError
     )
-    
+
     const hasErrors = hasAnyError(
         minterVaultsError,
         collateralTypesError,
@@ -210,7 +215,7 @@ export function useEarnData(): EarnDataState {
         velodromePricesData,
         haiVeloSafesData,
         strategyData,
-        
+
         // Store state data
         tokensData,
         userPositionsList,
@@ -218,16 +223,16 @@ export function useEarnData(): EarnDataState {
         totalStaked,
         stakingApyData,
         tokensFetchedData,
-        
+
         // Loading states
         loading,
         allDataLoaded,
         stakingDataLoaded,
         storeDataLoaded,
-        
+
         // Error states
         error: dataLoadingError,
         dataLoadingError,
         hasErrors,
     }
-} 
+}

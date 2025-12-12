@@ -86,11 +86,11 @@ export function Activity({ activities = [] }: ActivityProps) {
                                 <Text>
                                     {activity.boostChange
                                         ? formatNumberWithStyle(parseFloat(activity.boostChange), {
-                                            maxDecimals: 2,
-                                            minDecimals: 2,
-                                            scalingFactor: 100,
-                                            style: 'percent',
-                                        })
+                                              maxDecimals: 2,
+                                              minDecimals: 2,
+                                              scalingFactor: 100,
+                                              style: 'percent',
+                                          })
                                         : '-'}
                                 </Text>
                             ),

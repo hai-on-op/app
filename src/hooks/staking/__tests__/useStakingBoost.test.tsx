@@ -78,6 +78,4 @@ describe('useStakingBoost', () => {
             expect(screen.getByTestId('lp').textContent).toBe('1.8')
         })
     })
-}
-
-
+})

@@ -44,5 +44,3 @@ export function useHaiVeloAccount(address?: string): UseHaiVeloAccountResult {
         error,
     }
 }
-
-

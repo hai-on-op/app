@@ -21,7 +21,11 @@ describe('stakingRewardsService.getApy', () => {
             .mockImplementationOnce(() =>
                 mockContract({
                     rewards: () => rewardsCount,
-                    rewardTypes: (i: number) => ({ isActive: i !== 1, rewardPool: `0xpool${i}`, rewardToken: `0xtoken${i}` }),
+                    rewardTypes: (i: number) => ({
+                        isActive: i !== 1,
+                        rewardPool: `0xpool${i}`,
+                        rewardToken: `0xtoken${i}`,
+                    }),
                 })
             )
             .mockImplementation(() => rpMock)
@@ -44,7 +48,7 @@ describe('stakingRewardsService.getUserRewards', () => {
         vi.spyOn(ethers as any, 'Contract').mockImplementation(() =>
             mockContract({
                 rewards: () => rewardsCount,
-                rewardTypes: (i: number) => ({ isActive: true }),
+                rewardTypes: () => ({ isActive: true }),
                 callStatic: { earned: () => earned },
             })
         )
@@ -73,5 +77,3 @@ describe('stakingRewardsService.claimRewards', () => {
         expect(res).toBe(tx)
     })
 })
-
-

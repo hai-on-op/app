@@ -28,5 +28,5 @@ export function useInternalBalances() {
             ...balances,
             refetch: geb && proxyAddress ? () => auctionActions.fetchAuctionsData({ geb, proxyAddress }) : undefined,
         }
-    }, [geb, proxyAddress, prices?.KITE.raw, liquidationData, internalBalance, protInternalBalance])
+    }, [geb, proxyAddress, prices?.KITE.raw, liquidationData, internalBalance, protInternalBalance, auctionActions])
 }

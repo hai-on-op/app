@@ -20,5 +20,3 @@ describe('useStakeStats', () => {
         expect(screen.getByTestId('total').textContent).toBe('100.5')
     })
 })
-
-

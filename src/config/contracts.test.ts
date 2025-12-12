@@ -34,5 +34,3 @@ describe('contracts config env validation', () => {
         expect(mod.contracts.tokens.kite).toBeTypeOf('string')
     })
 })
-
-

@@ -9,7 +9,8 @@ import {
     LINK_TO_TELEGRAM,
     LINK_TO_TWITTER,
     formatDataNumber,
- formatCollateralLabel } from '~/utils'
+    formatCollateralLabel,
+} from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { useMediaQuery, useOutsideClick } from '~/hooks'
@@ -95,7 +96,8 @@ export function Header({ tickerActive = false }: HeaderProps) {
 
     const isHaiVeloRoute =
         location.pathname === '/haiVELO' ||
-        (location.pathname === '/vaults/open' && ['HAIVELO', 'HAIVELOV2'].includes(new URLSearchParams(location.search).get('collateral') || ''))
+        (location.pathname === '/vaults/open' &&
+            ['HAIVELO', 'HAIVELOV2'].includes(new URLSearchParams(location.search).get('collateral') || ''))
 
     return (
         <>
@@ -204,7 +206,9 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                             ref={setStakeContainer}
                                             onClick={() => setStakeDropdownActive((a) => !a)}
                                         >
-                                            <HeaderLink $active={location.pathname.startsWith('/stake')}>STAKE</HeaderLink>
+                                            <HeaderLink $active={location.pathname.startsWith('/stake')}>
+                                                STAKE
+                                            </HeaderLink>
                                             <StakeDropdown
                                                 $anchor="top"
                                                 $float="left"

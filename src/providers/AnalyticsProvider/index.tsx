@@ -1,5 +1,5 @@
-import { createContext, useContext, useMemo } from 'react'
-import { useQuery , gql } from '@apollo/client'
+import { createContext, useContext, useMemo, useCallback } from 'react'
+import { useQuery, gql } from '@apollo/client'
 
 import type { ReactChildren, SummaryItemValue } from '~/types'
 import { Timeframe } from '~/utils'
@@ -102,11 +102,11 @@ export function AnalyticsProvider({ children }: Props) {
         price: number
     }
 
-    const findNearestPrice = (priceHistory: PricePoint[], targetTimestamp: number) => {
+    const findNearestPrice = useCallback((priceHistory: PricePoint[], targetTimestamp: number) => {
         return priceHistory.reduce((prev: PricePoint, curr: PricePoint) => {
             return Math.abs(curr.timestamp - targetTimestamp) < Math.abs(prev.timestamp - targetTimestamp) ? curr : prev
         }, priceHistory[0]).price
-    }
+    }, [])
 
     const haiPricePerformance = useMemo(() => {
         if (!priceHistoryData?.dailyStats) {
@@ -144,7 +144,7 @@ export function AnalyticsProvider({ children }: Props) {
             priceHistory,
             loading: priceHistoryLoading,
         }
-    }, [priceHistoryData, priceHistoryLoading])
+    }, [priceHistoryData, priceHistoryLoading, findNearestPrice])
 
     return (
         <AnalyticsContext.Provider

@@ -25,5 +25,3 @@ describe('StakingExperience labels', () => {
         expect(screen.getByText('My Net Boost:')).toBeInTheDocument()
     })
 })
-
-

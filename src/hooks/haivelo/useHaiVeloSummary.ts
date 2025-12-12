@@ -48,5 +48,3 @@ export function useHaiVeloSummary(address?: string, haiVeloPriceUsd = 0): UseHai
         boostMap,
     }
 }
-
-

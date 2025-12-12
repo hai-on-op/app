@@ -198,7 +198,17 @@ export function Shared({ children }: Props) {
 
         await timeout(500)
         popupsActions.setIsInitializing(false)
-    }, [account, chain?.id, signer, geb, connectWalletActions, popupsActions, vaultActions, transactionsActions])
+    }, [
+        account,
+        chain?.id,
+        signer,
+        geb,
+        connectWalletActions,
+        popupsActions,
+        vaultActions,
+        transactionsActions,
+        connectWalletState.ctHash,
+    ])
 
     const accountChange = useCallback(() => {
         resetModals()
@@ -210,7 +220,7 @@ export function Shared({ children }: Props) {
             history.push('/')
         }
         transactionsActions.setTransactions({})
-    }, [account, previousAccount, history, connectWalletActions, vaultActions, transactionsActions])
+    }, [account, previousAccount, history, connectWalletActions, transactionsActions, resetModals])
 
     const networkChecker = useCallback(() => {
         accountChange()
@@ -226,7 +236,7 @@ export function Shared({ children }: Props) {
                 popupsActions.setIsInitializing(false)
             }
         }
-    }, [accountChange, accountChecker, account, chain?.id, geb, connectWalletActions, popupsActions])
+    }, [accountChange, accountChecker, account, chain?.id, connectWalletActions, popupsActions])
 
     useEffect(() => {
         networkChecker()

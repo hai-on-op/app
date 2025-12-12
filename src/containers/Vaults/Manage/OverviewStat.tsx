@@ -1,4 +1,4 @@
-import type { TokenKey , ReactChildren } from '~/types'
+import type { TokenKey, ReactChildren } from '~/types'
 import { Status } from '~/utils'
 import { useMediaQuery } from '~/hooks'
 
@@ -49,11 +49,14 @@ export function OverviewStat({
         <StatContainer $fullWidth={fullWidth}>
             {labelOnTop && (
                 <Flex $justify="flex-start" $align="center" $gap={4}>
-                    <Text $fontSize="0.8em" style={{ 
-                        wordBreak: 'break-word',
-                        whiteSpace: 'normal',
-                        lineHeight: '1.2',
-                    }}>
+                    <Text
+                        $fontSize="0.8em"
+                        style={{
+                            wordBreak: 'break-word',
+                            whiteSpace: 'normal',
+                            lineHeight: '1.2',
+                        }}
+                    >
                         {label}
                     </Text>
                     {!!tooltip && <Tooltip width="200px">{tooltip}</Tooltip>}
@@ -74,11 +77,14 @@ export function OverviewStat({
             </Flex>
             {!labelOnTop && (
                 <Flex $justify="flex-start" $align="center" $gap={4}>
-                    <Text $fontSize="0.8em" style={{ 
-                        wordBreak: 'break-word',
-                        whiteSpace: 'normal',
-                        lineHeight: '1.2',
-                    }}>
+                    <Text
+                        $fontSize="0.8em"
+                        style={{
+                            wordBreak: 'break-word',
+                            whiteSpace: 'normal',
+                            lineHeight: '1.2',
+                        }}
+                    >
                         {label}
                     </Text>
                     {!!tooltip && <Tooltip width="200px">{tooltip}</Tooltip>}
@@ -117,10 +123,7 @@ export function OverviewStat({
 
 type OverviewProgressStatProps = OverviewStatProps & {
     variant?: 'default' | 'simple'
-} & (
-    | ({ variant?: 'default' } & ProgressIndicatorProps)
-    | ({ variant: 'simple' } & { simpleProgress: number })
-)
+} & (({ variant?: 'default' } & ProgressIndicatorProps) | ({ variant: 'simple' } & { simpleProgress: number }))
 export function OverviewProgressStat({
     value,
     label,
@@ -313,5 +316,5 @@ const SimpleProgressBarFill = styled.div<{ $progress: number }>`
     border-radius: 999px;
     width: ${({ $progress }) => $progress * 100}%;
     transition: width 0.3s ease;
-    min-width: ${({ $progress }) => $progress > 0 ? '12px' : '0px'};
+    min-width: ${({ $progress }) => ($progress > 0 ? '12px' : '0px')};
 `

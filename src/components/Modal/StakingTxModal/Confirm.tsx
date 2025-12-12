@@ -47,7 +47,7 @@ export function Confirm({
     const service = config
         ? buildStakingService(config.addresses.manager as any, undefined, config.decimals)
         : undefined
-    const { stake, initiateWithdrawal, withdraw, cancelWithdrawal, claimRewards } = useStakeMutations(
+    const { stake, initiateWithdrawal, withdraw } = useStakeMutations(
         address as any,
         config?.namespace ?? 'kite',
         service
@@ -173,7 +173,7 @@ export function Confirm({
                                                   ? `${formatNumberWithStyle(
                                                         simulateNetBoost(
                                                             Number(effectiveStakedAmount) +
-                                                            (isStaking ? 1 : -1) * Number(amount),
+                                                                (isStaking ? 1 : -1) * Number(amount),
                                                             totalStakedNumber + (isStaking ? 1 : -1) * Number(amount)
                                                         ),
                                                         {
@@ -191,8 +191,8 @@ export function Confirm({
                 />
                 {!isStaking && (
                     <Text $fontSize="0.8em" $color="rgba(0,0,0,0.4)">
-                        Note: Unstaked {tokenLabel} has a {formatTimeFromSeconds(Number(cooldownPeriod))} cooldown period
-                        before it can be claimed
+                        Note: Unstaked {tokenLabel} has a {formatTimeFromSeconds(Number(cooldownPeriod))} cooldown
+                        period before it can be claimed
                     </Text>
                 )}
             </ModalBody>

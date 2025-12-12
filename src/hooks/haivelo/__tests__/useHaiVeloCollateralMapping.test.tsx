@@ -17,8 +17,12 @@ function Comp() {
 }
 
 describe('useHaiVeloCollateralMapping', () => {
-    beforeEach(() => { vi.resetAllMocks() })
-    afterEach(() => { vi.restoreAllMocks() })
+    beforeEach(() => {
+        vi.resetAllMocks()
+    })
+    afterEach(() => {
+        vi.restoreAllMocks()
+    })
 
     it('builds a mapping from v1 safes', async () => {
         vi.spyOn(dataSources, 'fetchV1Safes').mockResolvedValue({
@@ -36,5 +40,3 @@ describe('useHaiVeloCollateralMapping', () => {
         expect(screen.getByTestId('bbb').textContent).toBe('3')
     })
 })
-
-

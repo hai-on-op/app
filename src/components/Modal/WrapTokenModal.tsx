@@ -2,7 +2,15 @@ import { useEffect, useMemo, useState } from 'react'
 import { useAccount, useNetwork } from 'wagmi'
 import { ActionState, formatNumberWithStyle } from '~/utils'
 import { useStoreActions } from '~/store'
-import { handleTransactionError, useBalance, useEthersSigner, useGeb, useTokenApproval, ApprovalState , useAddTokens } from '~/hooks'
+import {
+    handleTransactionError,
+    useBalance,
+    useEthersSigner,
+    useGeb,
+    useTokenApproval,
+    ApprovalState,
+    useAddTokens,
+} from '~/hooks'
 
 import styled from 'styled-components'
 import { Flex, HaiButton, Text, CenteredFlex } from '~/styles'

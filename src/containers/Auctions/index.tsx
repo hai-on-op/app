@@ -56,7 +56,7 @@ export function Auctions() {
             }
         }
         fetchAuctions()
-    }, [auctionsActions.fetchAuctions, geb, tokensData])
+    }, [auctionsActions.fetchAuctions, geb, tokensData, auctionsActions])
 
     useEffect(() => {
         if (!geb || !proxyAddress || auctionsData) return

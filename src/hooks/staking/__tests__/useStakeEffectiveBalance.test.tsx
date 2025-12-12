@@ -32,5 +32,3 @@ describe('useStakeEffectiveBalance', () => {
         expect(Number(screen.getByTestId('val').textContent)).toBe(5)
     })
 })
-
-

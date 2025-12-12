@@ -62,7 +62,9 @@ export function useVaultRouting(address?: string) {
                 vaultActions.setVaultData({
                     ...DEFAULT_VAULT_DATA,
                     collateral: symbols.includes(collateral === 'HAIVELO' ? 'HAIVELOV2' : collateral)
-                        ? (collateral === 'HAIVELO' ? 'HAIVELOV2' : collateral)
+                        ? collateral === 'HAIVELO'
+                            ? 'HAIVELOV2'
+                            : collateral
                         : 'WETH',
                 })
                 break
@@ -90,7 +92,7 @@ export function useVaultRouting(address?: string) {
         }, 3000)
 
         return () => clearInterval(interval)
-    }, [account, address, isWrongNetwork, tokensData, geb, signer, vaultActions])
+    }, [account, address, isWrongNetwork, tokensData, geb, signer, vaultActions, chain?.id])
 
     return {
         location,

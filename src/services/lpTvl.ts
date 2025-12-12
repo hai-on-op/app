@@ -26,10 +26,7 @@ export type LpTvlTokenPriceMap = Record<string, number>
  *
  * Assumes 18 decimals for both tokens (which is true for HAI/VELO-style pools).
  */
-export function calculateVelodromePoolTvlUsd(
-    lp: VelodromeLpData,
-    pricesBySymbol: LpTvlTokenPriceMap
-): number {
+export function calculateVelodromePoolTvlUsd(lp: VelodromeLpData, pricesBySymbol: LpTvlTokenPriceMap): number {
     if (!lp) return 0
 
     const [symbol0, symbol1] = lp.tokenPair
@@ -77,7 +74,7 @@ export function buildLpTvlService(config: StakingConfig): LpTvlService | null {
                     }
                     {
                         const curveData = await fetchCurveLpTvlForOptimismLp(tvlMeta.poolAddress)
-                        
+
                         if (!curveData) return null
                         return { usd: curveData.tvlUsd, lpPriceUsd: curveData.lpPriceUsd }
                     }
@@ -109,5 +106,3 @@ export function formatLpTvlUsd(value: number | null): string {
         maxDecimals: 0,
     })
 }
-
-

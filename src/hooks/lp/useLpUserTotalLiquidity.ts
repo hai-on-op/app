@@ -11,5 +11,3 @@ export function useLpUserTotalLiquidity(address?: Address): { loading: boolean; 
     }, [positions])
     return { loading: isLoading, value }
 }
-
-

@@ -31,5 +31,3 @@ export function useLpBoostForUser(address?: Address): { loading: boolean; lpBoos
 
     return { loading, lpBoost, kiteRatio }
 }
-
-

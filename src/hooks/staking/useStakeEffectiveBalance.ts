@@ -17,5 +17,3 @@ export function useStakeEffectiveBalance(
     }, [data])
     return { loading: isLoading, value }
 }
-
-

@@ -53,10 +53,13 @@ describe('incentivesDistributorService.getUserIncentives', () => {
         const distro = {
             format: 'standard-v1',
             tree: { root: '0xroot' },
-            values: [ { value: [ account, '1000000000000000000' ] } ],
+            values: [{ value: [account, '1000000000000000000'] }],
         }
         // mock global fetch for claims blob
-        vi.spyOn(global, 'fetch' as any).mockResolvedValue({ ok: true, json: async () => ({ kite: distro, KITE: distro }) } as any)
+        vi.spyOn(global, 'fetch' as any).mockResolvedValue({
+            ok: true,
+            json: async () => ({ kite: distro, KITE: distro }),
+        } as any)
         // mock StandardMerkleTree.load
         vi.mock('@openzeppelin/merkle-tree', async () => ({
             StandardMerkleTree: { load: () => ({ root: '0xroot', getProof: () => ['0xproof'] }) },
@@ -70,5 +73,3 @@ describe('incentivesDistributorService.getUserIncentives', () => {
         expect(res.KITE?.amountWei).toBe('1000000000000000000')
     })
 })
-
-

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { formatNumberWithStyle, Status , getRatePercentage } from '~/utils'
+import { formatNumberWithStyle, Status } from '~/utils'
 
 import styled from 'styled-components'
 import { type DashedContainerProps, DashedContainerStyle, Flex, Grid, Text, CenteredFlex } from '~/styles'
@@ -9,7 +9,6 @@ import { StatusLabel } from '~/components/StatusLabel'
 import { Swirl } from '~/components/Icons/Swirl'
 import { useBoost } from '~/hooks/useBoost'
 import { useUnderlyingAPR } from '~/hooks/useUnderlyingAPR'
-import { useStoreState } from '~/store'
 import { useAccount } from 'wagmi'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { useHaiVeloAccount } from '~/hooks/haivelo/useHaiVeloAccount'
@@ -19,15 +18,7 @@ import { useQuery } from '@tanstack/react-query'
 export function HaiVeloOverview() {
     // Get all data and simulation state from the single context
     const {
-        data: {
-            loading,
-            error,
-            veloBalanceFormatted,
-            veVeloBalanceFormatted,
-            totalVeloBalanceFormatted,
-            haiVeloV1BalanceFormatted,
-            haiVeloV2BalanceFormatted,
-        },
+        data: { loading, error },
         simulatedAmount,
         simulatedDepositAmount,
     } = useHaiVelo()
@@ -35,24 +26,24 @@ export function HaiVeloOverview() {
     // Net Rewards APR (haiVELO vault): use combined haiVELO boost (v1+v2)
     const { hvBoost } = useBoost()
     const { underlyingAPR } = useUnderlyingAPR({ collateralType: 'HAIVELOV2' })
-    const { vaultModel } = useStoreState((state) => state)
-    const haiveloLiqData = vaultModel?.liquidationData?.collateralLiquidationData?.['HAIVELOV2']
-    const stabilityFeeCost = haiveloLiqData
-        ? -getRatePercentage(haiveloLiqData.totalAnnualizedStabilityFee || '1', 4, true)
-        : 0
-    const mintingIncentivesAPR = 0
+    // const { vaultModel } = useStoreState((state) => state)
+    // const haiveloLiqData = vaultModel?.liquidationData?.collateralLiquidationData?.['HAIVELOV2']
+    // const stabilityFeeCost = haiveloLiqData
+    //     ? -getRatePercentage(haiveloLiqData.totalAnnualizedStabilityFee || '1', 4, true)
+    //     : 0
+    // const mintingIncentivesAPR = 0
 
     // Estimate Net APR using assumed 200% collateral ratio (same approach as Manage/Overview fallback)
-    const assumedCollateralRatio = 2.0
-    const assumedCollateralValue = assumedCollateralRatio
-    const assumedDebtValue = 1
-    const collateralYield = assumedCollateralValue * underlyingAPR
-    const debtNetAPR = mintingIncentivesAPR + stabilityFeeCost
-    const debtNetYield = assumedDebtValue * debtNetAPR
-    const netAprDecimal =
-        assumedCollateralValue + assumedDebtValue > 0
-            ? (collateralYield + debtNetYield) / (assumedCollateralValue + assumedDebtValue)
-            : underlyingAPR + stabilityFeeCost
+    // const assumedCollateralRatio = 2.0
+    // const assumedCollateralValue = assumedCollateralRatio
+    // const assumedDebtValue = 1
+    // const collateralYield = assumedCollateralValue * underlyingAPR
+    // const debtNetAPR = mintingIncentivesAPR + stabilityFeeCost
+    // const debtNetYield = assumedDebtValue * debtNetAPR
+    // const netAprDecimal =
+    //     assumedCollateralValue + assumedDebtValue > 0
+    //         ? (collateralYield + debtNetYield) / (assumedCollateralValue + assumedDebtValue)
+    //         : underlyingAPR + stabilityFeeCost
 
     const { address } = useAccount()
     const addrLower = address?.toLowerCase()
@@ -116,12 +107,12 @@ export function HaiVeloOverview() {
             mounted = false
         }
     }, [])
-    const percentOfV2Deposited = useMemo(() => {
-        const totalQty = Number(v2Safes?.totalCollateral || '0')
-        if (!v2Supply || v2Supply <= 0) return '--%'
-        const pct = (totalQty * 100) / v2Supply
-        return formatNumberWithStyle(pct, { style: 'percent', suffixed: true, maxDecimals: 2 })
-    }, [v2Safes, v2Supply])
+    // const percentOfV2Deposited = useMemo(() => {
+    //     const totalQty = Number(v2Safes?.totalCollateral || '0')
+    //     if (!v2Supply || v2Supply <= 0) return '--%'
+    //     const pct = (totalQty * 100) / v2Supply
+    //     return formatNumberWithStyle(pct, { style: 'percent', suffixed: true, maxDecimals: 2 })
+    // }, [v2Safes, v2Supply])
 
     // Calculate progress for hai velo deposited (with simulation overlay)
     const progressProps = useMemo(() => {
@@ -129,7 +120,11 @@ export function HaiVeloOverview() {
         const supplyQty = v2Supply
 
         const baseProgress = supplyQty > 0 ? Math.min(totalDepositedQty / supplyQty, 1) : 0
-        const baseLabel = formatNumberWithStyle(baseProgress * 100, { style: 'percent', suffixed: true, maxDecimals: 2 })
+        const baseLabel = formatNumberWithStyle(baseProgress * 100, {
+            style: 'percent',
+            suffixed: true,
+            maxDecimals: 2,
+        })
 
         const withSimQty = totalDepositedQty + (simulatedDepositAmount > 0 ? simulatedDepositAmount : 0)
         const simProgress = supplyQty > 0 ? Math.min(withSimQty / supplyQty, 1) : 0
@@ -139,9 +134,9 @@ export function HaiVeloOverview() {
             simulatedProgress:
                 simulatedAmount > 0
                     ? {
-                        progress: simProgress,
-                        label: `${(simProgress * 100).toFixed(1)}% After Tx`,
-                    }
+                          progress: simProgress,
+                          label: `${(simProgress * 100).toFixed(1)}% After Tx`,
+                      }
                     : undefined,
             colorLimits: [0, 0.5, 1] as [number, number, number],
             labels: [],
@@ -154,8 +149,6 @@ export function HaiVeloOverview() {
         const after = Math.max(base - (simulatedAmount > 0 ? simulatedAmount : 0), 0)
         return formatNumberWithStyle(after, { maxDecimals: 2 })
     }, [myConvertibleVeloTotal, simulatedAmount])
-
-    
 
     return (
         <Container>

@@ -32,7 +32,7 @@ import type { Address } from '~/services/stakingService'
 import { client as apolloClient } from '~/utils/graphql/client'
 import { defaultStakingService } from '~/services/stakingService'
 import { stakeQueryKeys } from '~/hooks/staking/stakeQueryKeys'
-import type { StakingUserEntity } from '~/types/stakingConfig'
+// import type { StakingUserEntity } from '~/types/stakingConfig'
 
 type AccountCache = {
     stakedBalance: string
@@ -55,7 +55,7 @@ export function useStakeMutations(address?: Address, namespace: string = 'kite',
     // via the options object in useStakePendingWithdrawalQuery; for invalidation
     // we broadly target by namespace and address, so the specific entity string
     // is not required here.
-    const defaultUserEntity: StakingUserEntity = 'stakingUser'
+    // const defaultUserEntity: StakingUserEntity = 'stakingUser'
 
     const handleCommonSuccess = async () => {
         await Promise.all([
@@ -127,7 +127,9 @@ export function useStakeMutations(address?: Address, namespace: string = 'kite',
             })
             try {
                 await apolloClient.refetchQueries({ include: ['GetStakingUser', 'GetAllStakingUsers'] })
-            } catch {}
+            } catch {
+                // Ignore Apollo refetch errors - they're non-critical
+            }
             await handleCommonSuccess()
         },
         onSettled: handleCommonSettled,
@@ -175,7 +177,9 @@ export function useStakeMutations(address?: Address, namespace: string = 'kite',
             })
             try {
                 await apolloClient.refetchQueries({ include: ['GetStakingUser', 'GetAllStakingUsers'] })
-            } catch {}
+            } catch {
+                // Ignore Apollo refetch errors - they're non-critical
+            }
             await handleCommonSuccess()
         },
         onSettled: handleCommonSettled,
@@ -216,7 +220,9 @@ export function useStakeMutations(address?: Address, namespace: string = 'kite',
             })
             try {
                 await apolloClient.refetchQueries({ include: ['GetStakingUser', 'GetAllStakingUsers'] })
-            } catch {}
+            } catch {
+                // Ignore Apollo refetch errors - they're non-critical
+            }
             await handleCommonSuccess()
         },
         onSettled: handleCommonSettled,
@@ -257,7 +263,9 @@ export function useStakeMutations(address?: Address, namespace: string = 'kite',
             })
             try {
                 await apolloClient.refetchQueries({ include: ['GetStakingUser', 'GetAllStakingUsers'] })
-            } catch {}
+            } catch {
+                // Ignore Apollo refetch errors - they're non-critical
+            }
             await handleCommonSuccess()
         },
         onSettled: handleCommonSettled,
@@ -292,13 +300,8 @@ export function useStakeMutations(address?: Address, namespace: string = 'kite',
         onSettled: handleCommonSettled,
     })
 
-    return useMemo(() => ({ stake, initiateWithdrawal, withdraw, cancelWithdrawal, claimRewards }), [
-        stake,
-        initiateWithdrawal,
-        withdraw,
-        cancelWithdrawal,
-        claimRewards,
-    ])
+    return useMemo(
+        () => ({ stake, initiateWithdrawal, withdraw, cancelWithdrawal, claimRewards }),
+        [stake, initiateWithdrawal, withdraw, cancelWithdrawal, claimRewards]
+    )
 }
-
-

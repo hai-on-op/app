@@ -41,5 +41,3 @@ export const contracts = Object.freeze({
 })
 
 export type ContractsConfig = typeof contracts
-
-

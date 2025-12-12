@@ -21,7 +21,7 @@ export function usePlaylist(songs: string[], volume = 1) {
                 settingsModelActions.setIsPlayingMusic(false)
                 console.warn('failed to play audio')
             })
-    }, [audio])
+    }, [audio, settingsModelActions])
 
     const pause = useCallback(() => {
         audio?.pause()

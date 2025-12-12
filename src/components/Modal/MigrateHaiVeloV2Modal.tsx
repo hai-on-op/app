@@ -25,19 +25,27 @@ export function MigrateHaiVeloV2Modal(props: ModalProps) {
 
             <Steps>
                 <StepCard>
-                    <Text $fontSize="16px"><strong>Step 01:</strong> Payback HAI debt</Text>
+                    <Text $fontSize="16px">
+                        <strong>Step 01:</strong> Payback HAI debt
+                    </Text>
                 </StepCard>
                 <StepCard>
-                    <Text $fontSize="16px"><strong>Step 02:</strong> Withdraw haiVELO v1 collateral</Text>
+                    <Text $fontSize="16px">
+                        <strong>Step 02:</strong> Withdraw haiVELO v1 collateral
+                    </Text>
                 </StepCard>
                 <StepCard>
                     <Text $fontSize="16px">
                         <strong>Step 03:</strong> Convert haiVELO v1 to haiVELO v2 in the{' '}
-                        <Link href="/vaults/open?collateral=HAIVELOV2" onClick={props.onClose}>new user interface</Link>
+                        <Link href="/vaults/open?collateral=HAIVELOV2" onClick={props.onClose}>
+                            new user interface
+                        </Link>
                     </Text>
                 </StepCard>
                 <StepCard>
-                    <Text $fontSize="16px"><strong>Step 04:</strong> Deposit haiVELO v2 as collateral and mint HAI</Text>
+                    <Text $fontSize="16px">
+                        <strong>Step 04:</strong> Deposit haiVELO v2 as collateral and mint HAI
+                    </Text>
                 </StepCard>
             </Steps>
         </Modal>
@@ -77,5 +85,3 @@ const Footer = styled(Flex).attrs((props) => ({
     $align: 'center',
     ...props,
 }))``
-
-

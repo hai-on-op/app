@@ -18,14 +18,7 @@
  * - Version switching/aggregation policy (e.g., how to blend v1/v2 TVL). Expose data so policy can live in provider/hooks.
  */
 
-import type {
-    HaiVeloVersion,
-    HaiVeloAddresses,
-    HaiVeloBalances,
-    HaiVeloTotals,
-    HaiVeloBoost,
-    HaiVeloAPR,
-} from '~/types/haivelo'
+import type { HaiVeloAddresses } from '~/types/haivelo'
 
 // Token and contract addresses used across the app
 // Note: Keep these as a single source of truth
@@ -118,17 +111,20 @@ export function calculateHaiVeloBoostMap(
      * What: For each user, compute a multiplier based on (KITE ratio / haiVELO ratio) + 1, capped at 2x.
      * Notes: Mirrors boostService semantics to keep a consistent notion of “boost”.
      */
-    return Object.entries(haiVeloCollateralMapping).reduce((acc, [address, value]) => {
-        if (!usersStakingData[address]) return { ...acc, [address]: 1 }
-        const userStaked = Number(usersStakingData[address]?.stakedBalance)
-        const userDeposited = Number(value)
-        // Simple boost formula alignment with existing implementation: (kiteRatio / haiVeloRatio) + 1, capped externally if needed
-        const kiteRatio = isNaN(totalStakedAmount) || totalStakedAmount === 0 ? 0 : userStaked / totalStakedAmount
-        const haiVeloRatio = totalHaiVeloDeposited === 0 ? 0 : userDeposited / totalHaiVeloDeposited
-        const boostRaw = haiVeloRatio === 0 ? 1 : kiteRatio / haiVeloRatio + 1
-        const boost = Math.min(boostRaw, 2)
-        return { ...acc, [address]: boost }
-    }, {} as Record<string, number>)
+    return Object.entries(haiVeloCollateralMapping).reduce(
+        (acc, [address, value]) => {
+            if (!usersStakingData[address]) return { ...acc, [address]: 1 }
+            const userStaked = Number(usersStakingData[address]?.stakedBalance)
+            const userDeposited = Number(value)
+            // Simple boost formula alignment with existing implementation: (kiteRatio / haiVeloRatio) + 1, capped externally if needed
+            const kiteRatio = isNaN(totalStakedAmount) || totalStakedAmount === 0 ? 0 : userStaked / totalStakedAmount
+            const haiVeloRatio = totalHaiVeloDeposited === 0 ? 0 : userDeposited / totalHaiVeloDeposited
+            const boostRaw = haiVeloRatio === 0 ? 1 : kiteRatio / haiVeloRatio + 1
+            const boost = Math.min(boostRaw, 2)
+            return { ...acc, [address]: boost }
+        },
+        {} as Record<string, number>
+    )
 }
 
 /**
@@ -158,15 +154,18 @@ export function calculateHaiVeloBoost(params: {
  * This wrapper centralizes both implementation and addresses, and makes it easy to
  * support a different distributor/depositer for v2 without touching every consumer.
  */
-export async function fetchHaiVeloLatestTransferAmount(
-    params: {
-        rpcUrl: string
-        haiTokenAddress: string
-        depositerAddress?: string
-        distributorAddress?: string
-    }
-): Promise<number> {
-    const { rpcUrl, haiTokenAddress, depositerAddress = HAIVELO_V1_DEPOSITER_ADDRESS, distributorAddress = HAI_REWARD_DISTRIBUTOR_ADDRESS } = params
+export async function fetchHaiVeloLatestTransferAmount(params: {
+    rpcUrl: string
+    haiTokenAddress: string
+    depositerAddress?: string
+    distributorAddress?: string
+}): Promise<number> {
+    const {
+        rpcUrl,
+        haiTokenAddress,
+        depositerAddress = HAIVELO_V1_DEPOSITER_ADDRESS,
+        distributorAddress = HAI_REWARD_DISTRIBUTOR_ADDRESS,
+    } = params
     const { RewardsModel } = await import('~/model/rewardsModel')
     try {
         const amount = await RewardsModel.fetchHaiVeloDailyReward({
@@ -215,9 +214,8 @@ export function computeHaiVeloBoostApr(params: {
         ? myBoostedValueParticipating / totalBoostedValueParticipating
         : 0
 
-    const baseAPRPercent = totalBoostedValueParticipating > 0
-        ? (haiVeloDailyRewardValue / totalBoostedValueParticipating) * 365 * 100
-        : 0
+    const baseAPRPercent =
+        totalBoostedValueParticipating > 0 ? (haiVeloDailyRewardValue / totalBoostedValueParticipating) * 365 * 100 : 0
 
     const myBoostedAPRPercent = myBoost * baseAPRPercent
 
@@ -283,5 +281,3 @@ export function aggregateDeposits(params: {
 
     return { mappingCombined, v1Total, v2Total, totals }
 }
-
-

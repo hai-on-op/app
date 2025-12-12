@@ -90,14 +90,14 @@ export async function fetchVirtualPriceFromContract(
 
 /**
  * Calculate the base vAPY for a Curve pool.
- * 
+ *
  * Per Curve documentation (https://resources.curve.finance/pools/calculating-yield/#base-vapy):
  * vAPY = (virtual_price(today) / virtual_price(yesterday))^365 - 1
- * 
+ *
  * Since we don't have easy access to yesterday's virtual price, we:
  * 1. First try to get APY from Curve's subgraph data (latestDailyApy or latestWeeklyApy)
  * 2. Fall back to 0% if no data is available
- * 
+ *
  * For stablecoin pools, the base vAPY from trading fees is typically 0.1%-2% range.
  */
 export async function fetchCurvePoolApr(
@@ -169,7 +169,7 @@ export async function fetchCurvePoolApr(
 
 /**
  * Calculate KITE staking incentives APR for LP staking.
- * 
+ *
  * Formula: incentivesApr = (dailyKiteReward * 365 * kitePrice) / totalStakedValueUsd
  */
 export function calculateKiteIncentivesApr(params: {
@@ -199,4 +199,3 @@ export function calculateKiteIncentivesApr(params: {
 
     return incentivesApr
 }
-

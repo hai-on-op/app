@@ -2,16 +2,13 @@ import type { IVault, SetState, SortableHeader, Sorting } from '~/types'
 import { Status, formatNumberWithStyle, riskStateToStatus, getRatePercentage } from '~/utils'
 import { useVault } from '~/providers/VaultProvider'
 import { formatCollateralLabel } from '~/utils/formatting'
-import { useStoreState } from '~/store'
+// import { useStoreState } from '~/store'
 import styled from 'styled-components'
 import { CenteredFlex, Flex, Grid, HaiButton, TableButton, Text } from '~/styles'
 import { RewardsTokenArray, TokenArray } from '~/components/TokenArray'
 import { StatusLabel } from '~/components/StatusLabel'
 import { Table } from '~/components/Table'
 import { ClaimableFreeCollateral } from './ClaimableFreeCollateral'
-import { useBoost } from '~/hooks/useBoost'
-import { RewardsModel } from '~/model/rewardsModel'
-import { useUnderlyingAPR } from '~/hooks/useUnderlyingAPR'
 
 type MyVaultsTableProps = {
     headers: SortableHeader[]
@@ -22,14 +19,13 @@ type MyVaultsTableProps = {
 }
 export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: MyVaultsTableProps) {
     const { setActiveVault } = useVault()
-    
+
     // Get boost data for net APR calculation
-    const { individualVaultBoosts } = useBoost()
-   
+
     // Get liquidation data for price calculations
-    const {
-        vaultModel: { liquidationData },
-    } = useStoreState((state) => state)
+    // const {
+    //     vaultModel: { liquidationData },
+    // } = useStoreState((state) => state)
 
     // Get boost data for net APR calculation
     // const { individualVaultBoosts } = useBoost()
@@ -68,7 +64,15 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                 } = vault
 
                 const hasFreeCollateral = freeCollateral !== '0.0'
-                const HAS_REWARDS = ['HAIVELO', 'HAIVELOV2', 'ALETH', 'YV-VELO-ALETH-WETH', 'YV-VELO-MSETH-WETH', 'MSETH', 'MOO-VELO-BOLD-LUSD']
+                const HAS_REWARDS = [
+                    'HAIVELO',
+                    'HAIVELOV2',
+                    'ALETH',
+                    'YV-VELO-ALETH-WETH',
+                    'YV-VELO-MSETH-WETH',
+                    'MSETH',
+                    'MOO-VELO-BOLD-LUSD',
+                ]
                 const collateralLabel = formatCollateralLabel(collateralName)
                 const tooltip =
                     collateralName === 'HAIVELO'
@@ -85,12 +89,19 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                                 content: (
                                     <Grid $columns="2fr min-content 1fr" $align="center" $gap={12}>
                                         <CenteredFlex $width="fit-content" $gap={4}>
-                                            <TokenArray tokens={[collateralName as any]} label={formatCollateralLabel(collateralName)} />
+                                            <TokenArray
+                                                tokens={[collateralName as any]}
+                                                label={formatCollateralLabel(collateralName)}
+                                            />
                                             <Text>#{id}</Text>
                                         </CenteredFlex>
                                         {HAS_REWARDS.includes(collateralName) && (
                                             <RewardsTokenArray
-                                                tokens={(collateralName === 'HAIVELO' || collateralName === 'HAIVELOV2') ? ['HAI', 'KITE'] : ['KITE']}
+                                                tokens={
+                                                    collateralName === 'HAIVELO' || collateralName === 'HAIVELOV2'
+                                                        ? ['HAI', 'KITE']
+                                                        : ['KITE']
+                                                }
                                                 label="EARN"
                                                 tooltip={tooltip}
                                             />
@@ -106,9 +117,9 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                                         <Text $textAlign="right">
                                             {collateralRatio
                                                 ? formatNumberWithStyle(collateralRatio, {
-                                                    scalingFactor: 0.01,
-                                                    style: 'percent',
-                                                })
+                                                      scalingFactor: 0.01,
+                                                      style: 'percent',
+                                                  })
                                                 : '--%'}
                                         </Text>
                                         <Flex $justify="flex-start" $align="center">
@@ -141,10 +152,13 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                             {
                                 content: (
                                     <Text>
-                                        {formatNumberWithStyle(-getRatePercentage(totalAnnualizedStabilityFee || '1', 4, true), {
-                                            style: 'percent',
-                                            maxDecimals: 2,
-                                        })}
+                                        {formatNumberWithStyle(
+                                            -getRatePercentage(totalAnnualizedStabilityFee || '1', 4, true),
+                                            {
+                                                style: 'percent',
+                                                maxDecimals: 2,
+                                            }
+                                        )}
                                     </Text>
                                 ),
                             },

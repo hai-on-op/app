@@ -53,7 +53,7 @@ export function usePublicProvider() {
                 chainId: client.chain.id,
                 name: client.chain.name,
             }),
-        []
+        [client.chain.id, client.chain.name, client.transport.url]
     )
 }
 

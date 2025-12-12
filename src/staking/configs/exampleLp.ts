@@ -29,5 +29,3 @@ export const exampleLpConfig: StakingConfig = {
     },
     rewards,
 }
-
-

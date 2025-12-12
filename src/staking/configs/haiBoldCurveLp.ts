@@ -31,5 +31,3 @@ export const haiBoldCurveLpConfig: StakingConfig = {
     },
     rewards,
 }
-
-

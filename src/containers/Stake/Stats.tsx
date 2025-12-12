@@ -29,7 +29,10 @@ export function StakeStats({ config }: { config?: StakingConfig }) {
 
     // Staking context may be temporarily undefined during route transitions; guard defensively.
     const stakingCtx = useStakingData()
-    const userRewards = Array.isArray(stakingCtx?.userRewards) ? stakingCtx!.userRewards : []
+    const userRewards = useMemo(
+        () => (Array.isArray(stakingCtx?.userRewards) ? stakingCtx!.userRewards : []),
+        [stakingCtx]
+    )
 
     const { prices: veloPrices } = useVelodromePrices()
 
@@ -41,26 +44,30 @@ export function StakeStats({ config }: { config?: StakingConfig }) {
     const KITE_ADDRESS = import.meta.env.VITE_KITE_ADDRESS
     const OP_ADDRESS = import.meta.env.VITE_OP_ADDRESS
 
-    const rewardsDataMap: Record<string, { id: number; name: string; tokenImg: string; price: number | undefined }> = {
-        [HAI_ADDRESS]: {
-            id: 0,
-            name: tokenAssets.HAI.symbol,
-            tokenImg: tokenAssets.HAI.icon,
-            price: haiPrice,
-        },
-        [KITE_ADDRESS]: {
-            id: 1,
-            name: tokenAssets.KITE.symbol,
-            tokenImg: tokenAssets.KITE.icon,
-            price: kitePrice,
-        },
-        [OP_ADDRESS]: {
-            id: 2,
-            name: tokenAssets.OP.symbol,
-            tokenImg: tokenAssets.OP.icon,
-            price: opPrice,
-        },
-    }
+    const rewardsDataMap: Record<string, { id: number; name: string; tokenImg: string; price: number | undefined }> =
+        useMemo(
+            () => ({
+                [HAI_ADDRESS]: {
+                    id: 0,
+                    name: tokenAssets.HAI.symbol,
+                    tokenImg: tokenAssets.HAI.icon,
+                    price: haiPrice,
+                },
+                [KITE_ADDRESS]: {
+                    id: 1,
+                    name: tokenAssets.KITE.symbol,
+                    tokenImg: tokenAssets.KITE.icon,
+                    price: kitePrice,
+                },
+                [OP_ADDRESS]: {
+                    id: 2,
+                    name: tokenAssets.OP.symbol,
+                    tokenImg: tokenAssets.OP.icon,
+                    price: opPrice,
+                },
+            }),
+            [HAI_ADDRESS, KITE_ADDRESS, OP_ADDRESS, haiPrice, kitePrice, opPrice]
+        )
 
     const tokenLabel = config?.labels.token ?? 'KITE'
     const stTokenLabel = config?.labels.stToken ?? 'stKITE'
@@ -110,49 +117,42 @@ export function StakeStats({ config }: { config?: StakingConfig }) {
 
         const hasKiteRewards = isKitePool && Array.isArray(userRewards) && userRewards.length > 0
 
-        const rewardsRow: StatProps | null =
-            hasKiteRewards
-                ? {
-                      header: formatNumberWithStyle(
-                          userRewards.reduce(
-                              (
-                                  acc: number,
-                                  reward: {
-                                      amount: ethers.BigNumber
-                                      tokenAddress: string
-                                  }
-                              ) => {
-                                  const amount = parseFloat(ethers.utils.formatEther(reward.amount))
-                                  const rewardMeta = rewardsDataMap[
-                                      reward.tokenAddress as keyof typeof rewardsDataMap
-                                  ]
-                                  const rawPrice = rewardMeta?.price as unknown
-                                  const price =
-                                      typeof rawPrice === 'number'
-                                          ? rawPrice
-                                          : typeof rawPrice === 'string'
-                                              ? Number(rawPrice)
-                                              : 0
-                                  return acc + amount * price
-                              },
-                              0
-                          ),
-                          { style: 'currency', minDecimals: 0, maxDecimals: 2 }
+        const rewardsRow: StatProps | null = hasKiteRewards
+            ? {
+                  header: formatNumberWithStyle(
+                      userRewards.reduce(
+                          (
+                              acc: number,
+                              reward: {
+                                  amount: ethers.BigNumber
+                                  tokenAddress: string
+                              }
+                          ) => {
+                              const amount = parseFloat(ethers.utils.formatEther(reward.amount))
+                              const rewardMeta = rewardsDataMap[reward.tokenAddress as keyof typeof rewardsDataMap]
+                              const rawPrice = rewardMeta?.price as unknown
+                              const price =
+                                  typeof rawPrice === 'number'
+                                      ? rawPrice
+                                      : typeof rawPrice === 'string'
+                                      ? Number(rawPrice)
+                                      : 0
+                              return acc + amount * price
+                          },
+                          0
                       ),
-                      headerStatus: <RewardsTokenArray tokens={['HAI', 'KITE', 'OP']} hideLabel />,
-                      label: 'My Staking Rewards',
-                      tooltip:
-                          'Claim your staking rewards. Unclaimed rewards will accrue below and do not expire.',
-                      button: (
-                          <HaiButton
-                              $variant="yellowish"
-                              onClick={() => popupsActions.setIsStakeClaimPopupOpen(true)}
-                          >
-                              Claim
-                          </HaiButton>
-                      ),
-                  }
-                : null
+                      { style: 'currency', minDecimals: 0, maxDecimals: 2 }
+                  ),
+                  headerStatus: <RewardsTokenArray tokens={['HAI', 'KITE', 'OP']} hideLabel />,
+                  label: 'My Staking Rewards',
+                  tooltip: 'Claim your staking rewards. Unclaimed rewards will accrue below and do not expire.',
+                  button: (
+                      <HaiButton $variant="yellowish" onClick={() => popupsActions.setIsStakeClaimPopupOpen(true)}>
+                          Claim
+                      </HaiButton>
+                  ),
+              }
+            : null
 
         const boostTooltip = isKitePool ? (
             <Text>
@@ -198,6 +198,7 @@ export function StakeStats({ config }: { config?: StakingConfig }) {
         stTokenLabel,
         popupsActions,
         userRewards,
+        rewardsDataMap,
     ])
 
     const columns = isKitePool ? 'repeat(4, 1fr) 1.6fr' : 'repeat(4, 1fr)'

@@ -5,6 +5,7 @@ import { renderWithProviders } from '~/test/testUtils'
 import { useStakeMutations } from '../useStakeMutations'
 import * as svc from '~/services/stakingService'
 import { useQueryClient } from '@tanstack/react-query'
+import * as reactQuery from '@tanstack/react-query'
 
 function Comp({ address }: { address: `0x${string}` }) {
     const qc = useQueryClient()
@@ -67,7 +68,7 @@ describe('useStakeMutations', () => {
         const invalidateSpy = vi.fn()
         const refetchSpy = vi.fn()
 
-        vi.spyOn(require('@tanstack/react-query'), 'useQueryClient').mockReturnValue({
+        vi.spyOn(reactQuery, 'useQueryClient').mockReturnValue({
             setQueryData: vi.fn(),
             getQueryData: vi.fn(),
             invalidateQueries: invalidateSpy,
@@ -85,12 +86,8 @@ describe('useStakeMutations', () => {
                 )
             ).toBe(true)
             expect(
-                refetchSpy.mock.calls.some((call) =>
-                    JSON.stringify(call[0]?.queryKey || call[0]).includes('"pending"')
-                )
+                refetchSpy.mock.calls.some((call) => JSON.stringify(call[0]?.queryKey || call[0]).includes('"pending"'))
             ).toBe(true)
         })
     })
 })
-
-

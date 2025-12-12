@@ -40,7 +40,7 @@ export function AuctionTable({ headers, rows, sorting, setSorting, isLoading, er
             // auctionIds: rows.filter(({ sellToken: token }) => token === sellToken).map(({ auctionId }) => auctionId),
             auctionIds: [selectedAuction.auctionId],
         })
-    }, [selectedAuction, rows])
+    }, [selectedAuction, rows, geb, auctionActions])
 
     useEffect(() => {
         popupsActions.toggleModal({

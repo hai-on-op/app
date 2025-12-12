@@ -9,8 +9,11 @@ import { useAnalytics } from '~/providers/AnalyticsProvider'
 export function useLpUserPositionValue(address?: Address): { loading: boolean; value: number } {
     const { data: pool, isLoading: poolLoading } = useLpPool()
     const { data: currentPositions, isLoading: curLoading } = useLpCurrentPositions(address)
-    const { prices: veloPrices, loading: velodromeLoading } = useVelodromePrices()
-    const { haiMarketPrice, data: { tokenAnalyticsData } } = useAnalytics()
+    const { loading: velodromeLoading } = useVelodromePrices()
+    const {
+        haiMarketPrice,
+        data: { tokenAnalyticsData },
+    } = useAnalytics()
 
     const token0UsdPrice = useMemo(() => parseFloat(haiMarketPrice.raw || '0'), [haiMarketPrice])
     const token1UsdPrice = useMemo(() => {
@@ -29,5 +32,3 @@ export function useLpUserPositionValue(address?: Address): { loading: boolean; v
 }
 
 export default useLpUserPositionValue
-
-

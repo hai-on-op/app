@@ -9,7 +9,13 @@ export type UseHaiVeloBoostAprParams = {
     userAddress?: string
 }
 
-export function useHaiVeloBoostApr({ mapping, boostMap, prices, latestTransferAmount, userAddress }: UseHaiVeloBoostAprParams) {
+export function useHaiVeloBoostApr({
+    mapping,
+    boostMap,
+    prices,
+    latestTransferAmount,
+    userAddress,
+}: UseHaiVeloBoostAprParams) {
     return useMemo(() => {
         const result = computeHaiVeloBoostApr({
             mapping,
@@ -22,5 +28,3 @@ export function useHaiVeloBoostApr({ mapping, boostMap, prices, latestTransferAm
         return result
     }, [mapping, boostMap, prices.haiVeloPriceUsd, prices.haiPriceUsd, latestTransferAmount, userAddress])
 }
-
-
