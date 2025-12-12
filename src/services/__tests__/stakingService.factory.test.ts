@@ -1,8 +1,9 @@
+import { describe, it, expect, vi } from 'vitest'
 import { buildStakingService } from '~/services/stakingService'
 
 // Mock ethers.Contract to capture constructor args and expose minimal API
-jest.mock('ethers', () => {
-    const actual = jest.requireActual('ethers')
+vi.mock('ethers', async () => {
+    const actual = await vi.importActual<typeof import('ethers')>('ethers')
     class MockContract {
         public __address: string
         public __abi: any
@@ -50,7 +51,7 @@ jest.mock('ethers', () => {
 describe('buildStakingService', () => {
     it('creates isolated services for different manager addresses', async () => {
         const A = '0xA000000000000000000000000000000000000001'
-        const B = '0xB000000000000000000000000000000000000002'
+        const B = '0xB000000000000000000000000000000000002'
         const serviceA = buildStakingService(A as any, [] as any, 18)
         const serviceB = buildStakingService(B as any, [] as any, 18)
 
@@ -64,5 +65,3 @@ describe('buildStakingService', () => {
         expect(serviceB.decimals).toBe(18)
     })
 })
-
-

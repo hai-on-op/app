@@ -73,7 +73,7 @@ export function TransactionUpdater(): null {
                         console.error(`failed to check transaction hash: ${hash}`, error)
                     })
             })
-    }, [chainId, provider, transactions, lastBlockNumber])
+    }, [chainId, provider, transactions, lastBlockNumber, transactionsActions])
 
     return null
 }

@@ -47,36 +47,29 @@ export function useStakingBoost(config?: StakingConfig): StakingBoostResult {
         []
     )
 
-    const lpService = useMemo(
-        () => {
-            if (!config) return undefined
-            return buildStakingService(config.addresses.manager as any, undefined, config.decimals)
-        },
-        [config]
-    )
+    const lpService = useMemo(() => {
+        if (!config) return undefined
+        return buildStakingService(config.addresses.manager as any, undefined, config.decimals)
+    }, [config])
 
     // Global KITE staking data
-    const {
-        data: kiteAccount,
-        isLoading: kiteAccountLoading,
-    } = useStakeAccount(address as any, kiteConfig.namespace, kiteService)
-    const {
-        data: kiteStats,
-        isLoading: kiteStatsLoading,
-    } = useStakeStats(kiteConfig.namespace, kiteService)
+    const { data: kiteAccount, isLoading: kiteAccountLoading } = useStakeAccount(
+        address as any,
+        kiteConfig.namespace,
+        kiteService
+    )
+    const { data: kiteStats, isLoading: kiteStatsLoading } = useStakeStats(kiteConfig.namespace, kiteService)
 
     // This LP staking pool data
     const lpNamespace = config?.namespace ?? 'kite'
     const lpServiceForHooks = lpService ?? kiteService
 
-    const {
-        data: lpAccount,
-        isLoading: lpAccountLoading,
-    } = useStakeAccount(address as any, lpNamespace, lpServiceForHooks)
-    const {
-        data: lpStats,
-        isLoading: lpStatsLoading,
-    } = useStakeStats(lpNamespace, lpServiceForHooks)
+    const { data: lpAccount, isLoading: lpAccountLoading } = useStakeAccount(
+        address as any,
+        lpNamespace,
+        lpServiceForHooks
+    )
+    const { data: lpStats, isLoading: lpStatsLoading } = useStakeStats(lpNamespace, lpServiceForHooks)
 
     const loading = kiteAccountLoading || kiteStatsLoading || lpAccountLoading || lpStatsLoading
 
@@ -155,5 +148,3 @@ export function useStakingBoost(config?: StakingConfig): StakingBoostResult {
         simulateNetBoost: simulateNetBoostLp,
     }
 }
-
-

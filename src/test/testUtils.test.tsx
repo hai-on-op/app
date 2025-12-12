@@ -13,5 +13,3 @@ describe('renderWithProviders', () => {
         expect(screen.getByTestId('dummy').textContent).toBe('ok')
     })
 })
-
-

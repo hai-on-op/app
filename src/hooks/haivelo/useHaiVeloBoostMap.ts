@@ -14,9 +14,12 @@ export function useHaiVeloBoostMap({ mapping, usersStakingData, totalStaked }: U
         Object.entries(usersStakingData || {}).forEach(([addr, d]) => {
             lowerUsers[addr.toLowerCase()] = { stakedBalance: Number(d?.stakedBalance || 0) }
         })
-        const boostMap = calculateHaiVeloBoostMap(mapping, lowerUsers as any, Number(totalStaked || 0), totalHaiVeloDeposited)
+        const boostMap = calculateHaiVeloBoostMap(
+            mapping,
+            lowerUsers as any,
+            Number(totalStaked || 0),
+            totalHaiVeloDeposited
+        )
         return boostMap as Record<string, number>
     }, [mapping, usersStakingData, totalStaked])
 }
-
-

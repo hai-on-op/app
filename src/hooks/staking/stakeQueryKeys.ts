@@ -49,5 +49,3 @@ export const stakeQueryKeys = {
         return ['stake', namespace, 'pending', addr, userEntity] as const
     },
 }
-
-

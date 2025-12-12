@@ -57,7 +57,7 @@ export function useMyActiveAuctions() {
                 return true
             }) || []
         )
-    }, [formattedAuctionBids, auctionsData])
+    }, [formattedAuctionBids, auctionsData, address, proxyAddress])
 
     const activeBidsValue = useMemo(() => {
         const value = activeBids.reduce((total, { buyAmount, auction }) => {

@@ -65,5 +65,3 @@ const BodyGrid = styled(Grid)`
         padding: 24px;
     `}
 `
-
-

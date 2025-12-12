@@ -23,5 +23,3 @@ export async function getStakingApy(provider: Provider): Promise<StakingApy[]> {
     }
     return apyData
 }
-
-

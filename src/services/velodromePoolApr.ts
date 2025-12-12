@@ -11,18 +11,18 @@ export type VelodromeLpValueResult = {
 
 /**
  * Calculate LP value for Velodrome stable pools.
- * 
+ *
  * For stable pools like haiVELO/VELO that trade near 1:1:
  * - TVL = veloPrice * (reserve0 + reserve1)
  * - LP Token Price = TVL / totalSupply
- * 
+ *
  * This simplified method works well when token ratios are close to 1:1.
  * Per the DeFi analyst: "for the haiVELO/VELO LP TVL, when ratios are not too far off,
  * velodrome treats it as 1:1. basically takes the price of VELO and multiplies it by
  * the total amount of VELO + haiVELO tokens for TVL"
  */
 export function calculateVelodromeLpValue(params: {
-    reserve0: string  // Raw reserve (18 decimals typically)
+    reserve0: string // Raw reserve (18 decimals typically)
     reserve1: string
     totalSupply: string // liquidity field from Sugar
     veloPrice: number
@@ -64,10 +64,7 @@ export function calculateVelodromeLpValue(params: {
 /**
  * Calculate LP value from VelodromeLpData (from Sugar contract)
  */
-export function calculateVelodromeLpValueFromPool(
-    pool: VelodromeLpData,
-    veloPrice: number
-): VelodromeLpValueResult {
+export function calculateVelodromeLpValueFromPool(pool: VelodromeLpData, veloPrice: number): VelodromeLpValueResult {
     return calculateVelodromeLpValue({
         reserve0: pool.reserve0,
         reserve1: pool.reserve1,
@@ -79,18 +76,19 @@ export function calculateVelodromeLpValueFromPool(
 
 /**
  * Calculate HAI reward share for LP stakers based on TVL proportion.
- * 
+ *
  * HAI rewards are shared between:
  * - haiVELO depositors (collateral in vaults)
  * - haiVELO/VELO LP stakers
- * 
+ *
  * The share is proportional to TVL:
  * lpShare = lpStakedTvlUsd / (lpStakedTvlUsd + haiVeloDepositTvlUsd)
  */
-export function calculateHaiRewardShare(params: {
-    lpStakedTvlUsd: number
-    haiVeloDepositTvlUsd: number
-}): { lpShare: number; haiVeloShare: number; totalParticipatingTvl: number } {
+export function calculateHaiRewardShare(params: { lpStakedTvlUsd: number; haiVeloDepositTvlUsd: number }): {
+    lpShare: number
+    haiVeloShare: number
+    totalParticipatingTvl: number
+} {
     const { lpStakedTvlUsd, haiVeloDepositTvlUsd } = params
 
     const totalParticipatingTvl = lpStakedTvlUsd + haiVeloDepositTvlUsd
@@ -115,7 +113,7 @@ export function calculateHaiRewardShare(params: {
 
 /**
  * Calculate APR from HAI rewards for LP stakers.
- * 
+ *
  * Formula:
  * - Weekly HAI reward = latestTransferAmount (raw, already in 7-day window)
  * - Daily HAI reward = weeklyReward / 7
@@ -189,14 +187,14 @@ export function calculateKiteIncentivesApr(params: {
 
 /**
  * Calculate trading fee APR for Velodrome LP.
- * 
+ *
  * For unstaked LP (LP held outside the gauge), LP holders earn trading fees.
  * The pool_fee represents the fee rate in basis points (e.g., 5 = 0.05%).
- * 
+ *
  * Since we don't have historical trading volume, we estimate based on:
  * - Accumulated fees (token0_fees, token1_fees) from the Sugar contract
  * - Assuming these represent approximately 1 week of fee accumulation
- * 
+ *
  * Note: This is an estimate. For more accuracy, we would need to query
  * epochsByAddress for historical fee data.
  */
@@ -237,4 +235,3 @@ export function calculateTradingFeeApr(params: {
 
     return { tradingFeeApr, weeklyFeesUsd }
 }
-

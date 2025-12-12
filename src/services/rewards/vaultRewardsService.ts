@@ -9,11 +9,15 @@ export function getVaultSchedule(symbol: string): VaultRewardSchedule[] {
         .map(([token, dailyAmount]) => ({ token: token as VaultRewardSchedule['token'], dailyAmount }))
 }
 
-export function computeVaultApr({ schedule, totalBoostedValueUsd }: { schedule: VaultRewardSchedule[]; totalBoostedValueUsd: number }): BasisPointsNumber {
+export function computeVaultApr({
+    schedule,
+    totalBoostedValueUsd,
+}: {
+    schedule: VaultRewardSchedule[]
+    totalBoostedValueUsd: number
+}): BasisPointsNumber {
     if (!Array.isArray(schedule) || totalBoostedValueUsd <= 0) return 0
     const totalDailyRewardsUsd = schedule.reduce((acc, cur) => acc + Number(cur.dailyAmount || 0), 0)
     const aprPct = (totalDailyRewardsUsd / totalBoostedValueUsd) * 365 * 100
     return Math.max(0, aprPct)
 }
-
-

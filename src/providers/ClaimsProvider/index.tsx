@@ -122,7 +122,7 @@ export function ClaimsProvider({ children }: Props) {
             setIncentivesData(incentives)
         }
         fetchIncentives()
-    }, [geb])
+    }, [geb, account, chainId])
     const totalUSD = formatSummaryValue(
         (
             parseFloat(internalBalances.HAI?.usdRaw || '0') +

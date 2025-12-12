@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 
 import { ActionState, VaultAction, formatNumberWithStyle } from '~/utils'
-import { useStoreActions, useStoreState } from '~/store'
+import { useStoreActions } from '~/store'
 import { useVault } from '~/providers/VaultProvider'
 // import { formatCollateralLabel } from '~/utils'
 import styled from 'styled-components'
@@ -14,11 +14,10 @@ import { CheckBox } from '~/components/CheckBox'
 import { StakingTxModal } from '~/components/Modal/StakingTxModal'
 
 // import { Info } from '~/components/Icons/Info'
-import { useEthersSigner } from '~/hooks'
 import { useErc20BalanceQuery } from '~/hooks/useErc20BalanceQuery'
 import { useStakeDataScoped } from '~/hooks/staking/useStakeDataScoped'
 import { useStakeMutations } from '~/hooks/staking/useStakeMutations'
-import { useFlags } from 'flagsmith/react'
+// import { useFlags } from 'flagsmith/react'
 // import { Loader } from '~/components/Loader'
 import { AvailabilityBadge } from '~/components/AvailabilityBadge'
 // import { stakingModel } from '~/model/stakingModel'
@@ -40,14 +39,11 @@ type ManageStakingProps = {
 }
 
 export function ManageStaking({ simulation, config }: ManageStakingProps) {
-    const flags = useFlags(['staking_refactor'])
-    const useRQ = (flags.staking_refactor as any)?.enabled ?? true
+    // const flags = useFlags(['staking_refactor'])
+    // const useRQ = (flags.staking_refactor as any)?.enabled ?? true
     const { stakingAmount, unstakingAmount, setStakingAmount, setUnstakingAmount } = simulation
     const service = useMemo(
-        () =>
-            config
-                ? buildStakingService(config.addresses.manager as any, undefined, config.decimals)
-                : undefined,
+        () => (config ? buildStakingService(config.addresses.manager as any, undefined, config.decimals) : undefined),
         [config]
     )
     const { data: stakeTokenBalance } = useErc20BalanceQuery(
@@ -68,9 +64,9 @@ export function ManageStaking({ simulation, config }: ManageStakingProps) {
     })
     const { address } = useAccount()
     const mutations = useStakeMutations(address as any, config?.namespace ?? 'kite', service)
-    const signer = useEthersSigner()
+    // const signer = useEthersSigner()
 
-    const { stakingModel: stakingState } = useStoreState((state) => state)
+    // const { stakingModel: stakingState } = useStoreState((state) => state)
 
     const tokenLabel = config?.labels.token || 'KITE'
     const stTokenLabel = config?.labels.stToken || 'stKITE'
@@ -123,10 +119,10 @@ export function ManageStaking({ simulation, config }: ManageStakingProps) {
     const {
         // vaultModel: vaultActions,
         popupsModel: { toggleModal },
-        stakingModel: stakingActions,
+        // stakingModel: stakingActions,
         popupsModel: popupsActions,
     } = useStoreActions((actions) => actions)
-    const { stakingModel: stakingStates } = useStoreState((state) => state)
+    // const { stakingModel: stakingStates } = useStoreState((state) => state)
 
     const { action, formState, collateral } = useVault()
 
@@ -176,10 +172,10 @@ export function ManageStaking({ simulation, config }: ManageStakingProps) {
                         isUnStaking
                             ? unstakingAmount
                             : isStaking
-                                ? stakingAmount
-                                : pendingWithdrawal
-                                    ? pendingWithdrawal.amount
-                                    : ''
+                            ? stakingAmount
+                            : pendingWithdrawal
+                            ? pendingWithdrawal.amount
+                            : ''
                     }
                     stakedAmount={rq.stakedBalance}
                     totalStaked={rq.totalStaked}
@@ -204,10 +200,10 @@ export function ManageStaking({ simulation, config }: ManageStakingProps) {
                         isUnStaking
                             ? unstakingAmount
                             : isStaking
-                                ? stakingAmount
-                                : pendingWithdrawal
-                                    ? pendingWithdrawal.amount
-                                    : ''
+                            ? stakingAmount
+                            : pendingWithdrawal
+                            ? pendingWithdrawal.amount
+                            : ''
                     }
                     stakedAmount={rq.stakedBalance}
                     totalStaked={rq.totalStaked}
@@ -264,9 +260,9 @@ export function ManageStaking({ simulation, config }: ManageStakingProps) {
                         conversion={
                             stakingAmount && Number(stakingAmount) > 0
                                 ? `~${formatNumberWithStyle(
-                                    parseFloat(collateral.priceInUSD || '0') * parseFloat(stakingAmount),
-                                    { style: 'currency' }
-                                )}`
+                                      parseFloat(collateral.priceInUSD || '0') * parseFloat(stakingAmount),
+                                      { style: 'currency' }
+                                  )}`
                                 : ''
                         }
                         style={!isWithdraw ? undefined : { opacity: 0.4 }}
@@ -293,9 +289,9 @@ export function ManageStaking({ simulation, config }: ManageStakingProps) {
                         conversion={
                             formState.deposit && Number(formState.deposit) > 0
                                 ? `~${formatNumberWithStyle(
-                                    parseFloat(collateral.priceInUSD || '0') * parseFloat(formState.deposit),
-                                    { style: 'currency' }
-                                )}`
+                                      parseFloat(collateral.priceInUSD || '0') * parseFloat(formState.deposit),
+                                      { style: 'currency' }
+                                  )}`
                                 : ''
                         }
                         style={!isWithdraw ? undefined : { opacity: 0.4 }}
@@ -303,7 +299,9 @@ export function ManageStaking({ simulation, config }: ManageStakingProps) {
                     <Text $fontSize="0.85em" $color="rgba(0,0,0,0.85)">
                         {cooldownSeconds === 0
                             ? 'There are no lockups, you can withdraw anytime.'
-                            : `${stTokenLabel} has a ${formatTimeFromSeconds(cooldownSeconds)} cooldown period after unstaking.`}
+                            : `${stTokenLabel} has a ${formatTimeFromSeconds(
+                                  cooldownSeconds
+                              )} cooldown period after unstaking.`}
                     </Text>
                     {pendingWithdrawal && (
                         <div

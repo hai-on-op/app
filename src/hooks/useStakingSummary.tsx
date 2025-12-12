@@ -87,7 +87,6 @@ export function useStakingSummary(): StakingSummaryData {
         loading: stakingLoading,
         stakingApyData,
         totalStaked,
-        stakedBalance,
         usersStakingData,
     } = useStakingData()
     const { prices: veloPrices } = useVelodromePrices()
@@ -126,12 +125,14 @@ export function useStakingSummary(): StakingSummaryData {
     const KITE_ADDRESS = import.meta.env.VITE_KITE_ADDRESS as string
     const OP_ADDRESS = import.meta.env.VITE_OP_ADDRESS as string
 
-    const rewardsDataMap: Record<string, number> = {
-        [HAI_ADDRESS]: haiPrice,
-        [KITE_ADDRESS]: kitePrice,
-        [OP_ADDRESS]: opPrice,
-    }
-
+    const rewardsDataMap: Record<string, number> = useMemo(
+        () => ({
+            [HAI_ADDRESS]: haiPrice,
+            [KITE_ADDRESS]: kitePrice,
+            [OP_ADDRESS]: opPrice,
+        }),
+        [HAI_ADDRESS, KITE_ADDRESS, OP_ADDRESS, haiPrice, kitePrice, opPrice]
+    )
     // DEPRECATED: Legacy APR calculation below is retained for backward compatibility.
     // New staking UI should use V2 hooks (useStakeApr/useStakingSummaryV2) as the single APR source.
     // Calculate staking APR
@@ -188,7 +189,7 @@ export function useStakingSummary(): StakingSummaryData {
         //     : 0
 
         return Number(balanceStr) //+ pendingAmount
-    }, [stakedBalance, usersStakingData, stakingData.pendingWithdrawal, address])
+    }, [usersStakingData, address])
 
     // Function to calculate simulated values for staking/unstaking
     const calculateSimulatedValues = useCallback(
@@ -337,6 +338,8 @@ export function useStakingSummary(): StakingSummaryData {
         haiVeloPositionValue,
         userLPPositionValue,
         isOptimistic,
+        haiMintingBoost,
+        haiMintingPositionValue,
     ])
 
     // Default values when loading or data is not available
@@ -386,10 +389,10 @@ export function useStakingSummary(): StakingSummaryData {
     // Return all necessary data and functions
     return stakingSummary
         ? {
-            ...stakingSummary,
-            stakingData,
-            simulateNetBoost,
-            calculateSimulatedValues,
-        }
+              ...stakingSummary,
+              stakingData,
+              simulateNetBoost,
+              calculateSimulatedValues,
+          }
         : defaultSummary
 }

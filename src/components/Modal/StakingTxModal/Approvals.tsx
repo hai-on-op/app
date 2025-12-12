@@ -27,19 +27,17 @@ export function Approvals({ onNext, isStaking, isWithdraw = false, amount, confi
     const configStToken = config?.addresses.stToken
     const configStakeToken = config?.addresses.stakeToken
     const configManager = config?.addresses.manager
-    
+
     const stakeToken = isStaking
         ? configStakeToken || (import.meta.env.VITE_KITE_ADDRESS as string)
         : configStToken || (import.meta.env.VITE_STAKING_TOKEN_ADDRESS as string)
     const manager = configManager || (import.meta.env.VITE_STAKING_MANAGER as string)
     const decimals = String(config?.decimals ?? 18)
-    
+
     // Check if we're using fallback addresses (this would be wrong for LP pools!)
-    const usingFallbackToken = isStaking 
-        ? !configStakeToken 
-        : !configStToken
+    const usingFallbackToken = isStaking ? !configStakeToken : !configStToken
     const usingFallbackManager = !configManager
-    
+
     const [kiteApproval, approveKite] = useTokenApproval(amount, stakeToken, manager, decimals, true)
 
     const tokenLabel = config?.labels.token || 'KITE'
@@ -75,8 +73,16 @@ export function Approvals({ onNext, isStaking, isWithdraw = false, amount, confi
     console.log('║   To SPENDER (manager):', manager)
     console.log('║   For AMOUNT:', amount)
     console.log('║')
-    console.log('║   ⚠️ Using fallback token?:', usingFallbackToken, usingFallbackToken ? '← PROBLEM! Should use config address' : '✓')
-    console.log('║   ⚠️ Using fallback manager?:', usingFallbackManager, usingFallbackManager ? '← PROBLEM! Should use config address' : '✓')
+    console.log(
+        '║   ⚠️ Using fallback token?:',
+        usingFallbackToken,
+        usingFallbackToken ? '← PROBLEM! Should use config address' : '✓'
+    )
+    console.log(
+        '║   ⚠️ Using fallback manager?:',
+        usingFallbackManager,
+        usingFallbackManager ? '← PROBLEM! Should use config address' : '✓'
+    )
     console.log('╠══════════════════════════════════════════════════════════════╣')
     console.log('║ APPROVAL RESULT:')
     console.log('║   State:', ApprovalState[kiteApproval], `(${kiteApproval})`)
@@ -84,8 +90,17 @@ export function Approvals({ onNext, isStaking, isWithdraw = false, amount, confi
 
     const { isApproved, button } = useMemo(() => {
         console.log('=== APPROVAL useMemo ===')
-        console.log('Checking: !isStaking && !isWithdraw && !amount =>', !isStaking, '&&', !isWithdraw, '&&', !amount, '=', !isStaking && !isWithdraw && !amount)
-        
+        console.log(
+            'Checking: !isStaking && !isWithdraw && !amount =>',
+            !isStaking,
+            '&&',
+            !isWithdraw,
+            '&&',
+            !amount,
+            '=',
+            !isStaking && !isWithdraw && !amount
+        )
+
         if (!isStaking && !isWithdraw && !amount) {
             console.log('SKIPPING: Early return because !isStaking && !isWithdraw && !amount')
             return { isApproved: true, button: null }
@@ -120,8 +135,8 @@ export function Approvals({ onNext, isStaking, isWithdraw = false, amount, confi
                     {kiteApproval === ApprovalState.PENDING
                         ? 'Pending Approval..'
                         : kiteApproval === ApprovalState.UNKNOWN
-                            ? 'Checking Approval...'
-                            : `Approve ${isStaking ? tokenLabel : stTokenLabel}`}
+                        ? 'Checking Approval...'
+                        : `Approve ${isStaking ? tokenLabel : stTokenLabel}`}
                 </HaiButton>
             ),
         }

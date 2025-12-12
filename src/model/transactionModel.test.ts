@@ -40,7 +40,7 @@ const mockTx = (chainId: number, addon?: any) => {
             data: '',
             chainId,
             value: BigNumber.from('0'),
-            wait: () => new Promise((resolve, reject) => resolve(txReceipt)),
+            wait: () => new Promise((resolve) => resolve(txReceipt)),
         },
         ...addon,
     }

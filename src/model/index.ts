@@ -25,5 +25,4 @@ export const model: StoreModel = {
     transactionsModel,
     vaultModel,
     stakingModel,
-    
 }

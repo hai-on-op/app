@@ -212,10 +212,10 @@ export const formatSummaryPercentage = (value: string | undefined, scalingFactor
         formatted:
             value && !isNaN(Number(value))
                 ? formatNumberWithStyle(value, {
-                    scalingFactor,
-                    style: 'percent',
-                    maxDecimals: 1,
-                })
+                      scalingFactor,
+                      style: 'percent',
+                      maxDecimals: 1,
+                  })
                 : '--%',
     }
 }

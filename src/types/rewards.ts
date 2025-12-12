@@ -1,7 +1,7 @@
 // Rewards domain shared types
 
 export const REWARD_TOKENS = ['KITE', 'OP', 'DINERO', 'HAI'] as const
-export type RewardToken = typeof REWARD_TOKENS[number]
+export type RewardToken = (typeof REWARD_TOKENS)[number]
 
 // Address and numeric string aliases
 export type Address = `0x${string}`
@@ -53,5 +53,3 @@ export interface BoostAprResult {
         boostedValueUsd: number
     }
 }
-
-

@@ -65,7 +65,8 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
     const { isConnected } = useAccount()
     const isHaiVeloRoute =
         location.pathname === '/haiVELO' ||
-        (location.pathname === '/vaults/open' && ['HAIVELO', 'HAIVELOV2'].includes(new URLSearchParams(location.search).get('collateral') || ''))
+        (location.pathname === '/vaults/open' &&
+            ['HAIVELO', 'HAIVELOV2'].includes(new URLSearchParams(location.search).get('collateral') || ''))
 
     const [button, setButton] = useState<HTMLElement | null>(null)
 
@@ -119,7 +120,13 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
                                 >
                                     Earn
                                 </BrandedDropdown.Item>
-                                <Text $fontSize={12} $fontWeight={700} $textTransform="uppercase" $letterSpacing="0.05rem" $padding="0 8px">
+                                <Text
+                                    $fontSize={12}
+                                    $fontWeight={700}
+                                    $textTransform="uppercase"
+                                    $letterSpacing="0.05rem"
+                                    $padding="0 8px"
+                                >
                                     Staking
                                 </Text>
                                 <NestedGroup>
@@ -212,10 +219,7 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
                         >
                             {isPlayingMusic ? 'Pause Music' : 'Play Music'}
                         </BrandedDropdown.Item>
-                        <BrandedDropdown.Item
-                            href={LINK_TO_DOCS}
-                            icon={<FileText size={18} />}
-                        >
+                        <BrandedDropdown.Item href={LINK_TO_DOCS} icon={<FileText size={18} />}>
                             Docs
                         </BrandedDropdown.Item>
                         <BrandedDropdown.Item

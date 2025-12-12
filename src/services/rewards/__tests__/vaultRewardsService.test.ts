@@ -20,5 +20,3 @@ describe('vaultRewardsService.computeVaultApr', () => {
         expect(Math.round(apr)).toBe(365)
     })
 })
-
-

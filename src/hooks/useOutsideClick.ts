@@ -1,6 +1,9 @@
 import { useEffect, type RefObject } from 'react'
 
-export function useOutsideClick(ref: RefObject<HTMLElement> | HTMLElement | null | undefined, onOutsideClick: () => void) {
+export function useOutsideClick(
+    ref: RefObject<HTMLElement> | HTMLElement | null | undefined,
+    onOutsideClick: () => void
+) {
     useEffect(() => {
         const element = ref && 'current' in ref ? ref.current : ref
         if (!element) return

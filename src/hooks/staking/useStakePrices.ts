@@ -23,5 +23,3 @@ export function useStakePrices(): { data: StakePrices; loading: boolean } {
 
     return { data, loading: Boolean(velodromeLoading) }
 }
-
-

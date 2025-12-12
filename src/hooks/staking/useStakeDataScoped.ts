@@ -54,5 +54,3 @@ export function useStakeDataScoped(namespace: string = 'kite', options?: StakeDa
 
     return { loading, ...data, refetchAll }
 }
-
-

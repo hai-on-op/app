@@ -5,10 +5,10 @@ import { parseEther } from 'ethers/lib/utils'
 import * as ethers from 'ethers'
 
 import { type StoreModel } from './index'
-import { ActionState } from '~/utils'
+import { ActionState } from '~/utils/constants'
 import { handlePreTxGasEstimate } from '~/hooks/TransactionHooks'
 import StakingManagerABI from '~/abis/StakingManager.json'
-import RewardPoolABI from '~/abis/RewardPool.json'
+// import RewardPoolABI from '~/abis/RewardPool.json'
 import { RewardsModel } from '~/model/rewardsModel'
 
 // const ERC20ABI = [

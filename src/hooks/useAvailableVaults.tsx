@@ -18,19 +18,29 @@ const sortableHeaders: SortableHeader[] = [
     },
 ]
 
+const HAS_REWARDS = [
+    'HAIVELO',
+    'HAIVELOV2',
+    'ALETH',
+    'YV-VELO-ALETH-WETH',
+    'YV-VELO-MSETH-WETH',
+    'MSETH',
+    'MOO-VELO-BOLD-LUSD',
+]
+
 export function useAvailableVaults() {
     const {
         connectWalletModel: { tokensData, tokensFetchedData },
         vaultModel: vaultState,
     } = useStoreState((state) => state)
 
-    const symbols = useMemo(
-        () =>
-            Object.values(tokensData || {})
-                .filter(({ isCollateral }) => isCollateral)
-                .map(({ symbol }) => symbol),
-        [tokensData]
-    )
+    // const symbols = useMemo(
+    //     () =>
+    //         Object.values(tokensData || {})
+    //             .filter(({ isCollateral }) => isCollateral)
+    //             .map(({ symbol }) => symbol),
+    //     [tokensData]
+    // )
 
     const collaterals = useMemo(
         () =>
@@ -41,8 +51,6 @@ export function useAvailableVaults() {
                 .map((collateral) => collateral),
         [tokensData]
     )
-
-    const HAS_REWARDS = ['HAIVELO', 'HAIVELOV2', 'ALETH', 'YV-VELO-ALETH-WETH', 'YV-VELO-MSETH-WETH', 'MSETH', 'MOO-VELO-BOLD-LUSD']
 
     const availableVaults: AvailableVaultPair[] = useMemo(() => {
         return collaterals
@@ -64,7 +72,7 @@ export function useAvailableVaults() {
                     myVaults: vaultState.list.filter(({ collateralName }) => collateralName === symbol),
                 }
             })
-    }, [symbols, tokensFetchedData, vaultState.list, vaultState.liquidationData])
+    }, [tokensFetchedData, vaultState.list, vaultState.liquidationData, collaterals])
 
     const [eligibleOnly, setEligibleOnly] = useState(false)
 
@@ -75,7 +83,7 @@ export function useAvailableVaults() {
             const balance = tokensFetchedData[collateralName]?.balanceE18 || '0'
             return !BigNumber.from(balance).isZero()
         })
-    }, [availableVaults, eligibleOnly])
+    }, [availableVaults, eligibleOnly, tokensFetchedData])
 
     const [sorting, setSorting] = useState<Sorting>({
         key: 'Liquidation Ratio',

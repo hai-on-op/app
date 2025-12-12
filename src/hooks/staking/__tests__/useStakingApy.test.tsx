@@ -20,5 +20,3 @@ describe('useStakingApy', () => {
         expect(screen.getByTestId('count').textContent).toBe('1')
     })
 })
-
-

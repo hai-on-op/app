@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef } from 'react'
+import { useMemo, useState, useRef, useCallback } from 'react'
 
 import { Approvals } from './Approvals'
 import { Confirm } from './Confirm'
@@ -46,15 +46,18 @@ export function StakingTxModal({
     // Track if transaction is completed to prevent reopening
     const hasClosedRef = useRef(false)
 
+    // Destructure onClose from props to avoid dependency issues
+    const { onClose } = props
+
     // Ensure we only close once
-    const handleClose = () => {
+    const handleClose = useCallback(() => {
         if (hasClosedRef.current) return
         hasClosedRef.current = true
 
-        if (props.onClose) {
-            props.onClose()
+        if (onClose) {
+            onClose()
         }
-    }
+    }, [onClose])
 
     const content = useMemo(() => {
         // Zero-cooldown unstaking: show two-step instant withdraw flow
@@ -74,7 +77,9 @@ export function StakingTxModal({
             case StakingTxStep.APPROVE:
                 return (
                     <Approvals
-                        onNext={() => setStep(isInstantWithdraw ? StakingTxStep.INSTANT_WITHDRAW : StakingTxStep.CONFIRM)}
+                        onNext={() =>
+                            setStep(isInstantWithdraw ? StakingTxStep.INSTANT_WITHDRAW : StakingTxStep.CONFIRM)
+                        }
                         isStaking={isStaking}
                         isWithdraw={isWithdraw}
                         amount={amount}
@@ -96,7 +101,19 @@ export function StakingTxModal({
                     />
                 )
         }
-    }, [step, handleClose, isStaking, isInstantWithdraw, amount, stakedAmount, totalStaked, cooldownPeriod, isWithdraw, onSuccess, config])
+    }, [
+        step,
+        handleClose,
+        isStaking,
+        isInstantWithdraw,
+        amount,
+        stakedAmount,
+        totalStaked,
+        cooldownPeriod,
+        isWithdraw,
+        onSuccess,
+        config,
+    ])
 
     return (
         <Modal

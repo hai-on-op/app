@@ -144,10 +144,7 @@ export function useHaiVeloData(): HaiVeloData {
     })
 
     // Query user's HAIVELO v2 safes if address is available
-    const {
-        data: userSafesDataV2,
-        loading: userSafesLoadingV2,
-    } = useQuery<UserSafesData>(USER_SAFES_QUERY, {
+    const { data: userSafesDataV2, loading: userSafesLoadingV2 } = useQuery<UserSafesData>(USER_SAFES_QUERY, {
         variables: {
             collateralTypeId: 'HAIVELOV2',
             ownerId: address?.toLowerCase() || '',
@@ -235,13 +232,7 @@ export function useHaiVeloData(): HaiVeloData {
 
     // Return the data object with loading and error states
     return {
-        loading:
-            loading ||
-            userSafesLoading ||
-            allSafesLoading ||
-            loadingV2 ||
-            userSafesLoadingV2 ||
-            allSafesLoadingV2,
+        loading: loading || userSafesLoading || allSafesLoading || loadingV2 || userSafesLoadingV2 || allSafesLoadingV2,
         error: error || errorV2,
         data,
         ...formattedData,

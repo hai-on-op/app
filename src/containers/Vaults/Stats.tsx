@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 
 import { formatNumberWithStyle } from '~/utils'
-import { useStoreActions, useStoreState } from '~/store'
-import { useEarnStrategies } from '~/hooks'
+import { useStoreState } from '~/store'
+// import { useEarnStrategies } from '~/hooks'
 
 // import { HaiButton, Text } from '~/styles'
 // import { RewardsTokenArray } from '~/components/TokenArray'
@@ -15,21 +15,21 @@ export function BorrowStats() {
     const {
         vaultModel: { list, liquidationData },
     } = useStoreState((state) => state)
-    const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
+    // const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
 
-    const { rows } = useEarnStrategies()
+    // const { rows } = useEarnStrategies()
 
-    const { value, apy } = useMemo(() => {
-        return rows.reduce(
-            (obj, { userPosition = '0', apy }) => {
-                const apyToUse = apy ? apy : 0
-                obj.value += parseFloat(userPosition)
-                obj.apy += parseFloat(userPosition) * apyToUse
-                return obj
-            },
-            { value: 0, apy: 0 }
-        )
-    }, [rows])
+    // const { value, weightedApy } = useMemo(() => {
+    //     return rows.reduce(
+    //         (obj, { userPosition = '0', apy: rowApy = 0 }) => {
+    //             const apyToUse = rowApy || 0
+    //             obj.value += parseFloat(userPosition)
+    //             obj.weightedApy += parseFloat(userPosition) * apyToUse
+    //             return obj
+    //         },
+    //         { value: 0, weightedApy: 0 }
+    //     )
+    // }, [rows])
 
     const stats: StatProps[] = useMemo(() => {
         const { totalCollateralInUSD, totalHai, weightedStabilityFee } = list.reduce(
@@ -52,11 +52,11 @@ export function BorrowStats() {
             {
                 header: totalCollateralInUSD
                     ? formatNumberWithStyle(totalCollateralInUSD.toString(), {
-                        style: 'currency',
-                        minDecimals: 1,
-                        maxDecimals: 1,
-                        suffixed: true,
-                    })
+                          style: 'currency',
+                          minDecimals: 1,
+                          maxDecimals: 1,
+                          suffixed: true,
+                      })
                     : '$0',
                 label: 'My Locked Collateral',
                 tooltip:
@@ -65,11 +65,11 @@ export function BorrowStats() {
             {
                 header: totalDebtInUSD
                     ? formatNumberWithStyle(totalDebtInUSD.toString(), {
-                        style: 'currency',
-                        minDecimals: 1,
-                        maxDecimals: 1,
-                        suffixed: true,
-                    })
+                          style: 'currency',
+                          minDecimals: 1,
+                          maxDecimals: 1,
+                          suffixed: true,
+                      })
                     : '$0',
                 label: 'My Total Debt',
                 tooltip: 'The total amount of minted debt tokens multiplied by the protocol redemption price of debt.',
@@ -116,7 +116,7 @@ export function BorrowStats() {
                 ),
             },*/
         ]
-    }, [list, liquidationData, value, apy, popupsActions])
+    }, [list, liquidationData])
 
     return <Stats stats={stats} /*columns="repeat(4, 1fr) 1.6fr"*/ fun />
 }

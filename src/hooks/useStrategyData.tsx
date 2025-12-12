@@ -10,8 +10,7 @@ import { useHaiVeloCollateralMapping } from './haivelo/useHaiVeloCollateralMappi
 import { useHaiVeloBoostMap } from './haivelo/useHaiVeloBoostMap'
 
 // centralized in haiVeloService
-import { calculateHaiVeloBoost, calculateLPBoost } from '~/services/boostService'
-import { RewardsModel } from '~/model/rewardsModel'
+import { calculateLPBoost } from '~/services/boostService'
 
 // HAI-BOLD LP staking imports
 import { haiBoldCurveLpConfig } from '~/staking/configs/haiBoldCurveLp'
@@ -21,13 +20,12 @@ import { useLpStakingApr } from './staking/useLpStakingApr'
 import { useLpTvl } from './staking/useLpTvl'
 import { buildStakingService } from '~/services/stakingService'
 
-const HAIVELO_DEPOSITER = '0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3'
-const REWARD_DISTRIBUTOR = '0xfEd2eB6325432F0bF7110DcE2CCC5fF811ac3D4D'
+// const HAIVELO_DEPOSITER = '0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3'
+// const REWARD_DISTRIBUTOR = '0xfEd2eB6325432F0bF7110DcE2CCC5fF811ac3D4D'
 
 const HAI_TOKEN_ADDRESS = import.meta.env.VITE_HAI_ADDRESS as string
 const KITE_TOKEN_ADDRESS = import.meta.env.VITE_KITE_ADDRESS as string
 const OP_TOKEN_ADDRESS = import.meta.env.VITE_OP_ADDRESS as string
-
 
 export function useStrategyData(
     systemStateData: any,
@@ -62,8 +60,10 @@ export function useStrategyData(
 
     // === HAI VELO Deposit Strategy (combined v1 + v2) ===
     const haiVeloV1Data = systemStateData?.collateralTypes.find((collateral: any) => collateral.id === 'HAIVELO')
-    const haiVeloV2Data = systemStateData?.collateralTypes.find((collateral: any) => collateral.id === 'HAIVELOV2' || collateral.id === 'HAIVELO_V2')
-    const haiVeloPrice = (haiVeloV2Data?.currentPrice?.value) ?? (haiVeloV1Data?.currentPrice?.value)
+    const haiVeloV2Data = systemStateData?.collateralTypes.find(
+        (collateral: any) => collateral.id === 'HAIVELOV2' || collateral.id === 'HAIVELO_V2'
+    )
+    const haiVeloPrice = haiVeloV2Data?.currentPrice?.value ?? haiVeloV1Data?.currentPrice?.value
     const { mapping: haiVeloCollateralMapping } = useHaiVeloCollateralMapping()
 
     const combinedHaiVeloQtyTotal = useMemo(
@@ -116,9 +116,10 @@ export function useStrategyData(
             // Recompute base APR using last-epoch TVL to mirror underlying APR
             try {
                 const totals = await getLastEpochHaiVeloTotals(VITE_MAINNET_PUBLIC_RPC)
-                if (totals && (Number(haiVeloPrice || 0) > 0)) {
+                if (totals && Number(haiVeloPrice || 0) > 0) {
                     const lastEpochTvlUsd = (totals.v1Total + totals.v2Total) * Number(haiVeloPrice || 0)
-                    const baseAprPercent = lastEpochTvlUsd > 0 ? (apr.haiVeloDailyRewardValue / lastEpochTvlUsd) * 365 * 100 : 0
+                    const baseAprPercent =
+                        lastEpochTvlUsd > 0 ? (apr.haiVeloDailyRewardValue / lastEpochTvlUsd) * 365 * 100 : 0
                     const updated = {
                         ...apr,
                         baseAPR: baseAprPercent,
@@ -127,7 +128,9 @@ export function useStrategyData(
                     setHaiVeloBoostApr(updated)
                     return
                 }
-            } catch {}
+            } catch {
+                // Ignore errors from getLastEpochHaiVeloTotals
+            }
 
             setHaiVeloBoostApr(apr)
         })()
@@ -143,11 +146,12 @@ export function useStrategyData(
 
     // === HAI-BOLD LP Staking Strategy ===
     const haiBoldLpService = useMemo(
-        () => buildStakingService(
-            haiBoldCurveLpConfig.addresses.manager as `0x${string}`,
-            undefined,
-            haiBoldCurveLpConfig.decimals
-        ),
+        () =>
+            buildStakingService(
+                haiBoldCurveLpConfig.addresses.manager as `0x${string}`,
+                undefined,
+                haiBoldCurveLpConfig.decimals
+            ),
         []
     )
 
@@ -156,12 +160,13 @@ export function useStrategyData(
         haiBoldCurveLpConfig.namespace,
         haiBoldLpService
     )
-    const { data: haiBoldLpStats } = useStakeStats(
-        haiBoldCurveLpConfig.namespace,
-        haiBoldLpService
-    )
+    const { data: haiBoldLpStats } = useStakeStats(haiBoldCurveLpConfig.namespace, haiBoldLpService)
     const haiBoldLpAprData = useLpStakingApr(haiBoldCurveLpConfig)
-    const { tvlUsd: haiBoldLpPoolTvlUsd, lpPriceUsd: haiBoldLpPriceUsd, loading: haiBoldLpTvlLoading } = useLpTvl(haiBoldCurveLpConfig)
+    const {
+        // tvlUsd: haiBoldLpPoolTvlUsd,
+        lpPriceUsd: haiBoldLpPriceUsd,
+        loading: haiBoldLpTvlLoading,
+    } = useLpTvl(haiBoldCurveLpConfig)
 
     // Calculate user's LP staked value in USD
     const haiBoldLpUserStaked = Number(haiBoldLpAccount?.stakedBalance || 0)
@@ -191,11 +196,11 @@ export function useStrategyData(
         const incentivesApr = haiBoldLpAprData.incentivesApr * 100 // Convert to percentage
         const baseApr = haiBoldLpAprData.netApr * 100 // Total base APR
         const myBoost = haiBoldLpBoostResult.lpBoost ?? 1
-        
+
         // Only apply boost to KITE incentives, not underlying APY
         const boostedIncentivesApr = incentivesApr * myBoost
         const myBoostedAPR = underlyingApr + boostedIncentivesApr
-        
+
         return {
             baseAPR: baseApr,
             myBoost,
@@ -206,11 +211,14 @@ export function useStrategyData(
     }, [haiBoldLpAprData, haiBoldLpBoostResult.lpBoost, haiBoldLpUserPositionUsd, haiBoldLpStakedTvlUsd])
 
     const opPrice = Number(velodromePricesData?.OP?.raw)
-    const rewardsDataMap: Record<string, number> = {
-        [HAI_TOKEN_ADDRESS]: haiPrice,
-        [KITE_TOKEN_ADDRESS]: kitePrice,
-        [OP_TOKEN_ADDRESS]: opPrice,
-    }
+    const rewardsDataMap: Record<string, number> = useMemo(
+        () => ({
+            [HAI_TOKEN_ADDRESS]: haiPrice,
+            [KITE_TOKEN_ADDRESS]: kitePrice,
+            [OP_TOKEN_ADDRESS]: opPrice,
+        }),
+        [haiPrice, kitePrice, opPrice]
+    )
     const stakingApyRewardsTotal = useMemo(() => {
         return stakingApyData.reduce(
             (acc: any, item: any) => {

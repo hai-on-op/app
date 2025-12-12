@@ -1,21 +1,22 @@
 import { BigNumber } from 'ethers'
-import { RewardsModel } from '~/model/rewardsModel'
-import { client } from '~/utils/graphql/client'
-import { gql } from '@apollo/client'
-import { findBlockNumberByTimestamp, fetchHaiVeloTotalsAtBlock } from '~/services/haivelo/dataSources'
+// import { RewardsModel } from '~/model/rewardsModel'
+// import { client } from '~/utils/graphql/client'
+// import { gql } from '@apollo/client'
+// import { findBlockNumberByTimestamp, fetchHaiVeloTotalsAtBlock } from '~/services/haivelo/dataSources'
 import { VITE_MAINNET_PUBLIC_RPC } from '~/utils'
 import {
-    HAI_VELO_ADDRESSES,
+    // HAI_VELO_ADDRESSES,
     HAIVELO_V1_DEPOSITER_ADDRESS,
     HAI_REWARD_DISTRIBUTOR_ADDRESS,
- fetchHaiVeloLatestTransferAmount } from '~/services/haiVeloService'
+    fetchHaiVeloLatestTransferAmount,
+} from '~/services/haiVeloService'
 
 const HAIVELO_DEPOSITER = HAIVELO_V1_DEPOSITER_ADDRESS
 const REWARD_DISTRIBUTOR = HAI_REWARD_DISTRIBUTOR_ADDRESS
 
 const HAI_TOKEN_ADDRESS = import.meta.env.VITE_HAI_ADDRESS as string
-const KITE_TOKEN_ADDRESS = import.meta.env.VITE_KITE_ADDRESS as string
-const OP_TOKEN_ADDRESS = import.meta.env.VITE_OP_ADDRESS as string
+// const KITE_TOKEN_ADDRESS = import.meta.env.VITE_KITE_ADDRESS as string
+// const OP_TOKEN_ADDRESS = import.meta.env.VITE_OP_ADDRESS as string
 
 // Cache last-epoch TVL to avoid repeated binary searches and subgraph queries
 const __hvEpochCache: Map<string, { ts: number; block: number; tvlUsd: number; fetchedAt: number }> = new Map()
@@ -286,12 +287,10 @@ class YieldBearingAPRCalculator implements IUnderlyingAPRCalculator {
     }
 
     async calculateAPR(data: UnderlyingAPRData): Promise<UnderlyingAPRResult> {
-
         console.log('data', data)
         try {
             // For HAI VELO (v1 and v2), get the APR from the deposit strategy calculation
             if (['HAIVELO', 'HAIVELOV2', 'HAIVELO_V2'].includes(data.collateralType.toUpperCase())) {
-
                 let baseAPR = 0.05 // Default fallback (decimal)
                 let userBoost = 1 // Default boost multiplier
 
@@ -315,9 +314,10 @@ class YieldBearingAPRCalculator implements IUnderlyingAPRCalculator {
                     const haiVeloBoostApr = data.externalProtocolData?.haiVeloBoostApr
                     const lastEpochTvlUsd = data.externalProtocolData?.lastEpochHaiVeloTvlUsd as number | undefined
 
-                    const actualTVL = (lastEpochTvlUsd && lastEpochTvlUsd > 0)
-                        ? lastEpochTvlUsd
-                        : (haiVeloBoostApr?.totalBoostedValueParticipating || 1000000) // Fallback to current boosted TVL or $1M
+                    const actualTVL =
+                        lastEpochTvlUsd && lastEpochTvlUsd > 0
+                            ? lastEpochTvlUsd
+                            : haiVeloBoostApr?.totalBoostedValueParticipating || 1000000 // Fallback to current boosted TVL or $1M
 
                     // Calculate base APR using the same formula as strategy data, but return BASE only:
                     // baseAPR (decimal) = (dailyRewardValue / totalBoostedValueParticipating) * 365

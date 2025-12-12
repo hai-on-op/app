@@ -17,7 +17,11 @@ describe('rewardsService.getStakingApy', () => {
             .mockImplementationOnce(() =>
                 mockContract({
                     rewards: () => rewardsCount,
-                    rewardTypes: (i: number) => ({ isActive: i !== 1, rewardPool: `0xpool${i}`, rewardToken: `0xtoken${i}` }),
+                    rewardTypes: (i: number) => ({
+                        isActive: i !== 1,
+                        rewardPool: `0xpool${i}`,
+                        rewardToken: `0xtoken${i}`,
+                    }),
                 })
             )
             .mockImplementation(() => rpMock)
@@ -29,5 +33,3 @@ describe('rewardsService.getStakingApy', () => {
         ])
     })
 })
-
-

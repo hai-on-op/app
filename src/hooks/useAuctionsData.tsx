@@ -93,16 +93,7 @@ export function useAuctionsData() {
             temp = temp.filter((auction) => statusFilter === getAuctionStatus(auction, auctionsData))
         }
         return temp
-    }, [
-        auctionsData,
-        collateralAuctions,
-        debtAuctions,
-        surplusAuctions,
-        typeFilter,
-        typeFilter,
-        saleAssetsFilter,
-        statusFilter,
-    ])
+    }, [auctionsData, collateralAuctions, debtAuctions, surplusAuctions, typeFilter, saleAssetsFilter, statusFilter])
 
     const [sorting, setSorting] = useState<Sorting>({
         key: 'Status',

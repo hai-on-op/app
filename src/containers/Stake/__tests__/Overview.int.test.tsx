@@ -49,7 +49,12 @@ describe('Overview (integration, v2)', () => {
 
         renderWithProviders(
             <Overview
-                simulation={{ stakingAmount: '1', unstakingAmount: '', setStakingAmount: () => {}, setUnstakingAmount: () => {} }}
+                simulation={{
+                    stakingAmount: '1',
+                    unstakingAmount: '',
+                    setStakingAmount: () => {},
+                    setUnstakingAmount: () => {},
+                }}
             />
         )
 

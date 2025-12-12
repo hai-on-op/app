@@ -98,7 +98,7 @@ export function useEarnStrategies() {
                     } as Strategy
                 }) || []
         )
-    }, [data?.collateralTypes, prices, list, tokenAssets])
+    }, [data?.collateralTypes, prices, list])
 
     const uniStrategies = useMemo(() => {
         if (!uniData?.liquidityPools.length) return []

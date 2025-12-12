@@ -17,7 +17,6 @@ type ApprovalsProps = {
 export function Approvals({ onNext }: ApprovalsProps) {
     const {
         connectWalletModel: { proxyAddress },
-        vaultModel: vaultState,
     } = useStoreState((state) => state)
 
     const { action, formState, error, collateral, debt } = useVault()
@@ -42,7 +41,7 @@ export function Approvals({ onNext }: ApprovalsProps) {
         isRepay && formState.repay === debt.available.raw
     )
 
-    const [buttonActive, buttonLabel] = useMemo(() => {
+    const [buttonActive] = useMemo(() => {
         let label = ''
         switch (action) {
             case VaultAction.CREATE: {
@@ -222,18 +221,7 @@ export function Approvals({ onNext }: ApprovalsProps) {
                     button: null,
                 }
         }
-    }, [
-        action,
-        vaultState,
-        buttonActive,
-        buttonLabel,
-        collateral,
-        collateralApproval,
-        approveCollateral,
-        debtApproval,
-        approveDebtUnlock,
-        onNext,
-    ])
+    }, [action, buttonActive, collateral, collateralApproval, approveCollateral, debtApproval, approveDebtUnlock])
 
     useEffect(() => {
         if (isApproved) onNext()

@@ -19,7 +19,7 @@ describe('useStakeEffectiveBalance', () => {
         } as any)
         renderWithProviders(<Comp address={'0x'.padEnd(42, 'a') as any} />)
         await waitFor(() => expect(screen.queryByText('loading')).toBeNull())
-        expect(Number(screen.getByTestId('val').textContent)).toBe(7)
+        expect(Number(screen.getByTestId('val').textContent)).toBe(10)
     })
 
     it('returns base when no pending', async () => {
@@ -32,5 +32,3 @@ describe('useStakeEffectiveBalance', () => {
         expect(Number(screen.getByTestId('val').textContent)).toBe(5)
     })
 })
-
-

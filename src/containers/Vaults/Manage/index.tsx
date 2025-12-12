@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import type { ReactChildren } from '~/types'
 import { VaultAction } from '~/utils'
@@ -7,7 +7,6 @@ import { useMediaQuery, useVaultById } from '~/hooks'
 
 import styled, { css } from 'styled-components'
 import { CenteredFlex, Flex, Grid, HaiButton } from '~/styles'
-import { Link } from '~/components/Link'
 import { MigrateHaiVeloV2Modal } from '~/components/Modal/MigrateHaiVeloV2Modal'
 import { RewardsTokenArray } from '~/components/TokenArray'
 import { ProxyPrompt } from '~/components/ProxyPrompt'
@@ -16,8 +15,6 @@ import { HaiVeloOverview } from './HaiVeloOverview'
 import { HaiVeloProvider } from '~/providers/HaiVeloProvider'
 import { VaultActions } from './VaultActions'
 import { MintHaiVeloActions } from './MintHaiVeloActions'
-import { useAccount } from 'wagmi'
-import { useHaiVeloAccount } from '~/hooks/haivelo/useHaiVeloAccount'
 import { ManageDropdown } from './ManageDropdown'
 import { NavContainer } from '~/components/NavContainer'
 import { ActivityTable } from '../VaultById/ActivityTable'
@@ -151,11 +148,11 @@ const Header = styled(Flex).attrs((props) => ({
             width: 100%;
         }
         ${
-    $removePadding &&
+            $removePadding &&
             css`
                 padding-bottom: 0px;
             `
-}}
+        }}
     `}
 
     z-index: 1;
