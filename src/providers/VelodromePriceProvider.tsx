@@ -1,11 +1,9 @@
-import { type DispatchWithoutAction, createContext, useContext, useEffect, useReducer, useState } from 'react'
-
-import type { ReactChildren, SummaryItemValue } from '~/types'
-// import oracleAbi from '~/abis/velo_oracle.abi.json'
+import type { SummaryItemValue } from '~/types'
 import veloSpotOracleAbi from '~/abis/velo_spot_price_oracle.abi.json'
 import { useContract } from '~/hooks'
 import { formatSummaryValue } from '~/utils'
 import { formatUnits } from 'ethers/lib/utils'
+import { useQuery } from '@tanstack/react-query'
 
 // const oracleContractAddress = '0x395942c2049604a314d39f370dfb8d87aac89e16'
 const veloSpotOracleContractAddress = '0x59114D308C6DE4A84F5F8cD80485a5481047b99f'
@@ -25,95 +23,52 @@ const priceAddresses = {
     // WSTETH: '0x1F32b1c2345538c0c6f582fCB022739c4A194Ebb',
     // SAIL: '0x7a1263eC3Bf0a19e25C553B8A2C312e903262C5E',
     DINERO: '0x09D9420332bff75522a45FcFf4855F82a0a3ff50',
-}
+} as const
 
-type VelodromePriceContext = {
-    prices?: Record<keyof typeof priceAddresses, SummaryItemValue>
-    loading: boolean
-    error?: string
-    refetchPrices: DispatchWithoutAction
-}
+type VelodromePrices = Record<keyof typeof priceAddresses, SummaryItemValue>
 
-const defaultState: VelodromePriceContext = {
-    prices: undefined,
-    loading: false,
-    error: undefined,
-    refetchPrices: () => {},
-}
-
-const VelodromePriceContext = createContext<VelodromePriceContext>(defaultState)
-
-export const useVelodromePrices = () => useContext(VelodromePriceContext)
-
-type Props = {
-    children: ReactChildren
-}
-export function VelodromePriceProvider({ children }: Props) {
-    const [prices, setPrices] = useState<VelodromePriceContext['prices']>()
-
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState<string | undefined>(undefined)
-    const [refresher, refetchPrices] = useReducer((x) => x + 1, 0)
-
-    // const velodromeOracleContract = useContract(oracleContractAddress, oracleAbi)
+export function useVelodromePrices() {
     const veloSpotOracleContract = useContract(veloSpotOracleContractAddress, veloSpotOracleAbi)
 
-    useEffect(() => {
-        if (!veloSpotOracleContract) return
+    const {
+        data: prices,
+        isLoading: loading,
+        error,
+        refetch,
+    } = useQuery({
+        queryKey: ['velodromePrices', priceAddresses],
+        queryFn: async () => {
+            if (!veloSpotOracleContract) return
 
-        const usdcDst = '0x0b2c639c533813f4aa9d7837caf62653d097ff85'
+            const usdcDst = '0x0b2c639c533813f4aa9d7837caf62653d097ff85'
+            const addresses = Object.values(priceAddresses)
+            const prices = (await veloSpotOracleContract.getManyRatesWithCustomConnectors(
+                [...addresses],
+                usdcDst,
+                true,
+                [],
+                10
+            )) as string[] // actually BigNumber[] but don't need to import
 
-        let isStale = false
-        const fetchData = async () => {
-            try {
-                setLoading(true)
-                const addresses = Object.values(priceAddresses)
-                const prices = (await veloSpotOracleContract.getManyRatesWithCustomConnectors(
-                    [...addresses],
-                    usdcDst,
-                    true,
-                    [],
-                    10
-                )) as string[] // actually BigNumber[] but don't need to import
-                if (isStale) return
-                const formattedPrices = prices.reduce(
-                    (obj, price, i) => {
-                        ;(obj as any)[Object.keys(priceAddresses)[i]] = formatSummaryValue(formatUnits(price, 6), {
-                            style: 'currency',
-                            minDecimals: 2,
-                            maxDecimals: 2,
-                            minSigFigs: 2,
-                        })
-                        return obj
-                    },
-                    {} as VelodromePriceContext['prices']
-                )
+            return Object.fromEntries(
+                prices.map((price, i) => [
+                    Object.keys(priceAddresses)[i],
+                    formatSummaryValue(formatUnits(price, 6), {
+                        style: 'currency',
+                        minDecimals: 2,
+                        maxDecimals: 2,
+                        minSigFigs: 2,
+                    }),
+                ])
+            ) as VelodromePrices
+        },
+        cacheTime: 120,
+    })
 
-                setPrices(formattedPrices)
-            } catch (error: any) {
-                console.error(error)
-                setError(error?.message || 'An error occurred')
-            } finally {
-                setLoading(false)
-            }
-        }
-        fetchData()
-
-        return () => {
-            isStale = true
-        }
-    }, [veloSpotOracleContract, refresher])
-
-    return (
-        <VelodromePriceContext.Provider
-            value={{
-                prices,
-                loading,
-                error,
-                refetchPrices,
-            }}
-        >
-            {children}
-        </VelodromePriceContext.Provider>
-    )
+    return {
+        prices,
+        loading,
+        error,
+        refetchPrices: refetch,
+    }
 }

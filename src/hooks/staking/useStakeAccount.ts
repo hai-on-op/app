@@ -14,9 +14,9 @@ export function useStakeAccount(address?: Address, namespace: string = 'kite', s
     const provider = usePublicProvider()
 
     const query = useQuery<StakeAccountData>({
-        queryKey: ['stake', namespace, 'account', address?.toLowerCase() || '0x0'],
+        queryKey: ['stake', namespace, 'account', address?.toLowerCase()],
+        enabled: !!provider,
         queryFn: async () => {
-            if (!provider || !address) throw new Error('No provider or address')
             const [stakedBalance, pendingWithdrawal, rewards, cooldown] = await Promise.all([
                 service.getStakedBalance(address, provider),
                 service.getPendingWithdrawal(address, provider),

@@ -9,7 +9,7 @@ export type StakePrices = {
 }
 
 export function useStakePrices(): { data: StakePrices; loading: boolean } {
-    const { prices: veloPrices, loading: velodromeLoading } = useVelodromePrices()
+    const { prices: veloPrices, loading } = useVelodromePrices()
     const {
         vaultModel: { liquidationData },
     } = useStoreState((state) => state)
@@ -21,5 +21,5 @@ export function useStakePrices(): { data: StakePrices; loading: boolean } {
         return { kitePrice, haiPrice, opPrice }
     }, [veloPrices, liquidationData])
 
-    return { data, loading: Boolean(velodromeLoading) }
+    return { data, loading }
 }

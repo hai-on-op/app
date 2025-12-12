@@ -118,7 +118,8 @@ export function useVelodromePositions() {
     const query = useQuery<VelodromeLpPosition[], Error>(
         ['velodrome', 'positions', address],
         async () => {
-            if (!address || !velodromeSugarContract) throw new Error('Missing deps')
+            if (!velodromeSugarContract) throw new Error('Missing deps')
+            if (!address) return []
             const positions = (await velodromeSugarContract.positions(
                 BigNumber.from(800),
                 BigNumber.from(700),
