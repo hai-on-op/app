@@ -14,7 +14,8 @@ function Comp() {
 
 describe('useStakeStats', () => {
     it('returns stats from services', async () => {
-        vi.spyOn(stakingService, 'getTotalStaked').mockResolvedValue('100.5')
+        // Spy on defaultStakingService.getTotalStaked because useStakeStats uses the object directly
+        vi.spyOn(stakingService.defaultStakingService, 'getTotalStaked').mockResolvedValue('100.5')
         renderWithProviders(<Comp />)
         await waitFor(() => expect(screen.queryByText('loading')).toBeNull())
         expect(screen.getByTestId('total').textContent).toBe('100.5')

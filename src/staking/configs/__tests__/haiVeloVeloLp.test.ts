@@ -4,8 +4,8 @@ import { haiVeloVeloLpConfig } from '~/staking/configs/haiVeloVeloLp'
 describe('haiVeloVeloLpConfig', () => {
     it('has expected namespace and labels', () => {
         expect(haiVeloVeloLpConfig.namespace).toBe('lp-hai-velo-velo')
-        expect(haiVeloVeloLpConfig.labels.token).toBe('HAI/VELO LP')
-        expect(haiVeloVeloLpConfig.labels.stToken).toBe('stHAI/VELO LP')
+        expect(haiVeloVeloLpConfig.labels.token).toBe('haiVELO/VELO LP')
+        expect(haiVeloVeloLpConfig.labels.stToken).toBe('sthaiVELO/VELO LP')
         expect(haiVeloVeloLpConfig.labels.stakeVerb).toBe('Stake')
     })
 

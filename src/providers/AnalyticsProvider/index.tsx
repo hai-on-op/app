@@ -2,7 +2,7 @@ import { createContext, useContext, useMemo, useCallback } from 'react'
 import { useQuery, gql } from '@apollo/client'
 
 import type { ReactChildren, SummaryItemValue } from '~/types'
-import { Timeframe } from '~/utils'
+import { Timeframe } from '~/utils/time'
 import { type HistoricalStatsReturn, useHistoricalStats } from './useHistoricalStats'
 import { DEFAULT_ANALYTICS_DATA, type GebAnalyticsData, useGebAnalytics } from './useGebAnalytics'
 import { type SystemData, useSystemData } from './useSystemData'
