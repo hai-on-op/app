@@ -130,6 +130,9 @@ export function Overview({ simulation, config }: OverviewProps) {
                     My Boost
                 </Text>
                 <Text $fontSize=".9rem">{aprBreakdown.boostFormatted}</Text>
+                <Text $fontSize=".75rem" style={{ opacity: 0.7 }}>
+                    Based on your stKITE share / staked LP share ratio
+                </Text>
             </div>
             {hasBoost && (
                 <div style={{ marginTop: '8px' }}>
@@ -345,7 +348,7 @@ export function Overview({ simulation, config }: OverviewProps) {
                             loading={loading}
                             isComingSoon={false}
                             value={boost.netBoostValue}
-                            label="My Net Boost:"
+                            label="My Boost:"
                             simulatedValue={
                                 boost.netBoostValue !== simValues.netBoostAfterTx
                                     ? `${formatNumberWithStyle(simValues.netBoostAfterTx, {
@@ -382,7 +385,11 @@ export function Overview({ simulation, config }: OverviewProps) {
                                 { progress: 0.75, label: '1.75x' },
                                 { progress: 1, label: '2x' },
                             ]}
-                            tooltip={`Max Net Boost is achieved when your ${tokenLabel} staking share is equal to or greater than the weighted average proportions of your incentivized positions.`}
+                            tooltip={
+                                isLpPool
+                                    ? `Your boost is based on your stKITE share / staked LP share ratio. Max boost (2x) is achieved when your stKITE share is equal to or greater than your staked LP share.`
+                                    : `Max boost is achieved when your ${tokenLabel} staking share is equal to or greater than the weighted average proportions of your incentivized positions.`
+                            }
                         />
                     </>
                 )}
