@@ -13,8 +13,8 @@ describe('haiVeloVeloLpConfig', () => {
         expect(haiVeloVeloLpConfig.addresses.stakeToken.toLowerCase()).toBe(
             '0x5535cdc333fc8f08f6183e7064202c3917e9346c'
         )
-        expect(haiVeloVeloLpConfig.addresses.stToken?.toLowerCase()).toBe('0xfefe14e370c3cd9f7e1810b25ecf00d553fd625b')
-        expect(haiVeloVeloLpConfig.addresses.manager.toLowerCase()).toBe('0xfff582ce7353026b20264f27770fa7bdd4aa6d0e')
+        expect(haiVeloVeloLpConfig.addresses.stToken?.toLowerCase()).toBe('0xaa46f6e234d52cc8c3b387a44584a9fb1a62be0a')
+        expect(haiVeloVeloLpConfig.addresses.manager.toLowerCase()).toBe('0x13531b3039533860576e01798df29b6a14fcd1d9')
     })
 
     it('has expected decimals and subgraph metadata', () => {
