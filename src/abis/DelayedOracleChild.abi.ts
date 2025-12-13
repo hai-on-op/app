@@ -1,0 +1,103 @@
+const abi = [
+    {
+        inputs: [
+            { internalType: 'contract IBaseOracle', name: '_priceSource', type: 'address' },
+            { internalType: 'uint256', name: '_updateDelay', type: 'uint256' },
+        ],
+        stateMutability: 'nonpayable',
+        type: 'constructor',
+    },
+    { inputs: [], name: 'CallerNotFactory', type: 'error' },
+    { inputs: [], name: 'DelayedOracle_DelayHasNotElapsed', type: 'error' },
+    { inputs: [], name: 'DelayedOracle_NoCurrentValue', type: 'error' },
+    { inputs: [], name: 'DelayedOracle_NullDelay', type: 'error' },
+    { inputs: [], name: 'DelayedOracle_NullPriceSource', type: 'error' },
+    { inputs: [], name: 'InvalidPriceFeed', type: 'error' },
+    { inputs: [], name: 'NotFactoryDeployment', type: 'error' },
+    {
+        anonymous: false,
+        inputs: [
+            { indexed: false, internalType: 'uint256', name: '_newMedian', type: 'uint256' },
+            { indexed: false, internalType: 'uint256', name: '_lastUpdateTime', type: 'uint256' },
+        ],
+        name: 'UpdateResult',
+        type: 'event',
+    },
+    {
+        inputs: [],
+        name: 'factory',
+        outputs: [{ internalType: 'address', name: '', type: 'address' }],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [],
+        name: 'getNextResultWithValidity',
+        outputs: [
+            { internalType: 'uint256', name: '_result', type: 'uint256' },
+            { internalType: 'bool', name: '_validity', type: 'bool' },
+        ],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [],
+        name: 'getResultWithValidity',
+        outputs: [
+            { internalType: 'uint256', name: '_result', type: 'uint256' },
+            { internalType: 'bool', name: '_validity', type: 'bool' },
+        ],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [],
+        name: 'lastUpdateTime',
+        outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [],
+        name: 'priceSource',
+        outputs: [{ internalType: 'contract IBaseOracle', name: '', type: 'address' }],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [],
+        name: 'read',
+        outputs: [{ internalType: 'uint256', name: '_result', type: 'uint256' }],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [],
+        name: 'shouldUpdate',
+        outputs: [{ internalType: 'bool', name: '_ok', type: 'bool' }],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [],
+        name: 'symbol',
+        outputs: [{ internalType: 'string', name: '', type: 'string' }],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [],
+        name: 'updateDelay',
+        outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [],
+        name: 'updateResult',
+        outputs: [{ internalType: 'bool', name: '_success', type: 'bool' }],
+        stateMutability: 'nonpayable',
+        type: 'function',
+    },
+] as const
+export default abi
