@@ -25,6 +25,6 @@ const lpConfig = {
 describe('Confirm modal boost gating', () => {
     it('hides Net Boost row when affectsBoost=false', () => {
         renderWithProviders(<Confirm isStaking amount={''} stakedAmount={'0'} isWithdraw={false} config={lpConfig} />)
-        expect(screen.queryByText('Net Boost')).not.toBeInTheDocument()
+        expect(screen.queryByText('Net Boost')).not.toBeTruthy()
     })
 })

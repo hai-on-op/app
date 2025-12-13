@@ -1,12 +1,14 @@
+import { describe, it, expect, vi } from 'vitest'
+import { MemoryRouter } from 'react-router-dom'
 import * as v2 from '~/hooks/staking/useStakingSummaryV2'
 import { renderWithProviders } from '~/test/testUtils'
 import { StakeStats } from '~/containers/Stake/Stats'
 
-jest.mock('~/hooks/staking/useStakingSummaryV2')
+vi.mock('~/hooks/staking/useStakingSummaryV2')
 
 describe('StakeStats uses V2 APR', () => {
     it('renders values from useStakingSummaryV2', () => {
-        ;(v2.useStakingSummaryV2 as jest.Mock).mockReturnValue({
+        ;(v2.useStakingSummaryV2 as ReturnType<typeof vi.fn>).mockReturnValue({
             loading: false,
             isOptimistic: false,
             kitePrice: 1,
@@ -44,10 +46,14 @@ describe('StakeStats uses V2 APR', () => {
             }),
         })
 
-        const { getByText } = renderWithProviders(<StakeStats />)
+        const { getByText } = renderWithProviders(
+            <MemoryRouter>
+                <StakeStats />
+            </MemoryRouter>
+        )
         // Presence of key labels is enough to confirm rendering path; APR is used inside Overview, but StakeStats relies on summary for numbers
-        expect(getByText('Staking TVL')).toBeInTheDocument()
-        expect(getByText('My KITE Staked')).toBeInTheDocument()
-        expect(getByText('My stKITE Share')).toBeInTheDocument()
+        expect(getByText('Staking TVL')).toBeTruthy()
+        expect(getByText('My KITE Staked')).toBeTruthy()
+        expect(getByText('My stKITE Share')).toBeTruthy()
     })
 })
