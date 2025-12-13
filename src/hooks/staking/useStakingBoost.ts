@@ -54,7 +54,7 @@ export function useStakingBoost(config?: StakingConfig): StakingBoostResult {
 
     // Global KITE staking data
     const { data: kiteAccount, isLoading: kiteAccountLoading } = useStakeAccount(
-        address as any,
+        address,
         kiteConfig.namespace,
         kiteService
     )
@@ -64,11 +64,7 @@ export function useStakingBoost(config?: StakingConfig): StakingBoostResult {
     const lpNamespace = config?.namespace ?? 'kite'
     const lpServiceForHooks = lpService ?? kiteService
 
-    const { data: lpAccount, isLoading: lpAccountLoading } = useStakeAccount(
-        address as any,
-        lpNamespace,
-        lpServiceForHooks
-    )
+    const { data: lpAccount, isLoading: lpAccountLoading } = useStakeAccount(address, lpNamespace, lpServiceForHooks)
     const { data: lpStats, isLoading: lpStatsLoading } = useStakeStats(lpNamespace, lpServiceForHooks)
 
     const loading = kiteAccountLoading || kiteStatsLoading || lpAccountLoading || lpStatsLoading

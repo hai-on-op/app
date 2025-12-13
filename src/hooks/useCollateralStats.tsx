@@ -3,6 +3,9 @@ import { useMemo, useState } from 'react'
 import type { CollateralStat, SortableHeader, Sorting } from '~/types'
 import { arrayToSorted, transformToAnnualRate } from '~/utils'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
+import { useContractReads } from 'wagmi'
+import type { Address } from 'viem'
+import OracleABI from '~/abis/DelayedOracleChild.abi'
 
 const collateralHeaders: SortableHeader[] = [
     { label: 'Collateral Asset' },
@@ -29,12 +32,42 @@ const collateralHeaders: SortableHeader[] = [
         label: 'Next Price',
         tooltip: `Next system price of the collateral, this value is already quoted, and will impact the system on the next price update`,
     },
+    {
+        label: 'Next Update',
+        tooltip: `Next time that the price of the collateral will update within the system`,
+    },
 ]
 
 export function useCollateralInfo() {
     const {
-        data: { tokenAnalyticsData: rows },
+        data: { tokenAnalyticsData },
     } = useAnalytics()
+
+    // TODO: move update times into SDK
+    const { data } = useContractReads({
+        contracts: tokenAnalyticsData.flatMap(
+            ({ delayedOracle }) =>
+                [
+                    {
+                        address: delayedOracle as Address,
+                        abi: OracleABI,
+                        functionName: 'lastUpdateTime',
+                    },
+                    {
+                        address: delayedOracle as Address,
+                        abi: OracleABI,
+                        functionName: 'updateDelay',
+                    },
+                ] as const
+        ),
+        enabled: tokenAnalyticsData !== undefined,
+    })
+
+    const rows = tokenAnalyticsData.map((row, i) => ({
+        ...row,
+        lastUpdateTime: data?.[i * 2].result?.toString(),
+        updateDelay: data?.[i * 2 + 1].result?.toString(),
+    }))
 
     const [sorting, setSorting] = useState<Sorting>({
         key: 'Collateral Asset',
@@ -54,6 +87,12 @@ export function useCollateralInfo() {
                     getProperty: (row) => row.nextPrice.toString(),
                     dir: sorting.dir,
                     type: 'parseFloat',
+                })
+            case 'Next Update':
+                return arrayToSorted(rows, {
+                    getProperty: (row) => row.lastUpdateTime && row.updateDelay && row.lastUpdateTime + row.updateDelay,
+                    dir: sorting.dir,
+                    type: 'numerical',
                 })
             case 'Collateral Asset':
             default:
@@ -105,6 +144,8 @@ export type CollateralStatWithInfo = CollateralStat & {
     token: string
     stabilityFee?: number
     annualEarnings?: number
+    lastUpdateTime?: string
+    updateDelay?: string
 }
 export function useCollateralStats() {
     const {
@@ -163,6 +204,12 @@ export function useCollateralStats() {
                     getProperty: (row) => row.stabilityFee?.toString() || '0',
                     dir: sorting.dir,
                     type: 'parseFloat',
+                })
+            case 'Next Update':
+                return arrayToSorted(rows, {
+                    getProperty: (row) => row.lastUpdateTime && row.updateDelay && row.lastUpdateTime + row.updateDelay,
+                    dir: sorting.dir,
+                    type: 'numerical',
                 })
             case 'TVL':
             default:

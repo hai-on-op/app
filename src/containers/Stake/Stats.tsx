@@ -152,7 +152,11 @@ export function StakeStats({ config }: { config?: StakingConfig }) {
                       </HaiButton>
                   ),
               }
-            : null
+            : {
+                  header: '0',
+                  label: 'My Staking Rewards',
+                  tooltip: 'Connect a wallet to see your staking rewards. ',
+              }
 
         const boostTooltip = isKitePool ? (
             <Text>

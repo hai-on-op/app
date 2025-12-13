@@ -31,13 +31,13 @@ export function useBoost() {
     const { address } = useAccount()
     const addressLower = address?.toLowerCase()
     const { data: pool } = useLpPool()
-    const { value: userTotalLiquidity, loading: userTotalLiquidityLoading } = useLpUserTotalLiquidity(address as any)
-    const { loading: userLPValueLoading, value: calculatedUserLPPositionValue } = useLpUserPositionValue(address as any)
+    const { value: userTotalLiquidity, loading: userTotalLiquidityLoading } = useLpUserTotalLiquidity(address)
+    const { loading: userLPValueLoading, value: calculatedUserLPPositionValue } = useLpUserPositionValue(address)
     const lpDataLoading = userTotalLiquidityLoading || userLPValueLoading
-    const { lpBoost: lpBoostFromHook, kiteRatio: kiteRatioFromHook } = useLpBoostForUser(address as any)
+    const { lpBoost: lpBoostFromHook, kiteRatio: kiteRatioFromHook } = useLpBoostForUser(address)
     const { loading: positionsLoading } = useVelodromePositions()
     const { prices: veloPrices } = useVelodromePrices()
-    const { data: stakingAccount, isLoading: stakingAccountLoading } = useStakeAccount(address as any)
+    const { data: stakingAccount, isLoading: stakingAccountLoading } = useStakeAccount(address)
     const { data: stakingStatsData, isLoading: stakingStatsLoading } = useStakeStats()
     const stakingLoading = stakingAccountLoading || stakingStatsLoading
     const { mapping: hvMapping } = useHaiVeloCollateralMapping()

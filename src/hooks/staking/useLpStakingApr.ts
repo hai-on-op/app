@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { usePublicProvider } from '~/hooks'
 import { useVelodrome } from '~/hooks/useVelodrome'
@@ -69,9 +69,6 @@ export function useLpStakingApr(config?: StakingConfig): LpStakingAprResult {
     const haiVeloPrice = veloPrice // haiVELO is ~1:1 with VELO
     const haiVeloStats = useHaiVeloStats(haiVeloPrice)
 
-    // Weekly HAI reward for haiVELO distribution
-    const [weeklyHaiReward, setWeeklyHaiReward] = useState(0)
-
     // Build staking service for this config
     const service = useMemo(() => {
         if (!config) return undefined
@@ -85,20 +82,16 @@ export function useLpStakingApr(config?: StakingConfig): LpStakingAprResult {
     const isCurveLp = config?.tvl?.source === 'curve'
     const isVelodromeLp = config?.tvl?.source === 'velodrome'
 
-    // Fetch weekly HAI reward for Velodrome pools
-    useEffect(() => {
-        if (!isVelodromeLp) return
-        let mounted = true
-        fetchHaiVeloLatestTransferAmount({
-            rpcUrl: VITE_MAINNET_PUBLIC_RPC,
-            haiTokenAddress: HAI_TOKEN_ADDRESS,
-        }).then((amount) => {
-            if (mounted) setWeeklyHaiReward(amount)
-        })
-        return () => {
-            mounted = false
-        }
-    }, [isVelodromeLp])
+    const { data: weeklyHaiReward } = useQuery({
+        queryKey: ['weeklyHaiReward', isVelodromeLp],
+        queryFn: () => {
+            if (!isVelodromeLp) throw new Error('not Velodrome LP')
+            return fetchHaiVeloLatestTransferAmount({
+                rpcUrl: VITE_MAINNET_PUBLIC_RPC,
+                haiTokenAddress: HAI_TOKEN_ADDRESS,
+            })
+        },
+    })
 
     // Fetch Curve pool data (TVL and LP price)
     const { data: curveData, isLoading: curveDataLoading } = useQuery({
@@ -137,7 +130,8 @@ export function useLpStakingApr(config?: StakingConfig): LpStakingAprResult {
 
     const curveLoading = isCurveLp && (curveDataLoading || curveAprLoading)
     const velodromeLoading =
-        isVelodromeLp && (velodromePoolsLoading || velodromePricesLoading || haiVeloStats.isLoading)
+        isVelodromeLp &&
+        (velodromePoolsLoading || velodromePricesLoading || haiVeloStats.isLoading || weeklyHaiReward === undefined)
 
     const loading = pricesLoading || statsLoading || curveLoading || velodromeLoading
 
@@ -220,7 +214,7 @@ export function useLpStakingApr(config?: StakingConfig): LpStakingAprResult {
         }
 
         // Handle Velodrome LP pools (haiVELO/VELO)
-        if (isVelodromeLp && velodromePool) {
+        if (isVelodromeLp && velodromePool && weeklyHaiReward !== undefined) {
             const lpPriceUsd = velodromeLpValue?.lpPriceUsd ?? 0
             const poolTvlUsd = velodromeLpValue?.tvlUsd ?? 0
             const totalStakedValueUsd = totalStakedLp * lpPriceUsd
