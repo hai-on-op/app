@@ -23,7 +23,8 @@ export function buildStakingService(
             const total: BigNumber = await sm(provider).totalStaked()
             return toEtherString(total)
         },
-        async getStakedBalance(address: Address, provider: Provider): Promise<EtherString> {
+        async getStakedBalance(address: Address | undefined, provider: Provider): Promise<EtherString> {
+            if (!address) return toEtherString(BigNumber.from(0))
             const bal: BigNumber = await sm(provider).stakedBalances(address)
             return toEtherString(bal)
         },
@@ -31,7 +32,8 @@ export function buildStakingService(
             const seconds: BigNumber = await sm(provider)._params()
             return seconds.toNumber()
         },
-        async getRewards(address: Address, provider: Provider): Promise<AggregatedReward[]> {
+        async getRewards(address: Address | undefined, provider: Provider): Promise<AggregatedReward[]> {
+            if (!address) return []
             const rewardsCountBn: BigNumber = await sm(provider).rewards()
             const rewardsCount = rewardsCountBn.toNumber()
 
@@ -61,7 +63,10 @@ export function buildStakingService(
                 amount: toEtherString(amount),
             }))
         },
-        async getPendingWithdrawal(_address: Address, _provider: Provider): Promise<PendingWithdrawal | null> {
+        async getPendingWithdrawal(
+            _address: Address | undefined,
+            _provider: Provider
+        ): Promise<PendingWithdrawal | null> {
             return null
         },
         async stake(signer: any, amount: string): Promise<TxResponse> {

@@ -5,6 +5,7 @@ import { StrategyTable } from './StrategyTable'
 import { CheckboxButton } from '~/components/CheckboxButton'
 import { SortByDropdown } from '~/components/SortByDropdown'
 import { WrapperAdProps, WrapperAd } from '~/components/WrapperAd'
+import { useAccount } from 'wagmi'
 
 const wrappers: WrapperAdProps[] = [
     {
@@ -18,6 +19,7 @@ const wrappers: WrapperAdProps[] = [
 ]
 
 export function Earn() {
+    const { isConnected } = useAccount()
     const { headers, rows, loading, error, uniError, veloError, sorting, setSorting, filterEmpty, setFilterEmpty } =
         useEarnStrategies()
 
@@ -31,9 +33,11 @@ export function Earn() {
             compactQuery="upToMedium"
             headerContent={
                 <>
-                    <CheckboxButton checked={filterEmpty} toggle={() => setFilterEmpty((e) => !e)}>
-                        Only Show My Positions
-                    </CheckboxButton>
+                    {isConnected && (
+                        <CheckboxButton checked={filterEmpty} toggle={() => setFilterEmpty((e) => !e)}>
+                            Only Show My Positions
+                        </CheckboxButton>
+                    )}
                     {isUpToMedium && <SortByDropdown headers={headers} sorting={sorting} setSorting={setSorting} />}
                 </>
             }

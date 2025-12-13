@@ -98,7 +98,7 @@ export function useVelodrome() {
     return {
         data: query.data,
         loading: query.isLoading,
-        error: query.error?.message || '',
+        error: query.error?.message,
         refetch: query.refetch,
     }
 }
@@ -118,7 +118,8 @@ export function useVelodromePositions() {
     const query = useQuery<VelodromeLpPosition[], Error>(
         ['velodrome', 'positions', address],
         async () => {
-            if (!address || !velodromeSugarContract) throw new Error('Missing deps')
+            if (!velodromeSugarContract) throw new Error('Missing deps')
+            if (!address) return []
             const positions = (await velodromeSugarContract.positions(
                 BigNumber.from(800),
                 BigNumber.from(700),
@@ -134,7 +135,7 @@ export function useVelodromePositions() {
             return positionData
         },
         {
-            enabled: Boolean(velodromeSugarContract && address),
+            enabled: Boolean(velodromeSugarContract),
             staleTime: 20_000,
             keepPreviousData: true,
         }
@@ -143,7 +144,7 @@ export function useVelodromePositions() {
     return {
         data: query.data,
         loading: query.isLoading,
-        error: query.error?.message || '',
+        error: query.error?.message,
         refetch: query.refetch,
     }
 }
