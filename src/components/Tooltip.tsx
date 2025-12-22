@@ -3,7 +3,7 @@ import { useState } from 'react'
 import type { ReactChildren } from '~/types'
 import { useOutsideClick } from '~/hooks'
 
-import styled, { css } from 'styled-components'
+import styled from 'styled-components'
 import { CenteredFlex, Popout, type PopoutProps } from '~/styles'
 import { Info } from './Icons/Info'
 
@@ -22,43 +22,26 @@ export function Tooltip({ size = 14, width = 'auto', $float, children, ...props 
     return (
         <Container
             ref={setContainer}
-            $popoutWidth={width}
-            $float={$float}
             onClick={() => setClicked((c) => !c)}
             onPointerEnter={() => setHovered(true)}
             onPointerLeave={() => setHovered(false)}
         >
             <Info size={size} />
-            <Popout hidden={!hovered && !clicked} $anchor="bottom" $margin="20px" $float={$float} {...props}>
+            <Popout
+                hidden={!hovered && !clicked}
+                $anchor="bottom"
+                $margin="20px"
+                $float={$float}
+                $width={width}
+                {...props}
+            >
                 {children}
             </Popout>
         </Container>
     )
 }
 
-const Container = styled(CenteredFlex)<{
-    $popoutWidth: string
-    $float?: 'left' | 'center' | 'right'
-}>`
+const Container = styled(CenteredFlex)`
     position: relative;
     font-size: 0.7rem;
-
-    & ${Popout} {
-        width: ${({ $popoutWidth }) => $popoutWidth};
-        padding: 18px;
-        ${({ $float = 'center' }) => {
-            switch ($float) {
-                case 'left':
-                    return css`
-                        right: -44px;
-                    `
-                case 'right':
-                    return css`
-                        left: -44px;
-                    `
-                default:
-                    return ''
-            }
-        }}
-    }
 `

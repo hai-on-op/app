@@ -14,6 +14,7 @@ import { calculateLPBoost } from '~/services/boostService'
 
 // HAI-BOLD LP staking imports
 import { haiBoldCurveLpConfig } from '~/staking/configs/haiBoldCurveLp'
+import { haiVeloVeloLpConfig } from '~/staking/configs/haiVeloVeloLp'
 import { useStakeAccount } from './staking/useStakeAccount'
 import { useStakeStats } from './staking/useStakeStats'
 import { useLpStakingApr } from './staking/useLpStakingApr'
@@ -210,6 +211,77 @@ export function useStrategyData(
         }
     }, [haiBoldLpAprData, haiBoldLpBoostResult.lpBoost, haiBoldLpUserPositionUsd, haiBoldLpStakedTvlUsd])
 
+    // === haiVELO/VELO LP Staking Strategy ===
+    const haiVeloVeloLpService = useMemo(
+        () =>
+            buildStakingService(
+                haiVeloVeloLpConfig.addresses.manager as `0x${string}`,
+                undefined,
+                haiVeloVeloLpConfig.decimals
+            ),
+        []
+    )
+
+    const { data: haiVeloVeloLpAccount } = useStakeAccount(
+        address as `0x${string}`,
+        haiVeloVeloLpConfig.namespace,
+        haiVeloVeloLpService
+    )
+    const { data: haiVeloVeloLpStats } = useStakeStats(haiVeloVeloLpConfig.namespace, haiVeloVeloLpService)
+    const haiVeloVeloLpAprData = useLpStakingApr(haiVeloVeloLpConfig)
+    const {
+        lpPriceUsd: haiVeloVeloLpPriceUsd,
+        loading: haiVeloVeloLpTvlLoading,
+    } = useLpTvl(haiVeloVeloLpConfig)
+
+    // Calculate user's LP staked value in USD
+    const haiVeloVeloLpUserStaked = Number(haiVeloVeloLpAccount?.stakedBalance || 0)
+    const haiVeloVeloLpTotalStaked = Number(haiVeloVeloLpStats?.totalStaked || 0)
+    // Use LP token price to calculate staked values
+    const haiVeloVeloLpUserPositionUsd = haiVeloVeloLpUserStaked * (haiVeloVeloLpPriceUsd || 0)
+    // Campaign TVL = total staked LP tokens * LP token price
+    const haiVeloVeloLpStakedTvlUsd = haiVeloVeloLpTotalStaked * (haiVeloVeloLpPriceUsd || 0)
+
+    // Calculate boost for haiVELO/VELO LP staking
+    const haiVeloVeloLpBoostResult = useMemo(() => {
+        if (haiVeloVeloLpUserStaked <= 0 || haiVeloVeloLpTotalStaked <= 0) {
+            return { lpBoost: 1, kiteRatio: 0 }
+        }
+        return calculateLPBoost({
+            userStakingAmount: userKiteStaked,
+            totalStakingAmount: totalStakedAmount,
+            userLPPosition: haiVeloVeloLpUserStaked,
+            totalPoolLiquidity: haiVeloVeloLpTotalStaked,
+        })
+    }, [userKiteStaked, totalStakedAmount, haiVeloVeloLpUserStaked, haiVeloVeloLpTotalStaked])
+
+    const haiVeloVeloLpBoostApr = useMemo(() => {
+        // Get individual APR components
+        const underlyingApr = haiVeloVeloLpAprData.underlyingApr * 100 // Convert to percentage
+        const incentivesApr = haiVeloVeloLpAprData.incentivesApr * 100 // Convert to percentage
+        const baseApr = haiVeloVeloLpAprData.netApr * 100 // Total base APR
+        const myBoost = haiVeloVeloLpBoostResult.lpBoost ?? 1
+
+        // Only apply boost to KITE incentives, not underlying APY
+        const boostedIncentivesApr = incentivesApr * myBoost
+        const myBoostedAPR = underlyingApr + boostedIncentivesApr
+
+        return {
+            baseAPR: baseApr,
+            myBoost,
+            myBoostedAPR,
+            myValueParticipating: haiVeloVeloLpUserPositionUsd,
+            totalBoostedValueParticipating: haiVeloVeloLpStakedTvlUsd,
+        }
+    }, [
+        haiVeloVeloLpAprData.underlyingApr,
+        haiVeloVeloLpAprData.incentivesApr,
+        haiVeloVeloLpAprData.netApr,
+        haiVeloVeloLpBoostResult.lpBoost,
+        haiVeloVeloLpUserPositionUsd,
+        haiVeloVeloLpStakedTvlUsd,
+    ])
+
     const opPrice = Number(velodromePricesData?.OP?.raw)
     const rewardsDataMap: Record<string, number> = useMemo(
         () => ({
@@ -261,24 +333,56 @@ export function useStrategyData(
         }
     }, [stakingApyRewardsTotal, totalStakedAmount, kitePrice])
 
-    return {
-        hai: { apr: haiApr, tvl: haiTvl, userPosition: haiUserPosition },
-        haiVelo: {
-            tvl: haiVeloTVL,
-            userPosition: haiVeloUserPositionUsd,
-            boostApr: haiVeloBoostApr,
-        },
-        kiteStaking: {
-            tvl: kiteStakingTvl,
-            userPosition: kiteStakingUserPosition,
-            apr: stakingApr?.value / 10000,
-        },
-        haiBoldLp: {
-            tvl: haiBoldLpStakedTvlUsd,
-            userPosition: haiBoldLpUserPositionUsd,
-            apr: haiBoldLpAprData.netApr,
-            boostApr: haiBoldLpBoostApr,
-            loading: haiBoldLpAprData.loading || haiBoldLpTvlLoading,
-        },
-    }
+    return useMemo(
+        () => ({
+            hai: { apr: haiApr, tvl: haiTvl, userPosition: haiUserPosition },
+            haiVelo: {
+                tvl: haiVeloTVL,
+                userPosition: haiVeloUserPositionUsd,
+                boostApr: haiVeloBoostApr,
+            },
+            kiteStaking: {
+                tvl: kiteStakingTvl,
+                userPosition: kiteStakingUserPosition,
+                apr: stakingApr?.value / 10000,
+            },
+            haiBoldLp: {
+                tvl: haiBoldLpStakedTvlUsd,
+                userPosition: haiBoldLpUserPositionUsd,
+                apr: haiBoldLpAprData.netApr,
+                boostApr: haiBoldLpBoostApr,
+                loading: haiBoldLpAprData.loading || haiBoldLpTvlLoading,
+            },
+            haiVeloVeloLp: {
+                tvl: haiVeloVeloLpStakedTvlUsd,
+                userPosition: haiVeloVeloLpUserPositionUsd,
+                apr: haiVeloVeloLpAprData.netApr,
+                boostApr: haiVeloVeloLpBoostApr,
+                loading: haiVeloVeloLpAprData.loading || haiVeloVeloLpTvlLoading,
+            },
+        }),
+        [
+            haiApr,
+            haiTvl,
+            haiUserPosition,
+            haiVeloTVL,
+            haiVeloUserPositionUsd,
+            haiVeloBoostApr,
+            kiteStakingTvl,
+            kiteStakingUserPosition,
+            stakingApr,
+            haiBoldLpStakedTvlUsd,
+            haiBoldLpUserPositionUsd,
+            haiBoldLpAprData.netApr,
+            haiBoldLpAprData.loading,
+            haiBoldLpBoostApr,
+            haiBoldLpTvlLoading,
+            haiVeloVeloLpStakedTvlUsd,
+            haiVeloVeloLpUserPositionUsd,
+            haiVeloVeloLpAprData.netApr,
+            haiVeloVeloLpAprData.loading,
+            haiVeloVeloLpBoostApr,
+            haiVeloVeloLpTvlLoading,
+        ]
+    )
 }
