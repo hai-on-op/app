@@ -135,6 +135,8 @@ const Body = styled(Flex).attrs((props) => ({
     $gap: 24,
     ...props,
 }))<{ $compactQuery: MediaWidth }>`
+    position: relative;
+    z-index: 3;
     width: 100%;
     padding: 48px;
     padding-top: 24px;

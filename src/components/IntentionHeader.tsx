@@ -288,8 +288,6 @@ const Container = styled(BlurContainer).attrs((props) => ({
     ...props,
 }))`
     overflow: visible;
-    position: relative;
-    z-index: 1;
 `
 
 const Inner = styled(Flex).attrs((props) => ({
