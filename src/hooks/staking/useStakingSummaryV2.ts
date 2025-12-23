@@ -16,7 +16,7 @@ import type { StakingConfig } from '~/types/stakingConfig'
 import { buildStakingService } from '~/services/stakingService'
 import { useVelodrome } from '~/hooks/useVelodrome'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
-import { calculateVelodromeLpValueFromPool } from '~/services/velodromePoolApr'
+import { useLpTokenTotalSupply } from '~/hooks/useLpTokenTotalSupply'
 import type { VelodromeLpData } from '~/hooks/useVelodrome'
 import { fetchCurveLpTvlForOptimismLp, type CurveLpTvlResult } from '~/services/curveLpTvl'
 
@@ -133,7 +133,12 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
         },
     })
 
-    // Get VELO price for LP value calculation (haiVELO is treated as ~1:1 with VELO)
+    // Fetch actual totalSupply from the LP token contract (more reliable than Sugar's liquidity field)
+    const { data: lpTotalSupply, loading: totalSupplyLoading } = useLpTokenTotalSupply(
+        isVelodromeLp ? config?.tvl?.poolAddress : undefined
+    )
+
+    // Get VELO price for LP value calculation (haiVELO price is derived from pool ratio)
     const veloPrice = Number(veloPrices?.VELO?.raw || 0)
 
     const velodromePool = useMemo<VelodromeLpData | undefined>(() => {
@@ -142,17 +147,35 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
         return velodromePools.find((p) => p.address.toLowerCase() === target)
     }, [config?.tvl?.poolAddress, velodromePools])
 
-    // Calculate Velodrome LP price using unified calculation (same as useLpTvl)
+    // Calculate Velodrome LP price using actual totalSupply from contract
     const lpPriceUsd = useMemo(() => {
         if (!isVelodromeLp || !velodromePool || veloPrice <= 0) return prices.kitePrice || 0
 
-        const lpValue = calculateVelodromeLpValueFromPool(velodromePool, veloPrice)
-        if (!lpValue || !Number.isFinite(lpValue.lpPriceUsd) || lpValue.lpPriceUsd <= 0) {
+        const decimals = velodromePool.decimals || 18
+        const haiVeloReserve = Number(formatUnits(velodromePool.reserve0 || '0', decimals))
+        const veloReserve = Number(formatUnits(velodromePool.reserve1 || '0', decimals))
+
+        // Derive haiVELO price from pool ratio: haiVELO price = (VELO reserve × VELO price) / haiVELO reserve
+        const haiVeloPrice = haiVeloReserve > 0
+            ? (veloReserve * veloPrice) / haiVeloReserve
+            : veloPrice
+
+        // Calculate TVL using derived haiVELO price
+        // TVL = (haiVELO reserve × haiVELO price) + (VELO reserve × VELO price)
+        const tvlUsd = (haiVeloReserve * haiVeloPrice) + (veloReserve * veloPrice)
+
+        // Use actual totalSupply from contract if available
+        const totalSupply = lpTotalSupply?.formatted
+            ?? Number(formatUnits(velodromePool.liquidity || '0', decimals))
+
+        const calculatedLpPrice = totalSupply > 0 ? tvlUsd / totalSupply : 0
+
+        if (!Number.isFinite(calculatedLpPrice) || calculatedLpPrice <= 0) {
             return prices.kitePrice || 0
         }
 
-        return lpValue.lpPriceUsd
-    }, [isVelodromeLp, velodromePool, veloPrice, prices.kitePrice])
+        return calculatedLpPrice
+    }, [isVelodromeLp, velodromePool, veloPrice, lpTotalSupply, prices.kitePrice])
     // Derive optimistic state from active staking-related mutations
     const mutStake = useIsMutating({ mutationKey: ['stake', 'mut', 'stake'] })
     const mutInit = useIsMutating({ mutationKey: ['stake', 'mut', 'initiateWithdrawal'] })
@@ -161,7 +184,7 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
     const mutClaim = useIsMutating({ mutationKey: ['stake', 'mut', 'claimRewards'] })
     const isOptimistic = mutStake + mutInit + mutWdraw + mutCancel + mutClaim > 0
 
-    const velodromeLoading = isVelodromeLp && (velodromePoolsLoading || velodromePricesLoading)
+    const velodromeLoading = isVelodromeLp && (velodromePoolsLoading || velodromePricesLoading || totalSupplyLoading)
     const curveLoading = isCurveLp && curveLpLoading
 
     // Use LP APR loading for LP pools (Curve or Velodrome), standard APR loading otherwise
