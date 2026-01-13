@@ -68,6 +68,10 @@ export function Header({ tickerActive = false }: HeaderProps) {
     const [stakeDropdownActive, setStakeDropdownActive] = useState(false)
     useOutsideClick(stakeContainer, () => setStakeDropdownActive(false))
 
+    const [lstContainer, setLstContainer] = useState<HTMLElement | null>(null)
+    const [lstDropdownActive, setLstDropdownActive] = useState(false)
+    useOutsideClick(lstContainer, () => setLstDropdownActive(false))
+
     const [wrapEthActive, setWrapEthActive] = useState(false)
     useEffect(() => {
         toggleModal({
@@ -98,6 +102,13 @@ export function Header({ tickerActive = false }: HeaderProps) {
         location.pathname === '/haiVELO' ||
         (location.pathname === '/vaults/open' &&
             ['HAIVELO', 'HAIVELOV2'].includes(new URLSearchParams(location.search).get('collateral') || ''))
+
+    const isHaiAeroRoute =
+        location.pathname === '/haiAERO' ||
+        (location.pathname === '/vaults/open' &&
+            ['HAIAERO'].includes(new URLSearchParams(location.search).get('collateral') || ''))
+
+    const isLstRoute = isHaiVeloRoute || isHaiAeroRoute
 
     return (
         <>
@@ -194,11 +205,33 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                                 GET HAI
                                             </HeaderLink>
                                         </Link>
-                                        <Link href="/haiVELO" $textDecoration="none">
-                                            <HeaderLink $active={isHaiVeloRoute} style={{ textTransform: 'none' }}>
-                                                haiVELO
-                                            </HeaderLink>
-                                        </Link>
+                                        <LstDropdownContainer
+                                            ref={setLstContainer}
+                                            onClick={() => setLstDropdownActive((a) => !a)}
+                                        >
+                                            <HeaderLink $active={isLstRoute}>LST</HeaderLink>
+                                            <LstDropdown
+                                                $anchor="top"
+                                                $float="left"
+                                                $width="auto"
+                                                hidden={!lstDropdownActive}
+                                            >
+                                                <BrandedDropdown.Item
+                                                    href="/haiVELO"
+                                                    icon={<Lock size={18} />}
+                                                    active={isHaiVeloRoute}
+                                                >
+                                                    haiVELO
+                                                </BrandedDropdown.Item>
+                                                <BrandedDropdown.Item
+                                                    href="/haiAERO"
+                                                    icon={<Lock size={18} />}
+                                                    active={isHaiAeroRoute}
+                                                >
+                                                    haiAERO
+                                                </BrandedDropdown.Item>
+                                            </LstDropdown>
+                                        </LstDropdownContainer>
                                         <Link href="/earn" $textDecoration="none">
                                             <HeaderLink $active={location.pathname === '/earn'}>EARN</HeaderLink>
                                         </Link>
@@ -402,6 +435,29 @@ const StakeDropdownContainer = styled(CenteredFlex)`
     }
 `
 const StakeDropdown = styled(Popout)`
+    padding: 24px;
+    gap: 12px;
+    margin-top: 20px;
+    z-index: 2;
+    font-size: 14px;
+    font-weight: 500;
+
+    text-align: left;
+
+    & > * {
+        width: 100%;
+    }
+    & svg {
+        flex-shrink: 0;
+    }
+`
+const LstDropdownContainer = styled(CenteredFlex)`
+    position: relative;
+    & > *:first-child {
+        cursor: pointer;
+    }
+`
+const LstDropdown = styled(Popout)`
     padding: 24px;
     gap: 12px;
     margin-top: 20px;

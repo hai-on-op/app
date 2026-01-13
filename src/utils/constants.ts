@@ -17,6 +17,9 @@ export enum ChainId {
     MAINNET = 10,
     OPTIMISM_GOERLI = 420,
     OPTIMISM_SEPOLIA = 11155420,
+    // Base chain IDs for haiAERO
+    BASE = 8453,
+    BASE_SEPOLIA = 84532,
 }
 
 export const NETWORK_ID = parseInt(VITE_NETWORK_ID ?? '11155420')

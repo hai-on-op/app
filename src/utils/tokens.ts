@@ -73,6 +73,9 @@ export const TOKEN_LOGOS = {
     ALETH: alethImg,
     HAIVELO: haiVeloImg,
     HAIVELOV2: haiVeloImg,
+    // Aerodrome/Base tokens - using velodrome image as placeholder until AERO icons are added
+    AERO: velodromeImg,
+    HAIAERO: haiVeloImg,
     'YV-VELO-ALETH-WETH': yvVeloAlethWethImg,
     'YV-VELO-MSETH-WETH': yvVeloMsethWethImg,
     'MOO-VELO-BOLD-LUSD': mooVeloBoldLusdImg,
@@ -152,6 +155,17 @@ export const tokenAssets: Record<string, Token> = {
         symbol: 'HAIVELOV2',
         name: 'HAIVELOV2',
         icon: haiVeloImg,
+    },
+    // Aerodrome/Base tokens
+    AERO: {
+        symbol: 'AERO',
+        name: 'Aerodrome',
+        icon: velodromeImg, // Placeholder until AERO icon is added
+    },
+    HAIAERO: {
+        symbol: 'HAIAERO',
+        name: 'haiAERO',
+        icon: haiVeloImg, // Placeholder until haiAERO icon is added
     },
     APXETH: {
         symbol: 'APXETH',

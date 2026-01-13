@@ -68,6 +68,13 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
         (location.pathname === '/vaults/open' &&
             ['HAIVELO', 'HAIVELOV2'].includes(new URLSearchParams(location.search).get('collateral') || ''))
 
+    const isHaiAeroRoute =
+        location.pathname === '/haiAERO' ||
+        (location.pathname === '/vaults/open' &&
+            ['HAIAERO'].includes(new URLSearchParams(location.search).get('collateral') || ''))
+
+    const isLstRoute = isHaiVeloRoute || isHaiAeroRoute
+
     const [button, setButton] = useState<HTMLElement | null>(null)
 
     useOutsideClick(button, () => setActive(false))
@@ -106,13 +113,31 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
                                 >
                                     Get HAI
                                 </BrandedDropdown.Item>
-                                <BrandedDropdown.Item
-                                    href="/haiVELO"
-                                    icon={<Database size={18} />}
-                                    active={isHaiVeloRoute}
+                                <Text
+                                    $fontSize={12}
+                                    $fontWeight={700}
+                                    $textTransform="uppercase"
+                                    $letterSpacing="0.05rem"
+                                    $padding="0 8px"
                                 >
-                                    haiVELO
-                                </BrandedDropdown.Item>
+                                    LST
+                                </Text>
+                                <NestedGroup>
+                                    <BrandedDropdown.Item
+                                        href="/haiVELO"
+                                        icon={<Lock size={18} />}
+                                        active={isHaiVeloRoute}
+                                    >
+                                        haiVELO
+                                    </BrandedDropdown.Item>
+                                    <BrandedDropdown.Item
+                                        href="/haiAERO"
+                                        icon={<Lock size={18} />}
+                                        active={isHaiAeroRoute}
+                                    >
+                                        haiAERO
+                                    </BrandedDropdown.Item>
+                                </NestedGroup>
                                 <BrandedDropdown.Item
                                     href="/earn"
                                     icon={<TrendingUp size={18} />}

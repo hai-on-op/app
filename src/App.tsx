@@ -24,6 +24,7 @@ import { Contracts } from '~/containers/Contracts'
 import { Learn } from './containers/Learn'
 import { VaultExplorer } from './containers/Vaults/Explore'
 import { HaiVeloPage } from './containers/HaiVeloPage'
+import { HaiAeroPage } from './containers/MinterPage'
 import { TestClaim } from './containers/TestClaim'
 import KiteStakePage from './containers/Stake/KiteStakePage'
 import HaiVeloVeloLpStakePage from './containers/Stake/HaiVeloVeloLpStakePage'
@@ -136,6 +137,12 @@ const App = () => {
                                                                 strict
                                                                 component={HaiVeloPage}
                                                                 path={'/haiVELO'}
+                                                            />
+                                                            <Route
+                                                                exact
+                                                                strict
+                                                                component={HaiAeroPage}
+                                                                path={'/haiAERO'}
                                                             />
                                                             <Route
                                                                 exact

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import type { ReactChildren } from '~/types'
+import { MinterChainId } from '~/types/minterProtocol'
 import { VaultAction } from '~/utils'
 import { useVault } from '~/providers/VaultProvider'
 import { useMediaQuery, useVaultById } from '~/hooks'
@@ -13,8 +14,10 @@ import { ProxyPrompt } from '~/components/ProxyPrompt'
 import { Overview } from './Overview'
 import { HaiVeloOverview } from './HaiVeloOverview'
 import { HaiVeloProvider } from '~/providers/HaiVeloProvider'
+import { MinterProtocolProvider } from '~/providers/MinterProtocolProvider'
 import { VaultActions } from './VaultActions'
 import { MintHaiVeloActions } from './MintHaiVeloActions'
+import { MinterOverview, MintActions, BridgeTab } from './Minter'
 import { ManageDropdown } from './ManageDropdown'
 import { NavContainer } from '~/components/NavContainer'
 import { ActivityTable } from '../VaultById/ActivityTable'
@@ -25,6 +28,7 @@ type ManageVaultProps = {
 export function ManageVault({ headerContent }: ManageVaultProps) {
     const { action, vault, updateForm } = useVault()
 
+    // Detect haiVELO pages
     const isHAIVELO =
         vault?.collateralName === 'HAIVELOV2' ||
         new URLSearchParams(window.location.search).get('collateral') === 'HAIVELOV2' ||
@@ -33,6 +37,15 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
     const isHAIVELO_V1 =
         vault?.collateralName === 'HAIVELO' ||
         new URLSearchParams(window.location.search).get('collateral') === 'HAIVELO'
+
+    // Detect haiAERO pages
+    const isHAIAERO =
+        vault?.collateralName === 'HAIAERO' ||
+        new URLSearchParams(window.location.search).get('collateral') === 'HAIAERO' ||
+        window.location.pathname === '/haiAERO'
+
+    // Combined check for any minter protocol page
+    const isMinterProtocol = isHAIVELO || isHAIAERO
 
     const { vault: vaultWithActivity } = useVaultById(vault?.id || '')
 
@@ -43,15 +56,25 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
     // clear form inputs when unmounting
     useEffect(() => () => updateForm('clear'), [updateForm])
 
-    // Default to Manage tab for existing haiVELO vaults; Mint tab for CREATE/new
-    const [tab, setTab] = useState(() => (isHAIVELO ? (action === VaultAction.CREATE ? 0 : 1) : 0))
+    // Default to Manage tab for existing minter protocol vaults; Mint tab for CREATE/new
+    const [tab, setTab] = useState(() => (isMinterProtocol ? (action === VaultAction.CREATE ? 0 : 1) : 0))
 
     // Create navItems array based on vault type and action
     const getNavItems = () => {
         if (action === VaultAction.CREATE) {
-            return isHAIVELO ? ['Mint haiVELO', 'Create Vault'] : []
+            if (isHAIVELO) {
+                return ['Mint haiVELO', 'Create Vault']
+            } else if (isHAIAERO) {
+                return ['Mint haiAERO', 'Bridge to Optimism', 'Create Vault']
+            }
+            return []
         } else {
-            return isHAIVELO ? ['Mint haiVELO', 'Manage', 'Activity'] : ['Manage', 'Activity']
+            if (isHAIVELO) {
+                return ['Mint haiVELO', 'Manage', 'Activity']
+            } else if (isHAIAERO) {
+                return ['Mint haiAERO', 'Bridge to Optimism', 'Manage', 'Activity']
+            }
+            return ['Manage', 'Activity']
         }
     }
 
@@ -61,36 +84,71 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
     const renderTabContent = () => {
         const isCreateMode = action === VaultAction.CREATE
 
+        // haiVELO tabs: [Mint, Manage/Create, Activity?]
         if (isHAIVELO && tab === 0) {
             // Mint HAI Velo tab content
+            // Both HaiVeloProvider (for legacy components) and MinterProtocolProvider (for Execute modal) are needed
             return (
                 <ProxyPrompt>
                     <HaiVeloProvider>
-                        <BodyGrid>
-                            <HaiVeloOverview />
-                            <MintHaiVeloActions />
-                        </BodyGrid>
+                        <MinterProtocolProvider protocolId="haiVelo">
+                            <BodyGrid>
+                                <HaiVeloOverview />
+                                <MintHaiVeloActions />
+                            </BodyGrid>
+                        </MinterProtocolProvider>
                     </HaiVeloProvider>
                 </ProxyPrompt>
             )
-        } else if (
-            (!isHAIVELO && tab === 0 && isCreateMode) || // Create tab for non-HAIVELO in CREATE mode
-            (!isHAIVELO && tab === 0 && !isCreateMode) || // Manage tab for non-HAIVELO in non-CREATE mode
-            (isHAIVELO && tab === 1) // Create/Manage tab for HAIVELO
-        ) {
-            // Manage/Create content
+        }
+
+        // haiAERO tabs: [Mint, Bridge, Manage/Create, Activity?]
+        if (isHAIAERO && tab === 0) {
+            // Mint haiAERO tab content - allows Base chain for minting
+            return (
+                <ProxyPrompt allowedChainIds={[MinterChainId.BASE]}>
+                    <MinterProtocolProvider protocolId="haiAero">
+                        <BodyGrid>
+                            <MinterOverview />
+                            <MintActions />
+                        </BodyGrid>
+                    </MinterProtocolProvider>
+                </ProxyPrompt>
+            )
+        }
+
+        if (isHAIAERO && tab === 1) {
+            // Bridge tab content - allows Base chain for bridging
+            return (
+                <ProxyPrompt allowedChainIds={[MinterChainId.BASE]}>
+                    <MinterProtocolProvider protocolId="haiAero">
+                        <BridgeTabContainer>
+                            <BridgeTab />
+                        </BridgeTabContainer>
+                    </MinterProtocolProvider>
+                </ProxyPrompt>
+            )
+        }
+
+        // Manage/Create tab
+        const isManageTab =
+            (!isMinterProtocol && tab === 0) || // Manage tab for non-minter protocols
+            (isHAIVELO && tab === 1) || // Manage tab for haiVELO
+            (isHAIAERO && tab === 2) // Manage tab for haiAERO
+
+        if (isManageTab) {
             return (
                 <ProxyPrompt>
                     <BodyGrid>
-                        <Overview isHAIVELO={isHAIVELO} />
+                        <Overview isHAIVELO={isMinterProtocol} />
                         <VaultActions />
                     </BodyGrid>
                 </ProxyPrompt>
             )
-        } else {
-            // Activity tab
-            return <ActivityTable vault={vaultWithActivity} />
         }
+
+        // Activity tab (last tab)
+        return <ActivityTable vault={vaultWithActivity} />
     }
 
     return (
@@ -111,7 +169,7 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
                             )}
                         </Flex>
                         <CenteredFlex $gap={12}>
-                            {isHAIVELO ? <RewardsTokenArray tokens={['HAI']} hideLabel={isUpToExtraSmall} /> : null}
+                            {isMinterProtocol ? <RewardsTokenArray tokens={['HAI']} hideLabel={isUpToExtraSmall} /> : null}
                             <ManageDropdown $width={isUpToSmall ? '100%' : undefined} />
                         </CenteredFlex>
                     </Header>
@@ -167,5 +225,16 @@ const BodyGrid = styled(Grid)`
         grid-template-columns: 1fr;
         grid-gap: 24px;
         padding: 24px;
+    `}
+`
+
+const BridgeTabContainer = styled(Flex)`
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 24px;
+
+    ${({ theme }) => theme.mediaWidth.upToSmall`
+        padding: 16px;
     `}
 `
