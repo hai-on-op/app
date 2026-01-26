@@ -2,10 +2,15 @@
  * Bridge Types
  *
  * Types for Hyperlane cross-chain bridge operations.
- * Used for bridging haiAERO from Base to Optimism.
+ * Used for bridging haiAERO between Base and Optimism.
  */
 
 import { MinterChainId } from './minterProtocol'
+
+/**
+ * Bridge direction
+ */
+export type BridgeDirection = 'base-to-optimism' | 'optimism-to-base'
 
 /**
  * Hyperlane bridge configuration for a source chain
@@ -19,6 +24,8 @@ export interface BridgeSourceChainConfig {
     tokenAddress: `0x${string}`
     /** HypERC20Collateral contract address */
     hypCollateralAddress: `0x${string}`
+    /** Interchain Gas Paymaster contract address */
+    igpAddress: `0x${string}`
     /** RPC URL for the chain */
     rpcUrl: string
 }
@@ -156,6 +163,10 @@ export interface UseMinterBridgeReturn {
     refreshQuote: (amount: string) => Promise<void>
     /** Check transaction status */
     checkStatus: (txHash: `0x${string}`) => Promise<BridgeTransactionStatus>
+    /** Validation error message (if any) */
+    validationError?: string
+    /** Whether validation is in progress */
+    isValidating: boolean
     /** Loading states */
     isApproving: boolean
     isBridging: boolean

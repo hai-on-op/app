@@ -2,13 +2,13 @@
  * useMinterBridge Hook
  *
  * Hook for managing Hyperlane bridge operations for haiAERO.
- * Handles quoting fees, approvals, and bridge transactions.
+ * Supports both directions: Base → Optimism and Optimism → Base.
  */
 
-import { useState, useCallback, useMemo, useEffect } from 'react'
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAccount, useNetwork, useSwitchNetwork, useWalletClient } from 'wagmi'
-import { ethers } from 'ethers'
+import { ethers, BigNumber } from 'ethers'
 import type {
     BridgeConfig,
     BridgeQuote,
@@ -17,6 +17,7 @@ import type {
     BridgeTransactionStatus,
     UseMinterBridgeReturn,
     BridgeTransferParams,
+    BridgeDirection,
 } from '~/types/bridge'
 import { MinterChainId } from '~/types/minterProtocol'
 import {
@@ -26,12 +27,14 @@ import {
     approveBridge,
     executeBridge,
     checkBridgeStatus,
-    getSourceBalance,
-    getDestinationBalance,
+    getBaseBalance,
+    getOptimismBalance,
+    validateBridgePrerequisites,
 } from '~/services/hyperlane'
 
 const THIRTY_SECONDS_MS = 30 * 1000
-const FIVE_MINUTES_MS = 5 * 60 * 1000
+const FIVE_SECONDS_MS = 5 * 1000
+const ONE_MINUTE_MS = 60 * 1000
 
 /**
  * Convert wagmi wallet client to ethers signer
@@ -49,10 +52,44 @@ function walletClientToSigner(walletClient: ReturnType<typeof useWalletClient>['
     return provider.getSigner(account.address)
 }
 
+function walletClientToProvider(
+    walletClient: ReturnType<typeof useWalletClient>['data']
+): ethers.providers.Web3Provider | undefined {
+    if (!walletClient) return undefined
+    const { chain, transport } = walletClient
+    const network = {
+        chainId: chain.id,
+        name: chain.name,
+        ensAddress: chain.contracts?.ensRegistry?.address,
+    }
+    return new ethers.providers.Web3Provider(transport, network)
+}
+
+/**
+ * Get the required chain ID for a direction
+ */
+function getRequiredChainId(direction: BridgeDirection): number {
+    return direction === 'base-to-optimism' ? MinterChainId.BASE : MinterChainId.OPTIMISM
+}
+
 /**
  * Hook for managing Hyperlane bridge operations.
+ * @param bridgeAmount - The amount to bridge (as a string)
+ * @param direction - The bridge direction (default: 'base-to-optimism')
  */
-export function useMinterBridge(bridgeAmount?: string): UseMinterBridgeReturn {
+export function useMinterBridge(
+    bridgeAmount?: string,
+    direction: BridgeDirection = 'base-to-optimism'
+): UseMinterBridgeReturn & {
+    baseBalance?: { raw: string; formatted: string; decimals: number }
+    optimismBalance?: { raw: string; formatted: string; decimals: number }
+    sourceBalance?: { raw: string; formatted: string; decimals: number }
+    destinationBalance?: { raw: string; formatted: string; decimals: number }
+    isOnSourceChain: boolean
+    switchToSourceChain: () => void
+    isWaitingForDelivery: boolean
+    direction: BridgeDirection
+} {
     const { address } = useAccount()
     const { chain } = useNetwork()
     const { switchNetwork } = useSwitchNetwork()
@@ -66,6 +103,18 @@ export function useMinterBridge(bridgeAmount?: string): UseMinterBridgeReturn {
     const [isBridging, setIsBridging] = useState(false)
     const [activeTransaction, setActiveTransaction] = useState<BridgeTransaction | undefined>()
     const [transactionHistory, setTransactionHistory] = useState<BridgeTransaction[]>([])
+    const [validationError, setValidationError] = useState<string | undefined>()
+    const [isValidating, setIsValidating] = useState(false)
+    const [validationNonce, setValidationNonce] = useState(0)
+
+    // Track pre-bridge destination balance for detecting delivery
+    const preBridgeDestBalance = useRef<string | null>(null)
+    // Flag to enable fast polling during bridge
+    const [isPollingForDelivery, setIsPollingForDelivery] = useState(false)
+
+    // Determine source and destination based on direction
+    const requiredChainId = getRequiredChainId(direction)
+    const isOnSourceChain = chain?.id === requiredChainId
 
     // Parse amount to wei
     const amountWei = useMemo(() => {
@@ -83,9 +132,9 @@ export function useMinterBridge(bridgeAmount?: string): UseMinterBridgeReturn {
         isLoading: isQuoteLoading,
         refetch: refetchQuote,
     } = useQuery({
-        queryKey: ['bridge', 'quote', amountWei],
+        queryKey: ['bridge', 'quote', direction, amountWei],
         enabled: Boolean(amountWei) && amountWei !== '0',
-        queryFn: () => quoteBridgeFee(amountWei),
+        queryFn: () => quoteBridgeFee(amountWei, direction),
         staleTime: THIRTY_SECONDS_MS,
         refetchInterval: THIRTY_SECONDS_MS,
     })
@@ -102,11 +151,15 @@ export function useMinterBridge(bridgeAmount?: string): UseMinterBridgeReturn {
     )
 
     // Query for approval state
-    const { data: approvalData, isLoading: isApprovalLoading } = useQuery({
-        queryKey: ['bridge', 'approval', address, amountWei],
+    const {
+        data: approvalData,
+        isLoading: isApprovalLoading,
+        refetch: refetchApproval,
+    } = useQuery({
+        queryKey: ['bridge', 'approval', direction, address, amountWei],
         enabled: Boolean(address) && Boolean(amountWei) && amountWei !== '0',
-        queryFn: () => checkBridgeApproval(address!, amountWei),
-        staleTime: FIVE_MINUTES_MS,
+        queryFn: () => checkBridgeApproval(address!, amountWei, direction),
+        staleTime: THIRTY_SECONDS_MS,
     })
 
     const approval: BridgeApprovalState = useMemo(
@@ -118,31 +171,36 @@ export function useMinterBridge(bridgeAmount?: string): UseMinterBridgeReturn {
         [approvalData, isApprovalLoading]
     )
 
-    // Query for source balance (haiAERO on Base)
-    const { data: sourceBalanceData, refetch: refetchSourceBalance } = useQuery({
-        queryKey: ['bridge', 'sourceBalance', address],
+    // Query for Base balance
+    const { data: baseBalanceData, refetch: refetchBaseBalance } = useQuery({
+        queryKey: ['bridge', 'baseBalance', address],
         enabled: Boolean(address),
-        queryFn: () => getSourceBalance(address!),
-        staleTime: FIVE_MINUTES_MS,
+        queryFn: () => getBaseBalance(address!),
+        staleTime: THIRTY_SECONDS_MS,
     })
 
-    // Query for destination balance (bridged haiAERO on Optimism)
-    const { data: destBalanceData, refetch: refetchDestBalance } = useQuery({
-        queryKey: ['bridge', 'destBalance', address],
+    // Query for Optimism balance
+    // Poll every 5 seconds when waiting for bridge delivery
+    const { data: optimismBalanceData, refetch: refetchOptimismBalance } = useQuery({
+        queryKey: ['bridge', 'optimismBalance', address],
         enabled: Boolean(address),
-        queryFn: () => getDestinationBalance(address!),
-        staleTime: FIVE_MINUTES_MS,
+        queryFn: () => getOptimismBalance(address!),
+        staleTime: isPollingForDelivery ? FIVE_SECONDS_MS : ONE_MINUTE_MS,
+        refetchInterval: isPollingForDelivery ? FIVE_SECONDS_MS : false,
     })
 
-    // Check if on correct chain (Base)
-    const isOnSourceChain = chain?.id === MinterChainId.BASE
+    // Determine source/destination balances based on direction
+    const sourceBalance = direction === 'base-to-optimism' ? baseBalanceData : optimismBalanceData
+    const destinationBalance = direction === 'base-to-optimism' ? optimismBalanceData : baseBalanceData
+    const refetchSourceBalance = direction === 'base-to-optimism' ? refetchBaseBalance : refetchOptimismBalance
+    const refetchDestBalance = direction === 'base-to-optimism' ? refetchOptimismBalance : refetchBaseBalance
 
     // Switch to source chain
     const switchToSourceChain = useCallback(() => {
         if (switchNetwork) {
-            switchNetwork(MinterChainId.BASE)
+            switchNetwork(requiredChainId)
         }
-    }, [switchNetwork])
+    }, [switchNetwork, requiredChainId])
 
     // Approve tokens for bridging
     const approve = useCallback(
@@ -166,11 +224,16 @@ export function useMinterBridge(bridgeAmount?: string): UseMinterBridgeReturn {
             setIsApproving(true)
             try {
                 const amountWeiLocal = ethers.utils.parseEther(amount).toString()
-                const result = await approveBridge(signer, amountWeiLocal)
+                const result = await approveBridge(signer, amountWeiLocal, direction)
                 await result.wait()
 
-                // Invalidate approval query
-                await queryClient.invalidateQueries({ queryKey: ['bridge', 'approval', address] })
+                // Immediately refetch approval state and re-validate
+                await Promise.all([
+                    queryClient.invalidateQueries({ queryKey: ['bridge', 'approval'] }),
+                    refetchApproval(),
+                    refetchSourceBalance(),
+                ])
+                setValidationNonce((prev) => prev + 1)
 
                 return result.txHash
             } catch (error) {
@@ -180,7 +243,7 @@ export function useMinterBridge(bridgeAmount?: string): UseMinterBridgeReturn {
                 setIsApproving(false)
             }
         },
-        [walletClient, address, isOnSourceChain, switchToSourceChain, queryClient]
+        [walletClient, address, isOnSourceChain, switchToSourceChain, queryClient, refetchApproval, refetchSourceBalance, direction]
     )
 
     // Execute bridge transfer
@@ -202,8 +265,16 @@ export function useMinterBridge(bridgeAmount?: string): UseMinterBridgeReturn {
                 return undefined
             }
 
+            // Capture pre-bridge destination balance for delivery detection
+            preBridgeDestBalance.current = destinationBalance?.raw || '0'
+            console.log('[Bridge] Pre-bridge destination balance:', preBridgeDestBalance.current)
+
             setIsBridging(true)
             const now = Date.now()
+
+            // Determine source/dest chain IDs based on direction
+            const sourceChainId = direction === 'base-to-optimism' ? config.sourceChain.chainId : config.destinationChain.chainId
+            const destChainId = direction === 'base-to-optimism' ? config.destinationChain.chainId : config.sourceChain.chainId
 
             // Create transaction record
             const txRecord: BridgeTransaction = {
@@ -212,21 +283,21 @@ export function useMinterBridge(bridgeAmount?: string): UseMinterBridgeReturn {
                 status: 'bridging',
                 initiatedAt: now,
                 estimatedDeliveryAt: now + config.estimatedBridgeTimeMinutes * 60 * 1000,
-                sourceChainId: config.sourceChain.chainId,
-                destinationChainId: config.destinationChain.chainId,
+                sourceChainId,
+                destinationChainId: destChainId,
             }
 
             setActiveTransaction(txRecord)
 
             try {
-                const result = await executeBridge(signer, params.amount, params.recipient)
+                const result = await executeBridge(signer, params.amount, params.recipient, direction)
 
                 // Update with tx hash
                 txRecord.sourceTxHash = result.txHash
                 txRecord.status = 'pending_confirmation'
                 setActiveTransaction({ ...txRecord })
 
-                // Wait for confirmation
+                // Wait for source chain confirmation
                 await result.wait()
 
                 txRecord.status = 'confirmed'
@@ -235,8 +306,13 @@ export function useMinterBridge(bridgeAmount?: string): UseMinterBridgeReturn {
                 // Add to history
                 setTransactionHistory((prev) => [txRecord, ...prev])
 
-                // Invalidate balance queries
-                await Promise.all([refetchSourceBalance(), refetchDestBalance()])
+                // Refresh source balance immediately (tokens are now locked/burned)
+                await refetchSourceBalance()
+                setValidationNonce((prev) => prev + 1)
+
+                // Start polling for delivery on destination chain
+                console.log('[Bridge] Source tx confirmed, starting delivery polling...')
+                setIsPollingForDelivery(true)
 
                 return result.txHash
             } catch (error) {
@@ -244,6 +320,7 @@ export function useMinterBridge(bridgeAmount?: string): UseMinterBridgeReturn {
                 txRecord.status = 'failed'
                 txRecord.error = error instanceof Error ? error.message : 'Bridge failed'
                 setActiveTransaction({ ...txRecord })
+                preBridgeDestBalance.current = null
                 return undefined
             } finally {
                 setIsBridging(false)
@@ -256,7 +333,8 @@ export function useMinterBridge(bridgeAmount?: string): UseMinterBridgeReturn {
             switchToSourceChain,
             config,
             refetchSourceBalance,
-            refetchDestBalance,
+            destinationBalance?.raw,
+            direction,
         ]
     )
 
@@ -264,10 +342,10 @@ export function useMinterBridge(bridgeAmount?: string): UseMinterBridgeReturn {
     const refreshQuote = useCallback(
         async (amount: string) => {
             const amountWeiLocal = ethers.utils.parseEther(amount).toString()
-            await queryClient.invalidateQueries({ queryKey: ['bridge', 'quote', amountWeiLocal] })
+            await queryClient.invalidateQueries({ queryKey: ['bridge', 'quote', direction, amountWeiLocal] })
             await refetchQuote()
         },
-        [queryClient, refetchQuote]
+        [queryClient, refetchQuote, direction]
     )
 
     // Check transaction status
@@ -275,31 +353,88 @@ export function useMinterBridge(bridgeAmount?: string): UseMinterBridgeReturn {
         return checkBridgeStatus(txHash)
     }, [])
 
-    // Poll for active transaction status
+    // Detect bridge delivery by monitoring destination balance changes
     useEffect(() => {
-        if (!activeTransaction?.sourceTxHash || activeTransaction.status === 'delivered') {
+        if (!isPollingForDelivery || !activeTransaction || activeTransaction.status === 'delivered') {
             return
         }
 
-        const pollStatus = async () => {
-            const status = await checkBridgeStatus(activeTransaction.sourceTxHash!)
-            if (status !== activeTransaction.status) {
-                setActiveTransaction((prev) => (prev ? { ...prev, status } : undefined))
+        // Check if destination balance has increased
+        const currentBalance = destinationBalance?.raw || '0'
+        const preBridgeBalance = preBridgeDestBalance.current || '0'
 
-                if (status === 'delivered') {
-                    // Update history
-                    setTransactionHistory((prev) =>
-                        prev.map((tx) => (tx.id === activeTransaction.id ? { ...tx, status } : tx))
-                    )
-                    // Refresh destination balance
-                    refetchDestBalance()
-                }
+        console.log('[Bridge] Polling - Pre-bridge:', preBridgeBalance, 'Current:', currentBalance)
+
+        try {
+            const currentBN = BigNumber.from(currentBalance)
+            const preBridgeBN = BigNumber.from(preBridgeBalance)
+
+            if (currentBN.gt(preBridgeBN)) {
+                // Balance increased - tokens have arrived!
+                console.log('[Bridge] Delivery detected! Balance increased.')
+
+                setActiveTransaction((prev) => (prev ? { ...prev, status: 'delivered' } : undefined))
+
+                // Update history
+                setTransactionHistory((prev) =>
+                    prev.map((tx) => (tx.id === activeTransaction.id ? { ...tx, status: 'delivered' } : tx))
+                )
+
+                // Stop polling
+                setIsPollingForDelivery(false)
+                preBridgeDestBalance.current = null
             }
+        } catch (error) {
+            console.error('[Bridge] Error comparing balances:', error)
+        }
+    }, [isPollingForDelivery, destinationBalance?.raw, activeTransaction])
+
+    // Timeout for delivery polling (stop after 10 minutes)
+    useEffect(() => {
+        if (!isPollingForDelivery) return
+
+        const timeout = setTimeout(() => {
+            console.log('[Bridge] Delivery polling timeout reached')
+            setIsPollingForDelivery(false)
+            preBridgeDestBalance.current = null
+        }, 10 * 60 * 1000) // 10 minutes
+
+        return () => clearTimeout(timeout)
+    }, [isPollingForDelivery])
+
+    // Validation effect
+    useEffect(() => {
+        let cancelled = false
+
+        const runValidation = async () => {
+            if (!address || amountWei === '0') {
+                setValidationError(undefined)
+                setIsValidating(false)
+                return
+            }
+
+            const sourceChainName = direction === 'base-to-optimism' ? 'Base' : 'Optimism'
+            if (!isOnSourceChain) {
+                setValidationError(`Switch to ${sourceChainName} network to bridge.`)
+                setIsValidating(false)
+                return
+            }
+
+            const walletProvider = walletClientToProvider(walletClient)
+            setIsValidating(true)
+            const result = await validateBridgePrerequisites(address, amountWei, direction, walletProvider)
+            if (cancelled) return
+
+            setValidationError(result.valid ? undefined : result.error || 'Bridge validation failed.')
+            setIsValidating(false)
         }
 
-        const interval = setInterval(pollStatus, 30000) // Poll every 30 seconds
-        return () => clearInterval(interval)
-    }, [activeTransaction, refetchDestBalance])
+        runValidation()
+
+        return () => {
+            cancelled = true
+        }
+    }, [address, amountWei, isOnSourceChain, validationNonce, walletClient, direction])
 
     return {
         config,
@@ -311,18 +446,20 @@ export function useMinterBridge(bridgeAmount?: string): UseMinterBridgeReturn {
         bridge,
         refreshQuote,
         checkStatus,
+        validationError,
+        isValidating,
         isApproving,
         isBridging,
-        // Additional helpers
-        sourceBalance: sourceBalanceData,
-        destinationBalance: destBalanceData,
+        // Chain-specific balances
+        baseBalance: baseBalanceData,
+        optimismBalance: optimismBalanceData,
+        // Direction-aware source/destination balances
+        sourceBalance,
+        destinationBalance,
         isOnSourceChain,
         switchToSourceChain,
-    } as UseMinterBridgeReturn & {
-        sourceBalance?: { raw: string; formatted: string; decimals: number }
-        destinationBalance?: { raw: string; formatted: string; decimals: number }
-        isOnSourceChain: boolean
-        switchToSourceChain: () => void
+        isWaitingForDelivery: isPollingForDelivery,
+        direction,
     }
 }
 
@@ -330,12 +467,11 @@ export function useMinterBridge(bridgeAmount?: string): UseMinterBridgeReturn {
  * Get the query key for bridge data.
  * Useful for invalidating queries from outside the hook.
  */
-export function getBridgeQueryKeys(address?: string) {
+export function getBridgeQueryKeys(address?: string, direction?: BridgeDirection) {
     return {
-        quote: (amount: string) => ['bridge', 'quote', amount],
-        approval: (amount: string) => ['bridge', 'approval', address, amount],
-        sourceBalance: ['bridge', 'sourceBalance', address],
-        destBalance: ['bridge', 'destBalance', address],
+        quote: (amount: string) => ['bridge', 'quote', direction, amount],
+        approval: (amount: string) => ['bridge', 'approval', direction, address, amount],
+        baseBalance: ['bridge', 'baseBalance', address],
+        optimismBalance: ['bridge', 'optimismBalance', address],
     }
 }
-

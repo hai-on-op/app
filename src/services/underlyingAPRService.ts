@@ -421,6 +421,7 @@ export class UnderlyingAPRService {
         this.calculators.set('HAIVELO', yieldBearingCalculator)
         this.calculators.set('HAIVELOV2', yieldBearingCalculator)
         this.calculators.set('HAIVELO_V2', yieldBearingCalculator)
+        this.calculators.set('HAIAERO', yieldBearingCalculator)
 
         // Standard tokens (no underlying yield)
         this.calculators.set('WETH', standardTokenCalculator)

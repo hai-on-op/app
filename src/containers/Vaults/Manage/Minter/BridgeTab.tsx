@@ -1,24 +1,46 @@
 /**
  * BridgeTab
  *
- * Component for bridging haiAERO from Base to Optimism via Hyperlane.
- * This tab is shown on the haiAERO page.
+ * Component for bridging haiAERO between Base and Optimism via Hyperlane.
+ * Supports both directions: Base → Optimism and Optimism → Base.
  */
 
 import { useState, useMemo, useEffect } from 'react'
 import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
 import { ethers } from 'ethers'
 import styled from 'styled-components'
-import { ArrowRight, AlertCircle, Clock, CheckCircle, Loader } from 'react-feather'
+import { ArrowRight, RefreshCw, AlertCircle, Clock, CheckCircle, Loader } from 'react-feather'
 
 import { formatNumberWithStyle, Status } from '~/utils'
 import { useMinterBridge } from '~/hooks/minter'
 import { MinterChainId } from '~/types/minterProtocol'
-import type { BridgeTransactionStatus } from '~/types/bridge'
+import type { BridgeTransactionStatus, BridgeDirection } from '~/types/bridge'
 
 import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
 import { StatusLabel } from '~/components/StatusLabel'
 import { NumberInput } from '~/components/NumberInput'
+
+const BRIDGE_DIRECTION_STORAGE_KEY = 'hai-bridge-direction'
+
+function getStoredDirection(): BridgeDirection {
+    try {
+        const stored = localStorage.getItem(BRIDGE_DIRECTION_STORAGE_KEY)
+        if (stored === 'base-to-optimism' || stored === 'optimism-to-base') {
+            return stored
+        }
+    } catch {
+        // localStorage might not be available
+    }
+    return 'base-to-optimism'
+}
+
+function storeDirection(direction: BridgeDirection) {
+    try {
+        localStorage.setItem(BRIDGE_DIRECTION_STORAGE_KEY, direction)
+    } catch {
+        // localStorage might not be available
+    }
+}
 
 export function BridgeTab() {
     const { address, isConnected } = useAccount()
@@ -26,26 +48,41 @@ export function BridgeTab() {
     const { switchNetwork } = useSwitchNetwork()
 
     const [bridgeAmount, setBridgeAmount] = useState('')
+    const [direction, setDirectionState] = useState<BridgeDirection>(getStoredDirection)
+
+    // Wrapper to persist direction changes
+    const setDirection = (newDirection: BridgeDirection | ((prev: BridgeDirection) => BridgeDirection)) => {
+        setDirectionState((prev) => {
+            const next = typeof newDirection === 'function' ? newDirection(prev) : newDirection
+            storeDirection(next)
+            return next
+        })
+    }
 
     const {
         config,
         quote,
         approval,
         activeTransaction,
+        validationError,
+        isValidating,
         approve,
         bridge,
         isApproving,
         isBridging,
+        baseBalance,
+        optimismBalance,
         sourceBalance,
         destinationBalance,
         isOnSourceChain,
         switchToSourceChain,
-    } = useMinterBridge(bridgeAmount) as ReturnType<typeof useMinterBridge> & {
-        sourceBalance?: { raw: string; formatted: string; decimals: number }
-        destinationBalance?: { raw: string; formatted: string; decimals: number }
-        isOnSourceChain: boolean
-        switchToSourceChain: () => void
-    }
+        isWaitingForDelivery,
+    } = useMinterBridge(bridgeAmount, direction)
+
+    // Direction-aware labels
+    const sourceChainName = direction === 'base-to-optimism' ? 'Base' : 'Optimism'
+    const destChainName = direction === 'base-to-optimism' ? 'Optimism' : 'Base'
+    const requiredChainId = direction === 'base-to-optimism' ? MinterChainId.BASE : MinterChainId.OPTIMISM
 
     // Parse amount to wei
     const amountWei = useMemo(() => {
@@ -67,6 +104,23 @@ export function BridgeTab() {
 
     // Check if we need approval
     const needsApproval = approval.needsApproval && isValidAmount
+
+    // Clear input after successful bridge delivery
+    useEffect(() => {
+        if (activeTransaction?.status === 'delivered') {
+            setBridgeAmount('')
+        }
+    }, [activeTransaction?.status])
+
+    // Clear input when direction changes
+    useEffect(() => {
+        setBridgeAmount('')
+    }, [direction])
+
+    // Toggle direction
+    const toggleDirection = () => {
+        setDirection((prev) => (prev === 'base-to-optimism' ? 'optimism-to-base' : 'base-to-optimism'))
+    }
 
     // Handle max button
     const handleMax = () => {
@@ -119,9 +173,9 @@ export function BridgeTab() {
             case 'pending_confirmation':
                 return 'Bridge in progress...'
             case 'confirmed':
-                return 'Confirmed on Base'
+                return `Confirmed on ${sourceChainName}`
             case 'delivered':
-                return 'Delivered to Optimism!'
+                return `Delivered to ${destChainName}!`
             case 'failed':
                 return 'Bridge failed'
             default:
@@ -134,9 +188,12 @@ export function BridgeTab() {
             <Header>
                 <Flex $width="100%" $justify="space-between" $align="center">
                     <Text $fontWeight={700}>Bridge haiAERO</Text>
-                    <ChainBadge>
-                        <Text $fontSize="0.75em">Base → Optimism</Text>
-                    </ChainBadge>
+                    <DirectionToggle onClick={toggleDirection} disabled={isBridging || isWaitingForDelivery}>
+                        <Text $fontSize="0.75em">
+                            {sourceChainName} → {destChainName}
+                        </Text>
+                        <RefreshCw size={14} />
+                    </DirectionToggle>
                 </Flex>
             </Header>
             <Body>
@@ -146,41 +203,49 @@ export function BridgeTab() {
                         <Flex $align="center" $gap={8}>
                             <AlertCircle size={18} />
                             <Text $fontSize="0.85em">
-                                Please switch to Base network to bridge haiAERO
+                                Please switch to {sourceChainName} network to bridge haiAERO
                             </Text>
                         </Flex>
                         <HaiButton
                             $variant="yellowish"
                             $padding="8px 16px"
-                            onClick={() => switchNetwork?.(MinterChainId.BASE)}
+                            onClick={() => switchNetwork?.(requiredChainId)}
                         >
-                            Switch to Base
+                            Switch to {sourceChainName}
                         </HaiButton>
                     </NetworkWarning>
                 )}
 
                 {/* Balance Display */}
                 <BalanceRow>
-                    <BalanceCard>
+                    <BalanceCard $isSource={direction === 'base-to-optimism'}>
                         <Text $fontSize="0.75em" $color="rgba(0,0,0,0.6)">
                             haiAERO on Base
                         </Text>
                         <Text $fontWeight={700} $fontSize="1.25em">
-                            {formatNumberWithStyle(parseFloat(sourceBalance?.formatted || '0'), {
+                            {formatNumberWithStyle(parseFloat(baseBalance?.formatted || '0'), {
                                 maxDecimals: 4,
                             })}
                         </Text>
+                        {direction === 'base-to-optimism' && (
+                            <SourceBadge>Source</SourceBadge>
+                        )}
                     </BalanceCard>
-                    <ArrowRight size={24} color="rgba(0,0,0,0.3)" />
-                    <BalanceCard>
+                    <DirectionArrow $reverse={direction === 'optimism-to-base'}>
+                        <ArrowRight size={24} color="rgba(0,0,0,0.3)" />
+                    </DirectionArrow>
+                    <BalanceCard $isSource={direction === 'optimism-to-base'}>
                         <Text $fontSize="0.75em" $color="rgba(0,0,0,0.6)">
                             haiAERO on Optimism
                         </Text>
                         <Text $fontWeight={700} $fontSize="1.25em">
-                            {formatNumberWithStyle(parseFloat(destinationBalance?.formatted || '0'), {
+                            {formatNumberWithStyle(parseFloat(optimismBalance?.formatted || '0'), {
                                 maxDecimals: 4,
                             })}
                         </Text>
+                        {direction === 'optimism-to-base' && (
+                            <SourceBadge>Source</SourceBadge>
+                        )}
                     </BalanceCard>
                 </BalanceRow>
 
@@ -242,9 +307,27 @@ export function BridgeTab() {
                     </FeeContainer>
                 )}
 
+                {isValidAmount && isValidating && !validationError && (
+                    <ValidationNotice status={Status.NEUTRAL} background="white">
+                        <Flex $align="center" $gap={8}>
+                            <Loader size={14} className="spin" />
+                            <Text $fontSize="0.85em">Validating bridge prerequisites...</Text>
+                        </Flex>
+                    </ValidationNotice>
+                )}
+
+                {validationError && (
+                    <ValidationNotice status={Status.NEGATIVE} background="white">
+                        <Flex $align="center" $gap={8}>
+                            <AlertCircle size={16} color="#ef4444" />
+                            <Text $fontSize="0.85em">{validationError}</Text>
+                        </Flex>
+                    </ValidationNotice>
+                )}
+
                 {/* Active Transaction Status */}
                 {activeTransaction && (
-                    <StatusContainer>
+                    <StatusContainer $delivered={activeTransaction.status === 'delivered'}>
                         <Flex $align="center" $gap={8}>
                             {getStatusIcon(activeTransaction.status)}
                             <Text $fontWeight={600}>{getStatusText(activeTransaction.status)}</Text>
@@ -255,10 +338,19 @@ export function BridgeTab() {
                                 {activeTransaction.sourceTxHash.slice(-8)}
                             </Text>
                         )}
-                        {activeTransaction.status === 'pending_confirmation' && (
-                            <Text $fontSize="0.8em" $color="rgba(0,0,0,0.6)">
-                                Your haiAERO will arrive on Optimism in ~
-                                {config.estimatedBridgeTimeMinutes} minutes
+                        {(activeTransaction.status === 'pending_confirmation' || activeTransaction.status === 'confirmed') && isWaitingForDelivery && (
+                            <Flex $column $gap={4} $align="center">
+                                <Text $fontSize="0.8em" $color="rgba(0,0,0,0.6)">
+                                    Waiting for tokens to arrive on {destChainName}...
+                                </Text>
+                                <Text $fontSize="0.75em" $color="rgba(0,0,0,0.5)">
+                                    (polling every 5 seconds)
+                                </Text>
+                            </Flex>
+                        )}
+                        {activeTransaction.status === 'delivered' && (
+                            <Text $fontSize="0.85em" $color="#16a34a" $fontWeight={600}>
+                                🎉 Bridge complete! Tokens arrived on {destChainName}.
                             </Text>
                         )}
                     </StatusContainer>
@@ -267,8 +359,11 @@ export function BridgeTab() {
                 {/* Bridge Info */}
                 <InfoBox status={Status.CUSTOM} background="gradientCooler">
                     <Text $fontSize="0.85em">
-                        ℹ️ Bridging haiAERO from Base to Optimism via Hyperlane allows you to use
-                        haiAERO as collateral in HAI vaults on Optimism.
+                        {direction === 'base-to-optimism' ? (
+                            <>ℹ️ Bridging haiAERO from Base to Optimism via Hyperlane allows you to use haiAERO as collateral in HAI vaults on Optimism.</>
+                        ) : (
+                            <>ℹ️ Bridging haiAERO from Optimism back to Base allows you to redeem your haiAERO for AERO or use it in other Base protocols.</>
+                        )}
                     </Text>
                 </InfoBox>
             </Body>
@@ -282,9 +377,9 @@ export function BridgeTab() {
                         $variant="yellowish"
                         $width="100%"
                         $justify="center"
-                        onClick={() => switchNetwork?.(MinterChainId.BASE)}
+                        onClick={() => switchNetwork?.(requiredChainId)}
                     >
-                        Switch to Base
+                        Switch to {sourceChainName}
                     </HaiButton>
                 ) : needsApproval ? (
                     <HaiButton
@@ -309,7 +404,7 @@ export function BridgeTab() {
                         $width="100%"
                         $justify="center"
                         onClick={handleBridge}
-                        disabled={isBridging || !isValidAmount || quote.isLoading}
+                        disabled={isBridging || !isValidAmount || quote.isLoading || isValidating || Boolean(validationError)}
                     >
                         {isBridging ? (
                             <>
@@ -317,7 +412,7 @@ export function BridgeTab() {
                                 Bridging...
                             </>
                         ) : (
-                            'Bridge to Optimism'
+                            `Bridge to ${destChainName}`
                         )}
                     </HaiButton>
                 )}
@@ -404,11 +499,26 @@ const Footer = styled(CenteredFlex).attrs((props) => ({
     border-top: ${({ theme }) => theme.border.thin};
 `
 
-const ChainBadge = styled(Flex)`
+const DirectionToggle = styled.button<{ disabled?: boolean }>`
+    display: flex;
+    align-items: center;
+    gap: 8px;
     background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-    padding: 4px 12px;
+    padding: 6px 12px;
     border-radius: 12px;
     color: white;
+    border: none;
+    cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
+    opacity: ${({ disabled }) => (disabled ? 0.6 : 1)};
+    transition: transform 0.2s, opacity 0.2s;
+
+    &:hover:not(:disabled) {
+        transform: scale(1.02);
+    }
+
+    &:active:not(:disabled) {
+        transform: scale(0.98);
+    }
 `
 
 const NetworkWarning = styled(StatusLabel)`
@@ -430,12 +540,34 @@ const BalanceCard = styled(Flex).attrs((props) => ({
     $column: true,
     $gap: 4,
     ...props,
-}))`
+}))<{ $isSource?: boolean }>`
     flex: 1;
-    background: rgba(255, 255, 255, 0.5);
+    position: relative;
+    background: ${({ $isSource }) => ($isSource ? 'rgba(59, 130, 246, 0.1)' : 'rgba(255, 255, 255, 0.5)')};
     padding: 16px;
     border-radius: 12px;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid ${({ $isSource }) => ($isSource ? 'rgba(59, 130, 246, 0.3)' : 'rgba(0, 0, 0, 0.1)')};
+    transition: background 0.2s, border-color 0.2s;
+`
+
+const SourceBadge = styled.span`
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 0.65em;
+    background: #3b82f6;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+`
+
+const DirectionArrow = styled.div<{ $reverse?: boolean }>`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: ${({ $reverse }) => ($reverse ? 'rotate(180deg)' : 'rotate(0)')};
+    transition: transform 0.3s ease;
 `
 
 const FeeContainer = styled(Flex).attrs((props) => ({
@@ -450,17 +582,22 @@ const FeeContainer = styled(Flex).attrs((props) => ({
     border: 1px solid rgba(0, 0, 0, 0.1);
 `
 
+const ValidationNotice = styled(StatusLabel)`
+    width: 100%;
+    border-radius: 12px;
+`
+
 const StatusContainer = styled(Flex).attrs((props) => ({
     $column: true,
     $gap: 8,
     $align: 'center',
     ...props,
-}))`
+}))<{ $delivered?: boolean }>`
     width: 100%;
     padding: 16px;
-    background: rgba(34, 197, 94, 0.1);
+    background: ${({ $delivered }) => ($delivered ? 'rgba(34, 197, 94, 0.2)' : 'rgba(59, 130, 246, 0.1)')};
     border-radius: 12px;
-    border: 1px solid rgba(34, 197, 94, 0.3);
+    border: 1px solid ${({ $delivered }) => ($delivered ? 'rgba(34, 197, 94, 0.5)' : 'rgba(59, 130, 246, 0.3)')};
 `
 
 const InfoBox = styled(StatusLabel)`
@@ -468,4 +605,3 @@ const InfoBox = styled(StatusLabel)`
 `
 
 export default BridgeTab
-

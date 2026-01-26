@@ -21,6 +21,7 @@ import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { getTokenLabel } from '~/services/minterProtocol'
 import { HaiVeloTxModal } from '~/components/Modal/HaiVeloTxModal'
 import type { HaiVeloApprovalItem } from '~/components/Modal/HaiVeloTxModal/Approvals'
+import { HaiAeroTxModal } from '~/components/Modal/HaiAeroTxModal'
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
@@ -54,6 +55,9 @@ export function MintActions() {
         if (!chain) return false
         return chain.id === config.chainId
     }, [chain, config.chainId])
+
+    // Check if this is haiAERO (Base chain) - automatically bridges to Optimism
+    const isHaiAero = config.chainId === MinterChainId.BASE
 
     // Get chain name for display
     const requiredChainName = useMemo(() => {
@@ -241,19 +245,28 @@ export function MintActions() {
             const tokenMeta = tokensData[symbol]
             const addr = tokenMeta?.address
             const decimals = (tokenMeta?.decimals || 18).toString()
-            const amount = String(amountStr || '0')
-            const amountNum = Number(amount)
-            if (!addr || amountNum <= 0) return
-            if (!allowance) return
-            const needed = ethers.utils.parseUnits(
-                sanitizeDecimals(amount, Number(decimals)),
+            // Sanitize the amount string (remove commas and other non-numeric chars except decimal point)
+            const cleanAmount = String(amountStr || '0').replace(/[^0-9.]/g, '')
+            const amountNum = parseFloat(cleanAmount)
+            if (!addr || !isFinite(amountNum) || amountNum <= 0) return
+            
+            // Calculate the exact wei amount that will be used for execution
+            // This ensures the approval amount matches the execution amount exactly
+            const neededWei = ethers.utils.parseUnits(
+                sanitizeDecimals(cleanAmount, Number(decimals)),
                 Number(decimals)
             )
-            if (allowance.lt(needed)) {
+            
+            // If allowance is undefined (still loading), assume we need approval
+            // This prevents the race condition where the modal opens without the needed approval
+            const needsApproval = !allowance || allowance.lt(neededWei)
+            
+            if (needsApproval) {
                 items.push({
                     kind: 'ERC20',
                     label,
-                    amount,
+                    // Pass the cleaned amount to ensure consistent parsing in useTokenApproval
+                    amount: cleanAmount,
                     tokenAddress: addr,
                     decimals,
                     spender: targetAddress,
@@ -599,6 +612,16 @@ export function MintActions() {
                         {config.displayName} issued at a 1:1 ratio.
                     </Text>
                 </WarningLabel>
+
+                {/* Bridge info for haiAERO */}
+                {isHaiAero && (
+                    <BridgeInfo status={Status.CUSTOM} background="gradientCooler">
+                        <Text $fontSize="0.8em">
+                            🌉 After minting, your haiAERO will be automatically bridged to Optimism via Hyperlane
+                            so you can use it as vault collateral.
+                        </Text>
+                    </BridgeInfo>
+                )}
             </Body>
             <Footer>
                 <HaiButton
@@ -638,9 +661,32 @@ export function MintActions() {
                         toggleModal({ modal: 'reviewTx', isOpen: true })
                     }}
                 >
-                    {accountData.isLoading ? 'Loading...' : `Convert to ${config.displayName}`}
+                    {accountData.isLoading
+                        ? 'Loading...'
+                        : isHaiAero
+                          ? `Mint & Bridge ${config.displayName}`
+                          : `Convert to ${config.displayName}`}
                 </HaiButton>
-                {approvalsOpen && executionPlan && (
+                {approvalsOpen && executionPlan && isHaiAero && (
+                    <HaiAeroTxModal
+                        config={config}
+                        plan={{
+                            depositBaseWei: executionPlan.depositVeloWei,
+                            depositVeNftTokenIds: executionPlan.depositVeNftTokenIds,
+                            depositVeNftTotalWei: executionPlan.depositVeNftTotalWei,
+                        }}
+                        onSuccess={() => {
+                            // Clear the form after successful mint & bridge
+                            setConvertAmountBase('')
+                            setSelectedVeNftTokenIds([])
+                        }}
+                        onClose={() => {
+                            setApprovalsOpen(false)
+                            toggleModal({ modal: 'reviewTx', isOpen: false })
+                        }}
+                    />
+                )}
+                {approvalsOpen && executionPlan && !isHaiAero && (
                     <HaiVeloTxModal
                         items={requiredApprovals}
                         plan={executionPlan}
@@ -726,6 +772,10 @@ const Footer = styled(CenteredFlex).attrs((props) => ({
 `
 
 const WarningLabel = styled(StatusLabel)`
+    border-radius: 12px;
+`
+
+const BridgeInfo = styled(StatusLabel)`
     border-radius: 12px;
 `
 

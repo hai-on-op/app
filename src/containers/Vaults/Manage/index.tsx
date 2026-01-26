@@ -60,8 +60,15 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
     const [tab, setTab] = useState(() => (isMinterProtocol ? (action === VaultAction.CREATE ? 0 : 1) : 0))
 
     // Create navItems array based on vault type and action
+    // If there's no existing vault for this collateral type, show CREATE flow tabs
+    const hasMatchingVault = vault && (
+        (isHAIVELO && (vault.collateralName === 'HAIVELOV2' || vault.collateralName === 'HAIVELO')) ||
+        (isHAIAERO && vault.collateralName === 'HAIAERO') ||
+        (!isMinterProtocol) // For non-minter protocols, any vault is a match
+    )
+    const isCreateFlow = action === VaultAction.CREATE || !hasMatchingVault
     const getNavItems = () => {
-        if (action === VaultAction.CREATE) {
+        if (isCreateFlow) {
             if (isHAIVELO) {
                 return ['Mint haiVELO', 'Create Vault']
             } else if (isHAIAERO) {
@@ -82,7 +89,7 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
 
     // Determine content to show based on current tab and vault type
     const renderTabContent = () => {
-        const isCreateMode = action === VaultAction.CREATE
+        const isCreateMode = isCreateFlow
 
         // haiVELO tabs: [Mint, Manage/Create, Activity?]
         if (isHAIVELO && tab === 0) {
@@ -138,7 +145,10 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
 
         if (isManageTab) {
             return (
-                <ProxyPrompt>
+                <ProxyPrompt
+                    targetNetworkName="Optimism"
+                    continueText={isCreateMode ? 'create a vault' : 'manage your vault'}
+                >
                     <BodyGrid>
                         <Overview isHAIVELO={isMinterProtocol} />
                         <VaultActions />
@@ -159,7 +169,7 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
             stackHeader
             headerContent={
                 <>
-                    <Header $removePadding={action === VaultAction.CREATE}>
+                    <Header $removePadding={isCreateFlow}>
                         <Flex $align="center" $gap={8}>
                             {headerContent}
                             {isHAIVELO_V1 && (

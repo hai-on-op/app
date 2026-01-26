@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useAccount, useNetwork } from 'wagmi'
+import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
 
 import type { ReactChildren } from '~/types'
 import { useStoreActions, useStoreState } from '~/store'
@@ -26,6 +26,8 @@ type ProxyPromptProps = {
     children: ReactChildren
     /** Additional chain IDs that are allowed (e.g., Base for haiAERO minting) */
     allowedChainIds?: number[]
+    /** Name of the target network for display (e.g., "Optimism") - used when user needs to switch networks */
+    targetNetworkName?: string
 }
 export function ProxyPrompt({
     continueText = 'continue',
@@ -34,11 +36,13 @@ export function ProxyPrompt({
     connectWalletOnly,
     children,
     allowedChainIds = [],
+    targetNetworkName = 'Optimism',
 }: ProxyPromptProps) {
     const { t } = useTranslation()
     const { chain } = useNetwork()
     const chainId = chain?.id
     const { address: account } = useAccount()
+    const { switchNetwork } = useSwitchNetwork()
     const signer = useEthersSigner()
 
     const geb = useGeb()
@@ -119,8 +123,10 @@ export function ProxyPrompt({
     if (!isOnAllowedChain)
         return (
             <Container>
-                <Text>Please switch the connected network to {continueText}</Text>
-                <ConnectButton />
+                <Text>Please switch to {targetNetworkName} to {continueText}</Text>
+                <HaiButton $variant="yellowish" onClick={() => switchNetwork?.(NETWORK_ID)}>
+                    Switch to {targetNetworkName}
+                </HaiButton>
             </Container>
         )
 

@@ -128,7 +128,26 @@ export function Shared({ children }: Props) {
     }, [auctionsData, setInternalBalance, setProtInternalBalance])
 
     useEffect(() => {
-        connectWalletActions.setTokensData(publicGeb?.tokenList)
+        if (!publicGeb?.tokenList) return
+
+        // Extend tokenList to include HAIAERO if not already present
+        // This is needed because the SDK doesn't have HAIAERO configured yet
+        const extendedTokenList = { ...publicGeb.tokenList }
+        if (!extendedTokenList.HAIAERO && extendedTokenList.HAIVELOV2) {
+            // Clone HAIVELOV2 config as a template for HAIAERO
+            extendedTokenList.HAIAERO = {
+                ...extendedTokenList.HAIVELOV2,
+                symbol: 'HAIAERO',
+                name: 'haiAERO',
+                // Use the bridged haiAERO address on Optimism
+                address: '0xbdF4A4Cc124d9A83a5774574fcBE45DC5d1f1152',
+                bytes32String: utils.formatBytes32String('HAIAERO'),
+                collateralJoin: extendedTokenList.HAIVELOV2.collateralJoin, // Placeholder - needs real address
+                isCollateral: true,
+            }
+        }
+
+        connectWalletActions.setTokensData(extendedTokenList)
     }, [publicGeb?.tokenList, connectWalletActions, chain?.id])
 
     useEffect(() => {
@@ -138,9 +157,24 @@ export function Shared({ children }: Props) {
     useEffect(() => {
         if (!publicGeb) return
 
+        // Pass extended tokenList to liquidation data fetch
+        // The vaults service will handle filtering HAIAERO and injecting its data
+        const extendedTokenList = { ...publicGeb.tokenList }
+        if (!extendedTokenList.HAIAERO && extendedTokenList.HAIVELOV2) {
+            extendedTokenList.HAIAERO = {
+                ...extendedTokenList.HAIVELOV2,
+                symbol: 'HAIAERO',
+                name: 'haiAERO',
+                address: '0xbdF4A4Cc124d9A83a5774574fcBE45DC5d1f1152',
+                bytes32String: utils.formatBytes32String('HAIAERO'),
+                collateralJoin: extendedTokenList.HAIVELOV2.collateralJoin,
+                isCollateral: true,
+            }
+        }
+
         vaultActions.fetchLiquidationData({
             geb: publicGeb,
-            tokensData: publicGeb.tokenList,
+            tokensData: extendedTokenList,
         })
     }, [vaultActions, publicGeb])
 

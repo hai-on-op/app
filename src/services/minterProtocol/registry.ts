@@ -7,7 +7,7 @@
 
 import type { MinterProtocolConfig, MinterProtocolId } from '~/types/minterProtocol'
 import { MinterChainId } from '~/types/minterProtocol'
-import { VITE_MAINNET_PUBLIC_RPC, VITE_TESTNET_PUBLIC_RPC } from '~/utils'
+import { VITE_MAINNET_PUBLIC_RPC, VITE_PUBLIC_BASE_RPC, VITE_TESTNET_PUBLIC_RPC } from '~/utils'
 
 // ============================================================================
 // haiVELO Configuration (Optimism)
@@ -95,7 +95,7 @@ const HAI_AERO_CONFIG: MinterProtocolConfig = {
 
     dataSources: {
         // Base mainnet RPC
-        rpcUrl: 'https://mainnet.base.org',
+        rpcUrl: VITE_PUBLIC_BASE_RPC || 'https://mainnet.base.org',
         // Placeholder - to be updated with actual subgraph
         subgraphUrl: '',
         lpSubgraphUrl: undefined,
@@ -121,17 +121,19 @@ export const HAI_AERO_BRIDGE_CONFIG = {
         tokenAddress: '0x10398AbC267496E49106B07dd6BE13364D10dC71' as `0x${string}`,
         // HypERC20Collateral contract (locks haiAERO on Base)
         hypCollateralAddress: '0xd605046d24cdad37ca2dff3aa8ebf254ceee86d5' as `0x${string}`,
-        rpcUrl: 'https://mainnet.base.org',
+        // Interchain Gas Paymaster (IGP) on Base
+        igpAddress: '0xc3F23848Ed2e04C0c6d41bd7804fa8f89F940B94' as `0x${string}`,
+        rpcUrl: VITE_PUBLIC_BASE_RPC || 'https://mainnet.base.org',
     },
     // Destination chain (Optimism)
     destinationChain: {
         chainId: MinterChainId.OPTIMISM,
         name: 'Optimism',
         // Bridged haiAERO token on Optimism (HypERC20 synthetic)
-        tokenAddress: '0xbdF4A4Cc124d9A83a5774574fcBe45DC5d1f1152' as `0x${string}`,
+        tokenAddress: '0xbdF4A4Cc124d9A83a5774574fcBE45DC5d1f1152' as `0x${string}`,
         // HypERC20 synthetic contract
-        hypSyntheticAddress: '0xbdF4A4Cc124d9A83a5774574fcBe45DC5d1f1152' as `0x${string}`,
-        rpcUrl: 'https://mainnet.optimism.io',
+        hypSyntheticAddress: '0xbdF4A4Cc124d9A83a5774574fcBE45DC5d1f1152' as `0x${string}`,
+        rpcUrl: VITE_MAINNET_PUBLIC_RPC || 'https://mainnet.optimism.io',
     },
     // Hyperlane domain IDs
     domains: {

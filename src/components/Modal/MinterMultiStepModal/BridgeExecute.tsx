@@ -6,26 +6,25 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ethers } from 'ethers'
+import { ethers, BigNumber } from 'ethers'
 import { useAccount, useWalletClient } from 'wagmi'
 
 import { ActionState, formatNumberWithStyle } from '~/utils'
 import { useStoreActions } from '~/store'
 import type { MinterProtocolConfig } from '~/types/minterProtocol'
-import type { BridgeTransactionStatus } from '~/types/bridge'
 import {
     getBridgeConfig,
     quoteBridgeFee,
     checkBridgeApproval,
     approveBridge,
     executeBridge,
-    checkBridgeStatus,
+    getOptimismBalance,
 } from '~/services/hyperlane'
 
 import styled from 'styled-components'
 import { Flex, HaiButton, Text } from '~/styles'
 import { ModalBody, ModalFooter } from '../index'
-import { ArrowRight, CheckCircle, Clock, Loader as LoaderIcon, AlertCircle } from 'react-feather'
+import { ArrowRight, CheckCircle, Clock, AlertCircle } from 'react-feather'
 import { Loader } from '~/components/Loader'
 
 type Props = {
@@ -65,6 +64,7 @@ export function BridgeExecute({ config, amountToBridge, onDone }: Props) {
     const [fee, setFee] = useState<string>('0')
     const [needsApproval, setNeedsApproval] = useState(true)
     const hasClosedRef = useRef(false)
+    const preBridgeBalanceRef = useRef<string | null>(null)
 
     const bridgeConfig = getBridgeConfig()
 
@@ -158,6 +158,11 @@ export function BridgeExecute({ config, amountToBridge, onDone }: Props) {
         setError('')
 
         try {
+            // Capture pre-bridge balance on Optimism for delivery detection
+            const preBridgeBalance = await getOptimismBalance(address)
+            preBridgeBalanceRef.current = preBridgeBalance.raw
+            console.log('[BridgeExecute] Pre-bridge Optimism balance:', preBridgeBalance.raw)
+
             popupsActions.setIsWaitingModalOpen(true)
             popupsActions.setWaitingPayload({
                 title: 'Waiting for confirmation',
@@ -184,39 +189,54 @@ export function BridgeExecute({ config, amountToBridge, onDone }: Props) {
             if (hasClosedRef.current) return
             setError(e instanceof Error ? e.message : 'Bridge failed')
             setPhase('failed')
+            preBridgeBalanceRef.current = null
         } finally {
             popupsActions.setIsWaitingModalOpen(false)
             popupsActions.setWaitingPayload({ status: ActionState.NONE })
         }
     }, [walletClient, address, amountToBridge, popupsActions])
 
-    // Poll for delivery status
+    // Poll for delivery by checking destination balance
     useEffect(() => {
-        if (phase !== 'pending' || !txHash) return
+        if (phase !== 'pending' || !address || !preBridgeBalanceRef.current) return
 
-        const pollStatus = async () => {
+        const pollDelivery = async () => {
             try {
-                const status = await checkBridgeStatus(txHash)
+                const currentBalance = await getOptimismBalance(address)
                 if (hasClosedRef.current) return
 
-                if (status === 'delivered') {
+                const currentBN = BigNumber.from(currentBalance.raw)
+                const preBridgeBN = BigNumber.from(preBridgeBalanceRef.current || '0')
+
+                console.log('[BridgeExecute] Polling - Pre-bridge:', preBridgeBalanceRef.current, 'Current:', currentBalance.raw)
+
+                if (currentBN.gt(preBridgeBN)) {
+                    // Balance increased - tokens have arrived!
+                    console.log('[BridgeExecute] Delivery detected! Balance increased.')
                     setPhase('delivered')
-                } else if (status === 'failed') {
-                    setPhase('failed')
-                    setError('Bridge delivery failed')
+                    preBridgeBalanceRef.current = null
                 }
             } catch (e) {
-                console.error('Error checking bridge status:', e)
+                console.error('Error checking delivery status:', e)
             }
         }
 
-        // Poll every 30 seconds
-        const interval = setInterval(pollStatus, 30000)
+        // Poll every 5 seconds
+        const interval = setInterval(pollDelivery, 5000)
         // Also check immediately
-        pollStatus()
+        pollDelivery()
 
-        return () => clearInterval(interval)
-    }, [phase, txHash])
+        // Timeout after 10 minutes
+        const timeout = setTimeout(() => {
+            console.log('[BridgeExecute] Delivery polling timeout')
+            clearInterval(interval)
+        }, 10 * 60 * 1000)
+
+        return () => {
+            clearInterval(interval)
+            clearTimeout(timeout)
+        }
+    }, [phase, address])
 
     const getStatusDisplay = () => {
         switch (phase) {
@@ -248,8 +268,10 @@ export function BridgeExecute({ config, amountToBridge, onDone }: Props) {
                         <Flex $column $gap={4}>
                             <Text $fontWeight={600}>Bridge in progress</Text>
                             <Text $fontSize="0.85em" $color="rgba(0,0,0,0.6)">
-                                Your haiAERO will arrive on Optimism in ~{bridgeConfig.estimatedBridgeTimeMinutes}{' '}
-                                minutes
+                                Waiting for tokens to arrive on Optimism...
+                            </Text>
+                            <Text $fontSize="0.75em" $color="rgba(0,0,0,0.5)">
+                                (checking every 5 seconds)
                             </Text>
                             {txHash && (
                                 <Text $fontSize="0.8em" $color="rgba(0,0,0,0.5)">

@@ -1,13 +1,41 @@
 /**
  * Hyperlane Bridge Service
  *
- * Service for bridging haiAERO from Base to Optimism via Hyperlane.
+ * Service for bridging haiAERO between Base and Optimism via Hyperlane.
+ * Supports both directions: Base → Optimism and Optimism → Base.
  */
 
 import { ethers, BigNumber } from 'ethers'
-import type { BridgeConfig, BridgeQuote, BridgeApprovalState, BridgeTransactionStatus } from '~/types/bridge'
+import type {
+    BridgeConfig,
+    BridgeQuote,
+    BridgeApprovalState,
+    BridgeTransactionStatus,
+    BridgeDirection,
+} from '~/types/bridge'
 import { HAI_AERO_BRIDGE_CONFIG } from '~/services/minterProtocol/registry'
-import { HYP_ERC20_COLLATERAL_ABI, ERC20_APPROVAL_ABI } from './abi'
+import { HYP_ERC20_COLLATERAL_ABI, HYP_ERC20_SYNTHETIC_ABI, ERC20_APPROVAL_ABI } from './abi'
+
+function getBridgeErrorMessage(error: unknown): string {
+    if (error instanceof Error && error.message) {
+        return error.message
+    }
+
+    const anyError = error as {
+        reason?: string
+        data?: { message?: string }
+        error?: { message?: string }
+        message?: string
+    }
+
+    return (
+        anyError?.reason ||
+        anyError?.data?.message ||
+        anyError?.error?.message ||
+        anyError?.message ||
+        'Bridge transaction failed.'
+    )
+}
 
 /**
  * Convert an Ethereum address to bytes32 format (padded)
@@ -32,21 +60,39 @@ export function getBridgeConfig(): BridgeConfig {
 }
 
 /**
- * Get a provider for the source chain (Base)
+ * Get a provider for Base chain
  */
-export function getSourceProvider(): ethers.providers.JsonRpcProvider {
+export function getBaseProvider(): ethers.providers.JsonRpcProvider {
     return new ethers.providers.JsonRpcProvider(HAI_AERO_BRIDGE_CONFIG.sourceChain.rpcUrl)
 }
 
 /**
- * Get a provider for the destination chain (Optimism)
+ * Get a provider for Optimism chain
  */
-export function getDestinationProvider(): ethers.providers.JsonRpcProvider {
+export function getOptimismProvider(): ethers.providers.JsonRpcProvider {
     return new ethers.providers.JsonRpcProvider(HAI_AERO_BRIDGE_CONFIG.destinationChain.rpcUrl)
 }
 
+// Legacy aliases for backward compatibility
+export const getSourceProvider = getBaseProvider
+export const getDestinationProvider = getOptimismProvider
+
 /**
- * Get the HypERC20Collateral contract instance
+ * Get the provider for a specific direction's source chain
+ */
+export function getProviderForDirection(
+    direction: BridgeDirection,
+    which: 'source' | 'destination'
+): ethers.providers.JsonRpcProvider {
+    if (direction === 'base-to-optimism') {
+        return which === 'source' ? getBaseProvider() : getOptimismProvider()
+    } else {
+        return which === 'source' ? getOptimismProvider() : getBaseProvider()
+    }
+}
+
+/**
+ * Get the HypERC20Collateral contract instance (Base)
  */
 export function getHypCollateralContract(signerOrProvider: ethers.Signer | ethers.providers.Provider) {
     return new ethers.Contract(
@@ -57,9 +103,36 @@ export function getHypCollateralContract(signerOrProvider: ethers.Signer | ether
 }
 
 /**
+ * Get the HypERC20Synthetic contract instance (Optimism)
+ */
+export function getHypSyntheticContract(signerOrProvider: ethers.Signer | ethers.providers.Provider) {
+    return new ethers.Contract(
+        HAI_AERO_BRIDGE_CONFIG.destinationChain.hypSyntheticAddress,
+        HYP_ERC20_SYNTHETIC_ABI,
+        signerOrProvider
+    )
+}
+
+/**
+ * Get the router contract for a given direction
+ * Base → Optimism: uses HypCollateral on Base
+ * Optimism → Base: uses HypSynthetic on Optimism
+ */
+export function getRouterContract(
+    signerOrProvider: ethers.Signer | ethers.providers.Provider,
+    direction: BridgeDirection
+) {
+    if (direction === 'base-to-optimism') {
+        return getHypCollateralContract(signerOrProvider)
+    } else {
+        return getHypSyntheticContract(signerOrProvider)
+    }
+}
+
+/**
  * Get the haiAERO token contract on Base
  */
-export function getSourceTokenContract(signerOrProvider: ethers.Signer | ethers.providers.Provider) {
+export function getBaseTokenContract(signerOrProvider: ethers.Signer | ethers.providers.Provider) {
     return new ethers.Contract(
         HAI_AERO_BRIDGE_CONFIG.sourceChain.tokenAddress,
         ERC20_APPROVAL_ABI,
@@ -68,26 +141,77 @@ export function getSourceTokenContract(signerOrProvider: ethers.Signer | ethers.
 }
 
 /**
- * Quote the gas payment for a bridge transfer
+ * Get the haiAERO token contract on Optimism (synthetic)
  */
-export async function quoteBridgeFee(amount: string): Promise<BridgeQuote> {
+export function getOptimismTokenContract(signerOrProvider: ethers.Signer | ethers.providers.Provider) {
+    return new ethers.Contract(
+        HAI_AERO_BRIDGE_CONFIG.destinationChain.tokenAddress,
+        HYP_ERC20_SYNTHETIC_ABI,
+        signerOrProvider
+    )
+}
+
+// Legacy alias
+export const getSourceTokenContract = getBaseTokenContract
+
+/**
+ * Get the token contract for a direction's source chain
+ */
+export function getTokenContractForDirection(
+    signerOrProvider: ethers.Signer | ethers.providers.Provider,
+    direction: BridgeDirection
+) {
+    if (direction === 'base-to-optimism') {
+        return getBaseTokenContract(signerOrProvider)
+    } else {
+        return getOptimismTokenContract(signerOrProvider)
+    }
+}
+
+/**
+ * Get the spender address (router) for a direction
+ */
+export function getSpenderForDirection(direction: BridgeDirection): `0x${string}` {
+    if (direction === 'base-to-optimism') {
+        return HAI_AERO_BRIDGE_CONFIG.sourceChain.hypCollateralAddress
+    } else {
+        // For Optimism → Base, the synthetic token IS the router, no separate approval needed
+        // But we return the synthetic address for consistency
+        return HAI_AERO_BRIDGE_CONFIG.destinationChain.hypSyntheticAddress
+    }
+}
+
+/**
+ * Get destination domain for a direction
+ */
+export function getDestinationDomain(direction: BridgeDirection): number {
+    if (direction === 'base-to-optimism') {
+        return HAI_AERO_BRIDGE_CONFIG.domains.optimism
+    } else {
+        return HAI_AERO_BRIDGE_CONFIG.domains.base
+    }
+}
+
+/**
+ * Quote the gas payment for a bridge transfer.
+ * Calls quoteGasPayment on the appropriate warp route contract.
+ */
+export async function quoteBridgeFee(
+    amount: string,
+    direction: BridgeDirection = 'base-to-optimism'
+): Promise<BridgeQuote> {
     try {
-        const provider = getSourceProvider()
-        const hypCollateral = getHypCollateralContract(provider)
+        const provider = getProviderForDirection(direction, 'source')
+        const router = getRouterContract(provider, direction)
+        const destinationDomain = getDestinationDomain(direction)
 
-        // Get destination domain (Optimism)
-        const destinationDomain = HAI_AERO_BRIDGE_CONFIG.domains.optimism
-
-        // Quote gas payment
-        const feeWei: BigNumber = await hypCollateral.quoteGasPayment(destinationDomain, amount)
-
-        // Estimate gas for the bridge transaction
-        const estimatedGas = BigNumber.from(200000) // Conservative estimate
+        // Quote gas payment from the warp route's configured hook
+        const feeWei: BigNumber = await router.quoteGasPayment(destinationDomain)
 
         return {
             feeWei: feeWei.toString(),
             feeFormatted: ethers.utils.formatEther(feeWei),
-            estimatedGas: estimatedGas.toString(),
+            estimatedGas: '200000',
             isLoading: false,
         }
     } catch (error) {
@@ -105,16 +229,17 @@ export async function quoteBridgeFee(amount: string): Promise<BridgeQuote> {
 /**
  * Check the approval state for bridging
  */
-export async function checkBridgeApproval(userAddress: string, amount: string): Promise<BridgeApprovalState> {
+export async function checkBridgeApproval(
+    userAddress: string,
+    amount: string,
+    direction: BridgeDirection = 'base-to-optimism'
+): Promise<BridgeApprovalState> {
     try {
-        const provider = getSourceProvider()
-        const tokenContract = getSourceTokenContract(provider)
+        const provider = getProviderForDirection(direction, 'source')
+        const tokenContract = getTokenContractForDirection(provider, direction)
+        const spender = getSpenderForDirection(direction)
 
-        const allowance: BigNumber = await tokenContract.allowance(
-            userAddress,
-            HAI_AERO_BRIDGE_CONFIG.sourceChain.hypCollateralAddress
-        )
-
+        const allowance: BigNumber = await tokenContract.allowance(userAddress, spender)
         const amountBN = BigNumber.from(amount)
         const needsApproval = allowance.lt(amountBN)
 
@@ -134,16 +259,88 @@ export async function checkBridgeApproval(userAddress: string, amount: string): 
 }
 
 /**
+ * Validate bridge prerequisites before executing a transfer.
+ */
+export async function validateBridgePrerequisites(
+    userAddress: string,
+    amount: string,
+    direction: BridgeDirection = 'base-to-optimism',
+    providerOverride?: ethers.providers.Provider
+): Promise<{ valid: boolean; error?: string }> {
+    if (!amount || amount === '0') {
+        return { valid: false, error: 'Enter an amount to bridge.' }
+    }
+
+    let amountBN: BigNumber
+    try {
+        amountBN = BigNumber.from(amount)
+    } catch {
+        return { valid: false, error: 'Invalid bridge amount.' }
+    }
+
+    const sourceChainName = direction === 'base-to-optimism' ? 'Base' : 'Optimism'
+    const provider = providerOverride || getProviderForDirection(direction, 'source')
+    const spender = getSpenderForDirection(direction)
+    const destinationDomain = getDestinationDomain(direction)
+
+    // Verify router contract exists
+    try {
+        const contractCode = await provider.getCode(spender)
+        if (!contractCode || contractCode === '0x') {
+            return { valid: false, error: `Bridge contract not found on ${sourceChainName}.` }
+        }
+    } catch (error) {
+        console.error('Error checking bridge contract code:', error)
+        return { valid: false, error: `Unable to read bridge contract: ${getBridgeErrorMessage(error)}` }
+    }
+
+    const tokenContract = getTokenContractForDirection(provider, direction)
+    const router = getRouterContract(provider, direction)
+    let balance: BigNumber
+    let allowance: BigNumber
+    let feeWei: BigNumber
+    let nativeBalance: BigNumber
+
+    try {
+        ;[balance, allowance, feeWei, nativeBalance] = await Promise.all([
+            tokenContract.balanceOf(userAddress),
+            tokenContract.allowance(userAddress, spender),
+            router.quoteGasPayment(destinationDomain),
+            provider.getBalance(userAddress),
+        ])
+    } catch (error) {
+        console.error('Error fetching bridge prerequisites:', error)
+        return { valid: false, error: `Unable to fetch bridge data: ${getBridgeErrorMessage(error)}` }
+    }
+
+    if (balance.lt(amountBN)) {
+        return { valid: false, error: `Insufficient haiAERO balance on ${sourceChainName}.` }
+    }
+
+    if (allowance.lt(amountBN)) {
+        return { valid: false, error: 'Approve haiAERO before bridging.' }
+    }
+
+    const feeWithBuffer = feeWei.mul(110).div(100)
+    if (nativeBalance.lt(feeWithBuffer)) {
+        return { valid: false, error: `Insufficient ETH on ${sourceChainName} to pay bridge fee.` }
+    }
+
+    return { valid: true }
+}
+
+/**
  * Approve haiAERO for bridging
- * Returns the transaction hash
  */
 export async function approveBridge(
     signer: ethers.Signer,
-    amount: string
+    amount: string,
+    direction: BridgeDirection = 'base-to-optimism'
 ): Promise<{ txHash: `0x${string}`; wait: () => Promise<ethers.ContractReceipt> }> {
-    const tokenContract = getSourceTokenContract(signer)
+    const tokenContract = getTokenContractForDirection(signer, direction)
+    const spender = getSpenderForDirection(direction)
 
-    const tx = await tokenContract.approve(HAI_AERO_BRIDGE_CONFIG.sourceChain.hypCollateralAddress, amount)
+    const tx = await tokenContract.approve(spender, amount)
 
     return {
         txHash: tx.hash as `0x${string}`,
@@ -153,31 +350,40 @@ export async function approveBridge(
 
 /**
  * Execute a bridge transfer
- * Returns the transaction hash and message ID
  */
 export async function executeBridge(
     signer: ethers.Signer,
     amount: string,
-    recipient: string
+    recipient: string,
+    direction: BridgeDirection = 'base-to-optimism'
 ): Promise<{
     txHash: `0x${string}`
     messageId?: string
     wait: () => Promise<ethers.ContractReceipt>
 }> {
-    const hypCollateral = getHypCollateralContract(signer)
-    const destinationDomain = HAI_AERO_BRIDGE_CONFIG.domains.optimism
+    const router = getRouterContract(signer, direction)
+    const destinationDomain = getDestinationDomain(direction)
 
     // Convert recipient to bytes32
     const recipientBytes32 = addressToBytes32(recipient)
 
-    // Quote gas payment
-    const feeWei: BigNumber = await hypCollateral.quoteGasPayment(destinationDomain, amount)
+    // Quote gas payment from the warp route's configured hook
+    const feeWei: BigNumber = await router.quoteGasPayment(destinationDomain)
 
-    // Add 10% buffer to the fee
+    // Add 10% buffer to the fee for safety
     const feeWithBuffer = feeWei.mul(110).div(100)
 
+    // Simulate first to get better error messages
+    try {
+        await router.callStatic.transferRemote(destinationDomain, recipientBytes32, amount, {
+            value: feeWithBuffer,
+        })
+    } catch (error) {
+        throw new Error(getBridgeErrorMessage(error))
+    }
+
     // Execute transfer
-    const tx = await hypCollateral.transferRemote(destinationDomain, recipientBytes32, amount, {
+    const tx = await router.transferRemote(destinationDomain, recipientBytes32, amount, {
         value: feeWithBuffer,
     })
 
@@ -243,20 +449,16 @@ export async function checkBridgeStatus(sourceTxHash: string): Promise<BridgeTra
 }
 
 /**
- * Get the haiAERO balance on the destination chain (Optimism)
+ * Get haiAERO balance on Base
  */
-export async function getDestinationBalance(userAddress: string): Promise<{
+export async function getBaseBalance(userAddress: string): Promise<{
     raw: string
     formatted: string
     decimals: number
 }> {
     try {
-        const provider = getDestinationProvider()
-        const tokenContract = new ethers.Contract(
-            HAI_AERO_BRIDGE_CONFIG.destinationChain.tokenAddress,
-            ERC20_APPROVAL_ABI,
-            provider
-        )
+        const provider = getBaseProvider()
+        const tokenContract = getBaseTokenContract(provider)
 
         const [balance, decimals]: [BigNumber, number] = await Promise.all([
             tokenContract.balanceOf(userAddress),
@@ -269,7 +471,7 @@ export async function getDestinationBalance(userAddress: string): Promise<{
             decimals,
         }
     } catch (error) {
-        console.error('Error getting destination balance:', error)
+        console.error('[Bridge] Error getting Base balance:', error)
         return {
             raw: '0',
             formatted: '0',
@@ -279,19 +481,25 @@ export async function getDestinationBalance(userAddress: string): Promise<{
 }
 
 /**
- * Get the haiAERO balance on the source chain (Base)
+ * Get haiAERO balance on Optimism
  */
-export async function getSourceBalance(userAddress: string): Promise<{
+export async function getOptimismBalance(userAddress: string): Promise<{
     raw: string
     formatted: string
     decimals: number
 }> {
+    const tokenAddress = HAI_AERO_BRIDGE_CONFIG.destinationChain.tokenAddress
+
     try {
-        const provider = getSourceProvider()
-        const tokenContract = getSourceTokenContract(provider)
+        const provider = getOptimismProvider()
+
+        // Normalize the user address
+        const normalizedAddress = ethers.utils.getAddress(userAddress)
+
+        const tokenContract = new ethers.Contract(tokenAddress, ERC20_APPROVAL_ABI, provider)
 
         const [balance, decimals]: [BigNumber, number] = await Promise.all([
-            tokenContract.balanceOf(userAddress),
+            tokenContract.balanceOf(normalizedAddress),
             tokenContract.decimals(),
         ])
 
@@ -301,12 +509,27 @@ export async function getSourceBalance(userAddress: string): Promise<{
             decimals,
         }
     } catch (error) {
-        console.error('Error getting source balance:', error)
+        console.error('[Bridge] Error getting Optimism balance:', error)
         return {
             raw: '0',
             formatted: '0',
             decimals: 18,
         }
     }
+}
+
+// Legacy aliases for backward compatibility
+export const getSourceBalance = getBaseBalance
+export const getDestinationBalance = getOptimismBalance
+
+/**
+ * Get balances for both chains
+ */
+export async function getBothBalances(userAddress: string): Promise<{
+    base: { raw: string; formatted: string; decimals: number }
+    optimism: { raw: string; formatted: string; decimals: number }
+}> {
+    const [base, optimism] = await Promise.all([getBaseBalance(userAddress), getOptimismBalance(userAddress)])
+    return { base, optimism }
 }
 

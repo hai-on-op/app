@@ -21,6 +21,7 @@ const sortableHeaders: SortableHeader[] = [
 const HAS_REWARDS = [
     'HAIVELO',
     'HAIVELOV2',
+    'HAIAERO',
     'ALETH',
     'YV-VELO-ALETH-WETH',
     'YV-VELO-MSETH-WETH',
