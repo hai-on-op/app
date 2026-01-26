@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 import { useIsMutating, useQuery } from '@tanstack/react-query'
-import { BigNumber } from 'ethers'
 import { formatUnits } from 'ethers/lib/utils'
 import { formatNumberWithStyle } from '~/utils'
 import { useStakeStats } from './useStakeStats'
@@ -156,17 +155,14 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
         const veloReserve = Number(formatUnits(velodromePool.reserve1 || '0', decimals))
 
         // Derive haiVELO price from pool ratio: haiVELO price = (VELO reserve × VELO price) / haiVELO reserve
-        const haiVeloPrice = haiVeloReserve > 0
-            ? (veloReserve * veloPrice) / haiVeloReserve
-            : veloPrice
+        const haiVeloPrice = haiVeloReserve > 0 ? (veloReserve * veloPrice) / haiVeloReserve : veloPrice
 
         // Calculate TVL using derived haiVELO price
         // TVL = (haiVELO reserve × haiVELO price) + (VELO reserve × VELO price)
-        const tvlUsd = (haiVeloReserve * haiVeloPrice) + (veloReserve * veloPrice)
+        const tvlUsd = haiVeloReserve * haiVeloPrice + veloReserve * veloPrice
 
         // Use actual totalSupply from contract if available
-        const totalSupply = lpTotalSupply?.formatted
-            ?? Number(formatUnits(velodromePool.liquidity || '0', decimals))
+        const totalSupply = lpTotalSupply?.formatted ?? Number(formatUnits(velodromePool.liquidity || '0', decimals))
 
         const calculatedLpPrice = totalSupply > 0 ? tvlUsd / totalSupply : 0
 

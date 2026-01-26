@@ -229,10 +229,7 @@ export function useStrategyData(
     )
     const { data: haiVeloVeloLpStats } = useStakeStats(haiVeloVeloLpConfig.namespace, haiVeloVeloLpService)
     const haiVeloVeloLpAprData = useLpStakingApr(haiVeloVeloLpConfig)
-    const {
-        lpPriceUsd: haiVeloVeloLpPriceUsd,
-        loading: haiVeloVeloLpTvlLoading,
-    } = useLpTvl(haiVeloVeloLpConfig)
+    const { lpPriceUsd: haiVeloVeloLpPriceUsd, loading: haiVeloVeloLpTvlLoading } = useLpTvl(haiVeloVeloLpConfig)
 
     // Calculate user's LP staked value in USD
     const haiVeloVeloLpUserStaked = Number(haiVeloVeloLpAccount?.stakedBalance || 0)

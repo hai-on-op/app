@@ -37,10 +37,7 @@ export function useLpTokenTotalSupply(lpTokenAddress?: string) {
 
             const contract = new Contract(lpTokenAddress, ERC20_TOTAL_SUPPLY_ABI, provider)
 
-            const [totalSupply, decimals] = await Promise.all([
-                contract.totalSupply(),
-                contract.decimals(),
-            ])
+            const [totalSupply, decimals] = await Promise.all([contract.totalSupply(), contract.decimals()])
 
             const totalSupplyFormatted = Number(formatUnits(totalSupply, decimals))
 
@@ -58,4 +55,3 @@ export function useLpTokenTotalSupply(lpTokenAddress?: string) {
         error: query.error,
     }
 }
-

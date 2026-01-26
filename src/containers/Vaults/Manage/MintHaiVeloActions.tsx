@@ -532,12 +532,16 @@ export function MintHaiVeloActions() {
                             // Always open modal. It will show Approvals (if any) then Execute.
                             setExecutionPlan({
                                 depositVeloWei: convertAmountVelo
-                                    ? ethers.utils.parseUnits((convertAmountVelo || '0').replace(/,/g, ''), 18).toString()
+                                    ? ethers.utils
+                                          .parseUnits((convertAmountVelo || '0').replace(/,/g, ''), 18)
+                                          .toString()
                                     : undefined,
                                 depositVeNftTokenIds: selectedVeVeloNFTs,
                                 depositVeNftTotalWei: (() => {
                                     try {
-                                        const selected = veVeloNFTs.filter((n) => selectedVeVeloNFTs.includes(n.tokenId))
+                                        const selected = veVeloNFTs.filter((n) =>
+                                            selectedVeVeloNFTs.includes(n.tokenId)
+                                        )
                                         const sum = selected.reduce(
                                             (acc, n) => acc.add(ethers.BigNumber.from(n.balance)),
                                             ethers.BigNumber.from(0)

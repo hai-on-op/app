@@ -128,8 +128,7 @@ const DiscountInfoBox = styled(Flex).attrs((props) => ({
     ...props,
 }))<{ $hasDiscount: boolean }>`
     padding: 12px 16px;
-    background: ${({ $hasDiscount, theme }) =>
-        $hasDiscount ? theme.colors.greenish : theme.colors.neutral};
+    background: ${({ $hasDiscount, theme }) => ($hasDiscount ? theme.colors.greenish : theme.colors.neutral)};
     border: 2px solid rgba(0, 0, 0, 0.1);
     border-radius: 20px;
 `

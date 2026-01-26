@@ -2,12 +2,7 @@ import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { formatUnits } from 'ethers/lib/utils'
 import type { StakingConfig } from '~/types/stakingConfig'
-import {
-    buildLpTvlService,
-    formatLpTvlUsd,
-    type LpTvlHookResult,
-    type LpTvlValue,
-} from '~/services/lpTvl'
+import { buildLpTvlService, formatLpTvlUsd, type LpTvlHookResult, type LpTvlValue } from '~/services/lpTvl'
 import { useVelodrome } from '~/hooks/useVelodrome'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { useLpTokenTotalSupply } from '~/hooks/useLpTokenTotalSupply'
@@ -43,17 +38,14 @@ export function useLpTvl(config?: StakingConfig): LpTvlHookResult {
         const veloReserve = Number(formatUnits(velodromePool.reserve1 || '0', decimals))
 
         // Derive haiVELO price from pool ratio: haiVELO price = (VELO reserve × VELO price) / haiVELO reserve
-        const haiVeloPrice = haiVeloReserve > 0
-            ? (veloReserve * veloPrice) / haiVeloReserve
-            : veloPrice
+        const haiVeloPrice = haiVeloReserve > 0 ? (veloReserve * veloPrice) / haiVeloReserve : veloPrice
 
         // Calculate TVL using derived haiVELO price
         // TVL = (haiVELO reserve × haiVELO price) + (VELO reserve × VELO price)
-        const tvlUsd = (haiVeloReserve * haiVeloPrice) + (veloReserve * veloPrice)
+        const tvlUsd = haiVeloReserve * haiVeloPrice + veloReserve * veloPrice
 
         // Use actual totalSupply from contract if available, otherwise fall back to pool.liquidity
-        const totalSupply = lpTotalSupply?.formatted
-            ?? Number(formatUnits(velodromePool.liquidity || '0', decimals))
+        const totalSupply = lpTotalSupply?.formatted ?? Number(formatUnits(velodromePool.liquidity || '0', decimals))
 
         const lpPriceUsd = totalSupply > 0 ? tvlUsd / totalSupply : 0
 
@@ -64,7 +56,11 @@ export function useLpTvl(config?: StakingConfig): LpTvlHookResult {
         console.log(`[useLpTvl] haiVELO Price (derived): $${haiVeloPrice.toFixed(4)}`)
         console.log(`[useLpTvl] Pool TVL: $${tvlUsd.toFixed(2)}`)
         console.log(`[useLpTvl] Total LP Supply (from contract): ${lpTotalSupply?.formatted?.toFixed(4) ?? 'N/A'}`)
-        console.log(`[useLpTvl] Total LP Supply (from Sugar): ${Number(formatUnits(velodromePool.liquidity || '0', decimals)).toFixed(4)}`)
+        console.log(
+            `[useLpTvl] Total LP Supply (from Sugar): ${Number(
+                formatUnits(velodromePool.liquidity || '0', decimals)
+            ).toFixed(4)}`
+        )
         console.log(`[useLpTvl] LP Price: $${lpPriceUsd.toFixed(6)}`)
         console.log(`[useLpTvl] ========================================`)
 
