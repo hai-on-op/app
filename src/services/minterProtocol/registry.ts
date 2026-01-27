@@ -140,8 +140,8 @@ export const HAI_AERO_BRIDGE_CONFIG = {
         base: 8453,
         optimism: 10,
     },
-    // Estimated bridge time in minutes
-    estimatedBridgeTimeMinutes: 20,
+    // Estimated bridge time in seconds
+    estimatedBridgeTimeSeconds: 40,
 }
 
 // ============================================================================

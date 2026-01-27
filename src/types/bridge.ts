@@ -58,8 +58,8 @@ export interface BridgeConfig {
     domains: {
         [key: string]: number
     }
-    /** Estimated bridge time in minutes */
-    estimatedBridgeTimeMinutes: number
+    /** Estimated bridge time in seconds */
+    estimatedBridgeTimeSeconds: number
 }
 
 /**

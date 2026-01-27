@@ -282,7 +282,7 @@ export function useMinterBridge(
                 amount: ethers.utils.formatEther(params.amount),
                 status: 'bridging',
                 initiatedAt: now,
-                estimatedDeliveryAt: now + config.estimatedBridgeTimeMinutes * 60 * 1000,
+                estimatedDeliveryAt: now + config.estimatedBridgeTimeSeconds * 1000,
                 sourceChainId,
                 destinationChainId: destChainId,
             }

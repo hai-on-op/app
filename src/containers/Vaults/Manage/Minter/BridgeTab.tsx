@@ -9,7 +9,8 @@ import { useState, useMemo, useEffect } from 'react'
 import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
 import { ethers } from 'ethers'
 import styled from 'styled-components'
-import { ArrowRight, RefreshCw, AlertCircle, Clock, CheckCircle, Loader } from 'react-feather'
+import { AlertCircle, Clock, CheckCircle, Loader } from 'react-feather'
+import { HaiArrow } from '~/components/Icons/HaiArrow'
 
 import { formatNumberWithStyle, Status } from '~/utils'
 import { useMinterBridge } from '~/hooks/minter'
@@ -188,12 +189,9 @@ export function BridgeTab() {
             <Header>
                 <Flex $width="100%" $justify="space-between" $align="center">
                     <Text $fontWeight={700}>Bridge haiAERO</Text>
-                    <DirectionToggle onClick={toggleDirection} disabled={isBridging || isWaitingForDelivery}>
-                        <Text $fontSize="0.75em">
-                            {sourceChainName} → {destChainName}
-                        </Text>
-                        <RefreshCw size={14} />
-                    </DirectionToggle>
+                    <Text $fontSize="0.75em" $color="rgba(0,0,0,0.6)">
+                        {sourceChainName} → {destChainName}
+                    </Text>
                 </Flex>
             </Header>
             <Body>
@@ -231,9 +229,14 @@ export function BridgeTab() {
                             <SourceBadge>Source</SourceBadge>
                         )}
                     </BalanceCard>
-                    <DirectionArrow $reverse={direction === 'optimism-to-base'}>
-                        <ArrowRight size={24} color="rgba(0,0,0,0.3)" />
-                    </DirectionArrow>
+                    <DirectionArrowButton
+                        onClick={toggleDirection}
+                        disabled={isBridging || isWaitingForDelivery}
+                        $reverse={direction === 'optimism-to-base'}
+                        title="Switch direction"
+                    >
+                        <HaiArrow size={20} direction={direction === 'base-to-optimism' ? 'right' : 'left'} />
+                    </DirectionArrowButton>
                     <BalanceCard $isSource={direction === 'optimism-to-base'}>
                         <Text $fontSize="0.75em" $color="rgba(0,0,0,0.6)">
                             haiAERO on Optimism
@@ -301,7 +304,7 @@ export function BridgeTab() {
                                 </Text>
                             </Flex>
                             <Text $fontSize="0.85em" $fontWeight={600}>
-                                ~{config.estimatedBridgeTimeMinutes} minutes
+                                ~{config.estimatedBridgeTimeSeconds} seconds
                             </Text>
                         </Flex>
                     </FeeContainer>
@@ -499,27 +502,6 @@ const Footer = styled(CenteredFlex).attrs((props) => ({
     border-top: ${({ theme }) => theme.border.thin};
 `
 
-const DirectionToggle = styled.button<{ disabled?: boolean }>`
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-    padding: 6px 12px;
-    border-radius: 12px;
-    color: white;
-    border: none;
-    cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
-    opacity: ${({ disabled }) => (disabled ? 0.6 : 1)};
-    transition: transform 0.2s, opacity 0.2s;
-
-    &:hover:not(:disabled) {
-        transform: scale(1.02);
-    }
-
-    &:active:not(:disabled) {
-        transform: scale(0.98);
-    }
-`
 
 const NetworkWarning = styled(StatusLabel)`
     border-radius: 12px;
@@ -562,12 +544,27 @@ const SourceBadge = styled.span`
     font-weight: 600;
 `
 
-const DirectionArrow = styled.div<{ $reverse?: boolean }>`
+const DirectionArrowButton = styled.button<{ $reverse?: boolean; disabled?: boolean }>`
     display: flex;
     align-items: center;
     justify-content: center;
-    transform: ${({ $reverse }) => ($reverse ? 'rotate(180deg)' : 'rotate(0)')};
-    transition: transform 0.3s ease;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    background: ${({ theme }) => theme.colors.gradientCool};
+    border: ${({ theme }) => theme.border.medium};
+    border-radius: 999px;
+    cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
+    opacity: ${({ disabled }) => (disabled ? 0.6 : 1)};
+    transition: all 0.3s ease;
+
+    &:hover:not(:disabled) {
+        background: ${({ theme }) => theme.colors.yellowish};
+    }
+
+    &:active:not(:disabled) {
+        transform: scale(0.95);
+    }
 `
 
 const FeeContainer = styled(Flex).attrs((props) => ({
