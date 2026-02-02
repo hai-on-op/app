@@ -86,12 +86,12 @@ const typeOptions: BrandedSelectOption[] = [
         icon: ['HAI'],
         description: `Stake ${haiBoldCurveLpConfig.labels.token} to earn rewards.`,
     },
-    // {
-    //     label: `STAKE ${haiVeloVeloLpConfig.labels.token}`,
-    //     value: 'stake/hai-velo-velo-lp',
-    //     icon: ['HAIVELOV2', "VELO"],
-    //     description: `Stake ${haiVeloVeloLpConfig.labels.token} to earn rewards.`,
-    // },
+    {
+        label: `STAKE ${haiVeloVeloLpConfig.labels.token}`,
+        value: 'stake/hai-velo-velo-lp',
+        icon: ['HAIVELOV2', 'VELO'],
+        description: `Stake ${haiVeloVeloLpConfig.labels.token} to earn rewards.`,
+    },
     {
         label: 'Buy $HAI',
         value: '',
@@ -130,7 +130,7 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
 
     const isUpToExtraSmall = useMediaQuery('upToExtraSmall')
 
-    const { type, stats } = useMemo(() => {
+    const { type, stats, stakeConfig } = useMemo(() => {
         if (location.pathname.startsWith('/auctions')) {
             return {
                 type: Intention.AUCTION,
@@ -215,8 +215,11 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
             ['HAIVELO', 'HAIVELOV2'].includes(new URLSearchParams(location.search).get('collateral') || ''))
 
     const baseCopy = copy[type]
+    const isLpStaking = stakeConfig && stakeConfig.namespace !== 'kite'
     const subtitle = isHaiVeloOpen
         ? 'Convert your VELO & veVELO into haiVELO to use as collateral while earning veVELO rewards. '
+        : isLpStaking
+        ? `Stake ${stakeConfig.labels.token} to earn rewards. `
         : baseCopy.subtitle
     let cta = baseCopy.cta
     let ctaLink = baseCopy.ctaLink

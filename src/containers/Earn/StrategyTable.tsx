@@ -120,14 +120,16 @@ export function StrategyTable({
                     },
                     i
                 ) => {
-                    // HAI-BOLD LP staking only rewards KITE
+                    // HAI-BOLD LP and haiVELO/VELO LP staking only rewards KITE
                     const isHaiBoldLp = strategyType === 'stake' && pair.includes('BOLD')
+                    const isHaiVeloVeloLp =
+                        strategyType === 'stake' && pair.includes('HAIVELO') && pair.includes('VELO')
                     const tokens: TokenKey[] =
                         strategyType === 'borrow'
                             ? ['KITE']
                             : earnPlatform === 'velodrome'
                             ? ['VELO']
-                            : isHaiBoldLp
+                            : isHaiBoldLp || isHaiVeloVeloLp
                             ? ['KITE']
                             : strategyType === 'stake'
                             ? ['HAI', 'KITE', 'OP']
@@ -433,11 +435,14 @@ function EarnEmissionTooltip({ rewards, earnPlatform, earnLink, strategyType, pa
 
     if (strategyType == 'stake') {
         const isHaiBoldLp = pair.includes('BOLD')
+        const isHaiVeloVeloLp = pair.includes('HAIVELO') && pair.includes('VELO')
         return (
             <Flex $width="140px" $column $justify="flex-end" $align="flex-start" $gap={4}>
                 <Text $fontWeight={700}>
                     {isHaiBoldLp
                         ? 'Stake HAI/BOLD LP tokens to earn KITE rewards.'
+                        : isHaiVeloVeloLp
+                        ? 'Stake haiVELO/VELO LP tokens to earn KITE rewards.'
                         : 'Stake KITE to earn protocol fees and boost your incentives.'}
                 </Text>
             </Flex>

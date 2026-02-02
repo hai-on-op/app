@@ -222,13 +222,13 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                                 >
                                                     KITE Staking
                                                 </BrandedDropdown.Item>
-                                                {/* <BrandedDropdown.Item
+                                                <BrandedDropdown.Item
                                                     href="/stake/hai-velo-velo-lp"
                                                     icon={<Lock size={18} />}
                                                     active={location.pathname === '/stake/hai-velo-velo-lp'}
                                                 >
-                                                    HAI/VELO LP
-                                                </BrandedDropdown.Item> */}
+                                                    haiVELO/VELO
+                                                </BrandedDropdown.Item>
                                                 <BrandedDropdown.Item
                                                     href="/stake/hai-bold-curve-lp"
                                                     icon={<Lock size={18} />}

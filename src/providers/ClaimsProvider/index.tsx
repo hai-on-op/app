@@ -115,13 +115,24 @@ export function ClaimsProvider({ children }: Props) {
     })
 
     useEffect(() => {
+        let isMounted = true
+
         const fetchIncentives = async () => {
             if (!account || !chainId || !geb) return
-            const incentives = await fetchIncentivesData(geb, account, chainId)
-
-            setIncentivesData(incentives)
+            try {
+                const incentives = await fetchIncentivesData(geb, account, chainId)
+                if (isMounted) {
+                    setIncentivesData(incentives)
+                }
+            } catch (error) {
+                console.error('Error fetching incentives:', error)
+            }
         }
         fetchIncentives()
+
+        return () => {
+            isMounted = false
+        }
     }, [geb, account, chainId])
     const totalUSD = formatSummaryValue(
         (
@@ -139,8 +150,12 @@ export function ClaimsProvider({ children }: Props) {
                 incentivesData,
                 refetchIncentives: async () => {
                     if (!account || !chainId || !geb) return
-                    const updatedData = await fetchIncentivesData(geb, account, chainId)
-                    setIncentivesData(updatedData)
+                    try {
+                        const updatedData = await fetchIncentivesData(geb, account, chainId)
+                        setIncentivesData(updatedData)
+                    } catch (error) {
+                        console.error('Error refetching incentives:', error)
+                    }
                 },
                 activeAuctions,
                 totalUSD,

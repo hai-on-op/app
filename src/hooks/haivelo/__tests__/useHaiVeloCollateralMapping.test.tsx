@@ -33,6 +33,10 @@ describe('useHaiVeloCollateralMapping', () => {
                 { owner: { address: '0xBBB' }, collateral: '3' },
             ],
         } as any)
+        vi.spyOn(dataSources, 'fetchV2Safes').mockResolvedValue({
+            totalCollateral: '0',
+            safes: [],
+        } as any)
 
         renderWithProviders(<Comp />)
         await waitFor(() => expect(screen.queryByText('loading')).toBeNull())

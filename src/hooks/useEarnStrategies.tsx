@@ -210,6 +210,12 @@ export function useEarnStrategies() {
         const haiBoldLpUserPosition = strategyData.haiBoldLp?.userPosition || 0
         const haiBoldLpBoostApr = strategyData.haiBoldLp?.boostApr
 
+        // haiVELO/VELO LP staking data
+        const haiVeloVeloLpApr = strategyData.haiVeloVeloLp?.apr || 0
+        const haiVeloVeloLpTvl = strategyData.haiVeloVeloLp?.tvl || 0
+        const haiVeloVeloLpUserPosition = strategyData.haiVeloVeloLp?.userPosition || 0
+        const haiVeloVeloLpBoostApr = strategyData.haiVeloVeloLp?.boostApr
+
         return [
             createSpecialStrategy({
                 pair: ['HAI'],
@@ -245,6 +251,17 @@ export function useEarnStrategies() {
                 boostAPR: haiBoldLpBoostApr as BoostAPRData,
                 boostEligible: true,
                 earnLink: '/stake/hai-bold-curve-lp',
+                rewards: [{ token: 'KITE', emission: 25 }],
+            }),
+            createSpecialStrategy({
+                pair: ['HAIVELO', 'VELO'],
+                tvl: haiVeloVeloLpTvl,
+                apr: haiVeloVeloLpApr,
+                userPosition: haiVeloVeloLpUserPosition,
+                strategyType: 'stake',
+                boostAPR: haiVeloVeloLpBoostApr as BoostAPRData,
+                boostEligible: true,
+                earnLink: '/stake/hai-velo-velo-lp',
                 rewards: [{ token: 'KITE', emission: 25 }],
             }),
         ]
