@@ -172,7 +172,7 @@ export function StakeStats({ config }: { config?: StakingConfig }) {
 
         const boostRow: StatProps = {
             header: Number.isNaN(boost.netBoostValue) ? '...' : boost.netBoostFormatted,
-            label: 'My Net Boost',
+            label: 'My Boost',
             tooltip: boostTooltip,
         }
 

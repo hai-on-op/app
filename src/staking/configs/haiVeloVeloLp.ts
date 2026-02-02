@@ -11,8 +11,8 @@ export const haiVeloVeloLpConfig: StakingConfig = {
     labels: { token: 'haiVELO/VELO LP', stToken: 'sthaiVELO/VELO LP', stakeVerb: 'Stake' },
     addresses: {
         stakeToken: '0x5535Cdc333FC8f08f6183e7064202C3917E9346C' as Address, // haiVeloVeloLPToken
-        stToken: '0xFEFE14e370c3Cd9F7e1810b25ECF00d553FD625b' as Address, // stakingTokenHaiVeloVeloLP
-        manager: '0xfFf582CE7353026B20264F27770fa7Bdd4Aa6d0E' as Address, // stakingManagerHaiVeloVeloLP
+        stToken: '0xAA46f6e234d52cC8c3B387A44584a9FB1a62bE0a' as Address, // stakingTokenHaiVeloVeloLP
+        manager: '0x13531B3039533860576e01798Df29B6A14fcd1D9' as Address, // stakingManagerHaiVeloVeloLP
     },
     decimals: 18,
     affectsBoost: true,

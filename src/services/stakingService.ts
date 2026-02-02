@@ -64,10 +64,22 @@ export function buildStakingService(
             }))
         },
         async getPendingWithdrawal(
-            _address: Address | undefined,
-            _provider: Provider
+            address: Address | undefined,
+            provider: Provider
         ): Promise<PendingWithdrawal | null> {
-            return null
+            if (!address) return null
+            try {
+                const result = await sm(provider).pendingWithdrawals(address)
+                const amount: BigNumber = result.amount ?? result[0]
+                const timestamp: BigNumber = result.timestamp ?? result[1]
+                if (amount.isZero()) return null
+                return {
+                    amount: toEtherString(amount),
+                    timestamp: timestamp.toNumber(),
+                }
+            } catch {
+                return null
+            }
         },
         async stake(signer: any, amount: string): Promise<TxResponse> {
             const c = sm(signer)

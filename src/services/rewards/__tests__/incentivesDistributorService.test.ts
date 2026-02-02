@@ -10,6 +10,13 @@ vi.mock('ethers', async () => {
     }
 })
 
+// Mock GraphQL client to prevent network calls
+vi.mock('~/utils/graphql/client', () => ({
+    client: {
+        query: vi.fn().mockResolvedValue({ data: { merkleRoots: [] } }),
+    },
+}))
+
 function mockContract(methods: Record<string, any>) {
     return { ...methods }
 }

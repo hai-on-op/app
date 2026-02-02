@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 import { useIsMutating, useQuery } from '@tanstack/react-query'
-import { BigNumber } from 'ethers'
 import { formatUnits } from 'ethers/lib/utils'
 import { formatNumberWithStyle } from '~/utils'
 import { useStakeStats } from './useStakeStats'
@@ -16,7 +15,7 @@ import type { StakingConfig } from '~/types/stakingConfig'
 import { buildStakingService } from '~/services/stakingService'
 import { useVelodrome } from '~/hooks/useVelodrome'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
-import { calculateVelodromePoolTvlUsd } from '~/services/lpTvl'
+import { useLpTokenTotalSupply } from '~/hooks/useLpTokenTotalSupply'
 import type { VelodromeLpData } from '~/hooks/useVelodrome'
 import { fetchCurveLpTvlForOptimismLp, type CurveLpTvlResult } from '~/services/curveLpTvl'
 
@@ -133,18 +132,13 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
         },
     })
 
-    const velodromePricesBySymbol: Record<string, number> = useMemo(() => {
-        if (!veloPrices) return {}
+    // Fetch actual totalSupply from the LP token contract (more reliable than Sugar's liquidity field)
+    const { data: lpTotalSupply, loading: totalSupplyLoading } = useLpTokenTotalSupply(
+        isVelodromeLp ? config?.tvl?.poolAddress : undefined
+    )
 
-        const entries = Object.entries(veloPrices) as [string, { raw: string }][]
-        return entries.reduce<Record<string, number>>((acc, [symbol, value]) => {
-            const numeric = parseFloat(value.raw)
-            if (!Number.isNaN(numeric)) {
-                acc[symbol.toUpperCase()] = numeric
-            }
-            return acc
-        }, {})
-    }, [veloPrices])
+    // Get VELO price for LP value calculation (haiVELO price is derived from pool ratio)
+    const veloPrice = Number(veloPrices?.VELO?.raw || 0)
 
     const velodromePool = useMemo<VelodromeLpData | undefined>(() => {
         if (!config?.tvl?.poolAddress || !velodromePools?.length) return undefined
@@ -152,25 +146,32 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
         return velodromePools.find((p) => p.address.toLowerCase() === target)
     }, [config?.tvl?.poolAddress, velodromePools])
 
+    // Calculate Velodrome LP price using actual totalSupply from contract
     const lpPriceUsd = useMemo(() => {
-        if (!isVelodromeLp || !velodromePool) return prices.kitePrice || 0
+        if (!isVelodromeLp || !velodromePool || veloPrice <= 0) return prices.kitePrice || 0
 
-        const tvlUsd = calculateVelodromePoolTvlUsd(velodromePool, velodromePricesBySymbol)
-        if (!tvlUsd || !Number.isFinite(tvlUsd) || tvlUsd <= 0) {
+        const decimals = velodromePool.decimals || 18
+        const haiVeloReserve = Number(formatUnits(velodromePool.reserve0 || '0', decimals))
+        const veloReserve = Number(formatUnits(velodromePool.reserve1 || '0', decimals))
+
+        // Derive haiVELO price from pool ratio: haiVELO price = (VELO reserve × VELO price) / haiVELO reserve
+        const haiVeloPrice = haiVeloReserve > 0 ? (veloReserve * veloPrice) / haiVeloReserve : veloPrice
+
+        // Calculate TVL using derived haiVELO price
+        // TVL = (haiVELO reserve × haiVELO price) + (VELO reserve × VELO price)
+        const tvlUsd = haiVeloReserve * haiVeloPrice + veloReserve * veloPrice
+
+        // Use actual totalSupply from contract if available
+        const totalSupply = lpTotalSupply?.formatted ?? Number(formatUnits(velodromePool.liquidity || '0', decimals))
+
+        const calculatedLpPrice = totalSupply > 0 ? tvlUsd / totalSupply : 0
+
+        if (!Number.isFinite(calculatedLpPrice) || calculatedLpPrice <= 0) {
             return prices.kitePrice || 0
         }
 
-        try {
-            const supply = parseFloat(formatUnits(BigNumber.from(velodromePool.liquidity), velodromePool.decimals))
-            if (!supply || !Number.isFinite(supply) || supply <= 0) {
-                return prices.kitePrice || 0
-            }
-            const perLp = tvlUsd / supply
-            return perLp > 0 && Number.isFinite(perLp) ? perLp : prices.kitePrice || 0
-        } catch {
-            return prices.kitePrice || 0
-        }
-    }, [isVelodromeLp, velodromePool, velodromePricesBySymbol, prices.kitePrice])
+        return calculatedLpPrice
+    }, [isVelodromeLp, velodromePool, veloPrice, lpTotalSupply, prices.kitePrice])
     // Derive optimistic state from active staking-related mutations
     const mutStake = useIsMutating({ mutationKey: ['stake', 'mut', 'stake'] })
     const mutInit = useIsMutating({ mutationKey: ['stake', 'mut', 'initiateWithdrawal'] })
@@ -179,7 +180,7 @@ export function useStakingSummaryV2(address?: Address, config?: StakingConfig): 
     const mutClaim = useIsMutating({ mutationKey: ['stake', 'mut', 'claimRewards'] })
     const isOptimistic = mutStake + mutInit + mutWdraw + mutCancel + mutClaim > 0
 
-    const velodromeLoading = isVelodromeLp && (velodromePoolsLoading || velodromePricesLoading)
+    const velodromeLoading = isVelodromeLp && (velodromePoolsLoading || velodromePricesLoading || totalSupplyLoading)
     const curveLoading = isCurveLp && curveLpLoading
 
     // Use LP APR loading for LP pools (Curve or Velodrome), standard APR loading otherwise
