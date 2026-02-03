@@ -28,12 +28,36 @@ const VE_NFT_ABI = [
     'function locked(uint256 _tokenId) view returns (int128 amount, uint256 end)',
 ]
 
+const MULTICALL_ABI = [
+    'function tryAggregate(bool requireSuccess, tuple(address target, bytes callData)[] calls) view returns (tuple(bool success, bytes returnData)[])',
+]
+
+// Multicall3 address (same on all major chains)
+const MULTICALL_ADDRESS = '0xcA11bde05977b3631167028862bE2a173976CA11'
+
 // ============================================================================
-// Provider Helper
+// Provider Cache
 // ============================================================================
 
+const providerCache = new Map<string, ethers.providers.JsonRpcProvider>()
+let publicRpcWarningShown = false
+
 function getProvider(config: MinterProtocolConfig): ethers.providers.JsonRpcProvider {
-    return new ethers.providers.JsonRpcProvider(config.dataSources.rpcUrl)
+    const cacheKey = config.dataSources.rpcUrl
+    let provider = providerCache.get(cacheKey)
+    if (!provider) {
+        // Warn once if using public RPC (likely to be rate-limited)
+        if (!publicRpcWarningShown && cacheKey.includes('mainnet.base.org')) {
+            console.warn(
+                '[minterProtocol] Using public Base RPC which may be rate-limited. ' +
+                'Set VITE_PUBLIC_BASE_RPC to a dedicated RPC endpoint for better performance.'
+            )
+            publicRpcWarningShown = true
+        }
+        provider = new ethers.providers.JsonRpcProvider(config.dataSources.rpcUrl)
+        providerCache.set(cacheKey, provider)
+    }
+    return provider
 }
 
 // ============================================================================
@@ -550,11 +574,18 @@ export async function getLastEpochTotals(
 }
 
 // ============================================================================
-// Combined Account Data Fetch
+// Combined Account Data Fetch (Optimized with Multicall)
 // ============================================================================
 
+// Interface for encoding/decoding
+const erc20Interface = new ethers.utils.Interface(ERC20_MINIMAL_ABI)
+const veNftInterface = new ethers.utils.Interface(VE_NFT_ABI)
+
 /**
- * Fetch all account data for a user in a single call.
+ * Fetch all account data for a user using multicall for maximum efficiency.
+ * This batches all RPC calls into at most 2 requests:
+ * 1. First multicall: balances + veNFT count
+ * 2. Second multicall (if NFTs exist): tokenId lookups + locked amounts
  */
 export async function fetchAccountData(
     config: MinterProtocolConfig,
@@ -564,12 +595,159 @@ export async function fetchAccountData(
     baseTokenBalance: TokenBalance
     veNftData: VeNftData
 }> {
-    const [v2Balance, baseTokenBalance, veNftData] = await Promise.all([
-        fetchV2UserBalance(config, address),
-        fetchBaseTokenBalance(config, address),
-        fetchVeNftsForOwner(config, address),
-    ])
+    const provider = getProvider(config)
+    const multicall = new ethers.Contract(MULTICALL_ADDRESS, MULTICALL_ABI, provider)
 
-    return { v2Balance, baseTokenBalance, veNftData }
+    // All tokens use 18 decimals - no need to fetch
+    const decimals = 18
+
+    try {
+        // Phase 1: Batch fetch balances and veNFT count
+        const phase1Calls = [
+            {
+                target: config.tokens.wrappedTokenV2Address,
+                callData: erc20Interface.encodeFunctionData('balanceOf', [address]),
+            },
+            {
+                target: config.tokens.baseTokenAddress,
+                callData: erc20Interface.encodeFunctionData('balanceOf', [address]),
+            },
+            {
+                target: config.tokens.veNftAddress,
+                callData: veNftInterface.encodeFunctionData('balanceOf', [address]),
+            },
+        ]
+
+        const phase1Results: Array<{ success: boolean; returnData: string }> = await multicall.tryAggregate(
+            false,
+            phase1Calls
+        )
+
+        // Decode phase 1 results
+        const v2BalanceRaw =
+            phase1Results[0].success && phase1Results[0].returnData !== '0x'
+                ? erc20Interface.decodeFunctionResult('balanceOf', phase1Results[0].returnData)[0]
+                : BigNumber.from(0)
+
+        const baseTokenBalanceRaw =
+            phase1Results[1].success && phase1Results[1].returnData !== '0x'
+                ? erc20Interface.decodeFunctionResult('balanceOf', phase1Results[1].returnData)[0]
+                : BigNumber.from(0)
+
+        const nftCount =
+            phase1Results[2].success && phase1Results[2].returnData !== '0x'
+                ? veNftInterface.decodeFunctionResult('balanceOf', phase1Results[2].returnData)[0].toNumber()
+                : 0
+
+        // Build token balance results
+        const v2Balance: TokenBalance = {
+            raw: v2BalanceRaw.toString(),
+            formatted: ethers.utils.formatUnits(v2BalanceRaw, decimals),
+            decimals,
+        }
+
+        const baseTokenBalance: TokenBalance = {
+            raw: baseTokenBalanceRaw.toString(),
+            formatted: ethers.utils.formatUnits(baseTokenBalanceRaw, decimals),
+            decimals,
+        }
+
+        // If no NFTs, return early
+        if (nftCount === 0) {
+            return {
+                v2Balance,
+                baseTokenBalance,
+                veNftData: { totalRaw: '0', totalFormatted: '0', nfts: [] },
+            }
+        }
+
+        // Phase 2: Batch fetch all NFT tokenIds and their locked amounts
+        // We fetch tokenIds first, then locked amounts in the same multicall
+        const phase2Calls: Array<{ target: string; callData: string }> = []
+
+        // Add tokenId lookup calls
+        for (let i = 0; i < nftCount; i++) {
+            phase2Calls.push({
+                target: config.tokens.veNftAddress,
+                callData: veNftInterface.encodeFunctionData('ownerToNFTokenIdList', [address, i]),
+            })
+        }
+
+        const phase2Results: Array<{ success: boolean; returnData: string }> = await multicall.tryAggregate(
+            false,
+            phase2Calls
+        )
+
+        // Decode tokenIds
+        const tokenIds: BigNumber[] = []
+        for (let i = 0; i < nftCount; i++) {
+            if (phase2Results[i].success && phase2Results[i].returnData !== '0x') {
+                const tokenId = veNftInterface.decodeFunctionResult(
+                    'ownerToNFTokenIdList',
+                    phase2Results[i].returnData
+                )[0]
+                tokenIds.push(tokenId)
+            }
+        }
+
+        // Phase 3: Fetch locked amounts for all tokenIds
+        if (tokenIds.length === 0) {
+            return {
+                v2Balance,
+                baseTokenBalance,
+                veNftData: { totalRaw: '0', totalFormatted: '0', nfts: [] },
+            }
+        }
+
+        const phase3Calls = tokenIds.map((tokenId) => ({
+            target: config.tokens.veNftAddress,
+            callData: veNftInterface.encodeFunctionData('locked', [tokenId]),
+        }))
+
+        const phase3Results: Array<{ success: boolean; returnData: string }> = await multicall.tryAggregate(
+            false,
+            phase3Calls
+        )
+
+        // Build NFT data
+        let totalLocked = BigNumber.from(0)
+        const nfts: VeNftInfo[] = []
+
+        for (let i = 0; i < tokenIds.length; i++) {
+            if (phase3Results[i].success && phase3Results[i].returnData !== '0x') {
+                const [amount, end] = veNftInterface.decodeFunctionResult('locked', phase3Results[i].returnData)
+                const amountBn = BigNumber.from(amount)
+                const endBn = BigNumber.from(end)
+
+                totalLocked = totalLocked.add(amountBn)
+
+                nfts.push({
+                    tokenId: tokenIds[i].toString(),
+                    balance: amountBn.toString(),
+                    balanceFormatted: ethers.utils.formatUnits(amountBn, decimals),
+                    lockEndTime: endBn.toString(),
+                })
+            }
+        }
+
+        return {
+            v2Balance,
+            baseTokenBalance,
+            veNftData: {
+                totalRaw: totalLocked.toString(),
+                totalFormatted: ethers.utils.formatUnits(totalLocked, decimals),
+                nfts,
+            },
+        }
+    } catch (error) {
+        console.error(`[minterProtocol][fetchAccountData] Multicall error for ${config.id}:`, error)
+        // Fallback to individual fetches if multicall fails
+        const [v2Balance, baseTokenBalance, veNftData] = await Promise.all([
+            fetchV2UserBalance(config, address),
+            fetchBaseTokenBalance(config, address),
+            fetchVeNftsForOwner(config, address),
+        ])
+        return { v2Balance, baseTokenBalance, veNftData }
+    }
 }
 

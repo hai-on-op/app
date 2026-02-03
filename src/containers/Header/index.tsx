@@ -209,7 +209,7 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                             ref={setLstContainer}
                                             onClick={() => setLstDropdownActive((a) => !a)}
                                         >
-                                            <HeaderLink $active={isLstRoute}>LST</HeaderLink>
+                                            <HeaderLink $active={isLstRoute}>LSD</HeaderLink>
                                             <LstDropdown
                                                 $anchor="top"
                                                 $float="left"

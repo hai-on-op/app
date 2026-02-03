@@ -59,18 +59,28 @@ export function getBridgeConfig(): BridgeConfig {
     return HAI_AERO_BRIDGE_CONFIG
 }
 
+// Provider cache for connection reuse
+let cachedBaseProvider: ethers.providers.JsonRpcProvider | null = null
+let cachedOptimismProvider: ethers.providers.JsonRpcProvider | null = null
+
 /**
- * Get a provider for Base chain
+ * Get a provider for Base chain (cached for performance)
  */
 export function getBaseProvider(): ethers.providers.JsonRpcProvider {
-    return new ethers.providers.JsonRpcProvider(HAI_AERO_BRIDGE_CONFIG.sourceChain.rpcUrl)
+    if (!cachedBaseProvider) {
+        cachedBaseProvider = new ethers.providers.JsonRpcProvider(HAI_AERO_BRIDGE_CONFIG.sourceChain.rpcUrl)
+    }
+    return cachedBaseProvider
 }
 
 /**
- * Get a provider for Optimism chain
+ * Get a provider for Optimism chain (cached for performance)
  */
 export function getOptimismProvider(): ethers.providers.JsonRpcProvider {
-    return new ethers.providers.JsonRpcProvider(HAI_AERO_BRIDGE_CONFIG.destinationChain.rpcUrl)
+    if (!cachedOptimismProvider) {
+        cachedOptimismProvider = new ethers.providers.JsonRpcProvider(HAI_AERO_BRIDGE_CONFIG.destinationChain.rpcUrl)
+    }
+    return cachedOptimismProvider
 }
 
 // Legacy aliases for backward compatibility
@@ -456,14 +466,14 @@ export async function getBaseBalance(userAddress: string): Promise<{
     formatted: string
     decimals: number
 }> {
+    // haiAERO uses 18 decimals on all chains
+    const decimals = 18
+
     try {
         const provider = getBaseProvider()
         const tokenContract = getBaseTokenContract(provider)
 
-        const [balance, decimals]: [BigNumber, number] = await Promise.all([
-            tokenContract.balanceOf(userAddress),
-            tokenContract.decimals(),
-        ])
+        const balance: BigNumber = await tokenContract.balanceOf(userAddress)
 
         return {
             raw: balance.toString(),
@@ -475,7 +485,7 @@ export async function getBaseBalance(userAddress: string): Promise<{
         return {
             raw: '0',
             formatted: '0',
-            decimals: 18,
+            decimals,
         }
     }
 }
@@ -489,6 +499,8 @@ export async function getOptimismBalance(userAddress: string): Promise<{
     decimals: number
 }> {
     const tokenAddress = HAI_AERO_BRIDGE_CONFIG.destinationChain.tokenAddress
+    // haiAERO uses 18 decimals on all chains
+    const decimals = 18
 
     try {
         const provider = getOptimismProvider()
@@ -498,10 +510,7 @@ export async function getOptimismBalance(userAddress: string): Promise<{
 
         const tokenContract = new ethers.Contract(tokenAddress, ERC20_APPROVAL_ABI, provider)
 
-        const [balance, decimals]: [BigNumber, number] = await Promise.all([
-            tokenContract.balanceOf(normalizedAddress),
-            tokenContract.decimals(),
-        ])
+        const balance: BigNumber = await tokenContract.balanceOf(normalizedAddress)
 
         return {
             raw: balance.toString(),
@@ -513,7 +522,7 @@ export async function getOptimismBalance(userAddress: string): Promise<{
         return {
             raw: '0',
             formatted: '0',
-            decimals: 18,
+            decimals,
         }
     }
 }

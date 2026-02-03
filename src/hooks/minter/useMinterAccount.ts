@@ -41,6 +41,8 @@ export function useMinterAccount(
         },
         staleTime: FIVE_MINUTES_MS,
         refetchInterval: FIVE_MINUTES_MS,
+        refetchOnWindowFocus: false, // Prevent excessive refetching
+        retry: 1, // Limit retries to avoid overwhelming rate-limited RPCs
     })
 
     return {

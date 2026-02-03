@@ -2,17 +2,59 @@ import axios from 'axios'
 import type { IFetchLiquidationDataPayload, IFetchVaultsPayload, IUserVaultList } from '~/types'
 import { formatUserVault, gebManager } from '~/utils'
 
-// Fetch AERO price from CoinGecko (haiAERO is 1:1 with AERO)
+
+// AERO price cache to avoid repeated API calls
+let aeroPriceCache: { price: string; timestamp: number } | null = null
+const AERO_PRICE_CACHE_TTL = 5 * 60 * 1000 // 5 minutes
+const AERO_FALLBACK_PRICE = '0.44' // Fallback price if all fetches fail
+
+// Fetch AERO price with caching and multiple fallback sources
 const fetchAeroPrice = async (): Promise<string> => {
+    // Return cached price if still valid
+    if (aeroPriceCache && Date.now() - aeroPriceCache.timestamp < AERO_PRICE_CACHE_TTL) {
+        return aeroPriceCache.price
+    }
+
+    // Try DeFiLlama first (better CORS support)
     try {
         const res = await axios.get(
-            'https://api.coingecko.com/api/v3/simple/price?ids=aerodrome-finance&vs_currencies=usd'
+            'https://coins.llama.fi/prices/current/base:0x940181a94A35A4569E4529A3CDfB74e38FD98631',
+            { timeout: 5000 }
         )
-        return res.data['aerodrome-finance']?.usd?.toString() || '0.44' // Fallback to ~$0.44
+        const price = res.data?.coins?.['base:0x940181a94A35A4569E4529A3CDfB74e38FD98631']?.price
+        if (price) {
+            const priceStr = price.toString()
+            aeroPriceCache = { price: priceStr, timestamp: Date.now() }
+            return priceStr
+        }
     } catch (error) {
-        console.error('[fetchAeroPrice] Error fetching AERO price:', error)
-        return '0.44' // Fallback price
+        console.warn('[fetchAeroPrice] DeFiLlama failed, trying fallback:', error)
     }
+
+    // Fallback: try CoinGecko (may have CORS issues in browser)
+    try {
+        const res = await axios.get(
+            'https://api.coingecko.com/api/v3/simple/price?ids=aerodrome-finance&vs_currencies=usd',
+            { timeout: 5000 }
+        )
+        const price = res.data?.['aerodrome-finance']?.usd
+        if (price) {
+            const priceStr = price.toString()
+            aeroPriceCache = { price: priceStr, timestamp: Date.now() }
+            return priceStr
+        }
+    } catch (error) {
+        console.warn('[fetchAeroPrice] CoinGecko also failed:', error)
+    }
+
+    // Return cached price if we have one (even if stale), otherwise fallback
+    if (aeroPriceCache) {
+        console.warn('[fetchAeroPrice] Using stale cached price')
+        return aeroPriceCache.price
+    }
+
+    console.warn('[fetchAeroPrice] All sources failed, using fallback price')
+    return AERO_FALLBACK_PRICE
 }
 
 // Create HAIAERO liquidation data with correct AERO price

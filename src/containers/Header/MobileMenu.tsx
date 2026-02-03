@@ -120,7 +120,7 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
                                     $letterSpacing="0.05rem"
                                     $padding="0 8px"
                                 >
-                                    LST
+                                    LSD
                                 </Text>
                                 <NestedGroup>
                                     <BrandedDropdown.Item

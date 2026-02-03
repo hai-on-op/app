@@ -136,7 +136,9 @@ export function useMinterBridge(
         enabled: Boolean(amountWei) && amountWei !== '0',
         queryFn: () => quoteBridgeFee(amountWei, direction),
         staleTime: THIRTY_SECONDS_MS,
-        refetchInterval: THIRTY_SECONDS_MS,
+        refetchInterval: ONE_MINUTE_MS, // Reduce polling frequency
+        refetchOnWindowFocus: false,
+        retry: 1,
     })
 
     const quote: BridgeQuote = useMemo(
@@ -176,7 +178,9 @@ export function useMinterBridge(
         queryKey: ['bridge', 'baseBalance', address],
         enabled: Boolean(address),
         queryFn: () => getBaseBalance(address!),
-        staleTime: THIRTY_SECONDS_MS,
+        staleTime: ONE_MINUTE_MS,
+        refetchOnWindowFocus: false,
+        retry: 1, // Limit retries to avoid overwhelming rate-limited RPCs
     })
 
     // Query for Optimism balance
@@ -187,6 +191,8 @@ export function useMinterBridge(
         queryFn: () => getOptimismBalance(address!),
         staleTime: isPollingForDelivery ? FIVE_SECONDS_MS : ONE_MINUTE_MS,
         refetchInterval: isPollingForDelivery ? FIVE_SECONDS_MS : false,
+        refetchOnWindowFocus: false,
+        retry: 1,
     })
 
     // Determine source/destination balances based on direction
