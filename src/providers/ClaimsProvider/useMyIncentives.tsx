@@ -343,11 +343,12 @@ export const fetchIncentivesData = async (geb: any, account: string, _chainId: C
     //    OP: geb?.contracts?.merkleDistributorFactoryOp,
     //}
 
-    //console.log(geb.signer)
-
     const rewardDistributorAddress = import.meta.env.VITE_REWARD_DISTRIBUTOR_ADDRESS
 
-    const rewardDistributor = new ethers.Contract(rewardDistributorAddress, REWARD_DISTRIBUTOR_ABI, geb?.signer)
+    // Use provider instead of signer for read-only queries
+    // This allows the function to work with publicGeb which doesn't have a signer
+    // and ensures it works even when user is on a different chain (e.g., Base for haiAERO)
+    const rewardDistributor = new ethers.Contract(rewardDistributorAddress, REWARD_DISTRIBUTOR_ABI, geb?.provider)
 
     const bufferDuration = await rewardDistributor.bufferDuration()
     const startTimestamp = await rewardDistributor.startTimestamp()

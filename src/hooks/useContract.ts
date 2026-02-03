@@ -29,10 +29,20 @@ export function getContract(address: string, ABI: any, signerOrProvider: JsonRpc
     return new Contract(address, ABI, signerOrProvider)
 }
 
-// returns null on errors
+/**
+ * Hook to get a contract instance.
+ *
+ * @param addressOrAddressMap - Contract address or map of chainId to address
+ * @param ABI - Contract ABI
+ * @param readOnly - If true, always use public provider even when signer is available.
+ *                   This is useful for read-only queries that should always go to Optimism
+ *                   regardless of which network the user is connected to (e.g., when on Base).
+ *                   Defaults to false for backward compatibility.
+ */
 export function useContract<T extends Contract = Contract>(
     addressOrAddressMap: string | { [chainId: number]: string } | undefined,
-    ABI: any
+    ABI: any,
+    readOnly: boolean = false
 ): T | null {
     const provider = usePublicProvider()
     const signer = useEthersSigner()
@@ -44,22 +54,39 @@ export function useContract<T extends Contract = Contract>(
         else address = addressOrAddressMap[NETWORK_ID]
         if (!address) return null
         try {
-            return getContract(address, ABI, signer || (provider as JsonRpcProvider))
+            // Use public provider for read-only operations, or when signer is not available
+            const signerOrProvider = readOnly ? (provider as JsonRpcProvider) : (signer || (provider as JsonRpcProvider))
+            return getContract(address, ABI, signerOrProvider)
         } catch (error) {
             console.error('Failed to get contract', error)
             return null
         }
-    }, [addressOrAddressMap, ABI, provider, signer]) as T
+    }, [addressOrAddressMap, ABI, provider, signer, readOnly]) as T
 }
 
-export function useTokenContract(tokenAddress?: string, withSignerIfPossible?: boolean) {
-    return useContract<Erc20>(tokenAddress, ERC20_ABI, withSignerIfPossible)
+/**
+ * Hook to get an ERC20 token contract.
+ * @param tokenAddress - Token contract address
+ * @param readOnly - If true, use public provider (for cross-chain compatibility)
+ */
+export function useTokenContract(tokenAddress?: string, readOnly?: boolean) {
+    return useContract<Erc20>(tokenAddress, ERC20_ABI, readOnly)
 }
 
-export function useDistributorContract(tokenAddress?: string, withSignerIfPossible?: boolean) {
-    return useContract(tokenAddress, MERKLE_DISTRIBUTOR_ABI, withSignerIfPossible)
+/**
+ * Hook to get a merkle distributor contract.
+ * @param tokenAddress - Distributor contract address
+ * @param readOnly - If true, use public provider (for cross-chain compatibility)
+ */
+export function useDistributorContract(tokenAddress?: string, readOnly?: boolean) {
+    return useContract(tokenAddress, MERKLE_DISTRIBUTOR_ABI, readOnly)
 }
 
-export function useBytes32TokenContract(tokenAddress?: string, withSignerIfPossible?: boolean): Contract | null {
-    return useContract(tokenAddress, ERC20_BYTES32_ABI, withSignerIfPossible)
+/**
+ * Hook to get an ERC20 bytes32 token contract.
+ * @param tokenAddress - Token contract address
+ * @param readOnly - If true, use public provider (for cross-chain compatibility)
+ */
+export function useBytes32TokenContract(tokenAddress?: string, readOnly?: boolean): Contract | null {
+    return useContract(tokenAddress, ERC20_BYTES32_ABI, readOnly)
 }

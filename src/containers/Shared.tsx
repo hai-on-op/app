@@ -101,18 +101,26 @@ export function Shared({ children }: Props) {
     }, [connectWalletState, setCoinBalances])
 
     useEffect(() => {
+        // Only fetch allowances when user is on Optimism network (NETWORK_ID)
+        // Skip when user is on other chains like Base (for haiAERO minting)
+        // This prevents "call revert exception" errors when querying Optimism contracts from Base
         if (!account || !coinTokenContract || !protTokenContract || !connectWalletState.proxyAddress) return
+        if (chain?.id !== NETWORK_ID) return
 
         protTokenContract.allowance(account, connectWalletState.proxyAddress).then((allowance) => {
             const formattedAllowance = utils.formatEther(allowance)
             connectWalletActions.setProtAllowance(formattedAllowance)
+        }).catch((error) => {
+            console.debug('Error fetching KITE allowance (may be on different chain):', error.message)
         })
 
         coinTokenContract.allowance(account, connectWalletState.proxyAddress).then((allowance) => {
             const formattedAllowance = utils.formatEther(allowance)
             connectWalletActions.setCoinAllowance(formattedAllowance)
+        }).catch((error) => {
+            console.debug('Error fetching HAI allowance (may be on different chain):', error.message)
         })
-    }, [account, coinTokenContract, connectWalletState.proxyAddress, connectWalletActions, protTokenContract])
+    }, [account, coinTokenContract, connectWalletState.proxyAddress, connectWalletActions, protTokenContract, chain?.id])
 
     useEffect(() => {
         if (!auctionsData) return
@@ -179,10 +187,14 @@ export function Shared({ children }: Props) {
     }, [vaultActions, publicGeb])
 
     const accountChecker = useCallback(async () => {
-        if (!account || !chain?.id || !signer || !geb) {
+        if (!account || !chain?.id || !signer) {
             popupsActions.setIsInitializing(false)
             return
         }
+
+        // Skip Optimism-specific operations when user is on a different chain (e.g., Base for haiAERO)
+        // This prevents errors from trying to call Optimism contracts with a non-Optimism signer
+        const isOnOptimism = chain?.id === NETWORK_ID
 
         popupsActions.setWaitingPayload({
             title: '',
@@ -190,33 +202,42 @@ export function Shared({ children }: Props) {
         })
         popupsActions.setIsInitializing(true)
         try {
-            connectWalletActions.setProxyAddress('')
-            const userProxy = await geb.getProxyAction(account)
-            if (userProxy?.proxyAddress && userProxy.proxyAddress !== EMPTY_ADDRESS) {
-                connectWalletActions.setProxyAddress(userProxy.proxyAddress)
-            }
+            // Load cached transactions regardless of chain
             const txs = localStorage.getItem(`${account}-${NETWORK_ID}`)
             if (txs) {
                 transactionsActions.setTransactions(JSON.parse(txs))
             }
-            await timeout(200)
-            if (!connectWalletState.ctHash) {
-                connectWalletActions.setStep(2)
-                const { pathname } = window.location
 
-                let address = ''
-                if (pathname && pathname !== '/' && pathname !== '/vaults') {
-                    const route = pathname.split('/')[1]
-                    if (isAddress(route)) {
-                        address = route.toLowerCase()
-                    }
+            // Only perform Optimism-specific operations when on Optimism
+            if (isOnOptimism && geb) {
+                connectWalletActions.setProxyAddress('')
+                const userProxy = await geb.getProxyAction(account)
+                if (userProxy?.proxyAddress && userProxy.proxyAddress !== EMPTY_ADDRESS) {
+                    connectWalletActions.setProxyAddress(userProxy.proxyAddress)
                 }
-                await vaultActions.fetchUserVaults({
-                    address: address ? address : (account as string),
-                    geb,
-                    tokensData: geb.tokenList,
-                    chainId: NETWORK_ID,
-                })
+
+                await timeout(200)
+                if (!connectWalletState.ctHash) {
+                    connectWalletActions.setStep(2)
+                    const { pathname } = window.location
+
+                    let address = ''
+                    if (pathname && pathname !== '/' && pathname !== '/vaults') {
+                        const route = pathname.split('/')[1]
+                        if (isAddress(route)) {
+                            address = route.toLowerCase()
+                        }
+                    }
+                    await vaultActions.fetchUserVaults({
+                        address: address ? address : (account as string),
+                        geb,
+                        tokensData: geb.tokenList,
+                        chainId: NETWORK_ID,
+                    })
+                }
+            } else {
+                // When not on Optimism, just advance the step without fetching Optimism data
+                connectWalletActions.setStep(2)
             }
         } catch (error: any) {
             console.error(error)
@@ -258,7 +279,10 @@ export function Shared({ children }: Props) {
 
     const networkChecker = useCallback(() => {
         accountChange()
-        if (chain?.id !== NETWORK_ID) {
+        // Allow both Optimism (NETWORK_ID) and Base (8453) as valid networks
+        // Base is used for haiAERO minting flow
+        const isValidNetwork = chain?.id === NETWORK_ID || chain?.id === 8453
+        if (!isValidNetwork) {
             popupsActions.setIsInitializing(false)
             connectWalletActions.setIsWrongNetwork(true)
         } else {

@@ -84,8 +84,10 @@ export function useLpStakingApr(config?: StakingConfig): LpStakingAprResult {
 
     const { data: weeklyHaiReward } = useQuery({
         queryKey: ['weeklyHaiReward', isVelodromeLp],
+        // Only fetch weekly HAI reward for Velodrome LP pools
+        enabled: isVelodromeLp,
+        staleTime: 60_000,
         queryFn: () => {
-            if (!isVelodromeLp) throw new Error('not Velodrome LP')
             return fetchHaiVeloLatestTransferAmount({
                 rpcUrl: VITE_MAINNET_PUBLIC_RPC,
                 haiTokenAddress: HAI_TOKEN_ADDRESS,

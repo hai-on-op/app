@@ -1,10 +1,10 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { useAccount, useNetwork } from 'wagmi'
+import { useAccount } from 'wagmi'
 import { ApolloError } from '@apollo/client'
-import { useGeb } from '~/hooks'
+import { usePublicGeb } from '~/hooks'
 
 import { ReactChildren, SummaryCurrency, SummaryItemValue } from '~/types'
-import { formatSummaryValue } from '~/utils'
+import { formatSummaryValue, NETWORK_ID } from '~/utils'
 import { useInternalBalances } from './useInternalBalances'
 import { type FormattedQueryAuctionBid, useMyActiveAuctions } from './useMyActiveAuctions'
 import { fetchIncentivesData } from './useMyIncentives'
@@ -88,11 +88,11 @@ type Props = {
     children: ReactChildren
 }
 export function ClaimsProvider({ children }: Props) {
-    const geb = useGeb()
+    // Use publicGeb which always connects to Optimism, regardless of user's current chain
+    // This ensures incentives data can be fetched even when user is on Base for haiAERO
+    const publicGeb = usePublicGeb()
 
     const { address: account } = useAccount()
-    const { chain } = useNetwork()
-    const chainId = chain?.id
 
     const internalBalances = useInternalBalances()
 
@@ -116,13 +116,18 @@ export function ClaimsProvider({ children }: Props) {
 
     useEffect(() => {
         const fetchIncentives = async () => {
-            if (!account || !chainId || !geb) return
-            const incentives = await fetchIncentivesData(geb, account, chainId)
-
-            setIncentivesData(incentives)
+            // Always use NETWORK_ID for fetching incentives (Optimism data)
+            // regardless of what chain the user is connected to
+            if (!account || !publicGeb) return
+            try {
+                const incentives = await fetchIncentivesData(publicGeb, account, NETWORK_ID)
+                setIncentivesData(incentives)
+            } catch (error) {
+                console.error('Error fetching incentives data:', error)
+            }
         }
         fetchIncentives()
-    }, [geb, account, chainId])
+    }, [publicGeb, account])
     const totalUSD = formatSummaryValue(
         (
             parseFloat(internalBalances.HAI?.usdRaw || '0') +
@@ -138,9 +143,13 @@ export function ClaimsProvider({ children }: Props) {
                 internalBalances,
                 incentivesData,
                 refetchIncentives: async () => {
-                    if (!account || !chainId || !geb) return
-                    const updatedData = await fetchIncentivesData(geb, account, chainId)
-                    setIncentivesData(updatedData)
+                    if (!account || !publicGeb) return
+                    try {
+                        const updatedData = await fetchIncentivesData(publicGeb, account, NETWORK_ID)
+                        setIncentivesData(updatedData)
+                    } catch (error) {
+                        console.error('Error refetching incentives data:', error)
+                    }
                 },
                 activeAuctions,
                 totalUSD,

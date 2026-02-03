@@ -169,6 +169,9 @@ export function MintActions() {
     )
 
     // Prefetch veNFT approvals
+    // Note: These approval checks need to use the user's signer on the source chain
+    // (Base for haiAERO, Optimism for haiVELO), so we DON'T use readOnly mode here.
+    // The veNFT contract address comes from config which is chain-specific.
     const veNftABI = useMemo(
         () => [
             'function getApproved(uint256 tokenId) view returns (address)',
@@ -184,7 +187,9 @@ export function MintActions() {
     useEffect(() => {
         let mounted = true
         const fetchApprovals = async () => {
-            if (!veNftContract || !address || selectedVeNftTokenIds.length === 0) {
+            // Skip approval fetching if not on the correct chain to avoid cross-chain errors
+            // This is important during network transitions (e.g., switching to Base for haiAERO)
+            if (!isOnCorrectChain || !veNftContract || !address || selectedVeNftTokenIds.length === 0) {
                 if (mounted) {
                     if (Object.keys(veNftApprovedMap).length > 0) setVeNftApprovedMap({})
                     if (isApprovedForAll) setIsApprovedForAll(false)
@@ -219,7 +224,8 @@ export function MintActions() {
                     if (mounted && Object.keys(veNftApprovedMap).length > 0) setVeNftApprovedMap({})
                 }
             } catch (e) {
-                console.error('Error fetching veNFT approvals', e)
+                // Log as debug instead of error since this can happen during network transitions
+                console.debug('Error fetching veNFT approvals (may be during network transition):', e)
                 if (mounted) {
                     if (Object.keys(veNftApprovedMap).length > 0) setVeNftApprovedMap({})
                     if (isApprovedForAll) setIsApprovedForAll(false)
@@ -230,7 +236,7 @@ export function MintActions() {
         return () => {
             mounted = false
         }
-    }, [veNftContract, selectedVeNftTokenIds, address, targetAddress, isApprovedForAll, veNftApprovedMap])
+    }, [veNftContract, selectedVeNftTokenIds, address, targetAddress, isApprovedForAll, veNftApprovedMap, isOnCorrectChain])
 
     // Build required approvals list
     const requiredApprovals = useMemo<HaiVeloApprovalItem[]>(() => {

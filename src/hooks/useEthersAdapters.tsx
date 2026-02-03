@@ -2,13 +2,21 @@ import { useMemo } from 'react'
 import { providers } from 'ethers'
 import { createPublicClient, http, type HttpTransport } from 'viem'
 import { optimism, optimismSepolia } from 'viem/chains'
-import { type PublicClient, type WalletClient, useNetwork, usePublicClient, useWalletClient } from 'wagmi'
+import { type PublicClient, type WalletClient, usePublicClient, useWalletClient } from 'wagmi'
 
 import { NETWORK_ID, VITE_MAINNET_PUBLIC_RPC, VITE_TESTNET_PUBLIC_RPC } from '~/utils'
 
+/**
+ * Returns a public client for Optimism that is independent of the user's connected network.
+ * This is used for read-only queries to Optimism contracts regardless of which chain
+ * the user is connected to (e.g., when user is on Base for haiAERO minting).
+ *
+ * Uses NETWORK_ID (the target Optimism network) rather than the user's current chain.
+ */
 export const useCustomPublicClient = (): PublicClient => {
-    const { chain } = useNetwork()
-    const chainId = chain?.id || NETWORK_ID
+    // Always use NETWORK_ID (target Optimism network) rather than user's current chain
+    // This ensures Optimism data queries work even when user is on Base or other networks
+    const targetChainId = NETWORK_ID
 
     const testnetClient = createPublicClient({
         chain: optimismSepolia,
@@ -19,7 +27,7 @@ export const useCustomPublicClient = (): PublicClient => {
         transport: http(VITE_MAINNET_PUBLIC_RPC, { batch: true }),
     })
 
-    if (chainId === 10) return mainnetClient as PublicClient
+    if (targetChainId === 10) return mainnetClient as PublicClient
     return testnetClient as PublicClient
 }
 
