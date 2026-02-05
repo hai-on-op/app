@@ -242,8 +242,8 @@ export const auctionModel: AuctionModel = {
     }),
 
     coinBalances: {
-        hai: '',
-        kite: '',
+        hai: '0',
+        kite: '0',
     },
     setCoinBalances: action((state, payload) => {
         state.coinBalances = payload
