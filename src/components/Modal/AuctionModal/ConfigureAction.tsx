@@ -7,7 +7,7 @@ import { utils as gebUtils } from '@hai-on-op/sdk'
 import type { IAuction } from '~/types'
 import { Status, formatNumberWithStyle, sanitizeDecimals, toFixedString } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
-import { useAuction } from '~/hooks'
+import { useAuction, useBalances } from '~/hooks'
 
 import styled from 'styled-components'
 import { Flex, HaiButton, Text } from '~/styles'
@@ -36,7 +36,6 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
         auctionModel: {
             amount,
             auctionsData,
-            coinBalances: { hai: haiBalance = '0', kite: kiteBalance = '0' },
             collateralAmount,
             collateralData,
             internalBalance,
@@ -44,6 +43,10 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
         },
         connectWalletModel: { coinAllowance: haiAllowance = '0', protAllowance: kiteAllowance = '0' },
     } = useStoreState((state) => state)
+
+    const [haiBal, kiteBal] = useBalances(['HAI', 'KITE'])
+    const haiBalance = haiBal.raw || '0'
+    const kiteBalance = kiteBal.raw || '0'
     const { auctionModel: auctionActions } = useStoreActions((actions) => actions)
 
     const { buyToken, sellToken, remainingToSell } = useAuction(auction)
