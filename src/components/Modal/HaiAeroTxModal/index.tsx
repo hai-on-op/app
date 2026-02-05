@@ -38,7 +38,7 @@ import { ArrowRightCircle, Check, Clock } from 'react-feather'
 import { Loader } from '~/components/Loader'
 import { TransactionSummary } from '~/components/TransactionSummary'
 
-type StepKey = 'approve' | 'mint' | 'bridgeApprove' | 'bridge' | 'delivery'
+type StepKey = 'approve' | 'mint' | 'veNftApprove' | 'mintVeNft' | 'bridgeApprove' | 'bridge' | 'delivery'
 
 type Step = {
     key: StepKey
@@ -92,6 +92,8 @@ export function HaiAeroTxModal({ config, plan, onSuccess, ...props }: HaiAeroTxM
     const [done, setDone] = useState<Record<StepKey, boolean>>({
         approve: false,
         mint: false,
+        veNftApprove: false,
+        mintVeNft: false,
         bridgeApprove: false,
         bridge: false,
         delivery: false,
@@ -138,6 +140,75 @@ export function HaiAeroTxModal({ config, plan, onSuccess, ...props }: HaiAeroTxM
             setInitialNeedsAeroApproval(needsAeroApproval)
         }
     }, [needsAeroApproval, aeroAllowance, initialNeedsAeroApproval])
+
+    // Check veNFT approval for minting
+    const [needsVeNftApproval, setNeedsVeNftApproval] = useState(true)
+    const [initialNeedsVeNftApproval, setInitialNeedsVeNftApproval] = useState<boolean | null>(null)
+    const hasVeNfts = (plan.depositVeNftTokenIds?.length ?? 0) > 0
+
+    // veNFT contract for approval checks
+    const veNftContract = useMemo(() => {
+        if (!walletClient || !hasVeNfts) return null
+        const signer = walletClientToSigner(walletClient)
+        if (!signer) return null
+        return new ethers.Contract(
+            config.tokens.veNftAddress,
+            [
+                'function getApproved(uint256 tokenId) view returns (address)',
+                'function isApprovedForAll(address owner, address operator) view returns (bool)',
+                'function setApprovalForAll(address operator, bool approved)',
+                'function approve(address to, uint256 tokenId)',
+            ],
+            signer
+        )
+    }, [walletClient, hasVeNfts, config.tokens.veNftAddress])
+
+    // Check veNFT approvals on mount
+    useEffect(() => {
+        const checkVeNftApproval = async () => {
+            if (!address || !veNftContract || !hasVeNfts) {
+                setNeedsVeNftApproval(false)
+                return
+            }
+
+            try {
+                // First check if approved for all
+                const isApprovedForAll = await veNftContract.isApprovedForAll(address, CONTRACT_ADDRESS)
+                if (isApprovedForAll) {
+                    setNeedsVeNftApproval(false)
+                    if (initialNeedsVeNftApproval === null) {
+                        setInitialNeedsVeNftApproval(false)
+                    }
+                    return
+                }
+
+                // If multiple NFTs, we need setApprovalForAll
+                if (plan.depositVeNftTokenIds!.length > 1) {
+                    setNeedsVeNftApproval(true)
+                    if (initialNeedsVeNftApproval === null) {
+                        setInitialNeedsVeNftApproval(true)
+                    }
+                    return
+                }
+
+                // For single NFT, check individual approval
+                const tokenId = plan.depositVeNftTokenIds![0]
+                const approvedFor = await veNftContract.getApproved(tokenId)
+                const needsApproval = approvedFor.toLowerCase() !== CONTRACT_ADDRESS.toLowerCase()
+                setNeedsVeNftApproval(needsApproval)
+                if (initialNeedsVeNftApproval === null) {
+                    setInitialNeedsVeNftApproval(needsApproval)
+                }
+            } catch (e) {
+                console.error('Error checking veNFT approval:', e)
+                setNeedsVeNftApproval(true)
+                if (initialNeedsVeNftApproval === null) {
+                    setInitialNeedsVeNftApproval(true)
+                }
+            }
+        }
+        checkVeNftApproval()
+    }, [address, veNftContract, hasVeNfts, plan.depositVeNftTokenIds, initialNeedsVeNftApproval, CONTRACT_ADDRESS])
 
     // Bridge approval state - track both current state and initial state
     const [needsBridgeApproval, setNeedsBridgeApproval] = useState(true)
@@ -215,7 +286,7 @@ export function HaiAeroTxModal({ config, plan, onSuccess, ...props }: HaiAeroTxM
             })
         }
 
-        // Step 2: Mint haiAERO
+        // Step 2: Mint haiAERO from AERO tokens
         if (plan.depositBaseWei && BigNumber.from(plan.depositBaseWei).gt(0)) {
             list.push({
                 key: 'mint',
@@ -249,7 +320,68 @@ export function HaiAeroTxModal({ config, plan, onSuccess, ...props }: HaiAeroTxM
             })
         }
 
-        // Step 3: Approve haiAERO for bridging (if needed)
+        // Step 3: Approve veNFTs for minting (if needed)
+        const shouldIncludeVeNftApproval = hasVeNfts && (initialNeedsVeNftApproval ?? needsVeNftApproval)
+        if (shouldIncludeVeNftApproval) {
+            list.push({
+                key: 'veNftApprove',
+                label: `Approve ve${config.tokens.baseTokenSymbol}`,
+                run: async () => {
+                    if (!veNftContract || !address) throw new Error('Contract not ready')
+
+                    popupsActions.setIsWaitingModalOpen(true)
+                    popupsActions.setWaitingPayload({
+                        title: 'Waiting for confirmation',
+                        text: `Approve ve${config.tokens.baseTokenSymbol} for minting`,
+                        status: ActionState.LOADING,
+                    })
+
+                    try {
+                        // Use setApprovalForAll for simplicity (works for single or multiple NFTs)
+                        const tx = await veNftContract.setApprovalForAll(CONTRACT_ADDRESS, true)
+                        await tx.wait()
+                        setNeedsVeNftApproval(false)
+                    } finally {
+                        popupsActions.setIsWaitingModalOpen(false)
+                        popupsActions.setWaitingPayload({ status: ActionState.NONE })
+                    }
+                },
+            })
+        }
+
+        // Step 4: Mint haiAERO from veNFTs
+        if (hasVeNfts && plan.depositVeNftTokenIds && plan.depositVeNftTokenIds.length > 0) {
+            list.push({
+                key: 'mintVeNft',
+                label: `Mint ${config.displayName} from ve${config.tokens.baseTokenSymbol}`,
+                run: async () => {
+                    if (!mintContract || !address) throw new Error('Contract not ready')
+
+                    popupsActions.setIsWaitingModalOpen(true)
+                    popupsActions.setWaitingPayload({
+                        title: 'Waiting for confirmation',
+                        text: `Mint ${config.displayName} from ve${config.tokens.baseTokenSymbol} NFTs`,
+                        status: ActionState.LOADING,
+                    })
+
+                    try {
+                        const tokenIds = plan.depositVeNftTokenIds!.map((id) => BigNumber.from(id))
+                        const gas = await (mintContract as ethers.Contract).estimateGas.depositNFTs(address, tokenIds)
+                        const tx = await (mintContract as ethers.Contract).depositNFTs(address, tokenIds, {
+                            gasLimit: gas.mul(12).div(10),
+                        })
+                        await tx.wait()
+                        await refetchAccount()
+                        await refreshVault()
+                    } finally {
+                        popupsActions.setIsWaitingModalOpen(false)
+                        popupsActions.setWaitingPayload({ status: ActionState.NONE })
+                    }
+                },
+            })
+        }
+
+        // Step 5: Approve haiAERO for bridging (if needed)
         if (shouldIncludeBridgeApproval) {
             list.push({
                 key: 'bridgeApprove',
@@ -279,7 +411,7 @@ export function HaiAeroTxModal({ config, plan, onSuccess, ...props }: HaiAeroTxM
             })
         }
 
-        // Step 4: Bridge to Optimism
+        // Step 6: Bridge to Optimism
         list.push({
             key: 'bridge',
             label: 'Bridge to Optimism',
@@ -324,11 +456,15 @@ export function HaiAeroTxModal({ config, plan, onSuccess, ...props }: HaiAeroTxM
     }, [
         initialNeedsAeroApproval,
         initialNeedsBridgeApproval,
+        initialNeedsVeNftApproval,
         needsAeroApproval,
         needsBridgeApproval,
+        needsVeNftApproval,
+        hasVeNfts,
         plan,
         config,
         mintContract,
+        veNftContract,
         address,
         walletClient,
         totalMintWei,
@@ -444,6 +580,10 @@ export function HaiAeroTxModal({ config, plan, onSuccess, ...props }: HaiAeroTxM
                 return `Approve ${config.tokens.baseTokenSymbol}`
             case 'mint':
                 return `Mint ${config.displayName}`
+            case 'veNftApprove':
+                return `Approve ve${config.tokens.baseTokenSymbol}`
+            case 'mintVeNft':
+                return `Mint from ve${config.tokens.baseTokenSymbol}`
             case 'bridgeApprove':
                 return `Approve for Bridge`
             case 'bridge':
@@ -489,9 +629,11 @@ export function HaiAeroTxModal({ config, plan, onSuccess, ...props }: HaiAeroTxM
         }[] = []
 
         const baseWei = BigNumber.from(plan.depositBaseWei || 0)
+        const veNftWei = BigNumber.from(plan.depositVeNftTotalWei || 0)
 
         // Use initial states to determine which items to show (so they don't disappear during execution)
         const showAeroApproval = (initialNeedsAeroApproval ?? needsAeroApproval) || done.approve
+        const showVeNftApproval = hasVeNfts && ((initialNeedsVeNftApproval ?? needsVeNftApproval) || done.veNftApprove)
         const showBridgeApproval = (initialNeedsBridgeApproval ?? needsBridgeApproval) || done.bridgeApprove
 
         // AERO approval step (if needed) - show current allowance → needed allowance
@@ -511,7 +653,7 @@ export function HaiAeroTxModal({ config, plan, onSuccess, ...props }: HaiAeroTxM
             })
         }
 
-        // Mint step - show current haiAERO → haiAERO after mint
+        // Mint step from AERO - show current haiAERO → haiAERO after mint
         if (baseWei.gt(0)) {
             const currentV2 = parseFloat(initialBalances.v2 || '0')
             const mintAmount = parseFloat(ethers.utils.formatUnits(plan.depositBaseWei!, 18))
@@ -524,6 +666,34 @@ export function HaiAeroTxModal({ config, plan, onSuccess, ...props }: HaiAeroTxM
                 },
                 icon: stepIcon('mint'),
                 isDone: done.mint,
+            })
+        }
+
+        // veNFT approval step (if needed)
+        if (showVeNftApproval) {
+            items.push({
+                label: `Approve ve${config.tokens.baseTokenSymbol}`,
+                value: { after: `${plan.depositVeNftTokenIds?.length || 0} NFT(s)` },
+                icon: stepIcon('veNftApprove'),
+                isDone: done.veNftApprove,
+            })
+        }
+
+        // Mint step from veNFTs
+        if (hasVeNfts && veNftWei.gt(0)) {
+            // Calculate the running balance after AERO mint (if any)
+            const afterAeroMint = parseFloat(initialBalances.v2 || '0') + 
+                (baseWei.gt(0) ? parseFloat(ethers.utils.formatUnits(plan.depositBaseWei!, 18)) : 0)
+            const veNftMintAmount = parseFloat(ethers.utils.formatUnits(plan.depositVeNftTotalWei!, 18))
+            const afterVeNftMint = afterAeroMint + veNftMintAmount
+            items.push({
+                label: `Mint from ve${config.tokens.baseTokenSymbol}`,
+                value: {
+                    current: formatNumberWithStyle(afterAeroMint, { maxDecimals: 2 }),
+                    after: formatNumberWithStyle(afterVeNftMint, { maxDecimals: 2 }),
+                },
+                icon: stepIcon('mintVeNft'),
+                isDone: done.mintVeNft,
             })
         }
 
@@ -562,8 +732,11 @@ export function HaiAeroTxModal({ config, plan, onSuccess, ...props }: HaiAeroTxM
         initialBalances,
         initialNeedsAeroApproval,
         initialNeedsBridgeApproval,
+        initialNeedsVeNftApproval,
         needsAeroApproval,
         needsBridgeApproval,
+        needsVeNftApproval,
+        hasVeNfts,
         aeroAllowance,
         done,
         totalMintWei,

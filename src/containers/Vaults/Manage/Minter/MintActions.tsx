@@ -610,12 +610,23 @@ export function MintActions() {
                 {/* Conversion Warning */}
                 <WarningLabel status={Status.CUSTOM} background="gradientCooler">
                     <Text $fontSize="0.8em">
-                        ⚠️ {config.tokens.baseTokenSymbol}
-                        {config.features.supportsV1Migration && config.tokens.wrappedTokenV1Symbol
-                            ? ` and ${config.tokens.wrappedTokenV1Symbol}`
-                            : ''}{' '}
-                        converted here are permanently max locked into ve{config.tokens.baseTokenSymbol} with{' '}
-                        {config.displayName} issued at a 1:1 ratio.
+                        {isHaiAero ? (
+                            <>
+                                ⚠ Converting AERO and veAERO NFTs is an irreversible action. You may deposit and
+                                withdraw haiAERO, but not convert them back to AERO or veAERO. A secondary market
+                                however exists on Aerodrome to allow the exchange of haiAERO for AERO at varying
+                                market rates.
+                            </>
+                        ) : (
+                            <>
+                                ⚠️ {config.tokens.baseTokenSymbol}
+                                {config.features.supportsV1Migration && config.tokens.wrappedTokenV1Symbol
+                                    ? ` and ${config.tokens.wrappedTokenV1Symbol}`
+                                    : ''}{' '}
+                                converted here are permanently max locked into ve{config.tokens.baseTokenSymbol} with{' '}
+                                {config.displayName} issued at a 1:1 ratio.
+                            </>
+                        )}
                     </Text>
                 </WarningLabel>
 
