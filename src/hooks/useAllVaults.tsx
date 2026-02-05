@@ -68,9 +68,11 @@ export function useAllVaults() {
         const { collateralLiquidationData, currentRedemptionPrice } = vaultState.liquidationData || {}
         if (!data?.safes?.length || !collateralLiquidationData || !currentRedemptionPrice) return []
 
-        return data.safes.map((safe) => {
-            return formatQuerySafeToVault(safe, collateralLiquidationData, currentRedemptionPrice)
-        })
+        return data.safes
+            .map((safe) => {
+                return formatQuerySafeToVault(safe, collateralLiquidationData, currentRedemptionPrice)
+            })
+            .filter((vault) => vault.liquidationData)
     }, [data?.safes, vaultState.liquidationData])
 
     const sortedRows = useMemo(() => {
