@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { IFetchLiquidationDataPayload, IFetchVaultsPayload, IUserVaultList } from '~/types'
+import type { CollateralLiquidationData, IFetchLiquidationDataPayload, IFetchVaultsPayload, IUserVaultList } from '~/types'
 import { formatUserVault, gebManager } from '~/utils'
 
 
@@ -57,24 +57,22 @@ const fetchAeroPrice = async (): Promise<string> => {
     return AERO_FALLBACK_PRICE
 }
 
-// Create HAIAERO liquidation data with correct AERO price
+// Override HAIAERO liquidation data with correct AERO market price.
+// The on-chain oracle may not reflect AERO's actual market price accurately,
+// so we fetch the price from external sources and recalculate safety/liquidation prices.
 const createHaiAeroLiquidationData = (
-    baseData: Record<string, unknown>,
+    baseData: CollateralLiquidationData,
     aeroPrice: string,
     redemptionPrice: string
-) => {
-    // Calculate the safety price and liquidation price based on AERO's USD price
-    // These are used for collateralization ratio calculations
-    const safetyCRatio = baseData.safetyCRatio as string || '1.35'
-    const liquidationCRatio = baseData.liquidationCRatio as string || '1.2'
+): CollateralLiquidationData => {
+    const safetyCRatio = baseData.safetyCRatio || '1.35'
+    const liquidationCRatio = baseData.liquidationCRatio || '1.2'
 
-    // The currentPrice.value should be the USD price of the collateral
     return {
         ...baseData,
         currentPrice: {
-            ...(baseData.currentPrice as Record<string, string> || {}),
-            value: aeroPrice, // Use actual AERO price
-            // Safety price = price / safetyCRatio / redemptionPrice
+            ...baseData.currentPrice,
+            value: aeroPrice,
             safetyPrice: (parseFloat(aeroPrice) / parseFloat(safetyCRatio) / parseFloat(redemptionPrice)).toString(),
             liquidationPrice: (parseFloat(aeroPrice) / parseFloat(liquidationCRatio) / parseFloat(redemptionPrice)).toString(),
         },
@@ -82,22 +80,23 @@ const createHaiAeroLiquidationData = (
 }
 
 export const fetchUserVaults = async (config: IFetchVaultsPayload) => {
-    // Filter out HAIAERO from tokensData for the raw fetch (SDK doesn't support it yet)
-    const filteredConfig = {
-        ...config,
-        tokensData: Object.fromEntries(
-            Object.entries(config.tokensData).filter(([key]) => key !== 'HAIAERO')
-        ),
-    }
-
-    const response = await fetchUserVaultsRaw(filteredConfig)
+    const response = await fetchUserVaultsRaw(config)
     if (!response) return
 
     const vaultsResponse: IUserVaultList = response
 
-    // Inject HAIAERO liquidation data with correct AERO price
+    // Override HAIAERO liquidation data with correct AERO market price if needed
     const collateralLiquidationData = { ...vaultsResponse.collateralLiquidationData }
-    if (!collateralLiquidationData.HAIAERO && collateralLiquidationData.HAIVELOV2) {
+    if (collateralLiquidationData.HAIAERO) {
+        const aeroPrice = await fetchAeroPrice()
+        const redemptionPrice = vaultsResponse.systemState.currentRedemptionPrice.value
+        collateralLiquidationData.HAIAERO = createHaiAeroLiquidationData(
+            collateralLiquidationData.HAIAERO,
+            aeroPrice,
+            redemptionPrice
+        )
+    } else if (collateralLiquidationData.HAIVELOV2) {
+        // Fallback: construct HAIAERO data from HAIVELOV2 template if SDK didn't return it
         const aeroPrice = await fetchAeroPrice()
         const redemptionPrice = vaultsResponse.systemState.currentRedemptionPrice.value
         collateralLiquidationData.HAIAERO = createHaiAeroLiquidationData(
@@ -138,16 +137,20 @@ export const fetchUserVaultsRaw = async (config: IFetchVaultsPayload) => {
 }
 
 export const fetchLiquidationData = async (config: IFetchLiquidationDataPayload) => {
-    // Filter out HAIAERO from tokensData for the SDK fetch (SDK doesn't support it yet)
-    const filteredTokensData = Object.fromEntries(
-        Object.entries(config.tokensData).filter(([key]) => key !== 'HAIAERO')
-    )
+    const response = await gebManager.getLiquidationDataRpc(config.geb, config.tokensData)
 
-    const response = await gebManager.getLiquidationDataRpc(config.geb, filteredTokensData)
-
-    // Inject HAIAERO liquidation data with correct AERO price
+    // Override HAIAERO liquidation data with correct AERO market price if needed
     const collateralLiquidationData = { ...response.collateralLiquidationData }
-    if (!collateralLiquidationData.HAIAERO && collateralLiquidationData.HAIVELOV2) {
+    if (collateralLiquidationData.HAIAERO) {
+        const aeroPrice = await fetchAeroPrice()
+        const redemptionPrice = response.systemState.currentRedemptionPrice.value
+        collateralLiquidationData.HAIAERO = createHaiAeroLiquidationData(
+            collateralLiquidationData.HAIAERO,
+            aeroPrice,
+            redemptionPrice
+        )
+    } else if (collateralLiquidationData.HAIVELOV2) {
+        // Fallback: construct HAIAERO data from HAIVELOV2 template if SDK didn't return it
         const aeroPrice = await fetchAeroPrice()
         const redemptionPrice = response.systemState.currentRedemptionPrice.value
         collateralLiquidationData.HAIAERO = createHaiAeroLiquidationData(

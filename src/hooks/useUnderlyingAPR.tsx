@@ -3,6 +3,7 @@ import { underlyingAPRService, type UnderlyingAPRResult, type UnderlyingAPRData 
 import { useStoreState } from '~/store'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { getLastEpochHaiVeloTotals } from '~/services/haivelo/dataSources'
+import { getLastEpochTotals, getProtocolConfig } from '~/services/minterProtocol'
 import { VITE_MAINNET_PUBLIC_RPC } from '~/utils'
 import { useEarnData } from '~/hooks/useEarnData'
 
@@ -38,6 +39,7 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
     const { strategyData } = useEarnData()
 
     const isHaiVelo = collateralType === 'HAIVELO' || collateralType === 'HAIVELOV2' || collateralType === 'HAIVELO_V2'
+    const isHaiAero = collateralType === 'HAIAERO'
 
     // Prepare data that might be needed for APR calculations
     const aprData = useMemo((): Partial<UnderlyingAPRData> => {
@@ -86,9 +88,11 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
             try {
                 // Enrich with last-epoch TVL for haiVELO types to avoid service-side fetching
                 let enriched = aprData
-                const isHaiVelo =
+                const isHaiVeloLocal =
                     collateralType === 'HAIVELO' || collateralType === 'HAIVELOV2' || collateralType === 'HAIVELO_V2'
-                if (isHaiVelo) {
+                const isHaiAeroLocal = collateralType === 'HAIAERO'
+
+                if (isHaiVeloLocal) {
                     const haiVeloPrice = aprData?.price ? Number(aprData.price) : 0
                     const totals = await getLastEpochHaiVeloTotals(VITE_MAINNET_PUBLIC_RPC)
                     const lastEpochTvlUsd = totals
@@ -100,6 +104,25 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
                             ...(aprData.externalProtocolData || {}),
                             lastEpochHaiVeloTvlUsd: lastEpochTvlUsd ?? undefined,
                         },
+                    }
+                } else if (isHaiAeroLocal) {
+                    // Enrich with last-epoch TVL for haiAERO from the Optimism subgraph
+                    const haiAeroPrice = aprData?.price ? Number(aprData.price) : 0
+                    try {
+                        const haiAeroConfig = getProtocolConfig('haiAero')
+                        const totals = await getLastEpochTotals(haiAeroConfig)
+                        const lastEpochTvlUsd = totals
+                            ? (Number(totals.v1Total || 0) + Number(totals.v2Total || 0)) * (haiAeroPrice || 0)
+                            : undefined
+                        enriched = {
+                            ...aprData,
+                            externalProtocolData: {
+                                ...(aprData.externalProtocolData || {}),
+                                lastEpochHaiAeroTvlUsd: lastEpochTvlUsd ?? undefined,
+                            },
+                        }
+                    } catch (error) {
+                        console.warn('[useUnderlyingAPR] Failed to fetch haiAERO last-epoch TVL:', error)
                     }
                 }
 

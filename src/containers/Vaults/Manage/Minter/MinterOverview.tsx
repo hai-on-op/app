@@ -15,6 +15,7 @@ import { useMinterProtocol } from '~/providers/MinterProtocolProvider'
 import { useBoost } from '~/hooks/useBoost'
 import { useUnderlyingAPR } from '~/hooks/useUnderlyingAPR'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
+import { useAeroPrice } from '~/hooks/useAeroPrice'
 import { fetchV2Totals, fetchV2Safes } from '~/services/minterProtocol/dataSources'
 
 import styled from 'styled-components'
@@ -34,12 +35,18 @@ export function MinterOverview() {
     const { address } = useAccount()
     const addrLower = address?.toLowerCase()
     const { prices: veloPrices } = useVelodromePrices()
+    const { priceUsd: aeroPriceUsd } = useAeroPrice()
 
     // Get base token price (VELO or AERO)
+    // For haiAero, use the dedicated AERO price hook (DeFiLlama/CoinGecko)
+    // since the Velodrome oracle on Optimism doesn't include AERO pricing.
     const baseTokenPrice = useMemo(() => {
+        if (config.id === 'haiAero') {
+            return aeroPriceUsd || 0
+        }
         const priceData = veloPrices?.[config.tokens.baseTokenSymbol]
         return Number(priceData?.raw || 0)
-    }, [veloPrices, config.tokens.baseTokenSymbol])
+    }, [config.id, aeroPriceUsd, veloPrices, config.tokens.baseTokenSymbol])
 
     // Fetch V2 safes data
     const { data: v2Safes } = useQuery({

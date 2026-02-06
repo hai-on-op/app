@@ -8,6 +8,9 @@ import { fetchHaiVeloLatestTransferAmount, computeHaiVeloBoostApr } from '~/serv
 import { getLastEpochHaiVeloTotals } from '~/services/haivelo/dataSources'
 import { useHaiVeloCollateralMapping } from './haivelo/useHaiVeloCollateralMapping'
 import { useHaiVeloBoostMap } from './haivelo/useHaiVeloBoostMap'
+import { useHaiAeroCollateralMapping } from './haiaero/useHaiAeroCollateralMapping'
+import { useHaiAeroBoostMap } from './haiaero/useHaiAeroBoostMap'
+import { useAeroPrice } from './useAeroPrice'
 
 // centralized in haiVeloService
 import { calculateLPBoost } from '~/services/boostService'
@@ -138,6 +141,83 @@ export function useStrategyData(
         // Only re-run when stable inputs change
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [haiVeloCollateralMapping, haiVeloBoostMap, haiVeloLatestTransferAmount, address, haiVeloPrice, haiPrice])
+
+    // === HAI AERO Deposit Strategy ===
+    const haiAeroData = systemStateData?.collateralTypes.find((collateral: any) => collateral.id === 'HAIAERO')
+    const haiAeroPrice = haiAeroData?.currentPrice?.value
+    const { priceUsd: aeroPriceUsd } = useAeroPrice()
+    const { mapping: haiAeroCollateralMapping } = useHaiAeroCollateralMapping()
+
+    const combinedHaiAeroQtyTotal = useMemo(
+        () => Object.values(haiAeroCollateralMapping || {}).reduce((acc: number, v: any) => acc + Number(v), 0),
+        [haiAeroCollateralMapping]
+    )
+    const userHaiAeroQty = useMemo(
+        () => (address ? Number(haiAeroCollateralMapping?.[address.toLowerCase()] || 0) : 0),
+        [haiAeroCollateralMapping, address]
+    )
+    // Use AERO price from DeFiLlama (since haiAERO is backed by veAERO, its value tracks AERO price)
+    const haiAeroEffectivePrice = haiAeroPrice || aeroPriceUsd || 0
+    const haiAeroUserPositionUsd = userHaiAeroQty * haiAeroEffectivePrice
+    const haiAeroTVL = combinedHaiAeroQtyTotal * haiAeroEffectivePrice
+
+    const haiAeroBoostMap = useHaiAeroBoostMap({
+        mapping: haiAeroCollateralMapping,
+        usersStakingData,
+        totalStaked: Number(totalStakedAmount),
+    })
+
+    const [haiAeroBoostApr, setHaiAeroBoostApr] = useState<any>({
+        haiVeloDailyRewardValue: 0,
+        totalBoostedValueParticipating: 0,
+        baseAPR: 0,
+        myBoost: 1,
+        myValueParticipating: 0,
+        myBoostedValueParticipating: 0,
+        myBoostedShare: 0,
+        myBoostedAPR: 0,
+    })
+
+    useEffect(() => {
+        // Avoid re-compute until inputs are ready
+        if (!haiAeroCollateralMapping || !haiAeroBoostMap || haiVeloLatestTransferAmount === 0) return
+        ;(async () => {
+            // Reuse the same boost APR computation – math is protocol-agnostic
+            const apr = computeHaiVeloBoostApr({
+                mapping: haiAeroCollateralMapping,
+                boostMap: haiAeroBoostMap as any,
+                haiVeloPrice: haiAeroEffectivePrice || 0,
+                haiPrice: haiPrice || 0,
+                latestTransferAmount: haiVeloLatestTransferAmount,
+                userAddress: address,
+            })
+
+            // Recompute base APR using last-epoch TVL to mirror underlying APR
+            try {
+                const totals = await getLastEpochHaiVeloTotals(VITE_MAINNET_PUBLIC_RPC)
+                if (totals && Number(haiAeroEffectivePrice || 0) > 0) {
+                    // For haiAero, use the HAIAERO collateral total (which is v2-equivalent)
+                    // The getLastEpochHaiVeloTotals returns haiVelo totals – for now we use haiAero's own TVL
+                    const lastEpochTvlUsd = haiAeroTVL > 0 ? haiAeroTVL : 0
+                    if (lastEpochTvlUsd > 0) {
+                        const baseAprPercent = (apr.haiVeloDailyRewardValue / lastEpochTvlUsd) * 365 * 100
+                        const updated = {
+                            ...apr,
+                            baseAPR: baseAprPercent,
+                            myBoostedAPR: (apr.myBoost || 1) * baseAprPercent,
+                        }
+                        setHaiAeroBoostApr(updated)
+                        return
+                    }
+                }
+            } catch {
+                // Ignore errors
+            }
+
+            setHaiAeroBoostApr(apr)
+        })()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [haiAeroCollateralMapping, haiAeroBoostMap, haiVeloLatestTransferAmount, address, haiAeroEffectivePrice, haiPrice, haiAeroTVL])
 
     // // === Staking Strategy ===
     const kitePrice = Number(velodromePricesData?.KITE?.raw)
@@ -341,6 +421,11 @@ export function useStrategyData(
                 userPosition: haiVeloUserPositionUsd,
                 boostApr: haiVeloBoostApr,
             },
+            haiAero: {
+                tvl: haiAeroTVL,
+                userPosition: haiAeroUserPositionUsd,
+                boostApr: haiAeroBoostApr,
+            },
             kiteStaking: {
                 tvl: kiteStakingTvl,
                 userPosition: kiteStakingUserPosition,
@@ -368,6 +453,9 @@ export function useStrategyData(
             haiVeloTVL,
             haiVeloUserPositionUsd,
             haiVeloBoostApr,
+            haiAeroTVL,
+            haiAeroUserPositionUsd,
+            haiAeroBoostApr,
             kiteStakingTvl,
             kiteStakingUserPosition,
             stakingApr,

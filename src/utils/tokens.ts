@@ -26,6 +26,8 @@ import pxethImg from '~/assets/pxeth-img.png'
 import beefyImg from '~/assets/beefy-img.svg'
 import dineroImg from '~/assets/dinero-img.svg'
 import haiVeloImg from '~/assets/hai-velo.png'
+import aeroImg from '~/assets/aero-img.png'
+import haiAeroImg from '~/assets/hai-aero.png'
 import yvVeloAlethWethImg from '~/assets/yv-velo-aleth-weth-img.png'
 import yvVeloMsethWethImg from '~/assets/yv-velo-mseth-weth-img.png'
 import mooVeloBoldLusdImg from '~/assets/moo-velo-bold-lusd.png'
@@ -73,9 +75,9 @@ export const TOKEN_LOGOS = {
     ALETH: alethImg,
     HAIVELO: haiVeloImg,
     HAIVELOV2: haiVeloImg,
-    // Aerodrome/Base tokens - using velodrome image as placeholder until AERO icons are added
-    AERO: velodromeImg,
-    HAIAERO: haiVeloImg,
+    // Aerodrome/Base tokens
+    AERO: aeroImg,
+    HAIAERO: haiAeroImg,
     'YV-VELO-ALETH-WETH': yvVeloAlethWethImg,
     'YV-VELO-MSETH-WETH': yvVeloMsethWethImg,
     'MOO-VELO-BOLD-LUSD': mooVeloBoldLusdImg,
@@ -160,12 +162,12 @@ export const tokenAssets: Record<string, Token> = {
     AERO: {
         symbol: 'AERO',
         name: 'Aerodrome',
-        icon: velodromeImg, // Placeholder until AERO icon is added
+        icon: aeroImg,
     },
     HAIAERO: {
         symbol: 'HAIAERO',
         name: 'haiAERO',
-        icon: haiVeloImg, // Placeholder until haiAERO icon is added
+        icon: haiAeroImg,
     },
     APXETH: {
         symbol: 'APXETH',

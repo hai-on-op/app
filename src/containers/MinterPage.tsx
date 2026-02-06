@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react'
 import type { MinterProtocolId } from '~/types/minterProtocol'
 import type { IVault } from '~/types/vaults'
 import { VaultAction, DEFAULT_VAULT_DATA } from '~/utils'
+import { TREAT_EMPTY_VAULT_AS_NEW } from '~/utils/constants'
 import { useStoreActions, useStoreState } from '~/store'
 import { VaultProvider } from '~/providers/VaultProvider'
 import { getProtocolConfig } from '~/services/minterProtocol'
@@ -60,6 +61,13 @@ export function MinterPage({ protocolId, useTestnet = false }: MinterPageProps) 
             const debt = parseFloat(v.totalDebt || '0')
             return isFinite(col) && col > 0 ? col : debt
         }
+
+        // DEV: When TREAT_EMPTY_VAULT_AS_NEW is on, vaults with no collateral
+        // and no debt are considered "empty" and the create-vault flow is shown
+        // instead of the manage flow.
+        const isVaultEmpty = (v: IVault) => getSize(v) === 0
+
+        if (TREAT_EMPTY_VAULT_AS_NEW && protocolVaults.every(isVaultEmpty)) return
 
         const largest = protocolVaults.reduce(
             (max: IVault, v: IVault) => (getSize(v) > getSize(max) ? v : max),

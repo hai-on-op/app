@@ -20,6 +20,29 @@ import { useStoreState, useStoreActions } from '~/store'
 // import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { useTokenContract, useEthersSigner, useGeb, usePrevious, usePublicGeb } from '~/hooks'
 
+/**
+ * Ensure HAIAERO is present in a token list.
+ * SDK v1.2.33+ includes HAIAERO natively; this fallback covers older builds
+ * by cloning the HAIVELOV2 entry with HAIAERO-specific addresses.
+ */
+function withHaiAero(tokenList: Record<string, any>): Record<string, any> {
+    if (tokenList.HAIAERO || !tokenList.HAIVELOV2) return tokenList
+    return {
+        ...tokenList,
+        HAIAERO: {
+            ...tokenList.HAIVELOV2,
+            symbol: 'HAIAERO',
+            name: 'haiAERO',
+            address: '0xbdF4A4Cc124d9A83a5774574fcBE45DC5d1f1152',
+            bytes32String: utils.formatBytes32String('HAIAERO'),
+            collateralJoin: '0xc83e160E117A420d7BccE800450dE07Ff51d13bA',
+            collateralAuctionHouse: '0xeA089d5902ac42A4b25aB7749CECA8FB4a1eAf12',
+            isCollateral: true,
+            hasRewards: true,
+        },
+    }
+}
+
 import styled from 'styled-components'
 import { CenteredFlex, Flex } from '~/styles'
 import { ImagePreloader } from '~/components/ImagePreloader'
@@ -137,25 +160,7 @@ export function Shared({ children }: Props) {
 
     useEffect(() => {
         if (!publicGeb?.tokenList) return
-
-        // Extend tokenList to include HAIAERO if not already present
-        // This is needed because the SDK doesn't have HAIAERO configured yet
-        const extendedTokenList = { ...publicGeb.tokenList }
-        if (!extendedTokenList.HAIAERO && extendedTokenList.HAIVELOV2) {
-            // Clone HAIVELOV2 config as a template for HAIAERO
-            extendedTokenList.HAIAERO = {
-                ...extendedTokenList.HAIVELOV2,
-                symbol: 'HAIAERO',
-                name: 'haiAERO',
-                // Use the bridged haiAERO address on Optimism
-                address: '0xbdF4A4Cc124d9A83a5774574fcBE45DC5d1f1152',
-                bytes32String: utils.formatBytes32String('HAIAERO'),
-                collateralJoin: extendedTokenList.HAIVELOV2.collateralJoin, // Placeholder - needs real address
-                isCollateral: true,
-            }
-        }
-
-        connectWalletActions.setTokensData(extendedTokenList)
+        connectWalletActions.setTokensData(withHaiAero(publicGeb.tokenList))
     }, [publicGeb?.tokenList, connectWalletActions, chain?.id])
 
     useEffect(() => {
@@ -165,24 +170,9 @@ export function Shared({ children }: Props) {
     useEffect(() => {
         if (!publicGeb) return
 
-        // Pass extended tokenList to liquidation data fetch
-        // The vaults service will handle filtering HAIAERO and injecting its data
-        const extendedTokenList = { ...publicGeb.tokenList }
-        if (!extendedTokenList.HAIAERO && extendedTokenList.HAIVELOV2) {
-            extendedTokenList.HAIAERO = {
-                ...extendedTokenList.HAIVELOV2,
-                symbol: 'HAIAERO',
-                name: 'haiAERO',
-                address: '0xbdF4A4Cc124d9A83a5774574fcBE45DC5d1f1152',
-                bytes32String: utils.formatBytes32String('HAIAERO'),
-                collateralJoin: extendedTokenList.HAIVELOV2.collateralJoin,
-                isCollateral: true,
-            }
-        }
-
         vaultActions.fetchLiquidationData({
             geb: publicGeb,
-            tokensData: extendedTokenList,
+            tokensData: withHaiAero(publicGeb.tokenList),
         })
     }, [vaultActions, publicGeb])
 
@@ -231,7 +221,7 @@ export function Shared({ children }: Props) {
                     await vaultActions.fetchUserVaults({
                         address: address ? address : (account as string),
                         geb,
-                        tokensData: geb.tokenList,
+                        tokensData: withHaiAero(geb.tokenList),
                         chainId: NETWORK_ID,
                     })
                 }

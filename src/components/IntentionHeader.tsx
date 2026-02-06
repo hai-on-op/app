@@ -20,6 +20,7 @@ import uniswapLogo from '~/assets/uniswap-icon.svg'
 import { StakeStats } from '~/containers/Stake/Stats'
 import { WrapperAd, WrapperAdProps } from './WrapperAd'
 import { HaiVeloStats } from '~/containers/Vaults/HaiVeloStats'
+import { HaiAeroStats } from '~/containers/Vaults/HaiAeroStats'
 import { kiteConfig } from '~/staking/configs/kite'
 import { haiBoldCurveLpConfig } from '~/staking/configs/haiBoldCurveLp'
 import { haiVeloVeloLpConfig } from '~/staking/configs/haiVeloVeloLp'
@@ -178,14 +179,14 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
                             stakeConfig: undefined,
                         }
                     }
-                    // haiAERO uses similar stats for now
+                    // haiAERO uses AERO-specific stats
                     if (
                         location.pathname === '/haiAERO' ||
                         ['HAIAERO'].includes(new URLSearchParams(location.search).get('collateral') || '')
                     ) {
                         return {
                             type: Intention.BORROW,
-                            stats: <HaiVeloStats />, // Can be replaced with HaiAeroStats if needed
+                            stats: <HaiAeroStats />,
                             stakeConfig: undefined,
                         }
                     }
@@ -210,7 +211,7 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
         const haiAeroOption: BrandedSelectOption = {
             label: 'Get haiAERO',
             value: 'haiAERO',
-            icon: ['HAIVELOV2'], // TODO: Add HAIAERO icon when available
+            icon: ['HAIAERO'],
             description: 'Convert AERO into haiAERO on Base and bridge to Optimism',
         }
 

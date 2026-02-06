@@ -124,6 +124,13 @@ export const HARDCODED_KITE = 8
 
 export const DEPRECATED_COLLATERALS = ['MOO-VELO-V2-OP-VELO', 'SNX', 'WBTC', 'LUSD-A', 'LINK']
 
+/**
+ * DEV FEATURE FLAG: When enabled, minter pages (haiVELO, haiAERO) will show
+ * the "Create Vault" flow instead of "Manage Vault" if the user's vault(s)
+ * have zero collateral AND zero debt. Set to `false` for production behavior.
+ */
+export const TREAT_EMPTY_VAULT_AS_NEW = true
+
 // Token Addresses
 export const TOKEN_ADDRESSES = {
     ALUSD: '0xCB8FA9a76b8e203D8C3797bF438d8FB81Ea3326A',

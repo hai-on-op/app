@@ -347,6 +347,56 @@ class YieldBearingAPRCalculator implements IUnderlyingAPRCalculator {
                 }
             }
 
+            // For HAI AERO, calculate APR from Optimism-chain reward data
+            if (data.collateralType.toUpperCase() === 'HAIAERO') {
+                let baseAPR = 0
+                let userBoost = 1
+
+                try {
+                    // haiAERO shares the same reward infrastructure as haiVELO on Optimism.
+                    // Fetch HAI reward transfer from the Optimism depositer → distributor.
+                    const latestTransferAmount = await fetchHaiVeloLatestTransferAmount({
+                        rpcUrl: VITE_MAINNET_PUBLIC_RPC,
+                        haiTokenAddress: HAI_TOKEN_ADDRESS,
+                        depositerAddress: HAIVELO_DEPOSITER,
+                        distributorAddress: REWARD_DISTRIBUTOR,
+                    })
+
+                    const dailyRewardQuantity = latestTransferAmount / 7 || 0
+                    const haiPrice = data.externalProtocolData?.haiPrice || 1
+                    const dailyRewardValue = dailyRewardQuantity * haiPrice
+
+                    // Use last-epoch TVL from Optimism if provided, else fallback
+                    const lastEpochTvlUsd = data.externalProtocolData?.lastEpochHaiAeroTvlUsd as number | undefined
+                    const haiAeroBoostApr = data.externalProtocolData?.haiAeroBoostApr
+                    const actualTVL =
+                        lastEpochTvlUsd && lastEpochTvlUsd > 0
+                            ? lastEpochTvlUsd
+                            : haiAeroBoostApr?.totalBoostedValueParticipating || 1000000
+
+                    const baseAPRPercentage = actualTVL > 0 ? (dailyRewardValue / actualTVL) * 365 * 100 : 0
+                    baseAPR = baseAPRPercentage / 100
+
+                    userBoost = haiAeroBoostApr?.myBoost || 1
+                } catch (error) {
+                    console.error('[YieldBearingAPR] Error calculating haiAERO APR:', error)
+                    baseAPR = 0
+                }
+
+                return {
+                    collateralType: data.collateralType,
+                    underlyingAPR: baseAPR,
+                    breakdown: [
+                        {
+                            source: 'haiAERO Deposit Strategy (Optimism)',
+                            apr: baseAPR,
+                            description: `Base yield before boost; your boost is ~${userBoost?.toFixed(2)}x`,
+                        },
+                    ],
+                    lastUpdated: new Date(),
+                }
+            }
+
             // For other yield-bearing tokens, return 0 for now
             return {
                 collateralType: data.collateralType,

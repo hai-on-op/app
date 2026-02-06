@@ -420,11 +420,13 @@ function EarnEmissionTooltip({ rewards, earnPlatform, earnLink, strategyType, pa
     }
 
     if (strategyType == 'deposit') {
+        const isHaiAero = pair.includes('HAIAERO')
         return (
             <Flex $width="140px" $column $justify="flex-end" $align="flex-start" $gap={4}>
                 <Text $fontWeight={700}>
-                    haiVELO depositors receive rewards in HAI based off the rewards the protocol receives from voting on
-                    Velodrome propotional to their amount of haiVELO deposited.
+                    {isHaiAero
+                        ? 'haiAERO depositors receive rewards in HAI based off the rewards the protocol receives from voting on Aerodrome proportional to their amount of haiAERO deposited.'
+                        : 'haiVELO depositors receive rewards in HAI based off the rewards the protocol receives from voting on Velodrome proportional to their amount of haiVELO deposited.'}
                     <br />
                     <br />
                 </Text>
