@@ -7,4 +7,3 @@
 export { MinterOverview } from './MinterOverview'
 export { MintActions } from './MintActions'
 export { BridgeTab } from './BridgeTab'
-

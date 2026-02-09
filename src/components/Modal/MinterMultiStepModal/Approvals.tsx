@@ -290,7 +290,15 @@ export function Approvals({ items, onAllApproved }: ApprovalsProps) {
         }
 
         return null
-    }, [currentItem, isCurrentApproved, erc20ApprovalStates, erc20ApproveFns, nftPending, approveNft, approveCollection])
+    }, [
+        currentItem,
+        isCurrentApproved,
+        erc20ApprovalStates,
+        erc20ApproveFns,
+        nftPending,
+        approveNft,
+        approveCollection,
+    ])
 
     return (
         <>
@@ -330,4 +338,3 @@ const ImageContainer = styled(CenteredFlex).attrs((props) => ({
         }
     }
 `
-

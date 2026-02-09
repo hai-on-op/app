@@ -217,7 +217,15 @@ export function useStrategyData(
             setHaiAeroBoostApr(apr)
         })()
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [haiAeroCollateralMapping, haiAeroBoostMap, haiVeloLatestTransferAmount, address, haiAeroEffectivePrice, haiPrice, haiAeroTVL])
+    }, [
+        haiAeroCollateralMapping,
+        haiAeroBoostMap,
+        haiVeloLatestTransferAmount,
+        address,
+        haiAeroEffectivePrice,
+        haiPrice,
+        haiAeroTVL,
+    ])
 
     // // === Staking Strategy ===
     const kitePrice = Number(velodromePricesData?.KITE?.raw)

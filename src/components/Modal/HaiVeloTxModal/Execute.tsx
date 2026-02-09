@@ -190,7 +190,12 @@ export function Execute({ plan, onDone, onStepDone }: Props) {
                     </Description>
                     <TransactionSummary
                         items={(() => {
-                            const items: { label: string; value: { current?: string; after: string }; icon?: React.ReactNode; isDone?: boolean }[] = []
+                            const items: {
+                                label: string
+                                value: { current?: string; after: string }
+                                icon?: React.ReactNode
+                                isDone?: boolean
+                            }[] = []
                             const baseTokenWei = BigNumber.from(plan.depositVeloWei || 0)
                             const veNftWei = BigNumber.from((plan as any).depositVeNftTotalWei || 0)
                             const v1Wei = BigNumber.from(plan.migrateV1Wei || 0)

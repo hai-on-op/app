@@ -31,10 +31,7 @@ export function useMinterStats(
     const { data, isLoading, isError, error } = useQuery({
         queryKey: ['minter', protocolId, 'stats'],
         queryFn: async () => {
-            const [v1Data, v2Data] = await Promise.all([
-                fetchV1Safes(config),
-                fetchV2Totals(config),
-            ])
+            const [v1Data, v2Data] = await Promise.all([fetchV1Safes(config), fetchV2Totals(config)])
 
             const v1Total = Number(v1Data.totalCollateral || '0')
             const v2Total = Number(v2Data.totalSupplyFormatted || '0')
@@ -74,4 +71,3 @@ export function useMinterStats(
 export function getMinterStatsQueryKey(protocolId: MinterProtocolId): string[] {
     return ['minter', protocolId, 'stats']
 }
-

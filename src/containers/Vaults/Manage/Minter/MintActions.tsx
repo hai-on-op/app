@@ -97,15 +97,11 @@ export function MintActions() {
         const baseAmt = sanitize(convertAmountBase)
         const v1Amt = sanitize(convertAmountV1)
 
-        const selectedNFTs = accountData.veNft.nfts.filter((nft) =>
-            selectedVeNftTokenIds.includes(nft.tokenId)
-        )
+        const selectedNFTs = accountData.veNft.nfts.filter((nft) => selectedVeNftTokenIds.includes(nft.tokenId))
         const veNftAmt = selectedNFTs.reduce((sum, nft) => sum + parseFloat(nft.balanceFormatted), 0)
 
         const total = baseAmt + v1Amt + veNftAmt
-        const display = total
-            ? formatNumberWithStyle(total, { maxDecimals: 2 })
-            : '0'
+        const display = total ? formatNumberWithStyle(total, { maxDecimals: 2 }) : '0'
 
         return { totalReceivedRaw: total, totalReceivedDisplay: display }
     }, [convertAmountBase, convertAmountV1, selectedVeNftTokenIds, accountData.veNft.nfts])
@@ -127,13 +123,8 @@ export function MintActions() {
             case 'BASE':
                 return accountData.baseTokenBalance.formatted || '0'
             case 'VE_NFT': {
-                const selectedNFTs = accountData.veNft.nfts.filter((nft) =>
-                    selectedVeNftTokenIds.includes(nft.tokenId)
-                )
-                const totalBalance = selectedNFTs.reduce(
-                    (sum, nft) => sum + parseFloat(nft.balanceFormatted),
-                    0
-                )
+                const selectedNFTs = accountData.veNft.nfts.filter((nft) => selectedVeNftTokenIds.includes(nft.tokenId))
+                const totalBalance = selectedNFTs.reduce((sum, nft) => sum + parseFloat(nft.balanceFormatted), 0)
                 return String(totalBalance)
             }
             case 'V1':
@@ -157,16 +148,8 @@ export function MintActions() {
         ? tokensData[config.tokens.wrappedTokenV1Symbol]?.address
         : undefined
 
-    const { allowance: baseTokenAllowance } = useTokenAllowance(
-        baseTokenAddress,
-        address ?? undefined,
-        targetAddress
-    )
-    const { allowance: v1TokenAllowance } = useTokenAllowance(
-        v1TokenAddress,
-        address ?? undefined,
-        targetAddress
-    )
+    const { allowance: baseTokenAllowance } = useTokenAllowance(baseTokenAddress, address ?? undefined, targetAddress)
+    const { allowance: v1TokenAllowance } = useTokenAllowance(v1TokenAddress, address ?? undefined, targetAddress)
 
     // Prefetch veNFT approvals
     // Note: These approval checks need to use the user's signer on the source chain
@@ -236,7 +219,15 @@ export function MintActions() {
         return () => {
             mounted = false
         }
-    }, [veNftContract, selectedVeNftTokenIds, address, targetAddress, isApprovedForAll, veNftApprovedMap, isOnCorrectChain])
+    }, [
+        veNftContract,
+        selectedVeNftTokenIds,
+        address,
+        targetAddress,
+        isApprovedForAll,
+        veNftApprovedMap,
+        isOnCorrectChain,
+    ])
 
     // Build required approvals list
     const requiredApprovals = useMemo<HaiVeloApprovalItem[]>(() => {
@@ -255,18 +246,15 @@ export function MintActions() {
             const cleanAmount = String(amountStr || '0').replace(/[^0-9.]/g, '')
             const amountNum = parseFloat(cleanAmount)
             if (!addr || !isFinite(amountNum) || amountNum <= 0) return
-            
+
             // Calculate the exact wei amount that will be used for execution
             // This ensures the approval amount matches the execution amount exactly
-            const neededWei = ethers.utils.parseUnits(
-                sanitizeDecimals(cleanAmount, Number(decimals)),
-                Number(decimals)
-            )
-            
+            const neededWei = ethers.utils.parseUnits(sanitizeDecimals(cleanAmount, Number(decimals)), Number(decimals))
+
             // If allowance is undefined (still loading), assume we need approval
             // This prevents the race condition where the modal opens without the needed approval
             const needsApproval = !allowance || allowance.lt(neededWei)
-            
+
             if (needsApproval) {
                 items.push({
                     kind: 'ERC20',
@@ -439,10 +427,9 @@ export function MintActions() {
                 {selectedToken === 'VE_NFT' ? (
                     <MultiSelectInput
                         label={`Select ve${config.tokens.baseTokenSymbol} NFTs`}
-                        subLabel={`Available: ${formatNumberWithStyle(
-                            parseFloat(accountData.veNft.totalFormatted),
-                            { maxDecimals: 2 }
-                        )} ve${config.tokens.baseTokenSymbol}`}
+                        subLabel={`Available: ${formatNumberWithStyle(parseFloat(accountData.veNft.totalFormatted), {
+                            maxDecimals: 2,
+                        })} ve${config.tokens.baseTokenSymbol}`}
                         options={veNftOptions}
                         selectedValues={selectedVeNftTokenIds}
                         onChange={setSelectedVeNftTokenIds}
@@ -505,9 +492,7 @@ export function MintActions() {
                     disabled={true}
                     conversion={(() => {
                         const usd = totalReceivedRaw * (isFinite(baseTokenPrice) ? baseTokenPrice : 0)
-                        return totalReceivedRaw > 0
-                            ? `~${formatNumberWithStyle(usd, { style: 'currency' })}`
-                            : ''
+                        return totalReceivedRaw > 0 ? `~${formatNumberWithStyle(usd, { style: 'currency' })}` : ''
                     })()}
                 />
 
@@ -517,9 +502,7 @@ export function MintActions() {
                     {(() => {
                         const baseAmt = Number((convertAmountBase || '0').replace(/,/g, ''))
                         const v1Amt = Number((convertAmountV1 || '0').replace(/,/g, ''))
-                        const selected = accountData.veNft.nfts.filter((n) =>
-                            selectedVeNftTokenIds.includes(n.tokenId)
-                        )
+                        const selected = accountData.veNft.nfts.filter((n) => selectedVeNftTokenIds.includes(n.tokenId))
                         const hasAny = baseAmt > 0 || v1Amt > 0 || selected.length > 0
                         if (!hasAny) {
                             return (
@@ -614,8 +597,8 @@ export function MintActions() {
                             <>
                                 ⚠ Converting AERO and veAERO NFTs is an irreversible action. You may deposit and
                                 withdraw haiAERO, but not convert them back to AERO or veAERO. A secondary market
-                                however exists on Aerodrome to allow the exchange of haiAERO for AERO at varying
-                                market rates.
+                                however exists on Aerodrome to allow the exchange of haiAERO for AERO at varying market
+                                rates.
                             </>
                         ) : (
                             <>
@@ -634,8 +617,8 @@ export function MintActions() {
                 {isHaiAero && (
                     <BridgeInfo status={Status.CUSTOM} background="gradientCooler">
                         <Text $fontSize="0.8em">
-                            🌉 After minting, your haiAERO will be automatically bridged to Optimism via Hyperlane
-                            so you can use it as vault collateral.
+                            🌉 After minting, your haiAERO will be automatically bridged to Optimism via Hyperlane so
+                            you can use it as vault collateral.
                         </Text>
                     </BridgeInfo>
                 )}
@@ -649,9 +632,7 @@ export function MintActions() {
                     onClick={() => {
                         setExecutionPlan({
                             depositVeloWei: convertAmountBase
-                                ? ethers.utils
-                                      .parseUnits((convertAmountBase || '0').replace(/,/g, ''), 18)
-                                      .toString()
+                                ? ethers.utils.parseUnits((convertAmountBase || '0').replace(/,/g, ''), 18).toString()
                                 : undefined,
                             depositVeNftTokenIds: selectedVeNftTokenIds.length > 0 ? selectedVeNftTokenIds : undefined,
                             depositVeNftTotalWei: (() => {
@@ -669,9 +650,7 @@ export function MintActions() {
                                 }
                             })(),
                             migrateV1Wei: convertAmountV1
-                                ? ethers.utils
-                                      .parseUnits((convertAmountV1 || '0').replace(/,/g, ''), 18)
-                                      .toString()
+                                ? ethers.utils.parseUnits((convertAmountV1 || '0').replace(/,/g, ''), 18).toString()
                                 : undefined,
                         })
                         setApprovalsOpen(true)
@@ -681,8 +660,8 @@ export function MintActions() {
                     {accountData.isLoading
                         ? 'Loading...'
                         : isHaiAero
-                          ? `Mint & Bridge ${config.displayName}`
-                          : `Convert to ${config.displayName}`}
+                        ? `Mint & Bridge ${config.displayName}`
+                        : `Convert to ${config.displayName}`}
                 </HaiButton>
                 {approvalsOpen && executionPlan && isHaiAero && (
                     <HaiAeroTxModal
@@ -812,4 +791,3 @@ const NetworkWarning = styled(StatusLabel)`
 `
 
 export default MintActions
-

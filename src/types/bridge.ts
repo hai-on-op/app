@@ -207,4 +207,3 @@ export interface MintBridgeTransactionState {
     /** Error message if any step failed */
     error?: string
 }
-

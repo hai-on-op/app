@@ -143,11 +143,7 @@ export function getRouterContract(
  * Get the haiAERO token contract on Base
  */
 export function getBaseTokenContract(signerOrProvider: ethers.Signer | ethers.providers.Provider) {
-    return new ethers.Contract(
-        HAI_AERO_BRIDGE_CONFIG.sourceChain.tokenAddress,
-        ERC20_APPROVAL_ABI,
-        signerOrProvider
-    )
+    return new ethers.Contract(HAI_AERO_BRIDGE_CONFIG.sourceChain.tokenAddress, ERC20_APPROVAL_ABI, signerOrProvider)
 }
 
 /**
@@ -558,4 +554,3 @@ export async function getBothBalances(userAddress: string): Promise<{
     const [base, optimism] = await Promise.all([getBaseBalance(userAddress), getOptimismBalance(userAddress)])
     return { base, optimism }
 }
-

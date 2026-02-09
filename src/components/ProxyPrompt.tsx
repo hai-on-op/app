@@ -123,7 +123,9 @@ export function ProxyPrompt({
     if (!isOnAllowedChain)
         return (
             <Container>
-                <Text>Please switch to {targetNetworkName} to {continueText}</Text>
+                <Text>
+                    Please switch to {targetNetworkName} to {continueText}
+                </Text>
                 <HaiButton $variant="yellowish" onClick={() => switchNetwork?.(NETWORK_ID)}>
                     Switch to {targetNetworkName}
                 </HaiButton>

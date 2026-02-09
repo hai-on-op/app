@@ -61,11 +61,11 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
 
     // Create navItems array based on vault type and action
     // If there's no existing vault for this collateral type, show CREATE flow tabs
-    const hasMatchingVault = vault && (
-        (isHAIVELO && (vault.collateralName === 'HAIVELOV2' || vault.collateralName === 'HAIVELO')) ||
-        (isHAIAERO && vault.collateralName === 'HAIAERO') ||
-        (!isMinterProtocol) // For non-minter protocols, any vault is a match
-    )
+    const hasMatchingVault =
+        vault &&
+        ((isHAIVELO && (vault.collateralName === 'HAIVELOV2' || vault.collateralName === 'HAIVELO')) ||
+            (isHAIAERO && vault.collateralName === 'HAIAERO') ||
+            !isMinterProtocol) // For non-minter protocols, any vault is a match
     const isCreateFlow = action === VaultAction.CREATE || !hasMatchingVault
     const getNavItems = () => {
         if (isCreateFlow) {
@@ -179,7 +179,9 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
                             )}
                         </Flex>
                         <CenteredFlex $gap={12}>
-                            {isMinterProtocol ? <RewardsTokenArray tokens={['HAI']} hideLabel={isUpToExtraSmall} /> : null}
+                            {isMinterProtocol ? (
+                                <RewardsTokenArray tokens={['HAI']} hideLabel={isUpToExtraSmall} />
+                            ) : null}
                             <ManageDropdown $width={isUpToSmall ? '100%' : undefined} />
                         </CenteredFlex>
                     </Header>

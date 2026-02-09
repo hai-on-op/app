@@ -300,4 +300,3 @@ export const HAI_AERO_DEPOSITER_ADDRESS = HAI_AERO_CONFIG.rewards.depositerV1!
 // Bridge addresses (Hyperlane)
 export const HAI_AERO_HYP_COLLATERAL_ADDRESS = HAI_AERO_BRIDGE_CONFIG.sourceChain.hypCollateralAddress
 export const HAI_AERO_BRIDGED_TOKEN_ADDRESS = HAI_AERO_BRIDGE_CONFIG.destinationChain.tokenAddress
-

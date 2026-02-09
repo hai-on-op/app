@@ -248,7 +248,16 @@ export function useMinterBridge(
                 setIsApproving(false)
             }
         },
-        [walletClient, address, isOnSourceChain, switchToSourceChain, queryClient, refetchApproval, refetchSourceBalance, direction]
+        [
+            walletClient,
+            address,
+            isOnSourceChain,
+            switchToSourceChain,
+            queryClient,
+            refetchApproval,
+            refetchSourceBalance,
+            direction,
+        ]
     )
 
     // Execute bridge transfer
@@ -278,8 +287,10 @@ export function useMinterBridge(
             const now = Date.now()
 
             // Determine source/dest chain IDs based on direction
-            const sourceChainId = direction === 'base-to-optimism' ? config.sourceChain.chainId : config.destinationChain.chainId
-            const destChainId = direction === 'base-to-optimism' ? config.destinationChain.chainId : config.sourceChain.chainId
+            const sourceChainId =
+                direction === 'base-to-optimism' ? config.sourceChain.chainId : config.destinationChain.chainId
+            const destChainId =
+                direction === 'base-to-optimism' ? config.destinationChain.chainId : config.sourceChain.chainId
 
             // Create transaction record
             const txRecord: BridgeTransaction = {
@@ -399,11 +410,14 @@ export function useMinterBridge(
     useEffect(() => {
         if (!isPollingForDelivery) return
 
-        const timeout = setTimeout(() => {
-            console.log('[Bridge] Delivery polling timeout reached')
-            setIsPollingForDelivery(false)
-            preBridgeDestBalance.current = null
-        }, 10 * 60 * 1000) // 10 minutes
+        const timeout = setTimeout(
+            () => {
+                console.log('[Bridge] Delivery polling timeout reached')
+                setIsPollingForDelivery(false)
+                preBridgeDestBalance.current = null
+            },
+            10 * 60 * 1000
+        ) // 10 minutes
 
         return () => clearTimeout(timeout)
     }, [isPollingForDelivery])

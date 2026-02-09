@@ -246,4 +246,3 @@ export interface MinterProtocolContextValue {
     /** Refetch account data */
     refetchAccount: () => Promise<void>
 }
-

@@ -41,11 +41,7 @@ interface MinterProtocolProviderProps {
 // Provider Component
 // ============================================================================
 
-export function MinterProtocolProvider({
-    children,
-    protocolId,
-    useTestnet = false,
-}: MinterProtocolProviderProps) {
+export function MinterProtocolProvider({ children, protocolId, useTestnet = false }: MinterProtocolProviderProps) {
     const config = getProtocolConfig(protocolId, useTestnet)
     const queryClient = useQueryClient()
 
@@ -73,10 +69,13 @@ export function MinterProtocolProvider({
     const accountDataFromHook = useMinterAccount(protocolId, addressLower, useTestnet)
 
     // Combine with V1 balance
-    const accountData: MinterAccountData = useMemo(() => ({
-        ...accountDataFromHook,
-        v1Balance: v1Balance?.raw || '0',
-    }), [accountDataFromHook, v1Balance?.raw])
+    const accountData: MinterAccountData = useMemo(
+        () => ({
+            ...accountDataFromHook,
+            v1Balance: v1Balance?.raw || '0',
+        }),
+        [accountDataFromHook, v1Balance?.raw]
+    )
 
     // ========================================================================
     // Simulated Amounts
@@ -88,13 +87,8 @@ export function MinterProtocolProvider({
         const v1Amt = sanitize(convertAmountV1)
 
         // Calculate veNFT amount from selected NFTs
-        const selectedNFTs = accountData.veNft.nfts.filter((n) =>
-            selectedVeNftTokenIds.includes(n.tokenId)
-        )
-        const veNftAmt = selectedNFTs.reduce(
-            (sum, nft) => sum + parseFloat(nft.balanceFormatted),
-            0
-        )
+        const selectedNFTs = accountData.veNft.nfts.filter((n) => selectedVeNftTokenIds.includes(n.tokenId))
+        const veNftAmt = selectedNFTs.reduce((sum, nft) => sum + parseFloat(nft.balanceFormatted), 0)
 
         return baseAmt + v1Amt + veNftAmt
     }, [convertAmountBase, convertAmountV1, selectedVeNftTokenIds, accountData.veNft.nfts])
@@ -147,11 +141,7 @@ export function MinterProtocolProvider({
         refetchAccount,
     }
 
-    return (
-        <MinterProtocolContext.Provider value={value}>
-            {children}
-        </MinterProtocolContext.Provider>
-    )
+    return <MinterProtocolContext.Provider value={value}>{children}</MinterProtocolContext.Provider>
 }
 
 // ============================================================================
@@ -212,11 +202,7 @@ export type HaiVeloData = {
  * This provides the same interface as the original HaiVeloProvider.
  */
 export function HaiVeloProviderCompat({ children }: { children: ReactNode }) {
-    return (
-        <MinterProtocolProvider protocolId="haiVelo">
-            {children}
-        </MinterProtocolProvider>
-    )
+    return <MinterProtocolProvider protocolId="haiVelo">{children}</MinterProtocolProvider>
 }
 
 /**
@@ -291,4 +277,3 @@ export function useHaiVeloCompat() {
         data,
     }
 }
-

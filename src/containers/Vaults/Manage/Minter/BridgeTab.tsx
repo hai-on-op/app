@@ -200,9 +200,7 @@ export function BridgeTab() {
                     <NetworkWarning status={Status.CUSTOM} background="gradientCooler">
                         <Flex $align="center" $gap={8}>
                             <AlertCircle size={18} />
-                            <Text $fontSize="0.85em">
-                                Please switch to {sourceChainName} network to bridge haiAERO
-                            </Text>
+                            <Text $fontSize="0.85em">Please switch to {sourceChainName} network to bridge haiAERO</Text>
                         </Flex>
                         <HaiButton
                             $variant="yellowish"
@@ -225,9 +223,7 @@ export function BridgeTab() {
                                 maxDecimals: 4,
                             })}
                         </Text>
-                        {direction === 'base-to-optimism' && (
-                            <SourceBadge>Source</SourceBadge>
-                        )}
+                        {direction === 'base-to-optimism' && <SourceBadge>Source</SourceBadge>}
                     </BalanceCard>
                     <DirectionArrowButton
                         onClick={toggleDirection}
@@ -246,19 +242,16 @@ export function BridgeTab() {
                                 maxDecimals: 4,
                             })}
                         </Text>
-                        {direction === 'optimism-to-base' && (
-                            <SourceBadge>Source</SourceBadge>
-                        )}
+                        {direction === 'optimism-to-base' && <SourceBadge>Source</SourceBadge>}
                     </BalanceCard>
                 </BalanceRow>
 
                 {/* Bridge Amount Input */}
                 <NumberInput
                     label="Amount to Bridge"
-                    subLabel={`Available: ${formatNumberWithStyle(
-                        parseFloat(sourceBalance?.formatted || '0'),
-                        { maxDecimals: 4 }
-                    )} haiAERO`}
+                    subLabel={`Available: ${formatNumberWithStyle(parseFloat(sourceBalance?.formatted || '0'), {
+                        maxDecimals: 4,
+                    })} haiAERO`}
                     placeholder="0.0"
                     unitLabel="haiAERO"
                     min="0"
@@ -348,16 +341,18 @@ export function BridgeTab() {
                                 Tx: {activeTransaction.sourceTxHash}
                             </ExplorerLink>
                         )}
-                        {(activeTransaction.status === 'pending_confirmation' || activeTransaction.status === 'confirmed') && isWaitingForDelivery && (
-                            <Flex $column $gap={4} $align="center">
-                                <Text $fontSize="0.8em" $color="rgba(0,0,0,0.6)">
-                                    Waiting for tokens to arrive on {destChainName}...
-                                </Text>
-                                <Text $fontSize="0.75em" $color="rgba(0,0,0,0.5)">
-                                    (polling every 5 seconds)
-                                </Text>
-                            </Flex>
-                        )}
+                        {(activeTransaction.status === 'pending_confirmation' ||
+                            activeTransaction.status === 'confirmed') &&
+                            isWaitingForDelivery && (
+                                <Flex $column $gap={4} $align="center">
+                                    <Text $fontSize="0.8em" $color="rgba(0,0,0,0.6)">
+                                        Waiting for tokens to arrive on {destChainName}...
+                                    </Text>
+                                    <Text $fontSize="0.75em" $color="rgba(0,0,0,0.5)">
+                                        (polling every 5 seconds)
+                                    </Text>
+                                </Flex>
+                            )}
                         {activeTransaction.status === 'delivered' && (
                             <Text $fontSize="0.85em" $color="#16a34a" $fontWeight={600}>
                                 🎉 Bridge complete! Tokens arrived on {destChainName}.
@@ -370,9 +365,15 @@ export function BridgeTab() {
                 <InfoBox status={Status.CUSTOM} background="gradientCooler">
                     <Text $fontSize="0.85em">
                         {direction === 'base-to-optimism' ? (
-                            <>ℹ️ Bridging haiAERO from Base to Optimism via Hyperlane allows you to use haiAERO as collateral in HAI vaults on Optimism.</>
+                            <>
+                                ℹ️ Bridging haiAERO from Base to Optimism via Hyperlane allows you to use haiAERO as
+                                collateral in HAI vaults on Optimism.
+                            </>
                         ) : (
-                            <>ℹ️ Bridging haiAERO from Optimism back to Base allows you to redeem your haiAERO for AERO or use it in other Base protocols.</>
+                            <>
+                                ℹ️ Bridging haiAERO from Optimism back to Base allows you to redeem your haiAERO for
+                                AERO or use it in other Base protocols.
+                            </>
                         )}
                     </Text>
                 </InfoBox>
@@ -414,7 +415,9 @@ export function BridgeTab() {
                         $width="100%"
                         $justify="center"
                         onClick={handleBridge}
-                        disabled={isBridging || !isValidAmount || quote.isLoading || isValidating || Boolean(validationError)}
+                        disabled={
+                            isBridging || !isValidAmount || quote.isLoading || isValidating || Boolean(validationError)
+                        }
                     >
                         {isBridging ? (
                             <>
@@ -509,7 +512,6 @@ const Footer = styled(CenteredFlex).attrs((props) => ({
     border-top: ${({ theme }) => theme.border.thin};
 `
 
-
 const NetworkWarning = styled(StatusLabel)`
     border-radius: 12px;
     flex-direction: column;
@@ -536,7 +538,9 @@ const BalanceCard = styled(Flex).attrs((props) => ({
     padding: 16px;
     border-radius: 12px;
     border: 1px solid ${({ $isSource }) => ($isSource ? 'rgba(59, 130, 246, 0.3)' : 'rgba(0, 0, 0, 0.1)')};
-    transition: background 0.2s, border-color 0.2s;
+    transition:
+        background 0.2s,
+        border-color 0.2s;
 `
 
 const SourceBadge = styled.span`

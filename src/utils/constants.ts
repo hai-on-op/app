@@ -14,7 +14,6 @@ export const {
     VITE_LP_SUBGRAPH_URL,
 } = import.meta.env
 
-
 export enum ChainId {
     MAINNET = 10,
     OPTIMISM_GOERLI = 420,

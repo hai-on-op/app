@@ -57,4 +57,3 @@ export {
     type TokenBalance,
     type VeNftData,
 } from './dataSources'
-

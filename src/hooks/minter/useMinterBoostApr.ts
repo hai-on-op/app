@@ -56,13 +56,15 @@ export function useMinterBoostApr(params: UseMinterBoostAprParams): UseMinterBoo
     const config = getProtocolConfig(protocolId, useTestnet)
 
     // Fetch collateral mapping data
-    const { data: mappingData, isLoading: mappingLoading, isError: mappingError, error: mappingErr } = useQuery({
+    const {
+        data: mappingData,
+        isLoading: mappingLoading,
+        isError: mappingError,
+        error: mappingErr,
+    } = useQuery({
         queryKey: ['minter', protocolId, 'collateralMapping'],
         queryFn: async () => {
-            const [v1Data, v2Data] = await Promise.all([
-                fetchV1Safes(config),
-                fetchV2Safes(config),
-            ])
+            const [v1Data, v2Data] = await Promise.all([fetchV1Safes(config), fetchV2Safes(config)])
 
             // Combine V1 and V2 safes
             const allSafes = [...(v1Data.safes || []), ...(v2Data.safes || [])]
@@ -76,7 +78,12 @@ export function useMinterBoostApr(params: UseMinterBoostAprParams): UseMinterBoo
     })
 
     // Fetch reward data
-    const { data: rewardData, isLoading: rewardLoading, isError: rewardError, error: rewardErr } = useQuery({
+    const {
+        data: rewardData,
+        isLoading: rewardLoading,
+        isError: rewardError,
+        error: rewardErr,
+    } = useQuery({
         queryKey: ['minter', protocolId, 'rewardTransfer'],
         queryFn: async () => {
             // Get HAI token address from store (placeholder - would need to be passed in)
@@ -109,12 +116,7 @@ export function useMinterBoostApr(params: UseMinterBoostAprParams): UseMinterBoo
         const latestTransferAmount = rewardData || 0
 
         // Calculate boost map
-        const boostMap = calculateBoostMap(
-            mapping,
-            usersStakingData,
-            totalStakedAmount,
-            totalDeposited
-        )
+        const boostMap = calculateBoostMap(mapping, usersStakingData, totalStakedAmount, totalDeposited)
 
         // Compute APR
         const aprData = computeBoostApr({
@@ -169,10 +171,7 @@ export function useMinterCollateralMapping(
     const { data, isLoading, isError } = useQuery({
         queryKey: ['minter', protocolId, 'collateralMapping'],
         queryFn: async () => {
-            const [v1Data, v2Data] = await Promise.all([
-                fetchV1Safes(config),
-                fetchV2Safes(config),
-            ])
+            const [v1Data, v2Data] = await Promise.all([fetchV1Safes(config), fetchV2Safes(config)])
 
             const allSafes = [...(v1Data.safes || []), ...(v2Data.safes || [])]
             const mapping = calculateCollateralMapping({ safes: allSafes })
@@ -225,4 +224,3 @@ export function useMinterLastEpochTotals(
         isError,
     }
 }
-

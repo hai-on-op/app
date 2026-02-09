@@ -161,7 +161,11 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
                 stakeConfig: currentStakeConfig,
             }
         }
-        if (location.pathname.startsWith('/vaults') || location.pathname === '/haiVELO' || location.pathname === '/haiAERO') {
+        if (
+            location.pathname.startsWith('/vaults') ||
+            location.pathname === '/haiVELO' ||
+            location.pathname === '/haiAERO'
+        ) {
             switch (location.pathname) {
                 case '/vaults':
                 case '/vaults/manage':

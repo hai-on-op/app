@@ -149,4 +149,3 @@ export function MinterMultiStepModal({
 
 // Re-export types for convenience
 export type { MinterApprovalItem } from './Approvals'
-

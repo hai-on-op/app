@@ -130,20 +130,33 @@ export function Shared({ children }: Props) {
         if (!account || !coinTokenContract || !protTokenContract || !connectWalletState.proxyAddress) return
         if (chain?.id !== NETWORK_ID) return
 
-        protTokenContract.allowance(account, connectWalletState.proxyAddress).then((allowance) => {
-            const formattedAllowance = utils.formatEther(allowance)
-            connectWalletActions.setProtAllowance(formattedAllowance)
-        }).catch((error) => {
-            console.debug('Error fetching KITE allowance (may be on different chain):', error.message)
-        })
+        protTokenContract
+            .allowance(account, connectWalletState.proxyAddress)
+            .then((allowance) => {
+                const formattedAllowance = utils.formatEther(allowance)
+                connectWalletActions.setProtAllowance(formattedAllowance)
+            })
+            .catch((error) => {
+                console.debug('Error fetching KITE allowance (may be on different chain):', error.message)
+            })
 
-        coinTokenContract.allowance(account, connectWalletState.proxyAddress).then((allowance) => {
-            const formattedAllowance = utils.formatEther(allowance)
-            connectWalletActions.setCoinAllowance(formattedAllowance)
-        }).catch((error) => {
-            console.debug('Error fetching HAI allowance (may be on different chain):', error.message)
-        })
-    }, [account, coinTokenContract, connectWalletState.proxyAddress, connectWalletActions, protTokenContract, chain?.id])
+        coinTokenContract
+            .allowance(account, connectWalletState.proxyAddress)
+            .then((allowance) => {
+                const formattedAllowance = utils.formatEther(allowance)
+                connectWalletActions.setCoinAllowance(formattedAllowance)
+            })
+            .catch((error) => {
+                console.debug('Error fetching HAI allowance (may be on different chain):', error.message)
+            })
+    }, [
+        account,
+        coinTokenContract,
+        connectWalletState.proxyAddress,
+        connectWalletActions,
+        protTokenContract,
+        chain?.id,
+    ])
 
     useEffect(() => {
         if (!auctionsData) return

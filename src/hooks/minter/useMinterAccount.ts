@@ -63,4 +63,3 @@ export function useMinterAccount(
 export function getMinterAccountQueryKey(protocolId: MinterProtocolId, address?: string): string[] {
     return ['minter', protocolId, 'account', address?.toLowerCase() || '0x']
 }
-

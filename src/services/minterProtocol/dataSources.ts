@@ -50,7 +50,7 @@ function getProvider(config: MinterProtocolConfig): ethers.providers.JsonRpcProv
         if (!publicRpcWarningShown && cacheKey.includes('mainnet.base.org')) {
             console.warn(
                 '[minterProtocol] Using public Base RPC which may be rate-limited. ' +
-                'Set VITE_PUBLIC_BASE_RPC to a dedicated RPC endpoint for better performance.'
+                    'Set VITE_PUBLIC_BASE_RPC to a dedicated RPC endpoint for better performance.'
             )
             publicRpcWarningShown = true
         }
@@ -111,7 +111,10 @@ export async function fetchV1Safes(config: MinterProtocolConfig, limit = 1000): 
     `
 
     try {
-        const { data } = await client.query<{ collateralType: { id: string; totalCollateral: string }; safes: MinterSafe[] }>({
+        const { data } = await client.query<{
+            collateralType: { id: string; totalCollateral: string }
+            safes: MinterSafe[]
+        }>({
             query: QUERY,
             variables: { collateralTypeId: collateralId, limit },
             fetchPolicy: 'network-only',
@@ -155,7 +158,10 @@ export async function fetchV2Safes(config: MinterProtocolConfig, limit = 1000): 
     `
 
     try {
-        const { data } = await client.query<{ collateralType: { id: string; totalCollateral: string }; safes: MinterSafe[] }>({
+        const { data } = await client.query<{
+            collateralType: { id: string; totalCollateral: string }
+            safes: MinterSafe[]
+        }>({
             query: QUERY,
             variables: { collateralTypeId: collateralId, limit },
             fetchPolicy: 'network-only',
@@ -354,7 +360,10 @@ export async function fetchSafesAtBlock(
     `
 
     try {
-        const { data } = await client.query<{ collateralType: { id: string; totalCollateral: string }; safes: MinterSafe[] }>({
+        const { data } = await client.query<{
+            collateralType: { id: string; totalCollateral: string }
+            safes: MinterSafe[]
+        }>({
             query: QUERY,
             variables: { collateralTypeId: collateralId, limit, block: { number: blockNumber } },
             fetchPolicy: 'network-only',
@@ -508,13 +517,16 @@ export async function findBlockNumberByTimestamp(
 // Last Epoch Totals (for APR calculations)
 // ============================================================================
 
-const epochTotalsCache: Map<string, {
-    ts: number
-    block: number
-    v1Total: number
-    v2Total: number
-    fetchedAt: number
-}> = new Map()
+const epochTotalsCache: Map<
+    string,
+    {
+        ts: number
+        block: number
+        v1Total: number
+        v2Total: number
+        fetchedAt: number
+    }
+> = new Map()
 
 /**
  * Get totals at the last merkle root epoch for a protocol.
@@ -750,4 +762,3 @@ export async function fetchAccountData(
         return { v2Balance, baseTokenBalance, veNftData }
     }
 }
-

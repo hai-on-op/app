@@ -61,9 +61,7 @@ type HaiAeroTxModalProps = ModalProps & {
 /**
  * Convert wagmi wallet client to ethers signer
  */
-function walletClientToSigner(
-    walletClient: ReturnType<typeof useWalletClient>['data']
-): ethers.Signer | undefined {
+function walletClientToSigner(walletClient: ReturnType<typeof useWalletClient>['data']): ethers.Signer | undefined {
     if (!walletClient) return undefined
 
     const { account, chain, transport } = walletClient
@@ -512,13 +510,16 @@ export function HaiAeroTxModal({ config, plan, onSuccess, ...props }: HaiAeroTxM
         pollDelivery() // Check immediately
 
         // Timeout after 10 minutes
-        const timeout = setTimeout(() => {
-            console.log('[HaiAeroTxModal] Delivery polling timeout')
-            clearInterval(interval)
-            // Still mark as complete even if delivery not detected
-            setWaitingForDelivery(false)
-            setIsComplete(true)
-        }, 10 * 60 * 1000)
+        const timeout = setTimeout(
+            () => {
+                console.log('[HaiAeroTxModal] Delivery polling timeout')
+                clearInterval(interval)
+                // Still mark as complete even if delivery not detected
+                setWaitingForDelivery(false)
+                setIsComplete(true)
+            },
+            10 * 60 * 1000
+        )
 
         return () => {
             clearInterval(interval)
@@ -684,7 +685,8 @@ export function HaiAeroTxModal({ config, plan, onSuccess, ...props }: HaiAeroTxM
         // Mint step from veNFTs
         if (hasVeNfts && veNftWei.gt(0)) {
             // Calculate the running balance after AERO mint (if any)
-            const afterAeroMint = parseFloat(initialBalances.v2 || '0') + 
+            const afterAeroMint =
+                parseFloat(initialBalances.v2 || '0') +
                 (baseWei.gt(0) ? parseFloat(ethers.utils.formatUnits(plan.depositBaseWei!, 18)) : 0)
             const veNftMintAmount = parseFloat(ethers.utils.formatUnits(plan.depositVeNftTotalWei!, 18))
             const afterVeNftMint = afterAeroMint + veNftMintAmount
@@ -755,7 +757,10 @@ export function HaiAeroTxModal({ config, plan, onSuccess, ...props }: HaiAeroTxM
             overrideContent={
                 <>
                     <Modal.Header>
-                        <BrandedTitle textContent={`MINT & BRIDGE ${config.displayName.toUpperCase()}`} $fontSize="2em" />
+                        <BrandedTitle
+                            textContent={`MINT & BRIDGE ${config.displayName.toUpperCase()}`}
+                            $fontSize="2em"
+                        />
                         {props.onClose && (
                             <Modal.Close onClick={handleClose}>
                                 <X size={14} />

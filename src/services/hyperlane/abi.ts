@@ -241,4 +241,3 @@ export const HYPERLANE_MAILBOX_ABI = [
         type: 'function',
     },
 ] as const
-

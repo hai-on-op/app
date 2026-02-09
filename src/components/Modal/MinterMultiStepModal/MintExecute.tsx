@@ -115,7 +115,10 @@ export function MintExecute({ config, plan, includeBridge = false, onDone, onSte
                 )})`,
                 run: async () => {
                     if (!contract || !address) return
-                    const gas = await (contract as ethers.Contract).estimateGas.migrateV1toV2(address, plan.migrateV1Wei)
+                    const gas = await (contract as ethers.Contract).estimateGas.migrateV1toV2(
+                        address,
+                        plan.migrateV1Wei
+                    )
                     const tx = await (contract as ethers.Contract).migrateV1toV2(address, plan.migrateV1Wei, {
                         gasLimit: gas.mul(12).div(10),
                     })
@@ -199,8 +202,7 @@ export function MintExecute({ config, plan, includeBridge = false, onDone, onSte
                         {config.features.supportsV1Migration && config.tokens.wrappedTokenV1Symbol
                             ? `, and migrate ${config.tokens.wrappedTokenV1Symbol}`
                             : ''}{' '}
-                        to {config.displayName}.
-                        {includeBridge && ' Then bridge to Optimism.'}
+                        to {config.displayName}.{includeBridge && ' Then bridge to Optimism.'}
                     </Description>
                     <TransactionSummary
                         items={(() => {
@@ -314,4 +316,3 @@ const Description = styled(Text)`
         font-size: ${theme.font.small};
     `}
 `
-

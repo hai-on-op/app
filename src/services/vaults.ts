@@ -1,7 +1,11 @@
 import axios from 'axios'
-import type { CollateralLiquidationData, IFetchLiquidationDataPayload, IFetchVaultsPayload, IUserVaultList } from '~/types'
+import type {
+    CollateralLiquidationData,
+    IFetchLiquidationDataPayload,
+    IFetchVaultsPayload,
+    IUserVaultList,
+} from '~/types'
 import { formatUserVault, gebManager } from '~/utils'
-
 
 // AERO price cache to avoid repeated API calls
 let aeroPriceCache: { price: string; timestamp: number } | null = null
@@ -74,7 +78,11 @@ const createHaiAeroLiquidationData = (
             ...baseData.currentPrice,
             value: aeroPrice,
             safetyPrice: (parseFloat(aeroPrice) / parseFloat(safetyCRatio) / parseFloat(redemptionPrice)).toString(),
-            liquidationPrice: (parseFloat(aeroPrice) / parseFloat(liquidationCRatio) / parseFloat(redemptionPrice)).toString(),
+            liquidationPrice: (
+                parseFloat(aeroPrice) /
+                parseFloat(liquidationCRatio) /
+                parseFloat(redemptionPrice)
+            ).toString(),
         },
     }
 }

@@ -55,7 +55,7 @@ export function useContract<T extends Contract = Contract>(
         if (!address) return null
         try {
             // Use public provider for read-only operations, or when signer is not available
-            const signerOrProvider = readOnly ? (provider as JsonRpcProvider) : (signer || (provider as JsonRpcProvider))
+            const signerOrProvider = readOnly ? (provider as JsonRpcProvider) : signer || (provider as JsonRpcProvider)
             return getContract(address, ABI, signerOrProvider)
         } catch (error) {
             console.error('Failed to get contract', error)

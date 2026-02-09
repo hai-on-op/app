@@ -111,8 +111,7 @@ export function calculateUserBoost(params: {
         return { kiteRatio: 0, boost: 1 }
     }
 
-    const kiteRatio =
-        isNaN(totalStakingAmount) || totalStakingAmount === 0 ? 0 : userStakingAmount / totalStakingAmount
+    const kiteRatio = isNaN(totalStakingAmount) || totalStakingAmount === 0 ? 0 : userStakingAmount / totalStakingAmount
     const protocolRatio = Number(userDeposited) / Number(totalDeposited)
     const boostRaw = protocolRatio === 0 ? 1 : kiteRatio / protocolRatio + 1
     const boost = Math.min(boostRaw, 2)
@@ -162,9 +161,12 @@ export function computeBoostApr(params: {
     const myBoost = userAddr ? boostMap[userAddr] || 1 : 1
     const myValueParticipating = userAddr ? Number(mapping[userAddr] || 0) : 0
     const myBoostedValueParticipating = myValueParticipating * myBoost
-    const myBoostedShare = totalBoostedValueParticipating ? myBoostedValueParticipating / totalBoostedValueParticipating : 0
+    const myBoostedShare = totalBoostedValueParticipating
+        ? myBoostedValueParticipating / totalBoostedValueParticipating
+        : 0
 
-    const baseAPRPercent = totalBoostedValueParticipating > 0 ? (dailyRewardValue / totalBoostedValueParticipating) * 365 * 100 : 0
+    const baseAPRPercent =
+        totalBoostedValueParticipating > 0 ? (dailyRewardValue / totalBoostedValueParticipating) * 365 * 100 : 0
 
     const myBoostedAPRPercent = myBoost * baseAPRPercent
 
@@ -345,4 +347,3 @@ export async function fetchLatestTransferAmount(params: {
         return 0
     }
 }
-

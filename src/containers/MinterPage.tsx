@@ -110,4 +110,3 @@ export function HaiAeroPage() {
 
 // Default export for backward compatibility
 export default MinterPage
-

@@ -38,9 +38,7 @@ type BridgePhase = 'idle' | 'checking' | 'approving' | 'bridging' | 'pending' | 
 /**
  * Convert wagmi wallet client to ethers signer
  */
-function walletClientToSigner(
-    walletClient: ReturnType<typeof useWalletClient>['data']
-): ethers.Signer | undefined {
+function walletClientToSigner(walletClient: ReturnType<typeof useWalletClient>['data']): ethers.Signer | undefined {
     if (!walletClient) return undefined
 
     const { account, chain, transport } = walletClient
@@ -210,7 +208,12 @@ export function BridgeExecute({ config: _config, amountToBridge, onDone }: Props
                 const currentBN = BigNumber.from(currentBalance.raw)
                 const preBridgeBN = BigNumber.from(preBridgeBalanceRef.current || '0')
 
-                console.log('[BridgeExecute] Polling - Pre-bridge:', preBridgeBalanceRef.current, 'Current:', currentBalance.raw)
+                console.log(
+                    '[BridgeExecute] Polling - Pre-bridge:',
+                    preBridgeBalanceRef.current,
+                    'Current:',
+                    currentBalance.raw
+                )
 
                 if (currentBN.gt(preBridgeBN)) {
                     // Balance increased - tokens have arrived!
@@ -229,10 +232,13 @@ export function BridgeExecute({ config: _config, amountToBridge, onDone }: Props
         pollDelivery()
 
         // Timeout after 10 minutes
-        const timeout = setTimeout(() => {
-            console.log('[BridgeExecute] Delivery polling timeout')
-            clearInterval(interval)
-        }, 10 * 60 * 1000)
+        const timeout = setTimeout(
+            () => {
+                console.log('[BridgeExecute] Delivery polling timeout')
+                clearInterval(interval)
+            },
+            10 * 60 * 1000
+        )
 
         return () => {
             clearInterval(interval)
@@ -462,18 +468,17 @@ const StatusRow = styled(Flex)<{ $variant?: 'info' | 'success' | 'error' }>`
         $variant === 'success'
             ? 'rgba(34, 197, 94, 0.1)'
             : $variant === 'error'
-              ? 'rgba(239, 68, 68, 0.1)'
-              : $variant === 'info'
-                ? 'rgba(59, 130, 246, 0.1)'
-                : 'transparent'};
+            ? 'rgba(239, 68, 68, 0.1)'
+            : $variant === 'info'
+            ? 'rgba(59, 130, 246, 0.1)'
+            : 'transparent'};
     border: 1px solid
         ${({ $variant }) =>
             $variant === 'success'
                 ? 'rgba(34, 197, 94, 0.3)'
                 : $variant === 'error'
-                  ? 'rgba(239, 68, 68, 0.3)'
-                  : $variant === 'info'
-                    ? 'rgba(59, 130, 246, 0.3)'
-                    : 'transparent'};
+                ? 'rgba(239, 68, 68, 0.3)'
+                : $variant === 'info'
+                ? 'rgba(59, 130, 246, 0.3)'
+                : 'transparent'};
 `
-

@@ -6,4 +6,3 @@
 
 export * from './abi'
 export * from './bridgeService'
-

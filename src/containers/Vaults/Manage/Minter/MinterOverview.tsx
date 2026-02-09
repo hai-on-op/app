@@ -70,10 +70,7 @@ export function MinterOverview() {
     ])
 
     // My V2 token in wallet (not deposited)
-    const myV2Wallet = useMemo(
-        () => Number(accountData.v2Balance.formatted || '0'),
-        [accountData.v2Balance.formatted]
-    )
+    const myV2Wallet = useMemo(() => Number(accountData.v2Balance.formatted || '0'), [accountData.v2Balance.formatted])
 
     const simulatedMyV2Wallet = useMemo(() => {
         if (!(simulatedAmount > 0)) return undefined
@@ -321,4 +318,3 @@ const Inner = styled(Grid).attrs((props) => ({
 `
 
 export default MinterOverview
-
