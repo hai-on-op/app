@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useAccount, useNetwork } from 'wagmi'
+import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
 
 import type { ReactChildren } from '~/types'
 import { useStoreActions, useStoreState } from '~/store'
@@ -24,6 +24,10 @@ type ProxyPromptProps = {
     onSuccess?: () => void
     connectWalletOnly?: boolean
     children: ReactChildren
+    /** Additional chain IDs that are allowed (e.g., Base for haiAERO minting) */
+    allowedChainIds?: number[]
+    /** Name of the target network for display (e.g., "Optimism") - used when user needs to switch networks */
+    targetNetworkName?: string
 }
 export function ProxyPrompt({
     continueText = 'continue',
@@ -31,11 +35,14 @@ export function ProxyPrompt({
     onSuccess,
     connectWalletOnly,
     children,
+    allowedChainIds = [],
+    targetNetworkName = 'Optimism',
 }: ProxyPromptProps) {
     const { t } = useTranslation()
     const { chain } = useNetwork()
     const chainId = chain?.id
     const { address: account } = useAccount()
+    const { switchNetwork } = useSwitchNetwork()
     const signer = useEthersSigner()
 
     const geb = useGeb()
@@ -99,7 +106,12 @@ export function ProxyPrompt({
         localStorage.removeItem('ctHash')
     }, [connectWalletState.ctHash, popupsActions, connectWalletActions, onSuccess])
 
-    if (connectWalletState.step === PromptStep.CONNECT_WALLET)
+    // Check if user is on an allowed chain (primary network or any additional allowed chains)
+    const isOnAllowedChain = chain?.id === NETWORK_ID || allowedChainIds.includes(chain?.id ?? 0)
+
+    // Check wallet connection first - use account from wagmi directly instead of step
+    // (step is not properly set when on "wrong" networks like Base for haiAERO)
+    if (!account)
         return (
             <Container>
                 <Text>Please connect a wallet to {continueText}</Text>
@@ -107,15 +119,23 @@ export function ProxyPrompt({
             </Container>
         )
 
-    if (chain?.id !== NETWORK_ID)
+    // Then check network
+    if (!isOnAllowedChain)
         return (
             <Container>
-                <Text>Please switch the connected network to {continueText}</Text>
-                <ConnectButton />
+                <Text>
+                    Please switch to {targetNetworkName} to {continueText}
+                </Text>
+                <HaiButton $variant="yellowish" onClick={() => switchNetwork?.(NETWORK_ID)}>
+                    Switch to {targetNetworkName}
+                </HaiButton>
             </Container>
         )
 
-    if (!connectWalletOnly) {
+    // Skip proxy/vault checks when on alternative allowed chains (e.g., Base for haiAERO)
+    // Proxies are only on the primary network (Optimism)
+    const isOnPrimaryNetwork = chain?.id === NETWORK_ID
+    if (!connectWalletOnly && isOnPrimaryNetwork) {
         if (connectWalletState.step === PromptStep.CREATE_PROXY)
             return (
                 <Container>

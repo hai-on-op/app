@@ -1,5 +1,5 @@
 import { JsonRpcSigner } from '@ethersproject/providers/lib/json-rpc-provider'
-import { Geb, TransactionRequest } from '@hai-on-op/sdk'
+import { type BasicActions, Geb, TransactionRequest } from '@hai-on-op/sdk'
 import { BigNumber, ethers } from 'ethers'
 import { parseEther } from 'ethers/lib/utils'
 
@@ -9,6 +9,29 @@ import { handlePreTxGasEstimate } from '~/hooks'
 import { TransactionResponse } from '@ethersproject/providers'
 
 const abi = ['function drop() public view returns ()']
+
+/**
+ * Ensure the SDK's proxy BasicActions has HAIAERO in its internal token list.
+ * The SDK v1.2.33 includes HAIAERO natively, but Vite's dependency pre-bundling
+ * may cache an older version without it. This runtime patch guarantees HAIAERO
+ * is always available for vault operations.
+ */
+const ensureHaiAeroInProxyTokenList = (proxy: BasicActions): void => {
+    const tokenList = (proxy as any).tokenList
+    if (tokenList && !tokenList['HAIAERO']) {
+        tokenList['HAIAERO'] = {
+            address: '0xbdF4A4Cc124d9A83a5774574fcBE45DC5d1f1152',
+            decimals: 18,
+            symbol: 'HAIAERO',
+            label: 'HAIAERO',
+            bytes32String: '0x4841494145524f00000000000000000000000000000000000000000000000000',
+            collateralJoin: '0xc83e160E117A420d7BccE800450dE07Ff51d13bA',
+            collateralAuctionHouse: '0xeA089d5902ac42A4b25aB7749CECA8FB4a1eAf12',
+            isCollateral: true,
+            hasRewards: true,
+        }
+    }
+}
 
 export const claimAirdrop = async (signer: JsonRpcSigner) => {
     if (!signer) return
@@ -80,6 +103,7 @@ export const handleClaimFreeCollateral = async (signer: JsonRpcSigner, vault: IV
     const networkName = getNetworkName(chainId)
     const geb = new Geb(networkName, signer)
     const proxy = await geb.getProxyAction(signer._address)
+    ensureHaiAeroInProxyTokenList(proxy)
     let txData: TransactionRequest = {}
     txData = await proxy.collectTokenCollateral(vault.collateralName, vault.id, freeCollateralBN)
     const txResponse = await signer.sendTransaction(txData)
@@ -99,6 +123,7 @@ export const handleDepositAndBorrow = async (signer: JsonRpcSigner, vaultData: I
     const geb = new Geb(networkName, signer)
 
     const proxy = await geb.getProxyAction(signer._address)
+    ensureHaiAeroInProxyTokenList(proxy)
 
     let txData: TransactionRequest = {}
 
@@ -139,6 +164,7 @@ export const handleDepositAndRepay = async (signer: JsonRpcSigner, vaultData: IV
     const geb = new Geb(networkName, signer)
 
     const proxy = await geb.getProxyAction(signer._address)
+    ensureHaiAeroInProxyTokenList(proxy)
 
     let txResponse1: TransactionResponse | undefined = undefined
     if (!collateralBN.isZero()) {
@@ -172,6 +198,7 @@ export const handleRepayAndWithdraw = async (signer: JsonRpcSigner, vaultData: I
     const collateralToFree = parseEther(vaultData.withdraw || '0')
     const haiToRepay = parseEther(vaultData.repay || '0')
     const proxy = await geb.getProxyAction(signer._address)
+    ensureHaiAeroInProxyTokenList(proxy)
 
     const shouldRepayAll =
         (totalDebtBN.isZero() && !haiToRepay.isZero()) || totalDebtBN.sub(haiToRepay).lt(parseEther('1'))
@@ -220,6 +247,7 @@ export const handleWithdrawAndBorrow = async (signer: JsonRpcSigner, vaultData: 
     const collateralToFree = parseEther(vaultData.withdraw || '0')
     const debtBN = parseEther(vaultData.borrow || '0')
     const proxy = await geb.getProxyAction(signer._address)
+    ensureHaiAeroInProxyTokenList(proxy)
 
     let txResponse1: TransactionResponse | undefined = undefined
     if (!collateralToFree.isZero()) {

@@ -33,14 +33,7 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
     const { t } = useTranslation()
 
     const {
-        auctionModel: {
-            amount,
-            auctionsData,
-            collateralAmount,
-            collateralData,
-            internalBalance,
-            protInternalBalance,
-        },
+        auctionModel: { amount, auctionsData, collateralAmount, collateralData, internalBalance, protInternalBalance },
         connectWalletModel: { coinAllowance: haiAllowance = '0', protAllowance: kiteAllowance = '0' },
     } = useStoreState((state) => state)
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { VaultAction, DEFAULT_VAULT_DATA } from '~/utils'
+import { TREAT_EMPTY_VAULT_AS_NEW } from '~/utils/constants'
 import { useStoreActions, useStoreState } from '~/store'
 import { VaultProvider } from '~/providers/VaultProvider'
 
@@ -36,6 +37,14 @@ export function HaiVeloPage() {
             const debt = parseFloat(v.totalDebt || '0')
             return isFinite(col) && col > 0 ? col : debt
         }
+
+        // DEV: When TREAT_EMPTY_VAULT_AS_NEW is on, vaults with no collateral
+        // and no debt are considered "empty" and the create-vault flow is shown
+        // instead of the manage flow.
+        const isVaultEmpty = (v: any) => getSize(v) === 0
+
+        if (TREAT_EMPTY_VAULT_AS_NEW && haiVeloV2Vaults.every(isVaultEmpty)) return
+
         const largest = haiVeloV2Vaults.reduce(
             (max: any, v: any) => (getSize(v) > getSize(max) ? v : max),
             haiVeloV2Vaults[0]
