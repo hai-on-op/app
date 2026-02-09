@@ -383,9 +383,10 @@ export async function executeBridge(
     // Add 10% buffer to the fee for safety
     const feeWithBuffer = feeWei.mul(110).div(100)
 
-    // Simulate first to get better error messages
+    // Simulate first to get the messageId and catch errors
+    let messageId: string | undefined
     try {
-        await router.callStatic.transferRemote(destinationDomain, recipientBytes32, amount, {
+        messageId = await router.callStatic.transferRemote(destinationDomain, recipientBytes32, amount, {
             value: feeWithBuffer,
         })
     } catch (error) {
@@ -399,30 +400,46 @@ export async function executeBridge(
 
     return {
         txHash: tx.hash as `0x${string}`,
+        messageId: messageId || undefined,
         wait: async () => {
             const receipt = await tx.wait()
+            // Try to extract messageId from receipt logs if we don't have it yet
+            if (!messageId) {
+                messageId = parseMessageIdFromReceipt(receipt)
+            }
             return receipt
         },
     }
 }
 
 /**
- * Parse the message ID from a bridge transaction receipt
+ * Parse the message ID from a bridge transaction receipt.
+ * Looks for the DispatchId event emitted by the Hyperlane Mailbox contract.
  */
 export function parseMessageIdFromReceipt(receipt: ethers.ContractReceipt): string | undefined {
-    // Look for the SentTransferRemote event
-    const hypCollateralInterface = new ethers.utils.Interface(HYP_ERC20_COLLATERAL_ABI)
+    // Look for the DispatchId(bytes32 indexed messageId) event from the Hyperlane Mailbox
+    const DISPATCH_ID_TOPIC = ethers.utils.id('DispatchId(bytes32)')
 
     for (const log of receipt.logs) {
-        try {
-            const parsed = hypCollateralInterface.parseLog(log)
-            if (parsed.name === 'SentTransferRemote') {
-                // The message ID is typically in the transaction's return value or logs
-                // For now, we'll use the transaction hash as a proxy
-                return receipt.transactionHash
+        if (log.topics[0] === DISPATCH_ID_TOPIC && log.topics.length >= 2) {
+            return log.topics[1] // The messageId is the first indexed param
+        }
+    }
+
+    // Fallback: look for the Dispatch event
+    const DISPATCH_TOPIC = ethers.utils.id('Dispatch(address,uint32,bytes32,bytes)')
+    for (const log of receipt.logs) {
+        if (log.topics[0] === DISPATCH_TOPIC) {
+            // For the Dispatch event, messageId = keccak256(message)
+            // The message bytes are in the data field
+            try {
+                const decoded = ethers.utils.defaultAbiCoder.decode(['bytes'], log.data)
+                if (decoded[0]) {
+                    return ethers.utils.keccak256(decoded[0])
+                }
+            } catch {
+                // Continue to next log
             }
-        } catch {
-            // Log doesn't match this interface, continue
         }
     }
 

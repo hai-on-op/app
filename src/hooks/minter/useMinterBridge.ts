@@ -297,8 +297,9 @@ export function useMinterBridge(
             try {
                 const result = await executeBridge(signer, params.amount, params.recipient, direction)
 
-                // Update with tx hash
+                // Update with tx hash and message ID
                 txRecord.sourceTxHash = result.txHash
+                txRecord.messageId = result.messageId
                 txRecord.status = 'pending_confirmation'
                 setActiveTransaction({ ...txRecord })
 

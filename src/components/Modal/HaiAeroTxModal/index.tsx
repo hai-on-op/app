@@ -100,6 +100,7 @@ export function HaiAeroTxModal({ config, plan, onSuccess, ...props }: HaiAeroTxM
     })
     const [isComplete, setIsComplete] = useState(false)
     const [bridgeTxHash, setBridgeTxHash] = useState<string>('')
+    const [bridgeMessageId, setBridgeMessageId] = useState<string>('')
     const [waitingForDelivery, setWaitingForDelivery] = useState(false)
     const hasClosedRef = useRef(false)
     const preBridgeBalanceRef = useRef<string | null>(null)
@@ -436,6 +437,7 @@ export function HaiAeroTxModal({ config, plan, onSuccess, ...props }: HaiAeroTxM
                 try {
                     const result = await executeBridge(signer, totalMintWei.toString(), address)
                     setBridgeTxHash(result.txHash)
+                    if (result.messageId) setBridgeMessageId(result.messageId)
 
                     popupsActions.setWaitingPayload({
                         title: 'Bridge Initiated',
@@ -791,9 +793,17 @@ export function HaiAeroTxModal({ config, plan, onSuccess, ...props }: HaiAeroTxM
                                             Waiting for tokens to arrive on Optimism (checking every 5 seconds)
                                         </Text>
                                         {bridgeTxHash && (
-                                            <Text $fontSize="0.8em" $color="rgba(0,0,0,0.5)">
-                                                Tx: {bridgeTxHash.slice(0, 10)}...{bridgeTxHash.slice(-8)}
-                                            </Text>
+                                            <ExplorerLink
+                                                href={
+                                                    bridgeMessageId
+                                                        ? `https://explorer.hyperlane.xyz/message/${bridgeMessageId}`
+                                                        : `https://explorer.hyperlane.xyz/?search=${bridgeTxHash}`
+                                                }
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                Tx: {bridgeTxHash}
+                                            </ExplorerLink>
                                         )}
                                     </Flex>
                                 </DeliveryStatus>
@@ -853,6 +863,17 @@ const DeliveryStatus = styled(Flex)`
     border-radius: 12px;
     background: rgba(59, 130, 246, 0.1);
     border: 1px solid rgba(59, 130, 246, 0.3);
+`
+
+const ExplorerLink = styled.a`
+    font-size: 0.8em;
+    color: rgba(0, 0, 0, 0.5);
+    word-break: break-all;
+    text-decoration: underline;
+
+    &:hover {
+        color: rgba(0, 0, 0, 0.8);
+    }
 `
 
 const SuccessStatus = styled(Flex)`

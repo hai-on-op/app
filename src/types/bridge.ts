@@ -83,6 +83,8 @@ export interface BridgeTransaction {
     id: string
     /** Source chain transaction hash */
     sourceTxHash?: `0x${string}`
+    /** Hyperlane message ID (for explorer link) */
+    messageId?: string
     /** Destination chain transaction hash (once delivered) */
     destinationTxHash?: `0x${string}`
     /** Amount being bridged (formatted) */

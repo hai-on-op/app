@@ -336,10 +336,17 @@ export function BridgeTab() {
                             <Text $fontWeight={600}>{getStatusText(activeTransaction.status)}</Text>
                         </Flex>
                         {activeTransaction.sourceTxHash && (
-                            <Text $fontSize="0.8em" $color="rgba(0,0,0,0.6)">
-                                Tx: {activeTransaction.sourceTxHash.slice(0, 10)}...
-                                {activeTransaction.sourceTxHash.slice(-8)}
-                            </Text>
+                            <ExplorerLink
+                                href={
+                                    activeTransaction.messageId
+                                        ? `https://explorer.hyperlane.xyz/message/${activeTransaction.messageId}`
+                                        : `https://explorer.hyperlane.xyz/?search=${activeTransaction.sourceTxHash}`
+                                }
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                Tx: {activeTransaction.sourceTxHash}
+                            </ExplorerLink>
                         )}
                         {(activeTransaction.status === 'pending_confirmation' || activeTransaction.status === 'confirmed') && isWaitingForDelivery && (
                             <Flex $column $gap={4} $align="center">
@@ -595,6 +602,17 @@ const StatusContainer = styled(Flex).attrs((props) => ({
     background: ${({ $delivered }) => ($delivered ? 'rgba(34, 197, 94, 0.2)' : 'rgba(59, 130, 246, 0.1)')};
     border-radius: 12px;
     border: 1px solid ${({ $delivered }) => ($delivered ? 'rgba(34, 197, 94, 0.5)' : 'rgba(59, 130, 246, 0.3)')};
+`
+
+const ExplorerLink = styled.a`
+    font-size: 0.8em;
+    color: rgba(0, 0, 0, 0.6);
+    word-break: break-all;
+    text-decoration: underline;
+
+    &:hover {
+        color: rgba(0, 0, 0, 0.8);
+    }
 `
 
 const InfoBox = styled(StatusLabel)`

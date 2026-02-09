@@ -60,6 +60,7 @@ export function BridgeExecute({ config: _config, amountToBridge, onDone }: Props
 
     const [phase, setPhase] = useState<BridgePhase>('idle')
     const [txHash, setTxHash] = useState<string>('')
+    const [messageId, setMessageId] = useState<string>('')
     const [error, setError] = useState<string>('')
     const [fee, setFee] = useState<string>('0')
     const [needsApproval, setNeedsApproval] = useState(true)
@@ -172,6 +173,7 @@ export function BridgeExecute({ config: _config, amountToBridge, onDone }: Props
 
             const result = await executeBridge(signer, amountToBridge, address)
             setTxHash(result.txHash)
+            if (result.messageId) setMessageId(result.messageId)
 
             popupsActions.setWaitingPayload({
                 title: 'Bridge Initiated',
@@ -274,9 +276,17 @@ export function BridgeExecute({ config: _config, amountToBridge, onDone }: Props
                                 (checking every 5 seconds)
                             </Text>
                             {txHash && (
-                                <Text $fontSize="0.8em" $color="rgba(0,0,0,0.5)">
-                                    Tx: {txHash.slice(0, 10)}...{txHash.slice(-8)}
-                                </Text>
+                                <ExplorerLink
+                                    href={
+                                        messageId
+                                            ? `https://explorer.hyperlane.xyz/message/${messageId}`
+                                            : `https://explorer.hyperlane.xyz/?search=${txHash}`
+                                    }
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    Tx: {txHash}
+                                </ExplorerLink>
                             )}
                         </Flex>
                     </StatusRow>
@@ -429,6 +439,17 @@ const FeeRow = styled(Flex)`
     padding: 12px 16px;
     background: rgba(255, 255, 255, 0.5);
     border-radius: 8px;
+`
+
+const ExplorerLink = styled.a`
+    font-size: 0.8em;
+    color: rgba(0, 0, 0, 0.5);
+    word-break: break-all;
+    text-decoration: underline;
+
+    &:hover {
+        color: rgba(0, 0, 0, 0.8);
+    }
 `
 
 const StatusRow = styled(Flex)<{ $variant?: 'info' | 'success' | 'error' }>`

@@ -64,7 +64,7 @@ export function HaiAeroStats() {
         {
             header: myRewardsHeader,
             headerStatus: <RewardsTokenArray tokens={['HAI']} hideLabel />,
-            label: 'My haiAERO Rewards',
+            label: 'My Claimable Rewards',
             button: (
                 <HaiButton $variant="yellowish" onClick={() => popupsActions.setIsClaimPopupOpen(true)}>
                     Claim
