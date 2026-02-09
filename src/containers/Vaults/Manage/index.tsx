@@ -72,14 +72,14 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
             if (isHAIVELO) {
                 return ['Mint haiVELO', 'Create Vault']
             } else if (isHAIAERO) {
-                return ['Mint haiAERO', 'Bridge to Optimism', 'Create Vault']
+                return ['Mint haiAERO', 'Bridge haiAERO', 'Create Vault']
             }
             return []
         } else {
             if (isHAIVELO) {
                 return ['Mint haiVELO', 'Manage', 'Activity']
             } else if (isHAIAERO) {
-                return ['Mint haiAERO', 'Bridge to Optimism', 'Manage', 'Activity']
+                return ['Mint haiAERO', 'Bridge haiAERO', 'Manage', 'Activity']
             }
             return ['Manage', 'Activity']
         }

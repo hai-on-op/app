@@ -411,10 +411,10 @@ export function HaiAeroTxModal({ config, plan, onSuccess, ...props }: HaiAeroTxM
             })
         }
 
-        // Step 6: Bridge to Optimism
+        // Step 6: Bridge haiAERO
         list.push({
             key: 'bridge',
-            label: 'Bridge to Optimism',
+            label: 'Bridge haiAERO',
             run: async () => {
                 if (!walletClient || !address) throw new Error('Wallet not connected')
 
@@ -587,7 +587,7 @@ export function HaiAeroTxModal({ config, plan, onSuccess, ...props }: HaiAeroTxM
             case 'bridgeApprove':
                 return `Approve for Bridge`
             case 'bridge':
-                return 'Bridge to Optimism'
+                return 'Bridge haiAERO'
             default:
                 return 'Continue'
         }
@@ -709,7 +709,7 @@ export function HaiAeroTxModal({ config, plan, onSuccess, ...props }: HaiAeroTxM
 
         // Bridge step
         items.push({
-            label: 'Bridge to Optimism',
+            label: 'Bridge haiAERO',
             value: { after: fmt18(totalMintWei.toString()) },
             icon: stepIcon('bridge'),
             isDone: done.bridge,

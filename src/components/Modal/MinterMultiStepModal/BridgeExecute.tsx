@@ -339,7 +339,7 @@ export function BridgeExecute({ config, amountToBridge, onDone }: Props) {
         if (needsApproval) {
             return { label: 'Approve haiAERO', disabled: false, onClick: handleApprove }
         }
-        return { label: 'Bridge to Optimism', disabled: false, onClick: handleBridge }
+        return { label: 'Bridge haiAERO', disabled: false, onClick: handleBridge }
     }
 
     const buttonContent = getButtonContent()
