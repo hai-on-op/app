@@ -8,8 +8,8 @@
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import type { MinterProtocolId, MinterBoostAprData } from '~/types/minterProtocol'
-import { getProtocolConfig } from '~/services/minterProtocol'
 import {
+    getProtocolConfig,
     calculateCollateralMapping,
     calculateBoostMap,
     computeBoostApr,

@@ -476,7 +476,7 @@ export async function findBlockNumberByTimestamp(
             }
 
             // Final sanity check
-            let finalBlock = await provider.getBlock(blockNum)
+            const finalBlock = await provider.getBlock(blockNum)
             if (!finalBlock) return null
 
             if (finalBlock.timestamp > targetTimestamp && blockNum > 1) {

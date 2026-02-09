@@ -73,7 +73,7 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
         (location.pathname === '/vaults/open' &&
             ['HAIAERO'].includes(new URLSearchParams(location.search).get('collateral') || ''))
 
-    const isLstRoute = isHaiVeloRoute || isHaiAeroRoute
+    const _isLstRoute = isHaiVeloRoute || isHaiAeroRoute
 
     const [button, setButton] = useState<HTMLElement | null>(null)
 

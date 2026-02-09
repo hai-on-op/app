@@ -10,7 +10,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAccount, useNetwork, useSwitchNetwork, useWalletClient } from 'wagmi'
 import { ethers, BigNumber } from 'ethers'
 import type {
-    BridgeConfig,
     BridgeQuote,
     BridgeApprovalState,
     BridgeTransaction,
@@ -199,7 +198,7 @@ export function useMinterBridge(
     const sourceBalance = direction === 'base-to-optimism' ? baseBalanceData : optimismBalanceData
     const destinationBalance = direction === 'base-to-optimism' ? optimismBalanceData : baseBalanceData
     const refetchSourceBalance = direction === 'base-to-optimism' ? refetchBaseBalance : refetchOptimismBalance
-    const refetchDestBalance = direction === 'base-to-optimism' ? refetchOptimismBalance : refetchBaseBalance
+    const _refetchDestBalance = direction === 'base-to-optimism' ? refetchOptimismBalance : refetchBaseBalance
 
     // Switch to source chain
     const switchToSourceChain = useCallback(() => {

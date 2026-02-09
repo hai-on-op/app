@@ -45,7 +45,7 @@ function storeDirection(direction: BridgeDirection) {
 
 export function BridgeTab() {
     const { address, isConnected } = useAccount()
-    const { chain } = useNetwork()
+    const { chain: _chain } = useNetwork()
     const { switchNetwork } = useSwitchNetwork()
 
     const [bridgeAmount, setBridgeAmount] = useState('')
@@ -74,9 +74,9 @@ export function BridgeTab() {
         baseBalance,
         optimismBalance,
         sourceBalance,
-        destinationBalance,
+        destinationBalance: _destinationBalance,
         isOnSourceChain,
-        switchToSourceChain,
+        switchToSourceChain: _switchToSourceChain,
         isWaitingForDelivery,
     } = useMinterBridge(bridgeAmount, direction)
 

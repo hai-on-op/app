@@ -53,7 +53,7 @@ function walletClientToSigner(
     return provider.getSigner(account.address)
 }
 
-export function BridgeExecute({ config, amountToBridge, onDone }: Props) {
+export function BridgeExecute({ config: _config, amountToBridge, onDone }: Props) {
     const { address } = useAccount()
     const { data: walletClient } = useWalletClient()
     const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
@@ -66,7 +66,7 @@ export function BridgeExecute({ config, amountToBridge, onDone }: Props) {
     const hasClosedRef = useRef(false)
     const preBridgeBalanceRef = useRef<string | null>(null)
 
-    const bridgeConfig = getBridgeConfig()
+    const _bridgeConfig = getBridgeConfig()
 
     // Format amount for display
     const formattedAmount = useMemo(() => {

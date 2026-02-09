@@ -39,7 +39,7 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
     const { strategyData } = useEarnData()
 
     const isHaiVelo = collateralType === 'HAIVELO' || collateralType === 'HAIVELOV2' || collateralType === 'HAIVELO_V2'
-    const isHaiAero = collateralType === 'HAIAERO'
+    const _isHaiAero = collateralType === 'HAIAERO'
 
     // Prepare data that might be needed for APR calculations
     const aprData = useMemo((): Partial<UnderlyingAPRData> => {

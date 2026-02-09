@@ -12,7 +12,6 @@ import { useQueryClient } from '@tanstack/react-query'
 import { formatNumberWithStyle } from '~/utils'
 import type {
     MinterProtocolId,
-    MinterProtocolConfig,
     MinterProtocolContextValue,
     MinterSelectedToken,
     MinterMintingState,
