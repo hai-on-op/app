@@ -115,18 +115,26 @@ export function ClaimsProvider({ children }: Props) {
     })
 
     useEffect(() => {
+        let isMounted = true
+
         const fetchIncentives = async () => {
             // Always use NETWORK_ID for fetching incentives (Optimism data)
             // regardless of what chain the user is connected to
             if (!account || !publicGeb) return
             try {
                 const incentives = await fetchIncentivesData(publicGeb, account, NETWORK_ID)
-                setIncentivesData(incentives)
+                if (isMounted) {
+                    setIncentivesData(incentives)
+                }
             } catch (error) {
                 console.error('Error fetching incentives data:', error)
             }
         }
         fetchIncentives()
+
+        return () => {
+            isMounted = false
+        }
     }, [publicGeb, account])
     const totalUSD = formatSummaryValue(
         (

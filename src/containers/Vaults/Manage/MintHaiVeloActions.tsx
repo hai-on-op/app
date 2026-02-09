@@ -17,6 +17,8 @@ import { ethers } from 'ethers'
 import { useAccount } from 'wagmi'
 import { HAI_VELO_V2_TOKEN_ADDRESS, VE_NFT_CONTRACT_ADDRESS } from '~/services/haiVeloService'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
+import { useHaiVeloPoolDiscount } from '~/hooks/haivelo/useHaiVeloPoolDiscount'
+import { Link } from '~/components/Link'
 
 export function MintHaiVeloActions() {
     const {
@@ -35,6 +37,9 @@ export function MintHaiVeloActions() {
     const { prices } = useVelodromePrices()
     const { toggleModal } = useStoreActions((actions) => actions.popupsModel)
     const { address } = useAccount()
+
+    // Check if haiVELO can be bought at a discount on the market
+    const { discountPercent, marketRate, swapLink, loading: discountLoading } = useHaiVeloPoolDiscount()
 
     // Target contract for approvals (optimism mainnet)
     // Centralized in haiVeloService
@@ -512,46 +517,63 @@ export function MintHaiVeloActions() {
                 </WarningLabel>
             </Body>
             <Footer>
-                <HaiButton
-                    $variant="yellowish"
-                    $width="100%"
-                    $justify="center"
-                    disabled={!buttonActive || loading}
-                    onClick={() => {
-                        // Always open modal. It will show Approvals (if any) then Execute.
-                        setExecutionPlan({
-                            depositVeloWei: convertAmountVelo
-                                ? ethers.utils.parseUnits((convertAmountVelo || '0').replace(/,/g, ''), 18).toString()
-                                : undefined,
-                            depositVeNftTokenIds: selectedVeVeloNFTs,
-                            depositVeNftTotalWei: (() => {
-                                try {
-                                    const selected = veVeloNFTs.filter((n) => selectedVeVeloNFTs.includes(n.tokenId))
-                                    const sum = selected.reduce(
-                                        (acc, n) => acc.add(ethers.BigNumber.from(n.balance)),
-                                        ethers.BigNumber.from(0)
-                                    )
-                                    return sum.gt(0) ? sum.toString() : undefined
-                                } catch {
-                                    return undefined
-                                }
-                            })(),
-                            migrateV1Wei: convertAmountHaiVeloV1
-                                ? ethers.utils
-                                      .parseUnits((convertAmountHaiVeloV1 || '0').replace(/,/g, ''), 18)
-                                      .toString()
-                                : undefined,
-                        })
-                        setApprovalsOpen(true)
-                        toggleModal({ modal: 'reviewTx', isOpen: true })
-                    }}
-                >
-                    {loading ? 'Loading...' : 'Convert to haiVELO'}
-                </HaiButton>
+                <Flex $width="100%" $gap={12}>
+                    <Link href={swapLink} $width="auto" $textDecoration="none">
+                        <HaiButton $variant="bland" $justify="center">
+                            Swap VELO
+                        </HaiButton>
+                    </Link>
+                    <HaiButton
+                        $variant="yellowish"
+                        $grow={1}
+                        $justify="center"
+                        disabled={!buttonActive || loading}
+                        onClick={() => {
+                            // Always open modal. It will show Approvals (if any) then Execute.
+                            setExecutionPlan({
+                                depositVeloWei: convertAmountVelo
+                                    ? ethers.utils
+                                          .parseUnits((convertAmountVelo || '0').replace(/,/g, ''), 18)
+                                          .toString()
+                                    : undefined,
+                                depositVeNftTokenIds: selectedVeVeloNFTs,
+                                depositVeNftTotalWei: (() => {
+                                    try {
+                                        const selected = veVeloNFTs.filter((n) =>
+                                            selectedVeVeloNFTs.includes(n.tokenId)
+                                        )
+                                        const sum = selected.reduce(
+                                            (acc, n) => acc.add(ethers.BigNumber.from(n.balance)),
+                                            ethers.BigNumber.from(0)
+                                        )
+                                        return sum.gt(0) ? sum.toString() : undefined
+                                    } catch {
+                                        return undefined
+                                    }
+                                })(),
+                                migrateV1Wei: convertAmountHaiVeloV1
+                                    ? ethers.utils
+                                          .parseUnits((convertAmountHaiVeloV1 || '0').replace(/,/g, ''), 18)
+                                          .toString()
+                                    : undefined,
+                            })
+                            setApprovalsOpen(true)
+                            toggleModal({ modal: 'reviewTx', isOpen: true })
+                        }}
+                    >
+                        {loading ? 'Loading...' : 'Convert to haiVELO'}
+                    </HaiButton>
+                </Flex>
                 {approvalsOpen && executionPlan && (
                     <HaiVeloTxModal
                         items={requiredApprovals}
                         plan={executionPlan}
+                        discount={{
+                            loading: discountLoading,
+                            marketRate,
+                            discountPercent,
+                            swapLink,
+                        }}
                         onAllApproved={() => {
                             // After execution done, close
                             setApprovalsOpen(false)

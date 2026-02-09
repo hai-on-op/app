@@ -257,6 +257,8 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
 
     // Initial data fetch - only run once when signer becomes available
     useEffect(() => {
+        let isMounted = true
+
         async function loadInitialData() {
             if (signer && !signerInitialized.current) {
                 signerInitialized.current = true
@@ -268,7 +270,9 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
                         stakingActions.fetchTotalStaked({ signer }),
                         stakingActions.fetchUserStakedBalance({ signer }),
                     ])
-                    setIsInitialDataLoaded(true)
+                    if (isMounted) {
+                        setIsInitialDataLoaded(true)
+                    }
                 } catch (error) {
                     console.error('Error loading initial staking data:', error)
                     // Reset the flag to try again
@@ -285,7 +289,9 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
                         stakingActions.fetchTotalStaked({ provider }),
                     ])
                     // Note: We can't fetch user-specific data without a signer
-                    setIsInitialDataLoaded(true)
+                    if (isMounted) {
+                        setIsInitialDataLoaded(true)
+                    }
                 } catch (error) {
                     console.error('Error loading initial staking data with provider:', error)
                     providerInitialized.current = false
@@ -294,6 +300,10 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
         }
 
         loadInitialData()
+
+        return () => {
+            isMounted = false
+        }
     }, [signer, provider, stakingActions])
 
     // Reset initialization flags when signer or provider changes

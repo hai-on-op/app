@@ -122,7 +122,8 @@ export function StrategyTable({
                 ) => {
                     // HAI-BOLD LP and haiVELO/VELO LP staking only rewards KITE
                     const isHaiBoldLp = strategyType === 'stake' && pair.includes('BOLD')
-                    const isHaiVeloVeloLp = strategyType === 'stake' && pair.includes('HAIVELO') && pair.includes('VELO')
+                    const isHaiVeloVeloLp =
+                        strategyType === 'stake' && pair.includes('HAIVELO') && pair.includes('VELO')
                     const tokens: TokenKey[] =
                         strategyType === 'borrow'
                             ? ['KITE']
