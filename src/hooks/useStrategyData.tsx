@@ -4,7 +4,12 @@ import { formatEther } from 'ethers/lib/utils'
 import { formatNumberWithStyle, VITE_MAINNET_PUBLIC_RPC } from '~/utils'
 
 import { useBalance } from '~/hooks'
-import { fetchHaiVeloLatestTransferAmount, computeHaiVeloBoostApr } from '~/services/haiVeloService'
+import {
+    fetchHaiVeloLatestTransferAmount,
+    computeHaiVeloBoostApr,
+    HAI_REWARD_DISTRIBUTOR_ADDRESS,
+} from '~/services/haiVeloService'
+import { HAI_AERO_DEPOSITER_ADDRESS } from '~/services/minterProtocol/registry'
 import { getLastEpochHaiVeloTotals } from '~/services/haivelo/dataSources'
 import { useHaiVeloCollateralMapping } from './haivelo/useHaiVeloCollateralMapping'
 import { useHaiVeloBoostMap } from './haivelo/useHaiVeloBoostMap'
@@ -43,6 +48,7 @@ export function useStrategyData(
 ) {
     // === State ===
     const [haiVeloLatestTransferAmount, setHaiVeloLatestTransferAmount] = useState(0)
+    const [haiAeroLatestTransferAmount, setHaiAeroLatestTransferAmount] = useState(0)
     const [haiVeloBoostApr, setHaiVeloBoostApr] = useState<any>({
         haiVeloDailyRewardValue: 0,
         totalBoostedValueParticipating: 0,
@@ -98,6 +104,21 @@ export function useStrategyData(
             haiTokenAddress: HAI_TOKEN_ADDRESS,
         }).then((amount) => {
             if (mounted) setHaiVeloLatestTransferAmount(amount)
+        })
+        return () => {
+            mounted = false
+        }
+    }, [])
+
+    useEffect(() => {
+        let mounted = true
+        fetchHaiVeloLatestTransferAmount({
+            rpcUrl: VITE_MAINNET_PUBLIC_RPC,
+            haiTokenAddress: HAI_TOKEN_ADDRESS,
+            depositerAddress: HAI_AERO_DEPOSITER_ADDRESS,
+            distributorAddress: HAI_REWARD_DISTRIBUTOR_ADDRESS,
+        }).then((amount) => {
+            if (mounted) setHaiAeroLatestTransferAmount(amount)
         })
         return () => {
             mounted = false
@@ -180,47 +201,35 @@ export function useStrategyData(
 
     useEffect(() => {
         // Avoid re-compute until inputs are ready
-        if (!haiAeroCollateralMapping || !haiAeroBoostMap || haiVeloLatestTransferAmount === 0) return
-        ;(async () => {
-            // Reuse the same boost APR computation – math is protocol-agnostic
-            const apr = computeHaiVeloBoostApr({
-                mapping: haiAeroCollateralMapping,
-                boostMap: haiAeroBoostMap as any,
-                haiVeloPrice: haiAeroEffectivePrice || 0,
-                haiPrice: haiPrice || 0,
-                latestTransferAmount: haiVeloLatestTransferAmount,
-                userAddress: address,
-            })
+        if (!haiAeroCollateralMapping || !haiAeroBoostMap || haiAeroLatestTransferAmount === 0) return
 
-            // Recompute base APR using last-epoch TVL to mirror underlying APR
-            try {
-                const totals = await getLastEpochHaiVeloTotals(VITE_MAINNET_PUBLIC_RPC)
-                if (totals && Number(haiAeroEffectivePrice || 0) > 0) {
-                    // For haiAero, use the HAIAERO collateral total (which is v2-equivalent)
-                    // The getLastEpochHaiVeloTotals returns haiVelo totals – for now we use haiAero's own TVL
-                    const lastEpochTvlUsd = haiAeroTVL > 0 ? haiAeroTVL : 0
-                    if (lastEpochTvlUsd > 0) {
-                        const baseAprPercent = (apr.haiVeloDailyRewardValue / lastEpochTvlUsd) * 365 * 100
-                        const updated = {
-                            ...apr,
-                            baseAPR: baseAprPercent,
-                            myBoostedAPR: (apr.myBoost || 1) * baseAprPercent,
-                        }
-                        setHaiAeroBoostApr(updated)
-                        return
-                    }
-                }
-            } catch {
-                // Ignore errors
+        // Reuse the same boost APR computation – math is protocol-agnostic
+        const apr = computeHaiVeloBoostApr({
+            mapping: haiAeroCollateralMapping,
+            boostMap: haiAeroBoostMap as any,
+            haiVeloPrice: haiAeroEffectivePrice || 0,
+            haiPrice: haiPrice || 0,
+            latestTransferAmount: haiAeroLatestTransferAmount,
+            userAddress: address,
+        })
+
+        // Recompute base APR using raw TVL from collateral mapping
+        if (haiAeroTVL > 0) {
+            const baseAprPercent = (apr.haiVeloDailyRewardValue / haiAeroTVL) * 365 * 100
+            const updated = {
+                ...apr,
+                baseAPR: baseAprPercent,
+                myBoostedAPR: (apr.myBoost || 1) * baseAprPercent,
             }
-
+            setHaiAeroBoostApr(updated)
+        } else {
             setHaiAeroBoostApr(apr)
-        })()
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
         haiAeroCollateralMapping,
         haiAeroBoostMap,
-        haiVeloLatestTransferAmount,
+        haiAeroLatestTransferAmount,
         address,
         haiAeroEffectivePrice,
         haiPrice,

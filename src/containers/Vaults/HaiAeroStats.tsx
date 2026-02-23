@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 import { useStoreActions } from '~/store'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
-import { useUnderlyingAPR } from '~/hooks/useUnderlyingAPR'
 import { useEarnStrategies } from '~/hooks'
+import { useEarnData } from '~/hooks/useEarnData'
 import { useAeroPrice } from '~/hooks/useAeroPrice'
 import { useMinterStats } from '~/hooks/minter/useMinterStats'
 
@@ -33,14 +33,12 @@ export function HaiAeroStats() {
         return formatNumberWithStyle(pct, { style: 'percent', suffixed: true, maxDecimals: 2 })
     }, [graphSummary])
 
-    const { underlyingAPR, isLoading: aprLoading } = useUnderlyingAPR({ collateralType: 'HAIAERO' })
+    const { strategyData } = useEarnData()
+    const haiAeroBaseApr = ((strategyData?.haiAero?.boostApr as any)?.baseAPR || 0) / 100
 
     const aprFormatted = useMemo(() => {
-        const value = aprLoading ? undefined : underlyingAPR
-        return value === undefined
-            ? '...'
-            : formatNumberWithStyle(value * 100, { style: 'percent', suffixed: true, maxDecimals: 2 })
-    }, [underlyingAPR, aprLoading])
+        return formatNumberWithStyle(haiAeroBaseApr * 100, { style: 'percent', suffixed: true, maxDecimals: 2 })
+    }, [haiAeroBaseApr])
 
     const myRewardsHeader = useMemo(() => {
         return loading

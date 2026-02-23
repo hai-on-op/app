@@ -39,7 +39,7 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
     const { strategyData } = useEarnData()
 
     const isHaiVelo = collateralType === 'HAIVELO' || collateralType === 'HAIVELOV2' || collateralType === 'HAIVELO_V2'
-    const _isHaiAero = collateralType === 'HAIAERO'
+    const isHaiAero = collateralType === 'HAIAERO'
 
     // Prepare data that might be needed for APR calculations
     const aprData = useMemo((): Partial<UnderlyingAPRData> => {
@@ -65,16 +65,20 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
                 haiPrice,
                 // Only pass the specific values we need to avoid dependency issues
                 haiVeloBoostApr: isHaiVelo ? strategyData?.haiVelo?.boostApr : undefined,
+                haiAeroBoostApr: isHaiAero ? strategyData?.haiAero?.boostApr : undefined,
+                haiAeroRawTvl: isHaiAero ? strategyData?.haiAero?.tvl : undefined,
             },
         }
     }, [
         isHaiVelo,
+        isHaiAero,
         strategyData?.haiVelo?.boostApr,
+        strategyData?.haiAero?.boostApr,
+        strategyData?.haiAero?.tvl,
         collateralType,
         liquidationData,
         tokensData,
         velodromePricesData?.HAI?.raw,
-        // For HAIVELO v1/v2, depend on a stringified version of the boost data to avoid object reference issues
     ])
 
     // Fetch underlying APR

@@ -86,9 +86,9 @@ const HAI_AERO_CONFIG: MinterProtocolConfig = {
     },
 
     rewards: {
-        // haiAERO Prod multisig (receives deposited AERO)
-        depositerV1: '0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3',
-        distributorV1: undefined,
+        // haiAERO rewards depositer on Optimism
+        depositerV1: '0xf66ff754a563fd1c9dafa5928d8a02f38ac54241',
+        distributorV1: '0xfEd2eB6325432F0bF7110DcE2CCC5fF811ac3D4D',
         depositerV2: undefined,
         distributorV2: undefined,
     },

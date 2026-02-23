@@ -10,6 +10,7 @@ import {
     HAI_REWARD_DISTRIBUTOR_ADDRESS,
     fetchHaiVeloLatestTransferAmount,
 } from '~/services/haiVeloService'
+import { HAI_AERO_DEPOSITER_ADDRESS } from '~/services/minterProtocol/registry'
 
 const HAIVELO_DEPOSITER = HAIVELO_V1_DEPOSITER_ADDRESS
 const REWARD_DISTRIBUTOR = HAI_REWARD_DISTRIBUTOR_ADDRESS
@@ -353,12 +354,11 @@ class YieldBearingAPRCalculator implements IUnderlyingAPRCalculator {
                 let userBoost = 1
 
                 try {
-                    // haiAERO shares the same reward infrastructure as haiVELO on Optimism.
-                    // Fetch HAI reward transfer from the Optimism depositer → distributor.
+                    // Fetch HAI reward transfer from the haiAERO depositer → distributor on Optimism.
                     const latestTransferAmount = await fetchHaiVeloLatestTransferAmount({
                         rpcUrl: VITE_MAINNET_PUBLIC_RPC,
                         haiTokenAddress: HAI_TOKEN_ADDRESS,
-                        depositerAddress: HAIVELO_DEPOSITER,
+                        depositerAddress: HAI_AERO_DEPOSITER_ADDRESS,
                         distributorAddress: REWARD_DISTRIBUTOR,
                     })
 
@@ -369,10 +369,13 @@ class YieldBearingAPRCalculator implements IUnderlyingAPRCalculator {
                     // Use last-epoch TVL from Optimism if provided, else fallback
                     const lastEpochTvlUsd = data.externalProtocolData?.lastEpochHaiAeroTvlUsd as number | undefined
                     const haiAeroBoostApr = data.externalProtocolData?.haiAeroBoostApr
+                    const haiAeroRawTvl = data.externalProtocolData?.haiAeroRawTvl as number | undefined
                     const actualTVL =
                         lastEpochTvlUsd && lastEpochTvlUsd > 0
                             ? lastEpochTvlUsd
-                            : haiAeroBoostApr?.totalBoostedValueParticipating || 1000000
+                            : haiAeroRawTvl && haiAeroRawTvl > 0
+                              ? haiAeroRawTvl
+                              : haiAeroBoostApr?.totalBoostedValueParticipating || 1000000
 
                     const baseAPRPercentage = actualTVL > 0 ? (dailyRewardValue / actualTVL) * 365 * 100 : 0
                     baseAPR = baseAPRPercentage / 100
