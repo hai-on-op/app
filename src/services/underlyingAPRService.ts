@@ -374,8 +374,8 @@ class YieldBearingAPRCalculator implements IUnderlyingAPRCalculator {
                         lastEpochTvlUsd && lastEpochTvlUsd > 0
                             ? lastEpochTvlUsd
                             : haiAeroRawTvl && haiAeroRawTvl > 0
-                              ? haiAeroRawTvl
-                              : haiAeroBoostApr?.totalBoostedValueParticipating || 1000000
+                            ? haiAeroRawTvl
+                            : haiAeroBoostApr?.totalBoostedValueParticipating || 1000000
 
                     const baseAPRPercentage = actualTVL > 0 ? (dailyRewardValue / actualTVL) * 365 * 100 : 0
                     baseAPR = baseAPRPercentage / 100
