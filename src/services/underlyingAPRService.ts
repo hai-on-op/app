@@ -304,21 +304,27 @@ class YieldBearingAPRCalculator implements IUnderlyingAPRCalculator {
                         distributorAddress: REWARD_DISTRIBUTOR,
                     })
 
+                    // HAI rewards are shared between haiVELO depositors and haiVELO/VELO LP stakers
+                    // proportional to TVL. Adjust the transfer amount to only reflect the haiVELO share.
+                    const haiVeloDepositTvlUsd = data.externalProtocolData?.haiVeloDepositTvlUsd as number | undefined
+                    const haiVeloLpStakedTvlUsd = data.externalProtocolData?.haiVeloLpStakedTvlUsd as number | undefined
+                    const haiVeloRewardShare =
+                        haiVeloDepositTvlUsd && haiVeloDepositTvlUsd > 0 && haiVeloLpStakedTvlUsd && haiVeloLpStakedTvlUsd > 0
+                            ? haiVeloDepositTvlUsd / (haiVeloDepositTvlUsd + haiVeloLpStakedTvlUsd)
+                            : 1
+                    const adjustedTransferAmount = haiVeloLatestTransferAmount * haiVeloRewardShare
+
                     // Calculate daily reward quantity (divide by 7 as done in useStrategyData)
-                    const haiVeloDailyRewardQuantity = haiVeloLatestTransferAmount / 7 || 0
+                    const haiVeloDailyRewardQuantity = adjustedTransferAmount / 7 || 0
 
                     // Get HAI price from external protocol data
                     const haiPrice = data.externalProtocolData?.haiPrice || 1
                     const haiVeloDailyRewardValue = haiVeloDailyRewardQuantity * haiPrice
 
-                    // Prefer last-epoch TVL if provided, else fallback to current boosted TVL from strategy data
+                    // Use current boosted TVL from strategy data
                     const haiVeloBoostApr = data.externalProtocolData?.haiVeloBoostApr
-                    const lastEpochTvlUsd = data.externalProtocolData?.lastEpochHaiVeloTvlUsd as number | undefined
 
-                    const actualTVL =
-                        lastEpochTvlUsd && lastEpochTvlUsd > 0
-                            ? lastEpochTvlUsd
-                            : haiVeloBoostApr?.totalBoostedValueParticipating || 1000000 // Fallback to current boosted TVL or $1M
+                    const actualTVL = haiVeloBoostApr?.totalBoostedValueParticipating || haiVeloDepositTvlUsd || 1000000
 
                     // Calculate base APR using the same formula as strategy data, but return BASE only:
                     // baseAPR (decimal) = (dailyRewardValue / totalBoostedValueParticipating) * 365

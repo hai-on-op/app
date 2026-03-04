@@ -10,7 +10,6 @@ import {
     HAI_REWARD_DISTRIBUTOR_ADDRESS,
 } from '~/services/haiVeloService'
 import { HAI_AERO_DEPOSITER_ADDRESS } from '~/services/minterProtocol/registry'
-import { getLastEpochHaiVeloTotals } from '~/services/haivelo/dataSources'
 import { useHaiVeloCollateralMapping } from './haivelo/useHaiVeloCollateralMapping'
 import { useHaiVeloBoostMap } from './haivelo/useHaiVeloBoostMap'
 import { useHaiAeroCollateralMapping } from './haiaero/useHaiAeroCollateralMapping'
@@ -125,43 +124,60 @@ export function useStrategyData(
         }
     }, [])
 
+    // === haiVELO/VELO LP Staking (hooks + TVL only, needed for reward sharing) ===
+    const haiVeloVeloLpService = useMemo(
+        () =>
+            buildStakingService(
+                haiVeloVeloLpConfig.addresses.manager as `0x${string}`,
+                undefined,
+                haiVeloVeloLpConfig.decimals
+            ),
+        []
+    )
+
+    const { data: haiVeloVeloLpAccount } = useStakeAccount(
+        address as `0x${string}`,
+        haiVeloVeloLpConfig.namespace,
+        haiVeloVeloLpService
+    )
+    const { data: haiVeloVeloLpStats } = useStakeStats(haiVeloVeloLpConfig.namespace, haiVeloVeloLpService)
+    const haiVeloVeloLpAprData = useLpStakingApr(haiVeloVeloLpConfig)
+    const { lpPriceUsd: haiVeloVeloLpPriceUsd, loading: haiVeloVeloLpTvlLoading } = useLpTvl(haiVeloVeloLpConfig)
+
+    // Calculate user's LP staked value in USD
+    const haiVeloVeloLpUserStaked = Number(haiVeloVeloLpAccount?.stakedBalance || 0)
+    const haiVeloVeloLpTotalStaked = Number(haiVeloVeloLpStats?.totalStaked || 0)
+    // Use LP token price to calculate staked values
+    const haiVeloVeloLpUserPositionUsd = haiVeloVeloLpUserStaked * (haiVeloVeloLpPriceUsd || 0)
+    // Campaign TVL = total staked LP tokens * LP token price
+    const haiVeloVeloLpStakedTvlUsd = haiVeloVeloLpTotalStaked * (haiVeloVeloLpPriceUsd || 0)
+
     useEffect(() => {
         // Avoid re-compute until inputs are ready
         if (!haiVeloCollateralMapping || !haiVeloBoostMap || haiVeloLatestTransferAmount === 0) return
-        ;(async () => {
-            const apr = computeHaiVeloBoostApr({
-                mapping: haiVeloCollateralMapping,
-                boostMap: haiVeloBoostMap as any,
-                haiVeloPrice: haiVeloPrice || 0,
-                haiPrice: haiPrice || 0,
-                latestTransferAmount: haiVeloLatestTransferAmount,
-                userAddress: address,
-            })
 
-            // Recompute base APR using last-epoch TVL to mirror underlying APR
-            try {
-                const totals = await getLastEpochHaiVeloTotals(VITE_MAINNET_PUBLIC_RPC)
-                if (totals && Number(haiVeloPrice || 0) > 0) {
-                    const lastEpochTvlUsd = (totals.v1Total + totals.v2Total) * Number(haiVeloPrice || 0)
-                    const baseAprPercent =
-                        lastEpochTvlUsd > 0 ? (apr.haiVeloDailyRewardValue / lastEpochTvlUsd) * 365 * 100 : 0
-                    const updated = {
-                        ...apr,
-                        baseAPR: baseAprPercent,
-                        myBoostedAPR: (apr.myBoost || 1) * baseAprPercent,
-                    }
-                    setHaiVeloBoostApr(updated)
-                    return
-                }
-            } catch {
-                // Ignore errors from getLastEpochHaiVeloTotals
-            }
+        // HAI rewards are shared between haiVELO depositors and haiVELO/VELO LP stakers
+        // proportional to TVL. Adjust the transfer amount to only reflect the haiVELO share.
+        const haiVeloRewardShare =
+            haiVeloTVL > 0 && haiVeloVeloLpStakedTvlUsd > 0
+                ? haiVeloTVL / (haiVeloTVL + haiVeloVeloLpStakedTvlUsd)
+                : 1
+        const adjustedTransferAmount = haiVeloLatestTransferAmount * haiVeloRewardShare
 
-            setHaiVeloBoostApr(apr)
-        })()
-        // Only re-run when stable inputs change
+        const apr = computeHaiVeloBoostApr({
+            mapping: haiVeloCollateralMapping,
+            boostMap: haiVeloBoostMap as any,
+            haiVeloPrice: haiVeloPrice || 0,
+            haiPrice: haiPrice || 0,
+            latestTransferAmount: adjustedTransferAmount,
+            userAddress: address,
+        })
+
+        // Use the APR computed from current collateral mapping TVL directly.
+        // This reflects the actual current distribution proportions accurately.
+        setHaiVeloBoostApr(apr)
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [haiVeloCollateralMapping, haiVeloBoostMap, haiVeloLatestTransferAmount, address, haiVeloPrice, haiPrice])
+    }, [haiVeloCollateralMapping, haiVeloBoostMap, haiVeloLatestTransferAmount, address, haiVeloPrice, haiPrice, haiVeloTVL, haiVeloVeloLpStakedTvlUsd])
 
     // === HAI AERO Deposit Strategy ===
     const haiAeroData = systemStateData?.collateralTypes.find((collateral: any) => collateral.id === 'HAIAERO')
@@ -307,34 +323,6 @@ export function useStrategyData(
             totalBoostedValueParticipating: haiBoldLpStakedTvlUsd,
         }
     }, [haiBoldLpAprData, haiBoldLpBoostResult.lpBoost, haiBoldLpUserPositionUsd, haiBoldLpStakedTvlUsd])
-
-    // === haiVELO/VELO LP Staking Strategy ===
-    const haiVeloVeloLpService = useMemo(
-        () =>
-            buildStakingService(
-                haiVeloVeloLpConfig.addresses.manager as `0x${string}`,
-                undefined,
-                haiVeloVeloLpConfig.decimals
-            ),
-        []
-    )
-
-    const { data: haiVeloVeloLpAccount } = useStakeAccount(
-        address as `0x${string}`,
-        haiVeloVeloLpConfig.namespace,
-        haiVeloVeloLpService
-    )
-    const { data: haiVeloVeloLpStats } = useStakeStats(haiVeloVeloLpConfig.namespace, haiVeloVeloLpService)
-    const haiVeloVeloLpAprData = useLpStakingApr(haiVeloVeloLpConfig)
-    const { lpPriceUsd: haiVeloVeloLpPriceUsd, loading: haiVeloVeloLpTvlLoading } = useLpTvl(haiVeloVeloLpConfig)
-
-    // Calculate user's LP staked value in USD
-    const haiVeloVeloLpUserStaked = Number(haiVeloVeloLpAccount?.stakedBalance || 0)
-    const haiVeloVeloLpTotalStaked = Number(haiVeloVeloLpStats?.totalStaked || 0)
-    // Use LP token price to calculate staked values
-    const haiVeloVeloLpUserPositionUsd = haiVeloVeloLpUserStaked * (haiVeloVeloLpPriceUsd || 0)
-    // Campaign TVL = total staked LP tokens * LP token price
-    const haiVeloVeloLpStakedTvlUsd = haiVeloVeloLpTotalStaked * (haiVeloVeloLpPriceUsd || 0)
 
     // Calculate boost for haiVELO/VELO LP staking
     const haiVeloVeloLpBoostResult = useMemo(() => {

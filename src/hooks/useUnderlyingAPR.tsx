@@ -2,9 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { underlyingAPRService, type UnderlyingAPRResult, type UnderlyingAPRData } from '~/services/underlyingAPRService'
 import { useStoreState } from '~/store'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
-import { getLastEpochHaiVeloTotals } from '~/services/haivelo/dataSources'
 import { getLastEpochTotals, getProtocolConfig } from '~/services/minterProtocol'
-import { VITE_MAINNET_PUBLIC_RPC } from '~/utils'
 import { useEarnData } from '~/hooks/useEarnData'
 
 interface UseUnderlyingAPRProps {
@@ -65,6 +63,8 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
                 haiPrice,
                 // Only pass the specific values we need to avoid dependency issues
                 haiVeloBoostApr: isHaiVelo ? strategyData?.haiVelo?.boostApr : undefined,
+                haiVeloDepositTvlUsd: isHaiVelo ? strategyData?.haiVelo?.tvl : undefined,
+                haiVeloLpStakedTvlUsd: isHaiVelo ? strategyData?.haiVeloVeloLp?.tvl : undefined,
                 haiAeroBoostApr: isHaiAero ? strategyData?.haiAero?.boostApr : undefined,
                 haiAeroRawTvl: isHaiAero ? strategyData?.haiAero?.tvl : undefined,
             },
@@ -73,6 +73,8 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
         isHaiVelo,
         isHaiAero,
         strategyData?.haiVelo?.boostApr,
+        strategyData?.haiVelo?.tvl,
+        strategyData?.haiVeloVeloLp?.tvl,
         strategyData?.haiAero?.boostApr,
         strategyData?.haiAero?.tvl,
         collateralType,
@@ -90,26 +92,10 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
 
         const fetchAPR = async () => {
             try {
-                // Enrich with last-epoch TVL for haiVELO types to avoid service-side fetching
                 let enriched = aprData
-                const isHaiVeloLocal =
-                    collateralType === 'HAIVELO' || collateralType === 'HAIVELOV2' || collateralType === 'HAIVELO_V2'
                 const isHaiAeroLocal = collateralType === 'HAIAERO'
 
-                if (isHaiVeloLocal) {
-                    const haiVeloPrice = aprData?.price ? Number(aprData.price) : 0
-                    const totals = await getLastEpochHaiVeloTotals(VITE_MAINNET_PUBLIC_RPC)
-                    const lastEpochTvlUsd = totals
-                        ? (Number(totals.v1Total || 0) + Number(totals.v2Total || 0)) * (haiVeloPrice || 0)
-                        : undefined
-                    enriched = {
-                        ...aprData,
-                        externalProtocolData: {
-                            ...(aprData.externalProtocolData || {}),
-                            lastEpochHaiVeloTvlUsd: lastEpochTvlUsd ?? undefined,
-                        },
-                    }
-                } else if (isHaiAeroLocal) {
+                if (isHaiAeroLocal) {
                     // Enrich with last-epoch TVL for haiAERO from the Optimism subgraph
                     const haiAeroPrice = aprData?.price ? Number(aprData.price) : 0
                     try {
