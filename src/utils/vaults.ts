@@ -323,9 +323,7 @@ export const formatQuerySafeToVault = (
         )?.symbol || safe.collateralType.id.toUpperCase()
 
     const liquidationInfo = collateralLiquidationData[collateralToken]
-    const totalDebt = liquidationInfo
-        ? (returnTotalDebt(safe.debt, liquidationInfo.accumulatedRate) as string)
-        : '0'
+    const totalDebt = liquidationInfo ? (returnTotalDebt(safe.debt, liquidationInfo.accumulatedRate) as string) : '0'
     const collateralRatio =
         !safe.debt || safe.debt === '0'
             ? Infinity.toString()
@@ -338,12 +336,7 @@ export const formatQuerySafeToVault = (
     const status =
         riskStateToStatus[ratioChecker(parseFloat(collateralRatio), parseFloat(safe.collateralType.safetyCRatio))]
     const liquidationPrice = liquidationInfo
-        ? getLiquidationPrice(
-              safe.collateral,
-              totalDebt,
-              liquidationInfo.liquidationCRatio,
-              currentRedemptionPrice
-          )
+        ? getLiquidationPrice(safe.collateral, totalDebt, liquidationInfo.liquidationCRatio, currentRedemptionPrice)
         : '0'
     return {
         ...safe,

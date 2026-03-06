@@ -85,6 +85,9 @@ export function useEarnStrategies() {
     // Ensure haiVELO deposit strategy APR matches underlying APR
     const { underlyingAPR: haiVeloUnderlyingAPR } = useUnderlyingAPR({ collateralType: 'HAIVELOV2' })
 
+    // Ensure haiAERO deposit strategy APR matches underlying APR
+    const { underlyingAPR: haiAeroUnderlyingAPR } = useUnderlyingAPR({ collateralType: 'HAIAERO' })
+
     // Get token prices for rewards calculation
     const getTokenPrice = useCallback(
         (token: string): number => {
@@ -181,6 +184,10 @@ export function useEarnStrategies() {
         const haiVeloUserPositionUsd = strategyData.haiVelo?.userPosition || 0
         const haiVeloBoostApr = strategyData.haiVelo?.boostApr
 
+        const haiAeroTvl = strategyData.haiAero?.tvl || 0
+        const haiAeroUserPositionUsd = strategyData.haiAero?.userPosition || 0
+        const haiAeroBoostApr = strategyData.haiAero?.boostApr
+
         const kiteApr = strategyData.kiteStaking?.apr || 0
         const kiteTvl = strategyData.kiteStaking?.tvl || 0
         const kiteUserPosition = strategyData.kiteStaking?.userPosition || 0
@@ -235,6 +242,15 @@ export function useEarnStrategies() {
                 boostEligible: true,
             }),
             createSpecialStrategy({
+                pair: ['HAIAERO'],
+                tvl: haiAeroTvl,
+                apr: haiAeroUnderlyingAPR || 0,
+                userPosition: haiAeroUserPositionUsd,
+                strategyType: 'deposit',
+                boostAPR: haiAeroBoostApr as BoostAPRData,
+                boostEligible: true,
+            }),
+            createSpecialStrategy({
                 pair: ['KITE'],
                 tvl: kiteTvl,
                 apr: kiteApr,
@@ -265,7 +281,7 @@ export function useEarnStrategies() {
                 rewards: [{ token: 'KITE', emission: 25 }],
             }),
         ]
-    }, [strategyData, haiVeloUnderlyingAPR])
+    }, [strategyData, haiVeloUnderlyingAPR, haiAeroUnderlyingAPR])
 
     const calculateVeloStrategies = useCallback((): BaseStrategy[] => {
         // Safe fallback if required data is missing

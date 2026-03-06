@@ -7,6 +7,7 @@ export const {
     VITE_WALLETCONNECT_ID,
     VITE_ALCHEMY_KEY,
     VITE_GRAPH_API_KEY,
+    VITE_PUBLIC_BASE_RPC,
     VITE_MAINNET_PUBLIC_RPC,
     VITE_TESTNET_PUBLIC_RPC,
     VITE_FLAGSMITH_API_KEY,
@@ -17,6 +18,9 @@ export enum ChainId {
     MAINNET = 10,
     OPTIMISM_GOERLI = 420,
     OPTIMISM_SEPOLIA = 11155420,
+    // Base chain IDs for haiAERO
+    BASE = 8453,
+    BASE_SEPOLIA = 84532,
 }
 
 export const NETWORK_ID = parseInt(VITE_NETWORK_ID ?? '11155420')
@@ -118,6 +122,13 @@ export const COLLATERAL_BATCH_SIZE = 5_000_000 // blocks
 export const HARDCODED_KITE = 8
 
 export const DEPRECATED_COLLATERALS = ['MOO-VELO-V2-OP-VELO', 'SNX', 'WBTC', 'LUSD-A', 'LINK']
+
+/**
+ * DEV FEATURE FLAG: When enabled, minter pages (haiVELO, haiAERO) will show
+ * the "Create Vault" flow instead of "Manage Vault" if the user's vault(s)
+ * have zero collateral AND zero debt. Set to `false` for production behavior.
+ */
+export const TREAT_EMPTY_VAULT_AS_NEW = true
 
 // Token Addresses
 export const TOKEN_ADDRESSES = {

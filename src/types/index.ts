@@ -1,5 +1,7 @@
 export * from './auctions'
+export * from './bridge'
 export * from './distributions'
+export * from './minterProtocol'
 export * from './misc'
 export * from './system'
 export * from './theme'

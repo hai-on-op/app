@@ -4,7 +4,7 @@ import { formatEther } from 'ethers/lib/utils'
 import type { Collateral, FormState } from '~/types'
 import { VaultAction, formatSummaryValue, returnTotalValue } from '~/utils'
 import { useStoreState } from '~/store'
-import { useBalance } from '~/hooks'
+import { useBalance, useHaiAeroBalance } from '~/hooks'
 
 export function useCollateral(action: VaultAction, formState: FormState, collateral: string): Collateral {
     const {
@@ -58,7 +58,14 @@ export function useCollateral(action: VaultAction, formState: FormState, collate
         }
     }, [singleVault, formState.deposit, formState.withdraw, action])
 
-    const balance = useBalance(name)
+    // Use SDK balance for most tokens
+    const sdkBalance = useBalance(name)
+
+    // Use custom hook for haiAERO balance (SDK doesn't have it configured)
+    const haiAeroBalance = useHaiAeroBalance()
+
+    // Use haiAERO balance if this is HAIAERO collateral, otherwise use SDK balance
+    const balance = name === 'HAIAERO' ? haiAeroBalance : sdkBalance
 
     const collateralLiquidationData = liquidationData?.collateralLiquidationData[name]
 
