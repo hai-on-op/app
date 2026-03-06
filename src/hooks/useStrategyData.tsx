@@ -159,9 +159,7 @@ export function useStrategyData(
         // HAI rewards are shared between haiVELO depositors and haiVELO/VELO LP stakers
         // proportional to TVL. Adjust the transfer amount to only reflect the haiVELO share.
         const haiVeloRewardShare =
-            haiVeloTVL > 0 && haiVeloVeloLpStakedTvlUsd > 0
-                ? haiVeloTVL / (haiVeloTVL + haiVeloVeloLpStakedTvlUsd)
-                : 1
+            haiVeloTVL > 0 && haiVeloVeloLpStakedTvlUsd > 0 ? haiVeloTVL / (haiVeloTVL + haiVeloVeloLpStakedTvlUsd) : 1
         const adjustedTransferAmount = haiVeloLatestTransferAmount * haiVeloRewardShare
 
         const apr = computeHaiVeloBoostApr({
@@ -177,7 +175,16 @@ export function useStrategyData(
         // This reflects the actual current distribution proportions accurately.
         setHaiVeloBoostApr(apr)
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [haiVeloCollateralMapping, haiVeloBoostMap, haiVeloLatestTransferAmount, address, haiVeloPrice, haiPrice, haiVeloTVL, haiVeloVeloLpStakedTvlUsd])
+    }, [
+        haiVeloCollateralMapping,
+        haiVeloBoostMap,
+        haiVeloLatestTransferAmount,
+        address,
+        haiVeloPrice,
+        haiPrice,
+        haiVeloTVL,
+        haiVeloVeloLpStakedTvlUsd,
+    ])
 
     // === HAI AERO Deposit Strategy ===
     const haiAeroData = systemStateData?.collateralTypes.find((collateral: any) => collateral.id === 'HAIAERO')

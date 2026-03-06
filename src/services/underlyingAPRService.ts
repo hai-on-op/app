@@ -309,7 +309,10 @@ class YieldBearingAPRCalculator implements IUnderlyingAPRCalculator {
                     const haiVeloDepositTvlUsd = data.externalProtocolData?.haiVeloDepositTvlUsd as number | undefined
                     const haiVeloLpStakedTvlUsd = data.externalProtocolData?.haiVeloLpStakedTvlUsd as number | undefined
                     const haiVeloRewardShare =
-                        haiVeloDepositTvlUsd && haiVeloDepositTvlUsd > 0 && haiVeloLpStakedTvlUsd && haiVeloLpStakedTvlUsd > 0
+                        haiVeloDepositTvlUsd &&
+                        haiVeloDepositTvlUsd > 0 &&
+                        haiVeloLpStakedTvlUsd &&
+                        haiVeloLpStakedTvlUsd > 0
                             ? haiVeloDepositTvlUsd / (haiVeloDepositTvlUsd + haiVeloLpStakedTvlUsd)
                             : 1
                     const adjustedTransferAmount = haiVeloLatestTransferAmount * haiVeloRewardShare
