@@ -2,8 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { underlyingAPRService, type UnderlyingAPRResult, type UnderlyingAPRData } from '~/services/underlyingAPRService'
 import { useStoreState } from '~/store'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
-import { getLastEpochHaiVeloTotals } from '~/services/haivelo/dataSources'
-import { VITE_MAINNET_PUBLIC_RPC } from '~/utils'
+import { getLastEpochTotals, getProtocolConfig } from '~/services/minterProtocol'
 import { useEarnData } from '~/hooks/useEarnData'
 
 interface UseUnderlyingAPRProps {
@@ -38,6 +37,7 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
     const { strategyData } = useEarnData()
 
     const isHaiVelo = collateralType === 'HAIVELO' || collateralType === 'HAIVELOV2' || collateralType === 'HAIVELO_V2'
+    const isHaiAero = collateralType === 'HAIAERO'
 
     // Prepare data that might be needed for APR calculations
     const aprData = useMemo((): Partial<UnderlyingAPRData> => {
@@ -63,16 +63,24 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
                 haiPrice,
                 // Only pass the specific values we need to avoid dependency issues
                 haiVeloBoostApr: isHaiVelo ? strategyData?.haiVelo?.boostApr : undefined,
+                haiVeloDepositTvlUsd: isHaiVelo ? strategyData?.haiVelo?.tvl : undefined,
+                haiVeloLpStakedTvlUsd: isHaiVelo ? strategyData?.haiVeloVeloLp?.tvl : undefined,
+                haiAeroBoostApr: isHaiAero ? strategyData?.haiAero?.boostApr : undefined,
+                haiAeroRawTvl: isHaiAero ? strategyData?.haiAero?.tvl : undefined,
             },
         }
     }, [
         isHaiVelo,
+        isHaiAero,
         strategyData?.haiVelo?.boostApr,
+        strategyData?.haiVelo?.tvl,
+        strategyData?.haiVeloVeloLp?.tvl,
+        strategyData?.haiAero?.boostApr,
+        strategyData?.haiAero?.tvl,
         collateralType,
         liquidationData,
         tokensData,
         velodromePricesData?.HAI?.raw,
-        // For HAIVELO v1/v2, depend on a stringified version of the boost data to avoid object reference issues
     ])
 
     // Fetch underlying APR
@@ -84,22 +92,27 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
 
         const fetchAPR = async () => {
             try {
-                // Enrich with last-epoch TVL for haiVELO types to avoid service-side fetching
                 let enriched = aprData
-                const isHaiVelo =
-                    collateralType === 'HAIVELO' || collateralType === 'HAIVELOV2' || collateralType === 'HAIVELO_V2'
-                if (isHaiVelo) {
-                    const haiVeloPrice = aprData?.price ? Number(aprData.price) : 0
-                    const totals = await getLastEpochHaiVeloTotals(VITE_MAINNET_PUBLIC_RPC)
-                    const lastEpochTvlUsd = totals
-                        ? (Number(totals.v1Total || 0) + Number(totals.v2Total || 0)) * (haiVeloPrice || 0)
-                        : undefined
-                    enriched = {
-                        ...aprData,
-                        externalProtocolData: {
-                            ...(aprData.externalProtocolData || {}),
-                            lastEpochHaiVeloTvlUsd: lastEpochTvlUsd ?? undefined,
-                        },
+                const isHaiAeroLocal = collateralType === 'HAIAERO'
+
+                if (isHaiAeroLocal) {
+                    // Enrich with last-epoch TVL for haiAERO from the Optimism subgraph
+                    const haiAeroPrice = aprData?.price ? Number(aprData.price) : 0
+                    try {
+                        const haiAeroConfig = getProtocolConfig('haiAero')
+                        const totals = await getLastEpochTotals(haiAeroConfig)
+                        const lastEpochTvlUsd = totals
+                            ? (Number(totals.v1Total || 0) + Number(totals.v2Total || 0)) * (haiAeroPrice || 0)
+                            : undefined
+                        enriched = {
+                            ...aprData,
+                            externalProtocolData: {
+                                ...(aprData.externalProtocolData || {}),
+                                lastEpochHaiAeroTvlUsd: lastEpochTvlUsd ?? undefined,
+                            },
+                        }
+                    } catch (error) {
+                        console.warn('[useUnderlyingAPR] Failed to fetch haiAERO last-epoch TVL:', error)
                     }
                 }
 

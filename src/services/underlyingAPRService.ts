@@ -10,6 +10,7 @@ import {
     HAI_REWARD_DISTRIBUTOR_ADDRESS,
     fetchHaiVeloLatestTransferAmount,
 } from '~/services/haiVeloService'
+import { HAI_AERO_DEPOSITER_ADDRESS } from '~/services/minterProtocol/registry'
 
 const HAIVELO_DEPOSITER = HAIVELO_V1_DEPOSITER_ADDRESS
 const REWARD_DISTRIBUTOR = HAI_REWARD_DISTRIBUTOR_ADDRESS
@@ -303,21 +304,30 @@ class YieldBearingAPRCalculator implements IUnderlyingAPRCalculator {
                         distributorAddress: REWARD_DISTRIBUTOR,
                     })
 
+                    // HAI rewards are shared between haiVELO depositors and haiVELO/VELO LP stakers
+                    // proportional to TVL. Adjust the transfer amount to only reflect the haiVELO share.
+                    const haiVeloDepositTvlUsd = data.externalProtocolData?.haiVeloDepositTvlUsd as number | undefined
+                    const haiVeloLpStakedTvlUsd = data.externalProtocolData?.haiVeloLpStakedTvlUsd as number | undefined
+                    const haiVeloRewardShare =
+                        haiVeloDepositTvlUsd &&
+                        haiVeloDepositTvlUsd > 0 &&
+                        haiVeloLpStakedTvlUsd &&
+                        haiVeloLpStakedTvlUsd > 0
+                            ? haiVeloDepositTvlUsd / (haiVeloDepositTvlUsd + haiVeloLpStakedTvlUsd)
+                            : 1
+                    const adjustedTransferAmount = haiVeloLatestTransferAmount * haiVeloRewardShare
+
                     // Calculate daily reward quantity (divide by 7 as done in useStrategyData)
-                    const haiVeloDailyRewardQuantity = haiVeloLatestTransferAmount / 7 || 0
+                    const haiVeloDailyRewardQuantity = adjustedTransferAmount / 7 || 0
 
                     // Get HAI price from external protocol data
                     const haiPrice = data.externalProtocolData?.haiPrice || 1
                     const haiVeloDailyRewardValue = haiVeloDailyRewardQuantity * haiPrice
 
-                    // Prefer last-epoch TVL if provided, else fallback to current boosted TVL from strategy data
+                    // Use current boosted TVL from strategy data
                     const haiVeloBoostApr = data.externalProtocolData?.haiVeloBoostApr
-                    const lastEpochTvlUsd = data.externalProtocolData?.lastEpochHaiVeloTvlUsd as number | undefined
 
-                    const actualTVL =
-                        lastEpochTvlUsd && lastEpochTvlUsd > 0
-                            ? lastEpochTvlUsd
-                            : haiVeloBoostApr?.totalBoostedValueParticipating || 1000000 // Fallback to current boosted TVL or $1M
+                    const actualTVL = haiVeloBoostApr?.totalBoostedValueParticipating || haiVeloDepositTvlUsd || 1000000
 
                     // Calculate base APR using the same formula as strategy data, but return BASE only:
                     // baseAPR (decimal) = (dailyRewardValue / totalBoostedValueParticipating) * 365
@@ -339,6 +349,58 @@ class YieldBearingAPRCalculator implements IUnderlyingAPRCalculator {
                     breakdown: [
                         {
                             source: 'HAI VELO Deposit Strategy (Base)',
+                            apr: baseAPR,
+                            description: `Base yield before boost; your boost is ~${userBoost?.toFixed(2)}x`,
+                        },
+                    ],
+                    lastUpdated: new Date(),
+                }
+            }
+
+            // For HAI AERO, calculate APR from Optimism-chain reward data
+            if (data.collateralType.toUpperCase() === 'HAIAERO') {
+                let baseAPR = 0
+                let userBoost = 1
+
+                try {
+                    // Fetch HAI reward transfer from the haiAERO depositer → distributor on Optimism.
+                    const latestTransferAmount = await fetchHaiVeloLatestTransferAmount({
+                        rpcUrl: VITE_MAINNET_PUBLIC_RPC,
+                        haiTokenAddress: HAI_TOKEN_ADDRESS,
+                        depositerAddress: HAI_AERO_DEPOSITER_ADDRESS,
+                        distributorAddress: REWARD_DISTRIBUTOR,
+                    })
+
+                    const dailyRewardQuantity = latestTransferAmount / 7 || 0
+                    const haiPrice = data.externalProtocolData?.haiPrice || 1
+                    const dailyRewardValue = dailyRewardQuantity * haiPrice
+
+                    // Use last-epoch TVL from Optimism if provided, else fallback
+                    const lastEpochTvlUsd = data.externalProtocolData?.lastEpochHaiAeroTvlUsd as number | undefined
+                    const haiAeroBoostApr = data.externalProtocolData?.haiAeroBoostApr
+                    const haiAeroRawTvl = data.externalProtocolData?.haiAeroRawTvl as number | undefined
+                    const actualTVL =
+                        lastEpochTvlUsd && lastEpochTvlUsd > 0
+                            ? lastEpochTvlUsd
+                            : haiAeroRawTvl && haiAeroRawTvl > 0
+                            ? haiAeroRawTvl
+                            : haiAeroBoostApr?.totalBoostedValueParticipating || 1000000
+
+                    const baseAPRPercentage = actualTVL > 0 ? (dailyRewardValue / actualTVL) * 365 * 100 : 0
+                    baseAPR = baseAPRPercentage / 100
+
+                    userBoost = haiAeroBoostApr?.myBoost || 1
+                } catch (error) {
+                    console.error('[YieldBearingAPR] Error calculating haiAERO APR:', error)
+                    baseAPR = 0
+                }
+
+                return {
+                    collateralType: data.collateralType,
+                    underlyingAPR: baseAPR,
+                    breakdown: [
+                        {
+                            source: 'haiAERO Deposit Strategy (Optimism)',
                             apr: baseAPR,
                             description: `Base yield before boost; your boost is ~${userBoost?.toFixed(2)}x`,
                         },
@@ -421,6 +483,7 @@ export class UnderlyingAPRService {
         this.calculators.set('HAIVELO', yieldBearingCalculator)
         this.calculators.set('HAIVELOV2', yieldBearingCalculator)
         this.calculators.set('HAIVELO_V2', yieldBearingCalculator)
+        this.calculators.set('HAIAERO', yieldBearingCalculator)
 
         // Standard tokens (no underlying yield)
         this.calculators.set('WETH', standardTokenCalculator)

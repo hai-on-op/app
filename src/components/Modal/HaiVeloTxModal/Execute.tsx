@@ -7,7 +7,6 @@ import { ActionState, formatNumberWithStyle } from '~/utils'
 import { useContract } from '~/hooks/useContract'
 
 import HAI_VELO_V2_ABI from '~/abis/haiVELO_v2.json'
-import { HAI_VELO_V2_TOKEN_ADDRESS } from '~/services/haiVeloService'
 
 import styled from 'styled-components'
 import { Flex, HaiButton, Text } from '~/styles'
@@ -15,7 +14,7 @@ import { ModalBody, ModalFooter } from '../index'
 import { ArrowRightCircle, Check } from 'react-feather'
 import { Loader } from '~/components/Loader'
 import { TransactionSummary } from '~/components/TransactionSummary'
-import { useHaiVelo } from '~/providers/HaiVeloProvider'
+import { useMinterProtocol } from '~/providers/MinterProtocolProvider'
 import { useVault } from '~/providers/VaultProvider'
 
 type ExecutionPlan = {
@@ -39,19 +38,17 @@ type Props = {
 export function Execute({ plan, onDone, onStepDone }: Props) {
     const { address } = useAccount()
     // const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
-    const {
-        data: {
-            veloBalanceFormatted,
-            veVeloBalanceFormatted,
-            haiVeloV1BalanceFormatted,
-            haiVeloV2Balance,
-            haiVeloV2BalanceFormatted,
-            refetch,
-        },
-    } = useHaiVelo()
+    const { accountData, refetchAccount, config } = useMinterProtocol()
+    const { baseTokenBalance, veNft, v1Balance, v2Balance } = accountData
 
-    const CONTRACT_ADDRESS = HAI_VELO_V2_TOKEN_ADDRESS
-    const contract = useContract(CONTRACT_ADDRESS, HAI_VELO_V2_ABI as any, true)
+    // Map to legacy variable names for compatibility
+    const baseTokenBalanceFormatted = baseTokenBalance.formatted || '0'
+    const veNftBalanceFormatted = veNft.totalFormatted || '0'
+    const v1BalanceFormatted = v1Balance || '0'
+    const v2BalanceRaw = v2Balance.raw || '0'
+    const v2BalanceFormatted = v2Balance.formatted || '0'
+
+    const contract = useContract(config.tokens.wrappedTokenV2Address, HAI_VELO_V2_ABI as unknown[], true)
     const { refreshVault } = useVault()
 
     const [currentIndex, setCurrentIndex] = useState(0)
@@ -62,9 +59,9 @@ export function Execute({ plan, onDone, onStepDone }: Props) {
 
     // Take a snapshot of initial balances for stable "before" values in the summary
     const [initialBalances] = useState({
-        velo: veloBalanceFormatted,
-        veVelo: veVeloBalanceFormatted,
-        haiVeloV1: haiVeloV1BalanceFormatted,
+        baseToken: baseTokenBalanceFormatted,
+        veNft: veNftBalanceFormatted,
+        v1: v1BalanceFormatted,
     })
 
     useEffect(() => {
@@ -75,10 +72,13 @@ export function Execute({ plan, onDone, onStepDone }: Props) {
 
     const steps: Step[] = useMemo(() => {
         const list: Step[] = []
+        const baseSymbol = config.tokens.baseTokenSymbol
+        const v1Symbol = config.tokens.wrappedTokenV1Symbol || `${config.displayName} v1`
+
         if (plan.depositVeloWei && BigNumber.from(plan.depositVeloWei).gt(0)) {
             list.push({
                 key: 'depositVelo',
-                label: `Convert VELO (${formatNumberWithStyle(plan.depositVeloWei, { maxDecimals: 2 })})`,
+                label: `Convert ${baseSymbol} (${formatNumberWithStyle(plan.depositVeloWei, { maxDecimals: 2 })})`,
                 run: async () => {
                     if (!contract || !address) return
                     const gas = await (contract as any).estimateGas.deposit(address, plan.depositVeloWei)
@@ -92,7 +92,7 @@ export function Execute({ plan, onDone, onStepDone }: Props) {
         if (plan.depositVeNftTokenIds && plan.depositVeNftTokenIds.length > 0) {
             list.push({
                 key: 'depositVeNfts',
-                label: `Convert ${plan.depositVeNftTokenIds.length} veVELO NFT(s)`,
+                label: `Convert ${plan.depositVeNftTokenIds.length} ve${baseSymbol} NFT(s)`,
                 run: async () => {
                     if (!contract || !address) return
                     const tokenIds = plan.depositVeNftTokenIds!.map((id) => BigNumber.from(id))
@@ -107,7 +107,7 @@ export function Execute({ plan, onDone, onStepDone }: Props) {
         if (plan.migrateV1Wei && BigNumber.from(plan.migrateV1Wei).gt(0)) {
             list.push({
                 key: 'migrateV1',
-                label: `Migrate haiVELO v1 (${formatNumberWithStyle(plan.migrateV1Wei, { maxDecimals: 2 })})`,
+                label: `Migrate ${v1Symbol} (${formatNumberWithStyle(plan.migrateV1Wei, { maxDecimals: 2 })})`,
                 run: async () => {
                     if (!contract || !address) return
                     const gas = await (contract as any).estimateGas.migrateV1toV2(address, plan.migrateV1Wei)
@@ -119,7 +119,7 @@ export function Execute({ plan, onDone, onStepDone }: Props) {
             })
         }
         return list
-    }, [plan, contract, address])
+    }, [plan, contract, address, config])
 
     const handleRun = useCallback(async () => {
         const step = steps[currentIndex]
@@ -131,8 +131,8 @@ export function Execute({ plan, onDone, onStepDone }: Props) {
             if (hasClosedRef.current) return
 
             setDone((d) => ({ ...d, [step.key]: true }))
-            // Refresh haiVELO provider balances (v2 etc.)
-            await refetch()
+            // Refresh minter protocol balances (v2 etc.)
+            await refetchAccount()
             // Also refresh VaultProvider collateral balances (and tokens) for the Create tab
             await refreshVault()
             if (hasClosedRef.current) return
@@ -152,7 +152,7 @@ export function Execute({ plan, onDone, onStepDone }: Props) {
                 setPending(false)
             }
         }
-    }, [steps, currentIndex, refetch, onStepDone, refreshVault])
+    }, [steps, currentIndex, refetchAccount, onStepDone, refreshVault])
 
     // Note: We advance steps explicitly after each confirmed tx in handleRun to avoid double-advancing
 
@@ -160,15 +160,17 @@ export function Execute({ plan, onDone, onStepDone }: Props) {
         if (isComplete) return 'Done'
         const step = steps[currentIndex]
         if (!step) return 'Done'
+        const baseSymbol = config.tokens.baseTokenSymbol
+        const v1Symbol = config.tokens.wrappedTokenV1Symbol || `${config.displayName} v1`
         switch (step.key) {
             case 'depositVelo':
-                return 'Convert VELO'
+                return `Convert ${baseSymbol}`
             case 'depositVeNfts':
-                return 'Convert veVELO NFTs'
+                return `Convert ve${baseSymbol} NFTs`
             case 'migrateV1':
-                return 'Migrate haiVELO v1'
+                return `Migrate ${v1Symbol}`
         }
-    }, [steps, currentIndex, isComplete])
+    }, [steps, currentIndex, isComplete, config])
 
     // Format helper: parse 18-decimal wei to readable with 2 decimals
     const fmt18 = (wei?: string) =>
@@ -176,17 +178,27 @@ export function Execute({ plan, onDone, onStepDone }: Props) {
             ? formatNumberWithStyle(ethers.utils.formatUnits(wei, 18), { maxDecimals: 2 })
             : undefined
 
+    const baseSymbol = config.tokens.baseTokenSymbol
+    const v1Symbol = config.tokens.wrappedTokenV1Symbol || `${config.displayName} v1`
+
     return (
         <>
             <ModalBody>
                 <Flex $width="100%" $column $gap={12} $align="flex-start" $justify="flex-start">
-                    <Description>Convert VELO, veVELO NFTs, and migrate haiVELO v1 to haiVELO v2.</Description>
+                    <Description>
+                        Convert {baseSymbol}, ve{baseSymbol} NFTs, and migrate {v1Symbol} to {config.displayName}.
+                    </Description>
                     <TransactionSummary
                         items={(() => {
-                            const items: any[] = []
-                            const velo = BigNumber.from(plan.depositVeloWei || 0)
-                            const veNft = BigNumber.from((plan as any).depositVeNftTotalWei || 0)
-                            const v1 = BigNumber.from(plan.migrateV1Wei || 0)
+                            const items: {
+                                label: string
+                                value: { current?: string; after: string }
+                                icon?: React.ReactNode
+                                isDone?: boolean
+                            }[] = []
+                            const baseTokenWei = BigNumber.from(plan.depositVeloWei || 0)
+                            const veNftWei = BigNumber.from((plan as any).depositVeNftTotalWei || 0)
+                            const v1Wei = BigNumber.from(plan.migrateV1Wei || 0)
                             const stepIcon = (key: Step['key']) => {
                                 const idx = steps.findIndex((s) => s.key === key)
                                 if (idx === -1) return null
@@ -195,12 +207,12 @@ export function Execute({ plan, onDone, onStepDone }: Props) {
                                 return <ArrowRightCircle width={16} className={'stateless'} />
                             }
 
-                            if (velo.gt(0)) {
-                                const initial = parseFloat(initialBalances.velo || '0')
+                            if (baseTokenWei.gt(0)) {
+                                const initial = parseFloat(initialBalances.baseToken || '0')
                                 const diff = parseFloat(ethers.utils.formatUnits(plan.depositVeloWei!, 18))
                                 const after = Math.max(0, initial - diff)
                                 items.push({
-                                    label: 'VELO',
+                                    label: baseSymbol,
                                     value: {
                                         current: formatNumberWithStyle(initial, { maxDecimals: 2 }),
                                         after: formatNumberWithStyle(after, { maxDecimals: 2 }),
@@ -211,13 +223,13 @@ export function Execute({ plan, onDone, onStepDone }: Props) {
                             }
 
                             if ((plan.depositVeNftTokenIds?.length || 0) > 0) {
-                                const initial = parseFloat(initialBalances.veVelo || '0')
+                                const initial = parseFloat(initialBalances.veNft || '0')
                                 const diff = parseFloat(
                                     ethers.utils.formatUnits((plan as any).depositVeNftTotalWei || '0', 18)
                                 )
                                 const after = Math.max(0, initial - diff)
                                 items.push({
-                                    label: 'veVELO',
+                                    label: `ve${baseSymbol}`,
                                     value: {
                                         current: formatNumberWithStyle(initial, { maxDecimals: 2 }),
                                         after: formatNumberWithStyle(after, { maxDecimals: 2 }),
@@ -227,12 +239,12 @@ export function Execute({ plan, onDone, onStepDone }: Props) {
                                 })
                             }
 
-                            if (v1.gt(0)) {
-                                const initial = parseFloat(initialBalances.haiVeloV1 || '0')
+                            if (v1Wei.gt(0)) {
+                                const initial = parseFloat(initialBalances.v1 || '0')
                                 const diff = parseFloat(ethers.utils.formatUnits(plan.migrateV1Wei!, 18))
                                 const after = Math.max(0, initial - diff)
                                 items.push({
-                                    label: 'haiVELO v1',
+                                    label: v1Symbol,
                                     value: {
                                         current: formatNumberWithStyle(initial, { maxDecimals: 2 }),
                                         after: formatNumberWithStyle(after, { maxDecimals: 2 }),
@@ -242,25 +254,25 @@ export function Execute({ plan, onDone, onStepDone }: Props) {
                                 })
                             }
 
-                            // Special handling for the Total haiVELO v2 row
+                            // Special handling for the Total v2 row
                             if (isComplete) {
                                 items.push({
-                                    label: 'Total haiVELO v2',
+                                    label: `Total ${config.displayName}`,
                                     value: {
-                                        after: haiVeloV2BalanceFormatted,
+                                        after: v2BalanceFormatted,
                                     },
                                 })
                             } else {
-                                const remainingVelo = done['depositVelo'] ? BigNumber.from(0) : velo
-                                const remainingVeNft = done['depositVeNfts'] ? BigNumber.from(0) : veNft
-                                const remainingV1 = done['migrateV1'] ? BigNumber.from(0) : v1
-                                const totalFromRemainingPlan = remainingVelo.add(remainingVeNft).add(remainingV1)
-                                const afterTotal = BigNumber.from(haiVeloV2Balance || '0').add(totalFromRemainingPlan)
+                                const remainingBaseToken = done['depositVelo'] ? BigNumber.from(0) : baseTokenWei
+                                const remainingVeNft = done['depositVeNfts'] ? BigNumber.from(0) : veNftWei
+                                const remainingV1 = done['migrateV1'] ? BigNumber.from(0) : v1Wei
+                                const totalFromRemainingPlan = remainingBaseToken.add(remainingVeNft).add(remainingV1)
+                                const afterTotal = BigNumber.from(v2BalanceRaw || '0').add(totalFromRemainingPlan)
 
                                 items.push({
-                                    label: 'Total haiVELO v2',
+                                    label: `Total ${config.displayName}`,
                                     value: {
-                                        current: haiVeloV2BalanceFormatted,
+                                        current: v2BalanceFormatted,
                                         after: fmt18(afterTotal.toString()) || '0',
                                     },
                                 })

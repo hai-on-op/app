@@ -20,6 +20,7 @@ export const formatCollateralLabel = (collateralName: string) => {
     if (collateralName === 'LUSD-A') return 'LUSD'
     if (collateralName === 'HAIVELO') return 'haiVELO v1'
     if (collateralName === 'HAIVELOV2') return 'haiVELO v2'
+    if (collateralName === 'HAIAERO') return 'haiAERO'
     return collateralName
 }
 

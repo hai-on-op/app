@@ -375,7 +375,10 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
 
                 {/* Calculate Net APR: (underlying APR + minting incentives APR) - stability fee */}
                 {(() => {
-                    const isHaiVelo = collateral.name === 'HAIVELO' || collateral.name === 'HAIVELOV2'
+                    const isHaiVelo =
+                        collateral.name === 'HAIVELO' ||
+                        collateral.name === 'HAIVELOV2' ||
+                        collateral.name === 'HAIAERO'
                     const underlyingAPR = isHaiVelo ? underlyingAPRValue * (hvBoost || 1) : underlyingAPRValue
                     const mintingIncentivesAPR = boostData?.myBoostedAPR ? boostData.myBoostedAPR / 100 : 0
                     const stabilityFeeCost = -parseFloat(summary.stabilityFee.raw || '0') // Use raw value directly as negative cost
