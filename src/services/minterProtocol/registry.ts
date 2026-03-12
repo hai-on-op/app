@@ -45,7 +45,7 @@ const HAI_VELO_CONFIG: MinterProtocolConfig = {
     dataSources: {
         rpcUrl: VITE_MAINNET_PUBLIC_RPC || 'https://mainnet.optimism.io',
         subgraphUrl:
-            'https://api.goldsky.com/api/public/project_cmh0kaidl00khw2p29dmebtp5/subgraphs/hai-mainnet-v2/v1.0.9/gn',
+            'https://api.goldsky.com/api/public/project_cmh0kaidl00khw2p29dmebtp5/subgraphs/hai-mainnet-v2/v1.0.10/gn',
         lpSubgraphUrl: undefined,
     },
 
