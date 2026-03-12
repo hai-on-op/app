@@ -48,7 +48,7 @@ export function Execute({ plan, onDone, onStepDone }: Props) {
     const v2BalanceRaw = v2Balance.raw || '0'
     const v2BalanceFormatted = v2Balance.formatted || '0'
 
-    const contract = useContract(config.tokens.wrappedTokenV2Address, HAI_VELO_V2_ABI as unknown[], true)
+    const contract = useContract(config.tokens.wrappedTokenV2Address, HAI_VELO_V2_ABI as unknown[])
     const { refreshVault } = useVault()
 
     const [currentIndex, setCurrentIndex] = useState(0)
