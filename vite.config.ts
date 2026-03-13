@@ -1,17 +1,31 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import vercel from 'vite-plugin-vercel'
+import { visualizer } from 'rollup-plugin-visualizer'
 import tsConfigPaths from 'vite-tsconfig-paths'
 // https://vitejs.dev/config/
 
 export default defineConfig(() => {
+    const shouldAnalyzeBundle = process.env.ANALYZE_BUNDLE === '1'
     const isSandboxedTestEnv = Boolean(process.env.CI || process.env.CODEX_CI || process.env.CODEX_SANDBOX)
 
     return {
         resolve: {
             dedupe: ['buffer', 'bn.js', 'keccak', 'ethers'],
         },
-        plugins: [react(), vercel(), tsConfigPaths()],
+        plugins: [
+            react(),
+            vercel(),
+            tsConfigPaths(),
+            shouldAnalyzeBundle &&
+                visualizer({
+                    filename: 'build/bundle-stats.html',
+                    gzipSize: true,
+                    brotliSize: true,
+                    open: false,
+                    template: 'treemap',
+                }),
+        ].filter(Boolean),
         vercel: {
             expiration: 25,
             additionalEndpoints: [
