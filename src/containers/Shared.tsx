@@ -420,7 +420,7 @@ export function Shared({ children }: Props) {
                 {isSplash && (
                     <video
                         ref={splashVideo}
-                        src="/assets/tie-dye-reduced.mov"
+                        src="/assets/tie-dye-reduced.mp4"
                         width={1920}
                         height={1072}
                         muted
@@ -428,6 +428,7 @@ export function Shared({ children }: Props) {
                         playsInline
                         loop
                         preload="metadata"
+                        poster="/assets/tie-dye.webp"
                     />
                 )}
             </Background>
@@ -487,6 +488,10 @@ const Background = styled(CenteredFlex)`
     bottom: 0px;
     background-color: white;
     background-image: url('/assets/tie-dye.jpg');
+    background-image: image-set(
+        url('/assets/tie-dye.webp') type('image/webp'),
+        url('/assets/tie-dye.jpg') type('image/jpeg')
+    );
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;
