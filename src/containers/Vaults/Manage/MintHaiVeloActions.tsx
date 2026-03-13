@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 
-import { formatNumberWithStyle, sanitizeDecimals, Status } from '~/utils'
+import { formatNumberWithStyle, Status } from '~/utils'
 import styled from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
 import { StatusLabel } from '~/components/StatusLabel'
@@ -16,6 +16,7 @@ import { useContract } from '~/hooks/useContract'
 import { ethers } from 'ethers'
 import { useAccount } from 'wagmi'
 import { HAI_VELO_V2_TOKEN_ADDRESS, VE_NFT_CONTRACT_ADDRESS } from '~/services/haiVeloService'
+import { buildRequiredErc20ApprovalItem } from '~/services/minterProtocol/approval'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { useHaiVeloPoolDiscount } from '~/hooks/haivelo/useHaiVeloPoolDiscount'
 import { Link } from '~/components/Link'
@@ -214,16 +215,17 @@ export function MintHaiVeloActions() {
 
         const pushErc20IfNeeded = (label: string, symbol: string, amountStr: string, allowance?: any) => {
             const tokenMeta = tokensData[symbol]
-            const addr = tokenMeta?.address
-            const decimals = (tokenMeta?.decimals || 18).toString()
-            const amount = String(amountStr || '0')
-            const amountNum = Number(amount)
-            if (!addr || amountNum <= 0) return
-            // Only include if we know allowance and it's insufficient
-            if (!allowance) return
-            const needed = ethers.utils.parseUnits(sanitizeDecimals(amount, Number(decimals)), Number(decimals))
-            if (allowance.lt(needed)) {
-                items.push({ kind: 'ERC20', label, amount, tokenAddress: addr, decimals, spender: HAI_VELO_V2_TARGET })
+            const approvalItem = buildRequiredErc20ApprovalItem({
+                label,
+                amount: amountStr,
+                tokenAddress: tokenMeta?.address,
+                decimals: tokenMeta?.decimals || 18,
+                spender: HAI_VELO_V2_TARGET,
+                allowance,
+            })
+
+            if (approvalItem) {
+                items.push(approvalItem)
             }
         }
 

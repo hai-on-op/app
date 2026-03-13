@@ -29,6 +29,9 @@ yarn-error.log*
 # IDE
 .idea
 .vscode
+.cursor/
+.specstory/
+.cursorindexingignore
 
 # Solidity
 src/artifacts
