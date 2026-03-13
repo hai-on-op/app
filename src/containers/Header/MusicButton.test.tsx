@@ -87,4 +87,16 @@ describe('MusicButton', () => {
 
         expect(await screen.findByTestId('youtube-player')).not.toBeNull()
     })
+
+    it('does not mount the youtube player from preloaded playing state alone', () => {
+        resetMusicState(true)
+
+        render(
+            <ThemeProvider theme={darkTheme}>
+                <MusicButton />
+            </ThemeProvider>
+        )
+
+        expect(screen.queryByTestId('youtube-player')).toBeNull()
+    })
 })

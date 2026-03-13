@@ -1,4 +1,5 @@
 import dayjs from 'dayjs'
+import { useMemo } from 'react'
 import { type LineProps, ResponsiveLine, type SliceTooltipProps } from '@nivo/line'
 import styled from 'styled-components'
 
@@ -6,6 +7,7 @@ import { Timeframe } from '~/utils'
 import { Text } from '~/styles'
 
 import { BorderedLine } from './BorderedLine'
+import { downsampleSeriesPoints } from './downsample'
 
 const formatMap: Record<Timeframe, { format: string; tickValues: number }> = {
     [Timeframe.ONE_DAY]: {
@@ -41,7 +43,15 @@ export function LineChart({
     ...props
 }: LineChartProps) {
     const { format, tickValues } = formatMap[timeframe]
-    const hasChartData = data.some((serie) => Array.isArray(serie.data) && serie.data.length > 0)
+    const chartData = useMemo(
+        () =>
+            data.map((serie) => ({
+                ...serie,
+                data: downsampleSeriesPoints(serie.data),
+            })),
+        [data]
+    )
+    const hasChartData = chartData.some((serie) => Array.isArray(serie.data) && serie.data.length > 0)
 
     const formatXValue = (value: string | number | Date) => {
         const time = new Date(value).getTime() / 1000
@@ -56,7 +66,7 @@ export function LineChart({
 
     return (
         <ResponsiveLine
-            data={data}
+            data={chartData}
             colors={(d) => d.color}
             xScale={{
                 type: 'time',

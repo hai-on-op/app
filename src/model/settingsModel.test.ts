@@ -14,10 +14,10 @@ describe('settings model', () => {
             expect(getInitialIsPlayingMusic()).toBe(false)
         })
 
-        it('restores enabled music only for explicit opt-in sessions', () => {
+        it('does not restore enabled music from persisted state on boot', () => {
             localStorage.setItem('musicDisabled', 'false')
 
-            expect(getInitialIsPlayingMusic()).toBe(true)
+            expect(getInitialIsPlayingMusic()).toBe(false)
         })
     })
 

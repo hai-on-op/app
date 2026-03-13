@@ -16,13 +16,7 @@ export function MusicButton(props: HTMLAttributes<HTMLButtonElement>) {
     } = useStoreActions((actions) => actions)
 
     const [player, setPlayer] = useState<any>()
-    const [shouldRenderPlayer, setShouldRenderPlayer] = useState(isPlayingMusic)
-
-    useEffect(() => {
-        if (isPlayingMusic) {
-            setShouldRenderPlayer(true)
-        }
-    }, [isPlayingMusic])
+    const [shouldRenderPlayer, setShouldRenderPlayer] = useState(false)
 
     useEffect(() => {
         if (!player) return

@@ -4,7 +4,8 @@ const language = localStorage.getItem('lang')
 const isLight = localStorage.getItem('isLight')
 
 export function getInitialIsPlayingMusic() {
-    return localStorage.getItem('musicDisabled') === 'false'
+    // Never autoplay music from persisted state; require an explicit user click each session.
+    return false
 }
 // const local_blockchain_connection = localStorage.getItem(
 //     'blockchain_connection'
