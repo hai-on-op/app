@@ -1,9 +1,7 @@
 import { useMemo, useCallback } from 'react'
-import { useStoreState } from '~/store'
 // import { useVault } from '~/providers/VaultProvider'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { useAccount } from 'wagmi'
-import { formatEther } from 'ethers/lib/utils'
 import { useLpPool } from './lp/useLpPool'
 import { useLpUserTotalLiquidity } from './lp/useLpUserTotalLiquidity'
 import { useLpUserPositionValue } from './lp/useLpUserPositionValue'
@@ -13,6 +11,7 @@ import { useVelodromePositions } from './useVelodrome'
 // Replace legacy provider with react-query staking hooks
 import { useStakeAccount } from '~/hooks/staking/useStakeAccount'
 import { useStakeStats } from '~/hooks/staking/useStakeStats'
+import { useStakingUsersByIds } from '~/hooks/staking/useStakingUsersByIds'
 import { useHaiVeloCollateralMapping } from './haivelo/useHaiVeloCollateralMapping'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { useQuery } from '@apollo/client'
@@ -48,10 +47,19 @@ export function useBoost() {
         ALL_COLLATERAL_TYPES_QUERY
     )
 
-    // Get staking data from store
-    const {
-        stakingModel: { usersStakingData, totalStaked },
-    } = useStoreState((state) => state)
+    const relevantStakingAddresses = useMemo(() => {
+        const ids = new Set<string>()
+
+        if (addressLower) ids.add(addressLower)
+        Object.keys(hvMapping || {}).forEach((userAddress) => ids.add(userAddress.toLowerCase()))
+        Object.values(minterVaultsData || {}).forEach((vaultData: any) => {
+            Object.keys(vaultData?.userDebtMapping || {}).forEach((userAddress) => ids.add(userAddress.toLowerCase()))
+        })
+
+        return Array.from(ids)
+    }, [addressLower, hvMapping, minterVaultsData])
+
+    const { usersStakingData, loading: stakingUsersLoading } = useStakingUsersByIds(relevantStakingAddresses)
 
     const {
         haiMarketPrice,
@@ -108,14 +116,14 @@ export function useBoost() {
     )
     const haiVeloBoostResult = useMemo(() => {
         const userStakingAmount = Number(userKITEStaked)
-        const totalStakingAmount = Number(formatEther(totalStaked || '0'))
+        const totalStakingAmount = Number(totalKITEStaked || 0)
         return calculateHaiVeloBoost({
             userStakingAmount,
             totalStakingAmount,
             userHaiVELODeposited: userHaiVeloDepositedCombined,
             totalHaiVELODeposited: totalHaiVeloDepositedCombined,
         })
-    }, [userKITEStaked, totalStaked, userHaiVeloDepositedCombined, totalHaiVeloDepositedCombined])
+    }, [userKITEStaked, totalKITEStaked, userHaiVeloDepositedCombined, totalHaiVeloDepositedCombined])
 
     // Calculate vault boost values (replacing HAI minting boost)
     const vaultBoostResult = useMemo(() => {
@@ -177,7 +185,7 @@ export function useBoost() {
                         return { ...acc, [lowercasedAddress]: 1 }
                     } else {
                         const userStakingAmount = Number(usersStakingData[lowercasedAddress]?.stakedBalance)
-                        const totalStakingAmount = Number(formatEther(totalStaked || '0'))
+                        const totalStakingAmount = Number(totalKITEStaked || 0)
                         const userVaultMinted = Number(value)
                         const totalVaultMinted = Number(ctypeMinterData?.totalMinted)
                         const vaultBoost = calculateVaultBoost({
@@ -241,7 +249,7 @@ export function useBoost() {
             if (userVaultMinted > 0 && ctypeVaultMinted > 0) {
                 // Calculate boost for this collateral type for aggregated calculation
                 const userStakingAmount = Number(userKITEStaked)
-                const totalStakingAmount = Number(formatEther(totalStaked || '0'))
+                const totalStakingAmount = Number(totalKITEStaked || 0)
 
                 const vaultBoost = calculateVaultBoost({
                     userStakingAmount,
@@ -277,7 +285,7 @@ export function useBoost() {
         minterVaultsLoading,
         collateralTypesLoading,
         userKITEStaked,
-        totalStaked,
+        totalKITEStaked,
         address,
         haiPrice,
         usersStakingData,
@@ -422,6 +430,12 @@ export function useBoost() {
         baseAPR,
 
         // Loading state
-        loading: lpDataLoading || positionsLoading || stakingLoading || minterVaultsLoading || collateralTypesLoading,
+        loading:
+            lpDataLoading ||
+            positionsLoading ||
+            stakingLoading ||
+            stakingUsersLoading ||
+            minterVaultsLoading ||
+            collateralTypesLoading,
     }
 }

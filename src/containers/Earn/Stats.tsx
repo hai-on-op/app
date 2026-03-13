@@ -3,8 +3,7 @@ import { useAccount } from 'wagmi'
 
 import { formatNumberWithStyle } from '~/utils'
 import { useStoreActions } from '~/store'
-import { useEarnStrategies } from '~/hooks'
-import { useBoost } from '~/hooks/useBoost'
+import { useEarnContext } from '~/providers/EarnProvider'
 
 import { HaiButton } from '~/styles'
 import { RewardsTokenArray } from '~/components/TokenArray'
@@ -35,9 +34,9 @@ const StyledRewardsAPYWithBoost = styled.div`
 export function EarnStats() {
     const { address } = useAccount()
 
-    const { averageAPR, totalBoostablePosition, totalRewardsValue, rewardTokens, loading } = useEarnStrategies()
+    const { averageAPR, totalBoostablePosition, totalRewardsValue, rewardTokens, loading, netBoostValue } =
+        useEarnContext()
     const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
-    const { netBoostValue } = useBoost()
     const netBoostFormatted = `${formatNumberWithStyle(netBoostValue, { minDecimals: 0, maxDecimals: 2 })}x`
 
     const formattedWeightedAPR = useMemo(() => {

@@ -166,9 +166,19 @@ interface StakingContextType {
 // Create context
 const StakingContext = createContext<StakingContextType | undefined>(undefined)
 
+type StakingProviderProps = {
+    children: React.ReactNode
+    /**
+     * Opt into the expensive staking-users index only for routes that need
+     * cross-user boost calculations. Plain staking routes only need account data.
+     */
+    loadUsersIndex?: boolean
+}
+
 // Provider component
-export function StakingProvider({ children }: { children: React.ReactNode }) {
+export function StakingProvider({ children, loadUsersIndex = false }: StakingProviderProps) {
     const { address } = useAccount()
+    const normalizedAddress = address?.toLowerCase()
 
     const [isRefetching, setIsRefetching] = useState(false)
     const [isInitialDataLoaded, setIsInitialDataLoaded] = useState(false)
@@ -184,8 +194,6 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
     const pendingWithdrawals = useStoreState((state) => state.stakingModel.pendingWithdrawals)
     const { setPendingWithdrawals } = useStoreActions((actions) => actions.stakingModel)
 
-    const targetAddress = address ? address : '0x0000000000000000000000000000000000000000'
-
     // Track when the signer is first available
     const signerInitialized = useRef(false)
     // Track when provider is initialized (as fallback)
@@ -196,9 +204,10 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
         loading: userLoading,
         refetch: refetchUser,
     } = useQuery(STAKING_USER_QUERY, {
-        variables: { id: targetAddress?.toLowerCase() },
-        skip: !targetAddress,
-        fetchPolicy: 'network-only',
+        variables: { id: normalizedAddress },
+        skip: !normalizedAddress,
+        fetchPolicy: 'cache-first',
+        nextFetchPolicy: 'cache-first',
     })
 
     const {
@@ -206,7 +215,9 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
         loading: allUsersLoading,
         refetch: refetchAllUsers,
     } = useQuery(ALL_STAKING_USERS_QUERY, {
-        fetchPolicy: 'network-only',
+        skip: !loadUsersIndex,
+        fetchPolicy: 'cache-first',
+        nextFetchPolicy: 'cache-first',
     })
 
     const {
@@ -214,46 +225,47 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
         loading: statsLoading,
         refetch: refetchStats,
     } = useQuery(STAKING_STATS_QUERY, {
-        fetchPolicy: 'network-only',
+        fetchPolicy: 'cache-first',
+        nextFetchPolicy: 'cache-first',
     })
 
     // Process all users data and update the model
     useEffect(() => {
-        if (allUsersData?.stakingUsers) {
-            const modelUsersMap: Record<string, ModelUserStakingData> = {}
-            const pendingWithdrawalsMap: Record<
-                string,
-                {
-                    amount: number
-                    timestamp: number
-                    status: 'PENDING' | 'COMPLETED' | 'CANCELLED'
-                } | null
-            > = {}
+        if (!loadUsersIndex || !allUsersData?.stakingUsers) return
 
-            allUsersData.stakingUsers.forEach((user: any) => {
-                const formattedBalance = formatBigNumber(user.stakedBalance)
-                const userId = user.id.toLowerCase()
+        const modelUsersMap: Record<string, ModelUserStakingData> = {}
+        const pendingWithdrawalsMap: Record<
+            string,
+            {
+                amount: number
+                timestamp: number
+                status: 'PENDING' | 'COMPLETED' | 'CANCELLED'
+            } | null
+        > = {}
 
-                modelUsersMap[userId] = {
-                    id: userId,
-                    stakedBalance: formattedBalance,
+        allUsersData.stakingUsers.forEach((user: any) => {
+            const formattedBalance = formatBigNumber(user.stakedBalance)
+            const userId = user.id.toLowerCase()
+
+            modelUsersMap[userId] = {
+                id: userId,
+                stakedBalance: formattedBalance,
+            }
+
+            if (user.pendingWithdrawal) {
+                pendingWithdrawalsMap[userId] = {
+                    amount: Number(formatBigNumber(user.pendingWithdrawal.amount)),
+                    timestamp: Number(user.pendingWithdrawal.timestamp),
+                    status: user.pendingWithdrawal.status || 'PENDING',
                 }
+            } else {
+                pendingWithdrawalsMap[userId] = null
+            }
+        })
 
-                if (user.pendingWithdrawal) {
-                    pendingWithdrawalsMap[userId] = {
-                        amount: Number(formatBigNumber(user.pendingWithdrawal.amount)),
-                        timestamp: Number(user.pendingWithdrawal.timestamp),
-                        status: user.pendingWithdrawal.status || 'PENDING',
-                    }
-                } else {
-                    pendingWithdrawalsMap[userId] = null
-                }
-            })
-
-            stakingActions.setUsersStakingData(modelUsersMap)
-            setPendingWithdrawals(pendingWithdrawalsMap)
-        }
-    }, [allUsersData, stakingActions, setPendingWithdrawals])
+        stakingActions.setUsersStakingData(modelUsersMap)
+        setPendingWithdrawals(pendingWithdrawalsMap)
+    }, [allUsersData, loadUsersIndex, stakingActions, setPendingWithdrawals])
 
     // Initial data fetch - only run once when signer becomes available
     useEffect(() => {
@@ -321,10 +333,10 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
 
     // Simplified data merging that prioritizes model data
     const stakingData = useMemo((): StakingData => {
-        if (!targetAddress) return defaultStakingData
+        if (!normalizedAddress) return defaultStakingData
 
-        const userDataFromModel = usersStakingData[targetAddress.toLowerCase()]
-        const userPendingWithdrawal = pendingWithdrawals[targetAddress.toLowerCase()]
+        const userDataFromModel = usersStakingData[normalizedAddress]
+        const userPendingWithdrawal = pendingWithdrawals[normalizedAddress]
 
         if (!userDataFromModel && !userData?.stakingUser) {
             return defaultStakingData
@@ -354,14 +366,21 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
                 : [],
             pendingWithdrawal: userPendingWithdrawal
                 ? {
-                      id: 'pending-' + targetAddress.toLowerCase(),
+                      id: 'pending-' + normalizedAddress,
                       amount: String(userPendingWithdrawal.amount),
                       timestamp: userPendingWithdrawal.timestamp,
                       status: userPendingWithdrawal.status,
                   }
+                : userData?.stakingUser?.pendingWithdrawal
+                ? {
+                      id: userData.stakingUser.pendingWithdrawal.id,
+                      amount: formatBigNumber(userData.stakingUser.pendingWithdrawal.amount),
+                      timestamp: Number(userData.stakingUser.pendingWithdrawal.timestamp),
+                      status: userData.stakingUser.pendingWithdrawal.status || 'PENDING',
+                  }
                 : undefined,
         }
-    }, [userData, totalStaked, usersStakingData, pendingWithdrawals, targetAddress])
+    }, [userData, totalStaked, usersStakingData, pendingWithdrawals, normalizedAddress])
 
     const stakingStats = useMemo((): StakingStats => {
         if (!statsData?.stakingStatistic) return defaultStakingStats
@@ -393,7 +412,14 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
 
         try {
             // Just refetch GraphQL data since optimistic updates are now handled in the model
-            await Promise.all([refetchUser(), refetchAllUsers(), refetchStats()])
+            const graphRefetches = [refetchStats()]
+            if (normalizedAddress) {
+                graphRefetches.push(refetchUser())
+            }
+            if (loadUsersIndex) {
+                graphRefetches.push(refetchAllUsers())
+            }
+            await Promise.all(graphRefetches)
 
             // Also refresh contract data
             if (signer) {
@@ -416,7 +442,9 @@ export function StakingProvider({ children }: { children: React.ReactNode }) {
     }
 
     // Improved loading logic that accounts for initial data loading
-    const loading = (userLoading || statsLoading || allUsersLoading || !isInitialDataLoaded) && !isRefetching
+    const loading =
+        ((normalizedAddress ? userLoading : false) || statsLoading || (loadUsersIndex ? allUsersLoading : false) || !isInitialDataLoaded) &&
+        !isRefetching
 
     return (
         <StakingContext.Provider

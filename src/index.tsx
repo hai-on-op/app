@@ -17,7 +17,19 @@ import App from '~/App'
 import { CustomAvatar } from '~/components/CustomAvatar'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            staleTime: 30_000,
+            cacheTime: 5 * 60_000,
+            refetchOnWindowFocus: false,
+            retry: 1,
+        },
+        mutations: {
+            retry: 0,
+        },
+    },
+})
 
 ReactDOM.render(
     <React.StrictMode>

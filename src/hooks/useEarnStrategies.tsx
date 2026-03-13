@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState, useCallback } from 'react'
-import { useAccount } from 'wagmi'
 import { formatUnits } from 'ethers/lib/utils'
 import type { SortableHeader, Sorting } from '~/types'
 
@@ -17,7 +16,7 @@ import { useClaims } from '~/providers/ClaimsProvider'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { useStoreState } from '~/store'
 import { utils } from 'ethers'
-import { useUnderlyingAPR } from '~/hooks/useUnderlyingAPR'
+import { useUnderlyingAPRWithStrategyData } from '~/hooks/useUnderlyingAPR'
 
 // Import the BaseStrategy type for state management
 type BaseStrategy = ReturnType<typeof createVaultStrategy>
@@ -44,36 +43,27 @@ const sortableHeaders: SortableHeader[] = [
 ]
 
 export function useEarnStrategies() {
-    const { address } = useAccount()
-
     // === Load All Data ===
     const {
         // Raw data
-        systemStateData,
         minterVaultsData,
         collateralTypesData,
-        myVaultsData,
         velodromeData,
         velodromePositionsData,
         velodromePricesData,
-        haiVeloSafesData,
         strategyData,
         // Store state data
         tokensData,
         userPositionsList,
-        usersStakingData,
-        totalStaked,
-        stakingApyData,
         // Loading/error states
         coreDataLoaded,
-        stakingDataLoaded,
         storeDataLoaded,
         error: dataLoadingError,
         hasErrors,
     } = useEarnData()
 
     // === Get vault boost data from useBoost ===
-    const { individualVaultBoosts, loading: boostLoading } = useBoost()
+    const { individualVaultBoosts, loading: boostLoading, netBoostValue } = useBoost()
 
     // === Get incentives data for rewards calculation ===
     const { incentivesData } = useClaims()
@@ -83,10 +73,24 @@ export function useEarnStrategies() {
     } = useStoreState((state) => state)
 
     // Ensure haiVELO deposit strategy APR matches underlying APR
-    const { underlyingAPR: haiVeloUnderlyingAPR } = useUnderlyingAPR({ collateralType: 'HAIVELOV2' })
+    const { underlyingAPR: haiVeloUnderlyingAPR } = useUnderlyingAPRWithStrategyData({
+        collateralType: 'HAIVELOV2',
+        strategyData,
+    })
 
     // Ensure haiAERO deposit strategy APR matches underlying APR
-    const { underlyingAPR: haiAeroUnderlyingAPR } = useUnderlyingAPR({ collateralType: 'HAIAERO' })
+    const { underlyingAPR: haiAeroUnderlyingAPR } = useUnderlyingAPRWithStrategyData({
+        collateralType: 'HAIAERO',
+        strategyData,
+    })
+
+    const userPositionByCollateral = useMemo(() => {
+        return userPositionsList.reduce<Record<string, number>>((acc, { totalDebt, collateralName }: any) => {
+            const key = collateralName.toLowerCase()
+            acc[key] = (acc[key] || 0) + parseFloat(totalDebt)
+            return acc
+        }, {})
+    }, [userPositionsList])
 
     // Get token prices for rewards calculation
     const getTokenPrice = useCallback(
@@ -138,10 +142,7 @@ export function useEarnStrategies() {
         const strategies = collateralsWithMinterRewards.map((cType) => {
             const assets = tokenAssets[cType.id]
 
-            const cTypeUserPosition = userPositionsList.reduce((total: number, { totalDebt, collateralName }: any) => {
-                if (collateralName.toLowerCase() !== cType.id.toLowerCase()) return total
-                return total + parseFloat(totalDebt)
-            }, 0)
+            const cTypeUserPosition = userPositionByCollateral[cType.id.toLowerCase()] || 0
 
             const rewards = RewardsModel.getVaultRewards(cType.id) || {}
             // Use vault boost data from useBoost instead of calculating it here
@@ -168,7 +169,7 @@ export function useEarnStrategies() {
         })
 
         return strategies
-    }, [collateralTypesData, velodromePricesData, userPositionsList, individualVaultBoosts])
+    }, [collateralTypesData, velodromePricesData, userPositionByCollateral, individualVaultBoosts])
 
     const calculateSpecialStrategies = useCallback((): BaseStrategy[] => {
         // Safe fallback if strategy data is missing
@@ -365,15 +366,10 @@ export function useEarnStrategies() {
         }
     }, [
         coreDataLoaded,
-        stakingDataLoaded,
         storeDataLoaded,
         boostLoading,
         dataLoadingError,
         userPositionsList,
-        systemStateData,
-        haiVeloSafesData,
-        address,
-        stakingApyData,
         individualVaultBoosts,
         calculateVaultStrategies,
         calculateSpecialStrategies,
@@ -424,42 +420,31 @@ export function useEarnStrategies() {
     }, 0)
 
     // Calculate total rewards value from user's positions
-    const totalRewardsValue = useMemo(() => {
-        if (!incentivesData?.claimData) return 0
+    const rewardsSummary = useMemo(() => {
+        if (!incentivesData?.claimData) {
+            return {
+                rewardTokens: [] as string[],
+                totalRewardsValue: 0,
+            }
+        }
 
-        let totalValue = 0
-
-        // Calculate rewards from incentives data (same as ClaimModal)
+        const rewardTokens: string[] = []
+        let totalRewardsValue = 0
         const incentiveTokens = ['KITE', 'OP', 'DINERO', 'HAI'] as const
 
         incentiveTokens.forEach((token) => {
             const data = incentivesData.claimData[token]
-            const price = getTokenPrice(token)
+            if (!data?.hasClaimableDistros || !data?.amount) return
 
-            if (data?.hasClaimableDistros && data?.amount) {
-                const amount = parseFloat(utils.formatEther(data.amount))
-                totalValue += amount * price
-            }
+            rewardTokens.push(token)
+            totalRewardsValue += parseFloat(utils.formatEther(data.amount)) * getTokenPrice(token)
         })
 
-        return totalValue
-    }, [incentivesData, getTokenPrice])
-
-    // Get unique reward tokens from incentives data
-    const rewardTokens = useMemo(() => {
-        if (!incentivesData?.claimData) return []
-
-        const tokens: string[] = []
-        const incentiveTokens = ['KITE', 'OP', 'DINERO', 'HAI'] as const
-
-        incentiveTokens.forEach((token) => {
-            const data = incentivesData.claimData[token]
-            if (data?.hasClaimableDistros && data?.amount) {
-                tokens.push(token)
-            }
-        })
-        return tokens
-    }, [incentivesData?.claimData])
+        return {
+            rewardTokens,
+            totalRewardsValue,
+        }
+    }, [incentivesData?.claimData, getTokenPrice])
 
     const sortedRows = useMemo(() => {
         if (!coreDataLoaded) return []
@@ -520,12 +505,9 @@ export function useEarnStrategies() {
         rawData: {
             minterVaultsData,
             collateralTypesData,
-            myVaultsData,
             velodromeData,
             velodromePositionsData,
             velodromePricesData,
-            usersStakingData,
-            totalStaked,
         },
         headers: sortableHeaders,
         averageAPR: {
@@ -533,9 +515,10 @@ export function useEarnStrategies() {
             averageWeightedBoostedAPR,
         },
         averageWeightedBoost,
+        netBoostValue,
         totalBoostablePosition: totalPosition,
-        totalRewardsValue,
-        rewardTokens,
+        totalRewardsValue: rewardsSummary.totalRewardsValue,
+        rewardTokens: rewardsSummary.rewardTokens,
         rows: sortedRows,
         rowsUnmodified: strategies,
         loading: !coreDataLoaded || boostLoading,

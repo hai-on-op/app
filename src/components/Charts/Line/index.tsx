@@ -1,9 +1,10 @@
 import dayjs from 'dayjs'
-import { type LineProps, ResponsiveLine } from '@nivo/line'
+import { type LineProps, ResponsiveLine, type SliceTooltipProps } from '@nivo/line'
+import styled from 'styled-components'
 
 import { Timeframe } from '~/utils'
+import { Text } from '~/styles'
 
-import { PointWithPopout } from './PointWithPopout'
 import { BorderedLine } from './BorderedLine'
 
 const formatMap: Record<Timeframe, { format: string; tickValues: number }> = {
@@ -40,6 +41,18 @@ export function LineChart({
     ...props
 }: LineChartProps) {
     const { format, tickValues } = formatMap[timeframe]
+    const hasChartData = data.some((serie) => Array.isArray(serie.data) && serie.data.length > 0)
+
+    const formatXValue = (value: string | number | Date) => {
+        const time = new Date(value).getTime() / 1000
+        return dayjs.unix(time).format(format)
+    }
+
+    const formatYValue = (value: string | number) => {
+        if (formatY) return formatY(value)
+        if (axisRight?.format) return String(axisRight.format(value))
+        return String(value)
+    }
 
     return (
         <ResponsiveLine
@@ -53,10 +66,7 @@ export function LineChart({
             axisBottom={{
                 tickSize: 0,
                 tickValues,
-                format: (value) => {
-                    const time = new Date(value).getTime() / 1000
-                    return dayjs.unix(time).format(format)
-                },
+                format: formatXValue,
                 ...axisBottom,
             }}
             yScale={{
@@ -84,34 +94,93 @@ export function LineChart({
             enablePoints={false}
             enableGridX={false}
             enableGridY={false}
-            // enableSlices="x"
-            // enableCrosshair
-            // crosshairType="bottom-right"
+            enableSlices={hasChartData ? 'x' : false}
+            enableCrosshair={hasChartData}
+            sliceTooltip={({ slice }: SliceTooltipProps) => (
+                <LineSliceTooltip slice={slice} formatX={formatXValue} formatY={formatYValue} />
+            )}
             {...props}
             layers={[
-                // 'markers',
-                // 'areas',
                 'axes',
-                // 'lines',
                 BorderedLine,
-                // 'slices',
-                // 'crosshair',
-                // 'points',
-                ({ points }) => {
-                    return points.map((point) => (
-                        <PointWithPopout
-                            key={point.id}
-                            {...point}
-                            formatX={(value: string | number) => {
-                                const time = new Date(value).getTime() / 1000
-                                return dayjs.unix(time).format(format)
-                            }}
-                            formatY={(formatY || axisRight?.format) as any}
-                        />
-                    ))
-                },
+                'crosshair',
+                'slices',
                 'legends',
             ]}
         />
     )
 }
+
+type LineSliceTooltipComponentProps = {
+    slice: SliceTooltipProps['slice']
+    formatX: (value: string | number | Date) => string
+    formatY: (value: string | number) => string
+}
+
+function LineSliceTooltip({ slice, formatX, formatY }: LineSliceTooltipComponentProps) {
+    const firstPoint = slice.points[0]
+    const label = firstPoint ? formatX(firstPoint.data.x as string | number | Date) : ''
+
+    return (
+        <TooltipCard data-chart-tooltip="line-slice">
+            {!!label && <TooltipLabel>{label}</TooltipLabel>}
+            {slice.points.map((point) => (
+                <TooltipRow key={String(point.id)}>
+                    <TooltipSeries>
+                        <TooltipSwatch $color={point.serieColor} />
+                        <Text $fontSize="0.85em" $fontWeight={700} $color={point.serieColor}>
+                            {point.serieId}
+                        </Text>
+                    </TooltipSeries>
+                    <Text $fontSize="0.95em" $fontWeight={700}>
+                        {formatY(point.data.yFormatted)}
+                    </Text>
+                </TooltipRow>
+            ))}
+        </TooltipCard>
+    )
+}
+
+const TooltipCard = styled.div`
+    min-width: 180px;
+    padding: 12px 16px;
+    background-color: ${({ theme }) => theme.colors.background};
+    border: ${({ theme }) => theme.border.medium};
+    border-radius: 20px;
+    box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.12);
+`
+
+const TooltipLabel = styled(Text).attrs((props) => ({
+    $fontSize: '0.8em',
+    $fontWeight: 700,
+    ...props,
+}))`
+    display: block;
+    margin-bottom: 8px;
+`
+
+const TooltipRow = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+
+    & + & {
+        margin-top: 8px;
+    }
+`
+
+const TooltipSeries = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 8px;
+`
+
+const TooltipSwatch = styled.span<{ $color: string }>`
+    width: 10px;
+    height: 10px;
+    border: 2px solid black;
+    border-radius: 999px;
+    background-color: ${({ $color }) => $color};
+    flex-shrink: 0;
+`
