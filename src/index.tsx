@@ -5,16 +5,12 @@ import { HelmetProvider } from 'react-helmet-async'
 import { StoreProvider } from 'easy-peasy'
 import { Analytics } from '@vercel/analytics/react'
 import { WagmiConfig } from 'wagmi'
-import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
-import '@rainbow-me/rainbowkit/styles.css'
 
-import { chains, wagmiConfig } from './utils/wallet'
+import { wagmiConfig } from './utils/wallet'
 import { store } from '~/store'
 import { HaiThemeProvider } from '~/providers/HaiThemeProvider'
 
-import { haiTheme } from '~/styles/themes'
 import App from '~/App'
-import { CustomAvatar } from '~/components/CustomAvatar'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 const queryClient = new QueryClient({
@@ -36,17 +32,15 @@ ReactDOM.render(
         <Analytics />
         <HaiThemeProvider>
             <WagmiConfig config={wagmiConfig}>
-                <RainbowKitProvider avatar={CustomAvatar} theme={haiTheme} chains={chains}>
-                    <HelmetProvider>
-                        <BrowserRouter>
-                            <QueryClientProvider client={queryClient}>
-                                <StoreProvider store={store}>
-                                    <App />
-                                </StoreProvider>
-                            </QueryClientProvider>
-                        </BrowserRouter>
-                    </HelmetProvider>
-                </RainbowKitProvider>
+                <HelmetProvider>
+                    <BrowserRouter>
+                        <QueryClientProvider client={queryClient}>
+                            <StoreProvider store={store}>
+                                <App />
+                            </StoreProvider>
+                        </QueryClientProvider>
+                    </BrowserRouter>
+                </HelmetProvider>
             </WagmiConfig>
         </HaiThemeProvider>
     </React.StrictMode>,

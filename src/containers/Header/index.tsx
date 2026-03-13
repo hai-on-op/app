@@ -22,7 +22,7 @@ import { Discord } from '~/components/Icons/Discord'
 import { Send, Lock } from 'react-feather'
 import { Marquee, MarqueeChunk } from '~/components/Marquee'
 import { Link } from '~/components/Link'
-import { ConnectButton } from '~/components/ConnectButton'
+import { LazyConnectButton } from '~/components/LazyConnectButton'
 import { BrandedDropdown } from '~/components/BrandedDropdown'
 import { WrapETHModal } from '~/components/Modal/WrapETHModal'
 // import { Notifications } from './Notifications'
@@ -298,7 +298,7 @@ export function Header({ tickerActive = false }: HeaderProps) {
                             </Link>
                         ) : (
                             <>
-                                {!isUpToSmall && <ConnectButton showBalance="horizontal" />}
+                                {!isUpToSmall && <LazyConnectButton showBalance="horizontal" />}
                                 {/* <Notifications
                                         active={notificationsActive}
                                         setActive={setNotificationsActive}

@@ -9,7 +9,7 @@ import { handleTransactionError, useEthersSigner, useGeb, useTransactionAdder } 
 
 import styled from 'styled-components'
 import { CenteredFlex, HaiButton, Text } from '~/styles'
-import { ConnectButton } from './ConnectButton'
+import { LazyConnectButton } from './LazyConnectButton'
 import { Link } from './Link'
 
 enum PromptStep {
@@ -115,7 +115,7 @@ export function ProxyPrompt({
         return (
             <Container>
                 <Text>Please connect a wallet to {continueText}</Text>
-                <ConnectButton />
+                <LazyConnectButton />
             </Container>
         )
 
