@@ -11,7 +11,7 @@ import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
 import { ethers } from 'ethers'
 import { AlertCircle } from 'react-feather'
 
-import { formatNumberWithStyle, sanitizeDecimals, Status } from '~/utils'
+import { formatNumberWithStyle, Status } from '~/utils'
 import { useMinterProtocol } from '~/providers/MinterProtocolProvider'
 import { MinterChainId } from '~/types/minterProtocol'
 import { useStoreActions, useStoreState } from '~/store'
@@ -19,6 +19,7 @@ import { useTokenAllowance } from '~/hooks/useTokenApproval'
 import { useContract } from '~/hooks/useContract'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { getTokenLabel } from '~/services/minterProtocol'
+import { buildRequiredErc20ApprovalItem } from '~/services/minterProtocol/approval'
 import { HaiVeloTxModal } from '~/components/Modal/HaiVeloTxModal'
 import type { HaiVeloApprovalItem } from '~/components/Modal/HaiVeloTxModal/Approvals'
 import { HaiAeroTxModal } from '~/components/Modal/HaiAeroTxModal'
@@ -240,31 +241,17 @@ export function MintActions() {
             allowance: ethers.BigNumber | undefined
         ) => {
             const tokenMeta = tokensData[symbol]
-            const addr = tokenMeta?.address
-            const decimals = (tokenMeta?.decimals || 18).toString()
-            // Sanitize the amount string (remove commas and other non-numeric chars except decimal point)
-            const cleanAmount = String(amountStr || '0').replace(/[^0-9.]/g, '')
-            const amountNum = parseFloat(cleanAmount)
-            if (!addr || !isFinite(amountNum) || amountNum <= 0) return
+            const approvalItem = buildRequiredErc20ApprovalItem({
+                label,
+                amount: amountStr,
+                tokenAddress: tokenMeta?.address,
+                decimals: tokenMeta?.decimals || 18,
+                spender: targetAddress,
+                allowance,
+            })
 
-            // Calculate the exact wei amount that will be used for execution
-            // This ensures the approval amount matches the execution amount exactly
-            const neededWei = ethers.utils.parseUnits(sanitizeDecimals(cleanAmount, Number(decimals)), Number(decimals))
-
-            // If allowance is undefined (still loading), assume we need approval
-            // This prevents the race condition where the modal opens without the needed approval
-            const needsApproval = !allowance || allowance.lt(neededWei)
-
-            if (needsApproval) {
-                items.push({
-                    kind: 'ERC20',
-                    label,
-                    // Pass the cleaned amount to ensure consistent parsing in useTokenApproval
-                    amount: cleanAmount,
-                    tokenAddress: addr,
-                    decimals,
-                    spender: targetAddress,
-                })
+            if (approvalItem) {
+                items.push(approvalItem)
             }
         }
 
