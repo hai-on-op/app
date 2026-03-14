@@ -80,7 +80,8 @@ export function useMinterVaults(address?: string): MinterVaultsData {
         variables: {
             collateralTypeIds: minterVaultCollaterals,
         },
-        fetchPolicy: 'cache-and-network',
+        fetchPolicy: 'cache-first',
+        nextFetchPolicy: 'cache-first',
     })
 
     const {
@@ -91,7 +92,8 @@ export function useMinterVaults(address?: string): MinterVaultsData {
         variables: {
             collateralTypeIds: minterVaultCollaterals,
         },
-        fetchPolicy: 'cache-and-network',
+        fetchPolicy: 'cache-first',
+        nextFetchPolicy: 'cache-first',
     })
 
     const formattedData = useMemo(() => {

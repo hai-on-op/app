@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useQuery, gql } from '@apollo/client'
 import { BigNumber } from 'ethers'
 import { formatEther } from 'ethers/lib/utils'
@@ -24,6 +24,8 @@ const STAKING_USERS_BY_IDS_QUERY = gql`
     }
 `
 
+const STAKING_USERS_DEBOUNCE_MS = 250
+
 function normalizeStakingUserIds(ids: Array<string | undefined | null>) {
     const uniqueIds = new Set<string>()
 
@@ -45,10 +47,27 @@ function formatStakingBalance(value: string) {
 
 export function useStakingUsersByIds(ids: Array<string | undefined | null>) {
     const normalizedIds = useMemo(() => normalizeStakingUserIds(ids), [ids])
+    const [settledIds, setSettledIds] = useState<string[]>([])
+    const normalizedIdsKey = useMemo(() => normalizedIds.join(','), [normalizedIds])
+
+    useEffect(() => {
+        if (normalizedIds.length === 0) {
+            setSettledIds([])
+            return
+        }
+
+        const timeoutId = window.setTimeout(() => {
+            setSettledIds(normalizedIds)
+        }, STAKING_USERS_DEBOUNCE_MS)
+
+        return () => {
+            window.clearTimeout(timeoutId)
+        }
+    }, [normalizedIds, normalizedIdsKey])
 
     const { data, loading, error } = useQuery<StakingUsersByIdsQuery>(STAKING_USERS_BY_IDS_QUERY, {
-        variables: { ids: normalizedIds },
-        skip: normalizedIds.length === 0,
+        variables: { ids: settledIds },
+        skip: settledIds.length === 0,
         fetchPolicy: 'cache-first',
         nextFetchPolicy: 'cache-first',
     })
@@ -66,8 +85,8 @@ export function useStakingUsersByIds(ids: Array<string | undefined | null>) {
 
     return {
         usersStakingData,
-        loading,
+        loading: loading || normalizedIdsKey !== settledIds.join(','),
         error,
-        ids: normalizedIds,
+        ids: settledIds,
     }
 }
