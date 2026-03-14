@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useAccount } from 'wagmi'
 
@@ -24,13 +24,16 @@ import { Marquee, MarqueeChunk } from '~/components/Marquee'
 import { Link } from '~/components/Link'
 import { LazyConnectButton } from '~/components/LazyConnectButton'
 import { BrandedDropdown } from '~/components/BrandedDropdown'
-import { WrapETHModal } from '~/components/Modal/WrapETHModal'
 // import { Notifications } from './Notifications'
 import { HaiFace } from '~/components/Icons/HaiFace'
 import { MobileMenu } from './MobileMenu'
 import { MusicButton } from './MusicButton'
 
 import haiLogo from '~/assets/logo.png'
+
+const WrapETHModal = lazy(() =>
+    import('~/components/Modal/WrapETHModal').then((module) => ({ default: module.WrapETHModal }))
+)
 
 type HeaderProps = {
     tickerActive?: boolean
@@ -112,7 +115,11 @@ export function Header({ tickerActive = false }: HeaderProps) {
 
     return (
         <>
-            {wrapEthActive && <WrapETHModal onClose={() => setWrapEthActive(false)} />}
+            {wrapEthActive && (
+                <Suspense fallback={null}>
+                    <WrapETHModal onClose={() => setWrapEthActive(false)} />
+                </Suspense>
+            )}
             <Container $tickerActive={tickerActive} $withBg={!isSplash || headerBgActive}>
                 {tickerActive && (
                     <Ticker>

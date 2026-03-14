@@ -9,8 +9,12 @@ type WalletConnectVersion = '1' | '2'
 
 type InjectedConnectorOptions = Record<string, unknown>
 type WalletConnectOptions = Record<string, unknown>
+type WalletConnectQrModalOptions = Record<string, unknown>
 
 const sharedConnectors = new Map<string, WalletConnectConnector | WalletConnectLegacyConnector>()
+export const DEFAULT_WALLETCONNECT_QR_MODAL_OPTIONS = {
+    explorerRecommendedWalletIds: 'NONE',
+} as const
 const injectedWalletIcon =
     'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyOCIgaGVpZ2h0PSIyOCIgZmlsbD0ibm9uZSI+PHBhdGggZmlsbD0iI2ZmZiIgZD0iTTAgMGgyOHYyOEgweiIvPjxyZWN0IHdpZHRoPSIyMCIgaGVpZ2h0PSIxNiIgeD0iNCIgeT0iNiIgZmlsbD0idXJsKCNhKSIgcng9IjMuNSIvPjxwYXRoIGZpbGw9IiMwRTc2RkQiIGQ9Ik0xNiAxNGEzIDMgMCAwIDEgMy0zaDQuNGMuNTYgMCAuODQgMCAxLjA1NC4xMDlhMSAxIDAgMCAxIC40MzcuNDM3QzI1IDExLjc2IDI1IDEyLjA0IDI1IDEyLjZ2Mi44YzAgLjU2IDAgLjg0LS4xMDkgMS4wNTRhMSAxIDAgMCAxLS40MzcuNDM3QzI0LjI0IDE3IDIzLjk2IDE3IDIzLjQgMTdIMTlhMyAzIDAgMCAxLTMtM1oiLz48Y2lyY2xlIGN4PSIxOSIgY3k9IjE0IiByPSIxLjI1IiBmaWxsPSIjQTNEN0ZGIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhIiB4MT0iMTQiIHgyPSIxNCIgeTE9IjYiIHkyPSIyMiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIHN0b3AtY29sb3I9IiMxNzQyOTkiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMwMDFFNTkiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48L3N2Zz4='
 const rainbowWalletIcon =
@@ -77,6 +81,24 @@ function getInjectedConnector({
     })
 }
 
+function isObjectRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null
+}
+
+export function mergeWalletConnectOptions(options: WalletConnectOptions = {}): WalletConnectOptions {
+    const qrModalOptions = isObjectRecord(options.qrModalOptions)
+        ? (options.qrModalOptions as WalletConnectQrModalOptions)
+        : {}
+
+    return {
+        ...options,
+        qrModalOptions: {
+            ...DEFAULT_WALLETCONNECT_QR_MODAL_OPTIONS,
+            ...qrModalOptions,
+        },
+    }
+}
+
 function createWalletConnectConnector(
     version: WalletConnectVersion,
     config: ConstructorParameters<typeof WalletConnectConnector>[0]
@@ -121,7 +143,7 @@ function getWalletConnectConnector({
                 : {
                       projectId: projectId === 'YOUR_PROJECT_ID' ? exampleProjectId : projectId,
                       showQrModal: false,
-                      ...options,
+                      ...mergeWalletConnectOptions(options),
                   },
     }
 

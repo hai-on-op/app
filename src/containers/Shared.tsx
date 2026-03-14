@@ -2,7 +2,6 @@ import { Suspense, lazy, useEffect, useCallback, useRef, useState } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 import { utils } from 'ethers'
 import { useAccount, useNetwork } from 'wagmi'
-import { getTokenList } from '@hai-on-op/sdk'
 
 import type { ReactChildren } from '~/types'
 import {
@@ -11,7 +10,6 @@ import {
     // SYSTEM_STATUS,
     ActionState,
     blockedAddresses,
-    getNetworkName,
     timeout,
 } from '~/utils'
 import { TransactionUpdater } from '~/services/TransactionUpdater'
@@ -69,7 +67,6 @@ export function Shared({ children }: Props) {
     const { address: account } = useAccount()
     const previousAccount = usePrevious(account)
     const { chain } = useNetwork()
-    const networkName = getNetworkName(NETWORK_ID)
     const signer = useEthersSigner()
     const publicGeb = usePublicGeb()
     const geb = useGeb()
@@ -92,9 +89,9 @@ export function Shared({ children }: Props) {
         location.pathname === '/haiAERO' ||
         (location.pathname === '/vaults/open' && ['HAIAERO'].includes(openCollateral))
 
-    const tokenList = getTokenList(networkName)
-    const coinTokenContract = useTokenContract(tokenList.HAI?.address)
-    const protTokenContract = useTokenContract(tokenList.KITE?.address)
+    const tokenList = publicGeb ? withHaiAero(publicGeb.tokenList) : undefined
+    const coinTokenContract = useTokenContract(tokenList?.HAI?.address)
+    const protTokenContract = useTokenContract(tokenList?.KITE?.address)
 
     const {
         connectWalletModel: connectWalletState,
@@ -487,11 +484,7 @@ const Background = styled(CenteredFlex)`
     right: 0px;
     bottom: 0px;
     background-color: white;
-    background-image: url('/assets/tie-dye.jpg');
-    background-image: image-set(
-        url('/assets/tie-dye.webp') type('image/webp'),
-        url('/assets/tie-dye.jpg') type('image/jpeg')
-    );
+    background-image: url('/assets/tie-dye.webp');
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;

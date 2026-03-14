@@ -288,7 +288,6 @@ class YieldBearingAPRCalculator implements IUnderlyingAPRCalculator {
     }
 
     async calculateAPR(data: UnderlyingAPRData): Promise<UnderlyingAPRResult> {
-        console.log('data', data)
         try {
             // For HAI VELO (v1 and v2), get the APR from the deposit strategy calculation
             if (['HAIVELO', 'HAIVELOV2', 'HAIVELO_V2'].includes(data.collateralType.toUpperCase())) {
