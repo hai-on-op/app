@@ -8,6 +8,8 @@
         "build": "vite build",
         "build:report": "yarn build && node scripts/report-build-sizes.mjs",
         "build:analyze": "ANALYZE_BUNDLE=1 vite build",
+        "perf:budgets": "node scripts/check-build-budgets.mjs",
+        "perf:smoke": "node scripts/smoke-routes.mjs",
         "preview": "vite preview",
         "test": "vitest run --dir src/",
         "test:watch": "vitest --dir src/",
