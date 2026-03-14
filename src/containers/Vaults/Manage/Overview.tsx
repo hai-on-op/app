@@ -6,7 +6,6 @@ import { useStoreState } from '~/store'
 import { useVault } from '~/providers/VaultProvider'
 // import { useEarnStrategies } from '~/hooks'
 import { useBoost } from '~/hooks/useBoost'
-import { RewardsModel } from '~/model/rewardsModel'
 import { useUnderlyingAPR } from '~/hooks/useUnderlyingAPR'
 
 import styled from 'styled-components'
@@ -18,6 +17,7 @@ import { AlertTriangle, ArrowLeft, ArrowRight } from 'react-feather'
 import { useAccount } from 'wagmi'
 import { useHaiVeloData } from '~/hooks/useHaiVeloData'
 import { calculateHaiVeloBoost } from '~/services/boostService'
+import { getVaultRewards } from '~/services/rewards/rewardCatalog'
 import { useStakeStats } from '~/hooks/staking/useStakeStats'
 import { useStakingUsersByIds } from '~/hooks/staking/useStakingUsersByIds'
 
@@ -50,7 +50,7 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
     // --- Generalized boost logic for all boostable vaults ---
     const { individualVaultBoosts, hvBoost } = useBoost()
     const boostData = individualVaultBoosts[collateral.name]
-    const rewards = RewardsModel.getVaultRewards(collateral.name)
+    const rewards = getVaultRewards(collateral.name)
     const isBoostable = Object.values(rewards).some((v) => v > 0)
 
     // Calculate stKITE share for all boostable vaults

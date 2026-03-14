@@ -9,7 +9,6 @@ import { ActionState } from '~/utils/constants'
 import { handlePreTxGasEstimate } from '~/hooks/TransactionHooks'
 import StakingManagerABI from '~/abis/StakingManager.json'
 // import RewardPoolABI from '~/abis/RewardPool.json'
-import { RewardsModel } from '~/model/rewardsModel'
 
 // const ERC20ABI = [
 //     {
@@ -129,6 +128,16 @@ async function retryAsync<T>(fn: () => Promise<T>, retries = 5, delayMs = 30000)
         }
     }
     throw lastError
+}
+
+let rewardsModelModulePromise: Promise<typeof import('~/model/rewardsModel')> | undefined
+
+async function loadRewardsModel() {
+    if (!rewardsModelModulePromise) {
+        rewardsModelModulePromise = import('~/model/rewardsModel')
+    }
+
+    return (await rewardsModelModulePromise).RewardsModel
 }
 
 export const stakingModel: StakingModel = {
@@ -594,6 +603,7 @@ export const stakingModel: StakingModel = {
         if (!providerOrSigner) {
             throw new Error('Neither signer nor provider available')
         }
+        const RewardsModel = await loadRewardsModel()
         const apyData = await RewardsModel.fetchStakingApyData({
             stakingManagerAddress: import.meta.env.VITE_STAKING_MANAGER,
             providerOrSigner,

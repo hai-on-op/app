@@ -3,7 +3,6 @@ import { formatUnits } from 'ethers/lib/utils'
 import type { SortableHeader, Sorting } from '~/types'
 
 import { arrayToSorted, stringsExistAndAreEqual, tokenAssets } from '~/utils'
-import { RewardsModel } from '~/model/rewardsModel'
 import type { BoostAPRData } from '~/types/system'
 import { calculateTokenPrice, calculatePoolTVL, getTokenSymbol } from '~/utils/priceCalculations'
 import { VELO_POOLS } from '~/utils/constants'
@@ -17,6 +16,7 @@ import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { useStoreState } from '~/store'
 import { utils } from 'ethers'
 import { useUnderlyingAPRWithStrategyData } from '~/hooks/useUnderlyingAPR'
+import { getPoolRewards, getVaultRewards } from '~/services/rewards/rewardCatalog'
 
 // Import the BaseStrategy type for state management
 type BaseStrategy = ReturnType<typeof createVaultStrategy>
@@ -132,7 +132,7 @@ export function useEarnStrategies() {
         }
 
         const collateralsWithMinterRewards = collateralTypesData.collateralTypes.filter((cType) =>
-            Object.values(RewardsModel.getVaultRewards(cType.id) || {}).some((a) => a != 0)
+            Object.values(getVaultRewards(cType.id) || {}).some((a) => a != 0)
         )
 
         if (!collateralsWithMinterRewards.length) return []
@@ -144,7 +144,7 @@ export function useEarnStrategies() {
 
             const cTypeUserPosition = userPositionByCollateral[cType.id.toLowerCase()] || 0
 
-            const rewards = RewardsModel.getVaultRewards(cType.id) || {}
+            const rewards = getVaultRewards(cType.id) || {}
             // Use vault boost data from useBoost instead of calculating it here
             const vbr = individualVaultBoosts[cType.id] || {
                 userVaultBoostMap: {},
@@ -319,7 +319,7 @@ export function useEarnStrategies() {
                 )
             }, 0)
 
-            const rewardsObj = RewardsModel.getPoolRewards(pool.address) || {}
+            const rewardsObj = getPoolRewards(pool.address) || {}
             const rewardsArray = Object.entries(rewardsObj).map(([token, emission]) => ({ token, emission }))
             const strategy = createVeloStrategy({
                 pair: [token0, token1],
