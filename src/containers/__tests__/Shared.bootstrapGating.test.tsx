@@ -61,6 +61,7 @@ vi.mock('~/hooks', () => ({
     useTokenContract: () => useTokenContractMock(),
     useEthersSigner: () => useEthersSignerMock(),
     useGeb: () => useGebMock(),
+    useDocumentVisibility: () => true,
     usePrevious: () => undefined,
     usePublicGeb: () => usePublicGebMock(),
 }))

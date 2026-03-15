@@ -129,6 +129,12 @@ jobs:
 
       - name: Build project
         run: yarn build
+        env:
+          VITE_WALLETCONNECT_ID: ${{ secrets.VITE_WALLETCONNECT_ID }}
+          VITE_TESTNET_PUBLIC_RPC: ${{ secrets.VITE_TESTNET_PUBLIC_RPC }}
+          VITE_MAINNET_PUBLIC_RPC: ${{ secrets.VITE_MAINNET_PUBLIC_RPC }}
+          VITE_ALCHEMY_KEY: ${{ secrets.VITE_ALCHEMY_KEY }}
+          VITE_GRAPH_API_KEY: ${{ secrets.VITE_GRAPH_API_KEY }}
 
       - name: Check build budgets
         run: yarn perf:budgets
