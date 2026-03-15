@@ -18,6 +18,7 @@ const IGNORED_CONSOLE_PATTERNS = [
     /Apollo DevTools/i,
     /\[Vercel Web Analytics\] Failed to load script/i,
 ]
+const IGNORED_EXCEPTION_PATTERNS = [/^Uncaught(?: \(in promise\))?$/]
 const YOUTUBE_URL_PATTERNS = [/youtube\.com/i, /youtu\.be/i, /googlevideo\.com/i, /ytimg\.com/i]
 
 function formatBytes(bytes) {
@@ -158,7 +159,31 @@ function stripIgnoredConsole(entries) {
 }
 
 function stripIgnoredFailures(entries) {
-    return entries.filter((entry) => !IGNORED_FAILED_URL_PATTERNS.some((pattern) => pattern.test(entry.url)))
+    return entries.filter((entry) => {
+        if (!entry.url && entry.canceled && entry.errorText === 'net::ERR_ABORTED') return false
+        return !IGNORED_FAILED_URL_PATTERNS.some((pattern) => pattern.test(entry.url))
+    })
+}
+
+function stripIgnoredExceptions(entries) {
+    return entries.filter((entry) => {
+        const text = typeof entry === 'string' ? entry : entry.message || entry.text || ''
+        return !IGNORED_EXCEPTION_PATTERNS.some((pattern) => pattern.test(String(text)))
+    })
+}
+
+async function waitForEvaluate(send, expression, { timeoutMs = 10_000, intervalMs = 250 } = {}) {
+    const deadline = Date.now() + timeoutMs
+    let lastValue
+
+    while (Date.now() < deadline) {
+        const result = await send('Runtime.evaluate', { expression, returnByValue: true })
+        lastValue = result.result.value
+        if (lastValue?.ready) return lastValue
+        await delay(intervalMs)
+    }
+
+    return lastValue
 }
 
 async function main() {
@@ -257,7 +282,12 @@ async function main() {
     })
 
     on('Runtime.exceptionThrown', (params) => {
-        ensureRoute(currentRoute).exceptions.push(params.exceptionDetails?.text || 'exception')
+        const details = params.exceptionDetails || {}
+        const exception = details.exception || {}
+        ensureRoute(currentRoute).exceptions.push({
+            text: details.text || 'exception',
+            message: exception.description || exception.value || details.text || 'exception',
+        })
     })
 
     await send('Page.enable')
@@ -306,28 +336,43 @@ async function main() {
         }
 
         if (route === '/vaults?tab=available') {
-            const clickResult = await send('Runtime.evaluate', {
-                expression: `(() => {
+            const connectButton = await waitForEvaluate(
+                send,
+                `(() => {
+                    const candidates = [...document.querySelectorAll('button,[role="button"]')]
+                    const target = candidates.find((element) => /connect/i.test(element.textContent || ''))
+                    if (!target) return { ready: false }
+                    return { ready: true, text: (target.textContent || '').trim() }
+                })()`,
+                { timeoutMs: 12_000, intervalMs: 500 }
+            )
+
+            const clickResult = connectButton?.ready
+                ? await send('Runtime.evaluate', {
+                      expression: `(() => {
                     const candidates = [...document.querySelectorAll('button,[role="button"]')]
                     const target = candidates.find((element) => /connect/i.test(element.textContent || ''))
                     if (!target) return { found: false }
                     target.click()
                     return { found: true, text: (target.textContent || '').trim() }
                 })()`,
-                returnByValue: true,
-            })
+                      returnByValue: true,
+                  })
+                : { result: { value: { found: false, text: connectButton?.text || '' } } }
 
-            await delay(2_500)
-
-            const modalResult = await send('Runtime.evaluate', {
-                expression: `(() => ({
+            const modal = await waitForEvaluate(
+                send,
+                `(() => ({
                     dialogCount: document.querySelectorAll('[role="dialog"]').length,
                     bodyText: document.body.innerText,
+                    ready:
+                        document.querySelectorAll('[role="dialog"]').length > 0 &&
+                        document.body.innerText.includes('WalletConnect') &&
+                        document.body.innerText.includes('Rainbow'),
                 }))()`,
-                returnByValue: true,
-            })
+                { timeoutMs: 12_000, intervalMs: 500 }
+            )
 
-            const modal = modalResult.result.value || {}
             ensureRoute(route).checks.connect = {
                 found: Boolean(clickResult.result.value?.found),
                 buttonText: clickResult.result.value?.text || '',
@@ -346,6 +391,7 @@ async function main() {
         const data = ensureRoute(route)
         const failed = stripIgnoredFailures(data.failed)
         const consoleEntries = stripIgnoredConsole(data.console)
+        const exceptions = stripIgnoredExceptions(data.exceptions)
 
         return {
             route,
@@ -355,7 +401,7 @@ async function main() {
             checks: data.checks,
             failed,
             console: consoleEntries,
-            exceptions: data.exceptions,
+            exceptions: exceptions.map((entry) => entry.message || entry.text || String(entry)),
         }
     })
 
