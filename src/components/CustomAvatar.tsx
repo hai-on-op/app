@@ -1,4 +1,4 @@
-import { AvatarComponent } from '@rainbow-me/rainbowkit'
+import type { AvatarComponent } from '@rainbow-me/rainbowkit'
 
 import styled from 'styled-components'
 import { CenteredFlex } from '~/styles'

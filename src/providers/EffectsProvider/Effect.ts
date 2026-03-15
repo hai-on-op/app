@@ -1,11 +1,11 @@
 import type { Vector2 } from '~/types'
 
-import elf1 from '~/assets/splash/elf-1.png'
-import elf2 from '~/assets/splash/elf-2.png'
-import elf3 from '~/assets/splash/elf-3.png'
-import elf4 from '~/assets/splash/elf-4.png'
-import elf5 from '~/assets/splash/elf-5.png'
-import elf6 from '~/assets/splash/elf-6.png'
+import elf1 from '~/assets/splash/elf-1.webp'
+import elf2 from '~/assets/splash/elf-2.webp'
+import elf3 from '~/assets/splash/elf-3.webp'
+import elf4 from '~/assets/splash/elf-4.webp'
+import elf5 from '~/assets/splash/elf-5.webp'
+import elf6 from '~/assets/splash/elf-6.webp'
 
 export const elfImages = [elf1, elf2, elf3, elf4, elf5, elf6].map((src) => {
     const img = new Image()

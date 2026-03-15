@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
 import { utils } from 'ethers'
-import { formatEther } from 'ethers/lib/utils'
 import { formatNumberWithStyle, VITE_MAINNET_PUBLIC_RPC } from '~/utils'
 
 import { useBalance } from '~/hooks'
@@ -24,6 +23,7 @@ import { haiBoldCurveLpConfig } from '~/staking/configs/haiBoldCurveLp'
 import { haiVeloVeloLpConfig } from '~/staking/configs/haiVeloVeloLp'
 import { useStakeAccount } from './staking/useStakeAccount'
 import { useStakeStats } from './staking/useStakeStats'
+import { useStakingUsersByIds } from './staking/useStakingUsersByIds'
 import { useLpStakingApr } from './staking/useLpStakingApr'
 import { useLpTvl } from './staking/useLpTvl'
 import { buildStakingService } from '~/services/stakingService'
@@ -35,16 +35,7 @@ const HAI_TOKEN_ADDRESS = import.meta.env.VITE_HAI_ADDRESS as string
 const KITE_TOKEN_ADDRESS = import.meta.env.VITE_KITE_ADDRESS as string
 const OP_TOKEN_ADDRESS = import.meta.env.VITE_OP_ADDRESS as string
 
-export function useStrategyData(
-    systemStateData: any,
-    userPositionsList: any,
-    velodromePricesData: any,
-    usersStakingData: any,
-    haiVeloSafesData: any,
-    address: any,
-    stakingApyData: any,
-    totalStaked: string
-) {
+export function useStrategyData(systemStateData: any, velodromePricesData: any, address: any, stakingApyData: any) {
     // === State ===
     const [haiVeloLatestTransferAmount, setHaiVeloLatestTransferAmount] = useState(0)
     const [haiAeroLatestTransferAmount, setHaiAeroLatestTransferAmount] = useState(0)
@@ -86,16 +77,6 @@ export function useStrategyData(
     const haiVeloUserPositionUsd = userHaiVeloQty * (haiVeloPrice || 0)
     const haiVeloTVL = combinedHaiVeloQtyTotal * (haiVeloPrice || 0)
 
-    // Use the global totalStaked value from the store (formatted from wei to ether)
-    // instead of manually summing usersStakingData which may be incomplete
-    const totalStakedAmount = Number(formatEther(totalStaked || '0'))
-
-    const haiVeloBoostMap = useHaiVeloBoostMap({
-        mapping: haiVeloCollateralMapping,
-        usersStakingData,
-        totalStaked: Number(totalStakedAmount),
-    })
-
     useEffect(() => {
         let mounted = true
         fetchHaiVeloLatestTransferAmount({
@@ -123,6 +104,51 @@ export function useStrategyData(
             mounted = false
         }
     }, [])
+
+    // === HAI AERO Deposit Strategy ===
+    const haiAeroData = systemStateData?.collateralTypes.find((collateral: any) => collateral.id === 'HAIAERO')
+    const haiAeroPrice = haiAeroData?.currentPrice?.value
+    const { priceUsd: aeroPriceUsd } = useAeroPrice()
+    const { mapping: haiAeroCollateralMapping } = useHaiAeroCollateralMapping()
+
+    const combinedHaiAeroQtyTotal = useMemo(
+        () => Object.values(haiAeroCollateralMapping || {}).reduce((acc: number, v: any) => acc + Number(v), 0),
+        [haiAeroCollateralMapping]
+    )
+    const userHaiAeroQty = useMemo(
+        () => (address ? Number(haiAeroCollateralMapping?.[address.toLowerCase()] || 0) : 0),
+        [haiAeroCollateralMapping, address]
+    )
+    // Use AERO price from DeFiLlama (since haiAERO is backed by veAERO, its value tracks AERO price)
+    const haiAeroEffectivePrice = haiAeroPrice || aeroPriceUsd || 0
+    const haiAeroUserPositionUsd = userHaiAeroQty * haiAeroEffectivePrice
+    const haiAeroTVL = combinedHaiAeroQtyTotal * haiAeroEffectivePrice
+
+    const relevantStakingAddresses = useMemo(() => {
+        const ids = new Set<string>()
+        if (address) ids.add(address.toLowerCase())
+        Object.keys(haiVeloCollateralMapping || {}).forEach((userAddress) => ids.add(userAddress.toLowerCase()))
+        Object.keys(haiAeroCollateralMapping || {}).forEach((userAddress) => ids.add(userAddress.toLowerCase()))
+        return Array.from(ids)
+    }, [address, haiVeloCollateralMapping, haiAeroCollateralMapping])
+
+    const { usersStakingData: scopedUsersStakingData } = useStakingUsersByIds(relevantStakingAddresses)
+
+    const { data: kiteStakingAccount } = useStakeAccount(address as `0x${string}`)
+    const { data: kiteStakingStats } = useStakeStats()
+    const totalStakedAmount = Number(kiteStakingStats?.totalStaked || 0)
+
+    const haiVeloBoostMap = useHaiVeloBoostMap({
+        mapping: haiVeloCollateralMapping,
+        usersStakingData: scopedUsersStakingData,
+        totalStaked: totalStakedAmount,
+    })
+
+    const haiAeroBoostMap = useHaiAeroBoostMap({
+        mapping: haiAeroCollateralMapping,
+        usersStakingData: scopedUsersStakingData,
+        totalStaked: totalStakedAmount,
+    })
 
     // === haiVELO/VELO LP Staking (hooks + TVL only, needed for reward sharing) ===
     const haiVeloVeloLpService = useMemo(
@@ -186,31 +212,6 @@ export function useStrategyData(
         haiVeloVeloLpStakedTvlUsd,
     ])
 
-    // === HAI AERO Deposit Strategy ===
-    const haiAeroData = systemStateData?.collateralTypes.find((collateral: any) => collateral.id === 'HAIAERO')
-    const haiAeroPrice = haiAeroData?.currentPrice?.value
-    const { priceUsd: aeroPriceUsd } = useAeroPrice()
-    const { mapping: haiAeroCollateralMapping } = useHaiAeroCollateralMapping()
-
-    const combinedHaiAeroQtyTotal = useMemo(
-        () => Object.values(haiAeroCollateralMapping || {}).reduce((acc: number, v: any) => acc + Number(v), 0),
-        [haiAeroCollateralMapping]
-    )
-    const userHaiAeroQty = useMemo(
-        () => (address ? Number(haiAeroCollateralMapping?.[address.toLowerCase()] || 0) : 0),
-        [haiAeroCollateralMapping, address]
-    )
-    // Use AERO price from DeFiLlama (since haiAERO is backed by veAERO, its value tracks AERO price)
-    const haiAeroEffectivePrice = haiAeroPrice || aeroPriceUsd || 0
-    const haiAeroUserPositionUsd = userHaiAeroQty * haiAeroEffectivePrice
-    const haiAeroTVL = combinedHaiAeroQtyTotal * haiAeroEffectivePrice
-
-    const haiAeroBoostMap = useHaiAeroBoostMap({
-        mapping: haiAeroCollateralMapping,
-        usersStakingData,
-        totalStaked: Number(totalStakedAmount),
-    })
-
     const [haiAeroBoostApr, setHaiAeroBoostApr] = useState<any>({
         haiVeloDailyRewardValue: 0,
         totalBoostedValueParticipating: 0,
@@ -262,7 +263,7 @@ export function useStrategyData(
     // // === Staking Strategy ===
     const kitePrice = Number(velodromePricesData?.KITE?.raw)
     const kiteStakingTvl = (totalStakedAmount as any) * kitePrice
-    const kiteStakingUserQuantity = usersStakingData[address?.toLowerCase()]?.stakedBalance || 0
+    const kiteStakingUserQuantity = Number(kiteStakingAccount?.stakedBalance || 0)
     const kiteStakingUserPosition = kiteStakingUserQuantity * kitePrice
 
     // === HAI-BOLD LP Staking Strategy ===
@@ -298,7 +299,7 @@ export function useStrategyData(
     const haiBoldLpStakedTvlUsd = haiBoldLpTotalStaked * (haiBoldLpPriceUsd || 0)
 
     // Calculate boost for HAI-BOLD LP staking
-    const userKiteStaked = Number(usersStakingData[address?.toLowerCase()]?.stakedBalance || 0)
+    const userKiteStaked = Number(kiteStakingAccount?.stakedBalance || 0)
     const haiBoldLpBoostResult = useMemo(() => {
         if (haiBoldLpUserStaked <= 0 || haiBoldLpTotalStaked <= 0) {
             return { lpBoost: 1, kiteRatio: 0 }

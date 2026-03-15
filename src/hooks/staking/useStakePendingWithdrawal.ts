@@ -27,7 +27,8 @@ export function useStakePendingWithdrawal(namespace: string, _poolKey: string, a
     const { data } = useApolloQuery(STAKING_USER_PW, {
         variables: { id },
         skip: !id,
-        fetchPolicy: 'network-only',
+        fetchPolicy: 'cache-first',
+        nextFetchPolicy: 'cache-first',
     })
 
     const pending = useMemo(() => {

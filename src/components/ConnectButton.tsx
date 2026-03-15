@@ -1,8 +1,12 @@
-import { ConnectButton as RKConnectButton } from '@rainbow-me/rainbowkit'
+import { ConnectButton as RKConnectButton, RainbowKitProvider } from '@rainbow-me/rainbowkit'
+import '@rainbow-me/rainbowkit/styles.css'
 
 import { NETWORK_ID, formatNumberWithStyle } from '~/utils'
 import { useStoreState } from '~/store'
 import { useAddTokens, useBalances } from '~/hooks'
+import { chains } from '~/utils/wallet'
+import { haiTheme } from '~/styles/themes'
+import { CustomAvatar } from './CustomAvatar'
 
 import styled, { css } from 'styled-components'
 import { CenteredFlex, type FlexProps, HaiButton, Text, Grid } from '~/styles'
@@ -22,62 +26,64 @@ export function ConnectButton({ showBalance, ...props }: ConnectButtonProps) {
     const { addTokens } = useAddTokens()
 
     return (
-        <RKConnectButton.Custom>
-            {({ account, chain, openConnectModal, openAccountModal, openChainModal }) => {
-                if (!account)
-                    return (
-                        <Button {...props} onClick={openConnectModal}>
-                            Connect
-                        </Button>
-                    )
-                if (chain?.id !== NETWORK_ID)
-                    return (
-                        <Button {...props} onClick={openChainModal}>
-                            Switch Network
-                        </Button>
-                    )
+        <RainbowKitProvider avatar={CustomAvatar} theme={haiTheme} chains={chains}>
+            <RKConnectButton.Custom>
+                {({ account, chain, openConnectModal, openAccountModal, openChainModal }) => {
+                    if (!account)
+                        return (
+                            <Button {...props} onClick={openConnectModal}>
+                                Connect
+                            </Button>
+                        )
+                    if (chain?.id !== NETWORK_ID)
+                        return (
+                            <Button {...props} onClick={openChainModal}>
+                                Switch Network
+                            </Button>
+                        )
 
-                return (
-                    <Container {...props} $vertical={showBalance === 'vertical'}>
-                        {showBalance && (
-                            <Grid $columns="repeat(3, min-content)">
-                                <BalanceContainer as="button" title="Add HAI & KITE to Wallet" onClick={addTokens}>
-                                    <PlusCircle size={18} />
-                                    <Text>
-                                        {formatNumberWithStyle(kiteBalance.raw, {
-                                            maxDecimals: 0,
-                                        })}{' '}
-                                        KITE
-                                    </Text>
-                                </BalanceContainer>
-                                <BalanceContainer as="button" title="Add HAI & KITE to Wallet" onClick={addTokens}>
-                                    <PlusCircle size={18} />
-                                    <Text>
-                                        {formatNumberWithStyle(haiBalance.raw, {
-                                            maxDecimals: 0,
-                                        })}{' '}
-                                        HAI
-                                    </Text>
-                                </BalanceContainer>
-                                <BalanceContainer>
-                                    <Text>
-                                        {formatNumberWithStyle(ethBalance[chain.id], {
-                                            maxDecimals: 1,
-                                            maxSigFigs: 2,
-                                        })}{' '}
-                                        ETH
-                                    </Text>
-                                </BalanceContainer>
-                            </Grid>
-                        )}
-                        <Button $width={!showBalance ? 'calc(100% + 4px)' : undefined} onClick={openAccountModal}>
-                            <Text>{account.displayName}</Text>
-                            <Caret direction="down" />
-                        </Button>
-                    </Container>
-                )
-            }}
-        </RKConnectButton.Custom>
+                    return (
+                        <Container {...props} $vertical={showBalance === 'vertical'}>
+                            {showBalance && (
+                                <Grid $columns="repeat(3, min-content)">
+                                    <BalanceContainer as="button" title="Add HAI & KITE to Wallet" onClick={addTokens}>
+                                        <PlusCircle size={18} />
+                                        <Text>
+                                            {formatNumberWithStyle(kiteBalance.raw, {
+                                                maxDecimals: 0,
+                                            })}{' '}
+                                            KITE
+                                        </Text>
+                                    </BalanceContainer>
+                                    <BalanceContainer as="button" title="Add HAI & KITE to Wallet" onClick={addTokens}>
+                                        <PlusCircle size={18} />
+                                        <Text>
+                                            {formatNumberWithStyle(haiBalance.raw, {
+                                                maxDecimals: 0,
+                                            })}{' '}
+                                            HAI
+                                        </Text>
+                                    </BalanceContainer>
+                                    <BalanceContainer>
+                                        <Text>
+                                            {formatNumberWithStyle(ethBalance[chain.id], {
+                                                maxDecimals: 1,
+                                                maxSigFigs: 2,
+                                            })}{' '}
+                                            ETH
+                                        </Text>
+                                    </BalanceContainer>
+                                </Grid>
+                            )}
+                            <Button $width={!showBalance ? 'calc(100% + 4px)' : undefined} onClick={openAccountModal}>
+                                <Text>{account.displayName}</Text>
+                                <Caret direction="down" />
+                            </Button>
+                        </Container>
+                    )
+                }}
+            </RKConnectButton.Custom>
+        </RainbowKitProvider>
     )
 }
 

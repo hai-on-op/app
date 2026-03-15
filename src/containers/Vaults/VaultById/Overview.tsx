@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next'
 import { type QueriedVault, formatNumberWithStyle, getRatePercentage } from '~/utils'
 import { useStoreState } from '~/store'
 import { useBoost } from '~/hooks/useBoost'
-import { RewardsModel } from '~/model/rewardsModel'
 import { useUnderlyingAPR } from '~/hooks/useUnderlyingAPR'
 
 import styled from 'styled-components'
