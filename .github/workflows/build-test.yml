@@ -130,6 +130,7 @@ jobs:
       - name: Build project
         run: yarn build
         env:
+          VITE_NETWORK_ID: ${{ secrets.VITE_NETWORK_ID }}
           VITE_STAKING_MANAGER: '0x1250f2326F04ac61Ee5aEd92fEf74BcAC6E6BC90'
           VITE_REWARD_DISTRIBUTOR_ADDRESS: '0xfEd2eB6325432F0bF7110DcE2CCC5fF811ac3D4D'
           VITE_KITE_ADDRESS: '0xf467C7d5a4A9C4687fFc7986aC6aD5A4c81E1404'
@@ -141,6 +142,7 @@ jobs:
           VITE_MAINNET_PUBLIC_RPC: ${{ secrets.VITE_MAINNET_PUBLIC_RPC }}
           VITE_ALCHEMY_KEY: ${{ secrets.VITE_ALCHEMY_KEY }}
           VITE_GRAPH_API_KEY: ${{ secrets.VITE_GRAPH_API_KEY }}
+          VITE_FLAGSMITH_API_KEY: ${{ secrets.VITE_FLAGSMITH_API_KEY }}
 
       - name: Check build budgets
         run: yarn perf:budgets
