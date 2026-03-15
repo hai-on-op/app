@@ -21,9 +21,10 @@ function isMobileDevice() {
 }
 
 function omitUndefinedValues<T extends object>(value: T) {
-    return Object.fromEntries(
-        Object.entries(value).filter(([, entryValue]) => entryValue !== undefined)
-    ) as Record<string, unknown>
+    return Object.fromEntries(Object.entries(value).filter(([, entryValue]) => entryValue !== undefined)) as Record<
+        string,
+        unknown
+    >
 }
 
 // Importing RainbowKit's top-level connectors helper pulls in the full wallet registry.

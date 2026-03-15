@@ -37,7 +37,10 @@ type AnalyticsContext = {
     }
 }
 
-type AnalyticsSummaryContextValue = Pick<AnalyticsContext, 'forceRefresh' | 'data' | 'graphData' | 'graphSummary' | 'haiMarketPrice'>
+type AnalyticsSummaryContextValue = Pick<
+    AnalyticsContext,
+    'forceRefresh' | 'data' | 'graphData' | 'graphSummary' | 'haiMarketPrice'
+>
 type AnalyticsDetailContextValue = Pick<
     AnalyticsContext,
     'haiPriceHistory' | 'redemptionRateHistory' | 'pools' | 'haiPricePerformance'

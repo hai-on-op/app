@@ -443,7 +443,10 @@ export function StakingProvider({ children, loadUsersIndex = false }: StakingPro
 
     // Improved loading logic that accounts for initial data loading
     const loading =
-        ((normalizedAddress ? userLoading : false) || statsLoading || (loadUsersIndex ? allUsersLoading : false) || !isInitialDataLoaded) &&
+        ((normalizedAddress ? userLoading : false) ||
+            statsLoading ||
+            (loadUsersIndex ? allUsersLoading : false) ||
+            !isInitialDataLoaded) &&
         !isRefetching
 
     return (

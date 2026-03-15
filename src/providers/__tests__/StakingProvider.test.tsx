@@ -57,7 +57,8 @@ function Probe() {
     const staking = useStaking()
     return (
         <div data-testid="pending">
-            {staking?.stakingData.pendingWithdrawal?.amount || 'none'}|{staking?.stakingData.pendingWithdrawal?.status || 'none'}
+            {staking?.stakingData.pendingWithdrawal?.amount || 'none'}|
+            {staking?.stakingData.pendingWithdrawal?.status || 'none'}
         </div>
     )
 }
@@ -68,8 +69,8 @@ describe('StakingProvider query policy', () => {
 
         useAccountMock.mockReturnValue({ address: undefined })
         useStoreStateMock.mockImplementation((selector: (state: typeof baseState) => unknown) => selector(baseState))
-        useStoreActionsMock.mockImplementation(
-            (selector: (actions: typeof baseActions) => unknown) => selector(baseActions)
+        useStoreActionsMock.mockImplementation((selector: (actions: typeof baseActions) => unknown) =>
+            selector(baseActions)
         )
         useQueryMock.mockReturnValue({
             data: undefined,

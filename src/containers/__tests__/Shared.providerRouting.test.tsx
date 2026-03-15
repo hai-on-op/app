@@ -37,9 +37,7 @@ vi.mock('~/hooks', () => ({
 }))
 
 vi.mock('~/providers/StakingProvider', () => ({
-    StakingProvider: ({ children }: { children: ReactNode }) => (
-        <div data-testid="staking-provider">{children}</div>
-    ),
+    StakingProvider: ({ children }: { children: ReactNode }) => <div data-testid="staking-provider">{children}</div>,
 }))
 
 vi.mock('~/providers/ClaimsProvider', () => ({
@@ -87,9 +85,7 @@ vi.mock('~/components/Modal/StakingClaimModal', () => ({
 }))
 
 vi.mock('~/components/IntentionHeader', () => ({
-    IntentionHeader: ({ children }: { children?: ReactNode }) => (
-        <div data-testid="intention-header">{children}</div>
-    ),
+    IntentionHeader: ({ children }: { children?: ReactNode }) => <div data-testid="intention-header">{children}</div>,
 }))
 
 vi.mock('~/components/HaiAlert', () => ({
@@ -166,8 +162,8 @@ describe('Shared provider routing', () => {
     beforeEach(() => {
         vi.clearAllMocks()
         useStoreStateMock.mockImplementation((selector: (state: typeof baseState) => unknown) => selector(baseState))
-        useStoreActionsMock.mockImplementation(
-            (selector: (actions: typeof baseActions) => unknown) => selector(baseActions)
+        useStoreActionsMock.mockImplementation((selector: (actions: typeof baseActions) => unknown) =>
+            selector(baseActions)
         )
     })
 

@@ -3,19 +3,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { Timeframe } from '~/utils/time'
 
-const {
-    useGebAnalyticsMock,
-    useSystemDataMock,
-    useHistoricalStatsMock,
-    usePoolAnalyticsMock,
-    useQueryMock,
-} = vi.hoisted(() => ({
-    useGebAnalyticsMock: vi.fn(),
-    useSystemDataMock: vi.fn(),
-    useHistoricalStatsMock: vi.fn(),
-    usePoolAnalyticsMock: vi.fn(),
-    useQueryMock: vi.fn(),
-}))
+const { useGebAnalyticsMock, useSystemDataMock, useHistoricalStatsMock, usePoolAnalyticsMock, useQueryMock } =
+    vi.hoisted(() => ({
+        useGebAnalyticsMock: vi.fn(),
+        useSystemDataMock: vi.fn(),
+        useHistoricalStatsMock: vi.fn(),
+        usePoolAnalyticsMock: vi.fn(),
+        useQueryMock: vi.fn(),
+    }))
 
 vi.mock('@apollo/client', () => ({
     gql: (strings: TemplateStringsArray) => strings[0],

@@ -28,6 +28,8 @@ export function getUniswapRewards(poolAddress: string): PoolReward {
 
 export function getAllVaultsWithRewards(): string[] {
     return Object.keys(STATIC_REWARDS.vaults).filter((vault) =>
-        Object.values(STATIC_REWARDS.vaults[vault as keyof typeof STATIC_REWARDS.vaults] || {}).some((amount) => amount !== 0)
+        Object.values(STATIC_REWARDS.vaults[vault as keyof typeof STATIC_REWARDS.vaults] || {}).some(
+            (amount) => amount !== 0
+        )
     )
 }

@@ -177,19 +177,22 @@ async function main() {
     }
 
     const chromeUserDataDir = mkdtempSync(path.join(tmpdir(), 'hai-perf-smoke-'))
-    const chromeProcess = spawnLoggedProcess(
-        chromeBinary,
-        [
-            '--headless=new',
-            '--disable-gpu',
-            '--no-first-run',
-            '--no-default-browser-check',
-            `--remote-debugging-port=${DEBUG_PORT}`,
-            `--user-data-dir=${chromeUserDataDir}`,
-            `${BASE_URL}/`,
-        ],
-        'chrome'
-    )
+
+    const chromeArgs = [
+        '--headless=new',
+        '--disable-gpu',
+        '--no-first-run',
+        '--no-default-browser-check',
+        `--remote-debugging-port=${DEBUG_PORT}`,
+        `--user-data-dir=${chromeUserDataDir}`,
+        `${BASE_URL}/`,
+    ]
+
+    if (process.platform === 'linux') {
+        chromeArgs.push('--no-sandbox', '--disable-dev-shm-usage')
+    }
+
+    const chromeProcess = spawnLoggedProcess(chromeBinary, chromeArgs, 'chrome')
 
     const cleanup = () => {
         if (previewProcess && !previewProcess.killed) previewProcess.kill('SIGTERM')

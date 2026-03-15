@@ -223,8 +223,8 @@ describe('Shared bootstrap gating', () => {
             allowance: allowanceMock,
         })
         useStoreStateMock.mockImplementation((selector: (state: typeof baseState) => unknown) => selector(baseState))
-        useStoreActionsMock.mockImplementation(
-            (selector: (actions: typeof baseActions) => unknown) => selector(baseActions)
+        useStoreActionsMock.mockImplementation((selector: (actions: typeof baseActions) => unknown) =>
+            selector(baseActions)
         )
     })
 

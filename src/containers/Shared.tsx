@@ -55,7 +55,9 @@ import { IntentionHeader } from '~/components/IntentionHeader'
 import { HaiAlert } from '~/components/HaiAlert'
 import { StartAuction } from './Auctions/StartAuction'
 
-const ClaimModal = lazy(() => import('~/components/Modal/ClaimModal').then((module) => ({ default: module.ClaimModal })))
+const ClaimModal = lazy(() =>
+    import('~/components/Modal/ClaimModal').then((module) => ({ default: module.ClaimModal }))
+)
 const StakingClaimModal = lazy(() =>
     import('~/components/Modal/StakingClaimModal').then((module) => ({ default: module.StakingClaimModal }))
 )

@@ -110,13 +110,7 @@ export function LineChart({
                 <LineSliceTooltip slice={slice} formatX={formatXValue} formatY={formatYValue} />
             )}
             {...props}
-            layers={[
-                'axes',
-                BorderedLine,
-                'crosshair',
-                'slices',
-                'legends',
-            ]}
+            layers={['axes', BorderedLine, 'crosshair', 'slices', 'legends']}
         />
     )
 }

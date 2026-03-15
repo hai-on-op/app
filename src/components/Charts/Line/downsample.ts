@@ -14,7 +14,5 @@ export function downsampleSeriesPoints<T>(points: readonly T[], maxPoints = MAX_
     indices.add(0)
     indices.add(points.length - 1)
 
-    return [...indices]
-        .sort((left, right) => left - right)
-        .map((index) => points[index])
+    return [...indices].sort((left, right) => left - right).map((index) => points[index])
 }

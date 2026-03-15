@@ -35,12 +35,7 @@ const HAI_TOKEN_ADDRESS = import.meta.env.VITE_HAI_ADDRESS as string
 const KITE_TOKEN_ADDRESS = import.meta.env.VITE_KITE_ADDRESS as string
 const OP_TOKEN_ADDRESS = import.meta.env.VITE_OP_ADDRESS as string
 
-export function useStrategyData(
-    systemStateData: any,
-    velodromePricesData: any,
-    address: any,
-    stakingApyData: any
-) {
+export function useStrategyData(systemStateData: any, velodromePricesData: any, address: any, stakingApyData: any) {
     // === State ===
     const [haiVeloLatestTransferAmount, setHaiVeloLatestTransferAmount] = useState(0)
     const [haiAeroLatestTransferAmount, setHaiAeroLatestTransferAmount] = useState(0)

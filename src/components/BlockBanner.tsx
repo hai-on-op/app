@@ -18,16 +18,16 @@ export function BlockBanner({ text, width, active = true, children, ...props }: 
     if (!active) return <>{children}</>
 
     return (
-            <Container $width="100%" $justify="center" $align="center" {...props}>
-                {children}
-                <Band $width={width} $offset={offset} style={{ transform: `rotate(${rotation}deg)` }}>
-                    {text.split('').map((char, i) => (
-                        <span key={i}>{char === ' ' ? '\u00A0' : char}</span>
-                    ))}
-                </Band>
-            </Container>
-        )
-    }
+        <Container $width="100%" $justify="center" $align="center" {...props}>
+            {children}
+            <Band $width={width} $offset={offset} style={{ transform: `rotate(${rotation}deg)` }}>
+                {text.split('').map((char, i) => (
+                    <span key={i}>{char === ' ' ? '\u00A0' : char}</span>
+                ))}
+            </Band>
+        </Container>
+    )
+}
 
 const Container = styled(Flex)`
     position: relative;

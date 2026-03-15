@@ -65,7 +65,10 @@ export function CollateralTable({ headers, rows, sorting, setSorting }: Collater
                             {
                                 content:
                                     lastUpdateTime !== undefined && updateDelay !== undefined ? (
-                                        <TimeLeft now={now} timestamp={(Number(lastUpdateTime) + Number(updateDelay)) * 1000} />
+                                        <TimeLeft
+                                            now={now}
+                                            timestamp={(Number(lastUpdateTime) + Number(updateDelay)) * 1000}
+                                        />
                                     ) : (
                                         <Text>Loading...</Text>
                                     ),
