@@ -11,7 +11,13 @@ import WebSocket from 'ws'
 const LOCAL_BASE_URL = 'http://127.0.0.1:4173'
 const BASE_URL = process.env.SMOKE_BASE_URL || LOCAL_BASE_URL
 const DEBUG_PORT = Number(process.env.SMOKE_DEBUG_PORT || 9226)
-const ROUTES = ['/', '/vaults?tab=available', '/analytics', '/earn', '/stake']
+const DEFAULT_ROUTES = ['/', '/vaults?tab=available', '/analytics', '/earn', '/stake']
+const ROUTES = process.env.SMOKE_ROUTES
+    ? process.env.SMOKE_ROUTES.split(',')
+          .map((route) => route.trim())
+          .filter(Boolean)
+    : DEFAULT_ROUTES
+const SMOKE_TIMEOUT_MS = Number(process.env.SMOKE_TIMEOUT_MS || 120_000)
 const IGNORED_FAILED_URL_PATTERNS = [/_vercel\/insights\/script\.js/]
 const IGNORED_CONSOLE_PATTERNS = [
     /Download the React DevTools/i,
@@ -97,6 +103,29 @@ function spawnLoggedProcess(command, args, name, extraEnv = {}) {
     })
 
     return child
+}
+
+async function waitForChildExit(child, timeoutMs = 3_000) {
+    if (!child || child.exitCode !== null) return true
+
+    return Promise.race([
+        new Promise((resolve) => {
+            child.once('exit', () => resolve(true))
+        }),
+        delay(timeoutMs).then(() => false),
+    ])
+}
+
+async function terminateProcess(child) {
+    if (!child || child.exitCode !== null) return
+
+    child.kill('SIGTERM')
+    const exited = await waitForChildExit(child)
+
+    if (!exited && child.exitCode === null) {
+        child.kill('SIGKILL')
+        await waitForChildExit(child, 2_000)
+    }
 }
 
 function createConnectionHelpers(ws) {
@@ -219,9 +248,18 @@ async function main() {
 
     const chromeProcess = spawnLoggedProcess(chromeBinary, chromeArgs, 'chrome')
 
-    const cleanup = () => {
-        if (previewProcess && !previewProcess.killed) previewProcess.kill('SIGTERM')
-        if (!chromeProcess.killed) chromeProcess.kill('SIGTERM')
+    let cleanupPromise
+    const cleanup = () =>
+        cleanupPromise ||
+        (cleanupPromise = (async () => {
+            await Promise.all([terminateProcess(previewProcess), terminateProcess(chromeProcess)])
+        })().finally(() => {
+            clearTimeout(hardTimeout)
+        }))
+
+    const cleanupSync = () => {
+        if (previewProcess && previewProcess.exitCode === null) previewProcess.kill('SIGKILL')
+        if (chromeProcess.exitCode === null) chromeProcess.kill('SIGKILL')
         try {
             rmSync(chromeUserDataDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 })
         } catch {
@@ -229,14 +267,32 @@ async function main() {
         }
     }
 
-    process.on('exit', cleanup)
+    const hardTimeout = setTimeout(() => {
+        console.error(`Smoke timed out after ${SMOKE_TIMEOUT_MS}ms`)
+        cleanup()
+            .catch(() => {})
+            .finally(() => {
+                cleanupSync()
+                process.exit(1)
+            })
+    }, SMOKE_TIMEOUT_MS)
+
+    process.on('exit', cleanupSync)
     process.on('SIGINT', () => {
         cleanup()
-        process.exit(130)
+            .catch(() => {})
+            .finally(() => {
+                cleanupSync()
+                process.exit(130)
+            })
     })
     process.on('SIGTERM', () => {
         cleanup()
-        process.exit(143)
+            .catch(() => {})
+            .finally(() => {
+                cleanupSync()
+                process.exit(143)
+            })
     })
 
     if (previewProcess) {
@@ -447,7 +503,8 @@ async function main() {
     console.log(JSON.stringify(summary, null, 2))
 
     ws.close()
-    cleanup()
+    await cleanup()
+    cleanupSync()
 
     if (failures.length) {
         console.error('\nSmoke failures:')
@@ -458,5 +515,6 @@ async function main() {
 
 main().catch((error) => {
     console.error(error)
+    process.exitCode = 1
     process.exit(1)
 })

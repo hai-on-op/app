@@ -151,3 +151,5 @@ jobs:
         run: yarn perf:smoke
         env:
           CHROME_BIN: ${{ steps.setup-chrome.outputs.chrome-path }}
+          SMOKE_TIMEOUT_MS: '90000'
+          SMOKE_ROUTES: '/,/vaults?tab=available,/analytics'
