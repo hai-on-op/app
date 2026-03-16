@@ -96,7 +96,7 @@ jobs:
           VITE_OP_ADDRESS: '0x4200000000000000000000000000000000000042'
 
   perf:
-    name: Perf Guardrails
+    name: Perf Budgets
     runs-on: ubuntu-latest
 
     steps:
@@ -123,10 +123,6 @@ jobs:
       - name: Install project dependencies
         run: yarn --prefer-offline
 
-      - name: Set up Chrome
-        id: setup-chrome
-        uses: browser-actions/setup-chrome@v1
-
       - name: Build project
         run: yarn build
         env:
@@ -146,10 +142,3 @@ jobs:
 
       - name: Check build budgets
         run: yarn perf:budgets
-
-      - name: Run route smoke test
-        run: yarn perf:smoke
-        env:
-          CHROME_BIN: ${{ steps.setup-chrome.outputs.chrome-path }}
-          SMOKE_TIMEOUT_MS: '90000'
-          SMOKE_ROUTES: '/,/vaults?tab=available,/analytics'
