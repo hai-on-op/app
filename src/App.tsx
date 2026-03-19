@@ -46,11 +46,7 @@ function AnalyticsRoute() {
 }
 
 function AuctionsRoute() {
-    return (
-        <ClaimsProvider>
-            <Auctions />
-        </ClaimsProvider>
-    )
+    return <Auctions />
 }
 
 function EarnRoute() {

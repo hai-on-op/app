@@ -42,7 +42,13 @@ vi.mock('~/providers/StakingProvider', () => ({
 }))
 
 vi.mock('~/providers/ClaimsProvider', () => ({
-    ClaimsProvider: ({ children }: { children: ReactNode }) => <div data-testid="claims-provider">{children}</div>,
+    ClaimsProvider: ({
+        children,
+        includeIncentives,
+    }: {
+        children: ReactNode
+        includeIncentives?: boolean
+    }) => <div data-testid={includeIncentives === false ? 'claims-provider-lite' : 'claims-provider'}>{children}</div>,
 }))
 
 vi.mock('~/providers/RewardsProvider', () => ({
@@ -184,12 +190,14 @@ describe('Shared provider routing', () => {
         expect(within(claimsProvider).getByTestId('intention-header')).toBeTruthy()
     })
 
-    it('wraps the shared header in ClaimsProvider on the auctions route', () => {
+    it('wraps both the shared header and auctions content in one lite ClaimsProvider on the auctions route', () => {
         renderShared('/auctions')
 
-        const claimsProvider = screen.getByTestId('claims-provider')
+        const claimsProvider = screen.getByTestId('claims-provider-lite')
         expect(within(claimsProvider).getByTestId('intention-header')).toBeTruthy()
         expect(within(claimsProvider).getByTestId('start-auction')).toBeTruthy()
+        expect(within(claimsProvider).getByTestId('shared-child')).toBeTruthy()
+        expect(screen.queryByTestId('claims-provider')).toBeNull()
     })
 
     it('wraps the shared header in staking and claims providers for haiVELO minting routes', () => {

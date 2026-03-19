@@ -370,10 +370,6 @@ export function Shared({ children }: Props) {
             return intentionHeader
         }
 
-        if (isAuctionRoute) {
-            return <ClaimsProvider>{intentionHeader}</ClaimsProvider>
-        }
-
         if (isStakeRoute) {
             return <StakingProvider>{intentionHeader}</StakingProvider>
         }
@@ -400,6 +396,15 @@ export function Shared({ children }: Props) {
                         </EarnProvider>
                     </ClaimsProvider>
                 </StakingProvider>
+            )
+        }
+
+        if (isAuctionRoute) {
+            return (
+                <ClaimsProvider includeIncentives={false}>
+                    {scopedIntentionHeader}
+                    {children}
+                </ClaimsProvider>
             )
         }
 
