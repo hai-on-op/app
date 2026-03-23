@@ -109,6 +109,52 @@ const HAI_AERO_CONFIG: MinterProtocolConfig = {
 }
 
 // ============================================================================
+// sHAI Configuration (Base)
+// ============================================================================
+
+const SHAI_CONFIG: MinterProtocolConfig = {
+    id: 'sHai',
+    chainId: MinterChainId.OPTIMISM,
+    displayName: 'sHAI',
+    routePath: '/sHAI',
+    description: 'Convert AERO or veAERO to sHAI',
+
+    tokens: {
+        baseTokenSymbol: 'AERO',
+        baseTokenAddress: '0x940181a94A35A4569E4529A3CDfB74e38FD98631',
+        veNftAddress: '0xeBf418Fe2512e7E6bd9b87a8F0f294aCDC67e6B4',
+        wrappedTokenV1Symbol: undefined,
+        wrappedTokenV1Address: undefined,
+        wrappedTokenV2Symbol: 'SHAI',
+        wrappedTokenV2Address: '0x10398AbC267496E49106B07dd6BE13364D10dC71',
+    },
+
+    collateral: {
+        v1Id: undefined,
+        v2Id: 'SHAI',
+    },
+
+    rewards: {
+        depositerV1: '0xf66ff754a563fd1c9dafa5928d8a02f38ac54241',
+        distributorV1: '0xfEd2eB6325432F0bF7110DcE2CCC5fF811ac3D4D',
+        depositerV2: undefined,
+        distributorV2: undefined,
+    },
+
+    dataSources: {
+        rpcUrl: VITE_MAINNET_PUBLIC_RPC || 'https://mainnet.optimism.io',
+        subgraphUrl: '',
+        lpSubgraphUrl: undefined,
+    },
+
+    features: {
+        supportsV1Migration: false,
+        supportsVeNftDeposit: true,
+        supportsBoost: true,
+    },
+}
+
+// ============================================================================
 // haiAERO Bridge Configuration (Base <-> Optimism via Hyperlane)
 // ============================================================================
 
@@ -169,6 +215,16 @@ const HAI_AERO_SEPOLIA_CONFIG: MinterProtocolConfig = {
     },
 }
 
+const SHAI_SEPOLIA_CONFIG: MinterProtocolConfig = {
+    ...SHAI_CONFIG,
+    chainId: MinterChainId.OPTIMISM_SEPOLIA,
+    dataSources: {
+        rpcUrl: VITE_TESTNET_PUBLIC_RPC || 'https://sepolia.optimism.io',
+        subgraphUrl: '',
+        lpSubgraphUrl: undefined,
+    },
+}
+
 // ============================================================================
 // Protocol Registry
 // ============================================================================
@@ -179,6 +235,7 @@ const HAI_AERO_SEPOLIA_CONFIG: MinterProtocolConfig = {
 export const MINTER_PROTOCOLS: Record<MinterProtocolId, MinterProtocolConfig> = {
     haiVelo: HAI_VELO_CONFIG,
     haiAero: HAI_AERO_CONFIG,
+    sHai: SHAI_CONFIG,
 }
 
 /**
@@ -187,6 +244,7 @@ export const MINTER_PROTOCOLS: Record<MinterProtocolId, MinterProtocolConfig> = 
 export const MINTER_PROTOCOLS_TESTNET: Record<MinterProtocolId, MinterProtocolConfig> = {
     haiVelo: HAI_VELO_SEPOLIA_CONFIG,
     haiAero: HAI_AERO_SEPOLIA_CONFIG,
+    sHai: SHAI_SEPOLIA_CONFIG,
 }
 
 // ============================================================================

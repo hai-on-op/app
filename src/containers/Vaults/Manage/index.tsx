@@ -44,8 +44,14 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
         new URLSearchParams(window.location.search).get('collateral') === 'HAIAERO' ||
         window.location.pathname === '/haiAERO'
 
+    // Detect sHAI pages
+    const isSHAI =
+        vault?.collateralName === 'SHAI' ||
+        new URLSearchParams(window.location.search).get('collateral') === 'SHAI' ||
+        window.location.pathname === '/sHAI'
+
     // Combined check for any minter protocol page
-    const isMinterProtocol = isHAIVELO || isHAIAERO
+    const isMinterProtocol = isHAIVELO || isHAIAERO || isSHAI
 
     const { vault: vaultWithActivity } = useVaultById(vault?.id || '')
 
@@ -65,6 +71,7 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
         vault &&
         ((isHAIVELO && (vault.collateralName === 'HAIVELOV2' || vault.collateralName === 'HAIVELO')) ||
             (isHAIAERO && vault.collateralName === 'HAIAERO') ||
+            (isSHAI && vault.collateralName === 'SHAI') ||
             !isMinterProtocol) // For non-minter protocols, any vault is a match
     const isCreateFlow = action === VaultAction.CREATE || !hasMatchingVault
     const getNavItems = () => {
@@ -73,6 +80,8 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
                 return ['Mint haiVELO', 'Create Vault']
             } else if (isHAIAERO) {
                 return ['Mint haiAERO', 'Bridge haiAERO', 'Create Vault']
+            } else if (isSHAI) {
+                return ['Mint sHAI', 'Create Vault']
             }
             return []
         } else {
@@ -80,6 +89,8 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
                 return ['Mint haiVELO', 'Manage', 'Activity']
             } else if (isHAIAERO) {
                 return ['Mint haiAERO', 'Bridge haiAERO', 'Manage', 'Activity']
+            } else if (isSHAI) {
+                return ['Mint sHAI', 'Manage', 'Activity']
             }
             return ['Manage', 'Activity']
         }
@@ -137,11 +148,26 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
             )
         }
 
+        // sHAI tabs: [Mint, Manage/Create, Activity?]
+        if (isSHAI && tab === 0) {
+            return (
+                <ProxyPrompt>
+                    <MinterProtocolProvider protocolId="sHai">
+                        <BodyGrid>
+                            <MinterOverview />
+                            <MintActions />
+                        </BodyGrid>
+                    </MinterProtocolProvider>
+                </ProxyPrompt>
+            )
+        }
+
         // Manage/Create tab
         const isManageTab =
             (!isMinterProtocol && tab === 0) || // Manage tab for non-minter protocols
             (isHAIVELO && tab === 1) || // Manage tab for haiVELO
-            (isHAIAERO && tab === 2) // Manage tab for haiAERO
+            (isHAIAERO && tab === 2) || // Manage tab for haiAERO
+            (isSHAI && tab === 1) // Manage tab for sHAI
 
         if (isManageTab) {
             return (

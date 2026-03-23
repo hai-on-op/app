@@ -73,7 +73,12 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
         (location.pathname === '/vaults/open' &&
             ['HAIAERO'].includes(new URLSearchParams(location.search).get('collateral') || ''))
 
-    const _isLstRoute = isHaiVeloRoute || isHaiAeroRoute
+    const isSHaiRoute =
+        location.pathname === '/sHAI' ||
+        (location.pathname === '/vaults/open' &&
+            ['SHAI'].includes(new URLSearchParams(location.search).get('collateral') || ''))
+
+    const _isLstRoute = isHaiVeloRoute || isHaiAeroRoute || isSHaiRoute
 
     const [button, setButton] = useState<HTMLElement | null>(null)
 
@@ -136,6 +141,13 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
                                         active={isHaiAeroRoute}
                                     >
                                         haiAERO
+                                    </BrandedDropdown.Item>
+                                    <BrandedDropdown.Item
+                                        href="/sHAI"
+                                        icon={<Lock size={18} />}
+                                        active={isSHaiRoute}
+                                    >
+                                        sHAI
                                     </BrandedDropdown.Item>
                                 </NestedGroup>
                                 <BrandedDropdown.Item
