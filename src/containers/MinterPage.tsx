@@ -108,5 +108,12 @@ export function HaiAeroPage() {
     return <MinterPage protocolId="haiAero" />
 }
 
+/**
+ * SHaiPage - Page component for the /sHAI route.
+ */
+export function SHaiPage() {
+    return <MinterPage protocolId="sHai" />
+}
+
 // Default export for backward compatibility
 export default MinterPage

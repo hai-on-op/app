@@ -21,6 +21,7 @@ import { StakeStats } from '~/containers/Stake/Stats'
 import { WrapperAd, WrapperAdProps } from './WrapperAd'
 import { HaiVeloStats } from '~/containers/Vaults/HaiVeloStats'
 import { HaiAeroStats } from '~/containers/Vaults/HaiAeroStats'
+import { SHaiStats } from '~/containers/Vaults/SHaiStats'
 import { kiteConfig } from '~/staking/configs/kite'
 import { haiBoldCurveLpConfig } from '~/staking/configs/haiBoldCurveLp'
 import { haiVeloVeloLpConfig } from '~/staking/configs/haiVeloVeloLp'
@@ -164,7 +165,8 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
         if (
             location.pathname.startsWith('/vaults') ||
             location.pathname === '/haiVELO' ||
-            location.pathname === '/haiAERO'
+            location.pathname === '/haiAERO' ||
+            location.pathname === '/sHAI'
         ) {
             switch (location.pathname) {
                 case '/vaults':
@@ -172,6 +174,7 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
                 case '/vaults/open':
                 case '/haiVELO':
                 case '/haiAERO':
+                case '/sHAI':
                     // If opening haiVELO(v2) or haiAERO collateral, show special stats
                     if (
                         location.pathname === '/haiVELO' ||
@@ -191,6 +194,17 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
                         return {
                             type: Intention.BORROW,
                             stats: <HaiAeroStats />,
+                            stakeConfig: undefined,
+                        }
+                    }
+                    // sHAI stats
+                    if (
+                        location.pathname === '/sHAI' ||
+                        ['SHAI'].includes(new URLSearchParams(location.search).get('collateral') || '')
+                    ) {
+                        return {
+                            type: Intention.BORROW,
+                            stats: <SHaiStats />,
                             stakeConfig: undefined,
                         }
                     }
@@ -219,6 +233,13 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
             description: 'Convert AERO into haiAERO on Base and bridge to Optimism',
         }
 
+        const sHaiOption: BrandedSelectOption = {
+            label: 'Get sHAI',
+            value: 'sHAI',
+            icon: ['HAIAERO'],
+            description: 'Convert AERO into sHAI on Optimism',
+        }
+
         const extended: BrandedSelectOption[] = []
 
         for (const opt of typeOptions) {
@@ -226,6 +247,7 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
             if (opt.value === Intention.BORROW) {
                 extended.push(haiVeloOption)
                 extended.push(haiAeroOption)
+                extended.push(sHaiOption)
             }
         }
 
@@ -244,7 +266,12 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
         (location.pathname === '/vaults/open' &&
             ['HAIAERO'].includes(new URLSearchParams(location.search).get('collateral') || ''))
 
-    const isMinterOpen = isHaiVeloOpen || isHaiAeroOpen
+    const isSHaiOpen =
+        location.pathname === '/sHAI' ||
+        (location.pathname === '/vaults/open' &&
+            ['SHAI'].includes(new URLSearchParams(location.search).get('collateral') || ''))
+
+    const isMinterOpen = isHaiVeloOpen || isHaiAeroOpen || isSHaiOpen
 
     const baseCopy = copy[type]
     const isLpStaking = stakeConfig && stakeConfig.namespace !== 'kite'
@@ -252,6 +279,8 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
         ? 'Convert your VELO & veVELO into haiVELO to use as collateral while earning veVELO rewards. '
         : isHaiAeroOpen
         ? 'Convert your AERO on Base into haiAERO and bridge to Optimism to use as collateral. '
+        : isSHaiOpen
+        ? 'Convert your AERO into sHAI to use as collateral while earning veAERO rewards. '
         : isLpStaking
         ? `Stake ${stakeConfig.labels.token} to earn rewards. `
         : baseCopy.subtitle
@@ -262,13 +291,18 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
         ctaLink = 'https://docs.letsgethai.com/using-haivelo'
     } else if (isHaiAeroOpen) {
         cta = 'Read more about haiAERO →'
-        ctaLink = 'https://docs.letsgethai.com/using-haiaero' // Update when docs are available
+        ctaLink = 'https://docs.letsgethai.com/using-haiaero'
+    } else if (isSHaiOpen) {
+        cta = 'Read more about sHAI →'
+        ctaLink = 'https://docs.letsgethai.com/using-shai'
     }
 
     const selectedValue = isHaiVeloOpen
         ? 'haiVELO'
         : isHaiAeroOpen
         ? 'haiAERO'
+        : isSHaiOpen
+        ? 'sHAI'
         : location.pathname === '/stake'
         ? 'stake'
         : location.pathname === '/stake/hai-bold-curve-lp'
@@ -305,8 +339,9 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
                     const isMinterRoute =
                         location.pathname === '/haiVELO' ||
                         location.pathname === '/haiAERO' ||
+                        location.pathname === '/sHAI' ||
                         (location.pathname.startsWith('/vaults') &&
-                            ['HAIVELO', 'HAIVELOV2', 'HAIAERO'].includes(
+                            ['HAIVELO', 'HAIVELOV2', 'HAIAERO', 'SHAI'].includes(
                                 new URLSearchParams(location.search).get('collateral') || ''
                             ))
 

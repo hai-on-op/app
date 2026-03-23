@@ -108,7 +108,12 @@ export function Header({ tickerActive = false }: HeaderProps) {
         (location.pathname === '/vaults/open' &&
             ['HAIAERO'].includes(new URLSearchParams(location.search).get('collateral') || ''))
 
-    const isLstRoute = isHaiVeloRoute || isHaiAeroRoute
+    const isSHaiRoute =
+        location.pathname === '/sHAI' ||
+        (location.pathname === '/vaults/open' &&
+            ['SHAI'].includes(new URLSearchParams(location.search).get('collateral') || ''))
+
+    const isLstRoute = isHaiVeloRoute || isHaiAeroRoute || isSHaiRoute
 
     return (
         <>
@@ -229,6 +234,13 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                                     active={isHaiAeroRoute}
                                                 >
                                                     haiAERO
+                                                </BrandedDropdown.Item>
+                                                <BrandedDropdown.Item
+                                                    href="/sHAI"
+                                                    icon={<Lock size={18} />}
+                                                    active={isSHaiRoute}
+                                                >
+                                                    sHAI
                                                 </BrandedDropdown.Item>
                                             </LstDropdown>
                                         </LstDropdownContainer>

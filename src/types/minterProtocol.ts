@@ -7,7 +7,7 @@
  */
 
 /** Supported minter protocol identifiers */
-export type MinterProtocolId = 'haiVelo' | 'haiAero'
+export type MinterProtocolId = 'haiVelo' | 'haiAero' | 'sHai'
 
 /** Chain IDs for supported networks */
 export enum MinterChainId {
