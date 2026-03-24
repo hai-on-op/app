@@ -1,0 +1,56 @@
+name: Route Smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'Fully-qualified URL to smoke test'
+        required: true
+        type: string
+      routes:
+        description: 'Comma-separated routes to test'
+        required: false
+        default: '/,/vaults?tab=available,/analytics'
+        type: string
+
+jobs:
+  smoke:
+    name: Route Smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20.19.4"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - uses: actions/cache@v3
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Install project dependencies
+        run: yarn --prefer-offline
+
+      - name: Set up Chrome
+        id: setup-chrome
+        uses: browser-actions/setup-chrome@v1
+
+      - name: Run route smoke test
+        run: yarn perf:smoke
+        env:
+          CHROME_BIN: ${{ steps.setup-chrome.outputs.chrome-path }}
+          SMOKE_BASE_URL: ${{ inputs.base_url }}
+          SMOKE_ROUTES: ${{ inputs.routes }}
+          SMOKE_TIMEOUT_MS: '90000'

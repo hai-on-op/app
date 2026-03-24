@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ethers } from 'ethers'
 import { ChainId, isFormattedAddress } from '~/utils'
-import { StandardMerkleTree } from '@openzeppelin/merkle-tree'
 import { gql } from '@apollo/client'
 import { client } from '~/utils/graphql/client'
 
@@ -39,6 +38,16 @@ const fetchLatestMerkleRootTimestamp = async (): Promise<number | null> => {
         console.error('Failed to fetch merkle roots from GraphQL:', error)
         return null
     }
+}
+
+let standardMerkleTreeModulePromise: Promise<typeof import('@openzeppelin/merkle-tree')> | undefined
+
+async function loadStandardMerkleTree() {
+    if (!standardMerkleTreeModulePromise) {
+        standardMerkleTreeModulePromise = import('@openzeppelin/merkle-tree')
+    }
+
+    return (await standardMerkleTreeModulePromise).StandardMerkleTree
 }
 
 // TODO: THIS MUST GO TO THE SDK
@@ -387,6 +396,7 @@ export const fetchIncentivesData = async (geb: any, account: string, _chainId: C
     console.log('currentTime', currentTime, currentBlock, distributionDuration)
 
     const claimData = {}
+    const StandardMerkleTree = await loadStandardMerkleTree()
 
     // Calculate timer data independently of claims
     const timerData = {
@@ -463,6 +473,7 @@ export const fetchIncentivesData = async (geb: any, account: string, _chainId: C
                     const allProofs: string[][] = []
 
                     const tokenDistroClaims = await fetchTokenDistroClaims(account)
+                    const StandardMerkleTree = await loadStandardMerkleTree()
 
                     for (let i = 0; i < Object.keys(tokenDistroClaims).length; i++) {
                         const tokenKey = Object.keys(tokenDistroClaims)[i].toUpperCase() as keyof typeof tokensAddresses

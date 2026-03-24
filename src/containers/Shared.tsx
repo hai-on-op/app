@@ -1,8 +1,7 @@
-import { useEffect, useCallback, useState } from 'react'
+import { Suspense, lazy, useEffect, useCallback, useRef, useState } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 import { utils } from 'ethers'
 import { useAccount, useNetwork } from 'wagmi'
-import { getTokenList } from '@hai-on-op/sdk'
 
 import type { ReactChildren } from '~/types'
 import {
@@ -11,14 +10,16 @@ import {
     // SYSTEM_STATUS,
     ActionState,
     blockedAddresses,
-    getNetworkName,
-    isAddress,
     timeout,
 } from '~/utils'
 import { TransactionUpdater } from '~/services/TransactionUpdater'
 import { useStoreState, useStoreActions } from '~/store'
 // import { useAnalytics } from '~/providers/AnalyticsProvider'
-import { useTokenContract, useEthersSigner, useGeb, usePrevious, usePublicGeb } from '~/hooks'
+import { useDocumentVisibility, useTokenContract, useEthersSigner, useGeb, usePrevious, usePublicGeb } from '~/hooks'
+import { ClaimsProvider } from '~/providers/ClaimsProvider'
+import { RewardsProvider } from '~/providers/RewardsProvider'
+import { StakingProvider } from '~/providers/StakingProvider'
+import { EarnProvider } from '~/providers/EarnProvider'
 
 /**
  * Ensure HAIAERO is present in a token list.
@@ -50,11 +51,16 @@ import { BlockedAddress } from '~/components/BlockedAddress'
 import { ParallaxBackground } from '~/components/ParallaxBackground'
 import { Header } from './Header'
 import { WaitingModal } from '~/components/Modal/WaitingModal'
-import { ClaimModal } from '~/components/Modal/ClaimModal'
 import { IntentionHeader } from '~/components/IntentionHeader'
 import { HaiAlert } from '~/components/HaiAlert'
 import { StartAuction } from './Auctions/StartAuction'
-import { StakingClaimModal } from '~/components/Modal/StakingClaimModal'
+
+const ClaimModal = lazy(() =>
+    import('~/components/Modal/ClaimModal').then((module) => ({ default: module.ClaimModal }))
+)
+const StakingClaimModal = lazy(() =>
+    import('~/components/Modal/StakingClaimModal').then((module) => ({ default: module.StakingClaimModal }))
+)
 
 type Props = {
     children: ReactChildren
@@ -63,7 +69,6 @@ export function Shared({ children }: Props) {
     const { address: account } = useAccount()
     const previousAccount = usePrevious(account)
     const { chain } = useNetwork()
-    const networkName = getNetworkName(NETWORK_ID)
     const signer = useEthersSigner()
     const publicGeb = usePublicGeb()
     const geb = useGeb()
@@ -71,15 +76,41 @@ export function Shared({ children }: Props) {
     const history = useHistory()
     const location = useLocation()
     const isSplash = location.pathname === '/'
+    const isDocumentVisible = useDocumentVisibility()
+    const openCollateral = new URLSearchParams(location.search).get('collateral') || ''
+    const splashVideo = useRef<HTMLVideoElement | null>(null)
 
-    const tokenList = getTokenList(networkName)
-    const coinTokenContract = useTokenContract(tokenList.HAI?.address)
-    const protTokenContract = useTokenContract(tokenList.KITE?.address)
+    const isAuctionRoute = location.pathname.startsWith('/auctions')
+    const isEarnRoute = location.pathname.startsWith('/earn')
+    const isStakeRoute = location.pathname.startsWith('/stake')
+    const isVaultRoute = location.pathname.startsWith('/vaults')
+    const isHaiVeloRoute =
+        location.pathname === '/haiVELO' ||
+        (location.pathname === '/vaults/open' && ['HAIVELO', 'HAIVELOV2'].includes(openCollateral))
+    const isHaiAeroRoute =
+        location.pathname === '/haiAERO' ||
+        (location.pathname === '/vaults/open' && ['HAIAERO'].includes(openCollateral))
+
+    const tokenList = publicGeb ? withHaiAero(publicGeb.tokenList) : undefined
+    const coinTokenContract = useTokenContract(tokenList?.HAI?.address)
+    const protTokenContract = useTokenContract(tokenList?.KITE?.address)
 
     const {
         connectWalletModel: connectWalletState,
         auctionModel: { auctionsData },
+        popupsModel: { isClaimPopupOpen, isStakeClaimPopupOpen },
     } = useStoreState((state) => state)
+
+    const needsProxyAllowances = isAuctionRoute || isVaultRoute
+    const needsMarketData =
+        isAuctionRoute ||
+        isEarnRoute ||
+        isStakeRoute ||
+        isVaultRoute ||
+        isHaiVeloRoute ||
+        isHaiAeroRoute ||
+        isClaimPopupOpen ||
+        isStakeClaimPopupOpen
 
     const {
         connectWalletModel: connectWalletActions,
@@ -127,6 +158,7 @@ export function Shared({ children }: Props) {
         // Only fetch allowances when user is on Optimism network (NETWORK_ID)
         // Skip when user is on other chains like Base (for haiAERO minting)
         // This prevents "call revert exception" errors when querying Optimism contracts from Base
+        if (!needsProxyAllowances) return
         if (!account || !coinTokenContract || !protTokenContract || !connectWalletState.proxyAddress) return
         if (chain?.id !== NETWORK_ID) return
 
@@ -156,6 +188,7 @@ export function Shared({ children }: Props) {
         connectWalletActions,
         protTokenContract,
         chain?.id,
+        needsProxyAllowances,
     ])
 
     useEffect(() => {
@@ -177,17 +210,47 @@ export function Shared({ children }: Props) {
     }, [publicGeb?.tokenList, connectWalletActions, chain?.id])
 
     useEffect(() => {
+        if (!needsMarketData) return
         connectWalletActions.fetchFiatPrice()
-    }, [connectWalletActions])
+    }, [connectWalletActions, needsMarketData])
 
     useEffect(() => {
+        if (!needsMarketData) return
         if (!publicGeb) return
 
         vaultActions.fetchLiquidationData({
             geb: publicGeb,
             tokensData: withHaiAero(publicGeb.tokenList),
         })
-    }, [vaultActions, publicGeb])
+    }, [vaultActions, publicGeb, needsMarketData])
+
+    useEffect(() => {
+        if (!isEarnRoute) return
+        if (!account || !signer || !geb) return
+        if (chain?.id !== NETWORK_ID) return
+
+        vaultActions.fetchUserVaults({
+            address: account,
+            geb,
+            tokensData: withHaiAero(geb.tokenList),
+            chainId: NETWORK_ID,
+        })
+    }, [account, signer, geb, chain?.id, vaultActions, isEarnRoute])
+
+    useEffect(() => {
+        const video = splashVideo.current
+        if (!isSplash || !video) return
+
+        if (isDocumentVisible) {
+            const playPromise = video.play()
+            if (playPromise && typeof playPromise.catch === 'function') {
+                playPromise.catch(() => undefined)
+            }
+            return
+        }
+
+        video.pause()
+    }, [isSplash, isDocumentVisible])
 
     const accountChecker = useCallback(async () => {
         if (!account || !chain?.id || !signer) {
@@ -222,21 +285,6 @@ export function Shared({ children }: Props) {
                 await timeout(200)
                 if (!connectWalletState.ctHash) {
                     connectWalletActions.setStep(2)
-                    const { pathname } = window.location
-
-                    let address = ''
-                    if (pathname && pathname !== '/' && pathname !== '/vaults') {
-                        const route = pathname.split('/')[1]
-                        if (isAddress(route)) {
-                            address = route.toLowerCase()
-                        }
-                    }
-                    await vaultActions.fetchUserVaults({
-                        address: address ? address : (account as string),
-                        geb,
-                        tokensData: withHaiAero(geb.tokenList),
-                        chainId: NETWORK_ID,
-                    })
                 }
             } else {
                 // When not on Optimism, just advance the step without fetching Optimism data
@@ -263,7 +311,6 @@ export function Shared({ children }: Props) {
         geb,
         connectWalletActions,
         popupsActions,
-        vaultActions,
         transactionsActions,
         connectWalletState.ctHash,
     ])
@@ -312,6 +359,63 @@ export function Shared({ children }: Props) {
     // }, [priceDiff])
     const [haiAlertActive, setHaiAlertActive] = useState(true)
 
+    const intentionHeader = !isSplash ? (
+        <IntentionHeader>{location.pathname === '/auctions' && <StartAuction />}</IntentionHeader>
+    ) : null
+
+    const scopedIntentionHeader = (() => {
+        if (!intentionHeader) return null
+
+        if (isEarnRoute) {
+            return intentionHeader
+        }
+
+        if (isStakeRoute) {
+            return <StakingProvider>{intentionHeader}</StakingProvider>
+        }
+
+        if (isHaiVeloRoute || isHaiAeroRoute) {
+            return (
+                <StakingProvider>
+                    <ClaimsProvider>{intentionHeader}</ClaimsProvider>
+                </StakingProvider>
+            )
+        }
+
+        return intentionHeader
+    })()
+
+    const scopedContent = (() => {
+        if (isEarnRoute) {
+            return (
+                <StakingProvider>
+                    <ClaimsProvider>
+                        <EarnProvider>
+                            {scopedIntentionHeader}
+                            {children}
+                        </EarnProvider>
+                    </ClaimsProvider>
+                </StakingProvider>
+            )
+        }
+
+        if (isAuctionRoute) {
+            return (
+                <ClaimsProvider includeIncentives={false}>
+                    {scopedIntentionHeader}
+                    {children}
+                </ClaimsProvider>
+            )
+        }
+
+        return (
+            <>
+                {scopedIntentionHeader}
+                {children}
+            </>
+        )
+    })()
+
     return (
         <Container>
             <TransactionUpdater />
@@ -319,20 +423,35 @@ export function Shared({ children }: Props) {
             <Background aria-hidden="true">
                 {isSplash && (
                     <video
-                        src="/assets/tie-dye-reduced.mov"
+                        ref={splashVideo}
+                        src="/assets/tie-dye-reduced.mp4"
                         width={1920}
                         height={1072}
                         muted
                         autoPlay
                         playsInline
                         loop
+                        preload="metadata"
+                        poster="/assets/tie-dye.webp"
                     />
                 )}
             </Background>
             {!isSplash && <ParallaxBackground />}
             <Header tickerActive={!isSplash} />
-            <ClaimModal />
-            <StakingClaimModal />
+            <Suspense fallback={null}>
+                {isClaimPopupOpen && (
+                    <ClaimsProvider>
+                        <RewardsProvider>
+                            <ClaimModal />
+                        </RewardsProvider>
+                    </ClaimsProvider>
+                )}
+                {isStakeClaimPopupOpen && (
+                    <StakingProvider>
+                        <StakingClaimModal />
+                    </StakingProvider>
+                )}
+            </Suspense>
             {!isSplash && <WaitingModal />}
 
             {/* {SYSTEM_STATUS && SYSTEM_STATUS.toLowerCase() === 'shutdown' && (
@@ -351,10 +470,7 @@ export function Shared({ children }: Props) {
                     $padBottom={!isSplash ? (haiAlertActive ? '240px' : '168px') : undefined}
                     $maxWidth={!isSplash ? 'min(1200px, calc(100vw - 48px))' : undefined}
                 >
-                    {!isSplash && (
-                        <IntentionHeader>{location.pathname === '/auctions' && <StartAuction />}</IntentionHeader>
-                    )}
-                    {children}
+                    {scopedContent}
                 </Content>
             )}
             {!isSplash && <HaiAlert active={haiAlertActive} setActive={setHaiAlertActive} />}
@@ -375,7 +491,7 @@ const Background = styled(CenteredFlex)`
     right: 0px;
     bottom: 0px;
     background-color: white;
-    background-image: url('/assets/tie-dye.jpg');
+    background-image: url('/assets/tie-dye.webp');
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;

@@ -86,8 +86,9 @@ export const useClaims = () => useContext(ClaimsContext)
 
 type Props = {
     children: ReactChildren
+    includeIncentives?: boolean
 }
-export function ClaimsProvider({ children }: Props) {
+export function ClaimsProvider({ children, includeIncentives = true }: Props) {
     // Use publicGeb which always connects to Optimism, regardless of user's current chain
     // This ensures incentives data can be fetched even when user is on Base for haiAERO
     const publicGeb = usePublicGeb()
@@ -115,6 +116,8 @@ export function ClaimsProvider({ children }: Props) {
     })
 
     useEffect(() => {
+        if (!includeIncentives) return
+
         let isMounted = true
 
         const fetchIncentives = async () => {
@@ -135,7 +138,7 @@ export function ClaimsProvider({ children }: Props) {
         return () => {
             isMounted = false
         }
-    }, [publicGeb, account])
+    }, [publicGeb, account, includeIncentives])
     const totalUSD = formatSummaryValue(
         (
             parseFloat(internalBalances.HAI?.usdRaw || '0') +
@@ -151,6 +154,7 @@ export function ClaimsProvider({ children }: Props) {
                 internalBalances,
                 incentivesData,
                 refetchIncentives: async () => {
+                    if (!includeIncentives) return
                     if (!account || !publicGeb) return
                     try {
                         const updatedData = await fetchIncentivesData(publicGeb, account, NETWORK_ID)

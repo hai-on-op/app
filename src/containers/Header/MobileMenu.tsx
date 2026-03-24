@@ -21,7 +21,7 @@ import { useMediaQuery, useOutsideClick } from '~/hooks'
 import styled from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Popout, Text } from '~/styles'
 import { Hamburger } from '~/components/Icons/Hamburger'
-import { ConnectButton } from '~/components/ConnectButton'
+import { LazyConnectButton } from '~/components/LazyConnectButton'
 import { BrandedDropdown } from '~/components/BrandedDropdown'
 import {
     BarChart,
@@ -99,7 +99,7 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
             {active && (
                 <Dropdown $float="left" $margin="20px">
                     <Inner>
-                        {isUpToSmall && <ConnectButton $width="100%" showBalance="vertical" />}
+                        {isUpToSmall && <LazyConnectButton $width="100%" showBalance="vertical" />}
                         {(isConnected ? isUpToLarge : isUpToMedium) && (
                             <>
                                 <BrandedDropdown.Item

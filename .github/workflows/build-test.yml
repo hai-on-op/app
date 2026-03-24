@@ -94,3 +94,51 @@ jobs:
           VITE_STAKING_TOKEN_ADDRESS: '0xf632D72378D887e337C52Ff57FCd454f78881fc3'
           VITE_HAI_ADDRESS: '0x10398AbC267496E49106B07dd6BE13364D10dC71'
           VITE_OP_ADDRESS: '0x4200000000000000000000000000000000000042'
+
+  perf:
+    name: Perf Budgets
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20.19.4"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - uses: actions/cache@v3
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Install project dependencies
+        run: yarn --prefer-offline
+
+      - name: Build project
+        run: yarn build
+        env:
+          VITE_NETWORK_ID: ${{ secrets.VITE_NETWORK_ID }}
+          VITE_STAKING_MANAGER: '0x1250f2326F04ac61Ee5aEd92fEf74BcAC6E6BC90'
+          VITE_REWARD_DISTRIBUTOR_ADDRESS: '0xfEd2eB6325432F0bF7110DcE2CCC5fF811ac3D4D'
+          VITE_KITE_ADDRESS: '0xf467C7d5a4A9C4687fFc7986aC6aD5A4c81E1404'
+          VITE_STAKING_TOKEN_ADDRESS: '0xf632D72378D887e337C52Ff57FCd454f78881fc3'
+          VITE_HAI_ADDRESS: '0x10398AbC267496E49106B07dd6BE13364D10dC71'
+          VITE_OP_ADDRESS: '0x4200000000000000000000000000000000000042'
+          VITE_WALLETCONNECT_ID: ${{ secrets.VITE_WALLETCONNECT_ID }}
+          VITE_TESTNET_PUBLIC_RPC: ${{ secrets.VITE_TESTNET_PUBLIC_RPC }}
+          VITE_MAINNET_PUBLIC_RPC: ${{ secrets.VITE_MAINNET_PUBLIC_RPC }}
+          VITE_ALCHEMY_KEY: ${{ secrets.VITE_ALCHEMY_KEY }}
+          VITE_GRAPH_API_KEY: ${{ secrets.VITE_GRAPH_API_KEY }}
+          VITE_FLAGSMITH_API_KEY: ${{ secrets.VITE_FLAGSMITH_API_KEY }}
+
+      - name: Check build budgets
+        run: yarn perf:budgets

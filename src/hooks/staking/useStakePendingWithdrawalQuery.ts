@@ -84,6 +84,7 @@ export function useStakePendingWithdrawalQuery(
     return useQuery<PendingWithdrawal>({
         queryKey: stakeQueryKeys.pendingForAddressAndEntity(namespace, address, userEntity),
         enabled: Boolean(address),
+        staleTime: 60_000,
         queryFn: async () => {
             const addrLower = address?.toLowerCase()
             if (!addrLower) return null
@@ -93,7 +94,7 @@ export function useStakePendingWithdrawalQuery(
             const { data } = await apolloClient.query<StakingUserQueryResult>({
                 query: STAKING_USER_QUERIES[userEntity],
                 variables: { id },
-                fetchPolicy: 'network-only',
+                fetchPolicy: 'cache-first',
             })
 
             const rootField = STAKING_USER_ROOT_FIELD[userEntity]

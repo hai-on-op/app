@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { usePublicGeb } from '~/hooks'
 import { useStoreActions, useStoreState } from '~/store'
@@ -16,20 +16,26 @@ export function Auctions() {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState('')
 
-    // to avoid lag, don't fetch auctions until first render completes
-    useLayoutEffect(() => {
+    const collateralSymbols = useMemo(
+        () =>
+            Object.values(tokensData || {})
+                .filter(({ isCollateral }) => isCollateral)
+                .map(({ symbol }) => symbol),
+        [tokensData]
+    )
+
+    // Kick off auction loading after the first paint so the route shell can render immediately.
+    useEffect(() => {
         if (!geb) return
 
-        const symbols = Object.values(tokensData || {})
-            .filter(({ isCollateral }) => isCollateral)
-            .map(({ symbol }) => symbol)
+        let isCancelled = false
 
         async function fetchAuctions() {
             setIsLoading(true)
             setError('')
             try {
                 await Promise.all([
-                    ...symbols.map((symbol) =>
+                    ...collateralSymbols.map((symbol) =>
                         auctionsActions.fetchAuctions({
                             geb,
                             type: 'COLLATERAL',
@@ -46,17 +52,26 @@ export function Auctions() {
                     }),
                 ])
             } catch (error: any) {
+                if (isCancelled) return
+
                 console.error(error)
                 setError(error?.message || 'An error occurred')
                 // if (error instanceof SyntaxError && error.message.includes('failed')) {
                 //     setError('Failed to fetch auctions from the graph node')
                 // }
             } finally {
-                setIsLoading(false)
+                if (!isCancelled) {
+                    setIsLoading(false)
+                }
             }
         }
-        fetchAuctions()
-    }, [auctionsActions.fetchAuctions, geb, tokensData, auctionsActions])
+
+        void fetchAuctions()
+
+        return () => {
+            isCancelled = true
+        }
+    }, [auctionsActions, collateralSymbols, geb])
 
     useEffect(() => {
         if (!geb || !proxyAddress || auctionsData) return

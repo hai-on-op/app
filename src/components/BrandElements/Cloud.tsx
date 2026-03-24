@@ -1,7 +1,7 @@
 import styled from 'styled-components'
 
-import cloud1 from '~/assets/splash/cloud-1.png'
-import cloud2 from '~/assets/splash/cloud-2.png'
+import cloud1 from '~/assets/splash/cloud-1.webp'
+import cloud2 from '~/assets/splash/cloud-2.webp'
 
 const clouds = [
     {

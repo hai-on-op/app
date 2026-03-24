@@ -63,8 +63,6 @@ export function buildLpTvlService(config: StakingConfig): LpTvlService | null {
 
     const { source } = tvlMeta
 
-    console.log('tvlMeta =====', tvlMeta, source)
-
     return {
         async getTvl(): Promise<LpTvlValue | null> {
             switch (source) {
