@@ -176,27 +176,15 @@ export function useLpStakingApr(config?: StakingConfig): LpStakingAprResult {
             const lpPriceUsd = curveData?.lpPriceUsd ?? 0
             const totalStakedValueUsd = totalStakedLp * lpPriceUsd
 
-            console.log(`[useLpStakingApr] ====== CURVE LP STAKING APR ======`)
-            console.log(`[useLpStakingApr] Pool: ${config.namespace}`)
-            console.log(`[useLpStakingApr] LP Price USD: $${lpPriceUsd.toFixed(6)}`)
-            console.log(`[useLpStakingApr] Total Staked LP Tokens: ${totalStakedLp.toFixed(4)}`)
-            console.log(`[useLpStakingApr] Total Staked Value USD: $${totalStakedValueUsd.toFixed(2)}`)
-            console.log(`[useLpStakingApr] Daily KITE Reward: ${dailyKiteReward} KITE`)
-            console.log(`[useLpStakingApr] KITE Price: $${kitePrice.toFixed(4)}`)
-
             const underlyingApr = curveAprData?.vApy ?? 0
-            console.log(`[useLpStakingApr] Underlying LP APY: ${(underlyingApr * 100).toFixed(4)}%`)
 
             const incentivesApr = calculateCurveKiteApr({
                 dailyKiteReward,
                 kitePrice,
                 totalStakedValueUsd,
             })
-            console.log(`[useLpStakingApr] KITE Incentives APR: ${(incentivesApr * 100).toFixed(2)}%`)
 
             const netApr = underlyingApr + incentivesApr
-            console.log(`[useLpStakingApr] Net APR: ${(netApr * 100).toFixed(2)}%`)
-            console.log(`[useLpStakingApr] ====================================`)
 
             return {
                 loading: false,
@@ -221,15 +209,6 @@ export function useLpStakingApr(config?: StakingConfig): LpStakingAprResult {
             const poolTvlUsd = velodromeLpValue?.tvlUsd ?? 0
             const totalStakedValueUsd = totalStakedLp * lpPriceUsd
             const haiVeloDepositTvlUsd = haiVeloStats.combined.tvlUsd
-
-            console.log(`[useLpStakingApr] ====== VELODROME LP STAKING APR ======`)
-            console.log(`[useLpStakingApr] Pool: ${config.namespace}`)
-            console.log(`[useLpStakingApr] LP Price USD: $${lpPriceUsd.toFixed(6)}`)
-            console.log(`[useLpStakingApr] Pool TVL USD: $${poolTvlUsd.toFixed(2)}`)
-            console.log(`[useLpStakingApr] Total Staked LP Tokens: ${totalStakedLp.toFixed(4)}`)
-            console.log(`[useLpStakingApr] Total Staked Value USD: $${totalStakedValueUsd.toFixed(2)}`)
-            console.log(`[useLpStakingApr] haiVELO Deposit TVL: $${haiVeloDepositTvlUsd.toFixed(2)}`)
-            console.log(`[useLpStakingApr] Weekly HAI Reward: ${weeklyHaiReward.toFixed(4)} HAI`)
 
             // Calculate trading fee APR (underlying LP yield)
             const { tradingFeeApr: underlyingApr } = calculateTradingFeeApr({
@@ -262,11 +241,6 @@ export function useLpStakingApr(config?: StakingConfig): LpStakingAprResult {
             })
 
             const netApr = underlyingApr + haiRewardsApr + incentivesApr
-            console.log(`[useLpStakingApr] Trading Fee APR: ${(underlyingApr * 100).toFixed(4)}%`)
-            console.log(`[useLpStakingApr] HAI Rewards APR: ${(haiRewardsApr * 100).toFixed(2)}%`)
-            console.log(`[useLpStakingApr] KITE Incentives APR: ${(incentivesApr * 100).toFixed(2)}%`)
-            console.log(`[useLpStakingApr] Net APR: ${(netApr * 100).toFixed(2)}%`)
-            console.log(`[useLpStakingApr] ========================================`)
 
             return {
                 loading: false,

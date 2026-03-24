@@ -39,8 +39,6 @@ export function useAllVaults() {
         dir: 'asc',
     })
 
-    console.log(collateralFilter)
-
     const orderBy: OrderBy = useMemo(() => {
         switch (sorting.key) {
             case 'Collateral':

@@ -78,9 +78,6 @@ export async function fetchVirtualPriceFromContract(
         // Virtual price is scaled by 1e18
         const virtualPrice = Number(virtualPriceRaw) / 1e18
 
-        console.log(`[CurvePoolApr] Virtual price from contract: ${virtualPrice}`)
-        console.log(`[CurvePoolApr] Virtual price raw: ${virtualPriceRaw}`)
-
         return { virtualPrice, virtualPriceRaw }
     } catch (error) {
         console.error('[CurvePoolApr] Failed to fetch virtual price from contract:', error)
@@ -129,29 +126,12 @@ export async function fetchCurvePoolApr(
                 if (dailyApy != null && Number(dailyApy) > 0) {
                     // Curve API returns APY as percentage (e.g., 1.5 for 1.5%)
                     vApy = Number(dailyApy) / 100
-                    console.log(`[CurvePoolApr] Using daily APY from subgraph: ${Number(dailyApy)}%`)
                 } else if (weeklyApy != null && Number(weeklyApy) > 0) {
                     vApy = Number(weeklyApy) / 100
-                    console.log(`[CurvePoolApr] Using weekly APY from subgraph: ${Number(weeklyApy)}%`)
-                } else {
-                    console.log('[CurvePoolApr] No APY data in subgraph, using 0%')
                 }
-            } else {
-                console.log('[CurvePoolApr] Pool not found in subgraph data')
             }
         } catch (error) {
             console.warn('[CurvePoolApr] Error fetching subgraph data:', error)
-        }
-
-        // Log the calculated values
-        console.log(`[CurvePoolApr] Pool: ${poolAddress}`)
-        console.log(`[CurvePoolApr] Virtual Price: ${virtualPrice}`)
-        console.log(`[CurvePoolApr] Base vAPY: ${(vApy * 100).toFixed(4)}%`)
-        if (lpPriceUsd) {
-            console.log(`[CurvePoolApr] LP Price USD: $${lpPriceUsd.toFixed(4)}`)
-        }
-        if (poolTvlUsd) {
-            console.log(`[CurvePoolApr] Pool TVL USD: $${poolTvlUsd.toFixed(2)}`)
         }
 
         return {
@@ -180,22 +160,11 @@ export function calculateKiteIncentivesApr(params: {
     const { dailyKiteReward, kitePrice, totalStakedValueUsd } = params
 
     if (totalStakedValueUsd <= 0 || kitePrice <= 0) {
-        console.log('[CurvePoolApr] Cannot calculate KITE incentives APR - missing data')
-        console.log(`[CurvePoolApr]   dailyKiteReward: ${dailyKiteReward}`)
-        console.log(`[CurvePoolApr]   kitePrice: $${kitePrice}`)
-        console.log(`[CurvePoolApr]   totalStakedValueUsd: $${totalStakedValueUsd}`)
         return 0
     }
 
     const annualKiteRewardUsd = dailyKiteReward * 365 * kitePrice
     const incentivesApr = annualKiteRewardUsd / totalStakedValueUsd
-
-    console.log(`[CurvePoolApr] KITE Incentives APR Calculation:`)
-    console.log(`[CurvePoolApr]   Daily KITE reward: ${dailyKiteReward} KITE`)
-    console.log(`[CurvePoolApr]   KITE price: $${kitePrice.toFixed(4)}`)
-    console.log(`[CurvePoolApr]   Annual reward value: $${annualKiteRewardUsd.toFixed(2)}`)
-    console.log(`[CurvePoolApr]   Total staked value: $${totalStakedValueUsd.toFixed(2)}`)
-    console.log(`[CurvePoolApr]   KITE Incentives APR: ${(incentivesApr * 100).toFixed(2)}%`)
 
     return incentivesApr
 }

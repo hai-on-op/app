@@ -29,7 +29,8 @@ export function useStakeHistory(address?: Address) {
     const { data, loading, error, refetch } = useApolloQuery(STAKING_USER_QUERY, {
         variables: { id },
         skip: !id,
-        fetchPolicy: 'network-only',
+        fetchPolicy: 'cache-first',
+        nextFetchPolicy: 'cache-first',
     })
 
     return {

@@ -1,10 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Geb } from '@hai-on-op/sdk'
+import { IHaiSafeManager__factory } from '@hai-on-op/sdk/lib/typechained'
 import { useAccount } from 'wagmi'
 
 import { EMPTY_ADDRESS, getNetworkName, formatNumber, NETWORK_ID } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { useEthersSigner, usePublicProvider } from './useEthersAdapters'
+import { sanitizeFactoryDuplicateNamedEvents } from '~/utils/sanitizeFactoryAbi'
+
+sanitizeFactoryDuplicateNamedEvents(IHaiSafeManager__factory, 'TransferCollateral')
 
 type TokenType = 'ETH' | 'HAI' | 'WETH'
 

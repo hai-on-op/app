@@ -1,11 +1,14 @@
-import { useState, type HTMLAttributes } from 'react'
-import Youtube from 'react-youtube'
+import { lazy, Suspense, useEffect, useState, type HTMLAttributes } from 'react'
 
 import { useStoreActions, useStoreState } from '~/store'
 
 import styled from 'styled-components'
 import { HaiButton } from '~/styles'
 import { Sound } from '~/components/Icons/Sound'
+
+const Youtube = lazy(async () => ({
+    default: (await import('react-youtube')).default,
+}))
 
 export function MusicButton(props: HTMLAttributes<HTMLButtonElement>) {
     const {
@@ -16,54 +19,67 @@ export function MusicButton(props: HTMLAttributes<HTMLButtonElement>) {
     } = useStoreActions((actions) => actions)
 
     const [player, setPlayer] = useState<any>()
+    const [shouldRenderPlayer, setShouldRenderPlayer] = useState(false)
+
+    useEffect(() => {
+        if (!player) return
+
+        if (isPlayingMusic) player.playVideo()
+        else player.pauseVideo()
+    }, [player, isPlayingMusic])
 
     return (
         <Container
             {...props}
             aria-label="Toggle Music"
             onClick={() => {
-                if (!player) return
+                if (!shouldRenderPlayer) {
+                    setShouldRenderPlayer(true)
+                    setIsPlayingMusic(true)
+                    return
+                }
 
-                if (isPlayingMusic) player.pauseVideo()
-                else player.playVideo()
+                setIsPlayingMusic(!isPlayingMusic)
             }}
         >
             <Sound muted={!isPlayingMusic} size={21} />
-            <Youtube
-                videoId="1LoM8l8_1YM"
-                opts={{
-                    width: '560',
-                    height: '315',
-                    title: 'GET $HAI ON YOUR OWN SUPPLY',
-                    ...(isPlayingMusic && {
-                        playerVars: {
-                            autoplay: 1,
-                        },
-                    }),
-                }}
-                onReady={(event) => {
-                    event.target.setLoop(true)
-                    setPlayer(event.target)
-                }}
-                onPlay={() => {
-                    // console.log('play')
-                    setIsPlayingMusic(true)
-                }}
-                onPause={() => {
-                    // console.log('pause')
-                    setIsPlayingMusic(false)
-                }}
-                onError={() => {
-                    // console.error(e)
-                    setIsPlayingMusic(false)
-                }}
-                onEnd={() => {
-                    if (!player) return
+            {shouldRenderPlayer && (
+                <Suspense fallback={null}>
+                    <Youtube
+                        videoId="1LoM8l8_1YM"
+                        opts={{
+                            width: '560',
+                            height: '315',
+                            title: 'GET $HAI ON YOUR OWN SUPPLY',
+                            playerVars: {
+                                autoplay: isPlayingMusic ? 1 : 0,
+                                playsinline: 1,
+                            },
+                        }}
+                        onReady={(event) => {
+                            event.target.setLoop(true)
+                            setPlayer(event.target)
+                        }}
+                        onPlay={() => {
+                            setIsPlayingMusic(true)
+                        }}
+                        onPause={() => {
+                            setIsPlayingMusic(false)
+                        }}
+                        onError={() => {
+                            setPlayer(undefined)
+                            setShouldRenderPlayer(false)
+                            setIsPlayingMusic(false)
+                        }}
+                        onEnd={() => {
+                            if (!player) return
 
-                    player.seekTo(0, false)
-                    player.playVideo()
-                }}
-            />
+                            player.seekTo(0, false)
+                            player.playVideo()
+                        }}
+                    />
+                </Suspense>
+            )}
         </Container>
     )
 }
