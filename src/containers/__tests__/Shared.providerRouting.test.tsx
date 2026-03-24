@@ -42,13 +42,9 @@ vi.mock('~/providers/StakingProvider', () => ({
 }))
 
 vi.mock('~/providers/ClaimsProvider', () => ({
-    ClaimsProvider: ({
-        children,
-        includeIncentives,
-    }: {
-        children: ReactNode
-        includeIncentives?: boolean
-    }) => <div data-testid={includeIncentives === false ? 'claims-provider-lite' : 'claims-provider'}>{children}</div>,
+    ClaimsProvider: ({ children, includeIncentives }: { children: ReactNode; includeIncentives?: boolean }) => (
+        <div data-testid={includeIncentives === false ? 'claims-provider-lite' : 'claims-provider'}>{children}</div>
+    ),
 }))
 
 vi.mock('~/providers/RewardsProvider', () => ({

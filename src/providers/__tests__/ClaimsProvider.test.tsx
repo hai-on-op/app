@@ -1,19 +1,14 @@
 import { render, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const {
-    fetchIncentivesDataMock,
-    useAccountMock,
-    useInternalBalancesMock,
-    useMyActiveAuctionsMock,
-    usePublicGebMock,
-} = vi.hoisted(() => ({
-    fetchIncentivesDataMock: vi.fn(),
-    useAccountMock: vi.fn(),
-    useInternalBalancesMock: vi.fn(),
-    useMyActiveAuctionsMock: vi.fn(),
-    usePublicGebMock: vi.fn(),
-}))
+const { fetchIncentivesDataMock, useAccountMock, useInternalBalancesMock, useMyActiveAuctionsMock, usePublicGebMock } =
+    vi.hoisted(() => ({
+        fetchIncentivesDataMock: vi.fn(),
+        useAccountMock: vi.fn(),
+        useInternalBalancesMock: vi.fn(),
+        useMyActiveAuctionsMock: vi.fn(),
+        usePublicGebMock: vi.fn(),
+    }))
 
 vi.mock('wagmi', () => ({
     useAccount: () => useAccountMock(),
