@@ -30,6 +30,7 @@ import KiteStakePage from './containers/Stake/KiteStakePage'
 import HaiVeloVeloLpStakePage from './containers/Stake/HaiVeloVeloLpStakePage'
 import HaiBoldCurveLpStakePage from './containers/Stake/HaiBoldCurveLpStakePage'
 import { TestClaimVelo } from './containers/TestClaimVelo'
+import { RewardsAnalytics } from './containers/Rewards'
 import flagsmith from 'flagsmith'
 import { FlagsmithProvider } from 'flagsmith/react'
 
@@ -87,6 +88,12 @@ const App = () => {
                                                                 strict
                                                                 component={Analytics}
                                                                 path={'/analytics'}
+                                                            />
+                                                            <Route
+                                                                exact
+                                                                strict
+                                                                component={RewardsAnalytics}
+                                                                path={'/rewards'}
                                                             />
                                                             <Route
                                                                 exact

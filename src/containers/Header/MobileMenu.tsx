@@ -201,6 +201,13 @@ export function MobileMenu({ active, setActive, showWrapEth }: MobileMenuProps) 
                             Analytics
                         </BrandedDropdown.Item>
                         <BrandedDropdown.Item
+                            href="/rewards"
+                            icon={<TrendingUp size={18} />}
+                            active={location.pathname === '/rewards'}
+                        >
+                            Rewards
+                        </BrandedDropdown.Item>
+                        <BrandedDropdown.Item
                             href="/contracts"
                             icon={<File size={18} />}
                             active={location.pathname === '/contracts'}
