@@ -1,5 +1,5 @@
 import type { RewardsReport } from './types'
-import { sumStrategyTotals, formatRewardAmount, STRATEGY_LABELS } from './utils'
+import { sumStrategyTotals, formatRewardAmount, getStrategyLabel } from './utils'
 
 import styled from 'styled-components'
 import { DashedContainerStyle, type DashedContainerProps, Flex, Text } from '~/styles'
@@ -13,23 +13,22 @@ type Props = {
 export function GlobalOverview({ report }: Props) {
     const { globalAverages, users, totalDaysWithData } = report
     const strategyTotals = sumStrategyTotals(globalAverages.avgDailyStrategyTotals)
+    const tokenEntries = Object.entries(globalAverages.avgDailyRewardByToken)
+    const totalStats = tokenEntries.length + 3 // tokens + users + boosted + period
 
     return (
         <Section>
             <SectionHeader>PROTOCOL OVERVIEW</SectionHeader>
-            <Stats fun>
-                <Stat
-                    stat={{
-                        header: formatRewardAmount(globalAverages.avgDailyRewardByToken.HAI || 0),
-                        label: 'Avg Daily HAI Distributed',
-                    }}
-                />
-                <Stat
-                    stat={{
-                        header: formatRewardAmount(globalAverages.avgDailyRewardByToken.KITE || 0),
-                        label: 'Avg Daily KITE Distributed',
-                    }}
-                />
+            <Stats fun columns={`repeat(${totalStats}, 1fr)`}>
+                {tokenEntries.map(([token, value]) => (
+                    <Stat
+                        key={token}
+                        stat={{
+                            header: formatRewardAmount(value),
+                            label: `Avg Daily ${token} Distributed`,
+                        }}
+                    />
+                ))}
                 <Stat
                     stat={{
                         header: String(users.length),
@@ -62,7 +61,7 @@ export function GlobalOverview({ report }: Props) {
                 <tbody>
                     {strategyTotals.map((entry) => (
                         <tr key={`${entry.strategy}-${entry.token}`}>
-                            <Td>{STRATEGY_LABELS[entry.strategy] || entry.strategy}</Td>
+                            <Td>{getStrategyLabel(entry.strategy)}</Td>
                             <Td>{entry.token}</Td>
                             <Td $align="right">{formatRewardAmount(entry.avgDailyTotal || 0)}</Td>
                         </tr>

@@ -92,7 +92,7 @@ export const BOOST_KEY_LABELS: Record<string, string> = {
     lp: 'LP (Uniswap)',
 }
 
-// Human-readable strategy labels
+// Human-readable strategy labels (fallback map — strategies are discovered dynamically)
 export const STRATEGY_LABELS: Record<string, string> = {
     haiVELO: 'haiVELO',
     'haiVELO-historical': 'haiVELO (hist)',
@@ -100,6 +100,41 @@ export const STRATEGY_LABELS: Record<string, string> = {
     lpStaking: 'LP Staking',
     minter: 'Minter',
     LP: 'LP',
+}
+
+// Get display label for a strategy key — falls back to the raw key
+export function getStrategyLabel(key: string): string {
+    return STRATEGY_LABELS[key] || key
+}
+
+// Assign a color to a token dynamically
+const TOKEN_COLORS: Record<string, string> = {
+    HAI: '#22d3ee',
+    KITE: '#10b981',
+}
+let colorIndex = 0
+const FALLBACK_COLORS = ['#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#6366f1']
+
+export function getTokenColor(token: string): string {
+    if (TOKEN_COLORS[token]) return TOKEN_COLORS[token]
+    const color = FALLBACK_COLORS[colorIndex % FALLBACK_COLORS.length]
+    TOKEN_COLORS[token] = color
+    colorIndex++
+    return color
+}
+
+// Human-readable position unit label per strategy
+const POSITION_LABELS: Record<string, string> = {
+    haiVELO: 'collateral + LP',
+    'haiVELO-historical': 'collateral + LP',
+    haiAERO: 'collateral',
+    minter: 'debt',
+    lpStaking: 'LP staked',
+    LP: 'LP',
+}
+
+export function getPositionLabel(strategy: string): string {
+    return POSITION_LABELS[strategy] || 'position'
 }
 
 // Get strategy pool total for a specific strategy+token from day's strategyTotals

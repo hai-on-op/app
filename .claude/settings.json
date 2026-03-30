@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -r \"sticky\\\\|position.*fixed\" /Users/ajand/Projects/hai/app-main/src/components --include=*.tsx -l)"
+    ]
+  }
+}

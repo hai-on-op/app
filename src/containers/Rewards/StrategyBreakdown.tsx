@@ -1,5 +1,5 @@
 import type { AggregatedUser } from './types'
-import { formatRewardAmount, formatShare, STRATEGY_LABELS } from './utils'
+import { formatRewardAmount, formatShare, getStrategyLabel } from './utils'
 
 import styled from 'styled-components'
 import { DashedContainerStyle, type DashedContainerProps } from '~/styles'
@@ -43,7 +43,7 @@ export function StrategyBreakdown({ user }: Props) {
                 <tbody>
                     {rows.map((row) => (
                         <tr key={`${row.strategy}-${row.token}`}>
-                            <Td>{STRATEGY_LABELS[row.strategy] || row.strategy}</Td>
+                            <Td>{getStrategyLabel(row.strategy)}</Td>
                             <Td>{row.token}</Td>
                             <Td $align="right">
                                 {formatRewardAmount(row.earned)} {row.token}

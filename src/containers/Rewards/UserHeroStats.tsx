@@ -12,23 +12,22 @@ type Props = {
 
 export function UserHeroStats({ user, totalDays }: Props) {
     const avgBoost = calcAverageBoost(user.avgBoosts)
+    const tokenEntries = Object.entries(user.avgDailyEarnedByToken)
+    const totalStats = tokenEntries.length + 4 // tokens + days + boost + staked + share
 
     return (
         <Section>
             <SectionHeader>USER: {returnWalletAddress(user.address)}</SectionHeader>
-            <Stats fun>
-                <Stat
-                    stat={{
-                        header: formatRewardAmount(user.avgDailyEarnedByToken.HAI || 0),
-                        label: 'Avg Daily HAI',
-                    }}
-                />
-                <Stat
-                    stat={{
-                        header: formatRewardAmount(user.avgDailyEarnedByToken.KITE || 0),
-                        label: 'Avg Daily KITE',
-                    }}
-                />
+            <Stats fun columns={`repeat(${totalStats}, 1fr)`}>
+                {tokenEntries.map(([token, value]) => (
+                    <Stat
+                        key={token}
+                        stat={{
+                            header: formatRewardAmount(value),
+                            label: `Avg Daily ${token}`,
+                        }}
+                    />
+                ))}
                 <Stat
                     stat={{
                         header: `${user.daysActive} / ${totalDays}`,

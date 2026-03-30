@@ -1,41 +1,72 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
+
 import { Timeframe } from '~/utils'
 import type { UserDailyEntry } from './index'
+import { getTokenColor } from './utils'
 
 import styled from 'styled-components'
-import { CenteredFlex } from '~/styles'
+import { CenteredFlex, Flex, Text } from '~/styles'
 import { LineChart } from '~/components/Charts/Line'
 import { Legend } from '~/components/Charts/Legend'
 import { Section, SectionHeader } from './index'
 
 type Props = {
     userDailyData: UserDailyEntry[]
+    onDayClick?: (date: string) => void
 }
 
-export function EarningsChart({ userDailyData }: Props) {
+export function EarningsChart({ userDailyData, onDayClick }: Props) {
+    const containerRef = useRef<HTMLDivElement>(null)
+
     const chartData = useMemo(() => {
-        const haiData = userDailyData.map(({ dayReport, userData }) => ({
-            x: new Date(dayReport.date),
-            y: userData.dailyEarned.HAI || 0,
-        }))
+        // Discover all tokens dynamically from the data
+        const tokenSet = new Set<string>()
+        for (const { userData } of userDailyData) {
+            for (const token of Object.keys(userData.dailyEarned)) {
+                tokenSet.add(token)
+            }
+        }
+        const tokens = Array.from(tokenSet)
 
-        const kiteData = userDailyData.map(({ dayReport, userData }) => ({
-            x: new Date(dayReport.date),
-            y: userData.dailyEarned.KITE || 0,
+        return tokens.map((token) => ({
+            id: token,
+            color: getTokenColor(token),
+            data: userDailyData.map(({ dayReport, userData }) => ({
+                x: new Date(dayReport.date),
+                y: userData.dailyEarned[token] || 0,
+            })),
         }))
-
-        return [
-            { id: 'HAI', color: '#22d3ee', data: haiData },
-            { id: 'KITE', color: '#10b981', data: kiteData },
-        ]
     }, [userDailyData])
+
+    const dates = useMemo(() => userDailyData.map((d) => d.dayReport.date), [userDailyData])
+
+    const handleChartClick = useCallback(
+        (e: React.MouseEvent<HTMLDivElement>) => {
+            if (!onDayClick || !containerRef.current || dates.length === 0) return
+
+            const rect = containerRef.current.getBoundingClientRect()
+            // Nivo uses margin left=0 and right=0, so the chart spans full width
+            const fraction = (e.clientX - rect.left) / rect.width
+            const index = Math.round(fraction * (dates.length - 1))
+            const clampedIndex = Math.max(0, Math.min(dates.length - 1, index))
+            onDayClick(dates[clampedIndex])
+        },
+        [onDayClick, dates]
+    )
 
     if (userDailyData.length === 0) return null
 
     return (
         <Section>
-            <SectionHeader>DAILY EARNINGS</SectionHeader>
-            <ChartContainer>
+            <Flex $width="100%" $justify="space-between" $align="flex-end">
+                <SectionHeader>DAILY EARNINGS</SectionHeader>
+                {onDayClick && (
+                    <Text $fontSize="0.75rem" style={{ opacity: 0.4 }}>
+                        Click chart to view day details
+                    </Text>
+                )}
+            </Flex>
+            <ChartContainer ref={containerRef} $clickable={!!onDayClick} onClick={handleChartClick}>
                 <LineChart
                     data={chartData}
                     timeframe={Timeframe.ONE_MONTH}
@@ -57,13 +88,14 @@ export function EarningsChart({ userDailyData }: Props) {
     )
 }
 
-const ChartContainer = styled(CenteredFlex)`
+const ChartContainer = styled(CenteredFlex)<{ $clickable?: boolean }>`
     position: relative;
     width: 100%;
     height: 260px;
     border-radius: 24px;
     overflow: visible;
     background: ${({ theme }) => theme.colors.gradientCool};
+    cursor: ${({ $clickable }) => ($clickable ? 'pointer' : 'default')};
 
     & svg {
         overflow: visible;

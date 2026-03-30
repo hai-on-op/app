@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import type { RewardsReport, AggregatedUser, DailyReport, DailyUserData } from './types'
 
 import styled from 'styled-components'
 import { BlurContainer, Flex, type FlexProps, FlexStyle, Text } from '~/styles'
 import { BrandedTitle } from '~/components/BrandedTitle'
+import { NavContainer } from '~/components/NavContainer'
 import { AddressSearch } from './AddressSearch'
 import { GlobalOverview } from './GlobalOverview'
 import { UserHeroStats } from './UserHeroStats'
@@ -18,11 +19,15 @@ export type UserDailyEntry = {
     userData: DailyUserData
 }
 
+const TAB_ITEMS = ['Overview', 'Daily Details']
+
 export function RewardsAnalytics() {
     const [report, setReport] = useState<RewardsReport | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [searchAddress, setSearchAddress] = useState('')
+    const [activeTab, setActiveTab] = useState(0)
+    const [selectedDate, setSelectedDate] = useState<string | null>(null)
 
     useEffect(() => {
         fetch('/reports/rewards-report.json')
@@ -59,53 +64,88 @@ export function RewardsAnalytics() {
 
     const hasMatch = normalizedAddress.length === 42 ? matchedUser !== null : null
 
+    const handleDayClick = useCallback(
+        (date: string) => {
+            setSelectedDate(date)
+            setActiveTab(1)
+        },
+        []
+    )
+
+    // Clear selectedDate when switching tabs manually
+    const handleTabChange = useCallback((index: number) => {
+        setActiveTab(index)
+        if (index === 0) setSelectedDate(null)
+    }, [])
+
     if (loading) {
         return (
-            <Container>
+            <TopContainer>
                 <Section>
                     <BrandedTitle textContent="REWARDS ANALYTICS" $fontSize="3rem" />
                     <Text $fontSize="1rem">Loading rewards data...</Text>
                 </Section>
-            </Container>
+            </TopContainer>
         )
     }
 
     if (error || !report) {
         return (
-            <Container>
+            <TopContainer>
                 <Section>
                     <BrandedTitle textContent="REWARDS ANALYTICS" $fontSize="3rem" />
                     <Text $fontSize="1rem" $color="#ef4444">
                         {error || 'No rewards data available'}
                     </Text>
                 </Section>
-            </Container>
+            </TopContainer>
         )
     }
 
     return (
-        <Container>
-            <Section>
-                <BrandedTitle textContent="REWARDS ANALYTICS" $fontSize="3rem" />
-                <AddressSearch value={searchAddress} onChange={setSearchAddress} hasMatch={hasMatch} />
-            </Section>
+        <Flex $width="100%" $column $gap={24}>
+            {/* Address search — always visible above tabs */}
+            <TopContainer>
+                <Section>
+                    <BrandedTitle textContent="REWARDS ANALYTICS" $fontSize="3rem" />
+                    <AddressSearch value={searchAddress} onChange={setSearchAddress} hasMatch={hasMatch} />
+                </Section>
+            </TopContainer>
 
-            <GlobalOverview report={report} />
-
-            {matchedUser && (
-                <>
-                    <UserHeroStats user={matchedUser} totalDays={report.totalDaysWithData} />
-                    <EarningsChart userDailyData={userDailyData} />
-                    <StrategyBreakdown user={matchedUser} />
-                    <BoostSection user={matchedUser} />
-                    <DailyDetailList userDailyData={userDailyData} />
-                </>
-            )}
-        </Container>
+            {/* Tabbed content */}
+            <NavContainer
+                navItems={matchedUser ? TAB_ITEMS : ['Overview']}
+                selected={activeTab}
+                onSelect={handleTabChange}
+                stackHeader
+            >
+                {activeTab === 0 ? (
+                    <Flex $width="100%" $column $gap={24}>
+                        <GlobalOverview report={report} />
+                        {matchedUser && (
+                            <>
+                                <UserHeroStats user={matchedUser} totalDays={report.totalDaysWithData} />
+                                <EarningsChart userDailyData={userDailyData} onDayClick={handleDayClick} />
+                                <StrategyBreakdown user={matchedUser} />
+                                <BoostSection user={matchedUser} />
+                            </>
+                        )}
+                    </Flex>
+                ) : (
+                    matchedUser && (
+                        <DailyDetailList
+                            userDailyData={userDailyData}
+                            selectedDate={selectedDate}
+                            onClearSelectedDate={() => setSelectedDate(null)}
+                        />
+                    )
+                )}
+            </NavContainer>
+        </Flex>
     )
 }
 
-const Container = styled(BlurContainer).attrs((props) => ({
+const TopContainer = styled(BlurContainer).attrs((props) => ({
     $width: '100%',
     $gap: 24,
     ...props,

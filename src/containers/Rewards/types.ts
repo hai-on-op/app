@@ -45,8 +45,11 @@ export interface StrategyPosition {
     avgUnboostedWeight: number
     avgTotalWeight: number
     avgTotalUnboostedWeight: number
+    avgPosition: number
+    avgTotalPosition: number
     endOfDayWeight: number
     endOfDayBoost: number
+    isDelayed: boolean
 }
 
 export interface AggregatedUser {
