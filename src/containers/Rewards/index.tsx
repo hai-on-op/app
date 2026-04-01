@@ -30,12 +30,16 @@ export function RewardsAnalytics() {
     const [selectedDate, setSelectedDate] = useState<string | null>(null)
 
     useEffect(() => {
-        fetch('/reports/rewards-report.json')
+        fetch('http://143.198.123.60:3100/')
             .then((res) => {
                 if (!res.ok) throw new Error('Failed to load rewards report')
                 return res.json()
             })
             .then((data: RewardsReport) => {
+                // Drop the latest day — it's still incomplete / one day ahead
+                if (data.dailyReports && data.dailyReports.length > 1) {
+                    data.dailyReports = data.dailyReports.slice(0, -1)
+                }
                 setReport(data)
                 setLoading(false)
             })

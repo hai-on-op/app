@@ -11,6 +11,7 @@ import { EffectsProvider } from './providers/EffectsProvider'
 import { RewardsProvider } from './providers/RewardsProvider'
 import { ClaimsProvider } from './providers/ClaimsProvider'
 import { StakingProvider } from './providers/StakingProvider'
+import { AprProvider } from './apr/AprProvider'
 
 import { GlobalStyle } from '~/styles'
 import { ErrorBoundary } from '~/ErrorBoundary'
@@ -31,6 +32,7 @@ import HaiVeloVeloLpStakePage from './containers/Stake/HaiVeloVeloLpStakePage'
 import HaiBoldCurveLpStakePage from './containers/Stake/HaiBoldCurveLpStakePage'
 import { TestClaimVelo } from './containers/TestClaimVelo'
 import { RewardsAnalytics } from './containers/Rewards'
+import { AprAnalytics } from './containers/AprAnalytics'
 import flagsmith from 'flagsmith'
 import { FlagsmithProvider } from 'flagsmith/react'
 
@@ -55,6 +57,7 @@ const App = () => {
                                 <AnalyticsProvider>
                                     <EffectsProvider>
                                         <ClaimsProvider>
+                                            <AprProvider>
                                             <Shared>
                                                 <Suspense fallback={null}>
                                                     <Route />
@@ -94,6 +97,12 @@ const App = () => {
                                                                 strict
                                                                 component={RewardsAnalytics}
                                                                 path={'/rewards'}
+                                                            />
+                                                            <Route
+                                                                exact
+                                                                strict
+                                                                component={AprAnalytics}
+                                                                path={'/apr'}
                                                             />
                                                             <Route
                                                                 exact
@@ -163,6 +172,7 @@ const App = () => {
                                                     </>
                                                 </Suspense>
                                             </Shared>
+                                            </AprProvider>
                                         </ClaimsProvider>
                                     </EffectsProvider>
                                 </AnalyticsProvider>
