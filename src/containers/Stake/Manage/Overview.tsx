@@ -8,6 +8,7 @@ import { Status, formatNumberWithStyle } from '~/utils'
 // import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { useStakingSummaryV2 } from '~/hooks/staking/useStakingSummaryV2'
 import { useLpTvl } from '~/hooks/staking/useLpTvl'
+import { useApr } from '~/apr/AprProvider'
 import { Loader } from '~/components/Loader'
 // import { ComingSoon } from '~/components/ComingSoon'
 
@@ -63,6 +64,60 @@ export function Overview({ simulation, config }: OverviewProps) {
 
     const { loading: lpTvlLoading, tvlUsdFormatted } = useLpTvl(config)
 
+    // Read APR from AprProvider for consistency with /earn and /apr pages
+    const { getStrategy } = useApr()
+    const aprStrategyId = config?.namespace === 'lp-hai-bold-curve'
+        ? 'haibold-curve-lp'
+        : config?.namespace === 'lp-hai-velo-velo'
+        ? 'haivelo-velo-lp'
+        : 'kite-staking'
+    const aprStrategy = getStrategy(aprStrategyId)
+
+    // Override stakingApr AND aprBreakdown with AprProvider values for consistency
+    const effectiveStakingApr = useMemo(() => {
+        if (!aprStrategy) return stakingApr
+        const effectiveApr = aprStrategy.boost?.boostedApr ?? aprStrategy.baseApr
+        return {
+            ...stakingApr,
+            value: effectiveApr,
+            formatted: formatNumberWithStyle(effectiveApr * 100, {
+                style: 'percent',
+                maxDecimals: 1,
+                suffixed: true,
+            }),
+        }
+    }, [aprStrategy, stakingApr])
+
+    const effectiveAprBreakdown = useMemo(() => {
+        if (!aprStrategy || !aprBreakdown) return aprBreakdown
+        const comps = aprStrategy.components
+        const underlying = comps.find((c) => c.source === 'underlying-yield' || c.source === 'trading-fees')
+        const haiRewards = comps.find((c) => c.source === 'hai-rewards')
+        const incentives = comps.find((c) => c.source === 'kite-incentives')
+        const boost = aprStrategy.boost
+        const myBoost = boost?.myBoost ?? 1
+        const incentivesApr = incentives?.apr ?? 0
+        const boostedIncentivesApr = incentivesApr * myBoost
+        const netApr = (underlying?.apr ?? 0) + (haiRewards?.apr ?? 0) + incentivesApr
+        const boostedNetApr = (underlying?.apr ?? 0) + (haiRewards?.apr ?? 0) + boostedIncentivesApr
+        const fmt = (v: number) => formatNumberWithStyle(v * 100, { style: 'percent', maxDecimals: 2, suffixed: true })
+        return {
+            ...aprBreakdown,
+            underlyingApr: underlying?.apr ?? 0,
+            underlyingAprFormatted: fmt(underlying?.apr ?? 0),
+            haiRewardsApr: haiRewards?.apr ?? 0,
+            haiRewardsAprFormatted: fmt(haiRewards?.apr ?? 0),
+            incentivesApr: incentivesApr,
+            incentivesAprFormatted: fmt(incentivesApr),
+            netApr,
+            netAprFormatted: fmt(netApr),
+            boost: myBoost,
+            boostFormatted: `${myBoost.toFixed(2)}x`,
+            boostedNetApr,
+            boostedNetAprFormatted: fmt(boostedNetApr),
+        }
+    }, [aprStrategy, aprBreakdown])
+
     // Calculate simulated values if simulation values are provided
     const simValues = useMemo(
         () => calculateSimulatedValues(stakingAmount, unstakingAmount),
@@ -77,7 +132,8 @@ export function Overview({ simulation, config }: OverviewProps) {
     const lpTvlLabel = config?.tvl?.label || (config?.tvl?.source === 'curve' ? 'Curve LP TVL' : 'haiVELO/VELO LP TVL')
 
     // Dynamic descriptions based on pool type
-    const underlyingLabel = aprBreakdown?.underlyingLabel || 'Underlying LP APY'
+    const bd = effectiveAprBreakdown
+    const underlyingLabel = bd?.underlyingLabel || 'Underlying LP APY'
     const underlyingDescription = isCurveLp
         ? 'Trading fees from the Curve pool'
         : isVelodromeLp
@@ -85,25 +141,28 @@ export function Overview({ simulation, config }: OverviewProps) {
         : 'Underlying pool yield'
 
     // Tooltip content for LP staking APR breakdown
-    const hasBoost = aprBreakdown && aprBreakdown.boost > 1
-    const lpAprBreakdownTooltip = aprBreakdown ? (
+    const hasBoost = bd && bd.boost > 1
+    const boostedIncentivesFormatted = bd
+        ? formatNumberWithStyle((bd.incentivesApr * bd.boost) * 100, { style: 'percent', maxDecimals: 2, suffixed: true })
+        : ''
+    const lpAprBreakdownTooltip = bd ? (
         <div style={{ width: '100%' }}>
             <div style={{ marginBottom: '8px' }}>
                 <Text $fontSize=".9rem" $fontWeight={700}>
                     {underlyingLabel}
                 </Text>
-                <Text $fontSize=".9rem">{aprBreakdown.underlyingAprFormatted}</Text>
+                <Text $fontSize=".9rem">{bd.underlyingAprFormatted}</Text>
                 <Text $fontSize=".75rem" style={{ opacity: 0.7 }}>
                     {underlyingDescription}
                 </Text>
             </div>
             {/* HAI Rewards - only for Velodrome pools */}
-            {isVelodromeLp && aprBreakdown.haiRewardsApr > 0 && (
+            {isVelodromeLp && bd.haiRewardsApr > 0 && (
                 <div style={{ marginBottom: '8px' }}>
                     <Text $fontSize=".9rem" $fontWeight={700}>
                         HAI Rewards APR
                     </Text>
-                    <Text $fontSize=".9rem">{aprBreakdown.haiRewardsAprFormatted}</Text>
+                    <Text $fontSize=".9rem">{bd.haiRewardsAprFormatted}</Text>
                     <Text $fontSize=".75rem" style={{ opacity: 0.7 }}>
                         Shared with haiVELO depositors
                     </Text>
@@ -113,7 +172,7 @@ export function Overview({ simulation, config }: OverviewProps) {
                 <Text $fontSize=".9rem" $fontWeight={700}>
                     KITE Incentives APR
                 </Text>
-                <Text $fontSize=".9rem">{aprBreakdown.incentivesAprFormatted}</Text>
+                <Text $fontSize=".9rem">{bd.incentivesAprFormatted}</Text>
                 <Text $fontSize=".75rem" style={{ opacity: 0.7 }}>
                     25 KITE/day distributed to stakers
                 </Text>
@@ -122,14 +181,14 @@ export function Overview({ simulation, config }: OverviewProps) {
                 <Text $fontSize=".9rem" $fontWeight={700}>
                     Base Net APR
                 </Text>
-                <Text $fontSize=".9rem">{aprBreakdown.netAprFormatted}</Text>
+                <Text $fontSize=".9rem">{bd.netAprFormatted}</Text>
             </div>
             {/* Boost breakdown - show boost multiplier and boosted APR */}
             <div style={{ marginTop: '8px' }}>
                 <Text $fontSize=".9rem" $fontWeight={700}>
                     My Boost
                 </Text>
-                <Text $fontSize=".9rem">{aprBreakdown.boostFormatted}</Text>
+                <Text $fontSize=".9rem">{bd.boostFormatted}</Text>
                 <Text $fontSize=".75rem" style={{ opacity: 0.7 }}>
                     Based on your stKITE share / staked LP share ratio
                 </Text>
@@ -139,9 +198,9 @@ export function Overview({ simulation, config }: OverviewProps) {
                     <Text $fontSize=".9rem" $fontWeight={700}>
                         Boosted KITE Incentives
                     </Text>
-                    <Text $fontSize=".9rem">{aprBreakdown.boostedIncentivesAprFormatted}</Text>
+                    <Text $fontSize=".9rem">{boostedIncentivesFormatted}</Text>
                     <Text $fontSize=".75rem" style={{ opacity: 0.7 }}>
-                        {aprBreakdown.incentivesAprFormatted} × {aprBreakdown.boostFormatted}
+                        {bd.incentivesAprFormatted} × {bd.boostFormatted}
                     </Text>
                 </div>
             )}
@@ -150,11 +209,11 @@ export function Overview({ simulation, config }: OverviewProps) {
                     Boosted Net APR
                 </Text>
                 <Text $fontSize="1rem" $fontWeight={700} style={{ color: hasBoost ? '#00AC11' : undefined }}>
-                    {aprBreakdown.boostedNetAprFormatted}
+                    {bd.boostedNetAprFormatted}
                 </Text>
                 {hasBoost && (
                     <Text $fontSize=".75rem" style={{ opacity: 0.7 }}>
-                        {aprBreakdown.underlyingAprFormatted} + {aprBreakdown.boostedIncentivesAprFormatted}
+                        {bd.underlyingAprFormatted} + {boostedIncentivesFormatted}
                     </Text>
                 )}
             </div>
@@ -325,7 +384,18 @@ export function Overview({ simulation, config }: OverviewProps) {
                 <OverviewStat
                     isComingSoon={false}
                     loading={loading}
-                    value={stakingApr.formatted}
+                    value={
+                        aprStrategy?.boost && aprStrategy.boost.myBoost > 1 && isLpPool ? (
+                            <Flex $gap={8} $align="center">
+                                <Text $fontWeight={700} style={{ textDecoration: 'line-through', opacity: 0.5 }}>
+                                    {formatNumberWithStyle(aprStrategy.baseApr * 100, { style: 'percent', maxDecimals: 1, suffixed: true })}
+                                </Text>
+                                <Text $fontWeight={700} style={{ color: '#00ac11' }}>
+                                    {effectiveStakingApr.formatted}
+                                </Text>
+                            </Flex>
+                        ) : effectiveStakingApr.formatted
+                    }
                     label={isLpPool ? 'Net APR' : 'Staking APR'}
                     tooltip={
                         isLpPool && lpAprBreakdownTooltip

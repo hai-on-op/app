@@ -12,8 +12,7 @@ import { useQuery } from '@tanstack/react-query'
 
 import { formatNumberWithStyle, Status } from '~/utils'
 import { useMinterProtocol } from '~/providers/MinterProtocolProvider'
-import { useBoost } from '~/hooks/useBoost'
-import { useUnderlyingAPR } from '~/hooks/useUnderlyingAPR'
+import { useApr } from '~/apr/AprProvider'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { useAeroPrice } from '~/hooks/useAeroPrice'
 import { fetchV2Totals, fetchV2Safes } from '~/services/minterProtocol/dataSources'
@@ -28,9 +27,13 @@ export function MinterOverview() {
     const { config, mintingState, accountData } = useMinterProtocol()
     const { simulatedAmount, simulatedDepositAmount } = mintingState
 
-    // Get boost and APR data
-    const { hvBoost } = useBoost()
-    const { underlyingAPR } = useUnderlyingAPR({ collateralType: config.collateral.v2Id })
+    // Get boost and APR data from AprProvider
+    const { getStrategy } = useApr()
+    // Map minter protocol ID to AprProvider strategy ID
+    const aprStrategyId = config.id === 'haiAero' ? 'haiaero-deposit' : 'haivelo-deposit'
+    const minterStrategy = getStrategy(aprStrategyId)
+    const hvBoost = minterStrategy?.boost?.myBoost || 1
+    const underlyingAPR = minterStrategy?.baseApr || 0
 
     const { address } = useAccount()
     const addrLower = address?.toLowerCase()
@@ -221,10 +224,18 @@ export function MinterOverview() {
                     tooltip={`Total value of all ${config.displayName} deposited as collateral`}
                 />
                 <OverviewStat
-                    value={formatNumberWithStyle(underlyingAPR * (hvBoost || 1), {
-                        style: 'percent',
-                        maxDecimals: 2,
-                    })}
+                    value={
+                        hvBoost > 1 ? (
+                            <Flex $gap={8} $align="center">
+                                <Text $fontWeight={700} style={{ textDecoration: 'line-through', opacity: 0.5 }}>
+                                    {formatNumberWithStyle(underlyingAPR, { style: 'percent', maxDecimals: 1 })}
+                                </Text>
+                                <Text $fontWeight={700} style={{ color: '#00ac11' }}>
+                                    {formatNumberWithStyle(underlyingAPR * hvBoost, { style: 'percent', maxDecimals: 1 })}
+                                </Text>
+                            </Flex>
+                        ) : formatNumberWithStyle(underlyingAPR, { style: 'percent', maxDecimals: 2 })
+                    }
                     label="Deposit APR"
                     tooltip={`Your boosted APR on ${config.displayName} rewards`}
                 />

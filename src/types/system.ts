@@ -39,6 +39,9 @@ export type Strategy = {
     userPosition?: string
     strategyType: 'hold' | 'borrow' | 'farm' | 'deposit' | 'stake'
     boostAPR?: BoostAPRData
+    netApr?: number
+    underlyingApr?: number
+    stabilityFee?: number
 } & (
     | {
           earnPlatform?: undefined

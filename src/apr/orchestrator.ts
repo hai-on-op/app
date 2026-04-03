@@ -277,6 +277,16 @@ export function computeAllAprs(inputs: AprInputs): Record<string, StrategyAprRes
             })
         }
 
+        // Net APR: blends underlying collateral yield + minting incentives - stability fee
+        // Assumes 200% collateral ratio (same as vault manage page fallback)
+        const underlyingApr = inputs.underlyingAprs[cType.id] || 0
+        const stabilityFee = inputs.stabilityFees[cType.id] || 0
+        const effectiveIncentivesApr = vaultWithStaking.boost?.boostedApr ?? vaultWithStaking.baseApr
+        const assumedCR = 2.0 // 200% collateral ratio
+        const collateralYield = assumedCR * underlyingApr
+        const debtNetYield = effectiveIncentivesApr - stabilityFee
+        const netApr = (collateralYield + debtNetYield) / (assumedCR + 1)
+
         results[`vault-${cType.id}`] = {
             id: `vault-${cType.id}`,
             type: 'borrow',
@@ -284,7 +294,7 @@ export function computeAllAprs(inputs: AprInputs): Record<string, StrategyAprRes
             baseApr: vaultWithStaking.baseApr,
             components: vaultWithStaking.components,
             boost: vaultWithStaking.boost,
-            effectiveApr: vaultWithStaking.boost?.boostedApr ?? vaultWithStaking.baseApr,
+            effectiveApr: netApr,
             tvl: vaultWithStaking.tvl,
             userPosition: vaultWithStaking.userPosition,
             rewards: Object.entries(rewards)
@@ -301,6 +311,9 @@ export function computeAllAprs(inputs: AprInputs): Record<string, StrategyAprRes
                 },
             ],
             rewardTokens: vaultRewardTokens,
+            netApr,
+            underlyingApr,
+            stabilityFee,
             loading: false,
         }
     }

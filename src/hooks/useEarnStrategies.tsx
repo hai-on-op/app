@@ -42,6 +42,12 @@ interface BaseStrategy {
     earnPlatform?: 'uniswap' | 'velodrome'
     earnAddress?: string
     earnLink?: string
+    /** Net APR for vault strategies (underlying yield + incentives - stability fee) */
+    netApr?: number
+    /** Underlying collateral yield */
+    underlyingApr?: number
+    /** Stability fee (positive decimal) */
+    stabilityFee?: number
 }
 
 /** Map from AprProvider strategy ID to earn link */
@@ -69,6 +75,9 @@ function toBaseStrategy(s: StrategyAprResult): BaseStrategy {
 
     if (s.id.startsWith('vault-')) {
         base.collateral = s.id.replace('vault-', '')
+        base.netApr = s.netApr
+        base.underlyingApr = s.underlyingApr
+        base.stabilityFee = s.stabilityFee
     }
 
     if (s.id.startsWith('velo-')) {

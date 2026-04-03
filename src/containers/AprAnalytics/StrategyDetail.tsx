@@ -179,9 +179,42 @@ function buildNarrative(strategy: StrategyAprResult) {
         }
     }
 
+    // -- Net APR for vault strategies (underlying yield + incentives - stability fee) --
+    if (strategy.type === 'borrow' && strategy.netApr !== undefined) {
+        const uApr = strategy.underlyingApr || 0
+        const sFee = strategy.stabilityFee || 0
+        const incentiveApr = boost?.boostedApr ?? strategy.baseApr
+        lines.push({
+            text: `Net APR blends collateral yield, KITE incentives, and stability fee (at assumed 200% CR):`,
+            value: '',
+        })
+        if (uApr > 0) {
+            lines.push({
+                text: `  Collateral underlying yield (Beefy/Yearn/staking):`,
+                value: formatApr(uApr),
+            })
+        }
+        lines.push({
+            text: `  KITE incentive APR (your effective):`,
+            value: formatApr(incentiveApr),
+        })
+        if (sFee > 0) {
+            lines.push({
+                text: `  Stability fee (annual cost):`,
+                value: `-${formatApr(sFee)}`,
+                color: '#ef4444',
+            })
+        }
+        lines.push({
+            text: `  = (2 × ${formatApr(uApr)} + (${formatApr(incentiveApr)} − ${formatApr(sFee)})) / 3 =`,
+            value: `${formatApr(strategy.netApr)} Net APR`,
+            color: strategy.netApr > 0 ? '#10b981' : '#ef4444',
+        })
+    }
+
     // -- User estimated earnings --
     if (strategy.userPosition > 0) {
-        const userApr = boost?.boostedApr ?? strategy.baseApr
+        const userApr = strategy.netApr ?? boost?.boostedApr ?? strategy.baseApr
         const daily = (userApr * strategy.userPosition) / 365
         lines.push({
             text: `With your ${formatUsd(strategy.userPosition)} position at ${formatApr(userApr)} effective APR, you earn approximately`,
@@ -228,9 +261,19 @@ export function StrategyDetail({ strategies }: Props) {
                                 )}
                             </Flex>
                             <Flex $gap={24} $align="center">
+                                {strategy.type === 'borrow' && strategy.netApr !== undefined && (
+                                    <Flex $column $align="flex-end" $gap={2}>
+                                        <Text $fontSize="0.7rem" style={{ opacity: 0.4 }}>
+                                            Net APR
+                                        </Text>
+                                        <Text $fontWeight={700} $fontSize="1.1rem" style={{ opacity: 0.7 }}>
+                                            {formatApr(strategy.netApr)}
+                                        </Text>
+                                    </Flex>
+                                )}
                                 <Flex $column $align="flex-end" $gap={2}>
                                     <Text $fontSize="0.7rem" style={{ opacity: 0.4 }}>
-                                        Effective APR
+                                        {strategy.type === 'borrow' ? 'Incentive APR' : 'Effective APR'}
                                     </Text>
                                     <Text $fontWeight={700} $fontSize="1.1rem">
                                         {formatApr(strategy.effectiveApr)}

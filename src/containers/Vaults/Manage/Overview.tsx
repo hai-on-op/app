@@ -4,10 +4,9 @@ import { useTranslation } from 'react-i18next'
 import { formatCollateralLabel, Status, VaultAction, formatNumberWithStyle } from '~/utils'
 import { useStoreState } from '~/store'
 import { useVault } from '~/providers/VaultProvider'
-// import { useEarnStrategies } from '~/hooks'
-import { useBoost } from '~/hooks/useBoost'
 import { RewardsModel } from '~/model/rewardsModel'
 import { useUnderlyingAPR } from '~/hooks/useUnderlyingAPR'
+import { useApr } from '~/apr/AprProvider'
 
 import styled from 'styled-components'
 import { type DashedContainerProps, DashedContainerStyle, Flex, Grid, Text, CenteredFlex } from '~/styles'
@@ -34,13 +33,21 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
 
     const { action, vault, collateral, riskStatus, safetyRatio, collateralRatio, simulation, summary, formState } =
         useVault()
-    // Top-level APR hook to satisfy Rules of Hooks
+    // Underlying collateral yield (e.g., Beefy auto-compound, wstETH staking yield)
     const underlyingAPRHook = useUnderlyingAPR({ collateralType: collateral.name })
     const underlyingAPRValue = underlyingAPRHook.underlyingAPR
 
-    // --- Generalized boost logic for all boostable vaults ---
-    const { individualVaultBoosts, hvBoost } = useBoost()
-    const boostData = individualVaultBoosts[collateral.name]
+    // Boost and KITE incentive APR from the universal AprProvider
+    const { getStrategy } = useApr()
+    const vaultStrategy = getStrategy(`vault-${collateral.name}`)
+    const haiVeloStrategy = getStrategy('haivelo-deposit')
+    const boostData = vaultStrategy?.boost ? {
+        ...vaultStrategy.boost,
+        // Convert from decimal to percentage for legacy consumers
+        baseAPR: vaultStrategy.boost.baseApr * 100,
+        myBoostedAPR: vaultStrategy.boost.boostedApr * 100,
+    } : null
+    const hvBoost = haiVeloStrategy?.boost?.myBoost || 1
     const rewards = RewardsModel.getVaultRewards(collateral.name)
     const isBoostable = Object.values(rewards).some((v) => v > 0)
 
@@ -544,12 +551,43 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
                         })}`
                     )
 
+                    // Compute base net APR (using base incentive APR instead of boosted)
+                    const baseIncentivesAPR = boostData?.baseAPR ? boostData.baseAPR / 100 : mintingIncentivesAPR
+                    const isBoosted = boostData && boostData.myBoost > 1 && baseIncentivesAPR !== mintingIncentivesAPR
+                    let baseNetAPR = netAPR
+                    if (isBoosted && shouldShowNetAPR) {
+                        // Recalculate with base incentive APR
+                        if (action === VaultAction.CREATE || !vault?.id) {
+                            const cr = 2.0
+                            baseNetAPR = (cr * underlyingAPRValue + baseIncentivesAPR + stabilityFeeCost) / (cr + 1)
+                        } else {
+                            const collUsd = parseFloat(summary.collateral.current?.usdFormatted?.replace(/[$,]/g, '') || '0')
+                            const debtUsd = parseFloat(summary.debt.current?.usdFormatted?.replace(/[$,]/g, '') || '0')
+                            const totalPos = collUsd + debtUsd
+                            baseNetAPR = totalPos > 0
+                                ? (collUsd * (isHaiVelo ? underlyingAPRValue : underlyingAPRValue) + debtUsd * (baseIncentivesAPR + stabilityFeeCost)) / totalPos
+                                : 0
+                        }
+                    }
+
+                    const netAprDisplay = shouldShowNetAPR
+                        ? isBoosted
+                            ? (
+                                <Flex $gap={8} $align="center">
+                                    <Text $fontWeight={700} style={{ textDecoration: 'line-through', opacity: 0.5 }}>
+                                        {formatNumberWithStyle(baseNetAPR, { style: 'percent', maxDecimals: 1 })}
+                                    </Text>
+                                    <Text $fontWeight={700} style={{ color: '#00ac11' }}>
+                                        {formatNumberWithStyle(netAPR, { style: 'percent', maxDecimals: 1 })}
+                                    </Text>
+                                </Flex>
+                            )
+                            : formatNumberWithStyle(netAPR, { style: 'percent', maxDecimals: 2 })
+                        : formatNumberWithStyle(stabilityFeeCost, { style: 'percent', maxDecimals: 2 })
+
                     return (
                         <OverviewStat
-                            value={formatNumberWithStyle(shouldShowNetAPR ? netAPR : stabilityFeeCost, {
-                                style: 'percent',
-                                maxDecimals: 2,
-                            })}
+                            value={netAprDisplay}
                             label={shouldShowNetAPR ? 'Net APR' : 'Stability Fee'}
                             tooltip={tooltipText}
                             simulatedValue={

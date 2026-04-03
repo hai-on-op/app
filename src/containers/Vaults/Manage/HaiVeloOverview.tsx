@@ -7,8 +7,7 @@ import { OverviewProgressStat, OverviewStat } from './OverviewStat'
 import { useHaiVelo } from '~/providers/HaiVeloProvider'
 import { StatusLabel } from '~/components/StatusLabel'
 import { Swirl } from '~/components/Icons/Swirl'
-import { useBoost } from '~/hooks/useBoost'
-import { useUnderlyingAPR } from '~/hooks/useUnderlyingAPR'
+import { useApr } from '~/apr/AprProvider'
 import { useAccount } from 'wagmi'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { useHaiVeloAccount } from '~/hooks/haivelo/useHaiVeloAccount'
@@ -23,9 +22,11 @@ export function HaiVeloOverview() {
         simulatedDepositAmount,
     } = useHaiVelo()
 
-    // Net Rewards APR (haiVELO vault): use combined haiVELO boost (v1+v2)
-    const { hvBoost } = useBoost()
-    const { underlyingAPR } = useUnderlyingAPR({ collateralType: 'HAIVELOV2' })
+    // Net Rewards APR from AprProvider
+    const { getStrategy } = useApr()
+    const haiVeloStrategy = getStrategy('haivelo-deposit')
+    const hvBoost = haiVeloStrategy?.boost?.myBoost || 1
+    const underlyingAPR = haiVeloStrategy?.baseApr || 0
     // const { vaultModel } = useStoreState((state) => state)
     // const haiveloLiqData = vaultModel?.liquidationData?.collateralLiquidationData?.['HAIVELOV2']
     // const stabilityFeeCost = haiveloLiqData
@@ -211,10 +212,18 @@ export function HaiVeloOverview() {
                     tooltip="Total value of all haiVELO v2 deposited as collateral"
                 />
                 <OverviewStat
-                    value={formatNumberWithStyle(underlyingAPR * (hvBoost || 1), {
-                        style: 'percent',
-                        maxDecimals: 2,
-                    })}
+                    value={
+                        hvBoost > 1 ? (
+                            <Flex $gap={8} $align="center">
+                                <Text $fontWeight={700} style={{ textDecoration: 'line-through', opacity: 0.5 }}>
+                                    {formatNumberWithStyle(underlyingAPR, { style: 'percent', maxDecimals: 1 })}
+                                </Text>
+                                <Text $fontWeight={700} style={{ color: '#00ac11' }}>
+                                    {formatNumberWithStyle(underlyingAPR * hvBoost, { style: 'percent', maxDecimals: 1 })}
+                                </Text>
+                            </Flex>
+                        ) : formatNumberWithStyle(underlyingAPR, { style: 'percent', maxDecimals: 2 })
+                    }
                     label="Deposit APR"
                     tooltip="Your boosted APR on haiVELO rewards"
                 />

@@ -27,6 +27,9 @@ import { buildStakingService } from '~/services/stakingService'
 import { haiBoldCurveLpConfig } from '~/staking/configs/haiBoldCurveLp'
 import { haiVeloVeloLpConfig } from '~/staking/configs/haiVeloVeloLp'
 
+import { useMultipleUnderlyingAPR } from '~/hooks/useUnderlyingAPR'
+import { getRatePercentage } from '~/utils'
+
 // New query wrappers
 import { useWeeklyHaiRewardForHaiVelo, useWeeklyHaiRewardForHaiAero } from './queries/useWeeklyHaiReward'
 import { useCurvePoolData } from './queries/useCurveApy'
@@ -65,7 +68,7 @@ export function useAprEngine(): AprContextValue {
     // Store data
     const {
         connectWalletModel: { tokensData },
-        vaultModel: { list: userPositionsList },
+        vaultModel: { list: userPositionsList, liquidationData },
         stakingModel: { usersStakingData, totalStaked, stakingApyData },
     } = useStoreState((state) => state)
 
@@ -127,6 +130,35 @@ export function useAprEngine(): AprContextValue {
     // Use the SAME hooks the Earn page uses for LP APR — single source of truth
     const haiBoldLpAprData = useLpStakingApr(haiBoldCurveLpConfig)
     const haiVeloVeloLpAprData = useLpStakingApr(haiVeloVeloLpConfig)
+
+    // Underlying collateral APR for all vault collateral types (Lido, Beefy, Yearn, etc.)
+    const vaultCollateralTypes = useMemo(
+        () => Object.keys(REWARDS.vaults).filter((id) => {
+            const rewards = (REWARDS.vaults as Record<string, Record<string, number>>)[id]
+            return rewards && Object.values(rewards).some((v: number) => v > 0)
+        }),
+        []
+    )
+    const { aprs: underlyingAprMap } = useMultipleUnderlyingAPR({
+        collateralTypes: vaultCollateralTypes,
+    })
+
+    // Build stability fee map from liquidation data
+    const stabilityFees = useMemo(() => {
+        const sFees: Record<string, number> = {}
+        const collLiqData = liquidationData?.collateralLiquidationData
+        if (collLiqData) {
+            for (const cType of vaultCollateralTypes) {
+                const fee = (collLiqData as Record<string, any>)[cType]?.totalAnnualizedStabilityFee
+                if (fee) {
+                    // getRatePercentage(fee, 4, true) returns decimal (e.g., 0.02 for 2%)
+                    const feeDecimal = getRatePercentage(fee, 4, true)
+                    sFees[cType] = typeof feeDecimal === 'number' ? Math.abs(feeDecimal) : Math.abs(parseFloat(feeDecimal))
+                }
+            }
+        }
+        return sFees
+    }, [liquidationData, vaultCollateralTypes])
 
     // ==================== LOADING STATE ====================
     const coreDataLoaded =
@@ -220,6 +252,9 @@ export function useAprEngine(): AprContextValue {
             minterVaults: minterVaultsData || {},
             vaultRewards: REWARDS.vaults as Record<string, { KITE: number; OP: number }>,
 
+            underlyingAprs: underlyingAprMap || {},
+            stabilityFees,
+
             velodromePools: velodromeData || [],
             velodromePositions: velodromePositionsData || [],
             tokensData: tokensData || {},
@@ -260,6 +295,8 @@ export function useAprEngine(): AprContextValue {
         tokensData,
         usersStakingData,
         userPositionsList,
+        underlyingAprMap,
+        stabilityFees,
     ])
 
     // ==================== CONTEXT VALUE ====================

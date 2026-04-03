@@ -65,6 +65,17 @@ export interface StrategyAprResult {
     positionTokens: PositionToken[]
     /** Detailed breakdown of reward tokens (what you earn) */
     rewardTokens: RewardToken[]
+    /**
+     * Net APR for vault/borrow strategies.
+     * Blends: (collateralValue × underlyingYield + debtValue × (incentivesAPR - stabilityFee)) / totalPosition
+     * Assumes 200% collateral ratio when user has no open vault.
+     * Undefined for non-vault strategies (use effectiveApr instead).
+     */
+    netApr?: DecimalAPR
+    /** Underlying collateral yield (e.g., Beefy auto-compound, wstETH staking, Lido) */
+    underlyingApr?: DecimalAPR
+    /** Annual stability fee cost as a positive decimal (e.g., 0.02 = 2% fee) */
+    stabilityFee?: DecimalAPR
     loading: boolean
     error?: string
 }
@@ -178,6 +189,11 @@ export interface AprInputs {
     // Vault data
     minterVaults: Record<string, MinterVaultData>
     vaultRewards: Record<string, { KITE: number; OP: number }>
+
+    // Per-collateral underlying APR (from external protocols: Lido, Beefy, Yearn, etc.)
+    underlyingAprs: Record<string, number> // collateral id -> decimal APR
+    // Per-collateral annual stability fee (from liquidation data)
+    stabilityFees: Record<string, number> // collateral id -> decimal fee (positive)
 
     // Velodrome farm data
     velodromePools: VelodromePoolInput[]
