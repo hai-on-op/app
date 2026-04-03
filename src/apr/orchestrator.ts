@@ -7,7 +7,7 @@ import { calculateVaultBorrowApr } from './calculators/vaultBorrow'
 import { calculateCurveLpStakingApr } from './calculators/curveLpStaking'
 import { calculateVelodromeLpStakingApr } from './calculators/velodromeLpStaking'
 import { calculateVelodromeFarmApr } from './calculators/velodromeFarm'
-import { calculateHaiRewardShare, calculateHaiRewardsApr, calculateTradingFeeApr } from '~/services/velodromePoolApr'
+import { calculateHaiRewardShare } from '~/services/velodromePoolApr'
 import { VELO_POOLS, stringsExistAndAreEqual, tokenAssets } from '~/utils'
 import { formatUnits } from 'ethers/lib/utils'
 import { RewardsModel } from '~/model/rewardsModel'
@@ -49,27 +49,10 @@ export function computeAllAprs(inputs: AprInputs): Record<string, StrategyAprRes
     const haiVeloDailyHaiReward = inputs.weeklyHaiRewardForHaiVelo / 7
     const haiAeroDailyHaiReward = inputs.weeklyHaiRewardForHaiAero / 7
 
-    const { haiApr: velodromeLpHaiRewardsApr } = calculateHaiRewardsApr({
-        weeklyHaiReward: inputs.weeklyHaiRewardForHaiVelo,
-        haiPrice: prices.hai,
-        lpShare,
-        lpStakedTvlUsd: haiVeloVeloLpStakedTvl,
-    })
-
-    const veloLpPool = inputs.velodromePools.find(
-        (p) => p.address.toLowerCase() === (inputs.haiVeloVeloLp as any).poolAddress?.toLowerCase()
-    )
-    let velodromeLpTradingFeeApr = inputs.haiVeloVeloLp.tradingFeeApr
-    if (veloLpPool && velodromeLpTradingFeeApr === 0) {
-        const { tradingFeeApr } = calculateTradingFeeApr({
-            token0Fees: veloLpPool.token0_fees || '0',
-            token1Fees: veloLpPool.token1_fees || '0',
-            poolTvlUsd: haiVeloVeloLpStakedTvl,
-            veloPrice: prices.velo,
-            decimals: veloLpPool.decimals,
-        })
-        velodromeLpTradingFeeApr = tradingFeeApr
-    }
+    // Trading fee APR and HAI rewards APR come pre-computed from useLpStakingApr
+    // (the same hook the Earn page uses). No need to recalculate here.
+    const velodromeLpTradingFeeApr = inputs.haiVeloVeloLp.tradingFeeApr
+    const velodromeLpHaiRewardsApr = inputs.haiVeloVeloLp.haiRewardsApr
 
     // ==================== PHASE 3: APR + TOKEN DETAILS ====================
 

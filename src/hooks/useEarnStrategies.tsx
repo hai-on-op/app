@@ -1,26 +1,90 @@
-import { useEffect, useMemo, useState, useCallback } from 'react'
+import { useMemo, useState, useCallback } from 'react'
 import { useAccount } from 'wagmi'
-import { formatUnits } from 'ethers/lib/utils'
 import type { SortableHeader, Sorting } from '~/types'
-
-import { arrayToSorted, stringsExistAndAreEqual, tokenAssets } from '~/utils'
-import { RewardsModel } from '~/model/rewardsModel'
 import type { BoostAPRData } from '~/types/system'
-import { calculateTokenPrice, calculatePoolTVL, getTokenSymbol } from '~/utils/priceCalculations'
-import { VELO_POOLS } from '~/utils/constants'
+
+import { arrayToSorted } from '~/utils'
 import { normalizeAPRValue, getEffectiveAPR, getBestAPRValue } from '~/utils/aprNormalization'
-import { createVaultStrategy, createSpecialStrategy, createVeloStrategy } from '~/utils/strategyFactory'
-import { useEarnData } from './useEarnData'
-import { useBoost } from './useBoost'
-import { shouldHaltExecution, canContinueWithDegradedMode } from '~/utils/errorHandling'
 import { useClaims } from '~/providers/ClaimsProvider'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { useStoreState } from '~/store'
 import { utils } from 'ethers'
-import { useUnderlyingAPR } from '~/hooks/useUnderlyingAPR'
+import { useApr } from '~/apr/AprProvider'
+import type { StrategyAprResult, BoostData } from '~/apr/types'
 
-// Import the BaseStrategy type for state management
-type BaseStrategy = ReturnType<typeof createVaultStrategy>
+/**
+ * Convert AprProvider's BoostData (decimal APR) to the legacy BoostAPRData (percentage APR)
+ * used by the Earn page components.
+ */
+function toBoostAPRData(boost: BoostData): BoostAPRData {
+    return {
+        totalBoostedValueParticipating: boost.totalBoostedValueParticipating,
+        baseAPR: boost.baseApr * 100,
+        myBoost: boost.myBoost,
+        myValueParticipating: boost.myValueParticipating,
+        myBoostedValueParticipating: boost.myBoostedValueParticipating,
+        myBoostedShare: boost.myBoostedShare,
+        myBoostedAPR: boost.boostedApr * 100,
+    }
+}
+
+// Strategy shape expected by Earn page components
+interface BaseStrategy {
+    pair: string[]
+    tvl: number | string
+    apr: number | string
+    userPosition: number | string
+    strategyType: 'borrow' | 'hold' | 'deposit' | 'stake' | 'farm'
+    rewards?: Array<{ token: string; emission: number }>
+    boostAPR?: BoostAPRData
+    boostEligible?: boolean
+    collateral?: string
+    earnPlatform?: 'uniswap' | 'velodrome'
+    earnAddress?: string
+    earnLink?: string
+}
+
+/** Map from AprProvider strategy ID to earn link */
+const EARN_LINKS: Record<string, string> = {
+    'kite-staking': '/stake',
+    'haibold-curve-lp': '/stake/hai-bold-curve-lp',
+    'haivelo-velo-lp': '/stake/hai-velo-velo-lp',
+}
+
+/** Convert a StrategyAprResult from AprProvider to legacy BaseStrategy */
+function toBaseStrategy(s: StrategyAprResult): BaseStrategy {
+    const base: BaseStrategy = {
+        pair: s.pair,
+        tvl: s.tvl,
+        apr: s.type === 'borrow' ? '0' : s.baseApr, // vault strategies show apr=0, APR is in boostAPR
+        userPosition: s.userPosition,
+        strategyType: s.type,
+        rewards: s.rewards,
+    }
+
+    if (s.boost) {
+        base.boostAPR = toBoostAPRData(s.boost)
+        base.boostEligible = true
+    }
+
+    if (s.id.startsWith('vault-')) {
+        base.collateral = s.id.replace('vault-', '')
+    }
+
+    if (s.id.startsWith('velo-')) {
+        const poolAddress = s.id.replace('velo-', '')
+        base.earnPlatform = 'velodrome'
+        base.earnAddress = poolAddress
+        base.earnLink = `https://velodrome.finance/deposit?token0=&token1=&type=`
+    }
+
+    const earnLink = EARN_LINKS[s.id]
+    if (earnLink) {
+        base.earnLink = earnLink
+    }
+
+    return base
+}
 
 const sortableHeaders: SortableHeader[] = [
     { label: 'Asset / Asset Pair' },
@@ -45,35 +109,7 @@ const sortableHeaders: SortableHeader[] = [
 
 export function useEarnStrategies() {
     const { address } = useAccount()
-
-    // === Load All Data ===
-    const {
-        // Raw data
-        systemStateData,
-        minterVaultsData,
-        collateralTypesData,
-        myVaultsData,
-        velodromeData,
-        velodromePositionsData,
-        velodromePricesData,
-        haiVeloSafesData,
-        strategyData,
-        // Store state data
-        tokensData,
-        userPositionsList,
-        usersStakingData,
-        totalStaked,
-        stakingApyData,
-        // Loading/error states
-        coreDataLoaded,
-        stakingDataLoaded,
-        storeDataLoaded,
-        error: dataLoadingError,
-        hasErrors,
-    } = useEarnData()
-
-    // === Get vault boost data from useBoost ===
-    const { individualVaultBoosts, loading: boostLoading } = useBoost()
+    const { strategies: aprStrategies, loading: aprLoading } = useApr()
 
     // === Get incentives data for rewards calculation ===
     const { incentivesData } = useClaims()
@@ -81,12 +117,6 @@ export function useEarnStrategies() {
     const {
         vaultModel: { liquidationData },
     } = useStoreState((state) => state)
-
-    // Ensure haiVELO deposit strategy APR matches underlying APR
-    const { underlyingAPR: haiVeloUnderlyingAPR } = useUnderlyingAPR({ collateralType: 'HAIVELOV2' })
-
-    // Ensure haiAERO deposit strategy APR matches underlying APR
-    const { underlyingAPR: haiAeroUnderlyingAPR } = useUnderlyingAPR({ collateralType: 'HAIAERO' })
 
     // Get token prices for rewards calculation
     const getTokenPrice = useCallback(
@@ -107,11 +137,6 @@ export function useEarnStrategies() {
         [veloPrices, liquidationData]
     )
 
-    // === State ===
-    const [vaultStrategies, setVaultStrategies] = useState<BaseStrategy[]>([])
-    const [specialStrategies, setSpecialStrategies] = useState<BaseStrategy[]>([])
-    const [veloStrategies, setVeloStrategies] = useState<BaseStrategy[]>([])
-
     const [sorting, setSorting] = useState<Sorting>({
         key: 'TVP',
         dir: 'desc',
@@ -119,280 +144,14 @@ export function useEarnStrategies() {
 
     const [filterEmpty, setFilterEmpty] = useState(false)
 
-    // === Calculate Strategies ===
-
-    const calculateVaultStrategies = useCallback((): BaseStrategy[] => {
-        // Safe fallback if data is missing
-        if (!collateralTypesData?.collateralTypes || !velodromePricesData?.HAI) {
-            return []
-        }
-
-        const collateralsWithMinterRewards = collateralTypesData.collateralTypes.filter((cType) =>
-            Object.values(RewardsModel.getVaultRewards(cType.id) || {}).some((a) => a != 0)
-        )
-
-        if (!collateralsWithMinterRewards.length) return []
-
-        const haiPrice = Number(velodromePricesData?.HAI.raw)
-
-        const strategies = collateralsWithMinterRewards.map((cType) => {
-            const assets = tokenAssets[cType.id]
-
-            const cTypeUserPosition = userPositionsList.reduce((total: number, { totalDebt, collateralName }: any) => {
-                if (collateralName.toLowerCase() !== cType.id.toLowerCase()) return total
-                return total + parseFloat(totalDebt)
-            }, 0)
-
-            const rewards = RewardsModel.getVaultRewards(cType.id) || {}
-            // Use vault boost data from useBoost instead of calculating it here
-            const vbr = individualVaultBoosts[cType.id] || {
-                userVaultBoostMap: {},
-                cType: cType.id,
-                totalBoostedValueParticipating: 0,
-                baseAPR: 0,
-                myBoost: 1,
-                myValueParticipating: 0,
-                myBoostedValueParticipating: 0,
-                myBoostedShare: 0,
-                myBoostedAPR: 0,
-            }
-
-            return createVaultStrategy({
-                pair: [assets?.symbol || 'HAI'],
-                collateral: cType.id,
-                rewards: Object.entries(rewards).map(([token, emission]) => ({ token, emission })),
-                tvl: parseFloat(cType.debtAmount) * haiPrice,
-                boostAPR: vbr,
-                userPosition: cTypeUserPosition * haiPrice,
-            })
-        })
-
-        return strategies
-    }, [collateralTypesData, velodromePricesData, userPositionsList, individualVaultBoosts])
-
-    const calculateSpecialStrategies = useCallback((): BaseStrategy[] => {
-        // Safe fallback if strategy data is missing
-        if (!strategyData) {
-            return []
-        }
-
-        const haiApr = strategyData.hai?.apr || 0
-        const haiTvl = strategyData.hai?.tvl || 0
-        const haiUserPosition = strategyData.hai?.userPosition || 0
-
-        const haiVeloTvl = strategyData.haiVelo?.tvl || 0
-        const haiVeloUserPositionUsd = strategyData.haiVelo?.userPosition || 0
-        const haiVeloBoostApr = strategyData.haiVelo?.boostApr
-
-        const haiAeroTvl = strategyData.haiAero?.tvl || 0
-        const haiAeroUserPositionUsd = strategyData.haiAero?.userPosition || 0
-        const haiAeroBoostApr = strategyData.haiAero?.boostApr
-
-        const kiteApr = strategyData.kiteStaking?.apr || 0
-        const kiteTvl = strategyData.kiteStaking?.tvl || 0
-        const kiteUserPosition = strategyData.kiteStaking?.userPosition || 0
-
-        // Calculate HAI MINTING boost using the same logic as staking page
-        // const userHaiMinted = Number(haiUserPosition) / Number(velodromePricesData?.HAI?.raw || 1)
-        // const totalHaiMinted = Number(systemStateData?.systemStates[0]?.erc20CoinTotalSupply || 0)
-        // const userStakingAmount = address ? Number(usersStakingData[address.toLowerCase()]?.stakedBalance || 0) : 0
-        // const totalStakingAmount = Number(formatEther(totalStaked || '0'))
-
-        // const haiMintingBoostResult = calculateHaiMintingBoost({
-        //     userStakingAmount,
-        //     totalStakingAmount,
-        //     userHaiMinted,
-        //     totalHaiMinted,
-        // })
-
-        // const haiMintingBoost = {
-        //     baseAPR: haiApr * 100,
-        //     myBoost: haiMintingBoostResult.haiMintingBoost,
-        //     myBoostedAPR: haiApr * 100 * haiMintingBoostResult.haiMintingBoost,
-        // }
-
-        // HAI-BOLD LP staking data
-        const haiBoldLpApr = strategyData.haiBoldLp?.apr || 0
-        const haiBoldLpTvl = strategyData.haiBoldLp?.tvl || 0
-        const haiBoldLpUserPosition = strategyData.haiBoldLp?.userPosition || 0
-        const haiBoldLpBoostApr = strategyData.haiBoldLp?.boostApr
-
-        // haiVELO/VELO LP staking data
-        const haiVeloVeloLpApr = strategyData.haiVeloVeloLp?.apr || 0
-        const haiVeloVeloLpTvl = strategyData.haiVeloVeloLp?.tvl || 0
-        const haiVeloVeloLpUserPosition = strategyData.haiVeloVeloLp?.userPosition || 0
-        const haiVeloVeloLpBoostApr = strategyData.haiVeloVeloLp?.boostApr
-
-        return [
-            createSpecialStrategy({
-                pair: ['HAI'],
-                tvl: haiTvl,
-                apr: haiApr,
-                userPosition: haiUserPosition,
-                strategyType: 'hold',
-                boostEligible: false,
-            }),
-            createSpecialStrategy({
-                pair: ['HAIVELO'],
-                tvl: haiVeloTvl,
-                apr: haiVeloUnderlyingAPR || 0,
-                userPosition: haiVeloUserPositionUsd,
-                strategyType: 'deposit',
-                boostAPR: haiVeloBoostApr as BoostAPRData,
-                boostEligible: true,
-            }),
-            createSpecialStrategy({
-                pair: ['HAIAERO'],
-                tvl: haiAeroTvl,
-                apr: haiAeroUnderlyingAPR || 0,
-                userPosition: haiAeroUserPositionUsd,
-                strategyType: 'deposit',
-                boostAPR: haiAeroBoostApr as BoostAPRData,
-                boostEligible: true,
-            }),
-            createSpecialStrategy({
-                pair: ['KITE'],
-                tvl: kiteTvl,
-                apr: kiteApr,
-                userPosition: kiteUserPosition,
-                strategyType: 'stake',
-                earnLink: '/stake',
-            }),
-            createSpecialStrategy({
-                pair: ['HAI', 'BOLD'],
-                tvl: haiBoldLpTvl,
-                apr: haiBoldLpApr,
-                userPosition: haiBoldLpUserPosition,
-                strategyType: 'stake',
-                boostAPR: haiBoldLpBoostApr as BoostAPRData,
-                boostEligible: true,
-                earnLink: '/stake/hai-bold-curve-lp',
-                rewards: [{ token: 'KITE', emission: 25 }],
-            }),
-            createSpecialStrategy({
-                pair: ['HAIVELO', 'VELO'],
-                tvl: haiVeloVeloLpTvl,
-                apr: haiVeloVeloLpApr,
-                userPosition: haiVeloVeloLpUserPosition,
-                strategyType: 'stake',
-                boostAPR: haiVeloVeloLpBoostApr as BoostAPRData,
-                boostEligible: true,
-                earnLink: '/stake/hai-velo-velo-lp',
-                rewards: [{ token: 'KITE', emission: 25 }],
-            }),
-        ]
-    }, [strategyData, haiVeloUnderlyingAPR, haiAeroUnderlyingAPR])
-
-    const calculateVeloStrategies = useCallback((): BaseStrategy[] => {
-        // Safe fallback if required data is missing
-        if (!velodromePricesData || !velodromeData || !tokensData) {
-            return []
-        }
-
-        const strategies: BaseStrategy[] = []
-        for (const pool of velodromeData) {
-            if (!VELO_POOLS.includes(pool.address)) continue
-
-            // Get token symbols using utility function
-            const token0 = getTokenSymbol(pool.token0, tokensData, pool.tokenPair[0])
-            const token1 = getTokenSymbol(pool.token1, tokensData, pool.tokenPair[1])
-
-            // Get token prices using utility function
-            const price0 = calculateTokenPrice(token0, velodromePricesData as any)
-            const price1 = calculateTokenPrice(token1, velodromePricesData as any)
-
-            // Calculate pool TVL using utility function
-            const { totalTvl: tvl } = calculatePoolTVL(pool, tokensData, velodromePricesData as any)
-            const veloAPR =
-                (365 *
-                    parseFloat(formatUnits(pool.emissions, pool.decimals)) *
-                    Number(velodromePricesData.VELO.raw) *
-                    86400) /
-                tvl
-            const userPosition = (velodromePositionsData || []).reduce((total: number, position: any) => {
-                if (!stringsExistAndAreEqual(position.lp, pool.address)) return total
-                return (
-                    total +
-                    parseFloat(formatUnits(position.staked0, pool.decimals)) * price0 +
-                    parseFloat(formatUnits(position.staked1, pool.decimals)) * price1
-                )
-            }, 0)
-
-            const rewardsObj = RewardsModel.getPoolRewards(pool.address) || {}
-            const rewardsArray = Object.entries(rewardsObj).map(([token, emission]) => ({ token, emission }))
-            const strategy = createVeloStrategy({
-                pair: [token0, token1],
-                rewards: rewardsArray,
-                tvl: tvl,
-                apr: veloAPR || 0,
-                userPosition,
-                earnAddress: pool.address,
-                earnLink: `https://velodrome.finance/deposit?token0=${pool.token0}&token1=${pool.token1}&type=${pool.type}`,
-            })
-            strategies.push(strategy)
-        }
-        return strategies
-    }, [velodromePricesData, velodromeData, tokensData, velodromePositionsData])
-
-    useEffect(() => {
-        // Error boundary: halt execution if critical errors exist
-        if (dataLoadingError && shouldHaltExecution(dataLoadingError)) {
-            console.error('Critical error detected, halting strategy calculation:', dataLoadingError)
-            return
-        }
-
-        // Proceed with calculation if data is loaded or if we can continue with degraded mode
-        // Proceed earlier: require core data (coreDataLoaded) but do not block on user-specific extras
-        const canProceed =
-            (coreDataLoaded && storeDataLoaded && !boostLoading) ||
-            (dataLoadingError && canContinueWithDegradedMode(dataLoadingError))
-
-        if (canProceed) {
-            try {
-                const vaultStrats = calculateVaultStrategies()
-                const specialStrats = calculateSpecialStrategies()
-                const veloStrats = calculateVeloStrategies()
-                setVaultStrategies(vaultStrats)
-                setSpecialStrategies(specialStrats)
-                setVeloStrategies(veloStrats)
-            } catch (calculationError) {
-                console.error('Error calculating strategies:', calculationError)
-                // Reset to empty arrays on calculation failure
-                setVaultStrategies([])
-                setSpecialStrategies([])
-                setVeloStrategies([])
-            }
-        }
-    }, [
-        coreDataLoaded,
-        stakingDataLoaded,
-        storeDataLoaded,
-        boostLoading,
-        dataLoadingError,
-        userPositionsList,
-        systemStateData,
-        haiVeloSafesData,
-        address,
-        stakingApyData,
-        individualVaultBoosts,
-        calculateVaultStrategies,
-        calculateSpecialStrategies,
-        calculateVeloStrategies,
-    ])
-
-    // === Calculate Strategy Utils ===
-    // Note: calculateVaultBoostAPR and calculateVaultBoostMap functions have been removed
-    // as they are now handled by useBoost hook
-
-    const strategies = useMemo(
-        () => [...vaultStrategies, ...specialStrategies, ...veloStrategies],
-        [vaultStrategies, specialStrategies, veloStrategies]
-    )
+    // === Convert AprProvider strategies to legacy BaseStrategy shape ===
+    const strategies: BaseStrategy[] = useMemo(() => {
+        return Object.values(aprStrategies).map(toBaseStrategy)
+    }, [aprStrategies])
 
     const filteredRows = useMemo(() => {
         if (!filterEmpty) return strategies
 
-        // Filter to only show strategies where user has a position
         return strategies.filter((strategy) => {
             const userPosition = Number(strategy.userPosition)
             return userPosition > 0
@@ -418,7 +177,7 @@ export function useEarnStrategies() {
     }, 0)
 
     const averageWeightedBoost = boostEligibleStrategies.reduce((acc, strategy) => {
-        const strategyBoost = strategy.boostAPR?.myBoost || 1 // Default to 1x if no boost
+        const strategyBoost = strategy.boostAPR?.myBoost || 1
         const userPosition = Number(strategy.userPosition)
         return acc + (userPosition / totalPosition) * strategyBoost
     }, 0)
@@ -428,8 +187,6 @@ export function useEarnStrategies() {
         if (!incentivesData?.claimData) return 0
 
         let totalValue = 0
-
-        // Calculate rewards from incentives data (same as ClaimModal)
         const incentiveTokens = ['KITE', 'OP', 'DINERO', 'HAI'] as const
 
         incentiveTokens.forEach((token) => {
@@ -462,7 +219,7 @@ export function useEarnStrategies() {
     }, [incentivesData?.claimData])
 
     const sortedRows = useMemo(() => {
-        if (!coreDataLoaded) return []
+        if (aprLoading) return []
 
         switch (sorting.key) {
             case 'Asset / Asset Pair':
@@ -514,18 +271,18 @@ export function useEarnStrategies() {
                     checkValueExists: true,
                 })
         }
-    }, [filteredRows, sorting, coreDataLoaded])
+    }, [filteredRows, sorting, aprLoading])
 
     return {
         rawData: {
-            minterVaultsData,
-            collateralTypesData,
-            myVaultsData,
-            velodromeData,
-            velodromePositionsData,
-            velodromePricesData,
-            usersStakingData,
-            totalStaked,
+            minterVaultsData: undefined,
+            collateralTypesData: undefined,
+            myVaultsData: undefined,
+            velodromeData: undefined,
+            velodromePositionsData: undefined,
+            velodromePricesData: undefined,
+            usersStakingData: {},
+            totalStaked: '0',
         },
         headers: sortableHeaders,
         averageAPR: {
@@ -538,9 +295,9 @@ export function useEarnStrategies() {
         rewardTokens,
         rows: sortedRows,
         rowsUnmodified: strategies,
-        loading: !coreDataLoaded || boostLoading,
-        error: dataLoadingError,
-        hasErrors,
+        loading: aprLoading,
+        error: null,
+        hasErrors: false,
         uniError: null,
         veloError: null,
         sorting,

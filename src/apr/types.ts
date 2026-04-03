@@ -136,6 +136,7 @@ export interface CurveLpInput extends LpPoolInput {
 export interface VelodromeLpInput extends LpPoolInput {
     tradingFeeApr: number
     haiRewardsApr: number
+    poolTvlUsd: number // full pool TVL (all LP holders), NOT just staked portion
 }
 
 export interface AprInputs {

@@ -54,10 +54,15 @@ function buildNarrative(strategy: StrategyAprResult) {
     }
 
     // -- Per-component APR explanation --
-    // APR is always against the raw (unboosted) TVL. Boost affects reward
-    // distribution (your share of the pie), not the APR denominator.
+    // For boostable strategies, APR denominator is the boost-weighted total.
+    // This represents what a 1x boost user actually earns.
+    const aprDenominator = boost?.totalBoostedValueParticipating && boost.totalBoostedValueParticipating > 0
+        ? boost.totalBoostedValueParticipating
+        : strategy.tvl
     for (const comp of strategy.components) {
-        const denomLabel = `${formatUsd(strategy.tvl)} of position value`
+        const denomLabel = boost?.totalBoostedValueParticipating && boost.totalBoostedValueParticipating > 0
+            ? `${formatUsd(aprDenominator)} of boost-weighted position value`
+            : `${formatUsd(aprDenominator)} of position value`
 
         switch (comp.source) {
             case 'redemption-rate':
@@ -136,24 +141,24 @@ function buildNarrative(strategy: StrategyAprResult) {
     if (boost) {
         if (boost.totalBoostedValueParticipating > 0 && boost.totalBoostedValueParticipating !== strategy.tvl) {
             lines.push({
-                text: `Rewards are distributed based on boost-weighted positions. Raw TVL is ${formatUsd(strategy.tvl)}, boost-weighted total is`,
+                text: `Raw TVL is ${formatUsd(strategy.tvl)}, but APR is calculated against the boost-weighted total of`,
                 value: formatUsd(boost.totalBoostedValueParticipating),
             })
             lines.push({
-                text: `Boost doesn't change the base APR — it increases your share of reward distribution, effectively multiplying your personal APR`,
+                text: `The base APR (${formatApr(boost.baseApr)}) is what a 1x boost user earns. Higher boosts multiply your personal APR`,
                 value: '',
                 color: '#f59e0b',
             })
         }
         if (boost.myBoost > 1) {
             lines.push({
-                text: `Your ${formatBoost(boost.myBoost)} boost (stKITE share ÷ position share + 1, max 2x) gives you a larger share of the distribution, making your effective APR`,
+                text: `Your ${formatBoost(boost.myBoost)} boost (stKITE share ÷ position share + 1, max 2x) multiplies the base APR, giving you`,
                 value: formatApr(boost.boostedApr),
                 color: getBoostColor(boost.myBoost),
             })
         } else if (boost.myValueParticipating > 0) {
             lines.push({
-                text: `No boost active — stake KITE to earn up to 2x your share of reward distribution`,
+                text: `No boost active — stake KITE to earn up to 2x the base APR`,
                 value: '',
                 color: '#f59e0b',
             })
@@ -401,12 +406,11 @@ export function StrategyDetail({ strategies }: Props) {
                                 {boost && (() => {
                                     return (
                                     <StrategyBlock>
-                                        <SubHeader>UNBOOSTED VS BOOSTED</SubHeader>
+                                        <SubHeader>POSITIONS &amp; BOOST</SubHeader>
                                         <Text $fontSize="0.8rem" style={{ opacity: 0.5 }}>
-                                            Base APR is calculated against unboosted positions ({formatUsd(strategy.tvl)}).
-                                            Boost affects how rewards are distributed — a {formatBoost(boost.myBoost)} boost means
-                                            you receive {formatBoost(boost.myBoost)} your proportional share, giving you an effective APR
-                                            of {formatApr(boost.boostedApr)}.
+                                            Base APR ({formatApr(boost.baseApr)}) is calculated against the boost-weighted
+                                            total ({formatUsd(boost.totalBoostedValueParticipating)}), representing what a 1x
+                                            user earns. Your {formatBoost(boost.myBoost)} boost multiplies this to {formatApr(boost.boostedApr)}.
                                         </Text>
                                         <MiniTable>
                                             <thead>
@@ -421,50 +425,48 @@ export function StrategyDetail({ strategies }: Props) {
                                             <tbody>
                                                 <tr>
                                                     <MiniTd>
-                                                        <strong>Positions (unboosted)</strong>
-                                                    </MiniTd>
-                                                    <MiniTd $align="right">{formatUsd(strategy.tvl)}</MiniTd>
-                                                    <MiniTd $align="right">
-                                                        {boost.myValueParticipating > 0
-                                                            ? formatUsd(boost.myValueParticipating)
-                                                            : '-'}
+                                                        <span style={{ opacity: 0.5 }}>Raw positions</span>
                                                     </MiniTd>
                                                     <MiniTd $align="right">
-                                                        {strategy.tvl > 0 && boost.myValueParticipating > 0
-                                                            ? `${((boost.myValueParticipating / strategy.tvl) * 100).toFixed(4)}%`
-                                                            : '-'}
-                                                    </MiniTd>
-                                                    <MiniTd $align="right">
-                                                        <strong>{formatApr(boost.baseApr)}</strong>
-                                                    </MiniTd>
-                                                </tr>
-                                                <tr>
-                                                    <MiniTd>
-                                                        <span style={{ opacity: 0.5 }}>
-                                                            Reward distribution weights (boosted)
-                                                        </span>
+                                                        <span style={{ opacity: 0.5 }}>{formatUsd(strategy.tvl)}</span>
                                                     </MiniTd>
                                                     <MiniTd $align="right">
                                                         <span style={{ opacity: 0.5 }}>
-                                                            {formatUsd(boost.totalBoostedValueParticipating)}
-                                                        </span>
-                                                    </MiniTd>
-                                                    <MiniTd $align="right">
-                                                        <span style={{ opacity: 0.5 }}>
-                                                            {boost.myBoostedValueParticipating > 0
-                                                                ? formatUsd(boost.myBoostedValueParticipating)
+                                                            {boost.myValueParticipating > 0
+                                                                ? formatUsd(boost.myValueParticipating)
                                                                 : '-'}
                                                         </span>
                                                     </MiniTd>
                                                     <MiniTd $align="right">
                                                         <span style={{ opacity: 0.5 }}>
-                                                            {boost.myBoostedShare > 0
-                                                                ? `${(boost.myBoostedShare * 100).toFixed(4)}%`
+                                                            {strategy.tvl > 0 && boost.myValueParticipating > 0
+                                                                ? `${((boost.myValueParticipating / strategy.tvl) * 100).toFixed(4)}%`
                                                                 : '-'}
                                                         </span>
                                                     </MiniTd>
                                                     <MiniTd $align="right">
                                                         <span style={{ opacity: 0.3 }}>—</span>
+                                                    </MiniTd>
+                                                </tr>
+                                                <tr>
+                                                    <MiniTd>
+                                                        <strong>Boost-weighted (APR denominator)</strong>
+                                                    </MiniTd>
+                                                    <MiniTd $align="right">
+                                                        <strong>{formatUsd(boost.totalBoostedValueParticipating)}</strong>
+                                                    </MiniTd>
+                                                    <MiniTd $align="right">
+                                                        {boost.myBoostedValueParticipating > 0
+                                                            ? formatUsd(boost.myBoostedValueParticipating)
+                                                            : '-'}
+                                                    </MiniTd>
+                                                    <MiniTd $align="right">
+                                                        {boost.myBoostedShare > 0
+                                                            ? `${(boost.myBoostedShare * 100).toFixed(4)}%`
+                                                            : '-'}
+                                                    </MiniTd>
+                                                    <MiniTd $align="right">
+                                                        <strong>{formatApr(boost.baseApr)}</strong>
                                                     </MiniTd>
                                                 </tr>
                                                 {boost.myBoost > 1 && (

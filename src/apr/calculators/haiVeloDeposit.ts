@@ -25,19 +25,17 @@ interface HaiVeloDepositResult {
  * HAI rewards are shared between haiVELO depositors and haiVELO/VELO LP stakers
  * proportional to TVL.
  *
- * APR is calculated against the RAW (unboosted) TVL — this represents the return
- * per dollar of position value. Boost does NOT change the base APR; it changes
- * how rewards are *distributed*. A user with 2x boost receives double the share
- * of the distribution, which effectively gives them 2× the base APR personally.
+ * APR is calculated against the BOOSTED total value. This represents what a 1x
+ * boost user actually earns. A user with 2x boost earns 2× the base APR because
+ * their boosted position captures a larger share of the reward distribution.
  *
  * Formula:
  *   haiVeloRewardShare = depositTvl / (depositTvl + lpStakedTvl)
  *   adjustedWeeklyReward = weeklyHaiReward * haiVeloRewardShare
  *   dailyRewardValue = (adjustedWeeklyReward / 7) * haiPrice
- *   baseAPR = (dailyRewardValue / rawTVL) * 365        ← unboosted denominator
- *   myEffectiveAPR = myBoost * baseAPR                  ← boost multiplies your personal APR
- *
- * Output is normalized to decimal (0.05 = 5%).
+ *   totalBoostedValue = sum(userQty * userBoost) * haiVeloPrice
+ *   baseAPR = (dailyRewardValue / totalBoostedValue) * 365   ← boosted denominator
+ *   myEffectiveAPR = myBoost * baseAPR
  */
 export function calculateHaiVeloDepositApr(input: HaiVeloDepositInput): HaiVeloDepositResult {
     const {
@@ -60,7 +58,7 @@ export function calculateHaiVeloDepositApr(input: HaiVeloDepositInput): HaiVeloD
     const dailyRewardQty = adjustedWeeklyReward / 7 || 0
     const dailyRewardValue = dailyRewardQty * (haiPrice || 0)
 
-    // Boost-weighted totals (used for reward distribution, NOT for APR denominator)
+    // Boost-weighted totals — this IS the APR denominator
     const totalBoostedQty = Object.entries(mapping).reduce((acc, [address, value]) => {
         const boost = boostMap[address] || 1
         return acc + Number(value) * boost
@@ -75,10 +73,10 @@ export function calculateHaiVeloDepositApr(input: HaiVeloDepositInput): HaiVeloD
     const myBoostedValueParticipating = myValueParticipating * myBoost
     const myBoostedShare = totalBoostedValueParticipating > 0 ? myBoostedValueParticipating / totalBoostedValueParticipating : 0
 
-    // Base APR is against the RAW (unboosted) TVL
-    const baseApr = haiVeloDepositTvl > 0 ? (dailyRewardValue * 365) / haiVeloDepositTvl : 0
+    // Base APR is against boosted TVL (what a 1x user actually earns)
+    const baseApr = totalBoostedValueParticipating > 0 ? (dailyRewardValue * 365) / totalBoostedValueParticipating : 0
 
-    // User's effective APR: boost multiplies their personal return
+    // User's effective APR
     const boostedApr = myBoost * baseApr
 
     return {

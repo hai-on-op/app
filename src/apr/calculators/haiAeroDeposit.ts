@@ -20,8 +20,8 @@ interface HaiAeroDepositResult {
 /**
  * haiAERO Deposit strategy APR.
  *
- * Same principle as haiVELO: APR is against raw TVL (unboosted positions).
- * Boost affects reward distribution, not the APR denominator.
+ * Same principle as haiVELO: APR is against boosted TVL.
+ * Base APR = what a 1x user earns. Boost multiplies personal APR.
  */
 export function calculateHaiAeroDepositApr(input: HaiAeroDepositInput): HaiAeroDepositResult {
     const { mapping, boostMap, haiAeroPrice, haiPrice, weeklyHaiReward, userAddress } = input
@@ -29,11 +29,11 @@ export function calculateHaiAeroDepositApr(input: HaiAeroDepositInput): HaiAeroD
     const dailyRewardQty = weeklyHaiReward / 7 || 0
     const dailyRewardValue = dailyRewardQty * (haiPrice || 0)
 
-    // Raw TVL from collateral mapping (unboosted)
+    // Raw TVL from collateral mapping
     const totalQty = Object.values(mapping).reduce((acc, v) => acc + Number(v), 0)
     const tvl = totalQty * (haiAeroPrice || 0)
 
-    // Boost-weighted totals (used for reward distribution, NOT APR denominator)
+    // Boost-weighted totals — this IS the APR denominator
     const totalBoostedQty = Object.entries(mapping).reduce((acc, [address, value]) => {
         const boost = boostMap[address] || 1
         return acc + Number(value) * boost
@@ -48,10 +48,9 @@ export function calculateHaiAeroDepositApr(input: HaiAeroDepositInput): HaiAeroD
     const myBoostedValueParticipating = myValueParticipating * myBoost
     const myBoostedShare = totalBoostedValueParticipating > 0 ? myBoostedValueParticipating / totalBoostedValueParticipating : 0
 
-    // Base APR is against raw TVL (unboosted positions)
-    const baseApr = tvl > 0 ? (dailyRewardValue * 365) / tvl : 0
+    // Base APR against boosted TVL
+    const baseApr = totalBoostedValueParticipating > 0 ? (dailyRewardValue * 365) / totalBoostedValueParticipating : 0
 
-    // User's effective APR: boost multiplies personal return
     const boostedApr = myBoost * baseApr
 
     return {

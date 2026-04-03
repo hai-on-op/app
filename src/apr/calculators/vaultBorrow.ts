@@ -74,10 +74,12 @@ export function calculateVaultBorrowApr(input: VaultBorrowInput): VaultBorrowRes
         return acc + Number(value) * (vaultBoostMap[addr.toLowerCase()] || 1)
     }, 0)
 
-    // Base APR is against raw TVL (unboosted positions).
-    // Boost affects reward distribution (your share), not the APR denominator.
+    // Base APR is against boosted TVL — what a 1x user actually earns.
+    // Boost multiplies your personal APR by increasing your share of the distribution.
     const dailyKiteRewardUsd = dailyKiteReward * kitePrice
-    const baseApr = tvl > 0 ? (dailyKiteRewardUsd * 365) / tvl : 0
+    const baseApr = totalBoostedValueParticipating > 0
+        ? (dailyKiteRewardUsd * 365) / totalBoostedValueParticipating
+        : 0
 
     // User-specific
     const userAddr = userAddress?.toLowerCase()

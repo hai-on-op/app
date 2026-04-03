@@ -3,7 +3,7 @@ import { useAccount } from 'wagmi'
 import { useQuery } from '@apollo/client'
 import { formatEther } from 'ethers/lib/utils'
 
-import type { AprContextValue, AprInputs, StrategyAprResult, StrategyType, BoostData } from './types'
+import type { AprContextValue, AprInputs, StrategyAprResult, StrategyType } from './types'
 import { computeAllAprs } from './orchestrator'
 
 // Existing data source hooks
@@ -20,6 +20,7 @@ import { useHaiAeroBoostMap } from '~/hooks/haiaero/useHaiAeroBoostMap'
 import { useStakeAccount } from '~/hooks/staking/useStakeAccount'
 import { useStakeStats } from '~/hooks/staking/useStakeStats'
 import { useLpTvl } from '~/hooks/staking/useLpTvl'
+import { useLpStakingApr } from '~/hooks/staking/useLpStakingApr'
 import { SYSTEMSTATE_QUERY, ALL_COLLATERAL_TYPES_QUERY } from '~/utils/graphql/queries'
 import { REWARDS, STAKING_REWARDS } from '~/utils/rewards'
 import { buildStakingService } from '~/services/stakingService'
@@ -100,7 +101,6 @@ export function useAprEngine(): AprContextValue {
 
     // Staking data
     const { data: stakingAccount } = useStakeAccount(address as `0x${string}`)
-    const { data: stakingStats } = useStakeStats()
 
     // LP staking data - HAI-BOLD Curve
     const haiBoldLpService = useMemo(
@@ -122,7 +122,11 @@ export function useAprEngine(): AprContextValue {
         haiVeloVeloLpService
     )
     const { data: haiVeloVeloLpStats } = useStakeStats(haiVeloVeloLpConfig.namespace, haiVeloVeloLpService)
-    const { lpPriceUsd: haiVeloVeloLpPriceUsd } = useLpTvl(haiVeloVeloLpConfig)
+    const { lpPriceUsd: haiVeloVeloLpPriceUsd, tvlUsd: haiVeloVeloPoolTvlUsd } = useLpTvl(haiVeloVeloLpConfig)
+
+    // Use the SAME hooks the Earn page uses for LP APR — single source of truth
+    const haiBoldLpAprData = useLpStakingApr(haiBoldCurveLpConfig)
+    const haiVeloVeloLpAprData = useLpStakingApr(haiVeloVeloLpConfig)
 
     // ==================== LOADING STATE ====================
     const coreDataLoaded =
@@ -199,7 +203,7 @@ export function useAprEngine(): AprContextValue {
                 totalStakedLp: Number(haiBoldLpStats?.totalStaked || 0),
                 userStakedLp: Number(haiBoldLpAccount?.stakedBalance || 0),
                 lpPriceUsd: curveData.lpPriceUsd || 0,
-                curveVApy: curveData.vApy || 0,
+                curveVApy: haiBoldLpAprData.underlyingApr, // from useLpStakingApr (same as Earn page)
                 dailyKiteReward: haiBoldRewards.KITE,
             },
 
@@ -207,9 +211,10 @@ export function useAprEngine(): AprContextValue {
                 totalStakedLp: Number(haiVeloVeloLpStats?.totalStaked || 0),
                 userStakedLp: Number(haiVeloVeloLpAccount?.stakedBalance || 0),
                 lpPriceUsd: haiVeloVeloLpPriceUsd || 0,
-                tradingFeeApr: 0, // Will be computed in orchestrator from pool data
-                haiRewardsApr: 0, // Will be computed in orchestrator
+                tradingFeeApr: haiVeloVeloLpAprData.underlyingApr, // from useLpStakingApr (same as Earn page)
+                haiRewardsApr: haiVeloVeloLpAprData.haiRewardsApr, // from useLpStakingApr (same as Earn page)
                 dailyKiteReward: haiVeloVeloRewards.KITE,
+                poolTvlUsd: haiVeloVeloPoolTvlUsd || 0,
             },
 
             minterVaults: minterVaultsData || {},
