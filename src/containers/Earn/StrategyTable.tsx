@@ -276,16 +276,6 @@ export function StrategyTable({
                                                     </Text>
                                                 )}
                                             </div>
-                                            {strategyType === 'borrow' && netApr !== undefined && (
-                                                <Text $fontSize="0.75em" style={{ opacity: 0.6 }}>
-                                                    Net: {formatNumberWithStyle(netApr, {
-                                                        style: 'percent',
-                                                        scalingFactor: 100,
-                                                        maxDecimals: 1,
-                                                        suffixed: true,
-                                                    })}
-                                                </Text>
-                                            )}
                                             {/* {(isAPXETH || isPXETH) && (
                                                 <BoostBadge>
                                                     <Flex $justify="flex-start" $align="center">
