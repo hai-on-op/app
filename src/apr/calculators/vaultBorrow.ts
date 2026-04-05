@@ -69,22 +69,22 @@ export function calculateVaultBorrowApr(input: VaultBorrowInput): VaultBorrowRes
         vaultBoostMap[lowAddr] = typeof boost === 'number' ? boost : 1
     }
 
-    // Compute total boosted value
-    const totalBoostedValueParticipating = Object.entries(userDebtMapping).reduce((acc, [addr, value]) => {
+    // Base APR uses raw TVL — what the pool yields per $1 of position.
+    // Boost multiplies the user's effective APR (they get a bigger share of the distribution).
+    const dailyKiteRewardUsd = dailyKiteReward * kitePrice
+    const baseApr = tvl > 0 ? (dailyKiteRewardUsd * 365) / tvl : 0
+
+    // Total boosted value (for share calculation and reporting only)
+    const totalBoostedQty = Object.entries(userDebtMapping).reduce((acc, [addr, value]) => {
         return acc + Number(value) * (vaultBoostMap[addr.toLowerCase()] || 1)
     }, 0)
+    const totalBoostedValueParticipating = totalBoostedQty * haiPrice
 
-    // Base APR is against boosted TVL — what a 1x user actually earns.
-    // Boost multiplies your personal APR by increasing your share of the distribution.
-    const dailyKiteRewardUsd = dailyKiteReward * kitePrice
-    const baseApr = totalBoostedValueParticipating > 0
-        ? (dailyKiteRewardUsd * 365) / totalBoostedValueParticipating
-        : 0
-
-    // User-specific
+    // User-specific (all values in USD)
     const userAddr = userAddress?.toLowerCase()
     const myBoost = userAddr ? vaultBoostMap[userAddr] || 1 : 1
-    const myValueParticipating = userAddr ? Number(userDebtMapping[userAddr] || 0) : 0
+    const myQty = userAddr ? Number(userDebtMapping[userAddr] || 0) : 0
+    const myValueParticipating = myQty * haiPrice
     const myBoostedValueParticipating = myValueParticipating * myBoost
     const myBoostedShare =
         totalBoostedValueParticipating > 0 ? myBoostedValueParticipating / totalBoostedValueParticipating : 0

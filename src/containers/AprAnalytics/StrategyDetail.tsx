@@ -54,13 +54,14 @@ function buildNarrative(strategy: StrategyAprResult) {
     }
 
     // -- Per-component APR explanation --
-    // For boostable strategies, APR denominator is the boost-weighted total.
-    // This represents what a 1x boost user actually earns.
-    const aprDenominator = boost?.totalBoostedValueParticipating && boost.totalBoostedValueParticipating > 0
-        ? boost.totalBoostedValueParticipating
+    // For vault/borrow strategies, APR denominator is raw TVL.
+    // For deposit strategies (haiVELO/haiAERO), APR denominator is boost-weighted total.
+    const useBoostedDenom = strategy.type !== 'borrow' && boost?.totalBoostedValueParticipating && boost.totalBoostedValueParticipating > 0
+    const aprDenominator = useBoostedDenom
+        ? boost!.totalBoostedValueParticipating
         : strategy.tvl
     for (const comp of strategy.components) {
-        const denomLabel = boost?.totalBoostedValueParticipating && boost.totalBoostedValueParticipating > 0
+        const denomLabel = useBoostedDenom
             ? `${formatUsd(aprDenominator)} of boost-weighted position value`
             : `${formatUsd(aprDenominator)} of position value`
 
@@ -139,13 +140,19 @@ function buildNarrative(strategy: StrategyAprResult) {
 
     // -- Boost narrative --
     if (boost) {
-        if (boost.totalBoostedValueParticipating > 0 && boost.totalBoostedValueParticipating !== strategy.tvl) {
+        if (useBoostedDenom && boost.totalBoostedValueParticipating > 0 && boost.totalBoostedValueParticipating !== strategy.tvl) {
             lines.push({
                 text: `Raw TVL is ${formatUsd(strategy.tvl)}, but APR is calculated against the boost-weighted total of`,
                 value: formatUsd(boost.totalBoostedValueParticipating),
             })
             lines.push({
                 text: `The base APR (${formatApr(boost.baseApr)}) is what a 1x boost user earns. Higher boosts multiply your personal APR`,
+                value: '',
+                color: '#f59e0b',
+            })
+        } else if (strategy.type === 'borrow' && boost.totalBoostedValueParticipating > 0) {
+            lines.push({
+                text: `Base APR (${formatApr(boost.baseApr)}) is calculated against ${formatUsd(strategy.tvl)} raw TVL. Boost multiplies your effective APR`,
                 value: '',
                 color: '#f59e0b',
             })
@@ -242,10 +249,9 @@ export function StrategyDetail({ strategies }: Props) {
                     <DetailCard
                         key={strategy.id}
                         $borderOpacity={0.2}
-                        onClick={() => setExpandedId(isExpanded ? null : strategy.id)}
                     >
                         {/* ---- Summary row ---- */}
-                        <SummaryRow>
+                        <SummaryRow onClick={() => setExpandedId(isExpanded ? null : strategy.id)}>
                             <Flex $gap={12} $align="center">
                                 <Text $fontWeight={700} $fontSize="1rem">
                                     {getStrategyLabel(strategy.id)}
@@ -284,7 +290,7 @@ export function StrategyDetail({ strategies }: Props) {
                         </SummaryRow>
 
                         {isExpanded && (
-                            <ExpandedContent onClick={(e) => e.stopPropagation()}>
+                            <ExpandedContent>
                                 {/* ---- Narrative ---- */}
                                 <NarrativeBlock>
                                     {narrative.map((line, i) => (
@@ -620,12 +626,7 @@ export function StrategyDetail({ strategies }: Props) {
 const DetailCard = styled.div<DashedContainerProps>`
     ${DashedContainerStyle}
     width: 100%;
-    cursor: pointer;
     overflow: hidden;
-    transition: background 0.2s;
-    &:hover {
-        background: rgba(255, 255, 255, 0.02);
-    }
     &::after {
         opacity: 0.2;
     }
@@ -638,6 +639,12 @@ const SummaryRow = styled(Flex).attrs({
 })`
     padding: 16px 24px;
     flex-wrap: wrap;
+    cursor: pointer;
+    transition: background 0.2s;
+    user-select: none;
+    &:hover {
+        background: rgba(255, 255, 255, 0.02);
+    }
 `
 const CaretIcon = styled.span<{ $expanded: boolean }>`
     font-size: 1.2rem;
