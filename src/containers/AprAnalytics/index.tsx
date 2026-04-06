@@ -15,11 +15,17 @@ const TAB_ITEMS = ['Overview', 'Strategy Details']
 export function AprAnalytics() {
     const { strategies, loading, error } = useApr()
     const [activeTab, setActiveTab] = useState(0)
+    const [selectedStrategyId, setSelectedStrategyId] = useState<string | null>(null)
 
     const strategyList = useMemo(() => Object.values(strategies), [strategies])
 
     const handleTabChange = useCallback((index: number) => {
         setActiveTab(index)
+    }, [])
+
+    const handleStrategyClick = useCallback((strategyId: string) => {
+        setSelectedStrategyId(strategyId)
+        setActiveTab(1)
     }, [])
 
     if (loading) {
@@ -80,12 +86,12 @@ export function AprAnalytics() {
                 {activeTab === 0 ? (
                     <Flex $width="100%" $column $gap={24}>
                         <ProtocolOverview strategies={strategyList} />
-                        <StrategyTable strategies={strategyList} />
+                        <StrategyTable strategies={strategyList} onStrategyClick={handleStrategyClick} />
                         <BoostOverview strategies={strategyList} />
                     </Flex>
                 ) : (
                     <Flex $width="100%" $column $gap={24}>
-                        <StrategyDetail strategies={strategyList} />
+                        <StrategyDetail strategies={strategyList} defaultExpandedId={selectedStrategyId} />
                     </Flex>
                 )}
             </NavContainer>

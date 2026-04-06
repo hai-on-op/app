@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { StrategyAprResult, PositionToken, RewardToken } from '~/apr/types'
 import {
     formatApr,
@@ -16,6 +16,7 @@ import { DashedContainerStyle, type DashedContainerProps, Flex, Text } from '~/s
 
 type Props = {
     strategies: StrategyAprResult[]
+    defaultExpandedId?: string | null
 }
 
 /**
@@ -191,27 +192,59 @@ function buildNarrative(strategy: StrategyAprResult) {
         const uApr = strategy.underlyingApr || 0
         const sFee = strategy.stabilityFee || 0
         const incentiveApr = boost?.boostedApr ?? strategy.baseApr
+
+        // Plain-English explanation of the strategy
         lines.push({
-            text: `Net APR blends collateral yield, KITE incentives, and stability fee (at assumed 200% CR):`,
+            text: `HOW THIS STRATEGY WORKS:`,
             value: '',
+            color: '#f59e0b',
+        })
+        lines.push({
+            text: `To participate, you deposit collateral (e.g. ETH) into a vault and mint HAI against it. At 200% collateral ratio, you lock $2 of collateral for every $1 of HAI minted. You then deposit that HAI to earn rewards.`,
+            value: '',
+        })
+        lines.push({
+            text: `WHY NET APR IS LOWER THAN BASE APR:`,
+            value: '',
+            color: '#f59e0b',
+        })
+        lines.push({
+            text: `The base APR (${formatApr(incentiveApr)}) only applies to the HAI you deposit — but your total capital includes the collateral locked in the vault. At 200% CR, only 1/3 of your total capital ($1 HAI out of $3 total) earns that rate. The other $2 (collateral) earns ${uApr > 0 ? formatApr(uApr) : 'no yield'}. A ${formatApr(sFee)} annual stability fee is also deducted.`,
+            value: '',
+        })
+
+        // Breakdown
+        lines.push({
+            text: `NET APR BREAKDOWN (assumes 200% collateral ratio):`,
+            value: '',
+            color: '#f59e0b',
         })
         if (uApr > 0) {
             lines.push({
-                text: `  Collateral underlying yield (Beefy/Yearn/staking):`,
+                text: `  $2 collateral earning underlying yield:`,
                 value: formatApr(uApr),
+            })
+        } else {
+            lines.push({
+                text: `  $2 collateral earning underlying yield:`,
+                value: '0%',
             })
         }
         lines.push({
-            text: `  KITE incentive APR (your effective):`,
+            text: `  $1 HAI earning KITE incentives:`,
             value: formatApr(incentiveApr),
         })
         if (sFee > 0) {
             lines.push({
-                text: `  Stability fee (annual cost):`,
+                text: `  $1 HAI stability fee (annual cost):`,
                 value: `-${formatApr(sFee)}`,
                 color: '#ef4444',
             })
         }
+        lines.push({
+            text: `  Weighted average across $3 total capital:`,
+            value: '',
+        })
         lines.push({
             text: `  = (2 × ${formatApr(uApr)} + (${formatApr(incentiveApr)} − ${formatApr(sFee)})) / 3 =`,
             value: `${formatApr(strategy.netApr)} Net APR`,
@@ -233,8 +266,12 @@ function buildNarrative(strategy: StrategyAprResult) {
     return lines
 }
 
-export function StrategyDetail({ strategies }: Props) {
-    const [expandedId, setExpandedId] = useState<string | null>(null)
+export function StrategyDetail({ strategies, defaultExpandedId }: Props) {
+    const [expandedId, setExpandedId] = useState<string | null>(defaultExpandedId ?? null)
+
+    useEffect(() => {
+        if (defaultExpandedId) setExpandedId(defaultExpandedId)
+    }, [defaultExpandedId])
     const withTvl = strategies.filter((s) => s.tvl > 0)
 
     return (

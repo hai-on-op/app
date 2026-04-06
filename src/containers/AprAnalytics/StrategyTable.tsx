@@ -18,11 +18,12 @@ import { Flex, Text } from '~/styles'
 
 type Props = {
     strategies: StrategyAprResult[]
+    onStrategyClick?: (strategyId: string) => void
 }
 
 type SortKey = 'tvl' | 'apr' | 'position' | 'boost'
 
-export function StrategyTable({ strategies }: Props) {
+export function StrategyTable({ strategies, onStrategyClick }: Props) {
     const [sortKey, setSortKey] = useState<SortKey>('tvl')
 
     const sorted = useMemo(() => {
@@ -76,7 +77,7 @@ export function StrategyTable({ strategies }: Props) {
                             : 0
 
                         return (
-                            <tr key={strategy.id}>
+                            <ClickableRow key={strategy.id} onClick={() => onStrategyClick?.(strategy.id)}>
                                 <Td>
                                     <Flex $column $gap={2}>
                                         <Text $fontWeight={700} $fontSize="0.9rem">
@@ -127,7 +128,7 @@ export function StrategyTable({ strategies }: Props) {
                                         )}
                                     </Flex>
                                 </Td>
-                            </tr>
+                            </ClickableRow>
                         )
                     })}
                 </tbody>
@@ -135,6 +136,14 @@ export function StrategyTable({ strategies }: Props) {
         </Section>
     )
 }
+
+const ClickableRow = styled.tr`
+    cursor: pointer;
+    transition: background 0.2s;
+    &:hover {
+        background: rgba(255, 255, 255, 0.04);
+    }
+`
 
 const SortButton = styled.button<{ $active: boolean }>`
     padding: 4px 12px;
