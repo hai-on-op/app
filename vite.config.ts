@@ -35,6 +35,11 @@ export default defineConfig(() => {
                     destination: `/api/kite/circulating-supply`,
                     addRoute: true,
                 },
+                {
+                    source: './src/api/rewards/report.ts',
+                    destination: `/api/rewards/report`,
+                    addRoute: true,
+                },
             ],
         },
         optimizeDeps: {

@@ -30,7 +30,7 @@ export function RewardsAnalytics() {
     const [selectedDate, setSelectedDate] = useState<string | null>(null)
 
     useEffect(() => {
-        fetch('http://143.198.123.60:3100/')
+        fetch('/api/rewards/report')
             .then((res) => {
                 if (!res.ok) throw new Error('Failed to load rewards report')
                 return res.json()
