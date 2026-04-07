@@ -228,12 +228,14 @@ export function computeAllAprs(inputs: AprInputs): Record<string, StrategyAprRes
     }
 
     // --- Strategy 5: Vault/Borrow (per collateral type) ---
-    const collateralsWithRewards = inputs.collateralTypes.filter((cType) => {
+    const eligibleCollaterals = inputs.collateralTypes.filter((cType) => {
         const rewards = inputs.vaultRewards[cType.id]
-        return rewards && Object.values(rewards).some((v) => v !== 0)
+        const hasRewards = rewards && Object.values(rewards).some((v) => v !== 0)
+        const hasUnderlyingApr = (inputs.underlyingAprs[cType.id] || 0) > 0
+        return hasRewards || hasUnderlyingApr
     })
 
-    for (const cType of collateralsWithRewards) {
+    for (const cType of eligibleCollaterals) {
         const vaultData = inputs.minterVaults[cType.id]
         if (!vaultData) continue
 

@@ -133,10 +133,7 @@ export function useAprEngine(): AprContextValue {
 
     // Underlying collateral APR for all vault collateral types (Lido, Beefy, Yearn, etc.)
     const vaultCollateralTypes = useMemo(
-        () => Object.keys(REWARDS.vaults).filter((id) => {
-            const rewards = (REWARDS.vaults as Record<string, Record<string, number>>)[id]
-            return rewards && Object.values(rewards).some((v: number) => v > 0)
-        }),
+        () => Object.keys(REWARDS.vaults),
         []
     )
     const { aprs: underlyingAprMap } = useMultipleUnderlyingAPR({

@@ -491,7 +491,7 @@ export class UnderlyingAPRService {
         this.calculators.set('OP', standardTokenCalculator)
         this.calculators.set('TBTC', standardTokenCalculator)
         this.calculators.set('SNX', standardTokenCalculator)
-        this.calculators.set('APXETH', yieldBearingCalculator) // Could be liquid staking depending on implementation
+        this.calculators.set('APXETH', liquidStakingCalculator)
     }
 
     async getUnderlyingAPR(collateralType: string, data?: Partial<UnderlyingAPRData>): Promise<UnderlyingAPRResult> {

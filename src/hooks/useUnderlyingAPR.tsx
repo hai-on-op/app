@@ -185,6 +185,9 @@ export function useMultipleUnderlyingAPR({
         connectWalletModel: { tokensData },
     } = useStoreState((state) => state)
 
+    const { prices: velodromePricesData } = useVelodromePrices()
+    const { strategyData } = useEarnData()
+
     useEffect(() => {
         if (!enabled || !collateralTypes.length) return
 
@@ -195,18 +198,32 @@ export function useMultipleUnderlyingAPR({
             try {
                 // Prepare data for each collateral type
                 const dataMap: Record<string, Partial<UnderlyingAPRData>> = {}
+                const haiPrice = Number(velodromePricesData?.HAI?.raw || 1)
 
                 collateralTypes.forEach((type) => {
                     const collateralLiquidationData = liquidationData?.collateralLiquidationData?.[type]
                     const tokenData = Object.values(tokensData || {}).find((token) => token.symbol === type)
+                    const upperType = type.toUpperCase()
+                    const isHaiVelo = upperType === 'HAIVELO' || upperType === 'HAIVELOV2' || upperType === 'HAIVELO_V2'
+                    const isHaiAero = upperType === 'HAIAERO'
 
                     dataMap[type] = {
                         collateralType: type,
                         price: collateralLiquidationData?.currentPrice?.value,
-                        totalValueLocked: undefined, // Will be filled by specific calculators if needed
+                        totalValueLocked: undefined,
                         externalProtocolData: {
                             liquidationData: collateralLiquidationData,
                             tokenData,
+                            haiPrice,
+                            ...(isHaiVelo && {
+                                haiVeloBoostApr: strategyData?.haiVelo?.boostApr,
+                                haiVeloDepositTvlUsd: strategyData?.haiVelo?.tvl,
+                                haiVeloLpStakedTvlUsd: strategyData?.haiVeloVeloLp?.tvl,
+                            }),
+                            ...(isHaiAero && {
+                                haiAeroBoostApr: strategyData?.haiAero?.boostApr,
+                                haiAeroRawTvl: strategyData?.haiAero?.tvl,
+                            }),
                         },
                     }
                 })
@@ -254,7 +271,7 @@ export function useMultipleUnderlyingAPR({
         return () => {
             isCancelled = true
         }
-    }, [collateralTypes, enabled, refreshTrigger, liquidationData, tokensData])
+    }, [collateralTypes, enabled, refreshTrigger, liquidationData, tokensData, velodromePricesData?.HAI?.raw, strategyData])
 
     const refresh = () => {
         underlyingAPRService.clearCache()
