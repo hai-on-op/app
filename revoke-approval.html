@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Revoke veNFT Approval</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; }
+        button { padding: 10px 20px; margin: 8px 4px; cursor: pointer; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+        button:hover { background: #eee; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .connect { background: #f0ad4e; color: white; border: none; }
+        .revoke { background: #d9534f; color: white; border: none; }
+        #status { margin-top: 16px; padding: 12px; border-radius: 6px; background: #f5f5f5; white-space: pre-wrap; }
+        select, input { padding: 8px; margin: 8px 0; width: 100%; box-sizing: border-box; border-radius: 4px; border: 1px solid #ccc; }
+        label { font-weight: bold; margin-top: 12px; display: block; }
+        h1 { font-size: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Revoke veNFT Approval</h1>
+
+    <button class="connect" id="connectBtn" onclick="connectWallet()">Connect MetaMask</button>
+    <div id="walletInfo"></div>
+
+    <label>Chain</label>
+    <select id="chain" onchange="updateAddresses()">
+        <option value="optimism">Optimism (veVELO → haiVELO)</option>
+        <option value="base">Base (veAERO → haiAERO)</option>
+    </select>
+
+    <label>Revoke Type</label>
+    <select id="revokeType" onchange="toggleTokenId()">
+        <option value="collection">setApprovalForAll (collection)</option>
+        <option value="single">approve (single token ID)</option>
+    </select>
+
+    <div id="tokenIdRow" style="display:none">
+        <label>Token ID</label>
+        <input type="text" id="tokenId" placeholder="e.g. 12345" />
+    </div>
+
+    <label>veNFT Contract</label>
+    <input type="text" id="veNftAddr" readonly />
+
+    <label>Spender (wrapped token contract)</label>
+    <input type="text" id="spenderAddr" readonly />
+
+    <button class="revoke" id="revokeBtn" onclick="revoke()" disabled>Revoke Approval</button>
+
+    <div id="status">Not connected</div>
+
+    <script>
+        const CONTRACTS = {
+            optimism: {
+                veNft: '0xFAf8FD17D9840595845582fCB047DF13f006787d',
+                spender: '0x20A7EaF4a922DF50b312ef61AeA8B6E1deb5DdD6',
+                chainId: '0xa',
+                name: 'Optimism',
+            },
+            base: {
+                veNft: '0xeBf418Fe2512e7E6bd9b87a8F0f294aCDC67e6B4',
+                spender: '0x5778bB958De4Db36E4108B2e6Ef22fDF29Db9729',
+                chainId: '0x2105',
+                name: 'Base',
+            },
+        };
+
+        let provider, signer;
+
+        function updateAddresses() {
+            const c = CONTRACTS[document.getElementById('chain').value];
+            document.getElementById('veNftAddr').value = c.veNft;
+            document.getElementById('spenderAddr').value = c.spender;
+        }
+
+        function toggleTokenId() {
+            document.getElementById('tokenIdRow').style.display =
+                document.getElementById('revokeType').value === 'single' ? 'block' : 'none';
+        }
+
+        async function connectWallet() {
+            if (!window.ethereum) { alert('MetaMask not found'); return; }
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            document.getElementById('walletInfo').textContent = 'Connected: ' + accounts[0];
+            document.getElementById('revokeBtn').disabled = false;
+            document.getElementById('status').textContent = 'Connected. Ready to revoke.';
+        }
+
+        async function switchChain(chainId) {
+            try {
+                await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId }] });
+            } catch (e) {
+                throw new Error('Please switch to the correct network in MetaMask.');
+            }
+        }
+
+        async function revoke() {
+            const chain = document.getElementById('chain').value;
+            const c = CONTRACTS[chain];
+            const type = document.getElementById('revokeType').value;
+            const status = document.getElementById('status');
+
+            try {
+                status.textContent = 'Switching to ' + c.name + '...';
+                await switchChain(c.chainId);
+
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                const from = accounts[0];
+
+                let data;
+                if (type === 'collection') {
+                    // setApprovalForAll(address operator, bool approved)
+                    const selector = '0xa22cb465';
+                    const operator = c.spender.toLowerCase().replace('0x', '').padStart(64, '0');
+                    const approved = '0'.padStart(64, '0'); // false
+                    data = selector + operator + approved;
+                } else {
+                    // approve(address to, uint256 tokenId)
+                    const tokenId = document.getElementById('tokenId').value.trim();
+                    if (!tokenId) { alert('Enter a token ID'); return; }
+                    const selector = '0x095ea7b3';
+                    const to = '0'.padStart(64, '0'); // address(0)
+                    const id = BigInt(tokenId).toString(16).padStart(64, '0');
+                    data = selector + to + id;
+                }
+
+                status.textContent = 'Confirm the transaction in MetaMask...';
+                const txHash = await window.ethereum.request({
+                    method: 'eth_sendTransaction',
+                    params: [{ from, to: c.veNft, data }],
+                });
+
+                status.textContent = 'Transaction sent: ' + txHash + '\nWaiting for confirmation...';
+
+                // Poll for receipt
+                const poll = setInterval(async () => {
+                    const receipt = await window.ethereum.request({
+                        method: 'eth_getTransactionReceipt',
+                        params: [txHash],
+                    });
+                    if (receipt) {
+                        clearInterval(poll);
+                        status.textContent = receipt.status === '0x1'
+                            ? 'Approval revoked successfully!\nTx: ' + txHash
+                            : 'Transaction failed.\nTx: ' + txHash;
+                    }
+                }, 2000);
+
+            } catch (e) {
+                status.textContent = 'Error: ' + e.message;
+            }
+        }
+
+        updateAddresses();
+    </script>
+</body>
+</html>
