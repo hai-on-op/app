@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { useMediaQuery } from '~/hooks'
+import { useDocumentVisibility, useMediaQuery } from '~/hooks'
 
 import styled from 'styled-components'
 import { Flex, Grid, HaiButton, Text } from '~/styles'
@@ -71,12 +71,15 @@ const coins: FloatingElementsProps['coins'] = [
 export function Second({ zIndex }: ZoomSceneProps) {
     const isUpToExtraSmall = useMediaQuery('upToExtraSmall')
     const isUpToSmall = useMediaQuery('upToSmall')
+    const isDocumentVisible = useDocumentVisibility()
 
     const [progress, setProgress] = useState(0.72)
     useEffect(() => {
+        if (!isDocumentVisible) return
+
         const int = setInterval(() => setProgress(1.5 + 2.5 * Math.random()), 3000)
-        return () => clearTimeout(int)
-    }, [])
+        return () => clearInterval(int)
+    }, [isDocumentVisible])
 
     return (
         <ZoomScene $zIndex={zIndex}>

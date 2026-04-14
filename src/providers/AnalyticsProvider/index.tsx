@@ -37,9 +37,16 @@ type AnalyticsContext = {
     }
 }
 
-const defaultState: AnalyticsContext = {
-    forceRefresh: () => undefined,
-    data: DEFAULT_ANALYTICS_DATA,
+type AnalyticsSummaryContextValue = Pick<
+    AnalyticsContext,
+    'forceRefresh' | 'data' | 'graphData' | 'graphSummary' | 'haiMarketPrice'
+>
+type AnalyticsDetailContextValue = Pick<
+    AnalyticsContext,
+    'haiPriceHistory' | 'redemptionRateHistory' | 'pools' | 'haiPricePerformance'
+>
+
+const defaultAnalyticsDetailsState: AnalyticsDetailContextValue = {
     haiPriceHistory: {
         timeframe: Timeframe.ONE_WEEK,
         setTimeframe: () => undefined,
@@ -60,10 +67,6 @@ const defaultState: AnalyticsContext = {
         loading: false,
         error: '',
     },
-    haiMarketPrice: {
-        raw: '',
-        formatted: '$--',
-    },
     haiPricePerformance: {
         day30: 0,
         day60: 0,
@@ -73,9 +76,30 @@ const defaultState: AnalyticsContext = {
     },
 }
 
-const AnalyticsContext = createContext<AnalyticsContext>(defaultState)
+const defaultAnalyticsSummaryState: AnalyticsSummaryContextValue = {
+    forceRefresh: () => undefined,
+    data: DEFAULT_ANALYTICS_DATA,
+    haiMarketPrice: {
+        raw: '',
+        formatted: '$--',
+    },
+}
 
-export const useAnalytics = () => useContext(AnalyticsContext)
+const AnalyticsSummaryContext = createContext<AnalyticsSummaryContextValue>(defaultAnalyticsSummaryState)
+const AnalyticsDetailContext = createContext<AnalyticsDetailContextValue>(defaultAnalyticsDetailsState)
+
+export const useAnalytics = () => {
+    const summary = useContext(AnalyticsSummaryContext)
+    const details = useContext(AnalyticsDetailContext)
+
+    return useMemo(
+        () => ({
+            ...summary,
+            ...details,
+        }),
+        [summary, details]
+    )
+}
 
 type Props = {
     children: ReactChildren
@@ -85,13 +109,29 @@ export function AnalyticsProvider({ children }: Props) {
 
     const { data: graphData, summary: graphSummary } = useSystemData()
 
+    const haiMarketPrice = useMemo(() => data.marketPrice, [data.marketPrice])
+
+    return (
+        <AnalyticsSummaryContext.Provider
+            value={{
+                forceRefresh,
+                data,
+                graphData,
+                graphSummary,
+                haiMarketPrice,
+            }}
+        >
+            {children}
+        </AnalyticsSummaryContext.Provider>
+    )
+}
+
+export function AnalyticsDetailsProvider({ children }: Props) {
     const haiPriceHistory = useHistoricalStats()
 
     const redemptionRateHistory = useHistoricalStats()
 
     const pools = usePoolAnalytics()
-
-    const haiMarketPrice = useMemo(() => data.marketPrice, [data.marketPrice])
 
     // Add the price history query
     const { data: priceHistoryData, loading: priceHistoryLoading } = useQuery(HAI_PRICE_HISTORY_QUERY)
@@ -110,7 +150,7 @@ export function AnalyticsProvider({ children }: Props) {
 
     const haiPricePerformance = useMemo(() => {
         if (!priceHistoryData?.dailyStats) {
-            return defaultState.haiPricePerformance
+            return defaultAnalyticsDetailsState.haiPricePerformance
         }
 
         const priceHistory = priceHistoryData.dailyStats
@@ -147,20 +187,15 @@ export function AnalyticsProvider({ children }: Props) {
     }, [priceHistoryData, priceHistoryLoading, findNearestPrice])
 
     return (
-        <AnalyticsContext.Provider
+        <AnalyticsDetailContext.Provider
             value={{
-                forceRefresh,
-                data,
-                graphData,
-                graphSummary,
                 haiPriceHistory,
                 redemptionRateHistory,
                 pools,
-                haiMarketPrice,
                 haiPricePerformance,
             }}
         >
             {children}
-        </AnalyticsContext.Provider>
+        </AnalyticsDetailContext.Provider>
     )
 }

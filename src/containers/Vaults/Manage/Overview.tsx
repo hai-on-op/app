@@ -4,9 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { formatCollateralLabel, Status, VaultAction, formatNumberWithStyle } from '~/utils'
 import { useStoreState } from '~/store'
 import { useVault } from '~/providers/VaultProvider'
-import { RewardsModel } from '~/model/rewardsModel'
+import { useBoost } from '~/hooks/useBoost'
 import { useUnderlyingAPR } from '~/hooks/useUnderlyingAPR'
-import { useApr } from '~/apr/AprProvider'
 
 import styled from 'styled-components'
 import { type DashedContainerProps, DashedContainerStyle, Flex, Grid, Text, CenteredFlex } from '~/styles'
@@ -17,6 +16,9 @@ import { AlertTriangle, ArrowLeft, ArrowRight } from 'react-feather'
 import { useAccount } from 'wagmi'
 import { useHaiVeloData } from '~/hooks/useHaiVeloData'
 import { calculateHaiVeloBoost } from '~/services/boostService'
+import { getVaultRewards } from '~/services/rewards/rewardCatalog'
+import { useStakeStats } from '~/hooks/staking/useStakeStats'
+import { useStakingUsersByIds } from '~/hooks/staking/useStakingUsersByIds'
 
 export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
     const { t } = useTranslation()
@@ -26,8 +28,15 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
 
     const {
         vaultModel: { liquidationData },
-        stakingModel: { usersStakingData },
     } = useStoreState((state) => state)
+    const relevantStakingAddresses = useMemo(() => {
+        const ids = new Set<string>()
+        if (address) ids.add(address.toLowerCase())
+        Object.keys(userCollateralMapping || {}).forEach((userAddress) => ids.add(userAddress.toLowerCase()))
+        return Array.from(ids)
+    }, [address, userCollateralMapping])
+    const { usersStakingData } = useStakingUsersByIds(relevantStakingAddresses)
+    const { data: kiteStats } = useStakeStats()
 
     const HAI_VELO_DAILY_REWARDS = 200
 
@@ -37,22 +46,14 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
     const underlyingAPRHook = useUnderlyingAPR({ collateralType: collateral.name })
     const underlyingAPRValue = underlyingAPRHook.underlyingAPR
 
-    // Boost and KITE incentive APR from the universal AprProvider
-    const { getStrategy } = useApr()
-    const vaultStrategy = getStrategy(`vault-${collateral.name}`)
-    const haiVeloStrategy = getStrategy('haivelo-deposit')
-    const boostData = vaultStrategy?.boost ? {
-        ...vaultStrategy.boost,
-        // Convert from decimal to percentage for legacy consumers
-        baseAPR: vaultStrategy.boost.baseApr * 100,
-        myBoostedAPR: vaultStrategy.boost.boostedApr * 100,
-    } : null
-    const hvBoost = haiVeloStrategy?.boost?.myBoost || 1
-    const rewards = RewardsModel.getVaultRewards(collateral.name)
+    // --- Generalized boost logic for all boostable vaults ---
+    const { individualVaultBoosts, hvBoost } = useBoost()
+    const boostData = individualVaultBoosts[collateral.name]
+    const rewards = getVaultRewards(collateral.name)
     const isBoostable = Object.values(rewards).some((v) => v > 0)
 
     // Calculate stKITE share for all boostable vaults
-    const totalKite = Object.values(usersStakingData).reduce((acc, curr) => acc + Number(curr.stakedBalance), 0)
+    const totalKite = Number(kiteStats?.totalStaked || 0)
     const myStKiteShare = totalKite
         ? Number(usersStakingData[address?.toLowerCase() || '']?.stakedBalance || 0) / totalKite
         : 0
@@ -73,7 +74,7 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
             return acc + Number(value)
         }, 0)
 
-        const totalKite = Object.values(usersStakingData).reduce((acc, curr) => acc + Number(curr.stakedBalance), 0)
+        const totalKiteStaked = Number(kiteStats?.totalStaked || 0)
 
         const userHaiVeloBoostMap: Record<string, number> = Object.entries(userCollateralMapping).reduce(
             (acc, [address, value]) => {
@@ -83,7 +84,7 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
                     ...acc,
                     [address]: calculateHaiVeloBoost({
                         userStakingAmount: Number(usersStakingData[address.toLowerCase()]?.stakedBalance),
-                        totalStakingAmount: Number(totalKite),
+                        totalStakingAmount: totalKiteStaked,
                         userHaiVELODeposited: Number(value),
                         totalHaiVELODeposited: Number(totalHaiVeloDeposited),
                     }).haiVeloBoost,
@@ -98,7 +99,9 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
             }, 0)
         }
 
-        const mystKiteShare = totalKite ? Number(usersStakingData[address.toLowerCase()]?.stakedBalance) / totalKite : 0
+        const mystKiteShare = totalKiteStaked
+            ? Number(usersStakingData[address.toLowerCase()]?.stakedBalance) / totalKiteStaked
+            : 0
 
         const totalBoostedValueParticipating = calculateTotalBoostedValueParticipating()
 
@@ -121,7 +124,7 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
 
             return calculateHaiVeloBoost({
                 userStakingAmount: Number(usersStakingData[address.toLowerCase()]?.stakedBalance),
-                totalStakingAmount: Number(totalKite),
+                totalStakingAmount: totalKiteStaked,
                 userHaiVELODeposited: Number(currentUserDeposit) + Number(amount),
                 totalHaiVELODeposited: Number(totalHaiVeloDeposited) + Number(amount),
             }).haiVeloBoost
@@ -145,7 +148,7 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
         return {
             mystKiteShare,
             myHaiVeloShare,
-            totalKite,
+            totalKite: totalKiteStaked,
             myBoostedShare,
             baseAPR,
             myBoost,
@@ -155,7 +158,7 @@ export function Overview({ isHAIVELO }: { isHAIVELO: boolean }) {
             myHaiVeloSimulatedShare,
             myBoostedAPR,
         }
-    }, [address, usersStakingData, userCollateralMapping, formState])
+    }, [address, usersStakingData, userCollateralMapping, formState, kiteStats?.totalStaked])
 
     const progressProps = useMemo(() => {
         if (!collateralRatio || !safetyRatio || !collateral.liquidationData?.liquidationCRatio)

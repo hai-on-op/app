@@ -22,7 +22,7 @@ export function BlockBanner({ text, width, active = true, children, ...props }: 
             {children}
             <Band $width={width} $offset={offset} style={{ transform: `rotate(${rotation}deg)` }}>
                 {text.split('').map((char, i) => (
-                    <>{char == ' ' ? <>&nbsp;</> : <span key={i}>{char}</span>}</>
+                    <span key={i}>{char === ' ' ? '\u00A0' : char}</span>
                 ))}
             </Band>
         </Container>

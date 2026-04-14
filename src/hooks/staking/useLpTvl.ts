@@ -49,21 +49,6 @@ export function useLpTvl(config?: StakingConfig): LpTvlHookResult {
 
         const lpPriceUsd = totalSupply > 0 ? tvlUsd / totalSupply : 0
 
-        console.log(`[useLpTvl] ====== VELODROME LP CALCULATION ======`)
-        console.log(`[useLpTvl] haiVELO Reserve: ${haiVeloReserve.toFixed(4)}`)
-        console.log(`[useLpTvl] VELO Reserve: ${veloReserve.toFixed(4)}`)
-        console.log(`[useLpTvl] VELO Price: $${veloPrice.toFixed(4)}`)
-        console.log(`[useLpTvl] haiVELO Price (derived): $${haiVeloPrice.toFixed(4)}`)
-        console.log(`[useLpTvl] Pool TVL: $${tvlUsd.toFixed(2)}`)
-        console.log(`[useLpTvl] Total LP Supply (from contract): ${lpTotalSupply?.formatted?.toFixed(4) ?? 'N/A'}`)
-        console.log(
-            `[useLpTvl] Total LP Supply (from Sugar): ${Number(
-                formatUnits(velodromePool.liquidity || '0', decimals)
-            ).toFixed(4)}`
-        )
-        console.log(`[useLpTvl] LP Price: $${lpPriceUsd.toFixed(6)}`)
-        console.log(`[useLpTvl] ========================================`)
-
         return { tvlUsd, lpPriceUsd }
     }, [isVelodrome, velodromePool, veloPrice, lpTotalSupply])
 

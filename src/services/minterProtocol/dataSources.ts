@@ -9,7 +9,8 @@
 import { gql } from '@apollo/client'
 import { BigNumber, ethers } from 'ethers'
 import { client } from '~/utils/graphql/client'
-import type { MinterProtocolConfig, VeNftInfo } from '~/types/minterProtocol'
+import { VITE_MAINNET_PUBLIC_RPC, VITE_TESTNET_PUBLIC_RPC } from '~/utils'
+import { MinterChainId, type MinterProtocolConfig, type VeNftInfo } from '~/types/minterProtocol'
 
 // ============================================================================
 // ABIs
@@ -58,6 +59,47 @@ function getProvider(config: MinterProtocolConfig): ethers.providers.JsonRpcProv
         providerCache.set(cacheKey, provider)
     }
     return provider
+}
+
+function getHistoricalBlockLookupConfig(config: MinterProtocolConfig): MinterProtocolConfig {
+    // haiAERO last-epoch TVL is queried from the Optimism-side HAI subgraph,
+    // so the timestamp must be resolved against the matching Optimism chain.
+    if (config.id !== 'haiAero') {
+        return config
+    }
+
+    if (config.chainId === MinterChainId.BASE) {
+        return {
+            ...config,
+            chainId: MinterChainId.OPTIMISM,
+            dataSources: {
+                ...config.dataSources,
+                rpcUrl: VITE_MAINNET_PUBLIC_RPC || 'https://mainnet.optimism.io',
+            },
+        }
+    }
+
+    if (config.chainId === MinterChainId.BASE_SEPOLIA) {
+        return {
+            ...config,
+            chainId: MinterChainId.OPTIMISM_SEPOLIA,
+            dataSources: {
+                ...config.dataSources,
+                rpcUrl: VITE_TESTNET_PUBLIC_RPC || 'https://sepolia.optimism.io',
+            },
+        }
+    }
+
+    return config
+}
+
+function isUnavailableHistoricalBlockError(error: unknown) {
+    const message = error instanceof Error ? error.message : String(error)
+    return (
+        message.includes('only has data starting at block number') ||
+        message.includes('data for block number') ||
+        message.includes('Failed to decode `block.number` value')
+    )
 }
 
 // ============================================================================
@@ -386,16 +428,25 @@ export async function fetchTotalsAtBlock(
     config: MinterProtocolConfig,
     blockNumber: number
 ): Promise<{ v1Total: number; v2Total: number }> {
-    const QUERY = gql`
-        query GetTotalsAtBlock($v1Id: ID, $v2Id: ID!, $block: Block_height) {
-            v1: collateralType(id: $v1Id, block: $block) {
-                totalCollateral
-            }
-            v2: collateralType(id: $v2Id, block: $block) {
-                totalCollateral
-            }
-        }
-    `
+    const hasV1Collateral = Boolean(config.collateral.v1Id)
+    const QUERY = hasV1Collateral
+        ? gql`
+              query GetTotalsAtBlock($v1Id: ID!, $v2Id: ID!, $block: Block_height) {
+                  v1: collateralType(id: $v1Id, block: $block) {
+                      totalCollateral
+                  }
+                  v2: collateralType(id: $v2Id, block: $block) {
+                      totalCollateral
+                  }
+              }
+          `
+        : gql`
+              query GetTotalsAtBlock($v2Id: ID!, $block: Block_height) {
+                  v2: collateralType(id: $v2Id, block: $block) {
+                      totalCollateral
+                  }
+              }
+          `
 
     try {
         const { data } = await client.query<{
@@ -403,11 +454,16 @@ export async function fetchTotalsAtBlock(
             v2?: { totalCollateral?: string }
         }>({
             query: QUERY,
-            variables: {
-                v1Id: config.collateral.v1Id || null,
-                v2Id: config.collateral.v2Id,
-                block: { number: blockNumber },
-            },
+            variables: hasV1Collateral
+                ? {
+                      v1Id: config.collateral.v1Id!,
+                      v2Id: config.collateral.v2Id,
+                      block: { number: blockNumber },
+                  }
+                : {
+                      v2Id: config.collateral.v2Id,
+                      block: { number: blockNumber },
+                  },
             fetchPolicy: 'network-only',
         })
 
@@ -416,6 +472,9 @@ export async function fetchTotalsAtBlock(
             v2Total: Number(data?.v2?.totalCollateral || '0'),
         }
     } catch (error) {
+        if (isUnavailableHistoricalBlockError(error)) {
+            return { v1Total: 0, v2Total: 0 }
+        }
         console.error(`[minterProtocol][fetchTotalsAtBlock] Error for ${config.id}:`, error)
         return { v1Total: 0, v2Total: 0 }
     }
@@ -565,7 +624,8 @@ export async function getLastEpochTotals(
         const ts = Number(data?.merkleRoots?.[0]?.updatedAt || 0)
         if (!ts) return null
 
-        const blockNumber = await findBlockNumberByTimestamp(config, ts)
+        const blockLookupConfig = getHistoricalBlockLookupConfig(config)
+        const blockNumber = await findBlockNumberByTimestamp(blockLookupConfig, ts)
         if (!blockNumber || blockNumber <= 0) return null
 
         const { v1Total, v2Total } = await fetchTotalsAtBlock(config, blockNumber)

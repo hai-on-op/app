@@ -94,6 +94,7 @@ export function useStakingActivity(config?: StakingConfig) {
     const query = useQuery<StakingPosition[]>({
         queryKey: ['staking', 'activity', config?.namespace ?? 'kite', address?.toLowerCase()],
         enabled: Boolean(address) && Boolean(config),
+        staleTime: 60_000,
         queryFn: async () => {
             if (!address) return []
 
@@ -102,7 +103,7 @@ export function useStakingActivity(config?: StakingConfig) {
             const { data } = await apolloClient.query<StakingUserQueryResult>({
                 query: STAKING_ACTIVITY_QUERIES[userEntity],
                 variables: { id },
-                fetchPolicy: 'network-only',
+                fetchPolicy: 'cache-first',
             })
 
             const rootField = STAKING_USER_ROOT_FIELD[userEntity]

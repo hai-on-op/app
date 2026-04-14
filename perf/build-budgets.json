@@ -1,0 +1,14 @@
+{
+    "mainEntry": {
+        "maxBytes": 3100000,
+        "maxGzipBytes": 900000
+    },
+    "totalJs": {
+        "maxBytes": 5000000,
+        "maxGzipBytes": 1500000
+    },
+    "connectChunk": {
+        "maxBytes": 180000,
+        "maxGzipBytes": 50000
+    }
+}

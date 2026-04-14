@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import type { SplashImage } from '~/types'
 import { LINK_TO_DOCS } from '~/utils'
-import { useMediaQuery } from '~/hooks'
+import { useDocumentVisibility, useMediaQuery } from '~/hooks'
 
 import styled, { keyframes } from 'styled-components'
 import { CenteredFlex, Flex, Grid, Text } from '~/styles'
@@ -44,13 +44,14 @@ const ARROW_SIZE = window.devicePixelRatio * 14
 export function Third({ zIndex }: ZoomSceneProps) {
     const isUpToExtraSmall = useMediaQuery('upToExtraSmall')
     const isUpToSmall = useMediaQuery('upToSmall')
+    const isDocumentVisible = useDocumentVisibility()
 
     const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null)
     const priceText = useRef<HTMLDivElement | null>(null)
     const changeText = useRef<HTMLDivElement | null>(null)
 
     useEffect(() => {
-        if (!canvas) return
+        if (!canvas || !isDocumentVisible) return
 
         const ctx = canvas.getContext('2d')
         if (!ctx) return
@@ -121,7 +122,7 @@ export function Third({ zIndex }: ZoomSceneProps) {
         frame = requestAnimationFrame(onLoop)
 
         return () => cancelAnimationFrame(frame)
-    }, [canvas])
+    }, [canvas, isDocumentVisible])
 
     return (
         <ZoomScene $zIndex={zIndex}>

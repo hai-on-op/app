@@ -179,7 +179,7 @@ export function useStakingSummary(): StakingSummaryData {
     const effectiveStakedBalance = useMemo(() => {
         if (!address) return 0
         // Ensure stakedBalance is treated as a string
-        const balanceStr = usersStakingData[address.toLowerCase()]?.stakedBalance || '0'
+        const balanceStr = usersStakingData[address.toLowerCase()]?.stakedBalance || stakingData.stakedBalance || '0'
 
         // typeof stakedBalance === 'string' ? stakedBalance : String(stakedBalance || '0')
 
@@ -189,7 +189,7 @@ export function useStakingSummary(): StakingSummaryData {
         //     : 0
 
         return Number(balanceStr) //+ pendingAmount
-    }, [usersStakingData, address])
+    }, [usersStakingData, stakingData.stakedBalance, address])
 
     // Function to calculate simulated values for staking/unstaking
     const calculateSimulatedValues = useCallback(

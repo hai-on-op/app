@@ -1,4 +1,5 @@
-import { useEarnStrategies, useMediaQuery } from '~/hooks'
+import { useMediaQuery } from '~/hooks'
+import { useEarnContext } from '~/providers/EarnProvider'
 
 import { NavContainer } from '~/components/NavContainer'
 import { StrategyTable } from './StrategyTable'
@@ -21,7 +22,7 @@ const wrappers: WrapperAdProps[] = [
 export function Earn() {
     const { isConnected } = useAccount()
     const { headers, rows, loading, error, uniError, veloError, sorting, setSorting, filterEmpty, setFilterEmpty } =
-        useEarnStrategies()
+        useEarnContext()
 
     const isUpToMedium = useMediaQuery('upToMedium')
 

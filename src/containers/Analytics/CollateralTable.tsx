@@ -6,8 +6,7 @@ import { Flex, Grid, Popout, Text } from '~/styles'
 import { TokenArray } from '~/components/TokenArray'
 import { AddressLink } from '~/components/AddressLink'
 import { Table } from '~/components/Table'
-import { useQuery } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 type CollateralTableProps = {
     headers: SortableHeader[]
@@ -16,6 +15,8 @@ type CollateralTableProps = {
     setSorting: SetState<Sorting>
 }
 export function CollateralTable({ headers, rows, sorting, setSorting }: CollateralTableProps) {
+    const now = useNow()
+
     return (
         <Table
             headers={headers}
@@ -64,7 +65,10 @@ export function CollateralTable({ headers, rows, sorting, setSorting }: Collater
                             {
                                 content:
                                     lastUpdateTime !== undefined && updateDelay !== undefined ? (
-                                        <TimeLeft timestamp={(Number(lastUpdateTime) + Number(updateDelay)) * 1000} />
+                                        <TimeLeft
+                                            now={now}
+                                            timestamp={(Number(lastUpdateTime) + Number(updateDelay)) * 1000}
+                                        />
                                     ) : (
                                         <Text>Loading...</Text>
                                     ),
@@ -77,46 +81,54 @@ export function CollateralTable({ headers, rows, sorting, setSorting }: Collater
     )
 }
 
-function TimeLeft({ timestamp }: { timestamp: number }) {
+function useNow(intervalMs = 1000) {
+    const [now, setNow] = useState(() => Date.now())
+
+    useEffect(() => {
+        const interval = window.setInterval(() => {
+            setNow(Date.now())
+        }, intervalMs)
+
+        return () => window.clearInterval(interval)
+    }, [intervalMs])
+
+    return now
+}
+
+function formatRelativeTime(timestamp: number, now: number, rtf: Intl.RelativeTimeFormat) {
+    const diffMs = timestamp - now
+    const diffSec = Math.round(diffMs / 1000)
+
+    let value: number
+    let unit: Intl.RelativeTimeFormatUnit
+
+    if (Math.abs(diffSec) < 60) {
+        value = diffSec
+        unit = 'second'
+    } else if (Math.abs(diffSec) < 3600) {
+        value = Math.round(diffSec / 60)
+        unit = 'minute'
+    } else if (Math.abs(diffSec) < 86400) {
+        value = Math.round(diffSec / 3600)
+        unit = 'hour'
+    } else {
+        value = Math.round(diffSec / 86400)
+        unit = 'day'
+    }
+
+    return rtf.format(value, unit)
+}
+
+function TimeLeft({ timestamp, now }: { timestamp: number; now: number }) {
     const [hovered, setHovered] = useState(false)
-    const rtf = new Intl.RelativeTimeFormat('en-US', { numeric: 'auto', style: 'narrow' })
+    const rtf = useMemo(() => new Intl.RelativeTimeFormat('en-US', { numeric: 'auto', style: 'narrow' }), [])
     const date = new Date(timestamp)
-
-    const { data } = useQuery({
-        queryKey: ['timeleft', timestamp],
-        queryFn: () => {
-            const diffMs = timestamp - Date.now()
-            const diffSec = Math.round(diffMs / 1000)
-
-            let value: number
-            let unit: Intl.RelativeTimeFormatUnit
-
-            if (Math.abs(diffSec) < 60) {
-                value = diffSec
-                unit = 'second'
-            } else if (Math.abs(diffSec) < 3600) {
-                value = Math.round(diffSec / 60)
-                unit = 'minute'
-            } else if (Math.abs(diffSec) < 86400) {
-                value = Math.round(diffSec / 3600)
-                unit = 'hour'
-            } else {
-                value = Math.round(diffSec / 86400)
-                unit = 'day'
-            }
-
-            return rtf.format(value, unit)
-        },
-        refetchInterval: 1000,
-        staleTime: 0,
-    })
-
-    if (!data) return null
+    const label = formatRelativeTime(timestamp, now, rtf)
 
     return (
         <TimeContainer $align="center" $gap={2} $grow={0}>
             <Text onPointerEnter={() => setHovered(true)} onPointerLeave={() => setHovered(false)}>
-                {data}
+                {label}
             </Text>
             <Popout
                 hidden={!hovered}

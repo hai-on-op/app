@@ -27,6 +27,9 @@ const priceAddresses = {
 
 type VelodromePrices = Record<keyof typeof priceAddresses, SummaryItemValue>
 
+const VELODROME_PRICES_STALE_TIME_MS = 60_000
+const VELODROME_PRICES_CACHE_TIME_MS = 15 * 60_000
+
 export function useVelodromePrices() {
     const veloSpotOracleContract = useContract(veloSpotOracleContractAddress, veloSpotOracleAbi)
 
@@ -37,9 +40,8 @@ export function useVelodromePrices() {
         refetch,
     } = useQuery({
         queryKey: ['velodromePrices', priceAddresses],
+        enabled: Boolean(veloSpotOracleContract),
         queryFn: async () => {
-            if (!veloSpotOracleContract) return
-
             const usdcDst = '0x0b2c639c533813f4aa9d7837caf62653d097ff85'
             const addresses = Object.values(priceAddresses)
             const prices = (await veloSpotOracleContract.getManyRatesWithCustomConnectors(
@@ -62,7 +64,9 @@ export function useVelodromePrices() {
                 ])
             ) as VelodromePrices
         },
-        cacheTime: 120,
+        staleTime: VELODROME_PRICES_STALE_TIME_MS,
+        cacheTime: VELODROME_PRICES_CACHE_TIME_MS,
+        refetchOnWindowFocus: false,
     })
 
     return {

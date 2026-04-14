@@ -4,9 +4,8 @@ import { useTranslation } from 'react-i18next'
 
 import { type QueriedVault, formatNumberWithStyle, getRatePercentage } from '~/utils'
 import { useStoreState } from '~/store'
-import { RewardsModel } from '~/model/rewardsModel'
+import { useBoost } from '~/hooks/useBoost'
 import { useUnderlyingAPR } from '~/hooks/useUnderlyingAPR'
-import { useApr } from '~/apr/AprProvider'
 
 import styled from 'styled-components'
 import { type DashedContainerProps, DashedContainerStyle, Flex, Grid, Text, CenteredFlex } from '~/styles'
@@ -24,19 +23,12 @@ export function Overview({ vault }: OverviewProps) {
     const underlyingAprHook = useUnderlyingAPR({ collateralType: vault?.collateralToken || '' })
     const underlyingAPRValue = underlyingAprHook.underlyingAPR
 
-    // Boost and KITE incentive APR from AprProvider
-    const { getStrategy } = useApr()
-    const vaultAprStrategy = getStrategy(`vault-${vault?.collateralToken || ''}`)
-
     const haiPrice = parseFloat(vaultState.liquidationData?.currentRedemptionPrice || '1')
     const collateralPrice = parseFloat(vault?.collateralType.currentPrice.value || '0')
 
-    // Get boost data from AprProvider
-    const boostData = vaultAprStrategy?.boost ? {
-        ...vaultAprStrategy.boost,
-        baseAPR: vaultAprStrategy.boost.baseApr * 100,
-        myBoostedAPR: vaultAprStrategy.boost.boostedApr * 100,
-    } : null
+    // Get boost data for net APR calculation
+    const { individualVaultBoosts } = useBoost()
+    const boostData = vault ? individualVaultBoosts[vault.collateralToken] : null
 
     const progressProps = useMemo(() => {
         if (!vault)

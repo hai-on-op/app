@@ -10,6 +10,12 @@ interface UseUnderlyingAPRProps {
     enabled?: boolean
 }
 
+type UnderlyingAPRStrategyData = {
+    haiVelo?: { boostApr?: unknown; tvl?: number }
+    haiVeloVeloLp?: { tvl?: number }
+    haiAero?: { boostApr?: unknown; tvl?: number }
+}
+
 interface UseUnderlyingAPRResult {
     underlyingAPR: number
     isLoading: boolean
@@ -19,7 +25,11 @@ interface UseUnderlyingAPRResult {
     refresh: () => void
 }
 
-export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyingAPRProps): UseUnderlyingAPRResult {
+function useUnderlyingAPRBase({
+    collateralType,
+    enabled = true,
+    strategyData,
+}: UseUnderlyingAPRProps & { strategyData?: UnderlyingAPRStrategyData }): UseUnderlyingAPRResult {
     const [result, setResult] = useState<UnderlyingAPRResult | null>(null)
     const [isLoading, setIsLoading] = useState(false)
     const [refreshTrigger, setRefreshTrigger] = useState(0)
@@ -32,9 +42,6 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
 
     // Get Velodrome price data
     const { prices: velodromePricesData } = useVelodromePrices()
-
-    // Get strategy data (includes HAI VELO boost APR with correct TVL)
-    const { strategyData } = useEarnData()
 
     const isHaiVelo = collateralType === 'HAIVELO' || collateralType === 'HAIVELOV2' || collateralType === 'HAIVELO_V2'
     const isHaiAero = collateralType === 'HAIAERO'
@@ -157,6 +164,28 @@ export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyi
         lastUpdated: result?.lastUpdated,
         refresh,
     }
+}
+
+export function useUnderlyingAPR({ collateralType, enabled = true }: UseUnderlyingAPRProps): UseUnderlyingAPRResult {
+    const { strategyData } = useEarnData()
+
+    return useUnderlyingAPRBase({
+        collateralType,
+        enabled,
+        strategyData,
+    })
+}
+
+export function useUnderlyingAPRWithStrategyData({
+    collateralType,
+    enabled = true,
+    strategyData,
+}: UseUnderlyingAPRProps & { strategyData?: UnderlyingAPRStrategyData }): UseUnderlyingAPRResult {
+    return useUnderlyingAPRBase({
+        collateralType,
+        enabled,
+        strategyData,
+    })
 }
 
 // Hook for multiple vault types (useful for tables)

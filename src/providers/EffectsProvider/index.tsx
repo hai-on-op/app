@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useRef, useState } from 'react'
 
 import type { ReactChildren, SetState } from '~/types'
 import { ElfettiEffect } from './Elfetti'
+import { useDocumentVisibility } from '~/hooks'
 
 import styled from 'styled-components'
 
@@ -29,6 +30,7 @@ export function EffectsProvider({ children }: Props) {
     const [screensaver, setScreensaver] = useState<ElfettiEffect>()
     const screensaverRef = useRef(screensaver)
     screensaverRef.current = screensaver
+    const isDocumentVisible = useDocumentVisibility()
 
     const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null)
 
@@ -53,7 +55,7 @@ export function EffectsProvider({ children }: Props) {
     }, [canvas])
 
     useEffect(() => {
-        if (!canvas || !screensaverActive || !screensaver) return
+        if (!canvas || !screensaverActive || !screensaver || !isDocumentVisible) return
 
         const ctx = screensaver.ctx
         screensaver.trigger({
@@ -88,7 +90,7 @@ export function EffectsProvider({ children }: Props) {
             ctx.clearRect(0, 0, canvas.width, canvas.height)
             cancelAnimationFrame(animation)
         }
-    }, [canvas, screensaverActive, screensaver])
+    }, [canvas, screensaverActive, screensaver, isDocumentVisible])
 
     return (
         <EffectsContext.Provider
@@ -98,7 +100,7 @@ export function EffectsProvider({ children }: Props) {
                 toggleScreensaver,
             }}
         >
-            <Canvas ref={setCanvas} $active={screensaverActive} />
+            {screensaverActive && <Canvas ref={setCanvas} $active={screensaverActive} />}
             {children}
         </EffectsContext.Provider>
     )

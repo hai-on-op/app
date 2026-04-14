@@ -42,16 +42,6 @@ export function calculateVelodromeLpValue(params: {
     // LP token price
     const lpPriceUsd = totalSupplyFormatted > 0 ? tvlUsd / totalSupplyFormatted : 0
 
-    console.log(`[VelodromePoolApr] ====== LP VALUE CALCULATION ======`)
-    console.log(`[VelodromePoolApr] Reserve0 (haiVELO): ${reserve0Formatted.toFixed(4)}`)
-    console.log(`[VelodromePoolApr] Reserve1 (VELO): ${reserve1Formatted.toFixed(4)}`)
-    console.log(`[VelodromePoolApr] Total Tokens in Pool: ${totalTokens.toFixed(4)}`)
-    console.log(`[VelodromePoolApr] VELO Price: $${veloPrice.toFixed(4)}`)
-    console.log(`[VelodromePoolApr] Pool TVL USD: $${tvlUsd.toFixed(2)}`)
-    console.log(`[VelodromePoolApr] Total LP Supply: ${totalSupplyFormatted.toFixed(4)}`)
-    console.log(`[VelodromePoolApr] LP Token Price: $${lpPriceUsd.toFixed(6)}`)
-    console.log(`[VelodromePoolApr] ================================`)
-
     return {
         tvlUsd,
         lpPriceUsd,
@@ -100,14 +90,6 @@ export function calculateHaiRewardShare(params: { lpStakedTvlUsd: number; haiVel
     const lpShare = lpStakedTvlUsd / totalParticipatingTvl
     const haiVeloShare = haiVeloDepositTvlUsd / totalParticipatingTvl
 
-    console.log(`[VelodromePoolApr] ====== HAI REWARD SHARE CALCULATION ======`)
-    console.log(`[VelodromePoolApr] LP Staked TVL: $${lpStakedTvlUsd.toFixed(2)}`)
-    console.log(`[VelodromePoolApr] haiVELO Deposit TVL: $${haiVeloDepositTvlUsd.toFixed(2)}`)
-    console.log(`[VelodromePoolApr] Total Participating TVL: $${totalParticipatingTvl.toFixed(2)}`)
-    console.log(`[VelodromePoolApr] LP Share of HAI Rewards: ${(lpShare * 100).toFixed(2)}%`)
-    console.log(`[VelodromePoolApr] haiVELO Share of HAI Rewards: ${(haiVeloShare * 100).toFixed(2)}%`)
-    console.log(`[VelodromePoolApr] ==========================================`)
-
     return { lpShare, haiVeloShare, totalParticipatingTvl }
 }
 
@@ -142,16 +124,6 @@ export function calculateHaiRewardsApr(params: {
     const annualHaiRewardUsd = dailyHaiRewardUsd * 365
     const haiApr = annualHaiRewardUsd / lpStakedTvlUsd
 
-    console.log(`[VelodromePoolApr] ====== HAI REWARDS APR CALCULATION ======`)
-    console.log(`[VelodromePoolApr] Weekly HAI Reward (total): ${weeklyHaiReward.toFixed(4)} HAI`)
-    console.log(`[VelodromePoolApr] Daily HAI Reward (total): ${dailyHaiReward.toFixed(4)} HAI`)
-    console.log(`[VelodromePoolApr] LP's Daily HAI Reward: ${lpDailyHaiReward.toFixed(4)} HAI`)
-    console.log(`[VelodromePoolApr] HAI Price: $${haiPrice.toFixed(4)}`)
-    console.log(`[VelodromePoolApr] LP's Daily HAI Reward USD: $${dailyHaiRewardUsd.toFixed(2)}`)
-    console.log(`[VelodromePoolApr] LP's Annual HAI Reward USD: $${annualHaiRewardUsd.toFixed(2)}`)
-    console.log(`[VelodromePoolApr] HAI Rewards APR: ${(haiApr * 100).toFixed(2)}%`)
-    console.log(`[VelodromePoolApr] =========================================`)
-
     return { haiApr, dailyHaiRewardUsd, annualHaiRewardUsd }
 }
 
@@ -167,20 +139,11 @@ export function calculateKiteIncentivesApr(params: {
     const { dailyKiteReward, kitePrice, totalStakedValueUsd } = params
 
     if (totalStakedValueUsd <= 0 || kitePrice <= 0) {
-        console.log('[VelodromePoolApr] Cannot calculate KITE incentives APR - missing data')
         return 0
     }
 
     const annualKiteRewardUsd = dailyKiteReward * 365 * kitePrice
     const incentivesApr = annualKiteRewardUsd / totalStakedValueUsd
-
-    console.log(`[VelodromePoolApr] ====== KITE INCENTIVES APR ======`)
-    console.log(`[VelodromePoolApr] Daily KITE reward: ${dailyKiteReward} KITE`)
-    console.log(`[VelodromePoolApr] KITE price: $${kitePrice.toFixed(4)}`)
-    console.log(`[VelodromePoolApr] Annual reward value: $${annualKiteRewardUsd.toFixed(2)}`)
-    console.log(`[VelodromePoolApr] Total staked value: $${totalStakedValueUsd.toFixed(2)}`)
-    console.log(`[VelodromePoolApr] KITE Incentives APR: ${(incentivesApr * 100).toFixed(2)}%`)
-    console.log(`[VelodromePoolApr] =================================`)
 
     return incentivesApr
 }
@@ -208,7 +171,6 @@ export function calculateTradingFeeApr(params: {
     const { token0Fees, token1Fees, poolTvlUsd, veloPrice, decimals = 18 } = params
 
     if (poolTvlUsd <= 0 || veloPrice <= 0) {
-        console.log('[VelodromePoolApr] Cannot calculate trading fee APR - missing TVL or price')
         return { tradingFeeApr: 0, weeklyFeesUsd: 0 }
     }
 
@@ -222,16 +184,6 @@ export function calculateTradingFeeApr(params: {
     // Annualize: assume accumulated fees represent ~1 week
     const annualFeesUsd = weeklyFeesUsd * 52
     const tradingFeeApr = annualFeesUsd / poolTvlUsd
-
-    console.log(`[VelodromePoolApr] ====== TRADING FEE APR ESTIMATE ======`)
-    console.log(`[VelodromePoolApr] Token0 Fees: ${fees0.toFixed(4)}`)
-    console.log(`[VelodromePoolApr] Token1 Fees: ${fees1.toFixed(4)}`)
-    console.log(`[VelodromePoolApr] VELO Price: $${veloPrice.toFixed(4)}`)
-    console.log(`[VelodromePoolApr] Weekly Fees USD (estimate): $${weeklyFeesUsd.toFixed(2)}`)
-    console.log(`[VelodromePoolApr] Annual Fees USD (estimate): $${annualFeesUsd.toFixed(2)}`)
-    console.log(`[VelodromePoolApr] Pool TVL USD: $${poolTvlUsd.toFixed(2)}`)
-    console.log(`[VelodromePoolApr] Trading Fee APR (estimate): ${(tradingFeeApr * 100).toFixed(4)}%`)
-    console.log(`[VelodromePoolApr] ======================================`)
 
     return { tradingFeeApr, weeklyFeesUsd }
 }

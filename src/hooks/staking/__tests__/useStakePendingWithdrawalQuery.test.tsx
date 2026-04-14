@@ -4,23 +4,27 @@ import { waitFor, screen } from '@testing-library/react'
 import { renderWithProviders } from '~/test/testUtils'
 import { useStakePendingWithdrawalQuery } from '~/hooks/staking/useStakePendingWithdrawalQuery'
 
-vi.mock('~/utils/graphql/client', () => ({
-    client: {
-        query: vi.fn(() =>
-            Promise.resolve({
-                data: {
-                    haiVeloVeloLPStakingUser: {
+const { clientQueryMock } = vi.hoisted(() => ({
+    clientQueryMock: vi.fn(() =>
+        Promise.resolve({
+            data: {
+                haiVeloVeloLPStakingUser: {
+                    id: '0xabc',
+                    pendingWithdrawal: {
                         id: '0xabc',
-                        pendingWithdrawal: {
-                            id: '0xabc',
-                            amount: '5000000000000000000',
-                            timestamp: 1000,
-                            status: 'PENDING',
-                        },
+                        amount: '5000000000000000000',
+                        timestamp: 1000,
+                        status: 'PENDING',
                     },
                 },
-            })
-        ),
+            },
+        })
+    ),
+}))
+
+vi.mock('~/utils/graphql/client', () => ({
+    client: {
+        query: clientQueryMock,
     },
 }))
 
@@ -44,11 +48,18 @@ function TestComponent() {
 
 describe('useStakePendingWithdrawalQuery', () => {
     it('reads pendingWithdrawal for LP staking user entity', async () => {
+        clientQueryMock.mockClear()
         renderWithProviders(<TestComponent />)
 
         await waitFor(() => {
             expect(screen.getByTestId('amount').textContent).toBe('5.0')
             expect(screen.getByTestId('timestamp').textContent).toBe('1000')
         })
+
+        expect(clientQueryMock).toHaveBeenCalledWith(
+            expect.objectContaining({
+                fetchPolicy: 'cache-first',
+            })
+        )
     })
 })

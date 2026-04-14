@@ -1,16 +1,15 @@
 import { useAccount } from 'wagmi'
 import { useQuery } from '@apollo/client'
-import { ALL_COLLATERAL_TYPES_QUERY, SYSTEMSTATE_QUERY, ALL_SAFES_QUERY } from '~/utils/graphql/queries'
+import { ALL_COLLATERAL_TYPES_QUERY, SYSTEMSTATE_QUERY } from '~/utils/graphql/queries'
 import { useMinterVaults } from './useMinterVaults'
-import { useMyVaults } from '~/hooks'
 import { useVelodrome, useVelodromePositions } from './useVelodrome'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { useStrategyData } from './useStrategyData'
 import { useStoreState } from '~/store'
+import { useStakingData } from '~/hooks/useStakingData'
 import { BigNumber } from 'ethers'
 import type { QueryCollateralType } from '~/utils'
 import type { TokenData, TokenFetchData } from '@hai-on-op/sdk'
-import type { UserStakingData } from '~/model/stakingModel'
 import { combineErrors, hasAnyError, type AppError } from '~/utils/errorHandling'
 
 interface VelodromePoolData {
@@ -51,11 +50,9 @@ interface EarnDataState {
     systemStateData: { systemStates: Array<{ erc20CoinTotalSupply: string; [key: string]: unknown }> } | undefined
     minterVaultsData: Record<string, { userDebtMapping: Record<string, string>; totalMinted: string }> | undefined
     collateralTypesData: { collateralTypes: QueryCollateralType[] } | undefined
-    myVaultsData: unknown // This depends on useMyVaults return type
     velodromeData: VelodromePoolData[] | undefined
     velodromePositionsData: VelodromePositionData[] | undefined
     velodromePricesData: Record<string, VelodromePriceData> | undefined
-    haiVeloSafesData: { safes: Array<{ owner: { address: string }; collateral: string }> } | undefined
     strategyData:
         | {
               hai?: { apr: number; tvl: number; userPosition: number }
@@ -70,8 +67,6 @@ interface EarnDataState {
     // Store state data
     tokensData: Record<string, TokenData>
     userPositionsList: UserPosition[]
-    usersStakingData: Record<string, UserStakingData>
-    totalStaked: string
     stakingApyData: Array<{ id: number; rpToken: string; rpRate: BigNumber }>
     tokensFetchedData: Record<string, TokenFetchData>
 
@@ -94,8 +89,9 @@ export function useEarnData(): EarnDataState {
     const {
         connectWalletModel: { tokensFetchedData, tokensData },
         vaultModel: { list: userPositionsList },
-        stakingModel: { usersStakingData, totalStaked, stakingApyData },
+        stakingModel: { stakingApyData },
     } = useStoreState((state) => state)
+    const stakingContext = useStakingData()
 
     // 1. Load system state data
     const {
@@ -124,55 +120,29 @@ export function useEarnData(): EarnDataState {
         errorPolicy: 'ignore',
     })
 
-    // 4. Load user vaults data
-    const myVaultsData = useMyVaults()
-
-    // 5. Load velodrome data
+    // 4. Load velodrome data
     const { data: velodromeData, loading: velodromeLoading, error: velodromeError } = useVelodrome()
 
-    // 6. Load velodrome positions data
+    // 5. Load velodrome positions data
     const {
         data: velodromePositionsData,
         // loading: velodromePositionsLoading,
         error: velodromePositionsError,
     } = useVelodromePositions()
 
-    // 7. Load velodrome prices
+    // 6. Load velodrome prices
     const {
         prices: velodromePricesData,
         loading: velodromePricesLoading,
         error: velodromePricesError,
     } = useVelodromePrices()
 
-    // 8. Load hai velo safes data
-    const {
-        data: haiVeloSafesData,
-        // loading: haiVeloSafesLoading,
-        error: haiVeloSafesError,
-    } = useQuery<{ safes: Array<{ owner: { address: string }; collateral: string }> }>(ALL_SAFES_QUERY, {
-        variables: {
-            collateralTypeId: 'HAIVELO',
-        },
-        fetchPolicy: 'cache-first',
-        nextFetchPolicy: 'cache-first',
-        errorPolicy: 'ignore',
-    })
-
-    // 9. Load strategy specific data (hold hai, deposit haiVelo)
-    const strategyData = useStrategyData(
-        systemStateData,
-        userPositionsList,
-        velodromePricesData,
-        usersStakingData,
-        haiVeloSafesData,
-        address,
-        stakingApyData,
-        totalStaked
-    )
+    // 7. Load strategy specific data (hold hai, deposit haiVelo)
+    const strategyData = useStrategyData(systemStateData, velodromePricesData, address, stakingApyData)
 
     // Calculate loading states
-    const stakingDataLoaded = Object.keys(usersStakingData).length > 0 && Number(totalStaked) > 0
-    const storeDataLoaded = usersStakingData && userPositionsList && !!tokensFetchedData
+    const stakingDataLoaded = !stakingContext?.loading
+    const storeDataLoaded = !!userPositionsList && !!tokensFetchedData
 
     // Core data excludes user-specific velodrome positions and HAIVELO safes
     const coreDataLoaded =
@@ -192,8 +162,7 @@ export function useEarnData(): EarnDataState {
         velodromeError,
         velodromePositionsError,
         velodromePricesError,
-        systemStateError,
-        haiVeloSafesError
+        systemStateError
     )
 
     const hasErrors = hasAnyError(
@@ -202,8 +171,7 @@ export function useEarnData(): EarnDataState {
         velodromeError,
         velodromePositionsError,
         velodromePricesError,
-        systemStateError,
-        haiVeloSafesError
+        systemStateError
     )
 
     return {
@@ -211,18 +179,14 @@ export function useEarnData(): EarnDataState {
         systemStateData,
         minterVaultsData,
         collateralTypesData,
-        myVaultsData,
         velodromeData,
         velodromePositionsData,
         velodromePricesData,
-        haiVeloSafesData,
         strategyData,
 
         // Store state data
         tokensData,
         userPositionsList,
-        usersStakingData,
-        totalStaked,
         stakingApyData,
         tokensFetchedData,
 

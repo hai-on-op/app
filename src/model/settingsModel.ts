@@ -2,7 +2,11 @@ import { type Action, action } from 'easy-peasy'
 
 const language = localStorage.getItem('lang')
 const isLight = localStorage.getItem('isLight')
-const shouldPlayMusic = !localStorage.getItem('musicDisabled')
+
+export function getInitialIsPlayingMusic() {
+    // Never autoplay music from persisted state; require an explicit user click each session.
+    return false
+}
 // const local_blockchain_connection = localStorage.getItem(
 //     'blockchain_connection'
 // )
@@ -51,9 +55,9 @@ export const settingsModel: SettingsModel = {
         state.headerBgActive = payload
     }),
 
-    isPlayingMusic: shouldPlayMusic,
+    isPlayingMusic: getInitialIsPlayingMusic(),
     setIsPlayingMusic: action((state, payload) => {
         state.isPlayingMusic = payload
-        localStorage.setItem('musicDisabled', payload.toString())
+        localStorage.setItem('musicDisabled', (!payload).toString())
     }),
 }

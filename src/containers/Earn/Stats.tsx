@@ -3,8 +3,7 @@ import { useAccount } from 'wagmi'
 
 import { formatNumberWithStyle } from '~/utils'
 import { useStoreActions } from '~/store'
-import { useEarnStrategies } from '~/hooks'
-import { useApr } from '~/apr/AprProvider'
+import { useEarnContext } from '~/providers/EarnProvider'
 
 import { HaiButton } from '~/styles'
 import { RewardsTokenArray } from '~/components/TokenArray'
@@ -35,16 +34,9 @@ const StyledRewardsAPYWithBoost = styled.div`
 export function EarnStats() {
     const { address } = useAccount()
 
-    const { averageAPR, totalBoostablePosition, totalRewardsValue, rewardTokens, loading } = useEarnStrategies()
+    const { averageAPR, totalBoostablePosition, totalRewardsValue, rewardTokens, loading, netBoostValue } =
+        useEarnContext()
     const { popupsModel: popupsActions } = useStoreActions((actions) => actions)
-    const { strategies } = useApr()
-    // Compute net boost from AprProvider strategies (weighted average across boostable positions)
-    const netBoostValue = useMemo(() => {
-        const boostable = Object.values(strategies).filter((s) => s.boost && s.userPosition > 0)
-        const totalPos = boostable.reduce((acc, s) => acc + s.userPosition, 0)
-        if (totalPos <= 0) return 1
-        return boostable.reduce((acc, s) => acc + (s.boost!.myBoost * s.userPosition) / totalPos, 0)
-    }, [strategies])
     const netBoostFormatted = `${formatNumberWithStyle(netBoostValue, { minDecimals: 0, maxDecimals: 2 })}x`
 
     const formattedWeightedAPR = useMemo(() => {

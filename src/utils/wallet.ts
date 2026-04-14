@@ -2,10 +2,10 @@ import { configureChains, createConfig } from 'wagmi'
 import { optimism, optimismGoerli, optimismSepolia, base, baseSepolia } from 'wagmi/chains'
 import { alchemyProvider } from 'wagmi/providers/alchemy'
 import { publicProvider } from 'wagmi/providers/public'
-import { connectorsForWallets } from '@rainbow-me/rainbowkit'
-import { injectedWallet, rainbowWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets'
 
 import { NETWORK_ID, VITE_ALCHEMY_KEY, VITE_WALLETCONNECT_ID } from './constants'
+import { connectorsForWallets } from './connectorsForWallets'
+import { injectedWallet, rainbowWallet, walletConnectWallet } from './rainbowkitWallets'
 
 const projectId = VITE_WALLETCONNECT_ID!
 
