@@ -10,6 +10,7 @@ import { AnalyticsDetailsProvider, AnalyticsProvider } from '~/providers/Analyti
 import { EffectsProvider } from './providers/EffectsProvider'
 import { ClaimsProvider } from './providers/ClaimsProvider'
 import { StakingProvider } from './providers/StakingProvider'
+import { AprProvider } from './apr/AprProvider'
 
 import { GlobalStyle } from '~/styles'
 import { ErrorBoundary } from '~/ErrorBoundary'
@@ -36,6 +37,12 @@ const HaiBoldCurveLpStakePage = lazy(() => import('./containers/Stake/HaiBoldCur
 const TestClaimVelo = lazy(() =>
     import('./containers/TestClaimVelo').then((module) => ({ default: module.TestClaimVelo }))
 )
+const RewardsAnalytics = lazy(() =>
+    import('./containers/Rewards').then((module) => ({ default: module.RewardsAnalytics }))
+)
+const AprAnalytics = lazy(() =>
+    import('./containers/AprAnalytics').then((module) => ({ default: module.AprAnalytics }))
+)
 
 function AnalyticsRoute() {
     return (
@@ -56,7 +63,9 @@ function EarnRoute() {
 function VaultsRoute() {
     return (
         <StakingProvider>
-            <Vaults />
+            <AprProvider>
+                <Vaults />
+            </AprProvider>
         </StakingProvider>
     )
 }
@@ -65,7 +74,9 @@ function HaiVeloRoute() {
     return (
         <StakingProvider>
             <ClaimsProvider>
-                <HaiVeloPage />
+                <AprProvider>
+                    <HaiVeloPage />
+                </AprProvider>
             </ClaimsProvider>
         </StakingProvider>
     )
@@ -75,7 +86,9 @@ function HaiAeroRoute() {
     return (
         <StakingProvider>
             <ClaimsProvider>
-                <HaiAeroPage />
+                <AprProvider>
+                    <HaiAeroPage />
+                </AprProvider>
             </ClaimsProvider>
         </StakingProvider>
     )
@@ -84,7 +97,9 @@ function HaiAeroRoute() {
 function KiteStakeRoute() {
     return (
         <StakingProvider>
-            <KiteStakePage />
+            <AprProvider>
+                <KiteStakePage />
+            </AprProvider>
         </StakingProvider>
     )
 }
@@ -92,7 +107,9 @@ function KiteStakeRoute() {
 function HaiVeloVeloLpStakeRoute() {
     return (
         <StakingProvider>
-            <HaiVeloVeloLpStakePage />
+            <AprProvider>
+                <HaiVeloVeloLpStakePage />
+            </AprProvider>
         </StakingProvider>
     )
 }
@@ -100,8 +117,18 @@ function HaiVeloVeloLpStakeRoute() {
 function HaiBoldCurveLpStakeRoute() {
     return (
         <StakingProvider>
-            <HaiBoldCurveLpStakePage />
+            <AprProvider>
+                <HaiBoldCurveLpStakePage />
+            </AprProvider>
         </StakingProvider>
+    )
+}
+
+function AprAnalyticsRoute() {
+    return (
+        <AprProvider>
+            <AprAnalytics />
+        </AprProvider>
     )
 }
 
@@ -142,6 +169,8 @@ const App = () => {
                                                 <Route exact strict component={Splash} path={'/'} />
                                                 <Route exact strict component={AuctionsRoute} path={'/auctions'} />
                                                 <Route exact strict component={AnalyticsRoute} path={'/analytics'} />
+                                                <Route exact strict component={RewardsAnalytics} path={'/rewards'} />
+                                                <Route exact strict component={AprAnalyticsRoute} path={'/apr'} />
                                                 <Route exact strict component={Contracts} path={'/contracts'} />
                                                 <Route exact strict component={Learn} path={'/learn'} />
                                                 <Route exact strict component={KiteStakeRoute} path={'/stake'} />

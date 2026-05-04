@@ -10,6 +10,8 @@ node_modules
 
 # production
 /build
+.vercel
+public/reports/*.json
 
 # misc
 .DS_Store

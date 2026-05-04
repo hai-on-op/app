@@ -6,6 +6,12 @@ import * as flags from 'flagsmith/react'
 import { Overview } from '../Manage/Overview'
 import * as sumV2 from '~/hooks/staking/useStakingSummaryV2'
 
+vi.mock('~/apr/AprProvider', () => ({
+    useApr: () => ({
+        getStrategy: () => undefined,
+    }),
+}))
+
 describe('Overview (integration, v2)', () => {
     it('renders formatted stats with simulation when flag is on', async () => {
         vi.spyOn(flags, 'useFlags').mockReturnValue({ staking_refactor: { enabled: true } } as any)

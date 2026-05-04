@@ -13,7 +13,7 @@ import { Loader } from '~/components/Loader'
 type OverviewStatProps = {
     token?: TokenKey
     simulatedToken?: string
-    value: string | number
+    value: string | number | React.ReactNode
     tokenLabel?: string
     isComingSoon?: boolean
     label: string
