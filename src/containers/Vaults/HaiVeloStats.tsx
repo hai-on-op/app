@@ -2,9 +2,9 @@ import { useMemo } from 'react'
 import { useStoreActions } from '~/store'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { useEarnStrategies } from '~/hooks'
-import { useEarnData } from '~/hooks/useEarnData'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { useHaiVeloStats as useHaiVeloStatsHook } from '~/hooks/haivelo/useHaiVeloStats'
+import { useApr } from '~/apr/AprProvider'
 
 import { formatNumberWithStyle } from '~/utils'
 import { RewardsTokenArray } from '~/components/TokenArray'
@@ -40,8 +40,8 @@ export function HaiVeloStats() {
         return formatNumberWithStyle(pct, { style: 'percent', suffixed: true, maxDecimals: 2 })
     }, [graphSummary])
 
-    const { strategyData } = useEarnData()
-    const haiVeloBaseApr = ((strategyData?.haiVelo?.boostApr as any)?.baseAPR || 0) / 100
+    const { getStrategy } = useApr()
+    const haiVeloBaseApr = getStrategy('haivelo-deposit')?.boost?.baseApr || 0
 
     const aprFormatted = useMemo(() => {
         return formatNumberWithStyle(haiVeloBaseApr * 100, { style: 'percent', suffixed: true, maxDecimals: 2 })

@@ -57,6 +57,10 @@ export const REWARDS = {
             KITE: 50,
             OP: 0,
         },
+        HAIAERO: {
+            KITE: 0,
+            OP: 0,
+        },
         // Testnet
         WBTC: {
             KITE: 0,

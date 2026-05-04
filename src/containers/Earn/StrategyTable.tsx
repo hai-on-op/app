@@ -117,6 +117,7 @@ export function StrategyTable({
                         strategyType,
                         apr,
                         boostAPR,
+                        netApr,
                     },
                     i
                 ) => {
@@ -231,48 +232,52 @@ export function StrategyTable({
                                 },
                                 {
                                     content: (
-                                        <div style={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
-                                            {!!boostAPR && boostAPR.myBoost ? (
-                                                boostAPR.baseAPR === boostAPR.myBoostedAPR ? (
-                                                    <Text $fontWeight={700}>
-                                                        {formatNumberWithStyle(boostAPR.baseAPR / 100, {
-                                                            style: 'percent',
-                                                            scalingFactor: 100,
-                                                            maxDecimals: 1,
-                                                            suffixed: true,
-                                                        })}
-                                                    </Text>
-                                                ) : (
-                                                    <StyledRewardsAPYContainer>
-                                                        <StyledRewardsAPY>
+                                        <Flex $column $gap={2} $align="flex-start">
+                                            <div
+                                                style={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}
+                                            >
+                                                {!!boostAPR && boostAPR.myBoost ? (
+                                                    boostAPR.baseAPR === boostAPR.myBoostedAPR ? (
+                                                        <Text $fontWeight={700}>
                                                             {formatNumberWithStyle(boostAPR.baseAPR / 100, {
                                                                 style: 'percent',
                                                                 scalingFactor: 100,
                                                                 maxDecimals: 1,
                                                                 suffixed: true,
                                                             })}
-                                                        </StyledRewardsAPY>
-                                                        <StyledRewardsAPYWithBoost>
-                                                            {' '}
-                                                            {formatNumberWithStyle(boostAPR.myBoostedAPR / 100, {
-                                                                style: 'percent',
-                                                                scalingFactor: 100,
-                                                                maxDecimals: 1,
-                                                                suffixed: true,
-                                                            })}
-                                                        </StyledRewardsAPYWithBoost>
-                                                    </StyledRewardsAPYContainer>
-                                                )
-                                            ) : (
-                                                <Text $fontWeight={700}>
-                                                    {formatNumberWithStyle(apr, {
-                                                        style: 'percent',
-                                                        scalingFactor: 100,
-                                                        maxDecimals: 1,
-                                                        suffixed: true,
-                                                    })}
-                                                </Text>
-                                            )}
+                                                        </Text>
+                                                    ) : (
+                                                        <StyledRewardsAPYContainer>
+                                                            <StyledRewardsAPY>
+                                                                {formatNumberWithStyle(boostAPR.baseAPR / 100, {
+                                                                    style: 'percent',
+                                                                    scalingFactor: 100,
+                                                                    maxDecimals: 1,
+                                                                    suffixed: true,
+                                                                })}
+                                                            </StyledRewardsAPY>
+                                                            <StyledRewardsAPYWithBoost>
+                                                                {' '}
+                                                                {formatNumberWithStyle(boostAPR.myBoostedAPR / 100, {
+                                                                    style: 'percent',
+                                                                    scalingFactor: 100,
+                                                                    maxDecimals: 1,
+                                                                    suffixed: true,
+                                                                })}
+                                                            </StyledRewardsAPYWithBoost>
+                                                        </StyledRewardsAPYContainer>
+                                                    )
+                                                ) : (
+                                                    <Text $fontWeight={700}>
+                                                        {formatNumberWithStyle(apr, {
+                                                            style: 'percent',
+                                                            scalingFactor: 100,
+                                                            maxDecimals: 1,
+                                                            suffixed: true,
+                                                        })}
+                                                    </Text>
+                                                )}
+                                            </div>
                                             {/* {(isAPXETH || isPXETH) && (
                                                 <BoostBadge>
                                                     <Flex $justify="flex-start" $align="center">
@@ -316,7 +321,7 @@ export function StrategyTable({
                                                     </Text>
                                                 </BoostBadge>
                                             )} */}
-                                        </div>
+                                        </Flex>
                                     ),
                                 },
 

@@ -94,8 +94,7 @@ export function Approvals({ items, onAllApproved }: ApprovalsProps) {
         currentItem?.kind === 'ERC721_TOKEN' || currentItem?.kind === 'ERC721_COLLECTION'
             ? currentItem.nftAddress
             : undefined,
-        ERC721_APPROVAL_ABI,
-        true
+        ERC721_APPROVAL_ABI
     )
     const [nftApproved, setNftApproved] = useState<boolean>(false)
     const [collectionApproved, setCollectionApproved] = useState(false)

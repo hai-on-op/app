@@ -19,7 +19,7 @@ export function Overview({ vault }: OverviewProps) {
     const { t } = useTranslation()
 
     const { vaultModel: vaultState } = useStoreState((state) => state)
-    // Top-level APR hook (use current vault collateralToken if available)
+    // Underlying collateral yield (e.g., Beefy auto-compound, wstETH staking yield)
     const underlyingAprHook = useUnderlyingAPR({ collateralType: vault?.collateralToken || '' })
     const underlyingAPRValue = underlyingAprHook.underlyingAPR
 
@@ -168,10 +168,7 @@ export function Overview({ vault }: OverviewProps) {
 
                     const isHaiVelo = vault.collateralToken === 'HAIVELO' || vault.collateralToken === 'HAIVELOV2'
                     const underlyingAPR = isHaiVelo
-                        ? underlyingAPRValue *
-                          (Number(individualVaultBoosts?.[vault.collateralToken]?.myBoost) ||
-                              Number(boostData?.myBoost) ||
-                              1)
+                        ? underlyingAPRValue * (Number(boostData?.myBoost) || 1)
                         : underlyingAPRValue
                     const mintingIncentivesAPR = boostData?.myBoostedAPR ? boostData.myBoostedAPR / 100 : 0
                     const stabilityFeeCost = -getRatePercentage(
@@ -250,12 +247,40 @@ export function Overview({ vault }: OverviewProps) {
                         })}`
                     )
 
+                    // Compute base net APR (without boost)
+                    const baseIncentivesAPR = boostData?.baseAPR ? boostData.baseAPR / 100 : mintingIncentivesAPR
+                    const isBoosted = boostData && boostData.myBoost > 1 && baseIncentivesAPR !== mintingIncentivesAPR
+                    let baseNetAPR = netAPR
+                    if (isBoosted && shouldShowNetAPR && collateralUsdValue > 0) {
+                        const baseUnderlyingAPR = isHaiVelo ? underlyingAPRValue : underlyingAPRValue
+                        const baseDebtNet = baseIncentivesAPR + stabilityFeeCost
+                        const totalPos = collateralUsdValue + debtUsdValue
+                        baseNetAPR =
+                            totalPos > 0
+                                ? (collateralUsdValue * baseUnderlyingAPR + debtUsdValue * baseDebtNet) / totalPos
+                                : 0
+                    }
+
+                    const netAprDisplay = shouldShowNetAPR ? (
+                        isBoosted ? (
+                            <Flex $gap={8} $align="center">
+                                <Text $fontWeight={700} style={{ textDecoration: 'line-through', opacity: 0.5 }}>
+                                    {formatNumberWithStyle(baseNetAPR, { style: 'percent', maxDecimals: 1 })}
+                                </Text>
+                                <Text $fontWeight={700} style={{ color: '#00ac11' }}>
+                                    {formatNumberWithStyle(netAPR, { style: 'percent', maxDecimals: 1 })}
+                                </Text>
+                            </Flex>
+                        ) : (
+                            formatNumberWithStyle(netAPR, { style: 'percent', maxDecimals: 2 })
+                        )
+                    ) : (
+                        formatNumberWithStyle(stabilityFeeCost, { style: 'percent', maxDecimals: 2 })
+                    )
+
                     return (
                         <OverviewStat
-                            value={formatNumberWithStyle(shouldShowNetAPR ? netAPR : stabilityFeeCost, {
-                                style: 'percent',
-                                maxDecimals: 2,
-                            })}
+                            value={netAprDisplay}
                             label={shouldShowNetAPR ? 'Net APR' : 'Stability Fee'}
                             tooltip={tooltipText}
                         />

@@ -12,7 +12,7 @@ import { HaiButton, HaiButtonProps } from '~/styles/Button'
 
 type OverviewStatProps = {
     token?: TokenKey
-    value: string | number
+    value: string | number | React.ReactNode
     tokenLabel?: string
     label: string
     labelOnTop?: boolean
