@@ -233,7 +233,9 @@ export function StrategyTable({
                                 {
                                     content: (
                                         <Flex $column $gap={2} $align="flex-start">
-                                            <div style={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
+                                            <div
+                                                style={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}
+                                            >
                                                 {!!boostAPR && boostAPR.myBoost ? (
                                                     boostAPR.baseAPR === boostAPR.myBoostedAPR ? (
                                                         <Text $fontWeight={700}>

@@ -26,9 +26,7 @@ interface KiteStakingResult {
  *   aprBasisPoints = (yearlyValue * 10000) / (totalStaked * kitePrice)
  *   apr = aprBasisPoints / 10000  (convert to decimal)
  */
-export function calculateKiteStakingApr(
-    input: KiteStakingInput & { userKiteStaked: number }
-): KiteStakingResult {
+export function calculateKiteStakingApr(input: KiteStakingInput & { userKiteStaked: number }): KiteStakingResult {
     const { rewardRates, tokenPricesByAddress, totalKiteStaked, kitePrice, userKiteStaked } = input
 
     const tvl = totalKiteStaked * kitePrice
@@ -45,13 +43,16 @@ export function calculateKiteStakingApr(
     }
 
     // Sum rewards per second in 18-decimal fixed point
-    const stakingApyRewardsTotal = rewardRates.reduce((acc, item) => {
-        const price = tokenPricesByAddress[item.rpToken] || 0
-        if (isNaN(price) || price === 0) return acc
-        const scaledPrice = utils.parseUnits(price.toString(), 18)
-        const amount = item.rpRate.mul(scaledPrice)
-        return acc.add(amount)
-    }, utils.parseUnits('0', 18))
+    const stakingApyRewardsTotal = rewardRates.reduce(
+        (acc, item) => {
+            const price = tokenPricesByAddress[item.rpToken] || 0
+            if (isNaN(price) || price === 0) return acc
+            const scaledPrice = utils.parseUnits(price.toString(), 18)
+            const amount = item.rpRate.mul(scaledPrice)
+            return acc.add(amount)
+        },
+        utils.parseUnits('0', 18)
+    )
 
     // Annualize
     const stakingApyRewardsTotalYearly = stakingApyRewardsTotal.mul(31536000)

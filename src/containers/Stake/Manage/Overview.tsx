@@ -66,11 +66,12 @@ export function Overview({ simulation, config }: OverviewProps) {
 
     // Read APR from AprProvider for consistency with /earn and /apr pages
     const { getStrategy } = useApr()
-    const aprStrategyId = config?.namespace === 'lp-hai-bold-curve'
-        ? 'haibold-curve-lp'
-        : config?.namespace === 'lp-hai-velo-velo'
-        ? 'haivelo-velo-lp'
-        : 'kite-staking'
+    const aprStrategyId =
+        config?.namespace === 'lp-hai-bold-curve'
+            ? 'haibold-curve-lp'
+            : config?.namespace === 'lp-hai-velo-velo'
+            ? 'haivelo-velo-lp'
+            : 'kite-staking'
     const aprStrategy = getStrategy(aprStrategyId)
 
     // Override stakingApr AND aprBreakdown with AprProvider values for consistency
@@ -143,7 +144,7 @@ export function Overview({ simulation, config }: OverviewProps) {
     // Tooltip content for LP staking APR breakdown
     const hasBoost = bd && bd.boost > 1
     const boostedIncentivesFormatted = bd
-        ? formatNumberWithStyle((bd.incentivesApr * bd.boost) * 100, { style: 'percent', maxDecimals: 2, suffixed: true })
+        ? formatNumberWithStyle(bd.incentivesApr * bd.boost * 100, { style: 'percent', maxDecimals: 2, suffixed: true })
         : ''
     const lpAprBreakdownTooltip = bd ? (
         <div style={{ width: '100%' }}>
@@ -388,13 +389,19 @@ export function Overview({ simulation, config }: OverviewProps) {
                         aprStrategy?.boost && aprStrategy.boost.myBoost > 1 && isLpPool ? (
                             <Flex $gap={8} $align="center">
                                 <Text $fontWeight={700} style={{ textDecoration: 'line-through', opacity: 0.5 }}>
-                                    {formatNumberWithStyle(aprStrategy.baseApr * 100, { style: 'percent', maxDecimals: 1, suffixed: true })}
+                                    {formatNumberWithStyle(aprStrategy.baseApr * 100, {
+                                        style: 'percent',
+                                        maxDecimals: 1,
+                                        suffixed: true,
+                                    })}
                                 </Text>
                                 <Text $fontWeight={700} style={{ color: '#00ac11' }}>
                                     {effectiveStakingApr.formatted}
                                 </Text>
                             </Flex>
-                        ) : effectiveStakingApr.formatted
+                        ) : (
+                            effectiveStakingApr.formatted
+                        )
                     }
                     label={isLpPool ? 'Net APR' : 'Staking APR'}
                     tooltip={

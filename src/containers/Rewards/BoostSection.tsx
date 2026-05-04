@@ -29,7 +29,7 @@ export function BoostSection({ user }: Props) {
                             </Text>
                         </BoostLabel>
                         <BarTrack>
-                            <BarFill $width={Math.max(0, (value - 1)) * 100} $color={getBoostColor(value)} />
+                            <BarFill $width={Math.max(0, value - 1) * 100} $color={getBoostColor(value)} />
                         </BarTrack>
                     </BoostRow>
                 ))}

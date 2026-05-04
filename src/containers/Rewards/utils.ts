@@ -138,11 +138,7 @@ export function getPositionLabel(strategy: string): string {
 }
 
 // Get strategy pool total for a specific strategy+token from day's strategyTotals
-export function getStrategyPoolTotal(
-    strategyTotals: StrategyTotalEntry[],
-    strategy: string,
-    token: string
-): number {
+export function getStrategyPoolTotal(strategyTotals: StrategyTotalEntry[], strategy: string, token: string): number {
     return strategyTotals
         .filter((s) => s.strategy === strategy && s.token === token)
         .reduce((sum, s) => sum + (s.totalReward || 0), 0)

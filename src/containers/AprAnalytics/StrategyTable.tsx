@@ -72,9 +72,10 @@ export function StrategyTable({ strategies, onStrategyClick }: Props) {
                     {sorted.map((strategy) => {
                         const boost = strategy.boost
                         const dailyReward = (strategy.baseApr * strategy.tvl) / 365
-                        const userDailyReward = strategy.userPosition > 0
-                            ? ((boost?.boostedApr ?? strategy.baseApr) * strategy.userPosition) / 365
-                            : 0
+                        const userDailyReward =
+                            strategy.userPosition > 0
+                                ? ((boost?.boostedApr ?? strategy.baseApr) * strategy.userPosition) / 365
+                                : 0
 
                         return (
                             <ClickableRow key={strategy.id} onClick={() => onStrategyClick?.(strategy.id)}>
@@ -96,7 +97,10 @@ export function StrategyTable({ strategies, onStrategyClick }: Props) {
                                     {strategy.userPosition > 0 ? formatUsd(strategy.userPosition) : '-'}
                                 </Td>
                                 <Td $align="right">{formatApr(strategy.baseApr)}</Td>
-                                <Td $align="right" $color={boost && boost.myBoost > 1 ? getBoostColor(boost.myBoost) : undefined}>
+                                <Td
+                                    $align="right"
+                                    $color={boost && boost.myBoost > 1 ? getBoostColor(boost.myBoost) : undefined}
+                                >
                                     {boost ? formatBoost(boost.myBoost) : '-'}
                                 </Td>
                                 <Td $align="right" $color={getAprColor(strategy.effectiveApr)}>

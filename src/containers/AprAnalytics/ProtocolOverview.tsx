@@ -14,15 +14,15 @@ export function ProtocolOverview({ strategies }: Props) {
         const totalTvl = strategies.reduce((acc, s) => acc + s.tvl, 0)
         const totalUserPosition = strategies.reduce((acc, s) => acc + s.userPosition, 0)
         const boostEligible = strategies.filter((s) => s.boost !== null)
-        const totalBoostedValue = boostEligible.reduce((acc, s) => acc + (s.boost?.totalBoostedValueParticipating || 0), 0)
+        const totalBoostedValue = boostEligible.reduce(
+            (acc, s) => acc + (s.boost?.totalBoostedValueParticipating || 0),
+            0
+        )
         const totalDailyRewards = strategies.reduce((acc, s) => acc + (s.baseApr * s.tvl) / 365, 0)
         const strategyCount = strategies.length
 
         // Weighted average APR by TVL
-        const weightedApr =
-            totalTvl > 0
-                ? strategies.reduce((acc, s) => acc + s.effectiveApr * s.tvl, 0) / totalTvl
-                : 0
+        const weightedApr = totalTvl > 0 ? strategies.reduce((acc, s) => acc + s.effectiveApr * s.tvl, 0) / totalTvl : 0
 
         return { totalTvl, totalUserPosition, totalBoostedValue, totalDailyRewards, strategyCount, weightedApr }
     }, [strategies])

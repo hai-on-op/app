@@ -11,10 +11,7 @@ type Props = {
 }
 
 export function BoostOverview({ strategies }: Props) {
-    const boostableStrategies = useMemo(
-        () => strategies.filter((s) => s.boost !== null && s.tvl > 0),
-        [strategies]
-    )
+    const boostableStrategies = useMemo(() => strategies.filter((s) => s.boost !== null && s.tvl > 0), [strategies])
 
     if (boostableStrategies.length === 0) return null
 

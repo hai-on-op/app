@@ -68,13 +68,10 @@ export function RewardsAnalytics() {
 
     const hasMatch = normalizedAddress.length === 42 ? matchedUser !== null : null
 
-    const handleDayClick = useCallback(
-        (date: string) => {
-            setSelectedDate(date)
-            setActiveTab(1)
-        },
-        []
-    )
+    const handleDayClick = useCallback((date: string) => {
+        setSelectedDate(date)
+        setActiveTab(1)
+    }, [])
 
     // Clear selectedDate when switching tabs manually
     const handleTabChange = useCallback((index: number) => {
