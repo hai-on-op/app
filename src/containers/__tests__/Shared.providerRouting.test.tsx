@@ -55,6 +55,10 @@ vi.mock('~/providers/EarnProvider', () => ({
     EarnProvider: ({ children }: { children: ReactNode }) => <div data-testid="earn-provider">{children}</div>,
 }))
 
+vi.mock('~/apr/AprProvider', () => ({
+    AprProvider: ({ children }: { children: ReactNode }) => <div data-testid="apr-provider">{children}</div>,
+}))
+
 vi.mock('~/services/TransactionUpdater', () => ({
     TransactionUpdater: () => null,
 }))
@@ -201,7 +205,8 @@ describe('Shared provider routing', () => {
 
         const stakingProvider = screen.getByTestId('staking-provider')
         const claimsProvider = within(stakingProvider).getByTestId('claims-provider')
+        const aprProvider = within(claimsProvider).getByTestId('apr-provider')
 
-        expect(within(claimsProvider).getByTestId('intention-header')).toBeTruthy()
+        expect(within(aprProvider).getByTestId('intention-header')).toBeTruthy()
     })
 })

@@ -1,9 +1,16 @@
 import { screen } from '@testing-library/react'
+import { vi } from 'vitest'
 import { renderWithProviders } from '~/test/testUtils'
 import { StakingExperience } from '~/containers/Stake/StakingExperience'
 import { kiteConfig } from '~/staking/configs/kite'
 import { exampleLpConfig } from '~/staking/configs/exampleLp'
 import { haiVeloVeloLpConfig } from '~/staking/configs/haiVeloVeloLp'
+
+vi.mock('~/apr/AprProvider', () => ({
+    useApr: () => ({
+        getStrategy: () => undefined,
+    }),
+}))
 
 describe('StakingExperience labels', () => {
     it('renders KITE copy', () => {

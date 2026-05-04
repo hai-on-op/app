@@ -20,6 +20,7 @@ import { ClaimsProvider } from '~/providers/ClaimsProvider'
 import { RewardsProvider } from '~/providers/RewardsProvider'
 import { StakingProvider } from '~/providers/StakingProvider'
 import { EarnProvider } from '~/providers/EarnProvider'
+import { AprProvider } from '~/apr/AprProvider'
 
 /**
  * Ensure HAIAERO is present in a token list.
@@ -377,7 +378,9 @@ export function Shared({ children }: Props) {
         if (isHaiVeloRoute || isHaiAeroRoute) {
             return (
                 <StakingProvider>
-                    <ClaimsProvider>{intentionHeader}</ClaimsProvider>
+                    <ClaimsProvider>
+                        <AprProvider>{intentionHeader}</AprProvider>
+                    </ClaimsProvider>
                 </StakingProvider>
             )
         }
