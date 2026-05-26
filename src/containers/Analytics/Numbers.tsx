@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react'
 import { formatEther, formatUnits } from 'ethers/lib/utils'
 
-import { formatNumberWithStyle, getRatePercentage } from '~/utils'
+import { formatNumberWithStyle } from '~/utils'
 import { REWARDS, HAI_ADDRESS } from '~/utils/rewards'
 import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { useMediaQuery } from '~/hooks'
+import { buildRedemptionRateChart } from './rateChart'
 
 import styled from 'styled-components'
 import {
@@ -79,19 +80,13 @@ export function Numbers() {
         return [priceData, minAndMax.min, minAndMax.max]
     }, [haiPriceHistory])
 
-    const redemptionRateData = useMemo(() => {
+    const [redemptionRateData, redemptionRateYScale] = useMemo(() => {
         const data = redemptionRateHistory.data?.dailyStats || redemptionRateHistory.data?.hourlyStats || []
-        return [
-            {
-                id: 'Redemption Rate',
-                color: 'hsl(115, 70%, 84%)',
-                data: data.map(({ timestamp, redemptionRate }) => ({
-                    x: new Date(Number(timestamp) * 1000),
-                    y: getRatePercentage(redemptionRate.annualizedRate, 4),
-                })),
-            },
-        ]
-    }, [redemptionRateHistory])
+        return buildRedemptionRateChart(data, {
+            fallbackAnnualRate: annualRate.raw || graphSummary?.redemptionRate.raw,
+            timeframe: redemptionRateHistory.timeframe,
+        })
+    }, [annualRate.raw, graphSummary?.redemptionRate.raw, redemptionRateHistory])
 
     const [convertPieToUSD, setConvertPieToUSD] = useState(true)
 
@@ -307,11 +302,7 @@ export function Numbers() {
                         <LineChart
                             data={redemptionRateData}
                             timeframe={redemptionRateHistory.timeframe}
-                            yScale={{
-                                type: 'linear',
-                                // min: 1,
-                                // max: 10
-                            }}
+                            yScale={redemptionRateYScale}
                             axisRight={{
                                 format: (value) => parseFloat(parseFloat(value.toString()).toFixed(2)) + '%',
                             }}
