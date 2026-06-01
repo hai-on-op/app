@@ -121,7 +121,7 @@ export const COLLATERAL_BATCH_SIZE = 5_000_000 // blocks
 
 export const HARDCODED_KITE = 8
 
-export const DEPRECATED_COLLATERALS = ['MOO-VELO-V2-OP-VELO', 'SNX', 'WBTC', 'LUSD-A', 'LINK']
+export const DEPRECATED_COLLATERALS = ['MOO-VELO-V2-OP-VELO', 'SNX', 'WBTC', 'LUSD-A', 'LINK', 'APXETH']
 
 /**
  * DEV FEATURE FLAG: When enabled, minter pages (haiVELO, haiAERO) will show

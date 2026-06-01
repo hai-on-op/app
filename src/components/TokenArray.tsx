@@ -23,8 +23,6 @@ export function TokenArray({ tokens, size = 32, label, hideLabel = false }: Toke
     //             return 'white'
     //         case 'VELO':
     //             return 'white'
-    //         case 'APXETH':
-    //             return 'black'
     //         case 'PXETH':
     //             return 'black'
     //         case 'TBTC':

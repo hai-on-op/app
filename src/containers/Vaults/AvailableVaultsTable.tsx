@@ -24,7 +24,7 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
 
     const isUpToSmall = useMediaQuery('upToSmall')
 
-    const pausedRewards = ['APXETH', 'PXETH', 'RETH', 'WSTETH', 'OP', 'TBTC']
+    const pausedRewards = ['PXETH', 'RETH', 'WSTETH', 'OP', 'TBTC']
 
     // Define external links for specific collaterals
     const EXTERNAL_LINKS: Record<string, string> = {
