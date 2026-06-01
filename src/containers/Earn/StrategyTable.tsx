@@ -117,7 +117,6 @@ export function StrategyTable({
                         strategyType,
                         apr,
                         boostAPR,
-                        netApr,
                     },
                     i
                 ) => {
@@ -278,23 +277,6 @@ export function StrategyTable({
                                                     </Text>
                                                 )}
                                             </div>
-                                            {/* {(isAPXETH || isPXETH) && (
-                                                <BoostBadge>
-                                                    <Flex $justify="flex-start" $align="center">
-                                                        <img src={dineroLogo} alt="" width={18} height={18} />
-                                                    </Flex>
-                                                    <Text
-                                                        $fontSize="0.8em"
-                                                        style={{ marginLeft: '-7px', display: 'flex' }}
-                                                    >
-                                                        +10% Boost&nbsp;
-                                                        <Tooltip width="200px">
-                                                            Dinero is adding <br />
-                                                            +10% APY Boost
-                                                        </Tooltip>
-                                                    </Text>
-                                                </BoostBadge>
-                                            )} */}
                                             {/* {isLST && (
                                                 <BoostBadge>
                                                     <IconContainer $size={18}>

@@ -20,7 +20,6 @@ import uniImg from '~/assets/uniswap-icon.svg'
 import frxethImg from '~/assets/frxeth-img.svg'
 import sfrxethImg from '~/assets/sfrxeth-img.svg'
 import pendleImg from '~/assets/pendle-img.png'
-import apxethImg from '~/assets/apxeth-img.webp'
 import alethImg from '~/assets/aleth-img-2.svg'
 import pxethImg from '~/assets/pxeth-img.webp'
 import beefyImg from '~/assets/beefy-img.svg'
@@ -54,7 +53,6 @@ export const TOKEN_LOGOS = {
     SUSD: susdImg,
     TTM: ttmImg,
     VELO: velodromeImg,
-    APXETH: apxethImg,
     WBTC: wbtcImg,
     TBTC: tbtcImg,
     WETH: wethImg,
@@ -168,11 +166,6 @@ export const tokenAssets: Record<string, Token> = {
         symbol: 'HAIAERO',
         name: 'haiAERO',
         icon: haiAeroImg,
-    },
-    APXETH: {
-        symbol: 'APXETH',
-        name: 'APXETH',
-        icon: apxethImg,
     },
     ALETH: {
         symbol: 'ALETH',

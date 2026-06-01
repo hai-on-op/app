@@ -8,10 +8,6 @@ export const REWARDS = {
             KITE: 0,
             OP: 0,
         },
-        APXETH: {
-            KITE: 0,
-            OP: 0,
-        },
         ALETH: {
             KITE: 50,
             OP: 0,
