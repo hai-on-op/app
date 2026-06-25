@@ -111,6 +111,8 @@ export function Header({ tickerActive = false }: HeaderProps) {
         (location.pathname === '/vaults/open' &&
             ['HAIAERO'].includes(new URLSearchParams(location.search).get('collateral') || ''))
 
+    const isSHaiRoute = location.pathname === '/sHAI'
+
     const isLstRoute = isHaiVeloRoute || isHaiAeroRoute
 
     return (
@@ -278,6 +280,9 @@ export function Header({ tickerActive = false }: HeaderProps) {
                                                 </BrandedDropdown.Item>
                                             </StakeDropdown>
                                         </StakeDropdownContainer>
+                                        <Link href="/sHAI" $textDecoration="none">
+                                            <HeaderLink $active={isSHaiRoute}>sHAI</HeaderLink>
+                                        </Link>
                                         {/* <Link href="/learn" $textDecoration="none">
                                             <HeaderLink $active={location.pathname === '/learn'}>LEARN</HeaderLink>
                                         </Link> */}

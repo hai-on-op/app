@@ -30,6 +30,7 @@ const VaultExplorer = lazy(() =>
 )
 const HaiVeloPage = lazy(() => import('./containers/HaiVeloPage').then((module) => ({ default: module.HaiVeloPage })))
 const HaiAeroPage = lazy(() => import('./containers/MinterPage').then((module) => ({ default: module.HaiAeroPage })))
+const SHaiPage = lazy(() => import('./containers/SHaiPage').then((module) => ({ default: module.SHaiPage })))
 const TestClaim = lazy(() => import('./containers/TestClaim').then((module) => ({ default: module.TestClaim })))
 const KiteStakePage = lazy(() => import('./containers/Stake/KiteStakePage'))
 const HaiVeloVeloLpStakePage = lazy(() => import('./containers/Stake/HaiVeloVeloLpStakePage'))
@@ -91,6 +92,16 @@ function HaiAeroRoute() {
                 </AprProvider>
             </ClaimsProvider>
         </StakingProvider>
+    )
+}
+
+function SHaiRoute() {
+    return (
+        <ClaimsProvider>
+            <AprProvider>
+                <SHaiPage />
+            </AprProvider>
+        </ClaimsProvider>
     )
 }
 
@@ -187,6 +198,7 @@ const App = () => {
                                                     path={'/stake/hai-bold-curve-lp'}
                                                 />
                                                 <Route exact strict component={EarnRoute} path={'/earn'} />
+                                                <Route exact strict component={SHaiRoute} path={'/sHAI'} />
                                                 <Route
                                                     exact
                                                     strict
