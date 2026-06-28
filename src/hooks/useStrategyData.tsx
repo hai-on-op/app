@@ -14,6 +14,7 @@ import { useHaiVeloBoostMap } from './haivelo/useHaiVeloBoostMap'
 import { useHaiAeroCollateralMapping } from './haiaero/useHaiAeroCollateralMapping'
 import { useHaiAeroBoostMap } from './haiaero/useHaiAeroBoostMap'
 import { useAeroPrice } from './useAeroPrice'
+import { useHaiMarketPrice } from './useHaiMarketPrice'
 
 // centralized in haiVeloService
 import { calculateLPBoost } from '~/services/boostService'
@@ -51,7 +52,8 @@ export function useStrategyData(systemStateData: any, velodromePricesData: any, 
     })
 
     // === HAI Hold Strategy ===
-    const haiPrice = Number(velodromePricesData?.HAI?.raw)
+    const { priceUsd: haiMarketPriceUsd } = useHaiMarketPrice()
+    const haiPrice = Number(haiMarketPriceUsd || 1)
     const haiBalance = useBalance('HAI')
     const haiUserPosition = (haiBalance?.raw as any) * haiPrice
     const redemptionRate = systemStateData?.systemStates[0]?.currentRedemptionRate.annualizedRate - 1

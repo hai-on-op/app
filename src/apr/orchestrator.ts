@@ -1,4 +1,4 @@
-import type { AprInputs, StrategyAprResult, PositionToken, RewardToken } from './types'
+import type { AprInputs, StrategyAprResult, RewardToken } from './types'
 import { calculateHaiHoldApr } from './calculators/haiHold'
 import { calculateHaiVeloDepositApr } from './calculators/haiVeloDeposit'
 import { calculateHaiAeroDepositApr } from './calculators/haiAeroDeposit'
@@ -426,8 +426,13 @@ export function computeAllAprs(inputs: AprInputs): Record<string, StrategyAprRes
         const token1 =
             inputs.tokensData[pool.token1.toLowerCase()]?.symbol || pool.tokenPair?.[1] || pool.token1.slice(0, 6)
 
-        const price0 = Number((inputs as any)._velodromePrices?.[token0]?.raw || 0)
-        const price1 = Number((inputs as any)._velodromePrices?.[token1]?.raw || 0)
+        const getTokenPrice = (symbol: string) => {
+            if (symbol.toUpperCase() === 'HAI') return prices.hai
+            return Number((inputs as any)._velodromePrices?.[symbol]?.raw || 0)
+        }
+
+        const price0 = getTokenPrice(token0)
+        const price1 = getTokenPrice(token1)
 
         const reserve0 = parseFloat(formatUnits(pool.reserve0 || '0', pool.decimals))
         const reserve1 = parseFloat(formatUnits(pool.reserve1 || '0', pool.decimals))
