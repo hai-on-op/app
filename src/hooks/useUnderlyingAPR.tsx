@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo } from 'react'
 import { underlyingAPRService, type UnderlyingAPRResult, type UnderlyingAPRData } from '~/services/underlyingAPRService'
 import { useStoreState } from '~/store'
-import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { getLastEpochTotals, getProtocolConfig } from '~/services/minterProtocol'
 import { useEarnData } from '~/hooks/useEarnData'
+import { useHaiMarketPrice } from '~/hooks/useHaiMarketPrice'
 
 interface UseUnderlyingAPRProps {
     collateralType: string
@@ -40,8 +40,7 @@ function useUnderlyingAPRBase({
         connectWalletModel: { tokensData },
     } = useStoreState((state) => state)
 
-    // Get Velodrome price data
-    const { prices: velodromePricesData } = useVelodromePrices()
+    const { priceUsd: haiMarketPriceUsd } = useHaiMarketPrice()
 
     const isHaiVelo = collateralType === 'HAIVELO' || collateralType === 'HAIVELOV2' || collateralType === 'HAIVELO_V2'
     const isHaiAero = collateralType === 'HAIAERO'
@@ -54,7 +53,7 @@ function useUnderlyingAPRBase({
         const tokenData = Object.values(tokensData).find((token) => token.symbol === collateralType)
 
         // For HAI VELO (v1/v2), we need HAI price and the actual strategy data
-        const haiPrice = Number(velodromePricesData?.HAI?.raw || 1)
+        const haiPrice = Number(haiMarketPriceUsd || 1)
         // Only pass the specific values we need to avoid dependency issues
 
         // const haiVeloBoostApr = isHaiVelo ? strategyData?.haiVelo?.boostApr : undefined
@@ -87,7 +86,7 @@ function useUnderlyingAPRBase({
         collateralType,
         liquidationData,
         tokensData,
-        velodromePricesData?.HAI?.raw,
+        haiMarketPriceUsd,
     ])
 
     // Fetch underlying APR
@@ -214,7 +213,7 @@ export function useMultipleUnderlyingAPR({
         connectWalletModel: { tokensData },
     } = useStoreState((state) => state)
 
-    const { prices: velodromePricesData } = useVelodromePrices()
+    const { priceUsd: haiMarketPriceUsd } = useHaiMarketPrice()
     const { strategyData } = useEarnData()
 
     useEffect(() => {
@@ -227,7 +226,7 @@ export function useMultipleUnderlyingAPR({
             try {
                 // Prepare data for each collateral type
                 const dataMap: Record<string, Partial<UnderlyingAPRData>> = {}
-                const haiPrice = Number(velodromePricesData?.HAI?.raw || 1)
+                const haiPrice = Number(haiMarketPriceUsd || 1)
 
                 collateralTypes.forEach((type) => {
                     const collateralLiquidationData = liquidationData?.collateralLiquidationData?.[type]
@@ -306,7 +305,7 @@ export function useMultipleUnderlyingAPR({
         refreshTrigger,
         liquidationData,
         tokensData,
-        velodromePricesData?.HAI?.raw,
+        haiMarketPriceUsd,
         strategyData,
     ])
 
