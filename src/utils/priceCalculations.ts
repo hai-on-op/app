@@ -1,6 +1,6 @@
 import { formatUnits } from 'ethers/lib/utils'
-import { stringsExistAndAreEqual } from '~/utils'
 import { TOKEN_ADDRESSES } from '~/utils/constants'
+import { stringsExistAndAreEqual } from '~/utils/validations'
 
 // Types duplicated for this utility
 interface TokenData {
@@ -29,10 +29,22 @@ interface VelodromePricesData {
     }
 }
 
+type TokenPriceOverrides = Record<string, number | string | undefined>
+
 /**
  * Calculate the price of a token from velodrome price data
  */
-export function calculateTokenPrice(tokenSymbol: string, velodromePricesData: VelodromePricesData): number {
+export function calculateTokenPrice(
+    tokenSymbol: string,
+    velodromePricesData: VelodromePricesData,
+    priceOverrides: TokenPriceOverrides = {}
+): number {
+    const overridePrice = priceOverrides[tokenSymbol]
+    if (overridePrice !== undefined) {
+        const parsedOverride = typeof overridePrice === 'number' ? overridePrice : parseFloat(overridePrice)
+        if (Number.isFinite(parsedOverride)) return parsedOverride
+    }
+
     return parseFloat(velodromePricesData[tokenSymbol]?.raw || velodromePricesData[tokenSymbol]?.toString() || '1')
 }
 
@@ -56,15 +68,16 @@ export function getTokenSymbol(
 export function calculatePoolTVL(
     pool: PoolData,
     tokensData: Record<string, TokenData>,
-    velodromePricesData: VelodromePricesData
+    velodromePricesData: VelodromePricesData,
+    priceOverrides: TokenPriceOverrides = {}
 ): { tvl0: number; tvl1: number; totalTvl: number } {
     // Get token symbols
     const token0 = getTokenSymbol(pool.token0, tokensData, pool.tokenPair[0])
     const token1 = getTokenSymbol(pool.token1, tokensData, pool.tokenPair[1])
 
     // Get token prices
-    const price0 = calculateTokenPrice(token0, velodromePricesData)
-    const price1 = calculateTokenPrice(token1, velodromePricesData)
+    const price0 = calculateTokenPrice(token0, velodromePricesData, priceOverrides)
+    const price1 = calculateTokenPrice(token1, velodromePricesData, priceOverrides)
 
     // Determine which balance to use (reserve vs staked) based on ALUSD presence
     const base0 =

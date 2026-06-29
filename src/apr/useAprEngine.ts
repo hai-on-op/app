@@ -11,6 +11,7 @@ import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { useStoreState } from '~/store'
 import { useBalance } from '~/hooks'
 import { useAeroPrice } from '~/hooks/useAeroPrice'
+import { useHaiMarketPrice } from '~/hooks/useHaiMarketPrice'
 import { useVelodrome, useVelodromePositions } from '~/hooks/useVelodrome'
 import { useMinterVaults } from '~/hooks/useMinterVaults'
 import { useHaiVeloCollateralMapping } from '~/hooks/haivelo/useHaiVeloCollateralMapping'
@@ -50,6 +51,7 @@ export function useAprEngine(): AprContextValue {
     // Prices
     const { prices: velodromePricesData, loading: pricesLoading } = useVelodromePrices()
     const { priceUsd: aeroPriceUsd } = useAeroPrice()
+    const { priceUsd: haiMarketPriceUsd } = useHaiMarketPrice()
 
     // System state
     const { data: systemStateData, loading: systemLoading } = useQuery(SYSTEMSTATE_QUERY, {
@@ -68,7 +70,7 @@ export function useAprEngine(): AprContextValue {
     // Store data
     const {
         connectWalletModel: { tokensData },
-        vaultModel: { list: userPositionsList, liquidationData },
+        vaultModel: { liquidationData },
         stakingModel: { usersStakingData, totalStaked, stakingApyData },
     } = useStoreState((state) => state)
 
@@ -178,11 +180,11 @@ export function useAprEngine(): AprContextValue {
 
     // ==================== ASSEMBLE INPUTS ====================
     const strategies = useMemo((): Record<string, StrategyAprResult> => {
-        if (loading || !velodromePricesData?.HAI || !systemStateData?.systemStates?.[0]) {
+        if (loading || !velodromePricesData || !systemStateData?.systemStates?.[0]) {
             return {}
         }
 
-        const haiPrice = Number(velodromePricesData.HAI.raw)
+        const haiPrice = Number(haiMarketPriceUsd || 1)
         const kitePrice = Number(velodromePricesData.KITE?.raw || 0)
         const veloPrice = Number(velodromePricesData.VELO?.raw || 0)
         const opPrice = Number(velodromePricesData.OP?.raw || 0)
@@ -277,6 +279,7 @@ export function useAprEngine(): AprContextValue {
     }, [
         loading,
         velodromePricesData,
+        haiMarketPriceUsd,
         systemStateData,
         collateralTypesData,
         address,
@@ -293,16 +296,19 @@ export function useAprEngine(): AprContextValue {
         aeroPriceUsd,
         haiBoldLpAccount,
         haiBoldLpStats,
+        haiBoldLpAprData.underlyingApr,
         curveData,
         haiVeloVeloLpAccount,
         haiVeloVeloLpStats,
+        haiVeloVeloLpAprData.haiRewardsApr,
+        haiVeloVeloLpAprData.underlyingApr,
         haiVeloVeloLpPriceUsd,
+        haiVeloVeloPoolTvlUsd,
         minterVaultsData,
         velodromeData,
         velodromePositionsData,
         tokensData,
         usersStakingData,
-        userPositionsList,
         underlyingAprMap,
         stabilityFees,
     ])

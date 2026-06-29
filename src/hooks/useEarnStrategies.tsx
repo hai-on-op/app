@@ -17,6 +17,7 @@ import { useStoreState } from '~/store'
 import { utils } from 'ethers'
 import { useUnderlyingAPRWithStrategyData } from '~/hooks/useUnderlyingAPR'
 import { getPoolRewards, getVaultRewards } from '~/services/rewards/rewardCatalog'
+import { useHaiMarketPrice } from './useHaiMarketPrice'
 
 // Import the BaseStrategy type for state management
 type BaseStrategy = ReturnType<typeof createVaultStrategy>
@@ -71,6 +72,7 @@ export function useEarnStrategies() {
     const {
         vaultModel: { liquidationData },
     } = useStoreState((state) => state)
+    const { priceUsd: haiMarketPriceUsd } = useHaiMarketPrice()
 
     // Ensure haiVELO deposit strategy APR matches underlying APR
     const { underlyingAPR: haiVeloUnderlyingAPR } = useUnderlyingAPRWithStrategyData({
@@ -103,12 +105,12 @@ export function useEarnStrategies() {
                 case 'DINERO':
                     return Number(veloPrices?.DINERO?.raw || 0)
                 case 'HAI':
-                    return Number(liquidationData?.currentRedemptionPrice || 1)
+                    return Number(haiMarketPriceUsd || 1)
                 default:
                     return 0
             }
         },
-        [veloPrices, liquidationData]
+        [veloPrices, liquidationData, haiMarketPriceUsd]
     )
 
     // === State ===
@@ -127,7 +129,7 @@ export function useEarnStrategies() {
 
     const calculateVaultStrategies = useCallback((): BaseStrategy[] => {
         // Safe fallback if data is missing
-        if (!collateralTypesData?.collateralTypes || !velodromePricesData?.HAI) {
+        if (!collateralTypesData?.collateralTypes) {
             return []
         }
 
@@ -137,7 +139,7 @@ export function useEarnStrategies() {
 
         if (!collateralsWithMinterRewards.length) return []
 
-        const haiPrice = Number(velodromePricesData?.HAI.raw)
+        const haiPrice = Number(haiMarketPriceUsd || 1)
 
         const strategies = collateralsWithMinterRewards.map((cType) => {
             const assets = tokenAssets[cType.id]
@@ -169,7 +171,7 @@ export function useEarnStrategies() {
         })
 
         return strategies
-    }, [collateralTypesData, velodromePricesData, userPositionByCollateral, individualVaultBoosts])
+    }, [collateralTypesData, haiMarketPriceUsd, userPositionByCollateral, individualVaultBoosts])
 
     const calculateSpecialStrategies = useCallback((): BaseStrategy[] => {
         // Safe fallback if strategy data is missing
@@ -290,6 +292,9 @@ export function useEarnStrategies() {
             return []
         }
 
+        const haiPrice = Number(haiMarketPriceUsd || 1)
+        const priceOverrides = { HAI: haiPrice }
+
         const strategies: BaseStrategy[] = []
         for (const pool of velodromeData) {
             if (!VELO_POOLS.includes(pool.address)) continue
@@ -299,11 +304,11 @@ export function useEarnStrategies() {
             const token1 = getTokenSymbol(pool.token1, tokensData, pool.tokenPair[1])
 
             // Get token prices using utility function
-            const price0 = calculateTokenPrice(token0, velodromePricesData as any)
-            const price1 = calculateTokenPrice(token1, velodromePricesData as any)
+            const price0 = calculateTokenPrice(token0, velodromePricesData as any, priceOverrides)
+            const price1 = calculateTokenPrice(token1, velodromePricesData as any, priceOverrides)
 
             // Calculate pool TVL using utility function
-            const { totalTvl: tvl } = calculatePoolTVL(pool, tokensData, velodromePricesData as any)
+            const { totalTvl: tvl } = calculatePoolTVL(pool, tokensData, velodromePricesData as any, priceOverrides)
             const veloAPR =
                 (365 *
                     parseFloat(formatUnits(pool.emissions, pool.decimals)) *
@@ -333,7 +338,7 @@ export function useEarnStrategies() {
             strategies.push(strategy)
         }
         return strategies
-    }, [velodromePricesData, velodromeData, tokensData, velodromePositionsData])
+    }, [velodromePricesData, velodromeData, tokensData, velodromePositionsData, haiMarketPriceUsd])
 
     useEffect(() => {
         // Error boundary: halt execution if critical errors exist
