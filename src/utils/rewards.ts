@@ -9,11 +9,11 @@ export const REWARDS = {
             OP: 0,
         },
         ALETH: {
-            KITE: 50,
+            KITE: 0,
             OP: 0,
         },
         'YV-VELO-ALETH-WETH': {
-            KITE: 25,
+            KITE: 0,
             OP: 0,
         },
         'YV-VELO-MSETH-WETH': {
@@ -54,7 +54,7 @@ export const REWARDS = {
             OP: 0,
         },
         HAIAERO: {
-            KITE: 0,
+            KITE: 50,
             OP: 0,
         },
         // Testnet

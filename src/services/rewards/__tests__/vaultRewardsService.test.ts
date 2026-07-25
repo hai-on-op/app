@@ -2,10 +2,12 @@ import { describe, it, expect } from 'vitest'
 import { getVaultSchedule, computeVaultApr } from '../vaultRewardsService'
 
 describe('vaultRewardsService.getVaultSchedule', () => {
-    it('returns schedule entries only for positive rewards', () => {
-        const res = getVaultSchedule('ALETH')
-        expect(Array.isArray(res)).toBe(true)
-        expect(res.find((r) => r.token === 'KITE')?.dailyAmount).toBeGreaterThan(0)
+    it.each(['ALETH', 'YV-VELO-ALETH-WETH'])('returns no schedule entries for %s', (collateral) => {
+        expect(getVaultSchedule(collateral)).toEqual([])
+    })
+
+    it('returns the configured haiAERO minting reward', () => {
+        expect(getVaultSchedule('HAIAERO')).toEqual([{ token: 'KITE', dailyAmount: 50 }])
     })
 })
 
