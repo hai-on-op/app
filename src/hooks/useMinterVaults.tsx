@@ -64,6 +64,7 @@ export type MinterVaultsData = {
 const minterVaultCollaterals = [
     'HAIVELO',
     'HAIVELOV2',
+    'HAIAERO',
     'ALETH',
     'YV-VELO-ALETH-WETH',
     'YV-VELO-MSETH-WETH',
