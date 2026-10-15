@@ -299,15 +299,7 @@ export function useMultipleUnderlyingAPR({
         return () => {
             isCancelled = true
         }
-    }, [
-        collateralTypes,
-        enabled,
-        refreshTrigger,
-        liquidationData,
-        tokensData,
-        haiMarketPriceUsd,
-        strategyData,
-    ])
+    }, [collateralTypes, enabled, refreshTrigger, liquidationData, tokensData, haiMarketPriceUsd, strategyData])
 
     const refresh = () => {
         underlyingAPRService.clearCache()

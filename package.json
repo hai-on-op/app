@@ -5,7 +5,7 @@
     "private": true,
     "scripts": {
         "start": "vite",
-        "build": "vite build",
+        "build": "vite build && node scripts/check-vercel-runtime.mjs",
         "build:report": "yarn build && node scripts/report-build-sizes.mjs",
         "build:analyze": "ANALYZE_BUNDLE=1 vite build",
         "perf:budgets": "node scripts/check-build-budgets.mjs",
@@ -21,7 +21,7 @@
         "format:check": "yarn run prettier && yarn run lint"
     },
     "engines": {
-        "node": ">=20.19.4"
+        "node": "24.x"
     },
     "peerDependencies": {
         "@babel/runtime": "7.17.0",
@@ -119,6 +119,7 @@
         ]
     },
     "resolutions": {
+        "vite-plugin-vercel/@vercel/build-utils": "14.21.1",
         "chalk": "4.1.2",
         "strip-ansi": "6.0.0",
         "color-convert": "2.0.1",

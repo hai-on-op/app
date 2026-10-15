@@ -4354,15 +4354,18 @@
   dependencies:
     server-only "^0.0.1"
 
+"@vercel/build-utils@14.21.1", "@vercel/build-utils@^7.10.0":
+  version "14.21.1"
+  resolved "https://registry.yarnpkg.com/@vercel/build-utils/-/build-utils-14.21.1.tgz#8bd17dec816e62b7e08d30b69d8eb90cd9e1bfe2"
+  integrity sha512-zY+tAoAfQkuGiALPwLV2K0ugDtNml3LxWM0Fimv4JScSsCb/+5dIgn2gSXt+fiJPenk0MRKZ8/LphLZyrqTfRQ==
+  dependencies:
+    cjs-module-lexer "1.2.3"
+    es-module-lexer "1.5.0"
+
 "@vercel/build-utils@8.7.0":
   version "8.7.0"
   resolved "https://registry.yarnpkg.com/@vercel/build-utils/-/build-utils-8.7.0.tgz#253736b07938787e08470c3758e87c20ecb1fb89"
   integrity sha512-ofZX+ABiW76u5khIyYyH5xK5KSuiAteqRu5hz2k1a2WHLwF7VpeBg8gdFR+HwbVnNkHtkMA64ya5Dd/lNoABkw==
-
-"@vercel/build-utils@^7.10.0":
-  version "7.12.0"
-  resolved "https://registry.yarnpkg.com/@vercel/build-utils/-/build-utils-7.12.0.tgz#7d72dcb5867f8c53d65c176fe7499e9db1441c1c"
-  integrity sha512-h6fO2LqEWtceK2RxoxGp7QhZZnIa4rK2x3kTJlAYc5ARZPhsn0KB7Wf+YhFCInIqaDq7S0S92YWABkHIJDKjBw==
 
 "@vercel/error-utils@2.0.3":
   version "2.0.3"
@@ -6766,6 +6769,11 @@ es-module-lexer@1.4.1:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/es-module-lexer/-/es-module-lexer-1.4.1.tgz#41ea21b43908fe6a287ffcbe4300f790555331f5"
   integrity sha512-cXLGjP0c4T3flZJKQSuziYoq7MlT+rnvfZjfp7h+I7K9BNX54kP9nyWvdbwjQ4u1iWbOL4u96fgeZLToQlZC7w==
+
+es-module-lexer@1.5.0:
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/es-module-lexer/-/es-module-lexer-1.5.0.tgz#4878fee3789ad99e065f975fdd3c645529ff0236"
+  integrity sha512-pqrTKmwEIgafsYZAGw9kszYzmagcE/n4dbgwGWLEXg7J4QFJVQRBld8j3Q3GNez79jzxZshq0bcT962QHOghjw==
 
 es-object-atoms@^1.0.0, es-object-atoms@^1.1.1:
   version "1.1.1"

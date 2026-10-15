@@ -17,6 +17,7 @@ import { useStoreState } from '~/store'
 import { utils } from 'ethers'
 import { useUnderlyingAPRWithStrategyData } from '~/hooks/useUnderlyingAPR'
 import { getPoolRewards, getVaultRewards } from '~/services/rewards/rewardCatalog'
+import { STAKING_REWARDS } from '~/utils/rewards'
 import { useHaiMarketPrice } from './useHaiMarketPrice'
 
 // Import the BaseStrategy type for state management
@@ -270,7 +271,7 @@ export function useEarnStrategies() {
                 boostAPR: haiBoldLpBoostApr as BoostAPRData,
                 boostEligible: true,
                 earnLink: '/stake/hai-bold-curve-lp',
-                rewards: [{ token: 'KITE', emission: 25 }],
+                rewards: [{ token: 'KITE', emission: STAKING_REWARDS['lp-hai-bold-curve'].KITE }],
             }),
             createSpecialStrategy({
                 pair: ['HAIVELO', 'VELO'],
@@ -281,7 +282,7 @@ export function useEarnStrategies() {
                 boostAPR: haiVeloVeloLpBoostApr as BoostAPRData,
                 boostEligible: true,
                 earnLink: '/stake/hai-velo-velo-lp',
-                rewards: [{ token: 'KITE', emission: 25 }],
+                rewards: [{ token: 'KITE', emission: STAKING_REWARDS['lp-hai-velo-velo'].KITE }],
             }),
         ]
     }, [strategyData, haiVeloUnderlyingAPR, haiAeroUnderlyingAPR])

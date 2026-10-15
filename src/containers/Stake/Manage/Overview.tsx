@@ -23,6 +23,7 @@ import { OverviewProgressStat, OverviewStat } from './OverviewStat'
 import { useAccount } from 'wagmi'
 import { ExternalLink } from 'react-feather'
 import { TOKEN_LOGOS } from '~/utils/tokens'
+import { STAKING_REWARDS } from '~/utils/rewards'
 import type { TokenKey } from '~/types'
 import type { StakingConfig } from '~/types/stakingConfig'
 
@@ -129,6 +130,7 @@ export function Overview({ simulation, config }: OverviewProps) {
     const isCurveLp = config?.tvl?.source === 'curve'
     const isVelodromeLp = config?.tvl?.source === 'velodrome'
     const isLpPool = isCurveLp || isVelodromeLp
+    const dailyKiteReward = config ? STAKING_REWARDS[config.namespace as keyof typeof STAKING_REWARDS]?.KITE ?? 0 : 0
     const showLpTvl = Boolean(config?.tvl)
     const lpTvlLabel = config?.tvl?.label || (config?.tvl?.source === 'curve' ? 'Curve LP TVL' : 'haiVELO/VELO LP TVL')
 
@@ -175,7 +177,7 @@ export function Overview({ simulation, config }: OverviewProps) {
                 </Text>
                 <Text $fontSize=".9rem">{bd.incentivesAprFormatted}</Text>
                 <Text $fontSize=".75rem" style={{ opacity: 0.7 }}>
-                    25 KITE/day distributed to stakers
+                    {dailyKiteReward} KITE/day distributed to stakers
                 </Text>
             </div>
             <div style={{ borderTop: '1px solid rgba(255,255,255,0.2)', paddingTop: '8px', marginTop: '8px' }}>

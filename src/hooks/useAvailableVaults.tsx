@@ -25,7 +25,6 @@ const HAS_REWARDS = [
     'ALETH',
     'YV-VELO-ALETH-WETH',
     'YV-VELO-MSETH-WETH',
-    'MSETH',
     'MOO-VELO-BOLD-LUSD',
 ]
 
