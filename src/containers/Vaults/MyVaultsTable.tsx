@@ -70,7 +70,6 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                     'ALETH',
                     'YV-VELO-ALETH-WETH',
                     'YV-VELO-MSETH-WETH',
-                    'MSETH',
                     'MOO-VELO-BOLD-LUSD',
                 ]
                 const collateralLabel = formatCollateralLabel(collateralName)
