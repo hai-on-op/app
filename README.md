@@ -18,6 +18,11 @@ Deposit your crypto assets, generate HAI and lever up your position.
 
 ## Development
 
+Use Node.js 24 (`nvm use`). CI and Vercel use the same major version. The scoped
+`@vercel/build-utils` resolution lets the Vite adapter generate Node.js 24 function
+configs; its bundled version only supports Node.js 20. `yarn build` checks the
+generated function runtimes before deployment.
+
 ### Install Dependencies
 
 ```bash
