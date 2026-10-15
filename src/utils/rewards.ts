@@ -17,15 +17,15 @@ export const REWARDS = {
             OP: 0,
         },
         'YV-VELO-MSETH-WETH': {
-            KITE: 25,
+            KITE: 10,
             OP: 0,
         },
         'MOO-VELO-BOLD-LUSD': {
-            KITE: 25,
+            KITE: 10,
             OP: 0,
         },
         MSETH: {
-            KITE: 25,
+            KITE: 0,
             OP: 0,
         },
 
@@ -105,9 +105,9 @@ export const REWARDS = {
  * Maps pool namespace to daily reward amounts.
  */
 export const STAKING_REWARDS = {
-    // HAI/BOLD Curve LP Staking - 25 KITE per day
+    // HAI/BOLD Curve LP Staking - 50 KITE per day
     'lp-hai-bold-curve': {
-        KITE: 25,
+        KITE: 50,
         OP: 0,
     },
     // haiVELO/VELO LP Staking - 25 KITE per day + HAI rewards (shared with haiVELO depositors)
