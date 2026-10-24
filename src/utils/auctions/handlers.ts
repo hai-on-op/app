@@ -1,5 +1,5 @@
+import { createGeb } from '~/services/geb'
 import { ethers } from 'ethers'
-import { Geb } from '@hai-on-op/sdk'
 import { JsonRpcSigner } from '@ethersproject/providers'
 
 import type { IAuctionBid } from '~/types'
@@ -20,7 +20,7 @@ export const handleAuctionBuy = async ({ signer, haiAmount, auctionId, collatera
     }
     const chainId = await signer.getChainId()
     const networkName = getNetworkName(chainId)
-    const geb = new Geb(networkName, signer)
+    const geb = createGeb(networkName, signer)
 
     const proxy = await geb.getProxyAction(signer._address)
     const haiAmountBN = ethers.utils.parseUnits(haiAmount, 18)
@@ -42,7 +42,7 @@ export const handleAuctionBid = async ({ signer, bid, auctionId, auctionType }: 
 
     const chainId = await signer.getChainId()
     const networkName = getNetworkName(chainId)
-    const geb = new Geb(networkName, signer)
+    const geb = createGeb(networkName, signer)
 
     const proxy = await geb.getProxyAction(signer._address)
     const bidBN = ethers.utils.parseEther(bid)
@@ -68,7 +68,7 @@ export const handleAuctionClaim = async ({ signer, auctionId, auctionType }: IAu
 
     const chainId = await signer.getChainId()
     const networkName = getNetworkName(chainId)
-    const geb = new Geb(networkName, signer)
+    const geb = createGeb(networkName, signer)
 
     const proxy = await geb.getProxyAction(signer._address)
 
@@ -96,7 +96,7 @@ export const handleClaimInternalBalance = async ({ signer, type, bid: amount, to
 
     const chainId = await signer.getChainId()
     const networkName = getNetworkName(chainId)
-    const geb = new Geb(networkName, signer)
+    const geb = createGeb(networkName, signer)
     const proxy = await geb.getProxyAction(signer._address)
 
     let txData: ethers.PopulatedTransaction

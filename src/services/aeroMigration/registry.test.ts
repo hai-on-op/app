@@ -1,6 +1,7 @@
 import { NEW_HAI_AERO_BRIDGE_ROUTES, getReviewedBridgeRoute } from './bridgeRegistry'
 import { HAI_AERO_ISSUER_DEPLOYMENTS, getReviewedIssuer } from './issuerRegistry'
 import { describe, expect, it } from 'vitest'
+import { REVIEWED_ADDITIONAL_COLLATERALS } from './collateralRegistry'
 import { AERO_MIGRATION_DEPLOYMENTS, getReviewedDeployment, LEGACY_MIGRATION_ASSETS } from './registry'
 import { assertLegacyMintingEnabled } from './policy'
 
@@ -9,6 +10,7 @@ describe('AERO migration adoption', () => {
         expect(AERO_MIGRATION_DEPLOYMENTS).toEqual([])
         expect(HAI_AERO_ISSUER_DEPLOYMENTS).toEqual([])
         expect(NEW_HAI_AERO_BRIDGE_ROUTES).toEqual([])
+        expect(REVIEWED_ADDITIONAL_COLLATERALS).toEqual([])
         expect(() => getReviewedBridgeRoute('new')).toThrow('no verified route')
         expect(() => getReviewedIssuer('new')).toThrow('no verified issuer')
         expect(() => getReviewedDeployment('haiAERO-v2')).toThrow('no verified HAI deployment')

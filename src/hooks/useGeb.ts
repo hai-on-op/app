@@ -1,5 +1,6 @@
+import { createGeb } from '~/services/geb'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Geb } from '@hai-on-op/sdk'
+import type { Geb } from '@hai-on-op/sdk'
 import { IHaiSafeManager__factory } from '@hai-on-op/sdk/lib/typechained'
 import { useAccount } from 'wagmi'
 
@@ -19,7 +20,7 @@ export function useGeb(): Geb {
     useEffect(() => {
         if (!signer) return
         const networkName = getNetworkName(NETWORK_ID)
-        const geb = new Geb(networkName, signer)
+        const geb = createGeb(networkName, signer)
         setState(geb)
     }, [signer])
 
@@ -31,7 +32,7 @@ export function usePublicGeb(): Geb {
     const provider = usePublicProvider()
     const publicGeb = useMemo(() => {
         const networkName = getNetworkName(NETWORK_ID)
-        return new Geb(networkName, provider)
+        return createGeb(networkName, provider)
     }, [provider])
     return publicGeb
 }
