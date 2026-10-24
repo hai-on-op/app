@@ -1,3 +1,4 @@
+import { AeroMigrationNotice } from '~/components/AeroMigrationNotice'
 import type { TokenKey } from '~/types'
 
 import styled from 'styled-components'
@@ -46,6 +47,11 @@ export function WrapperAd({
         } else {
             setWrapTokenActive(true)
         }
+    }
+
+    // These banners advertise the legacy wrapper; keep their migration status visible.
+    if (tokenImages.some((token) => ['HAIVELO', 'HAIVELOV2', 'HAIAERO'].includes(token))) {
+        return <AeroMigrationNotice />
     }
 
     return (

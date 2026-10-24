@@ -1,3 +1,5 @@
+import { AeroMigrationNotice } from '~/components/AeroMigrationNotice'
+import { LEGACY_MINTING_ENABLED } from '~/services/aeroMigration/policy'
 /**
  * MinterMultiStepModal
  *
@@ -123,6 +125,14 @@ export function MinterMultiStepModal({
                 return null
         }
     }, [phase, items, config, plan, includeBridge, bridgeAmount, mintedAmount, onAllApproved, onStepDone])
+
+    if (!LEGACY_MINTING_ENABLED) {
+        return (
+            <Modal {...props} heading="AERO migration">
+                <AeroMigrationNotice />
+            </Modal>
+        )
+    }
 
     return (
         <Modal

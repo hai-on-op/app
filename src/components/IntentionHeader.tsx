@@ -249,9 +249,9 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
     const baseCopy = copy[type]
     const isLpStaking = stakeConfig && stakeConfig.namespace !== 'kite'
     const subtitle = isHaiVeloOpen
-        ? 'Convert your VELO & veVELO into haiVELO to use as collateral while earning veVELO rewards. '
+        ? 'Manage existing haiVELO collateral and rewards, and follow the migration to the new AERO. '
         : isHaiAeroOpen
-        ? 'Convert your AERO on Base into haiAERO and bridge to Optimism to use as collateral. '
+        ? 'Manage legacy haiAERO collateral and bridging, and follow the migration to the new AERO. '
         : isLpStaking
         ? `Stake ${stakeConfig.labels.token} to earn rewards. `
         : baseCopy.subtitle

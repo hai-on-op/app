@@ -29,6 +29,9 @@ const VaultExplorer = lazy(() =>
     import('./containers/Vaults/Explore').then((module) => ({ default: module.VaultExplorer }))
 )
 const HaiVeloPage = lazy(() => import('./containers/HaiVeloPage').then((module) => ({ default: module.HaiVeloPage })))
+const AeroMigrationPage = lazy(() =>
+    import('./containers/AeroMigration').then((module) => ({ default: module.AeroMigrationPage }))
+)
 const HaiAeroPage = lazy(() => import('./containers/MinterPage').then((module) => ({ default: module.HaiAeroPage })))
 const TestClaim = lazy(() => import('./containers/TestClaim').then((module) => ({ default: module.TestClaim })))
 const KiteStakePage = lazy(() => import('./containers/Stake/KiteStakePage'))
@@ -197,6 +200,12 @@ const App = () => {
                                                 <Route exact strict component={VaultsRoute} path={'/vaults/open'} />
                                                 <Route exact strict component={HaiVeloRoute} path={'/haiVELO'} />
                                                 <Route exact strict component={HaiAeroRoute} path={'/haiAERO'} />
+                                                <Route
+                                                    exact
+                                                    strict
+                                                    component={AeroMigrationPage}
+                                                    path={'/aero-migration'}
+                                                />
                                                 <Route exact component={VaultsRoute} path={'/vaults/:idOrOwner'} />
                                                 <Route exact strict component={VaultsRoute} path={'/vaults'} />
 

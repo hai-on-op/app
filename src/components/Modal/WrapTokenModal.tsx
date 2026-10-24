@@ -1,3 +1,5 @@
+import { AeroMigrationNotice } from '~/components/AeroMigrationNotice'
+import { LEGACY_MINTING_ENABLED, assertLegacyMintingEnabled } from '~/services/aeroMigration/policy'
 import { useEffect, useMemo, useState } from 'react'
 import { useAccount, useNetwork } from 'wagmi'
 import { ActionState, formatNumberWithStyle } from '~/utils'
@@ -99,6 +101,7 @@ export function WrapTokenModal(props: ModalProps) {
     const insufficientFunds = parseFloat(amount || '0') > parseFloat(details.balance?.raw || '0')
 
     const onWrap = async () => {
+        assertLegacyMintingEnabled()
         if (!signer || !isNonZero || insufficientFunds) return
 
         const title = `Minting ${details.symbol}`
@@ -143,6 +146,14 @@ export function WrapTokenModal(props: ModalProps) {
         } finally {
             refreshBalance()
         }
+    }
+
+    if (!LEGACY_MINTING_ENABLED) {
+        return (
+            <Modal {...props} heading="AERO migration">
+                <AeroMigrationNotice />
+            </Modal>
+        )
     }
 
     return (
