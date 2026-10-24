@@ -1,0 +1,74 @@
+{
+    "version": "1.0",
+    "chainId": "10",
+    "createdAt": 1792867831000,
+    "meta": {
+        "name": "Partial legacy veVELO historical claims \u2014 NFT 407",
+        "description": "UNSIGNED preparation only. Historical rewards coverage remains incomplete. Two calls simulated from Treasury Safe at Optimism block 158634527. Refresh earned/ownership/gas before user execution; no claim has been executed. See adjacent historical-rewards evidence JSON.",
+        "createdFromSafeAddress": "0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3"
+    },
+    "transactions": [
+        {
+            "to": "0x41C914ee0c7E1A5edCD0295623e6dC557B5aBf3C",
+            "value": "0",
+            "data": null,
+            "contractMethod": {
+                "inputs": [
+                    {
+                        "name": "_fees",
+                        "type": "address[]",
+                        "internalType": "address[]"
+                    },
+                    {
+                        "name": "_tokens",
+                        "type": "address[][]",
+                        "internalType": "address[][]"
+                    },
+                    {
+                        "name": "_tokenId",
+                        "type": "uint256",
+                        "internalType": "uint256"
+                    }
+                ],
+                "name": "claimFees",
+                "payable": false
+            },
+            "contractInputsValues": {
+                "_fees": "[\"0xACdD64d0280D766e16A376dF3da627a770D3689d\"]",
+                "_tokens": "[[\"0x4200000000000000000000000000000000000006\",\"0x6c84a8f1c29108F47a79964b5Fe888D4f4D0dE40\"]]",
+                "_tokenId": "407"
+            }
+        },
+        {
+            "to": "0x41C914ee0c7E1A5edCD0295623e6dC557B5aBf3C",
+            "value": "0",
+            "data": null,
+            "contractMethod": {
+                "inputs": [
+                    {
+                        "name": "_bribes",
+                        "type": "address[]",
+                        "internalType": "address[]"
+                    },
+                    {
+                        "name": "_tokens",
+                        "type": "address[][]",
+                        "internalType": "address[][]"
+                    },
+                    {
+                        "name": "_tokenId",
+                        "type": "uint256",
+                        "internalType": "uint256"
+                    }
+                ],
+                "name": "claimBribes",
+                "payable": false
+            },
+            "contractInputsValues": {
+                "_bribes": "[\"0x9feB118a2650848e32416D0f22d0586785bf5cAe\"]",
+                "_tokens": "[[\"0x747e42Eb0591547a0ab429B3627816208c734EA7\"]]",
+                "_tokenId": "407"
+            }
+        }
+    ]
+}
