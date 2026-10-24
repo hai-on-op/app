@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "reviewed": false,
+  "reviewReference": "",
+  "routeId": "haiAERO/new-aero-base-optimism",
+  "deployerAddress": "0xbd8EC4cb226EBaE228F8829E2ec23070b09165d3",
+  "legacyInventory": {
+    "file": "../../docs/aero-existing-hyperlane-route.json",
+    "sha256": "0023ec9865165c76ea861e3bf3c76fa659071c989101ef5d93f946d37a9fb3aa"
+  },
+  "wrapper": {
+    "address": null,
+    "runtimeCodeHash": null,
+    "transactionHash": null,
+    "blockNumber": null,
+    "blockHash": null
+  },
+  "chains": {
+    "base": {
+      "routerOwner": "0xbd8EC4cb226EBaE228F8829E2ec23070b09165d3",
+      "proxyAdminOwner": "0xbd8EC4cb226EBaE228F8829E2ec23070b09165d3",
+      "securityPolicy": "preserve-observed",
+      "securityReviewed": false,
+      "legacySecurityHash": "a31f8073dae2a92f0ee77f79316cef70691854067167abdec05e861fabe88128",
+      "hookPolicy": "mailbox-default",
+      "destinationGas": null,
+      "observedLegacyDestinationGas": "64000"
+    },
+    "optimism": {
+      "routerOwner": "0xbd8EC4cb226EBaE228F8829E2ec23070b09165d3",
+      "proxyAdminOwner": "0xbd8EC4cb226EBaE228F8829E2ec23070b09165d3",
+      "securityPolicy": "preserve-observed",
+      "securityReviewed": false,
+      "legacySecurityHash": "e71848c333a84704da9c8e524abd80c3dee8043a51ed9f9f424b79b5b03ff515",
+      "hookPolicy": "mailbox-default",
+      "destinationGas": null,
+      "observedLegacyDestinationGas": "68000"
+    }
+  }
+}

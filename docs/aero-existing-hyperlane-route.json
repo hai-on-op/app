@@ -1,0 +1,598 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-10-24T19:13:21.529Z",
+  "treasury": "0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3",
+  "routes": {
+    "base": {
+      "network": "base",
+      "chainId": 8453,
+      "blockNumber": 53039203,
+      "blockHash": "0x3f8d4dc5615e5320f1cc350de4cf8f5939b89336af0195379918ce4908e29f5c",
+      "timestamp": 1792867753,
+      "router": {
+        "address": "0xD605046D24CdaD37Ca2Dff3aa8Ebf254CeEe86d5",
+        "runtimeCodeHash": "0x12d65d137a79c184284b3b740ec6ccfc153fae6b7e34153a21cd793ddd8f9d9f",
+        "implementation": {
+          "address": "0xC3a0035bcD3fcBB84A4874b19f7170Bfe167fd35",
+          "runtimeCodeHash": "0xe78621f21d3553e90469a2c3799bfaae5bf1bb4c3d14fd2c0fd9d917b49dc130"
+        },
+        "proxyAdmin": "0xB6A352636588D833d2795E67EAaFdC5b6F3948c1",
+        "proxyAdminRuntimeCodeHash": "0x32f1d4f2f4d83b978ca419db3a849b69afbbb28ec988f78b236578edcf7730ae",
+        "proxyAdminOwner": "0xbd8EC4cb226EBaE228F8829E2ec23070b09165d3",
+        "owner": "0xbd8EC4cb226EBaE228F8829E2ec23070b09165d3",
+        "ownerIdentity": {
+          "address": "0xbd8EC4cb226EBaE228F8829E2ec23070b09165d3",
+          "runtimeCodeHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+          "isContract": false
+        },
+        "proxyAdminOwnerIdentity": {
+          "address": "0xbd8EC4cb226EBaE228F8829E2ec23070b09165d3",
+          "runtimeCodeHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+          "isContract": false
+        },
+        "mailbox": "0xeA87ae93Fa0019a82A727bfd3eBd1cFCa8f64f1D",
+        "hook": "0x0000000000000000000000000000000000000000",
+        "interchainSecurityModule": "0x61E95b746d1C757b5D7211b6c37dd25811d0df0F",
+        "effectiveIsm": "0x61E95b746d1C757b5D7211b6c37dd25811d0df0F",
+        "effectiveHook": "0x4Eb82Ee35b0a1c1d776E3a3B547f9A9bA6FCC9f2",
+        "wrappedToken": "0x10398AbC267496E49106B07dd6BE13364D10dC71"
+      },
+      "mailbox": {
+        "address": "0xeA87ae93Fa0019a82A727bfd3eBd1cFCa8f64f1D",
+        "runtimeCodeHash": "0xf412acae2beb37527f1be3f47a70bc921e02f2f8fe4735333b9b33a356b3c494",
+        "implementation": {
+          "address": "0x2f2aFaE1139Ce54feFC03593FeE8AB2aDF4a85A7",
+          "runtimeCodeHash": "0x57159bf6a24be75541cd60f1f0711d007dccb38be4e6363945d41e7c37de895b"
+        },
+        "proxyAdmin": "0x4Ed7d626f1E96cD1C0401607Bf70D95243E3dEd1",
+        "proxyAdminRuntimeCodeHash": "0x6358ab90007ec30c7f02a71e298f46f80afe552f77e107fa4c9ceee2e7ab1040",
+        "proxyAdminOwner": "0x890ac177Fe3052B8676A65f32C1589Bc329f3d50",
+        "owner": "0x890ac177Fe3052B8676A65f32C1589Bc329f3d50",
+        "localDomain": "8453",
+        "defaultIsm": "0x0C53271f445D5f0Cd1C7388f04A8C2EC55cf88b9",
+        "defaultHook": "0x4Eb82Ee35b0a1c1d776E3a3B547f9A9bA6FCC9f2",
+        "requiredHook": "0x99ca8c74cE7Cfa9d72A51fbb05F9821f5f826b3a"
+      },
+      "security": {
+        "ism": {
+          "address": "0x61E95b746d1C757b5D7211b6c37dd25811d0df0F",
+          "runtimeCodeHash": "0x18d24636da3316e6f3d8a29cdd22a9ceba1190dcf76d48014a4ca3bf8ac33405"
+        },
+        "hook": {
+          "address": "0x4Eb82Ee35b0a1c1d776E3a3B547f9A9bA6FCC9f2",
+          "runtimeCodeHash": "0x41214310e362cb1669eb13a925bce09268f174ae4608e1a23ef4508cc48c4d84"
+        },
+        "requiredHook": {
+          "address": "0x99ca8c74cE7Cfa9d72A51fbb05F9821f5f826b3a",
+          "runtimeCodeHash": "0xfaede57c6e305eb72ec961490a94b2b7206d8a17c625bb6fa56318598291ce6b"
+        },
+        "ismTree": {
+          "address": "0x61E95b746d1C757b5D7211b6c37dd25811d0df0F",
+          "runtimeCodeHash": "0x18d24636da3316e6f3d8a29cdd22a9ceba1190dcf76d48014a4ca3bf8ac33405",
+          "moduleType": 2,
+          "threshold": 1,
+          "modules": [
+            {
+              "address": "0xe807f3282f3391d237BA8B9bECb0d8Ea3ba23777",
+              "runtimeCodeHash": "0xe49c578b7b9bc75d3c97e71f9ac96075560ebdcd672f30f57fb2b1a6f263509a",
+              "moduleType": 1,
+              "owner": "0xbd8EC4cb226EBaE228F8829E2ec23070b09165d3",
+              "domains": [],
+              "selectedOrigin": 10,
+              "selectedModule": {
+                "address": "0x0C53271f445D5f0Cd1C7388f04A8C2EC55cf88b9",
+                "runtimeCodeHash": "0x34a282baafb3beb1333ca520ce3a59cbea7a729996e4ba55258ee62e1f3850fe",
+                "moduleType": 2,
+                "threshold": 2,
+                "modules": [
+                  {
+                    "address": "0x51C9a2c77072ab9CEBE31f3BaDB1286DD02Ad48D",
+                    "runtimeCodeHash": "0xb99b2f41c1e1be0dda16d941962903a66e09417d885c58f8bd406550de698117",
+                    "moduleType": 6,
+                    "owner": "0x60Cc386C85717CB51C2827A75e14826883dF5da4",
+                    "paused": false,
+                    "variant": "pausable"
+                  },
+                  {
+                    "address": "0xf8D31d98366e5891d14f4fcBC17B19F1521e2F62",
+                    "runtimeCodeHash": "0x4bf66f2a431da2abfcff3c08b88f3d57c7278b82039213b1231801e724d1afcb",
+                    "moduleType": 1,
+                    "owner": "0x890ac177Fe3052B8676A65f32C1589Bc329f3d50",
+                    "domains": [
+                      "2741",
+                      "36900",
+                      "1634493807",
+                      "33139",
+                      "42161",
+                      "5042",
+                      "43114",
+                      "80094",
+                      "81457",
+                      "60808",
+                      "56",
+                      "7667",
+                      "1128614981",
+                      "42220",
+                      "4114",
+                      "2632500",
+                      "1408864445",
+                      "52014",
+                      "173",
+                      "1",
+                      "25363",
+                      "252",
+                      "613419",
+                      "100",
+                      "999",
+                      "38833",
+                      "57073",
+                      "747474",
+                      "1783",
+                      "1983",
+                      "1264145989",
+                      "52924",
+                      "59144",
+                      "1135",
+                      "42",
+                      "5000",
+                      "5888",
+                      "4326",
+                      "1000001750",
+                      "1088",
+                      "124816",
+                      "2288",
+                      "34443",
+                      "143",
+                      "41443",
+                      "41444",
+                      "3946",
+                      "10",
+                      "514051890",
+                      "9745",
+                      "137",
+                      "369",
+                      "1633970780",
+                      "4663",
+                      "1329",
+                      "1399811149",
+                      "1936682104",
+                      "5031",
+                      "1868",
+                      "146",
+                      "507150715",
+                      "988",
+                      "358974494",
+                      "964",
+                      "239",
+                      "167000",
+                      "6122",
+                      "728126428",
+                      "130",
+                      "88",
+                      "480",
+                      "196",
+                      "16661",
+                      "324"
+                    ],
+                    "selectedOrigin": 10,
+                    "selectedModule": {
+                      "address": "0xea0965A537329f9d8C1151586E27Ca3959b2A38F",
+                      "runtimeCodeHash": "0x1353bff08a48be80ea08e43fc1870240c4a8410600e3f700f16e04f067ed0f8d",
+                      "moduleType": 2,
+                      "threshold": 1,
+                      "modules": [
+                        {
+                          "address": "0x7D87aB88b9012733d24C3d30A3F191Ba30A0b230",
+                          "runtimeCodeHash": "0x4d605e8e9d5cba6a8c52de6e791a8db73883b456e7752d5f1d4e13897cea9c38",
+                          "moduleType": 4,
+                          "validators": [
+                            "0x0d4c1394a255568ec0ecd11795B28D1BdA183Ca4",
+                            "0x5450447aeE7B544c462C9352bEF7cAD049B0C2Dc",
+                            "0xA5962eFA3ec138Bf7CA8f7fDe86b7ee32E24bf03",
+                            "0xd8c1cCbfF28413CE6c6ebe11A3e29B0D8384eDbB",
+                            "0xf9DFaA5C20ae1D84DA4B2696B8dc80C919E48B12"
+                          ],
+                          "threshold": 3
+                        },
+                        {
+                          "address": "0xf270180F14C13d73e1DDf9a18B2746290318d3Fa",
+                          "runtimeCodeHash": "0x75e825c0a26f7c68fff3b348b66c7ce124ccc30007314395acd288e097c47c55",
+                          "moduleType": 5,
+                          "validators": [
+                            "0x0d4c1394a255568ec0ecd11795B28D1BdA183Ca4",
+                            "0x5450447aeE7B544c462C9352bEF7cAD049B0C2Dc",
+                            "0xA5962eFA3ec138Bf7CA8f7fDe86b7ee32E24bf03",
+                            "0xd8c1cCbfF28413CE6c6ebe11A3e29B0D8384eDbB",
+                            "0xf9DFaA5C20ae1D84DA4B2696B8dc80C919E48B12"
+                          ],
+                          "threshold": 3
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              "mailbox": "0xeA87ae93Fa0019a82A727bfd3eBd1cFCa8f64f1D"
+            },
+            {
+              "address": "0xf467C7d5a4A9C4687fFc7986aC6aD5A4c81E1404",
+              "runtimeCodeHash": "0x23d6be259409e20193b3cec75a4830ee3aa03b40249a81061669ed3eb7869013",
+              "moduleType": 6,
+              "trustedRelayer": "0xbd8EC4cb226EBaE228F8829E2ec23070b09165d3",
+              "mailbox": "0xeA87ae93Fa0019a82A727bfd3eBd1cFCa8f64f1D"
+            }
+          ]
+        },
+        "hookTree": {
+          "address": "0x4Eb82Ee35b0a1c1d776E3a3B547f9A9bA6FCC9f2",
+          "runtimeCodeHash": "0x41214310e362cb1669eb13a925bce09268f174ae4608e1a23ef4508cc48c4d84",
+          "hookType": 5,
+          "owner": "0xa7ECcdb9Be08178f896c26b7BbD8C3D4E844d9Ba",
+          "selectedDestination": 10,
+          "destinationHook": "0xb8b39adCE5359B6d47cC0346CEb0Aa7d66346DF4",
+          "fallbackHook": {
+            "address": "0x19dc38aeae620380430C200a6E990D5Af5480117",
+            "runtimeCodeHash": "0x20e099e35065536dda4d5979da25c51425e91c8dd61581d81856b36e7b7e7543",
+            "hookType": 3,
+            "mailbox": "0xeA87ae93Fa0019a82A727bfd3eBd1cFCa8f64f1D"
+          },
+          "selectedHook": {
+            "address": "0xb8b39adCE5359B6d47cC0346CEb0Aa7d66346DF4",
+            "runtimeCodeHash": "0x2e0b5bc025cee81e7d8bed510f82d566e21e0049eb148f480775d213033d8e95",
+            "hookType": 2,
+            "hooks": [
+              {
+                "address": "0x19dc38aeae620380430C200a6E990D5Af5480117",
+                "runtimeCodeHash": "0x20e099e35065536dda4d5979da25c51425e91c8dd61581d81856b36e7b7e7543",
+                "hookType": 3,
+                "mailbox": "0xeA87ae93Fa0019a82A727bfd3eBd1cFCa8f64f1D"
+              },
+              {
+                "address": "0x46fa3A5780e5B90Eaf34BDED554d5353B5ABE9E7",
+                "runtimeCodeHash": "0x02b7d3950f5a56d103ed8c91d33c2528ec22ff6386743e501eda2d52861e98d8",
+                "hookType": 7,
+                "owner": "0x60Cc386C85717CB51C2827A75e14826883dF5da4",
+                "paused": false
+              },
+              {
+                "address": "0xc3F23848Ed2e04C0c6d41bd7804fa8f89F940B94",
+                "runtimeCodeHash": "0xf412acae2beb37527f1be3f47a70bc921e02f2f8fe4735333b9b33a356b3c494",
+                "implementation": {
+                  "address": "0x0E025067fe1a009e39F9C3De6A9965Ee1EAeB2d2",
+                  "runtimeCodeHash": "0xc4fbdf9764d3efdbb7c1102dbc5a9aebbab200d19f7ae2799c03b48f102cb1b2"
+                },
+                "proxyAdmin": "0x4Ed7d626f1E96cD1C0401607Bf70D95243E3dEd1",
+                "proxyAdminRuntimeCodeHash": "0x6358ab90007ec30c7f02a71e298f46f80afe552f77e107fa4c9ceee2e7ab1040",
+                "proxyAdminOwner": "0x890ac177Fe3052B8676A65f32C1589Bc329f3d50",
+                "hookType": 4,
+                "owner": "0xa7ECcdb9Be08178f896c26b7BbD8C3D4E844d9Ba",
+                "beneficiary": "0xa7ECcdb9Be08178f896c26b7BbD8C3D4E844d9Ba",
+                "selectedDestination": 10,
+                "gasOverhead": "166887",
+                "gasOracle": {
+                  "address": "0xBF12ef4B9f307463D3FB59c3604F294dDCe287E2",
+                  "runtimeCodeHash": "0x315b7097999e1dac68ec8097c3df7e729755cd3d4e5d963b4d19b335c0587f7f",
+                  "owner": "0xa7ECcdb9Be08178f896c26b7BbD8C3D4E844d9Ba"
+                }
+              }
+            ]
+          }
+        },
+        "requiredHookTree": {
+          "address": "0x99ca8c74cE7Cfa9d72A51fbb05F9821f5f826b3a",
+          "runtimeCodeHash": "0xfaede57c6e305eb72ec961490a94b2b7206d8a17c625bb6fa56318598291ce6b",
+          "hookType": 8,
+          "owner": "0xa7ECcdb9Be08178f896c26b7BbD8C3D4E844d9Ba",
+          "beneficiary": "0xa7ECcdb9Be08178f896c26b7BbD8C3D4E844d9Ba",
+          "MAX_PROTOCOL_FEE": "1000000000",
+          "protocolFee": "0"
+        }
+      },
+      "remoteRouters": [
+        {
+          "domain": 10,
+          "router": "0x000000000000000000000000bdf4a4cc124d9a83a5774574fcbe45dc5d1f1152",
+          "destinationGas": "64000"
+        }
+      ]
+    },
+    "optimism": {
+      "network": "optimism",
+      "chainId": 10,
+      "blockNumber": 158634340,
+      "blockHash": "0x25e8d0a57c06347c39d77703ceabeea32eb6426a7a7b012adcf5774975bce6b7",
+      "timestamp": 1792867457,
+      "router": {
+        "address": "0xbdF4A4Cc124d9A83a5774574fcBE45DC5d1f1152",
+        "runtimeCodeHash": "0x12d65d137a79c184284b3b740ec6ccfc153fae6b7e34153a21cd793ddd8f9d9f",
+        "implementation": {
+          "address": "0xFDf059e1c104a7cA3191b916E6F513C160ABa0B1",
+          "runtimeCodeHash": "0x824b31667293a8d36403d39964ff26e0e863506d288f9c475f778cf6cf6866e5"
+        },
+        "proxyAdmin": "0x1a3cBf11da1B799c521A655A258c45C852c66091",
+        "proxyAdminRuntimeCodeHash": "0x32f1d4f2f4d83b978ca419db3a849b69afbbb28ec988f78b236578edcf7730ae",
+        "proxyAdminOwner": "0xbd8EC4cb226EBaE228F8829E2ec23070b09165d3",
+        "owner": "0xbd8EC4cb226EBaE228F8829E2ec23070b09165d3",
+        "ownerIdentity": {
+          "address": "0xbd8EC4cb226EBaE228F8829E2ec23070b09165d3",
+          "runtimeCodeHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+          "isContract": false
+        },
+        "proxyAdminOwnerIdentity": {
+          "address": "0xbd8EC4cb226EBaE228F8829E2ec23070b09165d3",
+          "runtimeCodeHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+          "isContract": false
+        },
+        "mailbox": "0xd4C1905BB1D26BC93DAC913e13CaCC278CdCC80D",
+        "hook": "0x0000000000000000000000000000000000000000",
+        "interchainSecurityModule": "0xBd10Cd4989c5aaA327Cd4EAef92f1DD9431efD93",
+        "effectiveIsm": "0xBd10Cd4989c5aaA327Cd4EAef92f1DD9431efD93",
+        "effectiveHook": "0xD4b132C6d4AA93A4247F1A91e1ED929c0572a43d",
+        "decimals": "18",
+        "symbol": "haiAERO",
+        "name": "haiAERO",
+        "totalSupply": "226214193731620712913238"
+      },
+      "mailbox": {
+        "address": "0xd4C1905BB1D26BC93DAC913e13CaCC278CdCC80D",
+        "runtimeCodeHash": "0xf412acae2beb37527f1be3f47a70bc921e02f2f8fe4735333b9b33a356b3c494",
+        "implementation": {
+          "address": "0xF00824861e4bFe5dFC769295A50006BA203BBc29",
+          "runtimeCodeHash": "0x454927b51c334937d821c146b82d3b69a45255602392aa899da49bfb6a74950f"
+        },
+        "proxyAdmin": "0xE047cb95FB3b7117989e911c6afb34771183fC35",
+        "proxyAdminRuntimeCodeHash": "0x9beee53a27c08893a528a0947da06cf1af7c4c0ae376f99212815f02bb661e49",
+        "proxyAdminOwner": "0x890ac177Fe3052B8676A65f32C1589Bc329f3d50",
+        "owner": "0x890ac177Fe3052B8676A65f32C1589Bc329f3d50",
+        "localDomain": "10",
+        "defaultIsm": "0x5EBdc44365FEb72ab99FE76Bdd0c47D0bd674c21",
+        "defaultHook": "0xD4b132C6d4AA93A4247F1A91e1ED929c0572a43d",
+        "requiredHook": "0xD71Ff941120e8f935b8b1E2C1eD72F5d140FF458"
+      },
+      "security": {
+        "ism": {
+          "address": "0xBd10Cd4989c5aaA327Cd4EAef92f1DD9431efD93",
+          "runtimeCodeHash": "0xb7e0ebe15dd8857783f32d2d3a357825441ba3b9f90bf68fabf7cc1270cf9e6a"
+        },
+        "hook": {
+          "address": "0xD4b132C6d4AA93A4247F1A91e1ED929c0572a43d",
+          "runtimeCodeHash": "0x60c9e12c77bb30f8b602cc4f1c51cf12c0dff15a34628cce650784213e34475d"
+        },
+        "requiredHook": {
+          "address": "0xD71Ff941120e8f935b8b1E2C1eD72F5d140FF458",
+          "runtimeCodeHash": "0xfaede57c6e305eb72ec961490a94b2b7206d8a17c625bb6fa56318598291ce6b"
+        },
+        "ismTree": {
+          "address": "0xBd10Cd4989c5aaA327Cd4EAef92f1DD9431efD93",
+          "runtimeCodeHash": "0xb7e0ebe15dd8857783f32d2d3a357825441ba3b9f90bf68fabf7cc1270cf9e6a",
+          "moduleType": 2,
+          "threshold": 1,
+          "modules": [
+            {
+              "address": "0x5Efe302058757c630Df21608548f24545291d505",
+              "runtimeCodeHash": "0x5993cc7df56f5cbebddf38cb9aa90b5a8e1b1f55fb4d718526270ed5fb7eb4f5",
+              "moduleType": 6,
+              "trustedRelayer": "0xbd8EC4cb226EBaE228F8829E2ec23070b09165d3",
+              "mailbox": "0xd4C1905BB1D26BC93DAC913e13CaCC278CdCC80D"
+            },
+            {
+              "address": "0x6c797b98b9245470E16A86dBD2F666A421A0C200",
+              "runtimeCodeHash": "0xe4ded6f67778454ff7d70e72062ee6b88d3e19fb282955e5038ed31d1db55b41",
+              "moduleType": 1,
+              "owner": "0xbd8EC4cb226EBaE228F8829E2ec23070b09165d3",
+              "domains": [],
+              "selectedOrigin": 8453,
+              "selectedModule": {
+                "address": "0x5EBdc44365FEb72ab99FE76Bdd0c47D0bd674c21",
+                "runtimeCodeHash": "0x3f9b705f488af46006d67991c06a9bf569d1319d747bed6306196561c2b6fe63",
+                "moduleType": 2,
+                "threshold": 2,
+                "modules": [
+                  {
+                    "address": "0x050769d8816C381C8D4153701fB911b752003379",
+                    "runtimeCodeHash": "0xf14d881a5270184534f78f66b8e9616d2e723e69d7e7ed9bb0888a46dc1f9d1d",
+                    "moduleType": 1,
+                    "owner": "0x890ac177Fe3052B8676A65f32C1589Bc329f3d50",
+                    "domains": [
+                      "2741",
+                      "36900",
+                      "1634493807",
+                      "33139",
+                      "42161",
+                      "5042",
+                      "43114",
+                      "8453",
+                      "80094",
+                      "81457",
+                      "60808",
+                      "56",
+                      "7667",
+                      "1128614981",
+                      "42220",
+                      "4114",
+                      "2632500",
+                      "1408864445",
+                      "52014",
+                      "173",
+                      "1",
+                      "25363",
+                      "252",
+                      "613419",
+                      "100",
+                      "999",
+                      "38833",
+                      "57073",
+                      "747474",
+                      "1783",
+                      "1983",
+                      "1264145989",
+                      "52924",
+                      "59144",
+                      "1135",
+                      "42",
+                      "5000",
+                      "5888",
+                      "4326",
+                      "1000001750",
+                      "1088",
+                      "124816",
+                      "2288",
+                      "34443",
+                      "143",
+                      "41443",
+                      "41444",
+                      "3946",
+                      "514051890",
+                      "9745",
+                      "137",
+                      "369",
+                      "1633970780",
+                      "4663",
+                      "1329",
+                      "1399811149",
+                      "1936682104",
+                      "5031",
+                      "1868",
+                      "146",
+                      "507150715",
+                      "988",
+                      "358974494",
+                      "964",
+                      "239",
+                      "167000",
+                      "6122",
+                      "728126428",
+                      "130",
+                      "88",
+                      "480",
+                      "196",
+                      "16661",
+                      "324"
+                    ],
+                    "selectedOrigin": 8453,
+                    "selectedModule": {
+                      "address": "0xbcf2157fdAd25BE35D5acA33e0076D471506D309",
+                      "runtimeCodeHash": "0x4a122be59680a63378406450cddc53a4e2ec94c95a6a9a2dfa545c85c468bdce",
+                      "moduleType": 2,
+                      "threshold": 1,
+                      "modules": [
+                        {
+                          "address": "0xCcc26E818DF229ddF322032275d627E8B91FddeD",
+                          "runtimeCodeHash": "0x4fde41cade1ed9e28dd9cdd35a9a1dd7550411c9d226211a023ff4daf0a791dd",
+                          "moduleType": 4,
+                          "validators": [
+                            "0x34A14934D7C18A21440b59Dfe9bF132cE601457D",
+                            "0x5450447aeE7B544c462C9352bEF7cAD049B0C2Dc",
+                            "0xA5962eFA3ec138Bf7CA8f7fDe86b7ee32E24bf03",
+                            "0xb8Cf45d7bAB79c965843206d5f4D83BB866D6e86",
+                            "0xE957310e17730F29862e896709cce62D24e4B773"
+                          ],
+                          "threshold": 3
+                        },
+                        {
+                          "address": "0xFb7a7b70c54059B2efE345e30A008d2C1727F8C8",
+                          "runtimeCodeHash": "0x3a04ee03fc1a111d2db5d1b282bb71c458df1b24a96837f3422f6a2a9d28134b",
+                          "moduleType": 5,
+                          "validators": [
+                            "0x34A14934D7C18A21440b59Dfe9bF132cE601457D",
+                            "0x5450447aeE7B544c462C9352bEF7cAD049B0C2Dc",
+                            "0xA5962eFA3ec138Bf7CA8f7fDe86b7ee32E24bf03",
+                            "0xb8Cf45d7bAB79c965843206d5f4D83BB866D6e86",
+                            "0xE957310e17730F29862e896709cce62D24e4B773"
+                          ],
+                          "threshold": 3
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "address": "0xb84809408165B103A19316f7F566F8f56F8Ff654",
+                    "runtimeCodeHash": "0xb99b2f41c1e1be0dda16d941962903a66e09417d885c58f8bd406550de698117",
+                    "moduleType": 6,
+                    "owner": "0x60Cc386C85717CB51C2827A75e14826883dF5da4",
+                    "paused": false,
+                    "variant": "pausable"
+                  }
+                ]
+              },
+              "mailbox": "0xd4C1905BB1D26BC93DAC913e13CaCC278CdCC80D"
+            }
+          ]
+        },
+        "hookTree": {
+          "address": "0xD4b132C6d4AA93A4247F1A91e1ED929c0572a43d",
+          "runtimeCodeHash": "0x60c9e12c77bb30f8b602cc4f1c51cf12c0dff15a34628cce650784213e34475d",
+          "hookType": 5,
+          "owner": "0xa7ECcdb9Be08178f896c26b7BbD8C3D4E844d9Ba",
+          "selectedDestination": 8453,
+          "destinationHook": "0x80A80c6719f80fE2Ae557910Eb0008f9f6150352",
+          "fallbackHook": {
+            "address": "0x68eE9bec9B4dbB61f69D9D293Ae26a5AACb2e28f",
+            "runtimeCodeHash": "0x19b27d9915221f47db018e94bc303e11c046b6623d177f3c1c4248f14db34f22",
+            "hookType": 3,
+            "mailbox": "0xd4C1905BB1D26BC93DAC913e13CaCC278CdCC80D"
+          },
+          "selectedHook": {
+            "address": "0x80A80c6719f80fE2Ae557910Eb0008f9f6150352",
+            "runtimeCodeHash": "0x7e504ea70250c1b5978d9338bc54c86c3c290ebcfba54700b4d7582cb6ba22be",
+            "hookType": 2,
+            "hooks": [
+              {
+                "address": "0x68eE9bec9B4dbB61f69D9D293Ae26a5AACb2e28f",
+                "runtimeCodeHash": "0x19b27d9915221f47db018e94bc303e11c046b6623d177f3c1c4248f14db34f22",
+                "hookType": 3,
+                "mailbox": "0xd4C1905BB1D26BC93DAC913e13CaCC278CdCC80D"
+              },
+              {
+                "address": "0xD8A76C4D91fCbB7Cc8eA795DFDF870E48368995C",
+                "runtimeCodeHash": "0xf412acae2beb37527f1be3f47a70bc921e02f2f8fe4735333b9b33a356b3c494",
+                "implementation": {
+                  "address": "0x69D1A90f1A6ce003E993678aC8d19717454d1467",
+                  "runtimeCodeHash": "0x01c52947c353408153b26fca1b0a76174aeb6aa2297e41b31667516dc1e25b06"
+                },
+                "proxyAdmin": "0xE047cb95FB3b7117989e911c6afb34771183fC35",
+                "proxyAdminRuntimeCodeHash": "0x9beee53a27c08893a528a0947da06cf1af7c4c0ae376f99212815f02bb661e49",
+                "proxyAdminOwner": "0x890ac177Fe3052B8676A65f32C1589Bc329f3d50",
+                "hookType": 4,
+                "owner": "0xa7ECcdb9Be08178f896c26b7BbD8C3D4E844d9Ba",
+                "beneficiary": "0xa7ECcdb9Be08178f896c26b7BbD8C3D4E844d9Ba",
+                "selectedDestination": 8453,
+                "gasOverhead": "166887",
+                "gasOracle": {
+                  "address": "0x27e88AeB8EA4B159d81df06355Ea3d20bEB1de38",
+                  "runtimeCodeHash": "0xbef1f8fc267755a3d177b16bbad895919e942204d7ee104882db6f81539a00fe",
+                  "owner": "0xa7ECcdb9Be08178f896c26b7BbD8C3D4E844d9Ba"
+                }
+              },
+              {
+                "address": "0xf753CA2269c8A7693ce1808b5709Fbf36a65D47A",
+                "runtimeCodeHash": "0x02b7d3950f5a56d103ed8c91d33c2528ec22ff6386743e501eda2d52861e98d8",
+                "hookType": 7,
+                "owner": "0x60Cc386C85717CB51C2827A75e14826883dF5da4",
+                "paused": false
+              }
+            ]
+          }
+        },
+        "requiredHookTree": {
+          "address": "0xD71Ff941120e8f935b8b1E2C1eD72F5d140FF458",
+          "runtimeCodeHash": "0xfaede57c6e305eb72ec961490a94b2b7206d8a17c625bb6fa56318598291ce6b",
+          "hookType": 8,
+          "owner": "0xa7ECcdb9Be08178f896c26b7BbD8C3D4E844d9Ba",
+          "beneficiary": "0xa7ECcdb9Be08178f896c26b7BbD8C3D4E844d9Ba",
+          "MAX_PROTOCOL_FEE": "1000000000",
+          "protocolFee": "0"
+        }
+      },
+      "remoteRouters": [
+        {
+          "domain": 8453,
+          "router": "0x000000000000000000000000d605046d24cdad37ca2dff3aa8ebf254ceee86d5",
+          "destinationGas": "68000"
+        }
+      ]
+    }
+  },
+  "reviewedForReuse": false,
+  "note": "Observed legacy security is evidence only. Explicit policy review is required before using any mailbox, hook or ISM for a new route."
+}

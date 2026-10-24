@@ -1,0 +1,219 @@
+{
+  "schemaVersion": 1,
+  "cli": {
+    "package": "@hyperlane-xyz/cli",
+    "version": "45.0.1",
+    "sourceCommit": "e830d2ee425e3de4334eb868c359148a4b2ce809",
+    "tarball": "https://registry.npmjs.org/@hyperlane-xyz/cli/-/cli-45.0.1.tgz",
+    "integrity": "sha512-YAsndFXhs/xnrqRnoLlQzAklPxGajGGr+trZNnDjidoI4VctmPPUoBp2UFVw+qMBVSWHdQJ4SwOBl58KgikjqA=="
+  },
+  "registry": {
+    "repository": "https://github.com/hyperlane-xyz/hyperlane-registry",
+    "commit": "c02f061d7900c7dccd0ac6d464e5f44ba167c334",
+    "note": "Official chain snapshots with credential-named fields removed; original source hashes retained.",
+    "chains": {
+      "base": {
+        "metadata": {
+          "blockExplorers": [
+            {
+              "apiUrl": "https://api.etherscan.io/v2/api?chainid=8453",
+              "family": "etherscan",
+              "name": "BaseScan",
+              "url": "https://basescan.org"
+            },
+            {
+              "apiUrl": "https://api.routescan.io/v2/network/mainnet/evm/8453/etherscan/api",
+              "family": "routescan",
+              "name": "Base Explorer",
+              "url": "https://base.thesuperscan.io"
+            },
+            {
+              "apiUrl": "https://base.blockscout.com/api",
+              "family": "blockscout",
+              "name": "Base Mainnet explorer",
+              "url": "https://base.blockscout.com"
+            }
+          ],
+          "blocks": {
+            "confirmations": 3,
+            "estimateBlockTime": 2,
+            "reorgPeriod": 10
+          },
+          "chainId": 8453,
+          "deployer": {
+            "name": "Abacus Works",
+            "url": "https://www.hyperlane.xyz"
+          },
+          "displayName": "Base",
+          "domainId": 8453,
+          "gasCurrencyCoinGeckoId": "ethereum",
+          "gnosisSafeTransactionServiceUrl": "https://api.safe.global/tx-service/base",
+          "name": "base",
+          "nativeToken": {
+            "decimals": 18,
+            "name": "Ether",
+            "symbol": "ETH"
+          },
+          "protocol": "ethereum",
+          "rpcUrls": [
+            {
+              "http": "https://base-pokt.nodies.app"
+            },
+            {
+              "http": "https://base.public.blockpi.network/v1/rpc/public"
+            },
+            {
+              "http": "https://mainnet.base.org"
+            },
+            {
+              "http": "https://base.drpc.org"
+            },
+            {
+              "http": "https://1rpc.io/base"
+            },
+            {
+              "http": "https://base.gateway.tenderly.co"
+            },
+            {
+              "http": "https://base-rpc.publicnode.com"
+            }
+          ],
+          "technicalStack": "opstack"
+        },
+        "metadataSourceSha256": "a2cb174d47f44ce04dfaadf1b664f30ddaa3e27c758b248c1735d61f2505a4f9",
+        "addresses": {
+          "aggregationHook": "0xb8b39adCE5359B6d47cC0346CEb0Aa7d66346DF4",
+          "ccipHook_mode": "0xAD5b1B341048Fb5fCAa139b7025b97d1372E0cCe",
+          "ccipHook_optimism": "0xb2C9034279a8928fe75A0300F61d52fB87CAf106",
+          "ccipIsm_mode": "0x2d0092538AB16c996D8E60b10B015Cd83616334D",
+          "ccipIsm_optimism": "0xe588450a425FC74D464A710306DFaB9Fc2B8De0a",
+          "domainRoutingIsm": "0x80C8F6394c0FcF7bAB16ac08b85484361eCe5888",
+          "domainRoutingIsmFactory": "0x7E27456a839BFF31CA642c060a2b68414Cb6e503",
+          "fallbackRoutingHook": "0x4Eb82Ee35b0a1c1d776E3a3B547f9A9bA6FCC9f2",
+          "interchainAccountRouter": "0x44647Cd983E80558793780f9a0c7C2aa9F384D07",
+          "interchainAccountRouterV3": "0x0CA10C09Cad7aFE01619a4a9acDF6481938258C4",
+          "interchainGasPaymaster": "0xc3F23848Ed2e04C0c6d41bd7804fa8f89F940B94",
+          "interchainSecurityModule": "0x0C53271f445D5f0Cd1C7388f04A8C2EC55cf88b9",
+          "mailbox": "0xeA87ae93Fa0019a82A727bfd3eBd1cFCa8f64f1D",
+          "merkleTreeHook": "0x19dc38aeae620380430C200a6E990D5Af5480117",
+          "pausableHook": "0x46fa3A5780e5B90Eaf34BDED554d5353B5ABE9E7",
+          "pausableIsm": "0x2AF32cF8e3Cf42d221eDa0c843818fA5ee129E27",
+          "protocolFee": "0x99ca8c74cE7Cfa9d72A51fbb05F9821f5f826b3a",
+          "proxyAdmin": "0x4Ed7d626f1E96cD1C0401607Bf70D95243E3dEd1",
+          "quotedCalls": "0xa9f0a79433Cd2A0c483586C8c50627577f16F16e",
+          "quotedCallsV3": "0x220aA00D74C97D4f9a6d1fD5bDecA0793683D3Ad",
+          "staticAggregationHookFactory": "0x3bDcde749046eDd683233bb1Da476a965Ff3cE11",
+          "staticAggregationIsm": "0x77bE0b5aE400675063Ce2B2B0d692D9341f4b193",
+          "staticAggregationIsmFactory": "0xEb9FcFDC9EfDC17c1EC5E1dc085B98485da213D6",
+          "staticMerkleRootMultisigIsmFactory": "0x8b83fefd896fAa52057798f6426E9f0B080FCCcE",
+          "staticMerkleRootWeightedMultisigIsmFactory": "0x414B67F62b143d6db6E9b633168Dd6fd4DA20642",
+          "staticMessageIdMultisigIsmFactory": "0x8F7454AC98228f3504Bb91eA3D8Adafe6406110A",
+          "staticMessageIdWeightedMultisigIsmFactory": "0xcfacC141f090E5441D8F274659D43ec20F748b19",
+          "storageGasOracle": "0xBF12ef4B9f307463D3FB59c3604F294dDCe287E2",
+          "testRecipient": "0xb7C9307fE90B9AB093c6D3EdeE3259f5378D5f03",
+          "timelockController": "0x0000000000000000000000000000000000000000",
+          "universalRouter": "0x52dd779c1b5eeb54d5f218EfA72D52117ca04115",
+          "validatorAnnounce": "0x182E8d7c5F1B06201b102123FC7dF0EaeB445a7B"
+        },
+        "addressesSourceSha256": "3a11a22cec4675c238591227bbe5a3c31b59f008b7054e12d656320e364725d2"
+      },
+      "optimism": {
+        "metadata": {
+          "blockExplorers": [
+            {
+              "apiUrl": "https://api.etherscan.io/v2/api?chainid=10",
+              "family": "etherscan",
+              "name": "Etherscan",
+              "url": "https://optimistic.etherscan.io"
+            },
+            {
+              "apiUrl": "https://api.routescan.io/v2/network/mainnet/evm/10/etherscan/api",
+              "family": "routescan",
+              "name": "Optimism Explorer",
+              "url": "https://mainnet.thesuperscan.io"
+            },
+            {
+              "apiUrl": "https://optimism.blockscout.com/api",
+              "family": "blockscout",
+              "name": "OP Mainnet explorer",
+              "url": "https://optimism.blockscout.com"
+            }
+          ],
+          "blocks": {
+            "confirmations": 1,
+            "estimateBlockTime": 2,
+            "reorgPeriod": 10
+          },
+          "chainId": 10,
+          "deployer": {
+            "name": "Abacus Works",
+            "url": "https://www.hyperlane.xyz"
+          },
+          "displayName": "Optimism",
+          "domainId": 10,
+          "gasCurrencyCoinGeckoId": "ethereum",
+          "gnosisSafeTransactionServiceUrl": "https://api.safe.global/tx-service/oeth",
+          "name": "optimism",
+          "nativeToken": {
+            "decimals": 18,
+            "name": "Ether",
+            "symbol": "ETH"
+          },
+          "protocol": "ethereum",
+          "rpcUrls": [
+            {
+              "http": "https://mainnet.optimism.io"
+            },
+            {
+              "http": "https://optimism.drpc.org"
+            },
+            {
+              "http": "https://optimism-rpc.publicnode.com"
+            },
+            {
+              "http": "https://op-pokt.nodies.app"
+            }
+          ],
+          "technicalStack": "opstack"
+        },
+        "metadataSourceSha256": "356261773dc4ab39904dc38fcadd2ebd1d9473d2402a37fd2a9a200c4bc191d7",
+        "addresses": {
+          "aggregationHook": "0x80A80c6719f80fE2Ae557910Eb0008f9f6150352",
+          "ccipHook_base": "0xadC2aaE7affb4a7D4E362715D1b99E65DcEcDa0c",
+          "ccipHook_mode": "0x039E1AdD839f78A1B8567DCDeE7F058187d426bd",
+          "ccipIsm_base": "0x9E14846655d56fd8Bd08ac977e489AbDe2297aAB",
+          "ccipIsm_mode": "0x859295c13ED98785715a177539db2B040866E909",
+          "domainRoutingIsm": "0xDFfFCA9320E2c7530c61c4946B4c2376A1901dF2",
+          "domainRoutingIsmFactory": "0xD2e905108c5e44dADA680274740f896Ea96Cf2Fb",
+          "fallbackRoutingHook": "0xD4b132C6d4AA93A4247F1A91e1ED929c0572a43d",
+          "interchainAccountRouter": "0x3E343D07D024E657ECF1f8Ae8bb7a12f08652E75",
+          "interchainAccountRouterV3": "0x735df1b783D3AC4B103c3BDC82ed08cCbB6968a9",
+          "interchainGasPaymaster": "0xD8A76C4D91fCbB7Cc8eA795DFDF870E48368995C",
+          "interchainSecurityModule": "0x5EBdc44365FEb72ab99FE76Bdd0c47D0bd674c21",
+          "mailbox": "0xd4C1905BB1D26BC93DAC913e13CaCC278CdCC80D",
+          "merkleTreeHook": "0x68eE9bec9B4dbB61f69D9D293Ae26a5AACb2e28f",
+          "pausableHook": "0xf753CA2269c8A7693ce1808b5709Fbf36a65D47A",
+          "pausableIsm": "0xD84D8114cCfa5c2403E56aBf754da529430704F0",
+          "protocolFee": "0xD71Ff941120e8f935b8b1E2C1eD72F5d140FF458",
+          "proxyAdmin": "0xE047cb95FB3b7117989e911c6afb34771183fC35",
+          "quotedCalls": "0x7C03e17eEDE243913E126D620f4c10Fe4E104245",
+          "quotedCallsV3": "0xdf2e98958b318AB70816F624fdc2A08E7dBAE183",
+          "staticAggregationHookFactory": "0x7e5D0Df7401aa7c63B767542693a2D03db761B10",
+          "staticAggregationIsm": "0xdF6316DF574974110DCC94BB4E520B09Fe3CbEf9",
+          "staticAggregationIsmFactory": "0x7491843F3A5Ba24E0f17a22645bDa04A1Ae2c584",
+          "staticMerkleRootMultisigIsmFactory": "0xCA6Cb9Bc3cfF9E11003A06617cF934B684Bc78BC",
+          "staticMerkleRootWeightedMultisigIsmFactory": "0x313b18228236bf89fc67cca152c62f1896eEa362",
+          "staticMessageIdMultisigIsmFactory": "0xAa4Be20E9957fE21602c74d7C3cF5CB1112EA9Ef",
+          "staticMessageIdWeightedMultisigIsmFactory": "0x3A2e96403d076e9f953166A9E4c61bcD9D164CFe",
+          "storageGasOracle": "0x27e88AeB8EA4B159d81df06355Ea3d20bEB1de38",
+          "testRecipient": "0x36FdA966CfffF8a9Cdc814f546db0e6378bFef35",
+          "testTokenRecipient": "0x85ac1164878e017b67660a74ff1f41f3D05C02Bb",
+          "timelockController": "0x0000000000000000000000000000000000000000",
+          "universalRouter": "0x52dd779c1b5eeb54d5f218EfA72D52117ca04115",
+          "validatorAnnounce": "0x30f5b08e01808643221528BB2f7953bf2830Ef38"
+        },
+        "addressesSourceSha256": "395afeae4568e0b84115f544669bcd7c73590a6040fbe90107ab4cafca6e97a2"
+      }
+    }
+  }
+}
