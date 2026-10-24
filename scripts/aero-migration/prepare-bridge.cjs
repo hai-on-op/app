@@ -7,6 +7,7 @@ const { utils } = require('ethers')
 const { SAFE, ZERO, CHAINS, assert, rpc, read } = require('./lib.cjs')
 const { inventoryBridge, LEGACY_ROUTERS, IMPLEMENTATION_SLOT, ADMIN_SLOT, BEACON_SLOT, same } = require('./bridge-inventory.cjs')
 const toolchain = require('./hyperlane-toolchain.json')
+const DEPLOYER = '0xbd8EC4cb226EBaE228F8829E2ec23070b09165d3'
 const AERO = '0x3f5bF3EdAc59d650D8fDf9657a71F2f904A3a4Ee'
 const SAERO = '0xBF7977E1521e9a3032bf7243Ee4712f311f13915'
 const LEGACY_BASE_TOKEN = '0x10398AbC267496E49106B07dd6BE13364D10dC71'
@@ -29,7 +30,7 @@ function validateManifest(manifest, baseline) {
     assert(typeof manifest.reviewReference === 'string' && manifest.reviewReference.trim().length >= 8, 'Review reference required')
     assert(/^[a-zA-Z0-9.*]+\/[a-z0-9-]+$/.test(manifest.routeId || ''), 'Explicit distinct registry route ID required')
     assert(!['AERO/optimism','haiAERO/base-optimism'].includes(manifest.routeId), 'Legacy registry route ID cannot be reused')
-    address(manifest.deployerAddress)
+    assert(same(address(manifest.deployerAddress),DEPLOYER), 'Confirmed bridge deployer required')
     const token = address(manifest.wrapper?.address)
     assert(![LEGACY_BASE_TOKEN,AERO,SAERO,...Object.values(LEGACY_ROUTERS)].some(a=>same(a,token)), 'Actual new HAI issuer required; legacy and underlying assets are forbidden')
     hash(manifest.wrapper.runtimeCodeHash); hash(manifest.wrapper.transactionHash); hash(manifest.wrapper.blockHash)
@@ -42,6 +43,7 @@ function validateManifest(manifest, baseline) {
         address(c.routerOwner); address(c.proxyAdminOwner)
         // Initial deployment has a single ownership handoff. Split administration needs a separate reviewed flow.
         assert(same(c.routerOwner,c.proxyAdminOwner), 'This initial deployment requires equal explicit router and proxy-admin owners')
+        assert(same(c.routerOwner,DEPLOYER), 'Confirmed existing bridge administration required')
         assert(c.hookPolicy === 'mailbox-default' && same(old.router.hook,ZERO), 'This preparer preserves the existing mailbox-default hook behavior')
         assert(Number.isSafeInteger(c.destinationGas) && c.destinationGas > 0 && c.destinationGas <= 10000000, 'Explicit simulated destination gas budget required')
     }
@@ -79,10 +81,13 @@ async function verifyNewWrapper(wrapper, snapshot, clients={rpc,read}) {
     assert(same(await scalar('BASE_TOKEN() view returns(address)'),AERO),'Wrapper must hold new AERO')
     assert(same(await scalar('BASE_TOKEN_NFT() view returns(address)'),SAERO),'Wrapper must stake in verified sAERO')
     assert(same(await scalar('treasury() view returns(address)'),SAFE),'NFT custody treasury differs from reviewed issuer')
+    const owner=await scalar('owner() view returns(address)')
+    assert(same(owner,SAFE),'Issuer owner must be the confirmed treasury Safe')
+    assert(await scalar('deploymentChainId() view returns(uint256)')===String(CHAINS.base.id),'Issuer deployment chain must be Base')
     assert(await scalar('decimals() view returns(uint8)')==='18' && await scalar('name() view returns(string)')==='haiAERO'
         && await scalar('symbol() view returns(string)')==='haiAERO','Wrapper metadata differs from new route')
     return {address:token,runtimeCodeHash:wrapper.runtimeCodeHash,transactionHash:wrapper.transactionHash,blockNumber:wrapper.blockNumber,blockHash:wrapper.blockHash,
-        owner:await scalar('owner() view returns(address)'),paused:await scalar('paused() view returns(bool)'),treasury:SAFE,underlying:AERO,escrow:SAERO}
+        owner,paused:await scalar('paused() view returns(bool)'),deploymentChainId:CHAINS.base.id,treasury:SAFE,underlying:AERO,escrow:SAERO}
 }
 async function prepareBridge(manifest, baseline, dependencies={inventoryBridge,verifyNewWrapper,rpc}) {
     validateManifest(manifest,baseline)

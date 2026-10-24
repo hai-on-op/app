@@ -13,7 +13,8 @@ test('requires actual new wrapper, explicit review, deployment evidence and gas 
     assert.throws(()=>validateManifest(template,baseline),/Reviewed/)
     for(const mutate of [m=>m.wrapper.address='0x10398AbC267496E49106B07dd6BE13364D10dC71',m=>m.wrapper.transactionHash=null,
         m=>m.chains.base.securityReviewed=false,m=>m.chains.base.destinationGas=null,m=>m.chains.base.proxyAdminOwner=wrapper,
-        m=>m.routeId='AERO/optimism',m=>m.chains.base.legacySecurityHash='0'.repeat(64)]){
+        m=>m.routeId='AERO/optimism',m=>m.chains.base.legacySecurityHash='0'.repeat(64),m=>m.deployerAddress=wrapper,
+        m=>{m.chains.base.routerOwner=wrapper;m.chains.base.proxyAdminOwner=wrapper}]){
         const m=manifest();mutate(m);assert.throws(()=>validateManifest(m,baseline))
     }
 })
@@ -44,7 +45,8 @@ test('unchanged live state produces a review plan without supplying router addre
 })
 function wrapperRpc(){
     const values={'BASE_TOKEN()':'0x3f5bF3EdAc59d650D8fDf9657a71F2f904A3a4Ee','BASE_TOKEN_NFT()':'0xBF7977E1521e9a3032bf7243Ee4712f311f13915',
-        'treasury()':'0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3','decimals()':'18','name()':'haiAERO','symbol()':'haiAERO','owner()':template.deployerAddress,'paused()':true}
+        'treasury()':'0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3','decimals()':'18','name()':'haiAERO','symbol()':'haiAERO',
+        'owner()':'0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3','deploymentChainId()':'8453','paused()':true}
     const receipt={status:'0x1',transactionHash:h,contractAddress:wrapper,blockNumber:'0x5',blockHash:h}
     return {values,receipt,clients:{rpc:async(_url,method,args)=>{
         if(method==='eth_getCode')return args[1]==='0x4'?'0x':runtime
@@ -59,6 +61,14 @@ test('wrapper proof requires real finalized direct creation and new AERO/sAERO/t
     f.receipt.contractAddress=null;await assert.rejects(verifyNewWrapper(m.wrapper,{blockNumber:20},f.clients),/creation receipt/)
     f.receipt.contractAddress=wrapper;f.values['BASE_TOKEN()']='0x10398AbC267496E49106B07dd6BE13364D10dC71'
     await assert.rejects(verifyNewWrapper(m.wrapper,{blockNumber:20},f.clients),/new AERO/)
+})
+test('wrapper proof binds issuer ownership to the Safe independently of NFT custody',async()=>{
+    const f=wrapperRpc();f.values['owner()']=template.deployerAddress
+    await assert.rejects(verifyNewWrapper(manifest().wrapper,{blockNumber:20},f.clients),/Issuer owner/)
+})
+test('wrapper proof binds the immutable deployment chain to Base',async()=>{
+    const f=wrapperRpc();f.values['deploymentChainId()']='10'
+    await assert.rejects(verifyNewWrapper(manifest().wrapper,{blockNumber:20},f.clients),/deployment chain/)
 })
 test('isolated output pins CLI integrity, excludes credentials and refuses artifact overwrite',()=>{
     const base=fs.mkdtempSync(path.join(os.tmpdir(),'hai-bridge-test-')),out=path.join(base,'packet'),m=manifest()
