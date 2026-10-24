@@ -1,7 +1,14 @@
 {
-    "rewrites": [{
-        "source": "/(.*)",
-        "destination": "/index.html"
-    }],
-    "outputDirectory": "build"
+    "rewrites": [
+        {
+            "source": "/(.*)",
+            "destination": "/index.html"
+        }
+    ],
+    "outputDirectory": "build",
+    "git": {
+        "deploymentEnabled": {
+            "feat/aero-migration": false
+        }
+    }
 }
