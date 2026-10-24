@@ -41,6 +41,8 @@ export const LEGACY_MIGRATION_ASSETS: Record<
 export interface ContractCodeIdentity {
     address: string
     runtimeCodeHash: string
+    /** Required when the EIP-1967 administrator slot is nonzero. */
+    proxyAdmin?: string
     implementation?: { address: string; runtimeCodeHash: string }
 }
 

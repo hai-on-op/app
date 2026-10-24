@@ -20,7 +20,7 @@ let receipt: any
 beforeEach(() => {
     receipt = { status: 1, confirmations: 3, contractAddress: address, blockNumber: 100, blockHash: hash, logs: [] }
     provider = {
-        getCode: vi.fn(async () => code),
+        getCode: vi.fn(async (target: string, block: number) => (target === address && block === 99 ? '0x' : code)),
         getStorageAt: vi.fn(async () => ethers.constants.HashZero),
         getTransactionReceipt: vi.fn(async () => receipt),
         getBlock: vi.fn(async () => ({ hash })),
@@ -48,8 +48,29 @@ describe('reviewed deployment evidence', () => {
             },
         }
         await expect(verifyContractEvidence(reviewed, provider, 105)).resolves.toBeUndefined()
+        provider.getCode.mockResolvedValueOnce(code).mockResolvedValueOnce(code)
+        await expect(verifyContractEvidence(reviewed, provider, 105)).rejects.toThrow('already existed')
         receipt.logs[0].address = address
         await expect(verifyContractEvidence(reviewed, provider, 105)).rejects.toThrow('does not prove deployment')
+    })
+    it('requires an explicit matching proxy administrator whenever the admin slot is nonzero', async () => {
+        const admin = '0x4444444444444444444444444444444444444444'
+        provider.getStorageAt.mockImplementation(async (_: string, slot: string) =>
+            slot.endsWith('103') ? ethers.utils.hexZeroPad(admin, 32) : ethers.constants.HashZero
+        )
+        await expect(verifyContractEvidence(deployment, provider, 105)).rejects.toThrow(
+            'administrator changed or is unverified'
+        )
+        await expect(
+            verifyContractEvidence({ ...deployment, proxyAdmin: admin }, provider, 105)
+        ).resolves.toBeUndefined()
+        await expect(verifyContractEvidence({ ...deployment, proxyAdmin: factory }, provider, 105)).rejects.toThrow(
+            'administrator changed or is unverified'
+        )
+        provider.getStorageAt.mockResolvedValue(ethers.constants.HashZero)
+        await expect(verifyContractEvidence({ ...deployment, proxyAdmin: admin }, provider, 105)).rejects.toThrow(
+            'administrator is missing'
+        )
     })
     it('requires the reviewed proxy implementation address and runtime, not only proxy bytecode', async () => {
         const implementation = '0x3333333333333333333333333333333333333333'
