@@ -1,0 +1,456 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-10-24T18:26:16.866Z",
+  "sourceCommit": "8b506b450aaa9d4a9f1a77e264f2d9dd508e9ddf",
+  "chains": {
+    "base": {
+      "chainId": 8453,
+      "block": 53038048,
+      "blockHash": "0xfe4f5937b05e46b4746e5dd23b593957bba0c19c2115d2d134b46b9aefe69246",
+      "timestamp": 1792865443,
+      "contracts": {
+        "escrow": {
+          "address": "0xBF7977E1521e9a3032bf7243Ee4712f311f13915",
+          "codeHash": "0x1474067e90b379bf030a4b67292648a6873bb2c5ce0ae1eb64b4e3b21b5be87e"
+        },
+        "aero-token": {
+          "address": "0x3f5bF3EdAc59d650D8fDf9657a71F2f904A3a4Ee",
+          "codeHash": "0x4a7a844a493b672816a8adadf8500083dd100dd25976803f3964c079a819d0b9"
+        },
+        "root-voter": {
+          "address": "0x49d7d4f17Ec56Ef8fA04E464AF5D1A4942CC31e6",
+          "codeHash": "0x8a5513b4047058fcc5d8b6ae28f46a1ba03d95e31855ab202fa5e4a9f2e01b1b"
+        },
+        "aerodrome-migration": {
+          "address": "0x22a2F7340a3fB4C7C389D91eE954766B12476721",
+          "codeHash": "0xb83856ce3d2c9475c52a8f598a9a17366288acf5777d9994ca3c1562895e5401"
+        },
+        "velodrome-entrypoint": {
+          "address": "0x6daE95FE833f190640dB1176F8C8a2e50C6a66c0",
+          "codeHash": "0xa3706a387e8400985e81333cdd0793d5f0c8b43a0e374414786839eedb034894"
+        },
+        "base-reward-factory": {
+          "address": "0x8fbAaC4dbF170687ce6c3078f29556d97d197110",
+          "codeHash": "0x8a8c578df3aaffdbce9fda0d12d19fab7aa04829cb02d559cf9c4335a3e49e43"
+        },
+        "base-leaf-voter": {
+          "address": "0x382409fad8503FbCdbB27A4211551fa03e884078",
+          "codeHash": "0x363145d181429cc6f7b7c55a7b332fedb5a06b44da5371acee8a94d34d140f35"
+        }
+      },
+      "safe": {
+        "address": "0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3",
+        "owners": [
+          "0x4dF6c33c989E363B418C3622e0C826b2208FdD9b",
+          "0x0a453F46f8AE9a99b2B901A26b53e92BE6c3c43E",
+          "0x2825803b02ddACe519de971F512568Ed983faB96"
+        ],
+        "threshold": "2",
+        "nonce": "220",
+        "nativeBalance": "0"
+      },
+      "legacy": {
+        "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
+        "escrow": "0xeBf418Fe2512e7E6bd9b87a8F0f294aCDC67e6B4",
+        "voter": "0x16613524e02ad97eDfeF371bC883F2F5d6C480A5",
+        "distributor": "0x227f65131A261548b057215bB1D5Ab2997964C7d",
+        "liquidBalance": "56695698375299",
+        "nfts": [
+          {
+            "id": "83742",
+            "owner": "0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3",
+            "principal": "193601897107522385982243",
+            "end": "0",
+            "permanent": true,
+            "voted": true,
+            "restricted": false,
+            "outputPrincipal": "193601897107522385982243",
+            "outputLiquid": false,
+            "productAssignment": null
+          },
+          {
+            "id": "90818",
+            "owner": "0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3",
+            "principal": "32815048024667716698057",
+            "end": "0",
+            "permanent": true,
+            "voted": true,
+            "restricted": false,
+            "outputPrincipal": "32815048024667716698057",
+            "outputLiquid": false,
+            "productAssignment": null
+          },
+          {
+            "id": "8814",
+            "owner": "0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3",
+            "principal": "194845106930754346020",
+            "end": "1907539200",
+            "permanent": false,
+            "voted": false,
+            "restricted": false,
+            "outputPrincipal": "194845106930754346020",
+            "outputLiquid": false,
+            "productAssignment": null
+          },
+          {
+            "id": "41239",
+            "owner": "0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3",
+            "principal": "208927624618968625450",
+            "end": "1853712000",
+            "permanent": false,
+            "voted": true,
+            "restricted": false,
+            "outputPrincipal": "208927624618968625450",
+            "outputLiquid": false,
+            "productAssignment": null
+          }
+        ]
+      },
+      "migration": {
+        "address": "0x22a2F7340a3fB4C7C389D91eE954766B12476721",
+        "paused": false,
+        "opensAt": "1792620000"
+      },
+      "claims": [
+        {
+          "name": "haiAERO Base",
+          "address": "0x10398AbC267496E49106B07dd6BE13364D10dC71",
+          "numerator": "1",
+          "denominator": "1",
+          "duplicateCustody": "0xd605046d24cdad37ca2dff3aa8ebf254ceee86d5",
+          "totalSupply": "226438230480593387763282",
+          "deadBalance": "0",
+          "duplicateCustodyBalance": "226214193731620712913238",
+          "economicOutstanding": "224036748972674850044",
+          "requiredNewPrincipal": "224036748972674850044"
+        }
+      ],
+      "requiredLocalNewPrincipal": "224036748972674850044",
+      "newBacking": {
+        "token": "0x3f5bF3EdAc59d650D8fDf9657a71F2f904A3a4Ee",
+        "escrow": "0xBF7977E1521e9a3032bf7243Ee4712f311f13915",
+        "liquidBalance": "0",
+        "nfts": []
+      }
+    },
+    "optimism": {
+      "chainId": 10,
+      "block": 158633318,
+      "blockHash": "0xa43e1fcf59cd707489dfdeefc62eb20161bf0a7494303e5b5f01022ed9eca181",
+      "timestamp": 1792865413,
+      "contracts": {
+        "velodrome-migration": {
+          "address": "0x6daE95FE833f190640dB1176F8C8a2e50C6a66c0",
+          "codeHash": "0x326ddc13f5cacbcba1c32e4f32bf3d6bd053da878df4231095c5d1c8a3719807"
+        },
+        "op-reward-factory": {
+          "address": "0xa91Cded49F48b7b26F8464339D6E7b39d20a1502",
+          "codeHash": "0xd22aeff7e913f82d38694a3dce76dc233e68d951920d54b4c65a8b83ec8a43aa"
+        },
+        "op-leaf-voter": {
+          "address": "0x382409fad8503FbCdbB27A4211551fa03e884078",
+          "codeHash": "0x923f8ef1050107f784bd5befe6a919e01aa29736e1025a9abd336da1a9e19537"
+        }
+      },
+      "safe": {
+        "address": "0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3",
+        "owners": [
+          "0x4dF6c33c989E363B418C3622e0C826b2208FdD9b",
+          "0x0a453F46f8AE9a99b2B901A26b53e92BE6c3c43E",
+          "0x2825803b02ddACe519de971F512568Ed983faB96"
+        ],
+        "threshold": "2",
+        "nonce": "2650",
+        "nativeBalance": "0"
+      },
+      "legacy": {
+        "token": "0x9560e827aF36c94D2Ac33a39bCE1Fe78631088Db",
+        "escrow": "0xFAf8FD17D9840595845582fCB047DF13f006787d",
+        "voter": "0x41C914ee0c7E1A5edCD0295623e6dC557B5aBf3C",
+        "distributor": "0x9D4736EC60715e71aFe72973f7885DCBC21EA99b",
+        "liquidBalance": "8863354134245235870368",
+        "nfts": [
+          {
+            "id": "101",
+            "owner": "0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3",
+            "principal": "969728486294930110966335",
+            "end": "0",
+            "permanent": true,
+            "voted": true,
+            "restricted": false,
+            "outputPrincipal": "42668053396976924882518",
+            "outputLiquid": false,
+            "productAssignment": null
+          },
+          {
+            "id": "407",
+            "owner": "0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3",
+            "principal": "1076564086179185363983089",
+            "end": "0",
+            "permanent": true,
+            "voted": true,
+            "restricted": false,
+            "outputPrincipal": "47368819791884156015255",
+            "outputLiquid": false,
+            "productAssignment": null
+          },
+          {
+            "id": "49",
+            "owner": "0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3",
+            "principal": "1187165616937797375723252",
+            "end": "0",
+            "permanent": true,
+            "voted": true,
+            "restricted": false,
+            "outputPrincipal": "52235287145263084531823",
+            "outputLiquid": false,
+            "productAssignment": null
+          },
+          {
+            "id": "1545",
+            "owner": "0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3",
+            "principal": "960204207770191134446829",
+            "end": "0",
+            "permanent": true,
+            "voted": true,
+            "restricted": false,
+            "outputPrincipal": "42248985141888409915660",
+            "outputLiquid": false,
+            "productAssignment": null
+          },
+          {
+            "id": "1104",
+            "owner": "0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3",
+            "principal": "1012548888121271820955543",
+            "end": "0",
+            "permanent": true,
+            "voted": true,
+            "restricted": false,
+            "outputPrincipal": "44552151077335960122043",
+            "outputLiquid": false,
+            "productAssignment": null
+          },
+          {
+            "id": "645",
+            "owner": "0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3",
+            "principal": "1012264434670657340691475",
+            "end": "0",
+            "permanent": true,
+            "voted": true,
+            "restricted": false,
+            "outputPrincipal": "44539635125508922990424",
+            "outputLiquid": false,
+            "productAssignment": null
+          },
+          {
+            "id": "1144",
+            "owner": "0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3",
+            "principal": "993518761551163382362624",
+            "end": "0",
+            "permanent": true,
+            "voted": true,
+            "restricted": false,
+            "outputPrincipal": "43714825508251188823955",
+            "outputLiquid": false,
+            "productAssignment": null
+          },
+          {
+            "id": "1535",
+            "owner": "0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3",
+            "principal": "986591783907441123240107",
+            "end": "0",
+            "permanent": true,
+            "voted": true,
+            "restricted": false,
+            "outputPrincipal": "43410038491927409422564",
+            "outputLiquid": false,
+            "productAssignment": null
+          },
+          {
+            "id": "1550",
+            "owner": "0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3",
+            "principal": "939887350850200771414415",
+            "end": "0",
+            "permanent": true,
+            "voted": true,
+            "restricted": false,
+            "outputPrincipal": "41355043437408833942234",
+            "outputLiquid": false,
+            "productAssignment": null
+          },
+          {
+            "id": "1588",
+            "owner": "0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3",
+            "principal": "842078324371021874073653",
+            "end": "0",
+            "permanent": true,
+            "voted": true,
+            "restricted": false,
+            "outputPrincipal": "37051446272324962459240",
+            "outputLiquid": false,
+            "productAssignment": null
+          },
+          {
+            "id": "322",
+            "owner": "0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3",
+            "principal": "1009668819123186381549315",
+            "end": "0",
+            "permanent": true,
+            "voted": true,
+            "restricted": false,
+            "outputPrincipal": "44425428041420200788169",
+            "outputLiquid": false,
+            "productAssignment": null
+          },
+          {
+            "id": "1587",
+            "owner": "0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3",
+            "principal": "915020627580411687855172",
+            "end": "0",
+            "permanent": true,
+            "voted": true,
+            "restricted": false,
+            "outputPrincipal": "40260907613538114265627",
+            "outputLiquid": false,
+            "productAssignment": null
+          },
+          {
+            "id": "3530",
+            "owner": "0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3",
+            "principal": "267986598361346592932591",
+            "end": "0",
+            "permanent": true,
+            "voted": true,
+            "restricted": false,
+            "outputPrincipal": "11791410327899250089034",
+            "outputLiquid": false,
+            "productAssignment": null
+          },
+          {
+            "id": "1778",
+            "owner": "0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3",
+            "principal": "32037056411932839785471",
+            "end": "1912982400",
+            "permanent": false,
+            "voted": true,
+            "restricted": false,
+            "outputPrincipal": "1409630482125044950560",
+            "outputLiquid": false,
+            "productAssignment": null
+          },
+          {
+            "id": "26740",
+            "owner": "0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3",
+            "principal": "1040333028980590970697",
+            "end": "0",
+            "permanent": true,
+            "voted": false,
+            "restricted": false,
+            "outputPrincipal": "45774653275146002710",
+            "outputLiquid": false,
+            "productAssignment": null
+          },
+          {
+            "id": "30286",
+            "owner": "0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3",
+            "principal": "58670691501635362745033",
+            "end": "1868227200",
+            "permanent": false,
+            "voted": false,
+            "restricted": false,
+            "outputPrincipal": "2581510426071955960781",
+            "outputLiquid": false,
+            "productAssignment": null
+          },
+          {
+            "id": "112",
+            "owner": "0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3",
+            "principal": "77105048288518736153448",
+            "end": "1917820800",
+            "permanent": false,
+            "voted": false,
+            "restricted": false,
+            "outputPrincipal": "3392622124694824390751",
+            "outputLiquid": false,
+            "productAssignment": null
+          },
+          {
+            "id": "33919",
+            "owner": "0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3",
+            "principal": "117432451706022438941621",
+            "end": "0",
+            "permanent": true,
+            "voted": true,
+            "restricted": false,
+            "outputPrincipal": "5167027875064987313431",
+            "outputLiquid": false,
+            "productAssignment": null
+          },
+          {
+            "id": "15501",
+            "owner": "0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3",
+            "principal": "64569704598820941747084",
+            "end": "0",
+            "permanent": true,
+            "voted": true,
+            "restricted": false,
+            "outputPrincipal": "2841067002348121436871",
+            "outputLiquid": false,
+            "productAssignment": null
+          }
+        ]
+      },
+      "migration": {
+        "address": "0x6daE95FE833f190640dB1176F8C8a2e50C6a66c0",
+        "paused": false,
+        "opensAt": "1792620000"
+      },
+      "claims": [
+        {
+          "name": "haiVELO v1",
+          "address": "0x70f3713512089736661F928B291d1443C8b1BB6A",
+          "numerator": "44",
+          "denominator": "1000",
+          "totalSupply": "3802041595431551807559921",
+          "deadBalance": "3717742445343881166719288",
+          "duplicateCustodyBalance": "0",
+          "economicOutstanding": "84299150087670640840633",
+          "requiredNewPrincipal": "3709162603857508196988"
+        },
+        {
+          "name": "haiVELO v2",
+          "address": "0x20A7EaF4a922DF50b312ef61AeA8B6E1deb5DdD6",
+          "numerator": "44",
+          "denominator": "1000",
+          "totalSupply": "12425305712109036946660161",
+          "deadBalance": "0",
+          "duplicateCustodyBalance": "0",
+          "economicOutstanding": "12425305712109036946660161",
+          "requiredNewPrincipal": "546713451332797625653048"
+        },
+        {
+          "name": "haiAERO OP",
+          "address": "0xbdF4A4Cc124d9A83a5774574fcBE45DC5d1f1152",
+          "numerator": "1",
+          "denominator": "1",
+          "totalSupply": "226214193731620712913238",
+          "deadBalance": "0",
+          "duplicateCustodyBalance": "0",
+          "economicOutstanding": "226214193731620712913238",
+          "requiredNewPrincipal": "226214193731620712913238"
+        }
+      ],
+      "requiredLocalNewPrincipal": "776636807668275846763274"
+    }
+  },
+  "reconciliation": {
+    "allSafeLegacyNftPreviewOutput": "777880381798947323955420",
+    "visibleLocalLiabilities": "776860844417248521613318",
+    "bridgeEscrowMinusSyntheticSupply": "0",
+    "bridgeMessagesReconciled": false,
+    "nftProductAssignmentsReviewed": false,
+    "legacyRewardsReconciled": false,
+    "readyForExecution": false,
+    "note": "Safe inventory is not automatically product backing. Resolve all cross-chain in-flight messages and verify product assignments, all custody locations, rewards, and deployed HAI contracts before activation. The two chain snapshots have independent finalized timestamps."
+  }
+}
