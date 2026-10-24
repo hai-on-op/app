@@ -23,6 +23,8 @@ The [October 24 finalized inventory](aero-migration-evidence/2026-10-24-finalize
 
 The migration decision is to reuse the existing Pyth AERO/USD price. On October 24, the linked [Pyth page](https://app.pyth.com/explore/Crypto.AERO%2FUSD) displayed feed ID `179` and the instrument name `AERODROME FINANCE / US DOLLAR`. That UI identifier is not automatically the on-chain feed identifier. Onboarding must bind the existing deployed feed and preserve its current price-validity protections; it does not require a new feed or a separate publisher-transition approval.
 
+The [verified existing oracle wiring](aero-existing-pyth-oracle.md) selects OP delayed oracle `0x7DA9D12c5b6Fd2548B0E535Ec12F2406D69aBb75`, ultimately backed by Pyth feed `0x9db37f4d5654aad3e37e2e14ffd8d53265fb3026d1d8f91146539eebaa2ef45f`. The same oracle can serve the distinct new collateral without redeployment. Its one-hour update delay, relayer freshness checks, sequencer check and existing update keeper remain relevant.
+
 ## Release sequence
 
 1. **Refresh and reconcile backing.** Run the inventory tool against finalized blocks. Attribute each selected NFT to the correct product, review all historical fee/incentive venues, and reconcile legacy bridge messages still in flight. The tool reports all treasury NFTs, not an assertion that every treasury asset belongs to haiVELO/haiAERO. Exclude burned v1 supply and count Base bridge escrow and its OP synthetic only once.
