@@ -16,8 +16,15 @@ const {
     safeBatch,
 } = require('./lib.cjs')
 
+function rewardPolicy(selection) {
+    const policy = selection.rewardPolicy ?? 'claim-reviewed'
+    assert(['claim-reviewed', 'skip'].includes(policy), 'Unsupported reward policy')
+    return policy
+}
+
 function validateSelection(snapshot, selection, now = Math.floor(Date.now() / 1000)) {
     assert(selection.schemaVersion === 1 && CHAINS[selection.network], 'Invalid selection schema/chain')
+    const policy = rewardPolicy(selection)
     assert(
         selection.recipient?.toLowerCase() === SAFE.toLowerCase(),
         'Backing must settle to the existing Base treasury Safe'
@@ -42,6 +49,7 @@ function validateSelection(snapshot, selection, now = Math.floor(Date.now() / 10
         assert(observed && observed.owner.toLowerCase() === SAFE.toLowerCase(), 'NFT not owned by treasury in snapshot')
         assert(!observed.restricted && !observed.outputLiquid, 'Unsupported NFT migration outcome')
         assert(position.expectedPrincipal === observed.principal, 'Reviewed principal changed')
+        if (policy === 'skip') continue
         assert(
             typeof position.rewardReviewReference === 'string' && position.rewardReviewReference.trim().length >= 8,
             'Historical fee/incentive review reference required'
@@ -62,14 +70,15 @@ function validateSelection(snapshot, selection, now = Math.floor(Date.now() / 10
     return chain
 }
 
-async function prepare(snapshot, selection) {
+async function prepare(snapshot, selection, clients = { rpc, read, verifyDeployments }) {
     const chain = validateSelection(snapshot, selection)
+    const policy = rewardPolicy(selection)
     const network = CHAINS[selection.network]
     const url = network.rpc()
-    const block = await rpc(url, 'eth_getBlockByNumber', ['latest', false])
+    const block = await clients.rpc(url, 'eth_getBlockByNumber', ['latest', false])
     const tag = block.number
-    await verifyDeployments(selection.network, tag)
-    const call = (address, signature, args) => read(url, tag, address, signature, args)
+    await clients.verifyDeployments(selection.network, tag)
+    const call = (address, signature, args) => clients.read(url, tag, address, signature, args)
     const migration = deployments.contracts[network.migration].address
     assert(!(await call(migration, 'paused() view returns(bool)'))[0], 'Official migration paused')
     assert(
@@ -78,16 +87,16 @@ async function prepare(snapshot, selection) {
         'Official migration not open'
     )
     const voter = (await call(network.legacyEscrow, 'voter() view returns(address)'))[0]
-    const distributor = (await call(network.legacyEscrow, 'distributor() view returns(address)'))[0]
-    assert(
-        voter.toLowerCase() === chain.legacy.voter.toLowerCase() &&
-            distributor.toLowerCase() === chain.legacy.distributor.toLowerCase(),
-        'Legacy dependencies changed'
-    )
+    assert(voter.toLowerCase() === chain.legacy.voter.toLowerCase(), 'Legacy voter changed')
+    let distributor
+    if (policy === 'claim-reviewed') {
+        distributor = (await call(network.legacyEscrow, 'distributor() view returns(address)'))[0]
+        assert(distributor.toLowerCase() === chain.legacy.distributor.toLowerCase(), 'Legacy distributor changed')
+    }
     const claims = []
     const upgrades = []
     let totalFee = 0n
-    let rewardClaimsOutstanding = false
+    let rewardClaimsOutstanding = policy === 'skip' ? null : false
     let votesOutstanding = false
     for (const position of selection.positions) {
         const owner = (await call(network.legacyEscrow, 'ownerOf(uint256) view returns(address)', [position.id]))[0]
@@ -100,10 +109,12 @@ async function prepare(snapshot, selection) {
             preview[0].toString() === position.expectedPrincipal && !preview[3],
             'Refresh reviewed principal or migration outcome'
         )
-        for (const [kind, groups] of [
-            ['claimFees', position.fees],
-            ['claimBribes', position.incentives],
-        ]) {
+        for (const [kind, groups] of policy === 'skip'
+            ? []
+            : [
+                  ['claimFees', position.fees],
+                  ['claimBribes', position.incentives],
+              ]) {
             if (groups.length === 0) continue
             for (const group of groups) {
                 const rewardVoter = (await call(group.contract, 'voter() view returns(address)'))[0]
@@ -128,10 +139,12 @@ async function prepare(snapshot, selection) {
                 ]),
             })
         }
-        const rebase = (await call(distributor, 'claimable(uint256) view returns(uint256)', [position.id]))[0]
-        if (!rebase.isZero()) {
-            rewardClaimsOutstanding = true
-            claims.push({ to: distributor, value: '0', data: encode('claim(uint256)', [position.id]) })
+        if (policy === 'claim-reviewed') {
+            const rebase = (await call(distributor, 'claimable(uint256) view returns(uint256)', [position.id]))[0]
+            if (!rebase.isZero()) {
+                rewardClaimsOutstanding = true
+                claims.push({ to: distributor, value: '0', data: encode('claim(uint256)', [position.id]) })
+            }
         }
         if ((await call(network.legacyEscrow, 'voted(uint256) view returns(bool)', [position.id]))[0]) {
             votesOutstanding = true
@@ -165,8 +178,9 @@ async function prepare(snapshot, selection) {
         })
     }
     // Separating stages avoids invalidating output previews when claiming rebases adds principal.
-    const nativeBalance = BigInt(await rpc(url, 'eth_getBalance', [SAFE, tag]))
-    const canPrepareUpgrade = !rewardClaimsOutstanding && !votesOutstanding && nativeBalance >= totalFee
+    const nativeBalance = BigInt(await clients.rpc(url, 'eth_getBalance', [SAFE, tag]))
+    const canPrepareUpgrade =
+        (policy === 'skip' || rewardClaimsOutstanding === false) && !votesOutstanding && nativeBalance >= totalFee
     return {
         schemaVersion: 1,
         network: selection.network,
@@ -175,13 +189,17 @@ async function prepare(snapshot, selection) {
         safeNonce: (await call(SAFE, 'nonce() view returns(uint256)'))[0].toString(),
         totalMessageFeeWei: totalFee.toString(),
         safeNativeBalanceWei: nativeBalance.toString(),
+        rewardPolicy: policy,
+        rewardClaimsChecked: policy === 'claim-reviewed',
         rewardClaimsOutstanding,
         votesOutstanding,
         claimsAndReset: claims.length
             ? safeBatch(
                   network.id,
                   claims,
-                  'Claim reviewed legacy rewards and clear votes. Refresh inventory and reviewed principal after execution.'
+                  policy === 'skip'
+                      ? 'Clear votes required for migration. Reward claims are skipped. Refresh inventory after execution.'
+                      : 'Claim reviewed legacy rewards and clear votes. Refresh inventory and reviewed principal after execution.'
               )
             : null,
         upgrade: canPrepareUpgrade
@@ -193,7 +211,11 @@ async function prepare(snapshot, selection) {
             : null,
         readyForUpgradeSimulation: canPrepareUpgrade,
         requiresSafeSignatures: true,
-        note: 'Unsigned preparation only. A successful fork simulation and current fee/nonce checks are required before Safe signatures. Historical reward completeness and NFT product ownership require the recorded operator review; current claim lists alone cannot prove completeness.',
+        note:
+            'Unsigned preparation only. A successful fork simulation and current fee/nonce checks are required before Safe signatures. ' +
+            (policy === 'skip'
+                ? 'Reward review and claims are skipped by selection policy; unclaimed rewards and rebases are not reported as zero or reconciled. Current principal, ownership and settlement checks still apply.'
+                : 'Historical reward completeness and NFT product ownership require the recorded operator review; current claim lists alone cannot prove completeness.'),
     }
 }
 

@@ -149,7 +149,7 @@ async function main() {
         nftProductAssignmentsReviewed: false,
         legacyRewardsReconciled: false,
         readyForExecution: false,
-        note: 'Safe inventory is not automatically product backing. Resolve all cross-chain in-flight messages and verify product assignments, all custody locations, rewards, and deployed HAI contracts before activation. The two chain snapshots have independent finalized timestamps.',
+        note: 'Safe inventory is not automatically product backing. Resolve all cross-chain in-flight messages and verify product assignments, all custody locations, and deployed HAI contracts before activation. Legacy reward status is informational; claim or skip behavior is explicit in the Safe preparation selection. The two chain snapshots have independent finalized timestamps.',
     }
     fs.writeFileSync(output, JSON.stringify(result, null, 2) + '\n', { flag: 'wx' })
     console.log(
