@@ -1,0 +1,37 @@
+{
+    "schemaVersion": 1,
+    "decisionDate": "2026-10-25",
+    "decisionBasis": "User explicitly instructed: \"dont worry about the rewards\" after the legacy reward reconciliation explanation.",
+    "executionPolicy": "User performs all deployments and transactions; preparation only. No deployment, signing, claim execution or publication is authorized by this scope change.",
+    "legacyRewardCleanup": {
+        "rewardPolicy": "skip",
+        "status": "skipped",
+        "requiredForMigration": false,
+        "historicalRewardsReconciled": false,
+        "claimsExecutedByThisWork": false,
+        "rewardClaimsOutstanding": null,
+        "excludedWork": [
+            "Historical legacy fee and incentive venue discovery",
+            "Local and remote legacy fee or incentive claims",
+            "Legacy RewardsDistributor rebase discovery and claims",
+            "Subsequent legacy reward cleanup"
+        ],
+        "selectionRequirements": "Set rewardPolicy to skip explicitly. No historicalRewardsReviewed flag, rewardReviewReference, or fee/incentive claim lists are required. No additional permission or review-reference step is required.",
+        "toolBehavior": "Skip reward RPC reads and claim calls. Missing rewardPolicy retains claim-reviewed behavior. Null outstanding rewards means unchecked, not zero."
+    },
+    "stillRequired": [
+        "Upstream-required vote resets",
+        "Current NFT ownership and principal verification",
+        "Legacy bridge-message reconciliation and current message-fee checks",
+        "Actual deployment evidence and funded conversion inventory",
+        "Future holder reward accounting, cumulative entitlement preservation and new product reward configuration"
+    ],
+    "preservedEvidence": [
+        "2026-10-24-decisions.json",
+        "2026-10-24-finalized-inventory.json",
+        "2026-10-24-historical-rewards.json",
+        "2026-10-24-historical-rewards.md",
+        "2026-10-24-optimism-historical-claims.safe.json"
+    ],
+    "note": "This changes legacy reward cleanup scope only. Earlier evidence remains dated and unchanged; skipped work is not represented as reconciled or claimed."
+}

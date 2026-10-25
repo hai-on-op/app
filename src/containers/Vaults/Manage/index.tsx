@@ -12,12 +12,10 @@ import { MigrateHaiVeloV2Modal } from '~/components/Modal/MigrateHaiVeloV2Modal'
 import { RewardsTokenArray } from '~/components/TokenArray'
 import { ProxyPrompt } from '~/components/ProxyPrompt'
 import { Overview } from './Overview'
-import { HaiVeloOverview } from './HaiVeloOverview'
-import { HaiVeloProvider } from '~/providers/HaiVeloProvider'
 import { MinterProtocolProvider } from '~/providers/MinterProtocolProvider'
 import { VaultActions } from './VaultActions'
-import { MintHaiVeloActions } from './MintHaiVeloActions'
-import { MinterOverview, MintActions, BridgeTab } from './Minter'
+import { BridgeTab } from './Minter'
+import { AeroMigrationNotice } from '~/components/AeroMigrationNotice'
 import { ManageDropdown } from './ManageDropdown'
 import { NavContainer } from '~/components/NavContainer'
 import { ActivityTable } from '../VaultById/ActivityTable'
@@ -70,16 +68,16 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
     const getNavItems = () => {
         if (isCreateFlow) {
             if (isHAIVELO) {
-                return ['Mint haiVELO', 'Create Vault']
+                return ['Migration', 'Create Vault']
             } else if (isHAIAERO) {
-                return ['Mint haiAERO', 'Bridge haiAERO', 'Create Vault']
+                return ['Migration', 'Bridge haiAERO', 'Create Vault']
             }
             return []
         } else {
             if (isHAIVELO) {
-                return ['Mint haiVELO', 'Manage', 'Activity']
+                return ['Migration', 'Manage', 'Activity']
             } else if (isHAIAERO) {
-                return ['Mint haiAERO', 'Bridge haiAERO', 'Manage', 'Activity']
+                return ['Migration', 'Bridge haiAERO', 'Manage', 'Activity']
             }
             return ['Manage', 'Activity']
         }
@@ -91,37 +89,8 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
     const renderTabContent = () => {
         const isCreateMode = isCreateFlow
 
-        // haiVELO tabs: [Mint, Manage/Create, Activity?]
-        if (isHAIVELO && tab === 0) {
-            // Mint HAI Velo tab content
-            // Both HaiVeloProvider (for legacy components) and MinterProtocolProvider (for Execute modal) are needed
-            return (
-                <ProxyPrompt>
-                    <HaiVeloProvider>
-                        <MinterProtocolProvider protocolId="haiVelo">
-                            <BodyGrid>
-                                <HaiVeloOverview />
-                                <MintHaiVeloActions />
-                            </BodyGrid>
-                        </MinterProtocolProvider>
-                    </HaiVeloProvider>
-                </ProxyPrompt>
-            )
-        }
-
-        // haiAERO tabs: [Mint, Bridge, Manage/Create, Activity?]
-        if (isHAIAERO && tab === 0) {
-            // Mint haiAERO tab content - allows Base chain for minting
-            return (
-                <ProxyPrompt allowedChainIds={[MinterChainId.BASE]}>
-                    <MinterProtocolProvider protocolId="haiAero">
-                        <BodyGrid>
-                            <MinterOverview />
-                            <MintActions />
-                        </BodyGrid>
-                    </MinterProtocolProvider>
-                </ProxyPrompt>
-            )
+        if (isMinterProtocol && tab === 0) {
+            return <AeroMigrationNotice />
         }
 
         if (isHAIAERO && tab === 1) {
@@ -174,7 +143,7 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
                             {headerContent}
                             {isHAIVELO_V1 && (
                                 <HaiButton $variant="yellowish" onClick={() => setShowMigrate(true)}>
-                                    Migrate to haiVELO v2
+                                    AERO migration status
                                 </HaiButton>
                             )}
                         </Flex>

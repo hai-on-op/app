@@ -1,6 +1,6 @@
+import { createGeb } from '~/services/geb'
 import { ethers } from 'ethers'
 import { JsonRpcSigner } from '@ethersproject/providers'
-import { Geb } from '@hai-on-op/sdk'
 
 import { getNetworkName } from './constants'
 
@@ -14,7 +14,7 @@ export const handleWrapEther = async ({ signer, amount }: WrapEtherProps) => {
 
     const chainId = await signer.getChainId()
     const networkName = getNetworkName(chainId)
-    const geb = new Geb(networkName, signer)
+    const geb = createGeb(networkName, signer)
 
     const amountBN = ethers.utils.parseEther(amount)
     const tx = await geb.contracts.weth.populateTransaction.deposit({ value: amountBN })
@@ -29,7 +29,7 @@ export const handleUnwrapEther = async ({ signer, amount }: WrapEtherProps) => {
 
     const chainId = await signer.getChainId()
     const networkName = getNetworkName(chainId)
-    const geb = new Geb(networkName, signer)
+    const geb = createGeb(networkName, signer)
 
     const amountBN = ethers.utils.parseEther(amount)
     const tx = await geb.contracts.weth.populateTransaction.withdraw(amountBN)

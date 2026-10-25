@@ -1,5 +1,6 @@
+import { createGeb } from '~/services/geb'
 import { JsonRpcSigner } from '@ethersproject/providers/lib/json-rpc-provider'
-import { type BasicActions, Geb, TransactionRequest } from '@hai-on-op/sdk'
+import { type BasicActions, TransactionRequest } from '@hai-on-op/sdk'
 import { BigNumber, ethers } from 'ethers'
 import { parseEther } from 'ethers/lib/utils'
 
@@ -101,7 +102,7 @@ export const handleClaimFreeCollateral = async (signer: JsonRpcSigner, vault: IV
     const freeCollateralBN = parseEther(vault.freeCollateral || '0')
     const chainId = await signer.getChainId()
     const networkName = getNetworkName(chainId)
-    const geb = new Geb(networkName, signer)
+    const geb = createGeb(networkName, signer)
     const proxy = await geb.getProxyAction(signer._address)
     ensureHaiAeroInProxyTokenList(proxy)
     let txData: TransactionRequest = {}
@@ -120,7 +121,7 @@ export const handleDepositAndBorrow = async (signer: JsonRpcSigner, vaultData: I
 
     const chainId = await signer.getChainId()
     const networkName = getNetworkName(chainId)
-    const geb = new Geb(networkName, signer)
+    const geb = createGeb(networkName, signer)
 
     const proxy = await geb.getProxyAction(signer._address)
     ensureHaiAeroInProxyTokenList(proxy)
@@ -161,7 +162,7 @@ export const handleDepositAndRepay = async (signer: JsonRpcSigner, vaultData: IV
 
     const chainId = await signer.getChainId()
     const networkName = getNetworkName(chainId)
-    const geb = new Geb(networkName, signer)
+    const geb = createGeb(networkName, signer)
 
     const proxy = await geb.getProxyAction(signer._address)
     ensureHaiAeroInProxyTokenList(proxy)
@@ -191,7 +192,7 @@ export const handleRepayAndWithdraw = async (signer: JsonRpcSigner, vaultData: I
 
     const chainId = await signer.getChainId()
     const networkName = getNetworkName(chainId)
-    const geb = new Geb(networkName, signer)
+    const geb = createGeb(networkName, signer)
 
     const totalDebtBN = parseEther(vaultData.totalDebt || '0')
     // const totalCollateralBN = parseEther(vaultData.totalCollateral || '0')
@@ -242,7 +243,7 @@ export const handleWithdrawAndBorrow = async (signer: JsonRpcSigner, vaultData: 
 
     const chainId = await signer.getChainId()
     const networkName = getNetworkName(chainId)
-    const geb = new Geb(networkName, signer)
+    const geb = createGeb(networkName, signer)
 
     const collateralToFree = parseEther(vaultData.withdraw || '0')
     const debtBN = parseEther(vaultData.borrow || '0')

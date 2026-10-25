@@ -1,0 +1,108 @@
+{
+    "schemaVersion": 1,
+    "sourceCommit": "8b506b450aaa9d4a9f1a77e264f2d9dd508e9ddf",
+    "sourceUrl": "https://github.com/dromos-labs/metadex-public/tree/8b506b450aaa9d4a9f1a77e264f2d9dd508e9ddf/deployment-addresses",
+    "verifiedAt": "2026-10-24",
+    "contracts": {
+        "escrow": {
+            "chainId": 8453,
+            "address": "0xBF7977E1521e9a3032bf7243Ee4712f311f13915",
+            "codeHash": "0x1474067e90b379bf030a4b67292648a6873bb2c5ce0ae1eb64b4e3b21b5be87e",
+            "codeBytes": 24112,
+            "repoPrimarySource": "V3/src/core/VotingEscrow.sol",
+            "repoPrimarySourceSha256": "1440d5eea09b6ca6340a58037f5beeac8e1857618e707195c7c65079da46d407",
+            "exactSourcifyRuntimeHashMatch": true,
+            "repoPrimarySourceExactMatch": true
+        },
+        "aero-token": {
+            "chainId": 8453,
+            "address": "0x3f5bF3EdAc59d650D8fDf9657a71F2f904A3a4Ee",
+            "codeHash": "0x4a7a844a493b672816a8adadf8500083dd100dd25976803f3964c079a819d0b9",
+            "codeBytes": 3513,
+            "repoPrimarySource": "V3/src/token/Token.sol",
+            "repoPrimarySourceSha256": "e9c7276fc6d18d27ad138744fa930315b93d4ee2525835c35b38899b4c83a16d",
+            "exactSourcifyRuntimeHashMatch": true,
+            "repoPrimarySourceExactMatch": true
+        },
+        "root-voter": {
+            "chainId": 8453,
+            "address": "0x49d7d4f17Ec56Ef8fA04E464AF5D1A4942CC31e6",
+            "codeHash": "0x8a5513b4047058fcc5d8b6ae28f46a1ba03d95e31855ab202fa5e4a9f2e01b1b",
+            "codeBytes": 22914,
+            "repoPrimarySource": "V3/src/voter/Voter.sol",
+            "repoPrimarySourceSha256": "adf220abfda213f64998b81d9fb03866ea13af18b47f5bf60e5a93aaa18aae3f",
+            "exactSourcifyRuntimeHashMatch": true,
+            "repoPrimarySourceExactMatch": true
+        },
+        "aerodrome-migration": {
+            "chainId": 8453,
+            "address": "0x22a2F7340a3fB4C7C389D91eE954766B12476721",
+            "codeHash": "0xb83856ce3d2c9475c52a8f598a9a17366288acf5777d9994ca3c1562895e5401",
+            "codeBytes": 12685,
+            "repoPrimarySource": "V3/src/migration/AerodromeMigration.sol",
+            "repoPrimarySourceSha256": "12758a71c365792e0f45ce2743505e246fac0597ed617a86ae625fcd15e46bb9",
+            "exactSourcifyRuntimeHashMatch": true,
+            "repoPrimarySourceExactMatch": true
+        },
+        "velodrome-migration": {
+            "chainId": 10,
+            "address": "0x6daE95FE833f190640dB1176F8C8a2e50C6a66c0",
+            "codeHash": "0x326ddc13f5cacbcba1c32e4f32bf3d6bd053da878df4231095c5d1c8a3719807",
+            "codeBytes": 14254,
+            "repoPrimarySource": "V3/src/migration/VelodromeMigration.sol",
+            "repoPrimarySourceSha256": "b612bd25206453dd62acf321f0d3fe14f6fd877c6f64e2f78fbac7b27a889de9",
+            "exactSourcifyRuntimeHashMatch": true,
+            "repoPrimarySourceExactMatch": true
+        },
+        "velodrome-entrypoint": {
+            "chainId": 8453,
+            "address": "0x6daE95FE833f190640dB1176F8C8a2e50C6a66c0",
+            "codeHash": "0xa3706a387e8400985e81333cdd0793d5f0c8b43a0e374414786839eedb034894",
+            "codeBytes": 5620,
+            "repoPrimarySource": "V3/src/migration/VelodromeMigrationEntrypoint.sol",
+            "repoPrimarySourceSha256": "8744cd4382592e915a46b201a253c7f53f8595ad0270d5f45cb8c4086bbee414",
+            "exactSourcifyRuntimeHashMatch": true,
+            "repoPrimarySourceExactMatch": true
+        },
+        "base-reward-factory": {
+            "chainId": 8453,
+            "address": "0x8fbAaC4dbF170687ce6c3078f29556d97d197110",
+            "codeHash": "0x8a8c578df3aaffdbce9fda0d12d19fab7aa04829cb02d559cf9c4335a3e49e43",
+            "codeBytes": 1474,
+            "repoPrimarySource": "V3/src/rewards/VotingRewardsFactory.sol",
+            "repoPrimarySourceSha256": "c974f4172aad108fbb79876b1697cf9a07ae50d0022031c3a25b98d68da4dfb9",
+            "exactSourcifyRuntimeHashMatch": true,
+            "repoPrimarySourceExactMatch": true
+        },
+        "op-reward-factory": {
+            "chainId": 10,
+            "address": "0xa91Cded49F48b7b26F8464339D6E7b39d20a1502",
+            "codeHash": "0xd22aeff7e913f82d38694a3dce76dc233e68d951920d54b4c65a8b83ec8a43aa",
+            "codeBytes": 1474,
+            "repoPrimarySource": "V3/src/rewards/VotingRewardsFactory.sol",
+            "repoPrimarySourceSha256": "c974f4172aad108fbb79876b1697cf9a07ae50d0022031c3a25b98d68da4dfb9",
+            "exactSourcifyRuntimeHashMatch": true,
+            "repoPrimarySourceExactMatch": true
+        },
+        "base-leaf-voter": {
+            "chainId": 8453,
+            "address": "0x382409fad8503FbCdbB27A4211551fa03e884078",
+            "codeHash": "0x363145d181429cc6f7b7c55a7b332fedb5a06b44da5371acee8a94d34d140f35",
+            "codeBytes": 16985,
+            "repoPrimarySource": "V3/src/voter/LeafVoter.sol",
+            "repoPrimarySourceSha256": "38910109ff8d6a894725b535f974eba88f245aa3724dbe0afe1cde282887d818",
+            "exactSourcifyRuntimeHashMatch": true,
+            "repoPrimarySourceExactMatch": true
+        },
+        "op-leaf-voter": {
+            "chainId": 10,
+            "address": "0x382409fad8503FbCdbB27A4211551fa03e884078",
+            "codeHash": "0x923f8ef1050107f784bd5befe6a919e01aa29736e1025a9abd336da1a9e19537",
+            "codeBytes": 16985,
+            "repoPrimarySource": "V3/src/voter/LeafVoter.sol",
+            "repoPrimarySourceSha256": "38910109ff8d6a894725b535f974eba88f245aa3724dbe0afe1cde282887d818",
+            "exactSourcifyRuntimeHashMatch": true,
+            "repoPrimarySourceExactMatch": true
+        }
+    }
+}

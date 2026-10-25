@@ -95,6 +95,9 @@ jobs:
           VITE_HAI_ADDRESS: '0x10398AbC267496E49106B07dd6BE13364D10dC71'
           VITE_OP_ADDRESS: '0x4200000000000000000000000000000000000042'
 
+      - name: Test Aero migration accounting and Safe preparation
+        run: node --test scripts/aero-migration/*.test.cjs
+
   perf:
     name: Perf Budgets
     runs-on: ubuntu-latest

@@ -1,0 +1,226 @@
+{
+  "chainId": 10,
+  "block": 158633871,
+  "blockHash": "0x42f03c13c2f2466df336f64395f5e91aaf554815dfa6fcb01c959f3b46ae849b",
+  "timestamp": 1792866519,
+  "oracleRelayer": "0x6270403b908505F02Da05BE5c1956aBB59FDb3A6",
+  "collateralType": "HAIAERO",
+  "contracts": {
+    "0x7DA9D12c5b6Fd2548B0E535Ec12F2406D69aBb75": {
+      "runtimeHash": "0x37adb8e31ee85fd46689284e4a606cad06e4ae3f1d69ea564e60a628a386bc60",
+      "runtimeBytes": 1562,
+      "reads": {
+        "priceSource()": [
+          "0xaBB1D7583a6c0620be73859DF4DFbcab78696E2e"
+        ],
+        "updateDelay()": [
+          "3600"
+        ],
+        "lastUpdateTime()": [
+          "1792863003"
+        ],
+        "symbol()": [
+          "A port of a chainlink aggregator powered by pyth network feeds"
+        ],
+        "getResultWithValidity()": [
+          "681529940000000000",
+          "true"
+        ],
+        "read()": [
+          "681529940000000000"
+        ],
+        "getNextResultWithValidity()": [
+          "691237720000000000",
+          "true"
+        ]
+      },
+      "sourceVerification": {
+        "sourceType": "local-reproducible-solc-compilation",
+        "sourcePath": "src/contracts/factories/DelayedOracleChild.sol",
+        "compiler": "0.8.20+commit.a1b79de6",
+        "evmVersion": "paris",
+        "optimizerRuns": 10000,
+        "compiledRuntimeHash": "0x51ce8e87ab2cb9cd871db567ae4bd70ea5eb2f24c5dbf132ed68d9207597ca23",
+        "exactRuntimeMatch": false,
+        "runtimeWithoutMetadataMatch": true,
+        "sourcifyStatus": "not indexed (404)",
+        "compilerInput": "aero-existing-pyth-oracle.compiler-input.json",
+        "sourceRepository": "https://github.com/hai-on-op/core",
+        "sourceCommit": "de5a2d0fc17b9419a80751b8d22e3dd92e19e7f7"
+      },
+      "factory": "0x41A600E03eaa8D208B9230a219e0c4594897b3bB"
+    },
+    "0xaBB1D7583a6c0620be73859DF4DFbcab78696E2e": {
+      "runtimeHash": "0x6d7059a491a0feccb5a484e6dc3c79ea1c7d8c09021215145dd187d7f9c3fcfc",
+      "runtimeBytes": 2049,
+      "reads": {
+        "symbol()": [
+          "A port of a chainlink aggregator powered by pyth network feeds"
+        ],
+        "getResultWithValidity()": [
+          "700273540000000000",
+          "true"
+        ],
+        "read()": [
+          "700273540000000000"
+        ],
+        "staleThreshold()": [
+          "3600"
+        ],
+        "priceFeed()": [
+          "0xDAa95C72330a7eF1390874677323B2a13E0d94D7"
+        ],
+        "multiplier()": [
+          "10"
+        ],
+        "sequencerUptimeFeed()": [
+          "0x371EAD81c9102C9BF4874A9075FFFf170F2Ee389"
+        ]
+      },
+      "sourceVerification": {
+        "sourceType": "local-reproducible-solc-compilation",
+        "sourcePath": "src/contracts/factories/ChainlinkRelayerChild.sol",
+        "compiler": "0.8.20+commit.a1b79de6",
+        "evmVersion": "paris",
+        "optimizerRuns": 10000,
+        "compiledRuntimeHash": "0x4ce409b18856e076a4d35e1cd09470b7ce5361712e84599b3c25ce9c11ac0375",
+        "exactRuntimeMatch": false,
+        "runtimeWithoutMetadataMatch": true,
+        "sourcifyStatus": "not indexed (404)",
+        "compilerInput": "aero-existing-pyth-oracle.compiler-input.json",
+        "sourceRepository": "https://github.com/hai-on-op/core",
+        "sourceCommit": "de5a2d0fc17b9419a80751b8d22e3dd92e19e7f7"
+      },
+      "factory": "0xBf81945a08bE132e0a2EAc42662Fcd7661BA23B8"
+    },
+    "0xDAa95C72330a7eF1390874677323B2a13E0d94D7": {
+      "runtimeHash": "0x835ca6c22834866cfbd1f8714e9d2a36a9d75aae9b0ace1121eea6a7e628a4af",
+      "runtimeBytes": 3093,
+      "reads": {
+        "pyth()": [
+          "0xff1a0f4744e8582DF1aE09D5611b887B6a12925C"
+        ],
+        "priceId()": [
+          "0x9db37f4d5654aad3e37e2e14ffd8d53265fb3026d1d8f91146539eebaa2ef45f"
+        ],
+        "decimals()": [
+          "8"
+        ],
+        "description()": [
+          "A port of a chainlink aggregator powered by pyth network feeds"
+        ],
+        "version()": [
+          "1"
+        ],
+        "latestRoundData()": [
+          "1792866427",
+          "70027354",
+          "1792866427",
+          "1792866427",
+          "1792866427"
+        ]
+      },
+      "sourceVerification": {
+        "status": "exact_match",
+        "fullyQualifiedName": "node_modules/@pythnetwork/pyth-sdk-solidity/PythAggregatorV3.sol:PythAggregatorV3",
+        "runtimeHashMatches": true,
+        "sourceUrl": "https://sourcify.dev/server/v2/contract/10/0xDAa95C72330a7eF1390874677323B2a13E0d94D7?fields=all"
+      }
+    },
+    "0xff1a0f4744e8582DF1aE09D5611b887B6a12925C": {
+      "runtimeHash": "0x330b9f1afee9d71fb2ee42927a996a39889a45323883a66a194e210ab850d111",
+      "runtimeBytes": 680,
+      "reads": {
+        "getPriceUnsafe": [
+          "70027354",
+          "21061",
+          "-8",
+          "1792866427"
+        ],
+        "getValidTimePeriod": [
+          "60"
+        ],
+        "getPriceNoOlderThan": [
+          "70027354",
+          "21061",
+          "-8",
+          "1792866427"
+        ]
+      },
+      "eip1967Implementation": "0xacFaDACb95974C7729f3C910176a66eA88e32A80",
+      "sourceVerification": {
+        "status": "exact_match",
+        "fullyQualifiedName": "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol:ERC1967Proxy",
+        "runtimeHashMatches": true,
+        "sourceUrl": "https://sourcify.dev/server/v2/contract/10/0xff1a0f4744e8582DF1aE09D5611b887B6a12925C?fields=all"
+      }
+    }
+  },
+  "collateralParams": [
+    "0x7DA9D12c5b6Fd2548B0E535Ec12F2406D69aBb75",
+    "1600000000000000000000000000",
+    "1500000000000000000000000000"
+  ],
+  "sequencer": {
+    "address": "0x371EAD81c9102C9BF4874A9075FFFf170F2Ee389",
+    "latestRoundData": [
+      "18446744073709551664",
+      "0",
+      "1783448495",
+      "1792782113",
+      "18446744073709551664"
+    ],
+    "runtimeHash": "0xbd6f524cdc4268b6bd1bb6f77a8821faeea9c52ee9e0afa0b6d948ce82c966c2"
+  },
+  "pythImplementation": {
+    "address": "0xacFaDACb95974C7729f3C910176a66eA88e32A80",
+    "runtimeHash": "0xb3e7648f9ab1be2d14d6eb43c30dbd9da37abe1a253154248f0cd574c3245184",
+    "sourcifyStatus": "unverified (match:null)"
+  },
+  "derived": {
+    "underlyingPublishAgeSeconds": 92,
+    "delayedLastUpdateAgeSeconds": 3516,
+    "delayedCurrentWad": "681529940000000000",
+    "delayedNextWad": "691237720000000000",
+    "nonDelayedWad": "700273540000000000",
+    "pythFeedId": "0x9db37f4d5654aad3e37e2e14ffd8d53265fb3026d1d8f91146539eebaa2ef45f",
+    "haircut": "none",
+    "conversionRatio": "1:1",
+    "reuseBinding": "OracleRelayer._cParams(newCollateralType).oracle can reference the same deployed delayed oracle. The oracle has no collateral type input or exclusive assignment.",
+    "freshnessNotes": "PythAggregatorV3 uses getPriceUnsafe, so Pyth validTimePeriod=60 is not its validity rule. HAI relayer applies 3600-second freshness and sequencer-up status; delayed current valid flag is stored and does not expire automatically if the keeper stops.",
+    "decimalScaling": {
+      "sourceDecimals": 8,
+      "storedMultiplierExponent": 10,
+      "actualMultiplier": "10000000000",
+      "resultDecimals": 18
+    },
+    "confidencePolicy": "Adapter uses point price; it does not subtract the Pyth confidence interval."
+  },
+  "canonicalRereadMatches": true,
+  "metadataSource": "https://hermes.pyth.network/v2/price_feeds?query=AERO&asset_type=crypto",
+  "feedMetadata": {
+    "id": "9db37f4d5654aad3e37e2e14ffd8d53265fb3026d1d8f91146539eebaa2ef45f",
+    "market_hours": {
+      "is_open": true,
+      "next_open": null,
+      "next_close": null
+    },
+    "attributes": {
+      "asset_type": "Crypto",
+      "description": "AERODROME FINANCE / US DOLLAR",
+      "display_symbol": "AEROUSD",
+      "quote_currency": "USD",
+      "schedule": "America/New_York;O,O,O,O,O,O,O;",
+      "symbol": "Crypto.AERO/USD",
+      "min_channel": "fixed_rate@200ms"
+    }
+  },
+  "selectedReuse": {
+    "decision": "Reuse the existing deployed HAIAERO Pyth AERO/USD oracle unchanged, as instructed by the user.",
+    "oracle": "0x7DA9D12c5b6Fd2548B0E535Ec12F2406D69aBb75",
+    "runtimeCodeHash": "0x37adb8e31ee85fd46689284e4a606cad06e4ae3f1d69ea564e60a628a386bc60",
+    "newCollateralType": null,
+    "note": "New collateral identity and its risk parameters are independent deployment inputs; legacy ratios here are observed evidence, not an instruction to clone them."
+  },
+  "compilationInputSha256": "51aa112c30390a71a4d1fbcf0a6831ef6881de0c84d68731cc6b5f13b83ea476"
+}

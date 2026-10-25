@@ -1,6 +1,6 @@
+import { createGeb } from '~/services/geb'
 import { ethers } from 'ethers'
 import { JsonRpcSigner } from '@ethersproject/providers'
-import { Geb } from '@hai-on-op/sdk'
 
 import { getNetworkName } from './constants'
 
@@ -14,7 +14,7 @@ export const handleWrapToken = async ({ signer, amount }: WrapTokenProps) => {
 
     const chainId = await signer.getChainId()
     const networkName = getNetworkName(chainId)
-    const geb = new Geb(networkName, signer)
+    const geb = createGeb(networkName, signer)
 
     const amountBN = ethers.utils.parseEther(amount)
     const tx = await geb.contracts.wrappedTokenHaiVelo.populateTransaction.deposit(signer._address, amountBN)

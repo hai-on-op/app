@@ -371,8 +371,8 @@ export function BridgeTab() {
                             </>
                         ) : (
                             <>
-                                ℹ️ Bridging haiAERO from Optimism back to Base allows you to redeem your haiAERO for
-                                AERO or use it in other Base protocols.
+                                ℹ️ Bridging legacy haiAERO from Optimism back to Base returns the legacy receipt token.
+                                It does not redeem the permanently locked AERO backing.
                             </>
                         )}
                     </Text>

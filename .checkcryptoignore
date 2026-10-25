@@ -1,0 +1,266 @@
+# Exact public values only. Do not exclude files or directories.
+# Verified against public chain state, source files, and EIP-1967 derivations on 2026-10-24.
+
+# base public block hash at block 53038048
+fe4f5937b05e46b4746e5dd23b593957bba0c19c2115d2d134b46b9aefe69246
+
+# optimism public block hash at block 158633318
+a43e1fcf59cd707489dfdeefc62eb20161bf0a7494303e5b5f01022ed9eca181
+
+# Public deployed runtime Keccak256: escrow, chain 8453, 0xBF7977E1521e9a3032bf7243Ee4712f311f13915
+1474067e90b379bf030a4b67292648a6873bb2c5ce0ae1eb64b4e3b21b5be87e
+
+# Public deployed runtime Keccak256: aero-token, chain 8453, 0x3f5bF3EdAc59d650D8fDf9657a71F2f904A3a4Ee
+4a7a844a493b672816a8adadf8500083dd100dd25976803f3964c079a819d0b9
+
+# Public deployed runtime Keccak256: root-voter, chain 8453, 0x49d7d4f17Ec56Ef8fA04E464AF5D1A4942CC31e6
+8a5513b4047058fcc5d8b6ae28f46a1ba03d95e31855ab202fa5e4a9f2e01b1b
+
+# Public deployed runtime Keccak256: aerodrome-migration, chain 8453, 0x22a2F7340a3fB4C7C389D91eE954766B12476721
+b83856ce3d2c9475c52a8f598a9a17366288acf5777d9994ca3c1562895e5401
+
+# Public deployed runtime Keccak256: velodrome-migration, chain 10, 0x6daE95FE833f190640dB1176F8C8a2e50C6a66c0
+326ddc13f5cacbcba1c32e4f32bf3d6bd053da878df4231095c5d1c8a3719807
+
+# Public deployed runtime Keccak256: velodrome-entrypoint, chain 8453, 0x6daE95FE833f190640dB1176F8C8a2e50C6a66c0
+a3706a387e8400985e81333cdd0793d5f0c8b43a0e374414786839eedb034894
+
+# Public deployed runtime Keccak256: base-reward-factory, chain 8453, 0x8fbAaC4dbF170687ce6c3078f29556d97d197110
+8a8c578df3aaffdbce9fda0d12d19fab7aa04829cb02d559cf9c4335a3e49e43
+
+# Public deployed runtime Keccak256: op-reward-factory, chain 10, 0xa91Cded49F48b7b26F8464339D6E7b39d20a1502
+d22aeff7e913f82d38694a3dce76dc233e68d951920d54b4c65a8b83ec8a43aa
+
+# Public deployed runtime Keccak256: base-leaf-voter, chain 8453, 0x382409fad8503FbCdbB27A4211551fa03e884078
+363145d181429cc6f7b7c55a7b332fedb5a06b44da5371acee8a94d34d140f35
+
+# Public deployed runtime Keccak256: op-leaf-voter, chain 10, 0x382409fad8503FbCdbB27A4211551fa03e884078
+923f8ef1050107f784bd5befe6a919e01aa29736e1025a9abd336da1a9e19537
+
+# Public upstream source SHA256: V3/src/core/VotingEscrow.sol
+1440d5eea09b6ca6340a58037f5beeac8e1857618e707195c7c65079da46d407
+
+# Public upstream source SHA256: V3/src/token/Token.sol
+e9c7276fc6d18d27ad138744fa930315b93d4ee2525835c35b38899b4c83a16d
+
+# Public upstream source SHA256: V3/src/voter/Voter.sol
+adf220abfda213f64998b81d9fb03866ea13af18b47f5bf60e5a93aaa18aae3f
+
+# Public upstream source SHA256: V3/src/migration/AerodromeMigration.sol
+12758a71c365792e0f45ce2743505e246fac0597ed617a86ae625fcd15e46bb9
+
+# Public upstream source SHA256: V3/src/migration/VelodromeMigration.sol
+b612bd25206453dd62acf321f0d3fe14f6fd877c6f64e2f78fbac7b27a889de9
+
+# Public upstream source SHA256: V3/src/migration/VelodromeMigrationEntrypoint.sol
+8744cd4382592e915a46b201a253c7f53f8595ad0270d5f45cb8c4086bbee414
+
+# Public upstream source SHA256: V3/src/rewards/VotingRewardsFactory.sol
+c974f4172aad108fbb79876b1697cf9a07ae50d0022031c3a25b98d68da4dfb9
+
+# Public upstream source SHA256: V3/src/voter/LeafVoter.sol
+38910109ff8d6a894725b535f974eba88f245aa3724dbe0afe1cde282887d818
+
+# EIP-1967 implementation slot: keccak256(eip1967.proxy.implementation) - 1
+360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc
+
+# EIP-1967 beacon slot: keccak256(eip1967.proxy.beacon) - 1
+a3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50
+
+# Public Optimism oracle evidence block hash: block 158633871
+42f03c13c2f2466df336f64395f5e91aaf554815dfa6fcb01c959f3b46ae849b
+
+# Public Optimism oracle runtime Keccak256: 0x7DA9D12c5b6Fd2548B0E535Ec12F2406D69aBb75
+37adb8e31ee85fd46689284e4a606cad06e4ae3f1d69ea564e60a628a386bc60
+
+# Reproduced public Solidity runtime Keccak256: src/contracts/factories/DelayedOracleChild.sol
+51ce8e87ab2cb9cd871db567ae4bd70ea5eb2f24c5dbf132ed68d9207597ca23
+
+# Public Optimism oracle runtime Keccak256: 0xaBB1D7583a6c0620be73859DF4DFbcab78696E2e
+6d7059a491a0feccb5a484e6dc3c79ea1c7d8c09021215145dd187d7f9c3fcfc
+
+# Reproduced public Solidity runtime Keccak256: src/contracts/factories/ChainlinkRelayerChild.sol
+4ce409b18856e076a4d35e1cd09470b7ce5361712e84599b3c25ce9c11ac0375
+
+# Public Optimism oracle runtime Keccak256: 0xDAa95C72330a7eF1390874677323B2a13E0d94D7
+835ca6c22834866cfbd1f8714e9d2a36a9d75aae9b0ace1121eea6a7e628a4af
+
+# Public Optimism oracle runtime Keccak256: 0xff1a0f4744e8582DF1aE09D5611b887B6a12925C
+330b9f1afee9d71fb2ee42927a996a39889a45323883a66a194e210ab850d111
+
+# Public Optimism sequencer runtime Keccak256: 0x371EAD81c9102C9BF4874A9075FFFf170F2Ee389
+bd6f524cdc4268b6bd1bb6f77a8821faeea9c52ee9e0afa0b6d948ce82c966c2
+
+# Public Optimism pythImplementation runtime Keccak256: 0xacFaDACb95974C7729f3C910176a66eA88e32A80
+b3e7648f9ab1be2d14d6eb43c30dbd9da37abe1a253154248f0cd574c3245184
+
+# Public Pyth Crypto.AERO/USD feed identifier, read from deployed adapter priceId()
+9db37f4d5654aad3e37e2e14ffd8d53265fb3026d1d8f91146539eebaa2ef45f
+
+# SHA256 of docs/aero-existing-pyth-oracle.compiler-input.json
+51aa112c30390a71a4d1fbcf0a6831ef6881de0c84d68731cc6b5f13b83ea476
+
+# EIP-1967 admin slot: keccak256(eip1967.proxy.admin) - 1
+b53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103
+
+# Public base bridge evidence block hash: block 53039203
+3f8d4dc5615e5320f1cc350de4cf8f5939b89336af0195379918ce4908e29f5c
+
+# Public base bridge dependency runtime Keccak256: 0xD605046D24CdaD37Ca2Dff3aa8Ebf254CeEe86d5
+12d65d137a79c184284b3b740ec6ccfc153fae6b7e34153a21cd793ddd8f9d9f
+
+# Public base bridge dependency runtime Keccak256: 0xC3a0035bcD3fcBB84A4874b19f7170Bfe167fd35
+e78621f21d3553e90469a2c3799bfaae5bf1bb4c3d14fd2c0fd9d917b49dc130
+
+# Public base bridge ProxyAdmin runtime Keccak256: 0xB6A352636588D833d2795E67EAaFdC5b6F3948c1
+32f1d4f2f4d83b978ca419db3a849b69afbbb28ec988f78b236578edcf7730ae
+
+# Public base bridge dependency runtime Keccak256: 0xbd8EC4cb226EBaE228F8829E2ec23070b09165d3
+c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470
+
+# Public base bridge dependency runtime Keccak256: 0xeA87ae93Fa0019a82A727bfd3eBd1cFCa8f64f1D
+f412acae2beb37527f1be3f47a70bc921e02f2f8fe4735333b9b33a356b3c494
+
+# Public base bridge dependency runtime Keccak256: 0x2f2aFaE1139Ce54feFC03593FeE8AB2aDF4a85A7
+57159bf6a24be75541cd60f1f0711d007dccb38be4e6363945d41e7c37de895b
+
+# Public base bridge ProxyAdmin runtime Keccak256: 0x4Ed7d626f1E96cD1C0401607Bf70D95243E3dEd1
+6358ab90007ec30c7f02a71e298f46f80afe552f77e107fa4c9ceee2e7ab1040
+
+# Public base bridge dependency runtime Keccak256: 0x61E95b746d1C757b5D7211b6c37dd25811d0df0F
+18d24636da3316e6f3d8a29cdd22a9ceba1190dcf76d48014a4ca3bf8ac33405
+
+# Public base bridge dependency runtime Keccak256: 0x4Eb82Ee35b0a1c1d776E3a3B547f9A9bA6FCC9f2
+41214310e362cb1669eb13a925bce09268f174ae4608e1a23ef4508cc48c4d84
+
+# Public base bridge dependency runtime Keccak256: 0x99ca8c74cE7Cfa9d72A51fbb05F9821f5f826b3a
+faede57c6e305eb72ec961490a94b2b7206d8a17c625bb6fa56318598291ce6b
+
+# Public base bridge dependency runtime Keccak256: 0xe807f3282f3391d237BA8B9bECb0d8Ea3ba23777
+e49c578b7b9bc75d3c97e71f9ac96075560ebdcd672f30f57fb2b1a6f263509a
+
+# Public base bridge dependency runtime Keccak256: 0x0C53271f445D5f0Cd1C7388f04A8C2EC55cf88b9
+34a282baafb3beb1333ca520ce3a59cbea7a729996e4ba55258ee62e1f3850fe
+
+# Public base bridge dependency runtime Keccak256: 0x51C9a2c77072ab9CEBE31f3BaDB1286DD02Ad48D
+b99b2f41c1e1be0dda16d941962903a66e09417d885c58f8bd406550de698117
+
+# Public base bridge dependency runtime Keccak256: 0xf8D31d98366e5891d14f4fcBC17B19F1521e2F62
+4bf66f2a431da2abfcff3c08b88f3d57c7278b82039213b1231801e724d1afcb
+
+# Public base bridge dependency runtime Keccak256: 0xea0965A537329f9d8C1151586E27Ca3959b2A38F
+1353bff08a48be80ea08e43fc1870240c4a8410600e3f700f16e04f067ed0f8d
+
+# Public base bridge dependency runtime Keccak256: 0x7D87aB88b9012733d24C3d30A3F191Ba30A0b230
+4d605e8e9d5cba6a8c52de6e791a8db73883b456e7752d5f1d4e13897cea9c38
+
+# Public base bridge dependency runtime Keccak256: 0xf270180F14C13d73e1DDf9a18B2746290318d3Fa
+75e825c0a26f7c68fff3b348b66c7ce124ccc30007314395acd288e097c47c55
+
+# Public base bridge dependency runtime Keccak256: 0xf467C7d5a4A9C4687fFc7986aC6aD5A4c81E1404
+23d6be259409e20193b3cec75a4830ee3aa03b40249a81061669ed3eb7869013
+
+# Public base bridge dependency runtime Keccak256: 0x19dc38aeae620380430C200a6E990D5Af5480117
+20e099e35065536dda4d5979da25c51425e91c8dd61581d81856b36e7b7e7543
+
+# Public base bridge dependency runtime Keccak256: 0xb8b39adCE5359B6d47cC0346CEb0Aa7d66346DF4
+2e0b5bc025cee81e7d8bed510f82d566e21e0049eb148f480775d213033d8e95
+
+# Public base bridge dependency runtime Keccak256: 0x46fa3A5780e5B90Eaf34BDED554d5353B5ABE9E7
+02b7d3950f5a56d103ed8c91d33c2528ec22ff6386743e501eda2d52861e98d8
+
+# Public base bridge dependency runtime Keccak256: 0x0E025067fe1a009e39F9C3De6A9965Ee1EAeB2d2
+c4fbdf9764d3efdbb7c1102dbc5a9aebbab200d19f7ae2799c03b48f102cb1b2
+
+# Public base bridge dependency runtime Keccak256: 0xBF12ef4B9f307463D3FB59c3604F294dDCe287E2
+315b7097999e1dac68ec8097c3df7e729755cd3d4e5d963b4d19b335c0587f7f
+
+# Public base enrolled remote router address padded to bytes32
+000000000000000000000000bdf4a4cc124d9a83a5774574fcbe45dc5d1f1152
+
+# Public optimism bridge evidence block hash: block 158634340
+25e8d0a57c06347c39d77703ceabeea32eb6426a7a7b012adcf5774975bce6b7
+
+# Public optimism bridge dependency runtime Keccak256: 0xFDf059e1c104a7cA3191b916E6F513C160ABa0B1
+824b31667293a8d36403d39964ff26e0e863506d288f9c475f778cf6cf6866e5
+
+# Public optimism bridge dependency runtime Keccak256: 0xF00824861e4bFe5dFC769295A50006BA203BBc29
+454927b51c334937d821c146b82d3b69a45255602392aa899da49bfb6a74950f
+
+# Public optimism bridge ProxyAdmin runtime Keccak256: 0xE047cb95FB3b7117989e911c6afb34771183fC35
+9beee53a27c08893a528a0947da06cf1af7c4c0ae376f99212815f02bb661e49
+
+# Public optimism bridge dependency runtime Keccak256: 0xBd10Cd4989c5aaA327Cd4EAef92f1DD9431efD93
+b7e0ebe15dd8857783f32d2d3a357825441ba3b9f90bf68fabf7cc1270cf9e6a
+
+# Public optimism bridge dependency runtime Keccak256: 0xD4b132C6d4AA93A4247F1A91e1ED929c0572a43d
+60c9e12c77bb30f8b602cc4f1c51cf12c0dff15a34628cce650784213e34475d
+
+# Public optimism bridge dependency runtime Keccak256: 0x5Efe302058757c630Df21608548f24545291d505
+5993cc7df56f5cbebddf38cb9aa90b5a8e1b1f55fb4d718526270ed5fb7eb4f5
+
+# Public optimism bridge dependency runtime Keccak256: 0x6c797b98b9245470E16A86dBD2F666A421A0C200
+e4ded6f67778454ff7d70e72062ee6b88d3e19fb282955e5038ed31d1db55b41
+
+# Public optimism bridge dependency runtime Keccak256: 0x5EBdc44365FEb72ab99FE76Bdd0c47D0bd674c21
+3f9b705f488af46006d67991c06a9bf569d1319d747bed6306196561c2b6fe63
+
+# Public optimism bridge dependency runtime Keccak256: 0x050769d8816C381C8D4153701fB911b752003379
+f14d881a5270184534f78f66b8e9616d2e723e69d7e7ed9bb0888a46dc1f9d1d
+
+# Public optimism bridge dependency runtime Keccak256: 0xbcf2157fdAd25BE35D5acA33e0076D471506D309
+4a122be59680a63378406450cddc53a4e2ec94c95a6a9a2dfa545c85c468bdce
+
+# Public optimism bridge dependency runtime Keccak256: 0xCcc26E818DF229ddF322032275d627E8B91FddeD
+4fde41cade1ed9e28dd9cdd35a9a1dd7550411c9d226211a023ff4daf0a791dd
+
+# Public optimism bridge dependency runtime Keccak256: 0xFb7a7b70c54059B2efE345e30A008d2C1727F8C8
+3a04ee03fc1a111d2db5d1b282bb71c458df1b24a96837f3422f6a2a9d28134b
+
+# Public optimism bridge dependency runtime Keccak256: 0x68eE9bec9B4dbB61f69D9D293Ae26a5AACb2e28f
+19b27d9915221f47db018e94bc303e11c046b6623d177f3c1c4248f14db34f22
+
+# Public optimism bridge dependency runtime Keccak256: 0x80A80c6719f80fE2Ae557910Eb0008f9f6150352
+7e504ea70250c1b5978d9338bc54c86c3c290ebcfba54700b4d7582cb6ba22be
+
+# Public optimism bridge dependency runtime Keccak256: 0x69D1A90f1A6ce003E993678aC8d19717454d1467
+01c52947c353408153b26fca1b0a76174aeb6aa2297e41b31667516dc1e25b06
+
+# Public optimism bridge dependency runtime Keccak256: 0x27e88AeB8EA4B159d81df06355Ea3d20bEB1de38
+bef1f8fc267755a3d177b16bbad895919e942204d7ee104882db6f81539a00fe
+
+# Public optimism enrolled remote router address padded to bytes32
+000000000000000000000000d605046d24cdad37ca2dff3aa8ebf254ceee86d5
+
+# Public pinned Hyperlane registry base metadataSourceSha256; source URLs in hyperlane-toolchain.json
+a2cb174d47f44ce04dfaadf1b664f30ddaa3e27c758b248c1735d61f2505a4f9
+
+# Public pinned Hyperlane registry base addressesSourceSha256; source URLs in hyperlane-toolchain.json
+3a11a22cec4675c238591227bbe5a3c31b59f008b7054e12d656320e364725d2
+
+# Public pinned Hyperlane registry optimism metadataSourceSha256; source URLs in hyperlane-toolchain.json
+356261773dc4ab39904dc38fcadd2ebd1d9473d2402a37fd2a9a200c4bc191d7
+
+# Public pinned Hyperlane registry optimism addressesSourceSha256; source URLs in hyperlane-toolchain.json
+395afeae4568e0b84115f544669bcd7c73590a6040fbe90107ab4cafca6e97a2
+
+# SHA256 of docs/aero-existing-hyperlane-route.json
+0023ec9865165c76ea861e3bf3c76fa659071c989101ef5d93f946d37a9fb3aa
+
+# SHA256 of observed base bridge security projection; securityFingerprint in prepare-bridge.cjs
+a31f8073dae2a92f0ee77f79316cef70691854067167abdec05e861fabe88128
+
+# SHA256 of observed optimism bridge security projection; securityFingerprint in prepare-bridge.cjs
+e71848c333a84704da9c8e524abd80c3dee8043a51ed9f9f424b79b5b03ff515
+
+# Public legacy Voter runtime Keccak256: chain 8453, 0x16613524e02ad97eDfeF371bC883F2F5d6C480A5
+465dc52dbb30fca5cca06c57fb266ec0e36c10530cdc6738dc4f035c81a0ae96
+
+# Public legacy Voter runtime Keccak256: chain 10, 0x41C914ee0c7E1A5edCD0295623e6dC557B5aBf3C
+6b54418007a7361638cff3c94032cb17f2728a6cda864d4ac65753c5445f1062
+
+# Public base historical reward snapshot block hash: block 53039404
+8364cd86eaafdfeebff04b641d5e957bebb02b4389f6cff82c810665080d99a9
+
+# Public optimism historical reward snapshot block hash: block 158634527
+a09020cee56a94007343f87d09706695606da4ad0122de984f370401d3d25246

@@ -1,3 +1,5 @@
+import { AeroMigrationNotice } from '~/components/AeroMigrationNotice'
+import { LEGACY_MINTING_ENABLED } from '~/services/aeroMigration/policy'
 import { useMemo, useRef, useState } from 'react'
 import styled from 'styled-components'
 
@@ -86,6 +88,14 @@ export function HaiVeloTxModal({ items, plan, discount, onAllApproved, onStepDon
             </DiscountInfoWrapper>
         )
     }, [discount])
+
+    if (!LEGACY_MINTING_ENABLED) {
+        return (
+            <Modal {...props} heading="AERO migration">
+                <AeroMigrationNotice />
+            </Modal>
+        )
+    }
 
     return (
         <Modal

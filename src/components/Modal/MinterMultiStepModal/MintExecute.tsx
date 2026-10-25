@@ -1,3 +1,4 @@
+import { assertLegacyMintingEnabled } from '~/services/aeroMigration/policy'
 /**
  * MinterMultiStepModal - MintExecute Step
  *
@@ -139,6 +140,7 @@ export function MintExecute({ config, plan, includeBridge = false, onDone, onSte
     }, [plan])
 
     const handleRun = useCallback(async () => {
+        assertLegacyMintingEnabled()
         const step = steps[currentIndex]
         if (!step) return
         setPending(true)

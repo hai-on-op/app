@@ -1,3 +1,5 @@
+import { AeroMigrationNotice } from '~/components/AeroMigrationNotice'
+import { LEGACY_MINTING_ENABLED, assertLegacyMintingEnabled } from '~/services/aeroMigration/policy'
 /**
  * HaiAeroTxModal
  *
@@ -529,6 +531,7 @@ export function HaiAeroTxModal({ config, plan, onSuccess, ...props }: HaiAeroTxM
 
     // Handle step execution
     const handleRun = useCallback(async () => {
+        assertLegacyMintingEnabled()
         const step = steps[currentIndex]
         if (!step) return
 
@@ -747,6 +750,14 @@ export function HaiAeroTxModal({ config, plan, onSuccess, ...props }: HaiAeroTxM
         stepIcon,
         waitingForDelivery,
     ])
+
+    if (!LEGACY_MINTING_ENABLED) {
+        return (
+            <Modal {...props} heading="AERO migration">
+                <AeroMigrationNotice />
+            </Modal>
+        )
+    }
 
     return (
         <Modal

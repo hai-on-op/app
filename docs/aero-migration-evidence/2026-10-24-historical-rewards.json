@@ -1,0 +1,832 @@
+{
+    "schemaVersion": 1,
+    "purpose": "Partial historical legacy NFT reward discovery and unsigned candidate claims; not migration readiness or rewards settlement proof.",
+    "executionPolicy": "No claims signed, submitted, or executed. User performs all transactions later.",
+    "historicalRewardsReconciled": false,
+    "treasurySafe": "0x7F4735237c41F7F8578A9C7d10A11e3BCFa3D4A3",
+    "sourceVerification": [
+        {
+            "chainId": 8453,
+            "voter": "0x16613524e02ad97eDfeF371bC883F2F5d6C480A5",
+            "runtimeKeccak256": "0x465dc52dbb30fca5cca06c57fb266ec0e36c10530cdc6738dc4f035c81a0ae96",
+            "exactSourceMatch": true,
+            "sourceUrl": "https://sourcify.dev/server/v2/contract/8453/0x16613524e02ad97eDfeF371bC883F2F5d6C480A5?fields=abi,deployment,metadata,sources",
+            "creationBlock": 3200601
+        },
+        {
+            "chainId": 10,
+            "voter": "0x41C914ee0c7E1A5edCD0295623e6dC557B5aBf3C",
+            "runtimeKeccak256": "0x6b54418007a7361638cff3c94032cb17f2728a6cda864d4ac65753c5445f1062",
+            "exactSourceMatch": true,
+            "sourceUrl": "https://sourcify.dev/server/v2/contract/10/0x41C914ee0c7E1A5edCD0295623e6dC557B5aBf3C?fields=abi,deployment,metadata,sources",
+            "creationBlock": 105896851
+        }
+    ],
+    "discoveryMethod": {
+        "eventSignature": "Voted(address,address,uint256,uint256,uint256,uint256)",
+        "filter": "Verified deployed Voter address; indexed tokenId OR filter for the 19 listed OP IDs; no voter-address filter so keeper/delegate votes are included. Entire contract lifetime through snapshot requested in one RPC response.",
+        "venueResolution": "gauges(pool), then gaugeToFees(gauge) and gaugeToBribe(gauge); each venue voter() and ve() matched canonical deployed Voter and escrow.",
+        "localTokenEnumeration": "rewardsListLength(), rewards(index); earned(token,tokenId) for each historical pool/NFT pair, pinned to snapshot. Four failed aggregate calls succeeded on individual retry.",
+        "remoteClassification": "chainid() identifies 124 root reward venues on other chains. Local rewards()/earned() are unavailable by design; these were not treated as zero balances.",
+        "limitations": "No independent second-provider log crosscheck. earned excludes current-epoch/future accrual. Rebase distributor and remote leaf claims are separate requirements."
+    },
+    "chains": [
+        {
+            "name": "base",
+            "chainId": 8453,
+            "rpc": "https://mainnet.base.org",
+            "snapshot": {
+                "blockNumber": 53039404,
+                "blockHash": "0x8364cd86eaafdfeebff04b641d5e957bebb02b4389f6cff82c810665080d99a9",
+                "timestamp": 1792868155,
+                "blockTagAtSelection": "finalized"
+            },
+            "voter": "0x16613524e02ad97eDfeF371bC883F2F5d6C480A5",
+            "allListedNftsOwnedBySafe": true,
+            "nfts": [
+                {
+                    "tokenId": "83742",
+                    "observedCurrentPools": ["0x3FE04A59Ebd38cF06080a6F60a98D124eb59392A"],
+                    "poolListTermination": "Empty revert at next index; no independently attributed bounds error. Treat current list as observed only."
+                },
+                {
+                    "tokenId": "90818",
+                    "observedCurrentPools": ["0x3FE04A59Ebd38cF06080a6F60a98D124eb59392A"],
+                    "poolListTermination": "Empty revert at next index; no independently attributed bounds error. Treat current list as observed only."
+                },
+                {
+                    "tokenId": "8814",
+                    "observedCurrentPools": [],
+                    "poolListTermination": "Empty revert at next index; no independently attributed bounds error. Treat current list as observed only."
+                },
+                {
+                    "tokenId": "41239",
+                    "observedCurrentPools": ["0x04e5A1c883Dafd1eAE6b11BD6d3Eb784D90ce515"],
+                    "poolListTermination": "Empty revert at next index; no independently attributed bounds error. Treat current list as observed only."
+                }
+            ],
+            "observedCurrentVenueCount": 4,
+            "observedCurrentEarnedReads": 17,
+            "allObservedCurrentEarnedZero": true,
+            "historicalVotedScan": {
+                "fromBlock": 3200601,
+                "toBlock": 53039404,
+                "completeResponseReceived": false,
+                "failure": "Public RPC request limits/retry exhaustion; alternate endpoints unavailable. All four NFT histories remain unreviewed."
+            }
+        },
+        {
+            "name": "optimism",
+            "chainId": 10,
+            "rpc": "https://mainnet.optimism.io",
+            "snapshot": {
+                "blockNumber": 158634527,
+                "blockHash": "0xa09020cee56a94007343f87d09706695606da4ad0122de984f370401d3d25246",
+                "timestamp": 1792867831,
+                "blockTagAtSelection": "finalized"
+            },
+            "voter": "0x41C914ee0c7E1A5edCD0295623e6dC557B5aBf3C",
+            "allListedNftsOwnedBySafe": true,
+            "nfts": [
+                {
+                    "tokenId": "101",
+                    "observedCurrentPools": ["0xc092E9CBdb4148837FC54bc5233c12C2fc83B4DB"],
+                    "poolListTermination": "Empty revert at next index; no independently attributed bounds error. Treat current list as observed only.",
+                    "historicalPoolCount": 32
+                },
+                {
+                    "tokenId": "407",
+                    "observedCurrentPools": ["0xc092E9CBdb4148837FC54bc5233c12C2fc83B4DB"],
+                    "poolListTermination": "Empty revert at next index; no independently attributed bounds error. Treat current list as observed only.",
+                    "historicalPoolCount": 92
+                },
+                {
+                    "tokenId": "49",
+                    "observedCurrentPools": ["0xc092E9CBdb4148837FC54bc5233c12C2fc83B4DB"],
+                    "poolListTermination": "Empty revert at next index; no independently attributed bounds error. Treat current list as observed only.",
+                    "historicalPoolCount": 23
+                },
+                {
+                    "tokenId": "1545",
+                    "observedCurrentPools": ["0xc092E9CBdb4148837FC54bc5233c12C2fc83B4DB"],
+                    "poolListTermination": "Empty revert at next index; no independently attributed bounds error. Treat current list as observed only.",
+                    "historicalPoolCount": 21
+                },
+                {
+                    "tokenId": "1104",
+                    "observedCurrentPools": ["0xc092E9CBdb4148837FC54bc5233c12C2fc83B4DB"],
+                    "poolListTermination": "Empty revert at next index; no independently attributed bounds error. Treat current list as observed only.",
+                    "historicalPoolCount": 38
+                },
+                {
+                    "tokenId": "645",
+                    "observedCurrentPools": ["0xc092E9CBdb4148837FC54bc5233c12C2fc83B4DB"],
+                    "poolListTermination": "Empty revert at next index; no independently attributed bounds error. Treat current list as observed only.",
+                    "historicalPoolCount": 81
+                },
+                {
+                    "tokenId": "1144",
+                    "observedCurrentPools": ["0xc092E9CBdb4148837FC54bc5233c12C2fc83B4DB"],
+                    "poolListTermination": "Empty revert at next index; no independently attributed bounds error. Treat current list as observed only.",
+                    "historicalPoolCount": 60
+                },
+                {
+                    "tokenId": "1535",
+                    "observedCurrentPools": ["0xc092E9CBdb4148837FC54bc5233c12C2fc83B4DB"],
+                    "poolListTermination": "Empty revert at next index; no independently attributed bounds error. Treat current list as observed only.",
+                    "historicalPoolCount": 96
+                },
+                {
+                    "tokenId": "1550",
+                    "observedCurrentPools": ["0xc092E9CBdb4148837FC54bc5233c12C2fc83B4DB"],
+                    "poolListTermination": "Empty revert at next index; no independently attributed bounds error. Treat current list as observed only.",
+                    "historicalPoolCount": 29
+                },
+                {
+                    "tokenId": "1588",
+                    "observedCurrentPools": ["0xc092E9CBdb4148837FC54bc5233c12C2fc83B4DB"],
+                    "poolListTermination": "Empty revert at next index; no independently attributed bounds error. Treat current list as observed only.",
+                    "historicalPoolCount": 35
+                },
+                {
+                    "tokenId": "322",
+                    "observedCurrentPools": ["0xf2d3941b6E1cbD3616061E556Eb06986147715d1"],
+                    "poolListTermination": "Empty revert at next index; no independently attributed bounds error. Treat current list as observed only.",
+                    "historicalPoolCount": 118
+                },
+                {
+                    "tokenId": "1587",
+                    "observedCurrentPools": ["0xc092E9CBdb4148837FC54bc5233c12C2fc83B4DB"],
+                    "poolListTermination": "Empty revert at next index; no independently attributed bounds error. Treat current list as observed only.",
+                    "historicalPoolCount": 37
+                },
+                {
+                    "tokenId": "3530",
+                    "observedCurrentPools": ["0xc092E9CBdb4148837FC54bc5233c12C2fc83B4DB"],
+                    "poolListTermination": "Empty revert at next index; no independently attributed bounds error. Treat current list as observed only.",
+                    "historicalPoolCount": 39
+                },
+                {
+                    "tokenId": "1778",
+                    "observedCurrentPools": ["0x0af32614EEa68B8D2232B9592FbdB6512ab6DA73"],
+                    "poolListTermination": "Empty revert at next index; no independently attributed bounds error. Treat current list as observed only.",
+                    "historicalPoolCount": 20
+                },
+                {
+                    "tokenId": "26740",
+                    "observedCurrentPools": [],
+                    "poolListTermination": "Empty revert at next index; no independently attributed bounds error. Treat current list as observed only.",
+                    "historicalPoolCount": 6
+                },
+                {
+                    "tokenId": "30286",
+                    "observedCurrentPools": [],
+                    "poolListTermination": "Empty revert at next index; no independently attributed bounds error. Treat current list as observed only.",
+                    "historicalPoolCount": 0
+                },
+                {
+                    "tokenId": "112",
+                    "observedCurrentPools": [],
+                    "poolListTermination": "Empty revert at next index; no independently attributed bounds error. Treat current list as observed only.",
+                    "historicalPoolCount": 21
+                },
+                {
+                    "tokenId": "33919",
+                    "observedCurrentPools": ["0x0af32614EEa68B8D2232B9592FbdB6512ab6DA73"],
+                    "poolListTermination": "Empty revert at next index; no independently attributed bounds error. Treat current list as observed only.",
+                    "historicalPoolCount": 2
+                },
+                {
+                    "tokenId": "15501",
+                    "observedCurrentPools": [
+                        "0xc092E9CBdb4148837FC54bc5233c12C2fc83B4DB",
+                        "0xa0A215dE234276CAc1b844fD58901351a50fec8A",
+                        "0xe17105d7dE09e9D532AA12C36190e3f64CF3f68E"
+                    ],
+                    "poolListTermination": "Empty revert at next index; no independently attributed bounds error. Treat current list as observed only.",
+                    "historicalPoolCount": 71
+                }
+            ],
+            "observedCurrentVenueCount": 10,
+            "observedCurrentEarnedReads": 86,
+            "allObservedCurrentEarnedZero": false,
+            "historicalVotedScan": {
+                "fromBlock": 105896851,
+                "toBlock": 158634527,
+                "completeResponseReceived": true,
+                "logCount": 1776,
+                "independentSecondProviderCrosscheck": false
+            }
+        }
+    ],
+    "optimismHistoricalLocalCoverage": {
+        "votedLogs": 1776,
+        "distinctPools": 285,
+        "canonicalVenues": 570,
+        "venueBindingsVerified": 570,
+        "localVenues": 446,
+        "localRewardTokenEntries": 1587,
+        "localNftTokenEarnedReads": 5047,
+        "failedLocalEarnedReads": 0,
+        "positiveNftTokenEarnedReads": 3,
+        "remoteVenuesUnreviewed": 124,
+        "remoteVenueCountsByChain": {
+            "130": 12,
+            "252": 12,
+            "1135": 20,
+            "1750": 8,
+            "1868": 14,
+            "1923": 10,
+            "5330": 2,
+            "34443": 16,
+            "42220": 8,
+            "57073": 22
+        }
+    },
+    "candidateClaims": [
+        {
+            "tokenId": "407",
+            "kind": "fees",
+            "pool": "0xB0a9166Ff5A6227BD7354A8fc233B93aDe037156",
+            "venue": "0xACdD64d0280D766e16A376dF3da627a770D3689d",
+            "claims": [
+                {
+                    "tokenId": "407",
+                    "token": "0x4200000000000000000000000000000000000006",
+                    "earned": "10498609263217862",
+                    "displayAmount": "0.010498609263217862"
+                },
+                {
+                    "tokenId": "407",
+                    "token": "0x6c84a8f1c29108F47a79964b5Fe888D4f4D0dE40",
+                    "earned": "369664862369995",
+                    "displayAmount": "0.000369664862369995"
+                }
+            ],
+            "metadata": {
+                "0x4200000000000000000000000000000000000006": {
+                    "symbol": "WETH",
+                    "decimals": 18
+                },
+                "0x6c84a8f1c29108F47a79964b5Fe888D4f4D0dE40": {
+                    "symbol": "tBTC",
+                    "decimals": 18
+                }
+            },
+            "ethCallAtSnapshot": {
+                "passed": true,
+                "returnData": "0x"
+            }
+        },
+        {
+            "tokenId": "407",
+            "kind": "bribes",
+            "pool": "0xB0a9166Ff5A6227BD7354A8fc233B93aDe037156",
+            "venue": "0x9feB118a2650848e32416D0f22d0586785bf5cAe",
+            "claims": [
+                {
+                    "tokenId": "407",
+                    "token": "0x747e42Eb0591547a0ab429B3627816208c734EA7",
+                    "earned": "4228113578323456326758",
+                    "displayAmount": "4228.113578323456326758"
+                }
+            ],
+            "metadata": {
+                "0x747e42Eb0591547a0ab429B3627816208c734EA7": {
+                    "symbol": "T",
+                    "decimals": 18
+                }
+            },
+            "ethCallAtSnapshot": {
+                "passed": true,
+                "returnData": "0x"
+            }
+        }
+    ],
+    "unsignedBatch": "2026-10-24-optimism-historical-claims.safe.json",
+    "remoteRootRoutesRequiringLeafDiscovery": [
+        {
+            "chainId": 130,
+            "pool": "0x23D2351680d0Fc4cAdbfF86Ab0496586a780AaFC",
+            "gauge": "0xf893F7a61C11A4f8952cCD8540B65e39D9E86c80",
+            "tokenIds": ["322"],
+            "fees": "0x68778e2e4473E6Dc429Af61465Dd2c75C39a7dF2",
+            "bribes": "0xf6D4f3129cE06970dc4B5Fc1639441c7374fA72c"
+        },
+        {
+            "chainId": 130,
+            "pool": "0x4f3A679242E726d5D76B456D4A35f246280aE415",
+            "gauge": "0xA316cF72780594f8Fc178BD62aCFca441bCa2F85",
+            "tokenIds": ["322"],
+            "fees": "0xAC03eA716F56917ab54d45e6FD2cCF3D57ec2bBF",
+            "bribes": "0xc49F06aA368704e0849690e5698eE8f42F907C35"
+        },
+        {
+            "chainId": 130,
+            "pool": "0x959e853f7e6cf6E411F90F21c40eE9d1b0D28030",
+            "gauge": "0xFc5eEc239C8Cd78bEa2E37b239878A7E74422102",
+            "tokenIds": ["407", "322"],
+            "fees": "0xea5eD584Ef338a1b70B7B48a3a7040428A9E7Ebb",
+            "bribes": "0xA4ec86945F5db8E1B8Ffd328C3FCeD35C3fA537B"
+        },
+        {
+            "chainId": 130,
+            "pool": "0xb33B823c3E1a1937F9E97BC83167BD6C5E777808",
+            "gauge": "0xAF0e8Bb6550e3A0A3fE421456fe858c6b07D9330",
+            "tokenIds": ["1545", "1104", "645", "1144"],
+            "fees": "0xE37F2ed61Baa85D7B2c0aF35e2C266Dd646441d9",
+            "bribes": "0x8C1Df9D231bd26091b7E884E9C926a92253f742E"
+        },
+        {
+            "chainId": 130,
+            "pool": "0xee126EFc879A7EDe38badB732f1360cA1b592457",
+            "gauge": "0xFE266b13b9EB95CC03e621b7Caa073ad79dF8823",
+            "tokenIds": ["407", "1545", "1104", "645", "1144"],
+            "fees": "0xf47a358D2142d605C3e74DBe754999b22aD4da82",
+            "bribes": "0x0d54e9499404b7e80370A57D6E6b6F0f0233D4aa"
+        },
+        {
+            "chainId": 130,
+            "pool": "0xf11622d57d9E9549aD3Ba12b82b3B8D70afa771d",
+            "gauge": "0xf05AA3Da28d0DEfe7421291f8E9efb005d5f58a8",
+            "tokenIds": ["1550"],
+            "fees": "0x1AA3D260F806B99d3565a26078b594b625c18D88",
+            "bribes": "0x71694F1c7857B0eF8dD83fB26594Cd1380502567"
+        },
+        {
+            "chainId": 252,
+            "pool": "0x45aA031D9D858cD319B424B062c11FC8CeE750c4",
+            "gauge": "0x8b0acc7017CB6ca412064771F67df1a61c0761c2",
+            "tokenIds": ["407", "322"],
+            "fees": "0xa766555Bf2498072D7D1819E273ee4F7eb724976",
+            "bribes": "0xC1D606782F7B30d1230e5b8c206164EDDF306b5A"
+        },
+        {
+            "chainId": 252,
+            "pool": "0x6fc14C7C0B39843a8FBf7b4102fee195ae51ee6f",
+            "gauge": "0x3E456f9AF18e243DB0Dde89E3974A92E3367d4b6",
+            "tokenIds": ["322"],
+            "fees": "0x44E370D8C6f05FbD3564006FF1e551120ba9282d",
+            "bribes": "0x8fBbb77d045Cd91f4D1f26bFf36B09D0E74C7EcC"
+        },
+        {
+            "chainId": 252,
+            "pool": "0x869885B55F0231fa8c4fD37FEC14c84e52A092E6",
+            "gauge": "0x9d14aFE2da7128Ed06580526273eB634544d7230",
+            "tokenIds": ["645", "322"],
+            "fees": "0xC002E2881eaA628094b7983D5d97b01D3E97DC36",
+            "bribes": "0xe568979207B98b05f23a1E624190f98E590A1BE8"
+        },
+        {
+            "chainId": 252,
+            "pool": "0xB01234713d278D0aE3039d5930102956861d144B",
+            "gauge": "0xDD3E2c5E820bE11C1704eA09AD34FD832155D0dF",
+            "tokenIds": ["645"],
+            "fees": "0xDfc1D1D8cfEc9620F54980830718844Fb4FB9C45",
+            "bribes": "0x08a47a9F3FfA5AEc316dd3Bf3bff88CDAF750923"
+        },
+        {
+            "chainId": 252,
+            "pool": "0xC4Cbb0ba3c902Fb4b49B3844230354d45C779F74",
+            "gauge": "0xB6d76B35184Ec539C27b78D947b59b1e936064E5",
+            "tokenIds": ["322"],
+            "fees": "0x04baCE69B18f7B90FEA81896AeE6EA834b2299Ac",
+            "bribes": "0xEbf5e7B0CE591ba185e6aA17455dA89Ba9055b06"
+        },
+        {
+            "chainId": 252,
+            "pool": "0xc85618e15501a4c5B685E8d31005Bf1C4f59c36d",
+            "gauge": "0x3f8C3e32E1d05B13A45Eb334B9a443Dbff41cd6a",
+            "tokenIds": ["407"],
+            "fees": "0xCCd199FE3b3EE94301B3bC01c08048173d4c9e4f",
+            "bribes": "0x9Eb963fb8a9d431fd16705428B48937949EE1689"
+        },
+        {
+            "chainId": 1135,
+            "pool": "0x0BCe933dA45B386813BA95185c6C61a1Ae4b2F6C",
+            "gauge": "0xcf3c93f6FAb70b39F862ceD14A7c84e6aE319328",
+            "tokenIds": ["322"],
+            "fees": "0xCf4cC598a2f9aD6210DcAF78E1908E2B2f6fCB37",
+            "bribes": "0x0B2A9A829441bb2c9fac5A8052E6cE249317540F"
+        },
+        {
+            "chainId": 1135,
+            "pool": "0x506aF17BB2E89528F5ef5f6D0C94D2BDECB213cD",
+            "gauge": "0xCEAC8615DaF7414e7F4fE8926c7753e708F8843A",
+            "tokenIds": ["1545", "1104", "322"],
+            "fees": "0x082325D969b3F5Df5BDC982d1f788461F9c71A4A",
+            "bribes": "0xA89ef06C1BA6483FC4E7ADE6ca38d4212708b02f"
+        },
+        {
+            "chainId": 1135,
+            "pool": "0x68334F1a725187b4E11572388D414DeCBB30B251",
+            "gauge": "0x8bB8d6e5151FFfe9B1d1260360747A4371079D44",
+            "tokenIds": ["407", "1545", "1104", "645", "1144", "1550", "1588", "322", "1587"],
+            "fees": "0x59E3c9b591f14E79bEa60a8d76aaE026F2c288A8",
+            "bribes": "0x745315f22E5c03f42A7863d2f597DE15870109F4"
+        },
+        {
+            "chainId": 1135,
+            "pool": "0x69eC21BfA928a27F117eEF3aa02B1066A1d0fFcD",
+            "gauge": "0x5CC9b6F929155Bf745599F28071ecBcA2EDf6746",
+            "tokenIds": ["1545", "1104", "645", "1144", "1550", "1588", "322", "1587", "3530"],
+            "fees": "0x2415aF1A19Cba578fd32AE93F96EDAc499CFeEB0",
+            "bribes": "0xe18D81A5d0EF85059C4705B63ef6CD9f9f79C0BF"
+        },
+        {
+            "chainId": 1135,
+            "pool": "0x6ED5842fb766534A9bE9114405ffFeEe20130f8F",
+            "gauge": "0xAD6a17F3DeB425371730198073D69c83052351D6",
+            "tokenIds": ["322"],
+            "fees": "0xf966586DF8089B163AeDe25C56164945b7C4159D",
+            "bribes": "0x5c84ca2EaA7F8D15569B9C28b3aDaf7B6a0ae59a"
+        },
+        {
+            "chainId": 1135,
+            "pool": "0x82cF6DC86E52BcD78537be415db22c7CfE1e0500",
+            "gauge": "0x001DAD1CC0354C90de8f7304EEaCA732E3e25115",
+            "tokenIds": ["322"],
+            "fees": "0x4588445916bd7d317f39aE0813b3944710DF5753",
+            "bribes": "0xB1fFAE3BCc82ABAda61728Fc02282911491cE0a9"
+        },
+        {
+            "chainId": 1135,
+            "pool": "0xB10ECb21942200e3E96A9056BBbdF90eE5263468",
+            "gauge": "0xc209c2330Eb52836805ab79CA5577E46Bb89212d",
+            "tokenIds": ["407", "322"],
+            "fees": "0x0EA227B407Ba66506BA20f5DbAB230aDaaD303aF",
+            "bribes": "0x12bD498B889d6677258A6A22E8b78796Db16ffd7"
+        },
+        {
+            "chainId": 1135,
+            "pool": "0xB4b9173008088eaB9aC195c67c94dDC763acc36f",
+            "gauge": "0xD3AD131b12699c464dFD461a5FcE225F2C2e410b",
+            "tokenIds": ["322"],
+            "fees": "0x978ce5Fbd8eD18449a806a3e410b6B35e2Ee6585",
+            "bribes": "0xDB22127304a6173BFfcCc5431268F0a59C0311c4"
+        },
+        {
+            "chainId": 1135,
+            "pool": "0xc9741fb1A92372DEec0a9122FFD43D71D169A0B7",
+            "gauge": "0xD7FE1e0C17C34874B65b75c88f3B17d422837e61",
+            "tokenIds": ["645", "322"],
+            "fees": "0x2C191A84B32fD13bD9465541A1bBcF40D4a318c9",
+            "bribes": "0xaCD965F6B02CBEc59cc8Cd019fbFEF855d27EcAF"
+        },
+        {
+            "chainId": 1135,
+            "pool": "0xEc1087c9daF62FDa9aD2DBe8B6BF9c1f4bCAc3B3",
+            "gauge": "0x3aF261A143280f8a945aeBdC40747122Bb813a5B",
+            "tokenIds": ["407", "1545", "1104", "645", "1550", "322", "1587"],
+            "fees": "0x02eDE87623c01a72F56D129B8dDFFaa66FFF6fa5",
+            "bribes": "0x03Bf94B7abaFcb1c586004Decc25bF3C1ABB2b0f"
+        },
+        {
+            "chainId": 1750,
+            "pool": "0x4A0E43f1DD3e0e4ED09363ED165Eb396728bDA13",
+            "gauge": "0xC4C5230223B4b242e5Fd25b9A8E6d5BBe82aC603",
+            "tokenIds": ["407", "1144", "322", "3530"],
+            "fees": "0x386E44B7Eb45848158684875CEd42BA4c48a8A13",
+            "bribes": "0xb637f9Cb7735953f7dd47F4b11797E1618Aa4f77"
+        },
+        {
+            "chainId": 1750,
+            "pool": "0x8746EB83b847796A31eeB14F550E9A4B027Ce833",
+            "gauge": "0x513C6Be8B12d45D8751ed5c2936f2B24bd15a44d",
+            "tokenIds": ["407"],
+            "fees": "0x33541e89792e42C1C79a80A5343643292A5D11ca",
+            "bribes": "0xa502b5EC29f771e9048458EE6b94Aa221C1adb13"
+        },
+        {
+            "chainId": 1750,
+            "pool": "0xB3251DB497c526706BF0b0139c5D91D11Fb2d55C",
+            "gauge": "0x61075041dCe545669454166939793b1fD350bd1B",
+            "tokenIds": ["407", "322", "3530"],
+            "fees": "0xC6a7E0c550575dEF733E8f1f78735FF6AFb123a0",
+            "bribes": "0x7C87DcefF20ed915e7C8e7e4561dBc835d9F580B"
+        },
+        {
+            "chainId": 1750,
+            "pool": "0xBf0C8957ddacD58cC24b238703AF119c183AC923",
+            "gauge": "0xECa4aa186bB6De65fD73486bfC8B95F2A623b9Cb",
+            "tokenIds": ["322"],
+            "fees": "0x526131c51C931DBe30B5ED146A8d7a685B0FC4eE",
+            "bribes": "0x193c96768E529e9A2E8765F2CF6Da917aC659ce2"
+        },
+        {
+            "chainId": 1868,
+            "pool": "0x21cD02d175D61a4b4D6b62d8707186B1FedaaEAd",
+            "gauge": "0x9659d8C3371bBEA56e083F4e497c0b5097519509",
+            "tokenIds": ["407", "3530"],
+            "fees": "0x22796dEA87c141aBEc616E38247074e9e51C6B20",
+            "bribes": "0x2be8990C7057018b29Da8Af2F5b8c397babB2203"
+        },
+        {
+            "chainId": 1868,
+            "pool": "0x3A52981Ec48011dfA0784c0ea73F18f0F3930df4",
+            "gauge": "0xd38083932251e316a4EaCD0A145C493B9dEf8256",
+            "tokenIds": ["407", "645", "322"],
+            "fees": "0x71473FabC191C326394D1EB5f501f90CB19F0062",
+            "bribes": "0xBCBfAe61e3b4C46D19823E3dA0b43372d9B63fa3"
+        },
+        {
+            "chainId": 1868,
+            "pool": "0x4D8620e4D5d4980C80878A2cb8F0C6c5248C2b52",
+            "gauge": "0x4ac3dd48208DD679E25A0A96dbf4ef48C9537cc9",
+            "tokenIds": ["407"],
+            "fees": "0xc2Ab04DE32794F8179f7b9b52bC84DD888190a72",
+            "bribes": "0x7Fce924202E6819645D3ecd087D39a9A339e446E"
+        },
+        {
+            "chainId": 1868,
+            "pool": "0x55e100743203A4cbb1240fB738748E4feB4E0719",
+            "gauge": "0xf7b979caF782dD3456e4D0F4Ec185Dd7207B44e9",
+            "tokenIds": ["407"],
+            "fees": "0xd8c1089e39f88D69Cd2451A45f7B18306aA70Fa7",
+            "bribes": "0x0821b1ae5D5a5253E872fC821d1E41a212CaF172"
+        },
+        {
+            "chainId": 1868,
+            "pool": "0x7E3Ac95e7FDcd33c6fAE6F948349e4Fa918c96E7",
+            "gauge": "0x923EC7E98706153Ce2c984DD802230476D4722B4",
+            "tokenIds": ["322"],
+            "fees": "0x98F66f3393115F89009F16aa6146116970034BBB",
+            "bribes": "0x9ffaDf3E0a325FdcACb7564a1f124F756389a4b4"
+        },
+        {
+            "chainId": 1868,
+            "pool": "0xdf2059EdEfB9dB28145B7921c825DC935D17F41C",
+            "gauge": "0x10A2BD31da8582231bA355EC7a6d9C2F06932a77",
+            "tokenIds": ["322"],
+            "fees": "0x86F944C9ba82b0dCdD42Ef5B4e9342D90b612225",
+            "bribes": "0x4Ddb5Fe8c064551e557131C007AA3605A3f87397"
+        },
+        {
+            "chainId": 1868,
+            "pool": "0xf8bb867da9943ACa7b93309a2B7b19e2389b6f65",
+            "gauge": "0x10020F3b4d39Ab1303033330517030234cb0bc71",
+            "tokenIds": ["322", "3530"],
+            "fees": "0x0e254c362488b90F8a863B9dd7b583a328f2Bd91",
+            "bribes": "0x75d03EBb7916351dd58745b164C196FD2D4488D8"
+        },
+        {
+            "chainId": 1923,
+            "pool": "0x0cE7102B17Aa41623F228fe0F4774498fc627e84",
+            "gauge": "0x66f6Ae64A97792e681b6E7039B5c4F71422b2943",
+            "tokenIds": ["407"],
+            "fees": "0xDcd91DbdDD78098d0C4541fB24Dc34BAD44Af6f2",
+            "bribes": "0xA19CfFC3E1BfA6e2512504D04e038040Be1252A4"
+        },
+        {
+            "chainId": 1923,
+            "pool": "0x294CD92aCa9838E9688ca3851B53df2AB1e30b27",
+            "gauge": "0xbb02feaa077E275C85827f1635340A1F27d7D712",
+            "tokenIds": ["407"],
+            "fees": "0x0D63a8036ca7CC00deA9a23d192955D68Fc768Dc",
+            "bribes": "0x89Fb7Dc7a406A99ce4D12e58557529E1541183FF"
+        },
+        {
+            "chainId": 1923,
+            "pool": "0x3081eeBf9af55a6b81Bbe49b4e9E4d2CB942244A",
+            "gauge": "0xbbDd296E17B90f70e6B638CeA847135aA62bFaDe",
+            "tokenIds": ["407", "645"],
+            "fees": "0x766704d102A6c1B8d6e4b6bEcC28bd49EA789F22",
+            "bribes": "0x27914545407dB3dEd5Bb7b014F518Df3Df28a8f2"
+        },
+        {
+            "chainId": 1923,
+            "pool": "0x996D376F66f1f2db167d06b69E6c36E2622B20eD",
+            "gauge": "0x37E53329B2336514c1E0A27822c0B2bE76cDf9Cf",
+            "tokenIds": ["322"],
+            "fees": "0xe353837948B4ddD349148ad27E41DB78E30E9f5A",
+            "bribes": "0x7d251363CD13CA5898157A7E78D2aD8c015c0733"
+        },
+        {
+            "chainId": 1923,
+            "pool": "0xEcE9864d7C0ed317a0fE357A8Bb28590991201B6",
+            "gauge": "0x14bAD0eE354c0161178bAcC59340Bb223F66b76C",
+            "tokenIds": ["407", "322"],
+            "fees": "0x3dA59d2A8fa00F573B2818528040bd3f637D94f7",
+            "bribes": "0xE742F924F705287e09C018024421Ba2e4A67b492"
+        },
+        {
+            "chainId": 5330,
+            "pool": "0x25A8d62A832240cBAD4debfd1f6906B70D1A1aA3",
+            "gauge": "0xB7B2bc3FC7CeeBA180E747102F4Aee12041e8c19",
+            "tokenIds": ["322"],
+            "fees": "0x1932156608cFc26A432d351c4430782468D9dFA4",
+            "bribes": "0x54A3A07D330f038c636B10C55A4d6849B1d21fdF"
+        },
+        {
+            "chainId": 34443,
+            "pool": "0x17007DA859A7C76aa78479c3a55B903B02e6582f",
+            "gauge": "0x68F9a5cC3cF5c6d2B92d9D21aFc31c418a64b77d",
+            "tokenIds": ["322"],
+            "fees": "0xfDab94E95317AC92eb4c14f47F377473520B421F",
+            "bribes": "0xd3d037F4B2C8D6A83cA9d20Da61a28B3a495FD81"
+        },
+        {
+            "chainId": 34443,
+            "pool": "0x32AdAb8E2fA6238cdaCE0194a55A83dE40129FA4",
+            "gauge": "0xA125D085EF57D9a1B7e58b62314B4ab8fdeD8754",
+            "tokenIds": ["322"],
+            "fees": "0xd51CF6EDa68E453e46f1E3bD3c0E052fA772B5f6",
+            "bribes": "0x61680738D3cC991DCf705464C6E06E935B876533"
+        },
+        {
+            "chainId": 34443,
+            "pool": "0x3AA1f9D3c5b95ca4e6416DE91cbB0C5c7A8FB462",
+            "gauge": "0xe3C3A08AE41c36b204eF9a980f9eF5C579CC3f0f",
+            "tokenIds": ["1144"],
+            "fees": "0x4D04900a9421F4991CC92D1C7C4345693F7bA69E",
+            "bribes": "0x55e1103774A8D8d02cd712AF39184976a9aEA310"
+        },
+        {
+            "chainId": 34443,
+            "pool": "0x61EAC543a0E3FEb7e96a662B9656962babcd39af",
+            "gauge": "0xFdC4ba603B25Fbf2659a45cED114a205a4867457",
+            "tokenIds": ["645"],
+            "fees": "0xE672729F55C70fB16b935FE0E7a0269f2eeac89c",
+            "bribes": "0x35B45D997B1EF6F01e806c8B3DE309fD372B04f2"
+        },
+        {
+            "chainId": 34443,
+            "pool": "0x7F8EE32920Ef6ffcB5958945AB02F80A3ACDB004",
+            "gauge": "0xdC657C6a1523FE3fE4eC0790630b11B4Cb3103B0",
+            "tokenIds": ["322"],
+            "fees": "0x386805f5dC2B47118dd082b13B63c1bCAf468c20",
+            "bribes": "0x88Bba41B787B3454B56a5996b7232b081469A701"
+        },
+        {
+            "chainId": 34443,
+            "pool": "0xbB435Ef00F27e890930BACd2F77221A81013AF79",
+            "gauge": "0x134D1bc5a1899B4777944d97d5336a76BCeC2086",
+            "tokenIds": ["407"],
+            "fees": "0xbcA91e0a3409CB17EFFed2B5826809c60157F55f",
+            "bribes": "0xD18ec41E1a852297Be8388A19ea68aaDcd667376"
+        },
+        {
+            "chainId": 34443,
+            "pool": "0xBee3aA5c600d74e051dBe271Ac83e33fD5F6405C",
+            "gauge": "0x32F0e5Eec6F0Ede01e055c37aFF702EE6cc8b89E",
+            "tokenIds": ["322"],
+            "fees": "0x1A57E4D86f94a4E0bf23f7260a3F0eD781ea6b4E",
+            "bribes": "0xb38C113a589D92084Df39CF9d5Ae90c0533D1209"
+        },
+        {
+            "chainId": 34443,
+            "pool": "0xF9D7D448C45c2f06f11FEeb9f69F459c9Ab42B6C",
+            "gauge": "0xbF6833100eEF61E16988fD387A9f47e2429C348b",
+            "tokenIds": ["407"],
+            "fees": "0xa4A4372bFb7bBbaCF636F227e09476ac31bC4d2a",
+            "bribes": "0x284d7B13E7B7A3C3eDC7d17613E216C17432a426"
+        },
+        {
+            "chainId": 42220,
+            "pool": "0x4606b00B9c721E922145707957eb82E184735244",
+            "gauge": "0xd0023c4167acBe89fAE7eC7c452BDeE860ce5711",
+            "tokenIds": ["407"],
+            "fees": "0x10A40641E9042b34A7298019cb9Db9F7f3D03CEE",
+            "bribes": "0xa98dd80b01984B543bc6ebdBC2cA44b6fB10B1C2"
+        },
+        {
+            "chainId": 42220,
+            "pool": "0x844eb61CE46858871d8a65bD77b5022b550A4001",
+            "gauge": "0x695Eaddc1Ffa57C95a8148EAD292537a92c718e4",
+            "tokenIds": ["407", "322"],
+            "fees": "0x8D2E36B44Fef1513eF679991577E12f7b4376AEd",
+            "bribes": "0xEA872c928A3B44de19497AeF52b355C52b62e452"
+        },
+        {
+            "chainId": 42220,
+            "pool": "0x850D8cD143e68d1a1426346f122218450170c84c",
+            "gauge": "0x50854a1B57A0238Ba2aa5341a8A03FdE027bf75d",
+            "tokenIds": ["407", "322"],
+            "fees": "0x66782a2039b4CDf9A962caabD38492adc602c8c1",
+            "bribes": "0xa6438B910Fd62D07D85B1BAe4B6BfbedCf04d479"
+        },
+        {
+            "chainId": 42220,
+            "pool": "0xc8b4210784D784A51DCB872e398497F4f4962eB1",
+            "gauge": "0x93c77B19Cb0024D1D1c10236AD4552f805A27703",
+            "tokenIds": ["407", "322"],
+            "fees": "0xD86903309E6b5A5CF66549742Aacaaeb31059306",
+            "bribes": "0x559B9a4B1a58Fe3457efBBA593a4E700b34aa210"
+        },
+        {
+            "chainId": 57073,
+            "pool": "0x4dC279704350E27B475b62669301019f3B1e40ac",
+            "gauge": "0x18711dbACe90dE64E0322D8f97d0a3E7c1B399Cf",
+            "tokenIds": ["407", "3530"],
+            "fees": "0xE26179CD7Cf2EfCd90eacF70000F7761DB7CadF7",
+            "bribes": "0xbb58F2D1CeaB6B3e3FB93c6D908108c1ddc632f1"
+        },
+        {
+            "chainId": 57073,
+            "pool": "0x63A1e7817EF8643104B62d9AE2C047841FFC81ce",
+            "gauge": "0x6409eC070D15aCc356CF57F4ec037A5025F64BeA",
+            "tokenIds": ["407", "1104", "645", "1550", "1588", "322", "1587"],
+            "fees": "0x9069675baFA6376F77884B4AeCD6E877af877762",
+            "bribes": "0x2f01E551C28F2351beA44762e91A238db457da28"
+        },
+        {
+            "chainId": 57073,
+            "pool": "0x6d4dBbcf3325E04e4413Bc39eb8C2F1Ea4e5d129",
+            "gauge": "0xc9a7D5Da4A7520122943c5236229793CaC648381",
+            "tokenIds": ["1545", "645", "1144", "1550", "1588", "322", "1587", "3530"],
+            "fees": "0x6Af74c275A4260aEb218546fA4fB028D94c3417E",
+            "bribes": "0x014625371969c84b35Eb457FaaaECA137088FbF8"
+        },
+        {
+            "chainId": 57073,
+            "pool": "0x7c5095aB1aeaf83aae6D49bd4CE9093051ee8fb5",
+            "gauge": "0xA0561DBFD47498aEA001C040B04f49Fe8Ff99600",
+            "tokenIds": ["1545", "1104", "1144", "322"],
+            "fees": "0x5b3ad379E04FD9057eF0Fa21B4989f6572a969e6",
+            "bribes": "0x3c4a4b75686f11880beD1d597939BFb2F04EEdf7"
+        },
+        {
+            "chainId": 57073,
+            "pool": "0x7Dcc93f1e5fbd38ffe7b11BC0190FBcFbB807700",
+            "gauge": "0x118ADC9aE7d2C802DE7209592a1388C9A3eb26d2",
+            "tokenIds": ["407", "1545", "1104", "645", "1144", "1550", "1588", "322", "1587", "3530"],
+            "fees": "0x0936561C8eBe5217fFC47870F9f97AD347Ae841c",
+            "bribes": "0xEC1EC9F9509897126eA0523a3d0046499d5C1546"
+        },
+        {
+            "chainId": 57073,
+            "pool": "0x8A735f3A911860ea5C69a052bDc709dBfb32484f",
+            "gauge": "0xe03C9C733fc67179a4959cF96449549cb31C2130",
+            "tokenIds": ["407"],
+            "fees": "0x5205675a4F3F0f5c85cd82dE32379B5087E7fe3D",
+            "bribes": "0xD0E302fCD880ca2870d69866a3708a0Aaf65fDb3"
+        },
+        {
+            "chainId": 57073,
+            "pool": "0x9Df98aD0E87369342c75e9Ae807cabeF9743A326",
+            "gauge": "0xDCa50a7D3813A97F98cD48922E51c93fdf9b6dA3",
+            "tokenIds": ["407", "322"],
+            "fees": "0x554E077BF8201a43C1E1212B33452695B6c8D321",
+            "bribes": "0x6c7c646Ff5AFC2D9071aD5f53e879954d815c3F6"
+        },
+        {
+            "chainId": 57073,
+            "pool": "0x9f99185d476aA3632dFdB69faE43007E92B7ef7d",
+            "gauge": "0x3eaa211d25c04A992a79b57c32D6F307332B187e",
+            "tokenIds": [
+                "101",
+                "407",
+                "49",
+                "1545",
+                "1104",
+                "645",
+                "1144",
+                "1535",
+                "1550",
+                "1588",
+                "322",
+                "1587",
+                "3530"
+            ],
+            "fees": "0xF685451dCf9648a95fCB27b62a73121a2f1657DE",
+            "bribes": "0x7b27C3779a4Ba985AFC7E63c6c2dDAe2724545CA"
+        },
+        {
+            "chainId": 57073,
+            "pool": "0xB89E0EbD7c7f86A5952Fcd3248942D960654C1Fc",
+            "gauge": "0x2C568357E5e4BEee207Ab46b5bA5C1196D0D5Ecf",
+            "tokenIds": ["322"],
+            "fees": "0xB27616E844711F7dA85f2CDbBe1672bc74D5eafF",
+            "bribes": "0x90c7DB34f468da31a9A7C1BCFe8F7449e0889bD1"
+        },
+        {
+            "chainId": 57073,
+            "pool": "0xE993068FaD98832B362c8F39Ba70252C19eD6dc2",
+            "gauge": "0x8c32E9F12B9DaB083820113bdCBEbd5779B023Dd",
+            "tokenIds": ["101", "407", "49", "1104", "645", "322"],
+            "fees": "0x060E45C0840BA8f8D6a8Cec1f1c2528364aE39B7",
+            "bribes": "0x51E267eC22969a7BF711Bf7EF5F460616e88b823"
+        },
+        {
+            "chainId": 57073,
+            "pool": "0xfC3FBdc257B1354aD86A483D3E6192d0aCa0b0b9",
+            "gauge": "0xfA6d57eF283C869045dB64dB0312Cd492eB17152",
+            "tokenIds": ["407", "1545", "1104", "1144"],
+            "fees": "0xDD925CEeF96576de675F6DB14CBADe71afB28BB1",
+            "bribes": "0x2974dEAAc83219113d8297594D0b5f91B694C024"
+        }
+    ],
+    "openRequirements": [
+        "Base Voted history for NFTs 83742, 90818, 8814, 41239 from block 3200601 through block 53039404, then historical fee/bribe venue and earned discovery.",
+        "Resolve all 124 remote OP root reward venues to canonical leaf contracts, reward tokens, claim authorization/recipient and any bridge message delivery requirements on the ten listed chains.",
+        "Reconcile legacy RewardsDistributor rebases separately for all 23 NFTs.",
+        "Recheck post-snapshot accrual and ownership, and refresh each candidate eth_call immediately before manual claims; inspect actual receipt and token balance changes afterward.",
+        "Do not burn, merge or migrate old NFTs until the operator has reconciled all claim venues and completed the required claims. Current pool votes alone do not establish historical completion."
+    ],
+    "safeBatchEncodingVerification": {
+        "format": "Safe Transaction Builder v1.0 structured ABI and input values, data:null",
+        "officialSource": "https://github.com/safe-global/safe-react-apps/blob/e8cccfb9a1042fa2954087988bae59c3b8c81780/apps/tx-builder/src/utils.ts",
+        "importerSource": "https://github.com/safe-global/safe-react-apps/blob/e8cccfb9a1042fa2954087988bae59c3b8c81780/apps/tx-builder/src/store/transactionLibraryContext.tsx",
+        "verification": "Executed official encodeToHexData with web3-eth-abi/web3-utils 1.8.1; both nested-array calls exactly matched their prior successful eth_call calldata. No Safe service interaction."
+    }
+}

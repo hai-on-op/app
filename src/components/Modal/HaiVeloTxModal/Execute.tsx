@@ -1,3 +1,4 @@
+import { assertLegacyMintingEnabled } from '~/services/aeroMigration/policy'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { BigNumber, ethers } from 'ethers'
 import { useAccount } from 'wagmi'
@@ -122,6 +123,7 @@ export function Execute({ plan, onDone, onStepDone }: Props) {
     }, [plan, contract, address, config])
 
     const handleRun = useCallback(async () => {
+        assertLegacyMintingEnabled()
         const step = steps[currentIndex]
         if (!step) return
         setPending(true)
