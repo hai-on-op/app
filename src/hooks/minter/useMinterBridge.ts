@@ -84,6 +84,8 @@ export function useMinterBridge(
     optimismBalance?: { raw: string; formatted: string; decimals: number }
     sourceBalance?: { raw: string; formatted: string; decimals: number }
     destinationBalance?: { raw: string; formatted: string; decimals: number }
+    balancesLoading?: boolean
+    balancesError?: string
     isOnSourceChain: boolean
     switchToSourceChain: () => void
     isWaitingForDelivery: boolean
@@ -173,7 +175,12 @@ export function useMinterBridge(
     )
 
     // Query for Base balance
-    const { data: baseBalanceData, refetch: refetchBaseBalance } = useQuery({
+    const {
+        data: baseBalanceResult,
+        refetch: refetchBaseBalance,
+        isInitialLoading: isBaseBalanceLoading,
+        isError: isBaseBalanceError,
+    } = useQuery({
         queryKey: ['bridge', 'baseBalance', address],
         enabled: Boolean(address),
         queryFn: () => getBaseBalance(address!),
@@ -184,7 +191,12 @@ export function useMinterBridge(
 
     // Query for Optimism balance
     // Poll every 5 seconds when waiting for bridge delivery
-    const { data: optimismBalanceData, refetch: refetchOptimismBalance } = useQuery({
+    const {
+        data: optimismBalanceResult,
+        refetch: refetchOptimismBalance,
+        isInitialLoading: isOptimismBalanceLoading,
+        isError: isOptimismBalanceError,
+    } = useQuery({
         queryKey: ['bridge', 'optimismBalance', address],
         enabled: Boolean(address),
         queryFn: () => getOptimismBalance(address!),
@@ -193,6 +205,19 @@ export function useMinterBridge(
         refetchOnWindowFocus: false,
         retry: 1,
     })
+
+    // A failed read is unavailable, even if the query retained an earlier balance.
+    const baseBalanceData = isBaseBalanceError ? undefined : baseBalanceResult
+    const optimismBalanceData = isOptimismBalanceError ? undefined : optimismBalanceResult
+    const balancesLoading = Boolean(address) && (isBaseBalanceLoading || isOptimismBalanceLoading)
+    const failedBalanceChains = [
+        ...(isBaseBalanceError ? ['Base'] : []),
+        ...(isOptimismBalanceError ? ['Optimism'] : []),
+    ]
+    const balancesError =
+        address && failedBalanceChains.length
+            ? `Unable to load your haiAERO balance on ${failedBalanceChains.join(' and ')}. Please try again.`
+            : undefined
 
     // Determine source/destination balances based on direction
     const sourceBalance = direction === 'base-to-optimism' ? baseBalanceData : optimismBalanceData
@@ -473,6 +498,8 @@ export function useMinterBridge(
         // Chain-specific balances
         baseBalance: baseBalanceData,
         optimismBalance: optimismBalanceData,
+        balancesLoading,
+        balancesError,
         // Direction-aware source/destination balances
         sourceBalance,
         destinationBalance,

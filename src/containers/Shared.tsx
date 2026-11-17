@@ -80,6 +80,7 @@ export function Shared({ children }: Props) {
     const isDocumentVisible = useDocumentVisibility()
     const openCollateral = new URLSearchParams(location.search).get('collateral') || ''
     const splashVideo = useRef<HTMLVideoElement | null>(null)
+    const initialization = useRef<{ key?: string; revision: number }>({ revision: 0 })
 
     const isAuctionRoute = location.pathname.startsWith('/auctions')
     const isEarnRoute = location.pathname.startsWith('/earn')
@@ -133,15 +134,23 @@ export function Shared({ children }: Props) {
     }, [account, geb, connectWalletState?.forceUpdateTokens, connectWalletActions])
 
     useEffect(() => {
-        if (!connectWalletState || !signer) return
-
-        signer.getBalance().then((balance) => {
-            connectWalletActions.updateEthBalance({
-                chainId: NETWORK_ID,
-                balance: Number(utils.formatEther(balance)),
+        if (!account || !signer || !chain?.id) return
+        let cancelled = false
+        const chainId = chain.id
+        signer
+            .getBalance()
+            .then((balance) => {
+                if (cancelled) return
+                connectWalletActions.updateEthBalance({
+                    chainId,
+                    balance: Number(utils.formatEther(balance)),
+                })
             })
-        })
-    }, [account, signer, connectWalletState, connectWalletActions])
+            .catch(() => undefined)
+        return () => {
+            cancelled = true
+        }
+    }, [account, signer, chain?.id, connectWalletActions])
 
     useEffect(() => {
         if (!connectWalletState) return
@@ -253,68 +262,80 @@ export function Shared({ children }: Props) {
         video.pause()
     }, [isSplash, isDocumentVisible])
 
-    const accountChecker = useCallback(async () => {
-        if (!account || !chain?.id || !signer) {
-            popupsActions.setIsInitializing(false)
-            return
-        }
-
-        // Skip Optimism-specific operations when user is on a different chain (e.g., Base for haiAERO)
-        // This prevents errors from trying to call Optimism contracts with a non-Optimism signer
-        const isOnOptimism = chain?.id === NETWORK_ID
-
-        popupsActions.setWaitingPayload({
-            title: '',
-            status: ActionState.LOADING,
-        })
-        popupsActions.setIsInitializing(true)
-        try {
-            // Load cached transactions regardless of chain
-            const txs = localStorage.getItem(`${account}-${NETWORK_ID}`)
-            if (txs) {
-                transactionsActions.setTransactions(JSON.parse(txs))
+    const accountChecker = useCallback(
+        async (revision: number) => {
+            const isCurrent = () => initialization.current.revision === revision
+            if (!account || !chain?.id || !signer) {
+                popupsActions.setIsInitializing(false)
+                return
             }
 
-            // Only perform Optimism-specific operations when on Optimism
-            if (isOnOptimism && geb) {
-                connectWalletActions.setProxyAddress('')
-                const userProxy = await geb.getProxyAction(account)
-                if (userProxy?.proxyAddress && userProxy.proxyAddress !== EMPTY_ADDRESS) {
-                    connectWalletActions.setProxyAddress(userProxy.proxyAddress)
-                }
+            // Skip Optimism-specific operations when user is on a different chain (e.g., Base for haiAERO)
+            // This prevents errors from trying to call Optimism contracts with a non-Optimism signer
+            const isOnOptimism = chain?.id === NETWORK_ID
 
-                await timeout(200)
-                if (!connectWalletState.ctHash) {
-                    connectWalletActions.setStep(2)
-                }
-            } else {
-                // When not on Optimism, just advance the step without fetching Optimism data
-                connectWalletActions.setStep(2)
-            }
-        } catch (error: any) {
-            console.error(error)
-            connectWalletActions.setStep(1)
-            popupsActions.setIsInitializing(false)
-        } finally {
-            popupsActions.setIsWaitingModalOpen(false)
             popupsActions.setWaitingPayload({
                 title: '',
-                status: ActionState.NONE,
+                status: ActionState.LOADING,
             })
-        }
+            popupsActions.setIsInitializing(true)
+            try {
+                // Load cached transactions regardless of chain
+                const txs = localStorage.getItem(`${account}-${NETWORK_ID}`)
+                if (txs) {
+                    transactionsActions.setTransactions(JSON.parse(txs))
+                }
 
-        await timeout(500)
-        popupsActions.setIsInitializing(false)
-    }, [
-        account,
-        chain?.id,
-        signer,
-        geb,
-        connectWalletActions,
-        popupsActions,
-        transactionsActions,
-        connectWalletState.ctHash,
-    ])
+                // Only perform Optimism-specific operations when on Optimism
+                if (isOnOptimism && publicGeb) {
+                    connectWalletActions.setProxyAddress('')
+                    // Read from Optimism even while the signer-backed SDK catches up
+                    // after switching away from Base.
+                    const proxyAddress = await publicGeb.contracts.proxyFactory.proxies(account)
+                    if (!isCurrent()) return
+                    const hasProxy = proxyAddress && proxyAddress !== EMPTY_ADDRESS
+                    if (hasProxy) {
+                        connectWalletActions.setProxyAddress(proxyAddress)
+                    }
+
+                    await timeout(200)
+                    if (!isCurrent()) return
+                    if (hasProxy && !connectWalletState.ctHash) {
+                        connectWalletActions.setStep(2)
+                    }
+                } else {
+                    // When not on Optimism, just advance the step without fetching Optimism data
+                    connectWalletActions.setStep(2)
+                }
+            } catch (error: any) {
+                if (!isCurrent()) return
+                console.error(error)
+                connectWalletActions.setStep(1)
+                popupsActions.setIsInitializing(false)
+            } finally {
+                if (isCurrent()) {
+                    popupsActions.setIsWaitingModalOpen(false)
+                    popupsActions.setWaitingPayload({
+                        title: '',
+                        status: ActionState.NONE,
+                    })
+                }
+            }
+
+            await timeout(500)
+            if (isCurrent()) popupsActions.setIsInitializing(false)
+        },
+        [
+            account,
+            chain?.id,
+            signer,
+            publicGeb,
+            connectWalletActions,
+            popupsActions,
+            transactionsActions,
+            connectWalletState.ctHash,
+        ]
+    )
 
     const accountChange = useCallback(() => {
         resetModals()
@@ -329,6 +350,13 @@ export function Shared({ children }: Props) {
     }, [account, previousAccount, history, connectWalletActions, transactionsActions, resetModals])
 
     const networkChecker = useCallback(() => {
+        const ready = Boolean(signer && (chain?.id !== NETWORK_ID || publicGeb))
+        const key = JSON.stringify([account?.toLowerCase(), chain?.id, ready, connectWalletState.ctHash])
+        // Wallet clients can refresh without changing the connected account or chain.
+        // Do not reset the page or reopen its initialization overlay for those updates.
+        if (initialization.current.key === key) return
+        const revision = initialization.current.revision + 1
+        initialization.current = { key, revision }
         accountChange()
         // Allow both Optimism (NETWORK_ID) and Base (8453) as valid networks
         // Base is used for haiAERO minting flow
@@ -340,16 +368,34 @@ export function Shared({ children }: Props) {
             connectWalletActions.setIsWrongNetwork(false)
             if (account) {
                 connectWalletActions.setStep(1)
-                accountChecker()
+                if (ready) void accountChecker(revision)
+                else popupsActions.setIsInitializing(false)
             } else {
                 popupsActions.setIsInitializing(false)
             }
         }
-    }, [accountChange, accountChecker, account, chain?.id, connectWalletActions, popupsActions])
+    }, [
+        accountChange,
+        accountChecker,
+        account,
+        chain?.id,
+        signer,
+        publicGeb,
+        connectWalletState.ctHash,
+        connectWalletActions,
+        popupsActions,
+    ])
 
     useEffect(() => {
         networkChecker()
     }, [networkChecker])
+
+    useEffect(
+        () => () => {
+            initialization.current = { revision: initialization.current.revision + 1 }
+        },
+        []
+    )
 
     // const {
     //     data: { priceDiff },

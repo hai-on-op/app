@@ -12,6 +12,7 @@ type NavContainerProps = BlurContainerProps & {
     headerContent?: ReactChildren
     children: ReactChildren
     compactQuery?: MediaWidth
+    scrollTabs?: boolean
 }
 export function NavContainer({
     navItems,
@@ -20,16 +21,24 @@ export function NavContainer({
     stackHeader = false,
     headerContent,
     compactQuery = 'upToSmall',
+    scrollTabs = false,
     children,
     ...props
 }: NavContainerProps) {
     return (
         <Container {...props}>
-            <Header $stack={stackHeader} $compactQuery={compactQuery}>
+            <Header $stack={stackHeader} $compactQuery={compactQuery} $hasContent={!!headerContent}>
                 {!!navItems.length && (
-                    <NavGrid $columns={navItems.map(() => '1fr').join(' ')} $compactQuery={compactQuery}>
+                    <NavGrid
+                        $columns={navItems.map(() => '1fr').join(' ')}
+                        $compactQuery={compactQuery}
+                        $scrollTabs={scrollTabs}
+                    >
                         {navItems.map((item, i) => (
                             <Nav
+                                as="button"
+                                type="button"
+                                aria-pressed={selected === i}
                                 key={i}
                                 $active={selected === i}
                                 onClick={() => onSelect(i)}
@@ -57,19 +66,19 @@ const Header = styled(Flex).attrs((props) => ({
     $align: 'center',
     $gap: 24,
     ...props,
-}))<{ $stack: boolean; $compactQuery: MediaWidth }>`
+}))<{ $stack: boolean; $compactQuery: MediaWidth; $hasContent: boolean }>`
     position: relative;
     height: 144px;
     padding: 0 48px;
     border-bottom: ${({ theme }) => theme.border.medium};
-    ${({ $stack }) =>
+    ${({ $stack, $hasContent }) =>
         $stack &&
         css`
             flex-direction: column-reverse;
             justify-content: flex-end;
             align-items: flex-start;
             height: auto;
-            padding-top: 48px;
+            padding-top: ${$hasContent ? 48 : 0}px;
         `}
 
     ${({ theme, $compactQuery }) => theme.mediaWidth[$compactQuery]`
@@ -87,20 +96,40 @@ const Header = styled(Flex).attrs((props) => ({
 const NavGrid = styled(Grid).attrs((props) => ({
     $align: 'flex-end',
     ...props,
-}))<{ $active?: boolean; $compactQuery: MediaWidth }>`
+}))<{ $active?: boolean; $compactQuery: MediaWidth; $scrollTabs: boolean }>`
     height: 100%;
+    max-width: 100%;
 
-    ${({ theme, $compactQuery }) => theme.mediaWidth[$compactQuery]`
+    ${({ theme, $compactQuery, $scrollTabs }) => theme.mediaWidth[$compactQuery]`
         width: 100%;
         height: 48px;
         align-items: center;
         font-size: 0.8em;
         border: ${theme.border.medium};
         border-radius: 999px;
+        ${
+            $scrollTabs &&
+            css`
+                overflow-x: auto;
+                grid-template-columns: none;
+                grid-auto-flow: column;
+                grid-auto-columns: max-content;
+                border-radius: 12px;
+            `
+        }
     `}
 `
 const Nav = styled(CenteredFlex)<{ $active?: boolean; $compactQuery: MediaWidth }>`
+    appearance: none;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    border: 0;
     padding: 24px 16px;
+    &:focus-visible {
+        outline: 2px solid currentColor;
+        outline-offset: -4px;
+    }
     ${({ theme, $active = false }) =>
         $active
             ? css`

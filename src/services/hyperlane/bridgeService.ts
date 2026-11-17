@@ -493,13 +493,8 @@ export async function getBaseBalance(userAddress: string): Promise<{
             formatted: ethers.utils.formatUnits(balance, decimals),
             decimals,
         }
-    } catch (error) {
-        console.error('[Bridge] Error getting Base balance:', error)
-        return {
-            raw: '0',
-            formatted: '0',
-            decimals,
-        }
+    } catch {
+        throw new Error('Unable to load your haiAERO balance on Base. Please try again.')
     }
 }
 
@@ -530,13 +525,8 @@ export async function getOptimismBalance(userAddress: string): Promise<{
             formatted: ethers.utils.formatUnits(balance, decimals),
             decimals,
         }
-    } catch (error) {
-        console.error('[Bridge] Error getting Optimism balance:', error)
-        return {
-            raw: '0',
-            formatted: '0',
-            decimals,
-        }
+    } catch {
+        throw new Error('Unable to load your haiAERO balance on Optimism. Please try again.')
     }
 }
 
