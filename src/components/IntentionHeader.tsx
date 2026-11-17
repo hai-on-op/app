@@ -24,6 +24,7 @@ import { HaiAeroStats } from '~/containers/Vaults/HaiAeroStats'
 import { kiteConfig } from '~/staking/configs/kite'
 import { haiBoldCurveLpConfig } from '~/staking/configs/haiBoldCurveLp'
 import { haiVeloVeloLpConfig } from '~/staking/configs/haiVeloVeloLp'
+import { isAeroV2Route } from '~/services/aeroV2/navigation'
 
 enum Intention {
     AUCTION = 'auctions',
@@ -128,10 +129,12 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
 
     const location = useLocation()
     const history = useHistory()
+    const isAeroV2 = isAeroV2Route(location.pathname, location.search)
 
     const isUpToExtraSmall = useMediaQuery('upToExtraSmall')
 
     const { type, stats, stakeConfig } = useMemo(() => {
+        if (isAeroV2) return { type: Intention.BORROW, stats: undefined, stakeConfig: undefined }
         if (location.pathname.startsWith('/auctions')) {
             return {
                 type: Intention.AUCTION,
@@ -201,7 +204,7 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
         }
 
         return { type: undefined, stats: undefined, stakeConfig: undefined }
-    }, [location.pathname, location.search])
+    }, [location.pathname, location.search, isAeroV2])
 
     // Build select options, including dedicated haiVELO and haiAERO entries after the primary borrow option
     const selectOptions: BrandedSelectOption[] = useMemo(() => {
@@ -216,7 +219,7 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
             label: 'Get haiAERO',
             value: 'haiAERO',
             icon: ['HAIAERO'],
-            description: 'Convert AERO into haiAERO on Base and bridge to Optimism',
+            description: 'Mint on Base or Optimism, migrate legacy tokens, or bridge haiAERO v2',
         }
 
         const extended: BrandedSelectOption[] = []
@@ -244,14 +247,16 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
         (location.pathname === '/vaults/open' &&
             ['HAIAERO'].includes(new URLSearchParams(location.search).get('collateral') || ''))
 
-    const isMinterOpen = isHaiVeloOpen || isHaiAeroOpen
+    const isMinterOpen = isHaiVeloOpen || isHaiAeroOpen || isAeroV2
 
     const baseCopy = copy[type]
     const isLpStaking = stakeConfig && stakeConfig.namespace !== 'kite'
-    const subtitle = isHaiVeloOpen
+    const subtitle = isAeroV2
+        ? 'Mint haiAERO v2 with AERO, xAERO or sAERO NFTs, migrate existing haiVELO and haiAERO, or bridge between Base and Optimism. '
+        : isHaiVeloOpen
         ? 'Convert your VELO & veVELO into haiVELO to use as collateral while earning veVELO rewards. '
         : isHaiAeroOpen
-        ? 'Convert your AERO on Base into haiAERO and bridge to Optimism to use as collateral. '
+        ? 'Use legacy AERO on Base to mint haiAERO v1, or manage your existing collateral on Optimism. '
         : isLpStaking
         ? `Stake ${stakeConfig.labels.token} to earn rewards. `
         : baseCopy.subtitle
@@ -265,7 +270,9 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
         ctaLink = 'https://docs.letsgethai.com/using-haiaero' // Update when docs are available
     }
 
-    const selectedValue = isHaiVeloOpen
+    const selectedValue = isAeroV2
+        ? 'haiAERO'
+        : isHaiVeloOpen
         ? 'haiVELO'
         : isHaiAeroOpen
         ? 'haiAERO'
@@ -294,9 +301,11 @@ export function IntentionHeader({ children }: IntentionHeaderProps) {
                 <Text>
                     {subtitle}
 
-                    <Link href={ctaLink} $fontWeight={700}>
-                        {cta}
-                    </Link>
+                    {!isAeroV2 && (
+                        <Link href={ctaLink} $fontWeight={700}>
+                            {cta}
+                        </Link>
+                    )}
                 </Text>
                 {stats}
                 {children}

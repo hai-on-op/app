@@ -20,6 +20,7 @@ import type { BridgeTransactionStatus, BridgeDirection } from '~/types/bridge'
 import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
 import { StatusLabel } from '~/components/StatusLabel'
 import { NumberInput } from '~/components/NumberInput'
+import { LazyConnectButton } from '~/components/LazyConnectButton'
 
 const BRIDGE_DIRECTION_STORAGE_KEY = 'hai-bridge-direction'
 
@@ -43,13 +44,13 @@ function storeDirection(direction: BridgeDirection) {
     }
 }
 
-export function BridgeTab() {
+export function BridgeTab({ initialDirection }: { initialDirection?: BridgeDirection } = {}) {
     const { address, isConnected } = useAccount()
     const { chain: _chain } = useNetwork()
     const { switchNetwork } = useSwitchNetwork()
 
     const [bridgeAmount, setBridgeAmount] = useState('')
-    const [direction, setDirectionState] = useState<BridgeDirection>(getStoredDirection)
+    const [direction, setDirectionState] = useState<BridgeDirection>(() => initialDirection || getStoredDirection())
 
     // Wrapper to persist direction changes
     const setDirection = (newDirection: BridgeDirection | ((prev: BridgeDirection) => BridgeDirection)) => {
@@ -78,6 +79,8 @@ export function BridgeTab() {
         isOnSourceChain,
         switchToSourceChain: _switchToSourceChain,
         isWaitingForDelivery,
+        balancesLoading,
+        balancesError,
     } = useMinterBridge(bridgeAmount, direction)
 
     // Direction-aware labels
@@ -188,7 +191,7 @@ export function BridgeTab() {
         <Container>
             <Header>
                 <Flex $width="100%" $justify="space-between" $align="center">
-                    <Text $fontWeight={700}>Bridge haiAERO</Text>
+                    <Text $fontWeight={700}>Bridge haiAERO v1</Text>
                     <Text $fontSize="0.75em" $color="rgba(0,0,0,0.6)">
                         {sourceChainName} → {destChainName}
                     </Text>
@@ -219,9 +222,9 @@ export function BridgeTab() {
                             haiAERO on Base
                         </Text>
                         <Text $fontWeight={700} $fontSize="1.25em">
-                            {formatNumberWithStyle(parseFloat(baseBalance?.formatted || '0'), {
-                                maxDecimals: 4,
-                            })}
+                            {baseBalance
+                                ? formatNumberWithStyle(parseFloat(baseBalance.formatted), { maxDecimals: 4 })
+                                : '—'}
                         </Text>
                         {direction === 'base-to-optimism' && <SourceBadge>Source</SourceBadge>}
                     </BalanceCard>
@@ -238,20 +241,32 @@ export function BridgeTab() {
                             haiAERO on Optimism
                         </Text>
                         <Text $fontWeight={700} $fontSize="1.25em">
-                            {formatNumberWithStyle(parseFloat(optimismBalance?.formatted || '0'), {
-                                maxDecimals: 4,
-                            })}
+                            {optimismBalance
+                                ? formatNumberWithStyle(parseFloat(optimismBalance.formatted), { maxDecimals: 4 })
+                                : '—'}
                         </Text>
                         {direction === 'optimism-to-base' && <SourceBadge>Source</SourceBadge>}
                     </BalanceCard>
                 </BalanceRow>
 
+                {balancesError && (
+                    <ValidationNotice role="alert" status={Status.NEGATIVE} background="white">
+                        {balancesError}
+                    </ValidationNotice>
+                )}
+
                 {/* Bridge Amount Input */}
                 <NumberInput
                     label="Amount to Bridge"
-                    subLabel={`Available: ${formatNumberWithStyle(parseFloat(sourceBalance?.formatted || '0'), {
-                        maxDecimals: 4,
-                    })} haiAERO`}
+                    subLabel={
+                        balancesLoading
+                            ? 'Loading balances…'
+                            : `Available: ${
+                                  sourceBalance
+                                      ? formatNumberWithStyle(parseFloat(sourceBalance.formatted), { maxDecimals: 4 })
+                                      : '—'
+                              } haiAERO`
+                    }
                     placeholder="0.0"
                     unitLabel="haiAERO"
                     min="0"
@@ -380,9 +395,7 @@ export function BridgeTab() {
             </Body>
             <Footer>
                 {!isConnected ? (
-                    <HaiButton $variant="yellowish" $width="100%" $justify="center" disabled>
-                        Connect Wallet
-                    </HaiButton>
+                    <LazyConnectButton $width="100%" $justify="center" />
                 ) : !isOnSourceChain ? (
                     <HaiButton
                         $variant="yellowish"
@@ -443,18 +456,11 @@ const Container = styled(Flex).attrs((props) => ({
     $shrink: 0,
     ...props,
 }))`
-    max-width: 100%;
-    height: 592px;
-    margin-bottom: -143px;
+    width: 100%;
+    min-width: 0;
     background-color: #f7f1ff;
     border-radius: 24px;
     border: ${({ theme }) => theme.border.medium};
-
-    ${({ theme }) => theme.mediaWidth.upToMedium`
-        height: auto;
-        min-height: 480px;
-        margin-bottom: -119px;
-    `}
 
     .spin {
         animation: spin 1s linear infinite;
@@ -493,13 +499,10 @@ const Body = styled(Flex).attrs((props) => ({
     $justify: 'flex-start',
     $align: 'flex-start',
     $gap: 24,
-    $grow: 1,
-    $shrink: 1,
+    $shrink: 0,
     ...props,
 }))`
-    height: 100%;
     padding: 24px;
-    overflow: auto;
 `
 
 const Footer = styled(CenteredFlex).attrs((props) => ({
@@ -525,6 +528,16 @@ const BalanceRow = styled(Flex)`
     justify-content: space-between;
     align-items: center;
     gap: 16px;
+
+    @media (max-width: 500px) {
+        flex-direction: column;
+        & > div {
+            width: 100%;
+        }
+        & > button {
+            transform: rotate(90deg);
+        }
+    }
 `
 
 const BalanceCard = styled(Flex).attrs((props) => ({
@@ -533,6 +546,7 @@ const BalanceCard = styled(Flex).attrs((props) => ({
     ...props,
 }))<{ $isSource?: boolean }>`
     flex: 1;
+    min-width: 0;
     position: relative;
     background: ${({ $isSource }) => ($isSource ? 'rgba(59, 130, 246, 0.1)' : 'rgba(255, 255, 255, 0.5)')};
     padding: 16px;
@@ -544,9 +558,8 @@ const BalanceCard = styled(Flex).attrs((props) => ({
 `
 
 const SourceBadge = styled.span`
-    position: absolute;
-    top: 8px;
-    right: 8px;
+    align-self: flex-start;
+    order: -1;
     font-size: 0.65em;
     background: #3b82f6;
     color: white;

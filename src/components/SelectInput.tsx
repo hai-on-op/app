@@ -1,6 +1,6 @@
-import { useState, useRef, type ReactNode } from 'react'
+import { useState, useRef, useEffect, type KeyboardEvent, type ReactNode } from 'react'
 
-import { useOutsideClick } from '~/hooks'
+import { useOutsideClick } from '~/hooks/useOutsideClick'
 import styled, { css } from 'styled-components'
 import { Flex, Text } from '~/styles'
 import { CaretWithOutline } from './Icons/CaretWithOutline'
@@ -23,6 +23,8 @@ type SelectInputProps<T = string> = {
     style?: React.CSSProperties
 }
 
+let nextSelectId = 0
+
 export function SelectInput<T = string>({
     label,
     subLabel,
@@ -35,48 +37,120 @@ export function SelectInput<T = string>({
     style,
 }: SelectInputProps<T>) {
     const [isOpen, setIsOpen] = useState(false)
+    const [activeIndex, setActiveIndex] = useState(0)
+    const [id] = useState(() => `select-input-${++nextSelectId}`)
     const containerRef = useRef<HTMLDivElement | null>(null)
+    const buttonRef = useRef<HTMLButtonElement | null>(null)
+    const expanded = isOpen && !disabled && !hidden
 
     useOutsideClick(containerRef, () => setIsOpen(false))
+
+    useEffect(() => {
+        if (disabled || hidden) setIsOpen(false)
+    }, [disabled, hidden])
 
     const selectedOption = options.find((option) => option.value === value)
 
     const handleOptionClick = (optionValue: T) => {
+        if (disabled) return
         onChange(optionValue)
         setIsOpen(false)
+        buttonRef.current?.focus()
     }
 
     const handleInputClick = () => {
         if (!disabled) {
+            setActiveIndex(
+                Math.max(
+                    0,
+                    options.findIndex((option) => option.value === value)
+                )
+            )
             setIsOpen(!isOpen)
+        }
+    }
+
+    const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+        if (disabled) return
+        const selectedIndex = Math.max(
+            0,
+            options.findIndex((option) => option.value === value)
+        )
+        if (event.key === 'Escape' || event.key === 'Tab') {
+            if (event.key === 'Escape' && expanded) event.preventDefault()
+            setIsOpen(false)
+            return
+        }
+        if (!options.length) return
+        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+            event.preventDefault()
+            setActiveIndex(
+                expanded
+                    ? Math.max(0, Math.min(options.length - 1, activeIndex + (event.key === 'ArrowDown' ? 1 : -1)))
+                    : selectedIndex
+            )
+            setIsOpen(true)
+        } else if (event.key === 'Home' || event.key === 'End') {
+            event.preventDefault()
+            setActiveIndex(event.key === 'Home' ? 0 : options.length - 1)
+            setIsOpen(true)
+        } else if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault()
+            if (expanded && options[activeIndex]) handleOptionClick(options[activeIndex].value)
+            else {
+                setActiveIndex(selectedIndex)
+                setIsOpen(true)
+            }
         }
     }
 
     return (
         <Container ref={containerRef} $gap={12} hidden={hidden} style={style}>
             <Flex $width="100%" $justify="space-between" $align="center">
-                <Text $fontSize="0.65em" $fontWeight={700}>
+                <Text id={`${id}-label`} $fontSize="0.65em" $fontWeight={700}>
                     {label}
                 </Text>
-                <Text $fontSize="0.65em">{subLabel}</Text>
+                <Text id={`${id}-hint`} $fontSize="0.65em">
+                    {subLabel}
+                </Text>
             </Flex>
             <SelectContainer>
-                <SelectButton onClick={handleInputClick} $disabled={disabled} $isOpen={isOpen}>
+                <SelectButton
+                    ref={buttonRef}
+                    type="button"
+                    role="combobox"
+                    aria-labelledby={`${id}-label`}
+                    aria-describedby={subLabel ? `${id}-hint` : undefined}
+                    aria-haspopup="listbox"
+                    aria-expanded={expanded}
+                    aria-controls={expanded ? `${id}-options` : undefined}
+                    aria-activedescendant={expanded && options[activeIndex] ? `${id}-option-${activeIndex}` : undefined}
+                    disabled={disabled}
+                    onClick={handleInputClick}
+                    onKeyDown={handleKeyDown}
+                    $disabled={disabled}
+                    $isOpen={expanded}
+                >
                     <SelectedContent>
                         {selectedOption?.icon && <IconWrapper>{selectedOption.icon}</IconWrapper>}
                         <Text>{selectedOption?.label || placeholder}</Text>
                     </SelectedContent>
-                    <CaretWrapper $isOpen={isOpen}>
+                    <CaretWrapper $isOpen={expanded} aria-hidden="true">
                         <CaretWithOutline size={12} />
                     </CaretWrapper>
                 </SelectButton>
-                {isOpen && (
-                    <DropdownContainer>
-                        {options.map((option) => (
+                {expanded && (
+                    <DropdownContainer id={`${id}-options`} role="listbox" aria-labelledby={`${id}-label`}>
+                        {options.map((option, index) => (
                             <DropdownOption
+                                id={`${id}-option-${index}`}
+                                role="option"
+                                aria-selected={option.value === value}
                                 key={String(option.value)}
                                 onClick={() => handleOptionClick(option.value)}
+                                onMouseEnter={() => setActiveIndex(index)}
                                 $isSelected={option.value === value}
+                                $isActive={activeIndex === index}
                             >
                                 {option.icon && <IconWrapper>{option.icon}</IconWrapper>}
                                 <Text>{option.label}</Text>
@@ -107,7 +181,11 @@ const SelectContainer = styled.div`
     width: 100%;
 `
 
-const SelectButton = styled.div<{ $disabled: boolean; $isOpen: boolean }>`
+const SelectButton = styled.button<{ $disabled: boolean; $isOpen: boolean }>`
+    appearance: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
     width: 100%;
     height: 46px;
     border: ${({ theme }) => theme.border.medium};
@@ -119,6 +197,11 @@ const SelectButton = styled.div<{ $disabled: boolean; $isOpen: boolean }>`
     cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
     background: ${({ theme }) => theme.colors.background};
     transition: all 0.2s ease;
+
+    &:focus-visible {
+        outline: 2px solid ${({ theme }) => theme.colors.primary};
+        outline-offset: 2px;
+    }
 
     ${({ $disabled }) =>
         $disabled &&
@@ -200,7 +283,7 @@ const DropdownContainer = styled.div`
     }
 `
 
-const DropdownOption = styled.div<{ $isSelected: boolean }>`
+const DropdownOption = styled.div<{ $isSelected: boolean; $isActive: boolean }>`
     padding: 12px 24px;
     display: flex;
     align-items: center;
@@ -213,6 +296,12 @@ const DropdownOption = styled.div<{ $isSelected: boolean }>`
         css`
             background: ${theme.colors.yellowish}40;
             color: ${theme.colors.primary};
+        `}
+
+    ${({ $isActive, $isSelected, theme }) =>
+        $isActive &&
+        css`
+            background: ${$isSelected ? theme.colors.yellowish + '60' : theme.colors.yellowish + '80'};
         `}
 
     &:hover {
