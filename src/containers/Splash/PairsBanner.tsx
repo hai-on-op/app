@@ -1,90 +1,63 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 
-import { TOKEN_LOGOS } from '~/utils'
+import { useAnalytics } from '~/providers/AnalyticsProvider'
+import { useStoreState } from '~/store'
+import type { TokenKey } from '~/types'
+import { formatCollateralLabel, TOKEN_LOGOS } from '~/utils'
 
 import styled, { keyframes } from 'styled-components'
 import { CenteredFlex, Flex, Text } from '~/styles'
 
 const PAIR_WIDTH = 180
 
-const pairs: [string, string][] = [
-    ['OP', TOKEN_LOGOS.OP],
-    ['WETH', TOKEN_LOGOS.WETH],
-    ['WSTETH', TOKEN_LOGOS.WSTETH],
-    // ['SNX', TOKEN_LOGOS.SNX],
-    ['RETH', TOKEN_LOGOS.RETH],
-    // ['LUSD', TOKEN_LOGOS['LUSD-A']],
-    // ['LINK', TOKEN_LOGOS['LINK']],
-    ['TBTC', TOKEN_LOGOS['TBTC']],
-    ['VELO', TOKEN_LOGOS['VELO']],
-    ['HAIVELO', TOKEN_LOGOS['HAIVELO']],
-    // ['WBTC', TOKEN_LOGOS['WBTC']],
-    ['ALETH', TOKEN_LOGOS['ALETH']],
-    ['MSETH', TOKEN_LOGOS['MSETH']],
-    ['YV-VELO-ALETH-WETH', TOKEN_LOGOS['YV-VELO-ALETH-WETH']],
-    ['YV-VELO-MSETH-WETH', TOKEN_LOGOS['YV-VELO-MSETH-WETH']],
-    ['MOO-VELO-BOLD-LUSD', TOKEN_LOGOS['MOO-VELO-BOLD-LUSD']],
-    // ['Beefy Vaults', TOKEN_LOGOS['MOO']],
-]
-
 export function PairsBanner() {
+    const tokensData = useStoreState((state) => state.connectWalletModel.tokensData)
+    const { isOpenableCollateral } = useAnalytics()
+    const collaterals = Object.values(tokensData).filter(
+        ({ symbol, isCollateral }) => isCollateral && isOpenableCollateral(symbol)
+    )
+    const groupWidth = (PAIR_WIDTH + 24) * collaterals.length
     const [repeat, setRepeat] = useState(2)
-    const repeatRef = useRef(repeat)
-    repeatRef.current = repeat
 
     useEffect(() => {
-        const onResize = () => {
-            const w = window.innerWidth
-            const r = Math.ceil(w / ((PAIR_WIDTH + 24) * pairs.length)) + 1
-            if (r !== repeatRef.current) setRepeat(r)
-        }
+        if (!groupWidth) return
+        const onResize = () => setRepeat(Math.ceil(window.innerWidth / groupWidth) + 1)
         onResize()
         window.addEventListener('resize', onResize)
-
         return () => window.removeEventListener('resize', onResize)
-    }, [])
+    }, [groupWidth])
+
+    if (!groupWidth) return null
 
     return (
         <Container>
-            <Inner>
-                {Array.from({ length: repeat }, () => [...pairs])
-                    .flat()
-                    .map(([ticker, logo], i) => (
-                        <Pair key={i}>
-                            {/* <IconContainer>
-                                <img src={logo} alt="HAI" width={48} height={48} style={{ backgroundColor: 'white' }} />
-                            </IconContainer> */}
-                            {ticker == 'YV-VELO-ALETH-WETH' ? (
-                                <>
-                                    <img src={logo} alt="HAI" width={48} height={48} />
-                                    <Text $fontWeight={900} $fontSize={12}>
-                                        yvVelo-alETH-WETH
-                                    </Text>
-                                </>
-                            ) : (
-                                <>
+            <Inner style={{ width: groupWidth }}>
+                {Array.from({ length: repeat }, (_, copy) =>
+                    collaterals.map(({ symbol }) => {
+                        const logo = TOKEN_LOGOS[symbol as TokenKey]
+                        const label = formatCollateralLabel(symbol)
+                        return (
+                            <Pair key={`${copy}-${symbol}`} aria-hidden={copy > 0}>
+                                {logo && (
                                     <IconContainer>
-                                        <img
-                                            src={logo}
-                                            alt="HAI"
-                                            width={48}
-                                            height={48}
-                                            style={{ backgroundColor: 'white' }}
-                                        />
+                                        <img src={logo} alt="" width={48} height={48} />
                                     </IconContainer>
-                                    <Text $fontWeight={900}>{ticker}</Text>
-                                </>
-                            )}
-                        </Pair>
-                    ))}
+                                )}
+                                <Text $fontWeight={900} $fontSize={label.length > 12 ? 12 : undefined}>
+                                    {label}
+                                </Text>
+                            </Pair>
+                        )
+                    })
+                )}
             </Inner>
         </Container>
     )
 }
 
 const rightToLeft = keyframes`
-    0% { left: 0px; }
-    100% { left: ${-(PAIR_WIDTH + 24) * pairs.length}px; }
+    from { transform: translateX(0); }
+    to { transform: translateX(-100%); }
 `
 
 const Container = styled(Flex).attrs((props) => ({
@@ -113,7 +86,6 @@ const Inner = styled(Flex).attrs((props) => ({
     position: absolute;
     left: 0%;
     animation: ${rightToLeft} 40s linear infinite;
-    width: ${(PAIR_WIDTH + 24) * pairs.length}px;
 `
 const Pair = styled(Flex).attrs((props) => ({
     $justify: 'flex-start',
@@ -141,6 +113,6 @@ const IconContainer = styled(CenteredFlex)`
         height: 40px;
         border-radius: 50%;
         border: ${({ theme }) => theme.border.thin};
-        background-color: ${({ theme }) => theme.colors.greenish};
+        background-color: white;
     }
 `

@@ -5,7 +5,6 @@ import { useNetwork } from 'wagmi'
 
 import type { SummaryItemValue, TokenAnalyticsData } from '~/types'
 import {
-    DEPRECATED_COLLATERALS,
     formatSummaryValue,
     transformToAnnualRate,
     transformToEightHourlyRate,
@@ -95,16 +94,12 @@ export function useGebAnalytics() {
                         maxDecimals: 1,
                         style: 'percent',
                     })!,
-                    tokenAnalyticsData: Object.entries(result.tokenAnalyticsData)
-                        .filter(([key]) => {
-                            return !DEPRECATED_COLLATERALS.includes(key.toUpperCase())
-                        })
-                        .map(([key, value]) => ({
-                            symbol: key,
-                            ...value,
-                            tokenContract: geb.tokenList?.[key]?.address,
-                            collateralJoin: geb.tokenList?.[key]?.collateralJoin,
-                        })),
+                    tokenAnalyticsData: Object.entries(result.tokenAnalyticsData).map(([key, value]) => ({
+                        symbol: key,
+                        ...value,
+                        tokenContract: geb.tokenList?.[key]?.address,
+                        collateralJoin: geb.tokenList?.[key]?.collateralJoin,
+                    })),
                 }))
             } catch (e: any) {
                 console.error(e)

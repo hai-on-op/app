@@ -30,7 +30,8 @@ export function useMyVaults() {
         let temp = [...list]
         if (!showEmptyVaults)
             temp = temp.filter(
-                ({ collateral, debt }) => parseFloat(collateral || '0') > 0 || parseFloat(debt || '0') > 0
+                ({ collateral, debt, freeCollateral }) =>
+                    Number(collateral) > 0 || Number(debt) > 0 || Number(freeCollateral) > 0
             )
         if (assetsFilter) temp = temp.filter(({ collateralName }) => collateralName.toUpperCase() === assetsFilter)
         return temp

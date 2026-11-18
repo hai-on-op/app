@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useMediaQuery } from '~/hooks'
 import { useEarnContext } from '~/providers/EarnProvider'
 
@@ -7,6 +8,7 @@ import { CheckboxButton } from '~/components/CheckboxButton'
 import { SortByDropdown } from '~/components/SortByDropdown'
 import { WrapperAdProps, WrapperAd } from '~/components/WrapperAd'
 import { useAccount } from 'wagmi'
+import { getErrorMessage, shouldHaltExecution } from '~/utils/errorHandling'
 
 const wrappers: WrapperAdProps[] = [
     {
@@ -21,10 +23,12 @@ const wrappers: WrapperAdProps[] = [
 
 export function Earn() {
     const { isConnected } = useAccount()
-    const { headers, rows, loading, error, uniError, veloError, sorting, setSorting, filterEmpty, setFilterEmpty } =
-        useEarnContext()
+    const { headers, rows, loading, error, sorting, setSorting, filterEmpty, setFilterEmpty } = useEarnContext()
 
     const isUpToMedium = useMediaQuery('upToMedium')
+    useEffect(() => {
+        if (!isConnected) setFilterEmpty(false)
+    }, [isConnected, setFilterEmpty])
 
     return (
         <NavContainer
@@ -47,9 +51,7 @@ export function Earn() {
                 headers={headers}
                 rows={rows as any}
                 loading={loading}
-                error={error as any}
-                uniError={uniError as any}
-                veloError={veloError as any}
+                error={shouldHaltExecution(error) ? getErrorMessage(error) : undefined}
                 sorting={sorting}
                 setSorting={setSorting}
             />

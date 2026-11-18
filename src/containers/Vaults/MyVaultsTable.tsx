@@ -5,7 +5,8 @@ import { formatCollateralLabel } from '~/utils/formatting'
 // import { useStoreState } from '~/store'
 import styled from 'styled-components'
 import { CenteredFlex, Flex, Grid, HaiButton, TableButton, Text } from '~/styles'
-import { RewardsTokenArray, TokenArray } from '~/components/TokenArray'
+import { VaultRewardsBadge } from './VaultRewardsBadge'
+import { TokenArray } from '~/components/TokenArray'
 import { StatusLabel } from '~/components/StatusLabel'
 import { Table } from '~/components/Table'
 import { ClaimableFreeCollateral } from './ClaimableFreeCollateral'
@@ -19,21 +20,6 @@ type MyVaultsTableProps = {
 }
 export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: MyVaultsTableProps) {
     const { setActiveVault } = useVault()
-
-    // Get boost data for net APR calculation
-
-    // Get liquidation data for price calculations
-    // const {
-    //     vaultModel: { liquidationData },
-    // } = useStoreState((state) => state)
-
-    // Get boost data for net APR calculation
-    // const { individualVaultBoosts } = useBoost()
-
-    // Get liquidation data for price calculations
-    // const {
-    //     vaultModel: { liquidationData },
-    // } = useStoreState((state) => state)
 
     return (
         <Table
@@ -63,20 +49,8 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                     totalAnnualizedStabilityFee,
                 } = vault
 
-                const hasFreeCollateral = freeCollateral !== '0.0'
-                const HAS_REWARDS = [
-                    'HAIVELO',
-                    'HAIVELOV2',
-                    'ALETH',
-                    'YV-VELO-ALETH-WETH',
-                    'YV-VELO-MSETH-WETH',
-                    'MOO-VELO-BOLD-LUSD',
-                ]
+                const hasFreeCollateral = Number(freeCollateral) > 0
                 const collateralLabel = formatCollateralLabel(collateralName)
-                const tooltip =
-                    collateralName === 'HAIVELO'
-                        ? 'Deposit haiVELO to earn HAI from veVELO voting rewards. Earn KITE rewards for borrowing HAI against this asset. See earn page for details'
-                        : 'Earn KITE rewards for borrowing HAI against this asset. See earn page for details.'
                 return (
                     <Table.Row
                         key={id}
@@ -94,17 +68,7 @@ export function MyVaultsTable({ headers, rows, sorting, setSorting, onCreate }: 
                                             />
                                             <Text>#{id}</Text>
                                         </CenteredFlex>
-                                        {HAS_REWARDS.includes(collateralName) && (
-                                            <RewardsTokenArray
-                                                tokens={
-                                                    collateralName === 'HAIVELO' || collateralName === 'HAIVELOV2'
-                                                        ? ['HAI', 'KITE']
-                                                        : ['KITE']
-                                                }
-                                                label="EARN"
-                                                tooltip={tooltip}
-                                            />
-                                        )}
+                                        <VaultRewardsBadge collateral={collateralName} />
                                         {hasFreeCollateral && <ClaimableFreeCollateral vault={vault} />}
                                     </Grid>
                                 ),

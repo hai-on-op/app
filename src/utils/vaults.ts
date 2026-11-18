@@ -32,6 +32,7 @@ export enum VaultInfoError {
     HAI_DEBT_CEILING,
     INDIVIDUAL_DEBT_CEILING,
     MINIMUM_MINT,
+    COLLATERAL_DEBT_CEILING,
 }
 export const vaultInfoErrors: Record<number, string> = {
     [VaultInfoError.NO_WALLET]: `Connect a valid wallet to continue`,

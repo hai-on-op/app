@@ -96,14 +96,10 @@ const DEFAULT_VAULT_DATA: IVaultData = {
     collateral: '',
 }
 
-const DEPRECATED_COLLATERALS: Array<string> = ['WBTC', 'APXETH']
-
 export const vaultModel: VaultModel = {
     list: [],
     setList: action((state, payload) => {
-        state.list = payload.filter(
-            ({ collateralName }) => !DEPRECATED_COLLATERALS.includes(collateralName.toUpperCase())
-        )
+        state.list = payload
     }),
     fetchLiquidationData: thunk(async (actions, payload) => {
         const data = await fetchLiquidationData(payload)
@@ -119,7 +115,7 @@ export const vaultModel: VaultModel = {
         const fetched = await fetchUserVaults(payload)
         const chainId = payload.chainId
 
-        if (fetched) {
+        if (fetched && !payload.signal?.aborted) {
             actions.setList(fetched.userVaults)
             if (fetched.userVaults.length > 0) {
                 storeActions.connectWalletModel.setStep(2)

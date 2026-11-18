@@ -12,6 +12,7 @@ import { useEarnData } from './useEarnData'
 import { useBoost } from './useBoost'
 import { shouldHaltExecution, canContinueWithDegradedMode } from '~/utils/errorHandling'
 import { useClaims } from '~/providers/ClaimsProvider'
+import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { useVelodromePrices } from '~/providers/VelodromePriceProvider'
 import { useStoreState } from '~/store'
 import { utils } from 'ethers'
@@ -69,6 +70,7 @@ export function useEarnStrategies() {
 
     // === Get incentives data for rewards calculation ===
     const { incentivesData } = useClaims()
+    const { isOpenableCollateral } = useAnalytics()
     const { prices: veloPrices } = useVelodromePrices()
     const {
         vaultModel: { liquidationData },
@@ -145,7 +147,7 @@ export function useEarnStrategies() {
         const strategies = collateralsWithMinterRewards.map((cType) => {
             const assets = tokenAssets[cType.id]
 
-            const cTypeUserPosition = userPositionByCollateral[cType.id.toLowerCase()] || 0
+            const cTypeUserPosition = userPositionByCollateral[cType.id.toLowerCase()]
 
             const rewards = getVaultRewards(cType.id) || {}
             // Use vault boost data from useBoost instead of calculating it here
@@ -167,7 +169,11 @@ export function useEarnStrategies() {
                 rewards: Object.entries(rewards).map(([token, emission]) => ({ token, emission })),
                 tvl: parseFloat(cType.debtAmount) * haiPrice,
                 boostAPR: vbr,
-                userPosition: cTypeUserPosition * haiPrice,
+                userPosition: (cTypeUserPosition || 0) * haiPrice,
+                earnLink:
+                    cTypeUserPosition !== undefined
+                        ? '/vaults?tab=user'
+                        : `/vaults/open?collateral=${encodeURIComponent(cType.id)}`,
             })
         })
 
@@ -242,6 +248,7 @@ export function useEarnStrategies() {
                 apr: haiVeloUnderlyingAPR || 0,
                 userPosition: haiVeloUserPositionUsd,
                 strategyType: 'deposit',
+                earnLink: '/haiVELO',
                 boostAPR: haiVeloBoostApr as BoostAPRData,
                 boostEligible: true,
             }),
@@ -251,6 +258,7 @@ export function useEarnStrategies() {
                 apr: haiAeroUnderlyingAPR || 0,
                 userPosition: haiAeroUserPositionUsd,
                 strategyType: 'deposit',
+                earnLink: '/haiAERO',
                 boostAPR: haiAeroBoostApr as BoostAPRData,
                 boostEligible: true,
             }),
@@ -391,39 +399,31 @@ export function useEarnStrategies() {
         [vaultStrategies, specialStrategies, veloStrategies]
     )
 
-    const filteredRows = useMemo(() => {
-        if (!filterEmpty) return strategies
+    const filteredRows = useMemo(
+        () =>
+            strategies.filter((strategy) => {
+                if (filterEmpty) return Number(strategy.userPosition) > 0
+                return !strategy.collateral || isOpenableCollateral(strategy.collateral)
+            }),
+        [strategies, filterEmpty, isOpenableCollateral]
+    )
 
-        // Filter to only show strategies where user has a position
-        return strategies.filter((strategy) => {
-            const userPosition = Number(strategy.userPosition)
-            return userPosition > 0
-        })
-    }, [strategies, filterEmpty])
-
-    const boostEligibleStrategies = strategies.filter(({ boostEligible }: any) => boostEligible)
-
-    const totalPosition = boostEligibleStrategies.reduce((acc, { userPosition }: any) => {
-        return acc + Number(userPosition)
-    }, 0)
-
-    const effectiveStrategiesAPR = strategies.map((strategy) => getEffectiveAPR(strategy))
-
-    const averageWeightedAPR = strategies.reduce((acc, strategy, i) => {
-        const strategyAPR = effectiveStrategiesAPR[i]
-        return acc + (Number(strategy.userPosition) / totalPosition) * (strategyAPR ? strategyAPR.apr : 0)
-    }, 0)
-
-    const averageWeightedBoostedAPR = strategies.reduce((acc, strategy, i) => {
-        const strategyAPR = effectiveStrategiesAPR[i]
-        return acc + (Number(strategy.userPosition) / totalPosition) * (strategyAPR ? strategyAPR.boostedApr : 0)
-    }, 0)
-
-    const averageWeightedBoost = boostEligibleStrategies.reduce((acc, strategy) => {
-        const strategyBoost = strategy.boostAPR?.myBoost || 1 // Default to 1x if no boost
-        const userPosition = Number(strategy.userPosition)
-        return acc + (userPosition / totalPosition) * strategyBoost
-    }, 0)
+    const participating = strategies.filter(
+        ({ boostEligible, userPosition }) => boostEligible && Number(userPosition) > 0
+    )
+    const totalPosition = participating.reduce((total, strategy) => total + Number(strategy.userPosition), 0)
+    const weighted = participating.reduce(
+        (totals, strategy) => {
+            const weight = Number(strategy.userPosition) / totalPosition
+            const { apr, boostedApr } = getEffectiveAPR(strategy)
+            return {
+                baseAPR: totals.baseAPR + weight * apr,
+                boostedAPR: totals.boostedAPR + weight * boostedApr,
+                boost: totals.boost + weight * (strategy.boostAPR?.myBoost || 1),
+            }
+        },
+        { baseAPR: 0, boostedAPR: 0, boost: 0 }
+    )
 
     // Calculate total rewards value from user's positions
     const rewardsSummary = useMemo(() => {
@@ -452,7 +452,7 @@ export function useEarnStrategies() {
         }
     }, [incentivesData?.claimData, getTokenPrice])
 
-    const sortedRows = useMemo(() => {
+    const sortedRows = useMemo<BaseStrategy[]>(() => {
         if (!coreDataLoaded) return []
 
         switch (sorting.key) {
@@ -517,10 +517,10 @@ export function useEarnStrategies() {
         },
         headers: sortableHeaders,
         averageAPR: {
-            averageWeightedAPR,
-            averageWeightedBoostedAPR,
+            averageWeightedAPR: weighted.baseAPR,
+            averageWeightedBoostedAPR: weighted.boostedAPR,
         },
-        averageWeightedBoost,
+        averageWeightedBoost: weighted.boost,
         netBoostValue,
         totalBoostablePosition: totalPosition,
         totalRewardsValue: rewardsSummary.totalRewardsValue,
@@ -530,8 +530,6 @@ export function useEarnStrategies() {
         loading: !coreDataLoaded || boostLoading,
         error: dataLoadingError,
         hasErrors,
-        uniError: null,
-        veloError: null,
         sorting,
         setSorting,
         filterEmpty,

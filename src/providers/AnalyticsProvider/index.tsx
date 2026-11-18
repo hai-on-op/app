@@ -3,6 +3,7 @@ import { useQuery, gql } from '@apollo/client'
 
 import type { ReactChildren, SummaryItemValue } from '~/types'
 import { Timeframe } from '~/utils/time'
+import { getCollateralAvailability } from './collateralAvailability'
 import { type HistoricalStatsReturn, useHistoricalStats } from './useHistoricalStats'
 import { DEFAULT_ANALYTICS_DATA, type GebAnalyticsData, useGebAnalytics } from './useGebAnalytics'
 import { type SystemData, useSystemData } from './useSystemData'
@@ -20,6 +21,8 @@ const HAI_PRICE_HISTORY_QUERY = gql`
 `
 
 type AnalyticsContext = {
+    isOpenableCollateral: (symbol: string) => boolean
+    hasCollateralDebtCeiling: (symbol: string) => boolean
     forceRefresh: () => void
     data: GebAnalyticsData
     graphData?: SystemData['data']
@@ -39,7 +42,13 @@ type AnalyticsContext = {
 
 type AnalyticsSummaryContextValue = Pick<
     AnalyticsContext,
-    'forceRefresh' | 'data' | 'graphData' | 'graphSummary' | 'haiMarketPrice'
+    | 'forceRefresh'
+    | 'data'
+    | 'graphData'
+    | 'graphSummary'
+    | 'haiMarketPrice'
+    | 'isOpenableCollateral'
+    | 'hasCollateralDebtCeiling'
 >
 type AnalyticsDetailContextValue = Pick<
     AnalyticsContext,
@@ -77,6 +86,7 @@ const defaultAnalyticsDetailsState: AnalyticsDetailContextValue = {
 }
 
 const defaultAnalyticsSummaryState: AnalyticsSummaryContextValue = {
+    ...getCollateralAvailability(),
     forceRefresh: () => undefined,
     data: DEFAULT_ANALYTICS_DATA,
     haiMarketPrice: {
@@ -109,11 +119,16 @@ export function AnalyticsProvider({ children }: Props) {
 
     const { data: graphData, summary: graphSummary } = useSystemData()
 
+    const availability = useMemo(
+        () => getCollateralAvailability(data.tokenAnalyticsData, graphData?.collateralTypes),
+        [data.tokenAnalyticsData, graphData?.collateralTypes]
+    )
     const haiMarketPrice = useMemo(() => data.marketPrice, [data.marketPrice])
 
     return (
         <AnalyticsSummaryContext.Provider
             value={{
+                ...availability,
                 forceRefresh,
                 data,
                 graphData,

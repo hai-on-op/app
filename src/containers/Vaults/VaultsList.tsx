@@ -1,6 +1,4 @@
-import type { SetState } from '~/types'
 import { useStoreState } from '~/store'
-import { useVault } from '~/providers/VaultProvider'
 import { useAvailableVaults, useMediaQuery, useMyVaults } from '~/hooks'
 
 import styled from 'styled-components'
@@ -43,11 +41,9 @@ const strategies: StrategyAdProps[] = [
 
 type VaultsListProps = {
     navIndex: number
-    setNavIndex: SetState<number>
+    setNavIndex: (index: number) => void
 }
 export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
-    const { setActiveVault } = useVault()
-
     const isUpToSmall = useMediaQuery('upToSmall')
     const isUpToMedium = useMediaQuery('upToMedium')
 
@@ -81,7 +77,7 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
                     : [`Available Vaults (${availableVaults.length})`, `My Vaults (${vaultState.list.length})`]
             }
             selected={navIndex}
-            onSelect={(i: number) => setNavIndex(i)}
+            onSelect={setNavIndex}
             compactQuery="upToMedium"
             headerContent={
                 navIndex === 0 ? (
@@ -101,6 +97,7 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
                     <HeaderContent>
                         <CollateralDropdown
                             label="Collateral Asset"
+                            symbols={vaultState.list.map(({ collateralName }) => collateralName)}
                             selectedAsset={assetsFilter}
                             onSelect={setAssetsFilter}
                         />
@@ -131,28 +128,13 @@ export function VaultsList({ navIndex, setNavIndex }: VaultsListProps) {
                     ))}
                 </>
             ) : (
-                <ProxyPrompt
-                    onCreateVault={
-                        !vaultState.list.length
-                            ? () =>
-                                  setActiveVault({
-                                      create: true,
-                                      collateralName: 'WETH',
-                                  })
-                            : undefined
-                    }
-                >
+                <ProxyPrompt onCreateVault={!vaultState.list.length ? () => setNavIndex(0) : undefined}>
                     <MyVaultsTable
                         headers={myVaultsHeaders}
                         rows={myVaults}
                         sorting={myVaultsSorting}
                         setSorting={setMyVaultsSorting}
-                        onCreate={() =>
-                            setActiveVault({
-                                create: true,
-                                collateralName: assetsFilter || 'WETH',
-                            })
-                        }
+                        onCreate={() => setNavIndex(0)}
                     />
                 </ProxyPrompt>
             )}

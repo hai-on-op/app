@@ -82,6 +82,10 @@ vi.mock('~/providers/EarnProvider', () => ({
     EarnProvider: ({ children }: { children: ReactNode }) => <div data-testid="earn-provider">{children}</div>,
 }))
 
+vi.mock('~/apr/AprProvider', () => ({
+    AprProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
+}))
+
 vi.mock('~/services/TransactionUpdater', () => ({
     TransactionUpdater: () => null,
 }))
@@ -241,8 +245,8 @@ describe('Shared bootstrap gating', () => {
         expect(baseActions.connectWalletModel.setProtAllowance).not.toHaveBeenCalled()
     })
 
-    it('preloads earn market data and user vaults without proxy allowance fetches', async () => {
-        renderShared('/earn')
+    it.each(['/earn', '/haiVELO', '/haiAERO'])('loads owner vaults on a direct %s visit', async (path) => {
+        renderShared(path)
 
         await waitFor(() => expect(baseActions.vaultModel.fetchUserVaults).toHaveBeenCalledTimes(1))
 
@@ -252,8 +256,8 @@ describe('Shared bootstrap gating', () => {
         expect(baseActions.connectWalletModel.setProtAllowance).not.toHaveBeenCalled()
     })
 
-    it('fetches allowances on vault routes without doing the old global vault preload', async () => {
-        renderShared('/vaults')
+    it.each(['/vaults', '/vaults/open?collateral=HAIAERO'])('lets %s load its own vaults', async (path) => {
+        renderShared(path)
 
         await waitFor(() => expect(baseActions.connectWalletModel.setCoinAllowance).toHaveBeenCalledTimes(1))
 

@@ -64,7 +64,7 @@ export type TokenAnalyticsData = AnalyticsData['tokenAnalyticsData'][string] & {
 export type CollateralDebt = {
     debtAmount: string
     debtCeiling: string
-    ceilingPercent: number
+    ceilingPercent?: number
 }
 
 export type CollateralStat = {

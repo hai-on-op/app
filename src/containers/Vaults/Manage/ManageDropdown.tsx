@@ -9,9 +9,10 @@ import { CenteredFlex, Flex, type FlexProps, HaiButton, Text } from '~/styles'
 import { BrandedDropdown, DropdownOption } from '~/components/BrandedDropdown'
 import { TokenArray } from '~/components/TokenArray'
 import { Plus } from 'react-feather'
-import { DEPRECATED_COLLATERALS } from '~/utils'
+import { useAnalytics } from '~/providers/AnalyticsProvider'
 
 export function ManageDropdown(props: FlexProps) {
+    const { isOpenableCollateral } = useAnalytics()
     const {
         connectWalletModel: { tokensData },
         vaultModel: { list },
@@ -21,8 +22,7 @@ export function ManageDropdown(props: FlexProps) {
 
     const { label, options } = useMemo(() => {
         const symbols = Object.values(tokensData || {})
-            .filter(({ isCollateral }) => isCollateral)
-            .filter(({ symbol }) => !DEPRECATED_COLLATERALS.includes(symbol))
+            .filter(({ isCollateral, symbol }) => isCollateral && isOpenableCollateral(symbol))
             .map(({ symbol }) => symbol)
 
         const sortedVaults = symbols.reduce(
@@ -55,7 +55,7 @@ export function ManageDropdown(props: FlexProps) {
                             {list.findIndex(({ id }) => id === vault.id) + 1} of {list.length}
                         </Text>
                     ) : (
-                        <Text>Open New</Text>
+                        <Text>{symbols.includes(collateral.name) ? 'Open New' : 'Select a Vault'}</Text>
                     )}
                 </CenteredFlex>
             ),
@@ -67,18 +67,20 @@ export function ManageDropdown(props: FlexProps) {
                                 <TokenArray tokens={[symbol as TokenKey]} hideLabel size={28} />
                                 <Text>{symbol}</Text>
                             </CenteredFlex>
-                            <IconButton
-                                title={`Open New ${symbol} Vault`}
-                                onClick={() => {
-                                    setActiveVault({
-                                        create: true,
-                                        vault: undefined,
-                                        collateralName: symbol,
-                                    })
-                                }}
-                            >
-                                <Plus size={16} />
-                            </IconButton>
+                            {symbols.includes(symbol) && (
+                                <IconButton
+                                    title={`Open New ${symbol} Vault`}
+                                    onClick={() => {
+                                        setActiveVault({
+                                            create: true,
+                                            vault: undefined,
+                                            collateralName: symbol,
+                                        })
+                                    }}
+                                >
+                                    <Plus size={16} />
+                                </IconButton>
+                            )}
                         </VaultDropdownHeading>
                         {vaults.map((listVault) => (
                             <DropdownOption
@@ -97,7 +99,7 @@ export function ManageDropdown(props: FlexProps) {
                 return options
             }, [] as ReactChildren[]),
         }
-    }, [vault, setActiveVault, collateral, tokensData, list])
+    }, [vault, setActiveVault, collateral, tokensData, list, isOpenableCollateral])
 
     if (vault && !list.length) return null
 

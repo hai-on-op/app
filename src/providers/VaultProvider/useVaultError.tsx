@@ -5,6 +5,7 @@ import { useAccount } from 'wagmi'
 import type { Collateral, Debt, FormState } from '~/types'
 import { VaultAction, VaultInfoError, formatNumber, toFixedString } from '~/utils'
 import { useStoreState } from '~/store'
+import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { useProxyAddress } from '~/hooks'
 
 type Props = {
@@ -18,6 +19,7 @@ type Props = {
 export function useVaultError({ action, formState, collateral, debt, collateralRatio, isSafe }: Props) {
     const { address: account } = useAccount()
     const proxyAddress = useProxyAddress()
+    const { hasCollateralDebtCeiling, isOpenableCollateral } = useAnalytics()
     const { liquidationData } = useStoreState(({ vaultModel }) => vaultModel)
 
     if (!account) return { error: VaultInfoError.NO_WALLET }
@@ -39,6 +41,22 @@ export function useVaultError({ action, formState, collateral, debt, collateralR
 
     const debtFloorBN = BigNumber.from(toFixedString(debtFloor || '0', 'WAD'))
     const totalDebtBN = BigNumber.from(toFixedString(debt.total.after.raw, 'WAD'))
+
+    if (action === VaultAction.CREATE && !isOpenableCollateral(collateral.name)) {
+        return {
+            error: VaultInfoError.COLLATERAL_DEBT_CEILING,
+            errorMessage: 'This collateral is closed to new vaults',
+        }
+    }
+    const increasingDebt =
+        borrowBN.gt(0) && [VaultAction.CREATE, VaultAction.DEPOSIT_BORROW, VaultAction.WITHDRAW_BORROW].includes(action)
+    const withdrawing = withdrawBN.gt(0) && [VaultAction.WITHDRAW_BORROW, VaultAction.WITHDRAW_REPAY].includes(action)
+    if (increasingDebt && !hasCollateralDebtCeiling(collateral.name)) {
+        return {
+            error: VaultInfoError.COLLATERAL_DEBT_CEILING,
+            errorMessage: 'New borrowing is closed for this collateral',
+        }
+    }
 
     switch (action) {
         case VaultAction.CREATE:
@@ -115,7 +133,7 @@ export function useVaultError({ action, formState, collateral, debt, collateralR
             errorMessage: `The minimum amount of debt per vault is ${debtFloorFormatted} HAI`,
         }
     }
-    if (!isSafe && Number(collateralRatio) >= 0) {
+    if ((increasingDebt || withdrawing) && !isSafe && Number(collateralRatio) >= 0) {
         return {
             error: VaultInfoError.COLLATERAL_RATIO,
             errorMessage: `Too much debt, which would bring vault below ${
@@ -123,6 +141,9 @@ export function useVaultError({ action, formState, collateral, debt, collateralR
             }% collateralization ratio`,
         }
     }
+    // SAFEEngine applies debt ceilings only when the operation generates debt.
+    if (!increasingDebt) return {}
+
     if (numeral(debt).value() > numeral(globalDebtCeiling).value()) {
         return {
             error: VaultInfoError.GLOBAL_DEBT_CEILING,

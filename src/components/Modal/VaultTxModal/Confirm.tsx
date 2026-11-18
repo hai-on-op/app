@@ -35,7 +35,8 @@ export function Confirm({ onClose }: ConfirmProps) {
         vaultModel: vaultActions,
     } = useStoreActions((actions) => actions)
 
-    const { action, updateForm, collateral, summary } = useVault()
+    const { action, updateForm, collateral, summary, error, errorMessage } = useVault()
+    const canConfirm = !!account && !!signer && error === undefined && transactionState !== ActionState.LOADING
 
     const notice = useMemo(() => {
         switch (action) {
@@ -61,7 +62,7 @@ export function Confirm({ onClose }: ConfirmProps) {
     }
 
     const handleConfirm = async () => {
-        if (!account || !signer || transactionState === ActionState.LOADING) return
+        if (!canConfirm || !signer) return
 
         vaultActions.setTransactionState(ActionState.LOADING)
         popupsActions.setIsWaitingModalOpen(true)
@@ -178,6 +179,7 @@ export function Confirm({ onClose }: ConfirmProps) {
                         },
                     ]}
                 />
+                {errorMessage && <Text role="alert">{errorMessage}</Text>}
                 {!!notice && (
                     <Text $fontSize="0.8em" $color="rgba(0,0,0,0.4)">
                         {notice}
@@ -185,11 +187,7 @@ export function Confirm({ onClose }: ConfirmProps) {
                 )}
             </ModalBody>
             <ModalFooter $justify="flex-end">
-                <HaiButton
-                    $variant="yellowish"
-                    disabled={!account || !signer || transactionState === ActionState.LOADING}
-                    onClick={handleConfirm}
-                >
+                <HaiButton $variant="yellowish" disabled={!canConfirm} onClick={handleConfirm}>
                     Confirm Transaction{notice ? 's' : ''}
                 </HaiButton>
             </ModalFooter>

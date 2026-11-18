@@ -8,11 +8,12 @@ import { useMediaQuery } from '~/hooks'
 import { formatCollateralLabel } from '~/utils/formatting'
 import styled from 'styled-components'
 import { CenteredFlex, Flex, Grid, HaiButton, TableButton, Text } from '~/styles'
-import { RewardsTokenArray, TokenArray } from '~/components/TokenArray'
+import { VaultRewardsBadge } from './VaultRewardsBadge'
+import { TokenArray } from '~/components/TokenArray'
 import { Tooltip } from '~/components/Tooltip'
 import { HaiArrow } from '~/components/Icons/HaiArrow'
 import { Table, TableContainer } from '~/components/Table'
-import { DEPRECATED_COLLATERALS } from '~/utils/constants'
+
 type AvailableVaultsTableProps = {
     rows: AvailableVaultPair[]
     headers: SortableHeader[]
@@ -23,8 +24,6 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
     const { setActiveVault } = useVault()
 
     const isUpToSmall = useMediaQuery('upToSmall')
-
-    const pausedRewards = ['PXETH', 'RETH', 'WSTETH', 'OP', 'TBTC']
 
     // Define external links for specific collaterals
     const EXTERNAL_LINKS: Record<string, string> = {
@@ -43,190 +42,111 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
             setSorting={setSorting}
             isEmpty={!rows.length}
             compactQuery="upToMedium"
-            rows={rows
-                .filter((row) => !DEPRECATED_COLLATERALS.includes(row.collateralName))
-                .map(
-                    ({
-                        collateralName,
-                        collateralLabel,
-                        hasRewards,
-                        collateralizationFactor,
-                        stabilityFee,
-                        eligibleBalance,
-                        myVaults: existingVaults,
-                    }) => {
-                        const rewardOverride = collateralName == 'HAIVELO' || collateralName == 'HAIVELOV2'
-
-                        const tooltip =
-                            collateralName == 'HAIVELO' || collateralName == 'HAIVELOV2'
-                                ? 'haiVELO depositors receive rewards in HAI based off the rewards the protocol receives from voting on Velodrome propotional to their amount of haiVELO deposited.'
-                                : 'Earn OP by providing Liquitity'
-                        return (
-                            <Table.Row
-                                key={collateralName}
-                                container={TableRow}
-                                headers={headers}
-                                compactQuery="upToMedium"
-                                items={[
-                                    {
-                                        content: (
-                                            <Grid $columns="2fr min-content 1fr" $align="center" $gap={12}>
-                                                <TokenArray
-                                                    label={collateralLabel}
-                                                    tokens={[collateralName.toUpperCase() as any]}
-                                                />
-                                                {((hasRewards && !pausedRewards.includes(collateralName)) ||
-                                                    rewardOverride) && (
-                                                    <>
-                                                        {/* Custom earn tags for specific collaterals */}
-                                                        {collateralName === 'ALETH' && (
-                                                            <>
-                                                                <RewardsTokenArray
-                                                                    tokens={['KITE']}
-                                                                    label="EARN"
-                                                                    tooltip="Earn KITE rewards for borrowing HAI against this asset. See earn page for details."
-                                                                />
-                                                                {EXTERNAL_LINKS[collateralName] && (
-                                                                    <a
-                                                                        href={EXTERNAL_LINKS[collateralName]}
-                                                                        target="_blank"
-                                                                        rel="noopener noreferrer"
-                                                                        style={{
-                                                                            marginLeft: 4,
-                                                                            display: 'inline-flex',
-                                                                            alignItems: 'center',
-                                                                        }}
-                                                                        title="Get ALETH"
-                                                                    >
-                                                                        <ExternalLink
-                                                                            size={14}
-                                                                            style={{ verticalAlign: 'middle' }}
-                                                                        />
-                                                                    </a>
-                                                                )}
-                                                            </>
-                                                        )}
-                                                        {collateralName === 'MSETH' && (
-                                                            <>
-                                                                <RewardsTokenArray
-                                                                    tokens={['KITE']}
-                                                                    label="EARN"
-                                                                    tooltip="Earn KITE rewards for borrowing HAI against this asset. See earn page for details."
-                                                                />
-                                                            </>
-                                                        )}
-
-                                                        {(collateralName === 'YV-VELO-ALETH-WETH' ||
-                                                            collateralName === 'YV-VELO-MSETH-WETH' ||
-                                                            collateralName === 'MOO-VELO-BOLD-LUSD') && (
-                                                            <>
-                                                                <RewardsTokenArray
-                                                                    tokens={['KITE']}
-                                                                    label="EARN"
-                                                                    tooltip="Earn KITE rewards for borrowing HAI against this asset. See earn page for details."
-                                                                />
-                                                                {EXTERNAL_LINKS[collateralName] && (
-                                                                    <a
-                                                                        href={EXTERNAL_LINKS[collateralName]}
-                                                                        target="_blank"
-                                                                        rel="noopener noreferrer"
-                                                                        style={{
-                                                                            marginLeft: 4,
-                                                                            display: 'inline-flex',
-                                                                            alignItems: 'center',
-                                                                        }}
-                                                                        title={`Get ${collateralName}`}
-                                                                    >
-                                                                        <ExternalLink
-                                                                            size={14}
-                                                                            style={{ verticalAlign: 'middle' }}
-                                                                        />
-                                                                    </a>
-                                                                )}
-                                                            </>
-                                                        )}
-                                                        {(collateralName === 'HAIVELO' ||
-                                                            collateralName === 'HAIVELOV2') && (
-                                                            <RewardsTokenArray
-                                                                tokens={['HAI', 'KITE']}
-                                                                label="EARN"
-                                                                tooltip="Deposit haiVELO to earn HAI from veVELO voting rewards. Earn KITE rewards for borrowing HAI against this asset. See earn page for details"
-                                                            />
-                                                        )}
-                                                        {/* Default behavior for other collaterals */}
-                                                        {![
-                                                            'ALETH',
-                                                            'YV-VELO-ALETH-WETH',
-                                                            'YV-VELO-MSETH-WETH',
-                                                            'MOO-VELO-BOLD-LUSD',
-                                                            'HAIVELO',
-                                                            'HAIVELOV2',
-                                                            'MSETH',
-                                                            'HAIVELOV2',
-                                                        ].includes(collateralName) && (
-                                                            <RewardsTokenArray
-                                                                tokens={[]}
-                                                                label="EARN"
-                                                                tooltip={tooltip}
-                                                            />
-                                                        )}
-                                                    </>
-                                                )}
-                                            </Grid>
-                                        ),
-                                        props: { $fontSize: 'inherit' },
-                                    },
-                                    {
-                                        content: (
-                                            <Flex $align="center" $gap={8}>
-                                                <Text>
-                                                    {collateralizationFactor
-                                                        ? formatNumberWithStyle(collateralizationFactor, {
-                                                              maxDecimals: 0,
-                                                              style: 'percent',
-                                                          })
-                                                        : '--%'}
-                                                </Text>
-                                            </Flex>
-                                        ),
-                                    },
-                                    {
-                                        content: (
+            rows={rows.map(
+                ({
+                    collateralName,
+                    collateralLabel,
+                    collateralizationFactor,
+                    stabilityFee,
+                    eligibleBalance,
+                    myVaults: existingVaults,
+                }) => {
+                    return (
+                        <Table.Row
+                            key={collateralName}
+                            container={TableRow}
+                            headers={headers}
+                            compactQuery="upToMedium"
+                            items={[
+                                {
+                                    content: (
+                                        <Grid $columns="2fr min-content 1fr" $align="center" $gap={12}>
+                                            <TokenArray
+                                                label={collateralLabel}
+                                                tokens={[collateralName.toUpperCase() as any]}
+                                            />
+                                            <VaultRewardsBadge collateral={collateralName} />
+                                            {EXTERNAL_LINKS[collateralName] && (
+                                                <a
+                                                    href={EXTERNAL_LINKS[collateralName]}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    title={`Get ${collateralName}`}
+                                                >
+                                                    <ExternalLink size={14} style={{ verticalAlign: 'middle' }} />
+                                                </a>
+                                            )}
+                                        </Grid>
+                                    ),
+                                    props: { $fontSize: 'inherit' },
+                                },
+                                {
+                                    content: (
+                                        <Flex $align="center" $gap={8}>
                                             <Text>
-                                                {stabilityFee
-                                                    ? formatNumberWithStyle(-parseFloat(stabilityFee), {
-                                                          maxDecimals: 2,
+                                                {collateralizationFactor
+                                                    ? formatNumberWithStyle(collateralizationFactor, {
+                                                          maxDecimals: 0,
                                                           style: 'percent',
                                                       })
                                                     : '--%'}
                                             </Text>
-                                        ),
-                                    },
-                                    {
-                                        content: (
-                                            <Flex $align="center" $gap={4}>
-                                                <Text>
-                                                    {eligibleBalance && eligibleBalance !== '0'
-                                                        ? formatNumberWithStyle(formatEther(eligibleBalance), {
-                                                              maxDecimals: 4,
-                                                          })
-                                                        : '-'}
-                                                </Text>
-                                                {!!eligibleBalance && eligibleBalance !== '0' && (
-                                                    <Text>{formatCollateralLabel(collateralName)}</Text>
-                                                )}
-                                            </Flex>
-                                        ),
-                                    },
-                                    {
-                                        content: (
-                                            <Flex>
-                                                {!existingVaults?.length ? (
-                                                    <Text>-</Text>
-                                                ) : isUpToSmall ? (
-                                                    <ScrollableContainer>
+                                        </Flex>
+                                    ),
+                                },
+                                {
+                                    content: (
+                                        <Text>
+                                            {stabilityFee
+                                                ? formatNumberWithStyle(-parseFloat(stabilityFee), {
+                                                      maxDecimals: 2,
+                                                      style: 'percent',
+                                                  })
+                                                : '--%'}
+                                        </Text>
+                                    ),
+                                },
+                                {
+                                    content: (
+                                        <Flex $align="center" $gap={4}>
+                                            <Text>
+                                                {eligibleBalance && eligibleBalance !== '0'
+                                                    ? formatNumberWithStyle(formatEther(eligibleBalance), {
+                                                          maxDecimals: 4,
+                                                      })
+                                                    : '-'}
+                                            </Text>
+                                            {!!eligibleBalance && eligibleBalance !== '0' && (
+                                                <Text>{formatCollateralLabel(collateralName)}</Text>
+                                            )}
+                                        </Flex>
+                                    ),
+                                },
+                                {
+                                    content: (
+                                        <Flex>
+                                            {!existingVaults?.length ? (
+                                                <Text>-</Text>
+                                            ) : isUpToSmall ? (
+                                                <ScrollableContainer>
+                                                    {existingVaults.map((vault) => (
+                                                        <HaiButton
+                                                            key={vault.id}
+                                                            onClick={() => setActiveVault({ vault })}
+                                                        >
+                                                            <Text $whiteSpace="nowrap" $fontWeight={700}>
+                                                                Vault #{vault.id}
+                                                            </Text>
+                                                            <HaiArrow size={14} strokeWidth={2} direction="upRight" />
+                                                        </HaiButton>
+                                                    ))}
+                                                </ScrollableContainer>
+                                            ) : (
+                                                <CenteredFlex $gap={4}>
+                                                    <Text>{existingVaults.length}</Text>
+                                                    <Tooltip $gap={12}>
                                                         {existingVaults.map((vault) => (
-                                                            <HaiButton
+                                                            <VaultLink
                                                                 key={vault.id}
                                                                 onClick={() => setActiveVault({ vault })}
                                                             >
@@ -238,54 +158,34 @@ export function AvailableVaultsTable({ rows, headers, sorting, setSorting }: Ava
                                                                     strokeWidth={2}
                                                                     direction="upRight"
                                                                 />
-                                                            </HaiButton>
+                                                            </VaultLink>
                                                         ))}
-                                                    </ScrollableContainer>
-                                                ) : (
-                                                    <CenteredFlex $gap={4}>
-                                                        <Text>{existingVaults.length}</Text>
-                                                        <Tooltip $gap={12}>
-                                                            {existingVaults.map((vault) => (
-                                                                <VaultLink
-                                                                    key={vault.id}
-                                                                    onClick={() => setActiveVault({ vault })}
-                                                                >
-                                                                    <Text $whiteSpace="nowrap" $fontWeight={700}>
-                                                                        Vault #{vault.id}
-                                                                    </Text>
-                                                                    <HaiArrow
-                                                                        size={14}
-                                                                        strokeWidth={2}
-                                                                        direction="upRight"
-                                                                    />
-                                                                </VaultLink>
-                                                            ))}
-                                                        </Tooltip>
-                                                    </CenteredFlex>
-                                                )}
-                                            </Flex>
-                                        ),
-                                    },
-                                    {
-                                        content: (
-                                            <TableButton
-                                                onClick={() =>
-                                                    setActiveVault({
-                                                        create: true,
-                                                        collateralName,
-                                                    })
-                                                }
-                                            >
-                                                Open New
-                                            </TableButton>
-                                        ),
-                                        unwrapped: true,
-                                    },
-                                ]}
-                            />
-                        )
-                    }
-                )}
+                                                    </Tooltip>
+                                                </CenteredFlex>
+                                            )}
+                                        </Flex>
+                                    ),
+                                },
+                                {
+                                    content: (
+                                        <TableButton
+                                            onClick={() =>
+                                                setActiveVault({
+                                                    create: true,
+                                                    collateralName,
+                                                })
+                                            }
+                                        >
+                                            Open New
+                                        </TableButton>
+                                    ),
+                                    unwrapped: true,
+                                },
+                            ]}
+                        />
+                    )
+                }
+            )}
         />
     )
 }

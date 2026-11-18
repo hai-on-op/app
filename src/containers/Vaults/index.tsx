@@ -27,10 +27,10 @@ export function Vaults() {
     const [navIndex, setNavIndex] = useState(params.get('tab') === 'user' ? 1 : 0)
 
     useEffect(() => {
-        if (location.pathname === '/vaults') {
-            history.replace({ pathname: '/vaults', search: `?tab=${navIndex === 0 ? 'available' : 'user'}` })
-        }
-    }, [navIndex, location.pathname, history.replace, history])
+        if (location.pathname === '/vaults') setNavIndex(params.get('tab') === 'user' ? 1 : 0)
+    }, [location.pathname, params])
+
+    const selectTab = (index: number) => history.replace(`/vaults?tab=${index === 0 ? 'available' : 'user'}`)
 
     if (idOrOwner) {
         if (idOrOwner.startsWith('0x')) return <VaultsByOwner />
@@ -42,7 +42,9 @@ export function Vaults() {
             {action === VaultAction.CREATE || singleVault ? (
                 <ManageVault
                     headerContent={
-                        <BackButton onClick={() => history.push(`/vaults`)}>
+                        <BackButton
+                            onClick={() => history.push(`/vaults?tab=${navIndex === 0 ? 'available' : 'user'}`)}
+                        >
                             <Caret direction="left" />
                             <CenteredFlex $width="100%">
                                 Back to {navIndex === 0 ? 'Available' : 'My'} Vaults
@@ -51,7 +53,7 @@ export function Vaults() {
                     }
                 />
             ) : (
-                <VaultsList navIndex={navIndex} setNavIndex={setNavIndex} />
+                <VaultsList navIndex={navIndex} setNavIndex={selectTab} />
             )}
         </VaultProvider>
     )

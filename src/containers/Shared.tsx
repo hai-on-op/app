@@ -22,29 +22,6 @@ import { StakingProvider } from '~/providers/StakingProvider'
 import { EarnProvider } from '~/providers/EarnProvider'
 import { AprProvider } from '~/apr/AprProvider'
 
-/**
- * Ensure HAIAERO is present in a token list.
- * SDK v1.2.33+ includes HAIAERO natively; this fallback covers older builds
- * by cloning the HAIVELOV2 entry with HAIAERO-specific addresses.
- */
-function withHaiAero(tokenList: Record<string, any>): Record<string, any> {
-    if (tokenList.HAIAERO || !tokenList.HAIVELOV2) return tokenList
-    return {
-        ...tokenList,
-        HAIAERO: {
-            ...tokenList.HAIVELOV2,
-            symbol: 'HAIAERO',
-            name: 'haiAERO',
-            address: '0xbdF4A4Cc124d9A83a5774574fcBE45DC5d1f1152',
-            bytes32String: utils.formatBytes32String('HAIAERO'),
-            collateralJoin: '0xc83e160E117A420d7BccE800450dE07Ff51d13bA',
-            collateralAuctionHouse: '0xeA089d5902ac42A4b25aB7749CECA8FB4a1eAf12',
-            isCollateral: true,
-            hasRewards: true,
-        },
-    }
-}
-
 import styled from 'styled-components'
 import { CenteredFlex, Flex } from '~/styles'
 import { ImagePreloader } from '~/components/ImagePreloader'
@@ -83,6 +60,7 @@ export function Shared({ children }: Props) {
 
     const isAuctionRoute = location.pathname.startsWith('/auctions')
     const isEarnRoute = location.pathname.startsWith('/earn')
+    const preloadOwnerVaults = isEarnRoute || location.pathname === '/haiVELO' || location.pathname === '/haiAERO'
     const isStakeRoute = location.pathname.startsWith('/stake')
     const isVaultRoute = location.pathname.startsWith('/vaults')
     const isHaiVeloRoute =
@@ -92,7 +70,7 @@ export function Shared({ children }: Props) {
         location.pathname === '/haiAERO' ||
         (location.pathname === '/vaults/open' && ['HAIAERO'].includes(openCollateral))
 
-    const tokenList = publicGeb ? withHaiAero(publicGeb.tokenList) : undefined
+    const tokenList = publicGeb?.tokenList
     const coinTokenContract = useTokenContract(tokenList?.HAI?.address)
     const protTokenContract = useTokenContract(tokenList?.KITE?.address)
 
@@ -207,7 +185,7 @@ export function Shared({ children }: Props) {
 
     useEffect(() => {
         if (!publicGeb?.tokenList) return
-        connectWalletActions.setTokensData(withHaiAero(publicGeb.tokenList))
+        connectWalletActions.setTokensData(publicGeb.tokenList)
     }, [publicGeb?.tokenList, connectWalletActions, chain?.id])
 
     useEffect(() => {
@@ -221,22 +199,24 @@ export function Shared({ children }: Props) {
 
         vaultActions.fetchLiquidationData({
             geb: publicGeb,
-            tokensData: withHaiAero(publicGeb.tokenList),
+            tokensData: publicGeb.tokenList,
         })
     }, [vaultActions, publicGeb, needsMarketData])
 
     useEffect(() => {
-        if (!isEarnRoute) return
-        if (!account || !signer || !geb) return
-        if (chain?.id !== NETWORK_ID) return
+        if (!preloadOwnerVaults || !account || !signer || !geb || chain?.id !== NETWORK_ID) return
+
+        const controller = new AbortController()
 
         vaultActions.fetchUserVaults({
             address: account,
             geb,
-            tokensData: withHaiAero(geb.tokenList),
+            tokensData: geb.tokenList,
             chainId: NETWORK_ID,
+            signal: controller.signal,
         })
-    }, [account, signer, geb, chain?.id, vaultActions, isEarnRoute])
+        return () => controller.abort()
+    }, [account, signer, geb, chain?.id, vaultActions, preloadOwnerVaults])
 
     useEffect(() => {
         const video = splashVideo.current
@@ -315,6 +295,13 @@ export function Shared({ children }: Props) {
         transactionsActions,
         connectWalletState.ctHash,
     ])
+
+    useEffect(() => {
+        if (previousAccount && previousAccount !== account) {
+            vaultActions.setList([])
+            vaultActions.setSingleVault(undefined)
+        }
+    }, [account, previousAccount, vaultActions])
 
     const accountChange = useCallback(() => {
         resetModals()

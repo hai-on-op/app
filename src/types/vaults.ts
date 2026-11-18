@@ -135,6 +135,7 @@ export type IFetchLiquidationDataPayload = {
 }
 
 export type IFetchVaultsPayload = {
+    signal?: AbortSignal
     address: string
     geb: Geb
     tokensData: { [key: string]: TokenData }
@@ -157,7 +158,6 @@ export type IManageVault = {
 export type AvailableVaultPair = {
     collateralName: string
     collateralLabel: string
-    hasRewards: boolean
     collateralizationFactor: string
     stabilityFee: string
     apy: string

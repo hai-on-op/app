@@ -38,6 +38,7 @@ const listMock = [
         collateralRatio: '2',
         currentRedemptionPrice: '3',
         internalCollateralBalance: '0',
+        freeCollateral: '0',
         currentLiquidationPrice: '2',
         liquidationCRatio: '1.45',
         liquidationPenalty: '1.12',
@@ -76,6 +77,16 @@ describe('vault model', () => {
     })
 
     describe('setVaultList', () => {
+        it('keeps retired collateral vaults accessible to their owner', () => {
+            const vaults = ['WBTC', 'APXETH'].map((collateralName, index) => ({
+                ...listMock[0],
+                id: String(index + 1),
+                collateralName,
+            }))
+            store.getActions().setList(vaults)
+            expect(store.getState().list).toEqual(vaults)
+        })
+
         it('sets Vault List', () => {
             store.getActions().setList(listMock)
             store.getActions().setLiquidationData(liquidationDataMock)

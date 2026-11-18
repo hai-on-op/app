@@ -13,8 +13,6 @@ type StrategyTableProps = {
     rows: Strategy[]
     loading?: boolean
     error?: string
-    uniError?: string
-    veloError?: string
     sorting: Sorting
     setSorting: SetState<Sorting>
 }
@@ -84,22 +82,14 @@ const StyledRewardsAPYWithBoost = styled.div`
     margin-left: 8px;
 `
 
-export function StrategyTable({
-    headers,
-    rows,
-    loading,
-    error,
-    uniError,
-    veloError,
-    sorting,
-    setSorting,
-}: StrategyTableProps) {
+export function StrategyTable({ headers, rows, loading, error, sorting, setSorting }: StrategyTableProps) {
     return (
         <Table
             headers={headers}
             headerContainer={TableHeader}
-            loading={loading}
-            error={error && uniError && veloError}
+            loading={loading && !error}
+            error={error}
+            errorContent="Unable to load earning strategies. Reload the page to try again."
             isEmpty={!rows.length}
             sorting={sorting}
             setSorting={setSorting}
