@@ -66,7 +66,7 @@ export function ConnectButton({ showBalance, ...props }: ConnectButtonProps) {
                                     </BalanceContainer>
                                     <BalanceContainer>
                                         <Text>
-                                            {formatNumberWithStyle(ethBalance[chain.id], {
+                                            {formatNumberWithStyle(ethBalance[chain.id] ?? 0, {
                                                 maxDecimals: 1,
                                                 maxSigFigs: 2,
                                             })}{' '}

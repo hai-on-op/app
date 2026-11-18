@@ -1,7 +1,7 @@
 import { Suspense, lazy, useEffect, useCallback, useRef, useState } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 import { utils } from 'ethers'
-import { useAccount, useNetwork } from 'wagmi'
+import { useAccount, useBalance as useNativeBalance, useNetwork } from 'wagmi'
 
 import type { ReactChildren } from '~/types'
 import {
@@ -104,22 +104,46 @@ export function Shared({ children }: Props) {
         popupsActions.setIsWaitingModalOpen(false)
     }, [popupsActions])
 
+    const { data: nativeBalance, refetch: refreshNativeBalance } = useNativeBalance({
+        address: account,
+        chainId: chain?.id,
+        enabled: !!account && !!chain?.id,
+    })
     useEffect(() => {
-        if (!account || !geb || !connectWalletState?.forceUpdateTokens) return
-
-        connectWalletActions.fetchTokenData({ geb, user: account })
-    }, [account, geb, connectWalletState?.forceUpdateTokens, connectWalletActions])
+        connectWalletActions.setBalanceOwner(account)
+    }, [account, connectWalletActions])
 
     useEffect(() => {
-        if (!connectWalletState || !signer) return
-
-        signer.getBalance().then((balance) => {
-            connectWalletActions.updateEthBalance({
-                chainId: NETWORK_ID,
-                balance: Number(utils.formatEther(balance)),
+        if (
+            !account ||
+            account !== connectWalletState.balanceOwner ||
+            !publicGeb ||
+            !connectWalletState.forceUpdateTokens
+        )
+            return
+        const controller = new AbortController()
+        connectWalletActions
+            .fetchTokenData({ geb: publicGeb, user: account, signal: controller.signal })
+            .catch((error: unknown) => {
+                if (!controller.signal.aborted) console.warn('Unable to refresh Optimism token balances', error)
             })
-        })
-    }, [account, signer, connectWalletState, connectWalletActions])
+        return () => controller.abort()
+    }, [
+        account,
+        publicGeb,
+        connectWalletState.balanceOwner,
+        connectWalletState.forceUpdateTokens,
+        connectWalletActions,
+    ])
+
+    useEffect(() => {
+        if (account && chain?.id && connectWalletState.forceUpdateTokens) void refreshNativeBalance()
+    }, [account, chain?.id, connectWalletState.forceUpdateTokens, refreshNativeBalance])
+
+    useEffect(() => {
+        if (!account || !chain?.id || !nativeBalance) return
+        connectWalletActions.updateEthBalance({ chainId: chain.id, balance: nativeBalance.formatted })
+    }, [account, chain?.id, nativeBalance, connectWalletActions])
 
     useEffect(() => {
         if (!connectWalletState) return

@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useAccount, useNetwork } from 'wagmi'
+import { useAccount, useBalance, useNetwork } from 'wagmi'
+import { getAddressList } from '@hai-on-op/sdk'
+import type { Address } from 'viem'
+import { constants, utils } from 'ethers'
 
-import { ActionState, formatNumberWithStyle } from '~/utils'
+import { ActionState, formatNumberWithStyle, getNetworkName, parseTokenAmount } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
-import { handleTransactionError, useBalance, useEthersSigner, useGeb } from '~/hooks'
+import { handleTransactionError, useEthersSigner } from '~/hooks'
 
 import styled from 'styled-components'
 import { Flex, HaiButton, Text } from '~/styles'
@@ -16,11 +19,12 @@ enum Action {
     UNWRAP,
 }
 
+const gasCushion = utils.parseEther('0.01')
+
 export function WrapETHModal(props: ModalProps) {
     const { address: account } = useAccount()
     const { chain } = useNetwork()
     const signer = useEthersSigner()
-    const geb = useGeb()
 
     const [action, setAction] = useState(Action.WRAP)
 
@@ -31,7 +35,22 @@ export function WrapETHModal(props: ModalProps) {
         vaultModel: vaultActions,
     } = useStoreActions((actions) => actions)
 
-    const wethBalance = useBalance('WETH')
+    // The wrap transaction uses this deployment's WETH contract with the wallet's signer.
+    const wethAddress = chain?.id ? getAddressList(getNetworkName(chain.id)).ETH : undefined
+    const { data: wrapped, refetch: refreshWrappedBalance } = useBalance({
+        address: account,
+        chainId: chain?.id,
+        token: wethAddress as Address | undefined,
+        enabled: !!account && !!chain?.id && !!wethAddress,
+    })
+    const wethBalance = useMemo(
+        () =>
+            wrapped && {
+                raw: wrapped.formatted,
+                formatted: formatNumberWithStyle(wrapped.formatted, { maxDecimals: 4, minSigFigs: 1 }),
+            },
+        [wrapped]
+    )
 
     const [amount, setAmount] = useState('')
 
@@ -39,48 +58,25 @@ export function WrapETHModal(props: ModalProps) {
 
     const refreshBalance = () => {
         if (!account) return
-        connectWalletActions.fetchTokenData({ geb, user: account })
+        connectWalletActions.setForceUpdateTokens(true)
+        void refreshWrappedBalance()
     }
 
-    const [balance, balanceMinusCushion] = useMemo(() => {
-        if (!chain?.id || !ethBalance) return []
+    const nativeWei = parseTokenAmount(String((chain && ethBalance[chain.id]) ?? '0')) ?? constants.Zero
+    const wrappedWei = parseTokenAmount(wethBalance?.raw || '0') ?? constants.Zero
+    const nativeRaw = utils.formatEther(nativeWei)
+    const maxWrap = utils.formatEther(nativeWei.gt(gasCushion) ? nativeWei.sub(gasCushion) : constants.Zero)
+    const balance = { raw: nativeRaw, formatted: formatNumberWithStyle(nativeRaw, { maxDecimals: 4 }) }
+    const balanceMinusCushion = { raw: maxWrap, formatted: formatNumberWithStyle(maxWrap, { maxDecimals: 4 }) }
 
-        const bal = parseFloat(ethBalance[chain.id].toString())
-        const balMinusCushion = Math.max(bal - 0.01, 0).toString()
-        return [
-            {
-                raw: bal.toString(),
-                formatted: formatNumberWithStyle(bal, { maxDecimals: 4 }),
-            },
-            {
-                raw: balMinusCushion,
-                formatted: formatNumberWithStyle(balMinusCushion, { maxDecimals: 4 }),
-            },
-        ]
-    }, [chain?.id, ethBalance])
-
-    const details = useMemo(() => {
-        switch (action) {
-            case Action.UNWRAP:
-                return {
-                    action: 'Unwrap',
-                    symbol: 'WETH',
-                    balance: wethBalance,
-                    balanceMinusCushion: wethBalance,
-                }
-            case Action.WRAP:
-                return {
-                    action: 'Wrap',
-                    symbol: 'ETH',
-                    balance,
-                    balanceMinusCushion,
-                }
-        }
-    }, [action, balance, balanceMinusCushion, wethBalance])
-
-    const isNonZero = parseFloat(amount || '0') > 0
-
-    const insufficientFunds = parseFloat(amount || '0') > parseFloat(details.balance?.raw || '0')
+    const details =
+        action === Action.UNWRAP
+            ? { action: 'Unwrap', symbol: 'WETH', balanceMinusCushion: wethBalance }
+            : { action: 'Wrap', symbol: 'ETH', balanceMinusCushion }
+    const amountWei = parseTokenAmount(amount)
+    const isNonZero = !!amountWei?.gt(0)
+    const insufficientFunds = amountWei?.gt(action === Action.WRAP ? nativeWei : wrappedWei)
+    const wrappedChange = action === Action.WRAP ? amountWei ?? constants.Zero : (amountWei ?? constants.Zero).mul(-1)
 
     const onWrap = async () => {
         if (!signer || !isNonZero || insufficientFunds) return
@@ -156,12 +152,9 @@ export function WrapETHModal(props: ModalProps) {
                         label: 'ETH',
                         value: {
                             current: isNonZero ? balance?.formatted || '0' : undefined,
-                            after: formatNumberWithStyle(
-                                action === Action.WRAP
-                                    ? parseFloat(balance?.raw || '0') - parseFloat(amount || '0')
-                                    : parseFloat(balance?.raw || '0') + parseFloat(amount || '0'),
-                                { maxDecimals: 4 }
-                            ),
+                            after: formatNumberWithStyle(utils.formatEther(nativeWei.sub(wrappedChange)), {
+                                maxDecimals: 4,
+                            }),
                             label: 'ETH',
                             tooltip: isNonZero
                                 ? `This estimate does not include any fees associated with the ${details.action.toLowerCase()} transaction`
@@ -172,12 +165,9 @@ export function WrapETHModal(props: ModalProps) {
                         label: 'WETH',
                         value: {
                             current: isNonZero ? wethBalance?.formatted || '0' : undefined,
-                            after: formatNumberWithStyle(
-                                action === Action.WRAP
-                                    ? parseFloat(wethBalance?.raw || '0') + parseFloat(amount || '0')
-                                    : parseFloat(wethBalance?.raw || '0') - parseFloat(amount || '0'),
-                                { maxDecimals: 4 }
-                            ),
+                            after: formatNumberWithStyle(utils.formatEther(wrappedWei.add(wrappedChange)), {
+                                maxDecimals: 4,
+                            }),
                             label: 'WETH',
                         },
                     },

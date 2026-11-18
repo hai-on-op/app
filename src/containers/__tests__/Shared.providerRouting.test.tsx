@@ -21,6 +21,7 @@ vi.mock('@hai-on-op/sdk', () => ({
 vi.mock('wagmi', () => ({
     useAccount: () => ({ address: undefined }),
     useNetwork: () => ({ chain: undefined }),
+    useBalance: () => ({ data: undefined, refetch: vi.fn() }),
 }))
 
 vi.mock('~/store', () => ({
@@ -124,6 +125,7 @@ const baseState = {
 const baseActions = {
     connectWalletModel: {
         fetchTokenData: vi.fn(),
+        setBalanceOwner: vi.fn(),
         updateEthBalance: vi.fn(),
         setProtAllowance: vi.fn(),
         setCoinAllowance: vi.fn(),

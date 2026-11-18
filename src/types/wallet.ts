@@ -67,6 +67,7 @@ export type CallResults = {
 }
 
 export type IFetchTokensDataPayload = {
+    signal?: AbortSignal
     geb: Geb
     user: string
     tokens?: string[]

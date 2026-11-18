@@ -28,6 +28,8 @@ export interface ConnectWalletModel {
 
     tokensData: { [token: string]: TokenData }
     setTokensData: Action<ConnectWalletModel, { [token: string]: TokenData }>
+    balanceOwner?: string
+    setBalanceOwner: Action<ConnectWalletModel, string | undefined>
     tokensFetchedData: { [token: string]: TokenFetchData }
     fetchTokenData: Thunk<ConnectWalletModel, IFetchTokensDataPayload>
     setTokensFetchedData: Action<ConnectWalletModel, { [token: string]: TokenFetchData }>
@@ -35,7 +37,7 @@ export interface ConnectWalletModel {
     setForceUpdateTokens: Action<ConnectWalletModel, boolean>
 
     ethBalance: ITokenBalance
-    updateEthBalance: Action<ConnectWalletModel, { chainId: number; balance: number }>
+    updateEthBalance: Action<ConnectWalletModel, { chainId: number; balance: number | string }>
     haiBalance: ITokenBalance
     updateHaiBalance: Action<ConnectWalletModel, { chainId: number; balance: string }>
     veloBalance: ITokenBalance
@@ -117,13 +119,23 @@ export const connectWalletModel: ConnectWalletModel = {
     setTokensData: action((state, payload) => {
         state.tokensData = payload
     }),
+    balanceOwner: undefined,
+    setBalanceOwner: action((state, owner) => {
+        if (owner === state.balanceOwner) return
+        state.balanceOwner = owner
+        state.ethBalance = {}
+        state.tokensFetchedData = {}
+        state.forceUpdateTokens = true
+    }),
     tokensFetchedData: {},
-    fetchTokenData: thunk(async (actions, payload) => {
-        const tokenList = payload.geb.tokenList
-        const fetched = await fetchTokenData(payload.geb, payload.user, tokenList)
-        if (fetched) {
-            actions.setTokensFetchedData(fetched)
-            actions.setForceUpdateTokens(false)
+    fetchTokenData: thunk(async (actions, payload, { getState }) => {
+        const isCurrent = () => !payload.signal?.aborted && getState().balanceOwner === payload.user
+        if (!isCurrent()) return
+        try {
+            const fetched = await fetchTokenData(payload.geb, payload.user, payload.geb.tokenList)
+            if (fetched && isCurrent()) actions.setTokensFetchedData(fetched)
+        } finally {
+            if (isCurrent()) actions.setForceUpdateTokens(false)
         }
     }),
     setTokensFetchedData: action((state, payload) => {
