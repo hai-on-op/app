@@ -1,10 +1,10 @@
 import { type Dispatch, createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef } from 'react'
-import { useAccount } from 'wagmi'
+import { useAccount, useNetwork } from 'wagmi'
 import { useHistory } from 'react-router-dom'
 
 import type { Collateral, Debt, FormState, IVault, ReactChildren, SetState } from '~/types'
 import {
-    // DEFAULT_VAULT_DATA,
+    NETWORK_ID,
     Status,
     VaultAction,
     VaultInfoError,
@@ -16,13 +16,14 @@ import {
     vaultInfoErrors,
 } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
-import { useGeb } from '~/hooks'
+import { usePublicGeb } from '~/hooks'
 
 import { useCollateral } from './useCollateral'
 import { useDebt } from './useDebt'
 import { type Simulation, useSimulation } from './useSimulation'
 import { type Summary, useSummary, DEFAULT_SUMMARY } from './useSummary'
 import { useVaultError } from './useVaultError'
+import { useVaultDebtLimits } from './useVaultDebtLimits'
 
 type SetActiveVaultProps =
     | {
@@ -56,6 +57,7 @@ type VaultContext = {
     summary: Summary
     error?: VaultInfoError
     errorMessage?: string
+    debtLimitNotice?: string
 }
 
 const defaultState: VaultContext = {
@@ -117,9 +119,11 @@ type Props = {
 export function VaultProvider({ action, setAction, children }: Props) {
     const history = useHistory()
     const { address } = useAccount()
-    const geb = useGeb()
+    const { chain } = useNetwork()
+    const geb = usePublicGeb()
 
     const { liquidationData, vaultData, singleVault } = useStoreState(({ vaultModel }) => vaultModel)
+    const { proxyAddress, tokensData } = useStoreState(({ connectWalletModel }) => connectWalletModel)
     const { vaultModel: vaultActions, connectWalletModel: connectWalletActions } = useStoreActions((actions) => actions)
 
     const dataRef = useRef(vaultData)
@@ -142,52 +146,61 @@ export function VaultProvider({ action, setAction, children }: Props) {
         [history]
     )
 
-    const [formState, updateForm] = useReducer((previous: FormState, update: Partial<FormState> | 'clear') => {
-        if (update === 'clear') {
-            vaultActions.setVaultData({
-                ...dataRef.current,
-                deposit: '',
-                withdraw: '',
-                borrow: '',
-                repay: '',
-            })
-            return {}
-        }
-
-        const newState = {
-            ...previous,
-            ...update,
-        }
-        vaultActions.setVaultData({
-            ...dataRef.current,
-            ...newState,
-        })
-        return newState
-    }, {})
-
-    const collateral = useCollateral(action, formState, vaultData.collateral)
-    const debt = useDebt(action, formState, collateral.liquidationData)
-
-    // When entering Create flow or changing collateral, refresh balances so deposit max reflects latest wallet state
-    useEffect(() => {
-        if (action === VaultAction.CREATE && address) {
-            try {
-                connectWalletActions.fetchTokenData({ geb, user: address })
-            } catch (e) {
-                // swallow
-            }
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [action, collateral.name, address])
+    const [draft, updateForm] = useReducer(
+        (previous: FormState & { payoffVaultId?: string }, update: Partial<FormState> | 'clear') => {
+            if (update === 'clear') return {}
+            const next = { ...previous, ...update }
+            if ('repay' in update) next.payoffVaultId = update.repayAll ? singleVault?.id : undefined
+            return next
+        },
+        {}
+    )
+    const repaying = action === VaultAction.DEPOSIT_REPAY || action === VaultAction.WITHDRAW_REPAY
+    const borrowing = [VaultAction.CREATE, VaultAction.DEPOSIT_BORROW, VaultAction.WITHDRAW_BORROW].includes(action)
+    const creating = action === VaultAction.CREATE
+    const { limits, notice: limitQueryNotice } = useVaultDebtLimits(
+        geb,
+        !!address &&
+            chain?.id === NETWORK_ID &&
+            (borrowing || repaying) &&
+            (creating || !!singleVault?.vaultHandler),
+        creating ? tokensData[vaultData.collateral]?.bytes32String : singleVault?.collateralType,
+        creating ? undefined : singleVault?.vaultHandler,
+        repaying ? proxyAddress || undefined : undefined
+    )
+    const repayAll = repaying && !!singleVault && draft.payoffVaultId === singleVault.id && draft.repayAll === true
+    const snapshot = repaying && limitQueryNotice ? undefined : limits
+    const collateral = useCollateral(action, draft, vaultData.collateral, snapshot)
+    const debt = useDebt(action, { ...draft, repayAll }, collateral, snapshot)
+    const formState: FormState = useMemo(
+        () => ({
+            deposit: draft.deposit,
+            withdraw: draft.withdraw,
+            borrow: draft.borrow,
+            repay: repayAll ? debt.payoff?.raw ?? draft.repay : draft.repay,
+            repayAll,
+        }),
+        [draft, debt.payoff?.raw, repayAll]
+    )
+    const debtLimitNotice =
+        borrowing && Number(formState.borrow) > 0
+            ? limitQueryNotice
+            : repaying && (repayAll || Number(formState.repay) > 0) && limitQueryNotice
+            ? 'The repayment estimate assumes zero internal HAI credit until current vault data is available.'
+            : undefined
 
     const refreshVault = useCallback(async () => {
         if (!address) return
         try {
             await connectWalletActions.fetchTokenData({ geb, user: address })
-        } catch (e) {
-            // swallow
+        } catch {
+            // Keep the last wallet balances until the next refresh.
         }
     }, [address, connectWalletActions, geb])
+
+    useEffect(() => {
+        if (action === VaultAction.CREATE) void refreshVault()
+    }, [action, collateral.name, refreshVault])
 
     const liquidationPrice = useMemo(() => {
         if (!liquidationData?.currentRedemptionPrice || !collateral.liquidationData?.liquidationCRatio) return ''
@@ -263,20 +276,25 @@ export function VaultProvider({ action, setAction, children }: Props) {
         formState,
         collateral,
         debt,
-        collateralRatio,
         isSafe,
+        limits: snapshot,
     })
 
     // update vaultData as values change
     useEffect(() => {
         vaultActions.setVaultData({
             ...dataRef.current,
+            deposit: formState.deposit || '',
+            withdraw: formState.withdraw || '',
+            borrow: formState.borrow || '',
+            repay: formState.repay || '',
+            repayAll,
             totalCollateral: collateral.total.current?.raw || collateral.total.after.raw,
             totalDebt: debt.total.current?.raw || debt.total.after.raw,
             collateralRatio: parseFloat(collateralRatio),
             liquidationPrice: parseFloat(liquidationPrice),
         })
-    }, [collateral.total, debt.total, collateralRatio, liquidationPrice, vaultActions])
+    }, [formState, repayAll, collateral.total, debt.total, collateralRatio, liquidationPrice, vaultActions])
 
     return (
         <VaultContext.Provider
@@ -299,7 +317,8 @@ export function VaultProvider({ action, setAction, children }: Props) {
                 liquidationPenaltyPercentage,
                 summary,
                 error,
-                errorMessage: error ? errorMessage || vaultInfoErrors[error] || undefined : undefined,
+                errorMessage: error === undefined ? undefined : errorMessage || vaultInfoErrors[error],
+                debtLimitNotice,
             }}
         >
             {children}

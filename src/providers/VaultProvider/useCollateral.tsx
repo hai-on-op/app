@@ -1,12 +1,18 @@
 import { useMemo } from 'react'
-import { formatEther } from 'ethers/lib/utils'
+import { formatEther, formatUnits } from 'ethers/lib/utils'
 
 import type { Collateral, FormState } from '~/types'
 import { VaultAction, formatSummaryValue, returnTotalValue } from '~/utils'
 import { useStoreState } from '~/store'
 import { useBalance, useHaiAeroBalance } from '~/hooks'
+import type { VaultDebtLimits } from '~/services/vaultDebtLimits'
 
-export function useCollateral(action: VaultAction, formState: FormState, collateral: string): Collateral {
+export function useCollateral(
+    action: VaultAction,
+    formState: FormState,
+    collateral: string,
+    snapshot?: VaultDebtLimits
+): Collateral {
     const {
         vaultModel: {
             // vaultData: { collateral, deposit, withdraw },
@@ -17,6 +23,7 @@ export function useCollateral(action: VaultAction, formState: FormState, collate
     } = useStoreState((state) => state)
 
     const name = useMemo(() => singleVault?.collateralName || collateral, [singleVault, collateral])
+    const lockedCollateralWad = snapshot?.lockedCollateralWad
 
     const total: Collateral['total'] = useMemo(() => {
         if (!singleVault)
@@ -25,16 +32,12 @@ export function useCollateral(action: VaultAction, formState: FormState, collate
                 after: formatSummaryValue(formState.deposit || '0', { maxDecimals: 4, minSigFigs: 1 })!,
             }
 
-        const current = formatSummaryValue(singleVault.collateral || '0')!
+        const locked = lockedCollateralWad ? formatEther(lockedCollateralWad) : singleVault.collateral || '0'
+        const current = formatSummaryValue(locked)!
         switch (action) {
             case VaultAction.WITHDRAW_BORROW:
             case VaultAction.WITHDRAW_REPAY: {
-                const afterBN = returnTotalValue(
-                    singleVault.collateral,
-                    formState.withdraw || '0',
-                    false,
-                    true
-                ).toString()
+                const afterBN = returnTotalValue(locked, formState.withdraw || '0', false, true).toString()
                 return {
                     current,
                     after: formatSummaryValue(formatEther(afterBN), { maxDecimals: 4, minSigFigs: 1 })!,
@@ -44,19 +47,14 @@ export function useCollateral(action: VaultAction, formState: FormState, collate
             case VaultAction.DEPOSIT_BORROW:
             case VaultAction.DEPOSIT_REPAY:
             default: {
-                const totalBN = returnTotalValue(
-                    singleVault.collateral,
-                    formState.deposit || '0',
-                    false,
-                    false
-                ).toString()
+                const totalBN = returnTotalValue(locked, formState.deposit || '0', false, false).toString()
                 return {
                     current,
                     after: formatSummaryValue(formatEther(totalBN), { maxDecimals: 4, minSigFigs: 1 })!,
                 }
             }
         }
-    }, [singleVault, formState.deposit, formState.withdraw, action])
+    }, [singleVault, lockedCollateralWad, formState.deposit, formState.withdraw, action])
 
     // Use SDK balance for most tokens
     const sdkBalance = useBalance(name)
@@ -67,7 +65,17 @@ export function useCollateral(action: VaultAction, formState: FormState, collate
     // Use haiAERO balance if this is HAIAERO collateral, otherwise use SDK balance
     const balance = name === 'HAIAERO' ? haiAeroBalance : sdkBalance
 
-    const collateralLiquidationData = liquidationData?.collateralLiquidationData[name]
+    const stored = liquidationData?.collateralLiquidationData[name]
+    const collateralLiquidationData = useMemo(
+        () =>
+            stored && snapshot
+                ? {
+                      ...stored,
+                      currentPrice: { ...stored.currentPrice, safetyPrice: formatUnits(snapshot.safetyPriceRay, 27) },
+                  }
+                : stored,
+        [stored, snapshot]
+    )
 
     return {
         name,

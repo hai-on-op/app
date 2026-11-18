@@ -49,8 +49,9 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
     const isUpToSmall = useMediaQuery('upToSmall')
     const [showMigrate, setShowMigrate] = useState(false)
 
-    // clear form inputs when unmounting
-    useEffect(() => () => updateForm('clear'), [updateForm])
+    // A draft and its open review belong to the selected vault or new collateral.
+    const formKey = vault?.id ?? symbol
+    useEffect(() => () => updateForm('clear'), [updateForm, formKey])
 
     const [selectedTab, setSelectedTab] = useState<string>()
     const isCreateFlow = action === VaultAction.CREATE || vault?.collateralName !== symbol
@@ -115,7 +116,7 @@ export function ManageVault({ headerContent }: ManageVaultProps) {
                 >
                     <BodyGrid>
                         <Overview isHAIVELO={isMinterProtocol} />
-                        <VaultActions />
+                        <VaultActions key={formKey} />
                     </BodyGrid>
                 </ProxyPrompt>
             )

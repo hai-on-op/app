@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
+import { BigNumber } from 'ethers'
 
-import { ActionState, VaultAction, formatNumberWithStyle, formatCollateralLabel } from '~/utils'
+import { ActionState, VaultAction, formatNumberWithStyle, formatCollateralLabel, toFixedString } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
-import { useGeb } from '~/hooks'
-import { useAccount } from 'wagmi'
 import { useVault } from '~/providers/VaultProvider'
 import styled from 'styled-components'
 import { CenteredFlex, Flex, HaiButton, Text } from '~/styles'
@@ -17,13 +16,10 @@ export function VaultActions() {
     const { vaultModel: vaultState } = useStoreState((state) => state)
     const {
         vaultModel: vaultActions,
-        connectWalletModel: connectWalletActions,
         popupsModel: { toggleModal },
     } = useStoreActions((actions) => actions)
 
     const { vault, action, setAction, formState, updateForm, collateral, debt, summary, error } = useVault()
-    const geb = useGeb()
-    const { address } = useAccount()
 
     const isWithdraw = action === VaultAction.WITHDRAW_REPAY || action === VaultAction.WITHDRAW_BORROW
     const isRepay = action === VaultAction.WITHDRAW_REPAY || action === VaultAction.DEPOSIT_REPAY
@@ -43,18 +39,9 @@ export function VaultActions() {
         })
     }, [wrapEthActive, toggleModal])
 
-    // Ensure balances are fresh when switching to Create tab (e.g., after migrating haiVELO v2)
-    useEffect(() => {
-        if (action === VaultAction.CREATE && address) {
-            try {
-                connectWalletActions.fetchTokenData({ geb, user: address })
-            } catch (e) {
-                // swallow
-            }
-        }
-    }, [action, collateral.name, address, connectWalletActions, geb])
-
     const [buttonActive, buttonLabel] = useMemo(() => {
+        const hasRepayment = formState.repayAll || Number(formState.repay || '0') > 0
+        const repayLabel = formState.repayAll ? 'Pay Back All' : 'Pay Back'
         let label = ''
         switch (action) {
             case VaultAction.CREATE: {
@@ -76,23 +63,23 @@ export function VaultActions() {
                 break
             }
             case VaultAction.DEPOSIT_REPAY: {
-                const { deposit = '0', repay = '0' } = formState
-                if (Number(deposit) <= 0 && Number(repay) <= 0) {
+                const { deposit = '0' } = formState
+                if (Number(deposit) <= 0 && !hasRepayment) {
                     return [false, 'Deposit']
                 }
-                if (Number(repay) <= 0) label = 'Deposit'
-                else if (Number(deposit) <= 0) label = 'Pay Back'
-                else label = 'Deposit & Pay Back'
+                if (!hasRepayment) label = 'Deposit'
+                else if (Number(deposit) <= 0) label = repayLabel
+                else label = `Deposit & ${repayLabel}`
                 break
             }
             case VaultAction.WITHDRAW_REPAY: {
-                const { withdraw = '0', repay = '0' } = formState
-                if (Number(withdraw) <= 0 && Number(repay) <= 0) {
+                const { withdraw = '0' } = formState
+                if (Number(withdraw) <= 0 && !hasRepayment) {
                     return [false, 'Withdraw']
                 }
-                if (Number(repay) <= 0) label = 'Withdraw'
-                else if (Number(withdraw) <= 0) label = 'Pay Back'
-                else label = 'Withdraw & Pay Back'
+                if (!hasRepayment) label = 'Withdraw'
+                else if (Number(withdraw) <= 0) label = repayLabel
+                else label = `Withdraw & ${repayLabel}`
                 break
             }
             case VaultAction.WITHDRAW_BORROW: {
@@ -108,10 +95,15 @@ export function VaultActions() {
             default:
                 return [false, 'Deposit']
         }
-        return [!error, label]
+        return [error === undefined, label]
     }, [action, formState, error])
 
-    const maxRepay = Number(debt.balance.raw) < Number(debt.total.current?.raw || 0) ? debt.balance : debt.total.current
+    const payoff = debt.payoff ?? debt.total.current
+    const walletLimited = BigNumber.from(toFixedString(debt.balance.raw || '0', 'WAD')).lt(
+        toFixedString(payoff?.raw || '0', 'WAD')
+    )
+    const maxRepay = walletLimited ? debt.balance : payoff
+    const canRepayAll = !!debt.payoff && !walletLimited
 
     return (
         <>
@@ -280,12 +272,14 @@ export function VaultActions() {
                         subLabel={`Max ${maxRepay?.formatted || '0'} HAI`}
                         placeholder="Pay Back Amount"
                         unitLabel="HAI"
-                        onChange={(value: string) => updateForm({ repay: value || undefined })}
+                        onChange={(value: string) => updateForm({ repay: value || undefined, repayAll: false })}
                         value={formState.repay}
                         disabled={action === VaultAction.CREATE}
-                        onMax={() => updateForm({ repay: maxRepay?.raw || '0' })}
+                        onMax={() => updateForm({ repay: maxRepay?.raw || '0', repayAll: canRepayAll })}
                         conversion={
-                            formState.repay && Number(formState.repay) > 0
+                            formState.repayAll && Number(formState.repay) === 0
+                                ? 'Covered by internal HAI credit'
+                                : formState.repay && Number(formState.repay) > 0
                                 ? `~${formatNumberWithStyle(parseFloat(debt.priceInUSD) * parseFloat(formState.repay), {
                                       style: 'currency',
                                   })}`

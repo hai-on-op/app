@@ -35,6 +35,7 @@ export type IVaultData = {
     withdraw: string
     borrow: string
     repay: string
+    repayAll?: boolean
     collateralRatio: number
     liquidationPrice: number
     isGnosisSafe?: boolean
@@ -165,11 +166,14 @@ export type AvailableVaultPair = {
     myVaults?: IVault[]
 }
 
+export type VaultLeg = 'deposit' | 'withdraw' | 'borrow' | 'repay'
+
 export type FormState = {
     deposit?: string
     borrow?: string
     withdraw?: string
     repay?: string
+    repayAll?: boolean
 }
 
 export type Collateral = {
@@ -182,6 +186,8 @@ export type Collateral = {
 }
 
 export type Debt = {
+    payoff?: SummaryItemValue
+    afterRad?: string
     data?: TokenData
     total: SummaryItem<SummaryItemValue>
     available: SummaryItemValue

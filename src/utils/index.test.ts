@@ -1,7 +1,17 @@
+import { BigNumber } from 'ethers'
+import { formatUnits, parseUnits } from 'ethers/lib/utils'
 import { ChainId } from './constants'
+import { parseTokenAmount, toFixedString } from './formatting'
 import { getEtherscanLink } from './helper'
 import { returnTotalValue } from './math'
-import { getCollateralRatio, getLiquidationPrice, ratioChecker, vaultIsSafe } from './vaults'
+import {
+    getCollateralRatio,
+    getLiquidationPrice,
+    getVaultAmountError,
+    ratioChecker,
+    vaultIsSafe,
+    VaultAction,
+} from './vaults'
 
 describe('utils', () => {
     describe('#getEtherscanLink', () => {
@@ -99,6 +109,36 @@ describe('utils', () => {
 
         it('returns 5', () => {
             expect(ratioChecker(50, 1)).toEqual(5)
+        })
+    })
+
+    describe('fixed-point vault amounts', () => {
+        it('uses the requested RAY and RAD scales even for values with exactly 18 fractional digits', () => {
+            const rate = '1.123456789012345678'
+            expect(formatUnits(toFixedString(rate, 'RAY'), 27)).toBe(rate)
+            expect(formatUnits(toFixedString(rate, 'RAD'), 45)).toBe(rate)
+            expect(formatUnits(toFixedString('-1.1234567890123456789', 'WAD'), 18)).toBe('-1.123456789012345678')
+            expect(BigNumber.from(toFixedString('1e-7', 'WAD')).isZero()).toBe(true)
+        })
+
+        it('preserves one wei and large vault balances through arithmetic', () => {
+            expect(returnTotalValue('0.000000000000000001', '0', false).toString()).toBe('1')
+            expect(
+                returnTotalValue('9007199254740993.000000000000000001', '0.000000000000000001', false, true).toString()
+            ).toBe(parseUnits('9007199254740993', 18).toString())
+        })
+
+        it('checks only submitted fields using the collateral and HAI token precisions', () => {
+            const action = VaultAction.WITHDRAW_REPAY
+            expect(
+                getVaultAmountError(action, { withdraw: '0.00000001', repay: '0.000000000000000001', borrow: '-2' }, 8)
+            ).toBeUndefined()
+            expect(getVaultAmountError(action, { withdraw: '0.000000001' }, 8)).toContain('8 decimal places')
+            for (const repay of ['-1', '1e-7', '2.3.1', '0.0000000000000000001']) {
+                expect(getVaultAmountError(action, { repay })).toContain('HAI')
+            }
+            expect(parseTokenAmount('1.25', 8)?.toString()).toBe('125000000')
+            expect(parseTokenAmount('1e-7')).toBeUndefined()
         })
     })
 

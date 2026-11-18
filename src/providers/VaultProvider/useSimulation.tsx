@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import type { Collateral, Debt } from '~/types'
+import type { Collateral, Debt, FormState } from '~/types'
 import { Status, VaultAction, getCollateralRatio, getLiquidationPrice, ratioChecker, riskStateToStatus } from '~/utils'
 import { useStoreState } from '~/store'
 
@@ -14,7 +14,7 @@ export type Simulation = {
 
 type Props = {
     action: VaultAction
-    formState: any
+    formState: FormState
     collateral: Collateral
     debt: Debt
 }
@@ -38,7 +38,7 @@ export function useSimulation({ action, formState, collateral, debt }: Props): S
             }
             case VaultAction.DEPOSIT_REPAY: {
                 const { deposit = '0', repay = '0' } = formState
-                if (Number(deposit) <= 0 && Number(repay) <= 0) return undefined
+                if (Number(deposit) <= 0 && Number(repay) <= 0 && !formState.repayAll) return undefined
                 return {
                     collateral: Number(deposit) > 0 ? deposit : undefined,
                     debt: Number(repay) > 0 ? repay : undefined,
@@ -46,7 +46,7 @@ export function useSimulation({ action, formState, collateral, debt }: Props): S
             }
             case VaultAction.WITHDRAW_REPAY: {
                 const { withdraw = '0', repay = '0' } = formState
-                if (Number(withdraw) <= 0 && Number(repay) <= 0) return undefined
+                if (Number(withdraw) <= 0 && Number(repay) <= 0 && !formState.repayAll) return undefined
                 return {
                     collateral: Number(withdraw) > 0 ? withdraw : undefined,
                     debt: Number(repay) > 0 ? repay : undefined,
@@ -76,7 +76,7 @@ export function useSimulation({ action, formState, collateral, debt }: Props): S
             currentPrice.liquidationPrice,
             liquidationCRatio
         )
-        const state = ratioChecker(Number(cr), Number(safetyCRatio))
+        const state = ratioChecker(Number(debt.total.after.raw) === 0 ? Infinity : Number(cr), Number(safetyCRatio))
         const status = riskStateToStatus[state] || Status.UNKNOWN
         return [cr, status]
     }, [simulation, collateral, debt])

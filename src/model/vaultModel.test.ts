@@ -1,5 +1,15 @@
 import { type EasyPeasyConfig, type Store, createStore } from 'easy-peasy'
+import type { JsonRpcSigner, TransactionResponse } from '@ethersproject/providers'
+import { vi } from 'vitest'
+import { handleDepositAndBorrow } from '~/services/blockchain'
+import { DEFAULT_VAULT_DATA, NETWORK_ID } from '~/utils'
 import { type VaultModel, vaultModel } from './vaultModel'
+import { transactionsModel } from './transactionsModel'
+import { popupsModel } from './popupsModel'
+
+vi.mock('~/services/blockchain', () => ({
+    handleDepositAndBorrow: vi.fn(),
+}))
 
 const liquidationDataMock = {
     currentRedemptionPrice: '3',
@@ -54,6 +64,32 @@ describe('vault model', () => {
     let store: Store<VaultModel, EasyPeasyConfig<{}, any>>
     beforeEach(() => {
         store = createStore(vaultModel)
+    })
+    it('records the submitted leg in transaction history before the receipt is available', async () => {
+        const tx = {
+            hash: 'depositHash',
+            from: 'owner',
+            chainId: NETWORK_ID,
+            wait: vi.fn(),
+        } as unknown as TransactionResponse
+        vi.mocked(handleDepositAndBorrow).mockResolvedValue(tx)
+        const appStore = createStore({ vaultModel, transactionsModel, popupsModel })
+        const signer = {} as JsonRpcSigner
+        const vaultData = { ...DEFAULT_VAULT_DATA, deposit: '1', repay: '2', withdraw: '3', borrow: '4' }
+        const submitted = await appStore
+            .getActions()
+            .vaultModel.submitVaultLeg({ signer, vaultId: '17', vaultData, leg: 'deposit' })
+        expect(handleDepositAndBorrow).toHaveBeenCalledWith(
+            signer,
+            { ...vaultData, repay: '', repayAll: false, withdraw: '', borrow: '' },
+            '17'
+        )
+        expect(appStore.getState().transactionsModel.transactions[tx.hash]).toMatchObject({
+            hash: tx.hash,
+            summary: 'Deposit collateral · Vault #17',
+        })
+        expect(appStore.getState().popupsModel.waitingPayload.hash).toBe(tx.hash)
+        expect(submitted.wait).not.toHaveBeenCalled()
     })
     describe('setLiquidationData', () => {
         it('sets Liquidation Data', () => {

@@ -1,17 +1,17 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { TransactionResponse } from '@ethersproject/providers'
 import { MaxUint256 } from '@ethersproject/constants'
-import { BigNumber, ethers } from 'ethers'
-import { useAccount } from 'wagmi'
+import { BigNumber } from 'ethers'
+import { erc20ABI, useAccount, useNetwork, usePublicClient } from 'wagmi'
+import { useQuery } from '@tanstack/react-query'
+import type { Address } from 'viem'
 
-import { ActionState, sanitizeDecimals } from '~/utils'
+import { ActionState, NETWORK_ID, parseTokenAmount } from '~/utils'
 import { useStoreActions } from '~/store'
 
 import { calculateGasMargin, handleTransactionError } from './TransactionHooks'
 import { useTokenContract } from './useContract'
 import { useGeb } from './useGeb'
-
-const decimals18 = BigNumber.from(10).pow(18)
 
 export enum ApprovalState {
     UNKNOWN,
@@ -21,61 +21,39 @@ export enum ApprovalState {
 }
 // checks for token allowance
 export function useTokenAllowance(tokenAddress?: string, owner?: string, spender?: string) {
-    const [allowance, setAllowance] = useState<BigNumber>()
-    const [loading, setLoading] = useState(false)
-    const contract = useTokenContract(tokenAddress, false)
-
-    useEffect(() => {
-        if (!owner || !spender || !contract) {
-            setAllowance(undefined)
-            setLoading(false)
-            return
-        }
-
-        let isStale = false
-        const fetchAllowance = async () => {
-            setLoading(true)
-            try {
-                const a = await contract.allowance(owner, spender)
-                if (isStale) return
-                setAllowance(a)
-            } catch (error: any) {
-                if (isStale) return
-                console.error(`An error occurred while fetching allowance:`, error)
-            } finally {
-                if (!isStale) setLoading(false)
-            }
-        }
-        fetchAllowance()
-
-        return () => {
-            isStale = true
-        }
-    }, [contract, owner, spender])
-
+    const { chain } = useNetwork()
+    const chainId = chain?.id ?? NETWORK_ID
+    const client = usePublicClient({ chainId })
+    const enabled = !!tokenAddress && !!owner && !!spender
+    const { data, refetch, isFetching, isError } = useQuery({
+        queryKey: [
+            'tokenAllowance',
+            chainId,
+            tokenAddress?.toLowerCase(),
+            owner?.toLowerCase(),
+            spender?.toLowerCase(),
+        ],
+        enabled,
+        staleTime: 0,
+        queryFn: async () =>
+            BigNumber.from(
+                await client.readContract({
+                    abi: erc20ABI,
+                    functionName: 'allowance',
+                    address: tokenAddress as Address,
+                    args: [owner as Address, spender as Address],
+                })
+            ),
+    })
     const updateAllowance = useCallback(async () => {
-        if (!owner || !spender || !contract) {
-            setAllowance(undefined)
-            setLoading(false)
-            return
-        }
+        if (enabled) await refetch()
+    }, [enabled, refetch])
 
-        setLoading(true)
-        try {
-            const a = await contract.allowance(owner, spender)
-            setAllowance(a)
-        } catch (error: any) {
-            console.error(`An error occurred while fetching allowance:`, error)
-        } finally {
-            setLoading(false)
-        }
-    }, [contract, owner, spender])
-
-    return { allowance, updateAllowance, loading }
+    return { allowance: enabled && !isError ? data : undefined, updateAllowance, loading: isFetching }
 }
 
 export function useTokenApproval(
-    amount: string, // in 18 decimals
+    amount: string,
     tokenAddress?: string,
     spender?: string,
     decimals: string = '18',
@@ -90,69 +68,23 @@ export function useTokenApproval(
         updateAllowance,
         loading: pendingAllowance,
     } = useTokenAllowance(tokenAddress, account ?? undefined, spender)
-    const tokenDecimals = BigNumber.from(10).pow(decimals)
     const [loading, setLoading] = useState(false)
 
-    // Formatted approval amount (with 18 decimals)
     const approvalAmount = useMemo(() => {
-        if (!amount) return BigNumber.from(0)
+        const amountInBaseUnits = parseTokenAmount(amount, Number(decimals))
+        // Keep the existing approval buffer for debt accrued before the transaction is mined.
+        if (!amountInBaseUnits) return undefined
+        const buffered = amountInBaseUnits.mul(101).div(100)
+        return buffered.gt(MaxUint256) ? MaxUint256 : buffered
+    }, [amount, decimals])
 
-        // cut decimals to avoid underflow error
-        const formattedAmount = sanitizeDecimals(amount, 18)
-        // Format the amount to 18 decimals
-        const approvalAmount = ethers.utils.parseEther(formattedAmount).mul(tokenDecimals).div(decimals18)
-
-        // always approve a slightly higher amount just in case
-        return approvalAmount.mul(101).div(100)
-        // Add 1% to the approval amount in case that the debt increses
-        // if (isRepayAll) {
-        //     return approvalAmount.mul(101).div(100)
-        // } else {
-        //     return approvalAmount
-        // }
-    }, [amount, tokenDecimals])
-
-    // check the current approval status
     const approvalState: ApprovalState = useMemo(() => {
-        console.log('=== useTokenApproval DEBUG ===')
-        console.log('amount:', amount)
-        console.log('tokenAddress:', tokenAddress)
-        console.log('spender:', spender)
-        console.log('geb:', !!geb)
-        console.log('currentAllowance:', currentAllowance?.toString())
-        console.log('approvalAmount:', approvalAmount?.toString())
-        console.log('pendingAllowance:', pendingAllowance)
-        console.log('loading:', loading)
-
-        if (!amount || !tokenAddress || !spender || !geb) {
-            console.log('RESULT: UNKNOWN (missing params)')
-            return ApprovalState.UNKNOWN
-        }
-
-        // we might not have enough data to know whether or not we need to approve
-        if (!currentAllowance) {
-            console.log('RESULT: UNKNOWN (no currentAllowance yet)')
-            return ApprovalState.UNKNOWN
-        }
-
-        // amountToApprove will be defined if currentAllowance is
-        const needsApproval = currentAllowance.lt(approvalAmount)
-        console.log('currentAllowance.lt(approvalAmount):', needsApproval)
-        console.log('currentAllowance:', currentAllowance.toString())
-        console.log('approvalAmount:', approvalAmount.toString())
-
-        if (needsApproval) {
-            if (pendingAllowance || loading) {
-                console.log('RESULT: PENDING')
-                return ApprovalState.PENDING
-            }
-            console.log('RESULT: NOT_APPROVED')
-            return ApprovalState.NOT_APPROVED
-        }
-
-        console.log('RESULT: APPROVED (allowance >= amount needed)')
-        return ApprovalState.APPROVED
-    }, [amount, tokenAddress, spender, geb, currentAllowance, approvalAmount, pendingAllowance, loading])
+        if (!amount || !tokenAddress || !spender || !geb || !approvalAmount) return ApprovalState.UNKNOWN
+        if (approvalAmount.isZero()) return ApprovalState.APPROVED
+        if (!currentAllowance) return ApprovalState.UNKNOWN
+        if (currentAllowance.gte(approvalAmount)) return ApprovalState.APPROVED
+        return pendingAllowance || loading ? ApprovalState.PENDING : ApprovalState.NOT_APPROVED
+    }, [amount, tokenAddress, spender, geb, approvalAmount, currentAllowance, pendingAllowance, loading])
 
     const tokenContract = useTokenContract(tokenAddress)
 
@@ -171,7 +103,7 @@ export function useTokenApproval(
             return
         }
 
-        if (!amount) {
+        if (!approvalAmount) {
             console.error('missing amount to approve')
             return
         }
@@ -188,19 +120,18 @@ export function useTokenApproval(
             status: ActionState.LOADING,
         })
 
-        let useExact = exactApproval
-        const estimatedGas = await tokenContract.estimateGas.approve(spender, MaxUint256).catch(() => {
-            // general fallback for tokens who restrict approval amounts
-            useExact = true
-            return tokenContract.estimateGas.approve(spender, approvalAmount.toString())
-        })
         setLoading(true)
         try {
-            const txResponse: TransactionResponse = await tokenContract.approve(
-                spender,
-                useExact ? approvalAmount.toString() : MaxUint256,
-                { gasLimit: calculateGasMargin(estimatedGas) }
-            )
+            let amountToApprove = exactApproval ? approvalAmount : MaxUint256
+            const estimatedGas = await tokenContract.estimateGas.approve(spender, amountToApprove).catch((error) => {
+                if (exactApproval) throw error
+                // Some tokens restrict unlimited approvals.
+                amountToApprove = approvalAmount
+                return tokenContract.estimateGas.approve(spender, amountToApprove)
+            })
+            const txResponse: TransactionResponse = await tokenContract.approve(spender, amountToApprove, {
+                gasLimit: calculateGasMargin(estimatedGas),
+            })
             const { hash, chainId } = txResponse
             transactionsActions.addTransaction({
                 chainId,
@@ -234,7 +165,6 @@ export function useTokenApproval(
         approvalState,
         tokenAddress,
         tokenContract,
-        amount,
         spender,
         exactApproval,
         approvalAmount,

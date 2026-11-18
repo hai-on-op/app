@@ -72,7 +72,7 @@ export const returnTotalValue = (
     isRepay = false,
     type: keyof typeof floatsTypes = 'WAD'
 ) => {
-    const firstBN = first ? BigNumber.from(toFixedString(Number(first).toString(), type)) : BigNumber.from('0')
+    const firstBN = first ? BigNumber.from(toFixedString(first, type)) : BigNumber.from('0')
     const secondBN = second ? BigNumber.from(toFixedString(second, type)) : BigNumber.from('0')
 
     const totalBN = isRepay ? firstBN.sub(secondBN) : firstBN.add(secondBN)

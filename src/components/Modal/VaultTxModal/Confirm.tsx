@@ -1,9 +1,9 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
-import { BigNumber } from 'ethers'
 import { useAccount, useNetwork } from 'wagmi'
 
+import type { VaultLeg } from '~/types'
 import { NETWORK_ID, DEFAULT_VAULT_DATA, ActionState, VaultAction } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
 import { useVault } from '~/providers/VaultProvider'
@@ -13,6 +13,13 @@ import styled from 'styled-components'
 import { HaiButton, Text } from '~/styles'
 import { TransactionSummary } from '~/components/TransactionSummary'
 import { ModalBody, ModalFooter } from '../index'
+
+const legNames: Record<VaultLeg, string> = {
+    deposit: 'deposit',
+    withdraw: 'withdrawal',
+    repay: 'repayment',
+    borrow: 'borrowing transaction',
+}
 
 type ConfirmProps = {
     onClose?: () => void
@@ -35,24 +42,43 @@ export function Confirm({ onClose }: ConfirmProps) {
         vaultModel: vaultActions,
     } = useStoreActions((actions) => actions)
 
-    const { action, updateForm, collateral, summary, error, errorMessage } = useVault()
-    const canConfirm = !!account && !!signer && error === undefined && transactionState !== ActionState.LOADING
+    const { action, updateForm, collateral, summary, error, errorMessage, debtLimitNotice } = useVault()
+    const canConfirm =
+        !!account &&
+        !!signer &&
+        chain?.id === NETWORK_ID &&
+        error === undefined &&
+        transactionState !== ActionState.LOADING
 
+    // Leaving this review or switching wallets must not prompt for a later transaction.
+    const reviewScope = useRef<AbortController>()
+    useEffect(() => {
+        const scope = new AbortController()
+        reviewScope.current = scope
+        return () => scope.abort()
+    }, [account, chain?.id, singleVault?.id])
+
+    const repayingInFull =
+        (action === VaultAction.DEPOSIT_REPAY || action === VaultAction.WITHDRAW_REPAY) && vaultData.repayAll
     const notice = useMemo(() => {
         switch (action) {
             case VaultAction.DEPOSIT_REPAY:
-                return `Note: Depositing and repaying in the same transaction is not currently supported, so you will be prompted to approve two separate transactions`
+                return Number(vaultData.deposit) > 0 && (vaultData.repayAll || Number(vaultData.repay) > 0)
+                    ? 'Your wallet will ask you to confirm the deposit and repayment separately.'
+                    : undefined
             case VaultAction.WITHDRAW_BORROW:
-                return `Note: Withdrawing and borrowing in the same transaction is not currently supported, so you will be prompted to approve two separate transactions`
+                return Number(vaultData.withdraw) > 0 && Number(vaultData.borrow) > 0
+                    ? 'Your wallet will ask you to confirm the withdrawal and borrowing separately.'
+                    : undefined
             default:
                 return undefined
         }
-    }, [action])
+    }, [action, vaultData.deposit, vaultData.repay, vaultData.repayAll, vaultData.withdraw, vaultData.borrow])
 
     const reset = () => {
         updateForm('clear')
         vaultActions.setVaultData(DEFAULT_VAULT_DATA)
-        connectWalletActions.setIsStepLoading(true)
+        connectWalletActions.setIsStepLoading(false)
         vaultActions.fetchUserVaults({
             address: account as string,
             geb,
@@ -62,7 +88,8 @@ export function Confirm({ onClose }: ConfirmProps) {
     }
 
     const handleConfirm = async () => {
-        if (!canConfirm || !signer) return
+        const signal = reviewScope.current?.signal
+        if (!canConfirm || !signer || !signal || signal.aborted) return
 
         vaultActions.setTransactionState(ActionState.LOADING)
         popupsActions.setIsWaitingModalOpen(true)
@@ -72,6 +99,9 @@ export function Confirm({ onClose }: ConfirmProps) {
             hint: 'Confirm this transaction in your wallet',
             status: ActionState.LOADING,
         })
+        let confirmedLeg: { name: VaultLeg; hash: string } | undefined
+        let pendingLeg: { name: VaultLeg; hash: string } | undefined
+        let nextLeg: VaultLeg | undefined
         try {
             connectWalletActions.setIsStepLoading(true)
             switch (action) {
@@ -92,35 +122,34 @@ export function Confirm({ onClose }: ConfirmProps) {
                     })
                     break
                 }
-                case VaultAction.DEPOSIT_REPAY: {
+                case VaultAction.DEPOSIT_REPAY:
+                case VaultAction.WITHDRAW_BORROW: {
                     if (!singleVault) throw new Error('Vault marked for modification, but no vault is selected')
-                    if (BigNumber.from(vaultData.deposit || '0').isZero()) {
-                        await vaultActions.repayAndWithdraw({
+                    const legs: VaultLeg[] =
+                        action === VaultAction.DEPOSIT_REPAY ? ['deposit', 'repay'] : ['withdraw', 'borrow']
+                    for (const leg of legs) {
+                        if (!(Number(vaultData[leg]) > 0 || (leg === 'repay' && vaultData.repayAll))) continue
+                        nextLeg = leg
+                        if (signal.aborted) throw new Error('The vault review changed before the next transaction.')
+                        const tx = await vaultActions.submitVaultLeg({
                             vaultData,
                             signer,
                             vaultId: singleVault.id,
+                            leg,
                         })
-                    } else {
-                        await vaultActions.depositAndRepay({
-                            vaultData,
-                            signer,
-                            vaultId: singleVault.id,
-                        })
+                        pendingLeg = { name: leg, hash: tx.hash }
+                        if (!signal.aborted) updateForm({ [leg]: undefined })
+                        await tx.wait()
+                        confirmedLeg = pendingLeg
+                        pendingLeg = undefined
+                        connectWalletActions.setForceUpdateTokens(true)
                     }
+                    if (!confirmedLeg) throw new Error('Enter an amount to modify your vault.')
                     break
                 }
                 case VaultAction.WITHDRAW_REPAY: {
                     if (!singleVault) throw new Error('Vault marked for modification, but no vault is selected')
                     await vaultActions.repayAndWithdraw({
-                        vaultData,
-                        signer,
-                        vaultId: singleVault.id,
-                    })
-                    break
-                }
-                case VaultAction.WITHDRAW_BORROW: {
-                    if (!singleVault) throw new Error('Vault marked for modification, but no vault is selected')
-                    await vaultActions.withdrawAndBorrow({
                         vaultData,
                         signer,
                         vaultId: singleVault.id,
@@ -133,11 +162,33 @@ export function Confirm({ onClose }: ConfirmProps) {
             vaultActions.setTransactionState(ActionState.SUCCESS)
             popupsActions.setIsWaitingModalOpen(false)
             popupsActions.setWaitingPayload({ status: ActionState.NONE })
-            onClose?.()
-            reset()
+            if (!signal.aborted) {
+                reset()
+                onClose?.()
+            }
         } catch (e: any) {
             vaultActions.setTransactionState(ActionState.ERROR)
-            handleTransactionError(e)
+            connectWalletActions.setIsStepLoading(false)
+            if (pendingLeg || confirmedLeg) {
+                // A hash already exists. Close the original review so it cannot repeat a submitted leg.
+                if (!signal.aborted) {
+                    reset()
+                    onClose?.()
+                }
+                const confirmed = confirmedLeg ? `Your ${legNames[confirmedLeg.name]} confirmed. ` : ''
+                const remaining = pendingLeg
+                    ? 'Check the linked transaction before submitting it again.'
+                    : `Your ${legNames[nextLeg!]} was not submitted. Review that amount on your vault.`
+                popupsActions.setIsWaitingModalOpen(true)
+                popupsActions.setWaitingPayload({
+                    title: 'Vault transaction update',
+                    text: confirmed + remaining,
+                    hash: pendingLeg?.hash ?? confirmedLeg?.hash,
+                    status: ActionState.ERROR,
+                })
+            } else {
+                handleTransactionError(e)
+            }
         }
     }
 
@@ -179,7 +230,14 @@ export function Confirm({ onClose }: ConfirmProps) {
                         },
                     ]}
                 />
+                {repayingInFull && (
+                    <Text>
+                        Paying off this vault settles its full debt, including fees accrued before the transaction
+                        confirms.
+                    </Text>
+                )}
                 {errorMessage && <Text role="alert">{errorMessage}</Text>}
+                {debtLimitNotice && <Text role="status">{debtLimitNotice}</Text>}
                 {!!notice && (
                     <Text $fontSize="0.8em" $color="rgba(0,0,0,0.4)">
                         {notice}

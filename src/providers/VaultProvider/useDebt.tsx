@@ -1,120 +1,98 @@
 import { useMemo } from 'react'
+import { BigNumber } from 'ethers'
 import { formatEther } from 'ethers/lib/utils'
+import { utils as gebUtils } from '@hai-on-op/sdk'
 
-import type { CollateralLiquidationData, Debt, FormState } from '~/types'
-import { VaultAction, formatSummaryValue, returnAvaiableDebt, returnTotalDebt, returnTotalValue } from '~/utils'
+import type { Collateral, Debt, FormState } from '~/types'
+import { VaultAction, formatSummaryValue, getBorrowableHai, toFixedString } from '~/utils'
+import { type VaultDebtLimits, getGeneratedDebtWad, getMaxBorrowWad } from '~/services/vaultDebtLimits'
 import { useStoreState } from '~/store'
 import { useBalance } from '~/hooks'
 
 export function useDebt(
     action: VaultAction,
     formState: FormState,
-    collateralLiquidationData?: CollateralLiquidationData
+    collateral: Collateral,
+    limits?: VaultDebtLimits
 ): Debt {
     const {
         vaultModel: { liquidationData, singleVault },
         connectWalletModel: { tokensData },
     } = useStoreState((state) => state)
 
-    const { accumulatedRate = '0' } = collateralLiquidationData || {}
+    const { accumulatedRate = '0', currentPrice } = collateral.liquidationData || {}
 
-    const total: Debt['total'] = useMemo(() => {
-        if (!singleVault)
-            return {
-                current: undefined,
-                after: formatSummaryValue(formState.borrow || '0', { maxDecimals: 4 })!,
-            }
+    const { total, payoff, afterRad } = useMemo(() => {
+        const { RAY } = gebUtils
+        const zero = BigNumber.from(0)
+        const rate = limits?.rateRay ?? BigNumber.from(toFixedString(accumulatedRate, 'RAY'))
+        const normalizedDebt = limits?.safeDebtWad ?? BigNumber.from(toFixedString(singleVault?.debt || '0', 'WAD'))
+        const debtRad = normalizedDebt.mul(rate)
+        const repaying = action === VaultAction.DEPOSIT_REPAY || action === VaultAction.WITHDRAW_REPAY
+        const withWithdrawal =
+            (action === VaultAction.WITHDRAW_REPAY || action === VaultAction.WITHDRAW_BORROW) &&
+            Number(formState.withdraw) > 0
+        // Standalone repayAllDebt spends the proxy's internal coins. The combined payoff spends the handler's.
+        const payoffCredit = (withWithdrawal ? limits?.creditRad : limits?.proxyCreditRad) ?? zero
+        const formatDebt = (rad: BigNumber) =>
+            formatSummaryValue(formatEther(rad.add(RAY.sub(1)).div(RAY)), { maxDecimals: 4, minSigFigs: 1 })!
+        // _getRepaidDebt subtracts credit without capping it. An excess balance would underflow.
+        const payoff = debtRad.gt(0) && payoffCredit.lte(debtRad) ? formatDebt(debtRad.sub(payoffCredit)) : undefined
 
-        const current = formatSummaryValue(formatEther(returnTotalDebt(singleVault.debt, accumulatedRate, false)), {
-            maxDecimals: 4,
-            minSigFigs: 1,
-        })!
-        switch (action) {
-            case VaultAction.DEPOSIT_REPAY:
-            case VaultAction.WITHDRAW_REPAY: {
-                const valueBN =
-                    Math.abs(parseFloat(current.raw) - parseFloat(formState.repay || '0')) < 0.1
-                        ? '0'
-                        : returnTotalValue(current.raw, formState.repay || '0', false, true).toString()
-                return {
-                    current,
-                    after: formatSummaryValue(formatEther(valueBN), { maxDecimals: 4 })!,
-                }
+        let afterRad = debtRad
+        if (repaying) {
+            const repay = BigNumber.from(toFixedString(formState.repay || '0', 'WAD'))
+            if (formState.repayAll && payoff) afterRad = zero
+            else if (repay.gt(0) && rate.gt(0)) {
+                // Both fixed-amount methods consume all available SAFE handler coins, capped at its debt.
+                const availableRad = repay.mul(RAY).add(limits?.creditRad ?? zero)
+                const cancelled = availableRad.div(rate)
+                afterRad = cancelled.gte(normalizedDebt) ? zero : normalizedDebt.sub(cancelled).mul(rate)
             }
-            case VaultAction.CREATE:
-            case VaultAction.DEPOSIT_BORROW:
-            case VaultAction.WITHDRAW_BORROW:
-            default: {
-                const valueBN = returnTotalValue(current.raw, formState.borrow || '0', false, false).toString()
-                return {
-                    current,
-                    after: formatSummaryValue(formatEther(valueBN), { maxDecimals: 4 })!,
-                }
-            }
+        } else {
+            const borrow = BigNumber.from(toFixedString(formState.borrow || '0', 'WAD'))
+            afterRad = debtRad.add(limits ? getGeneratedDebtWad(borrow, limits).mul(rate) : borrow.mul(RAY))
         }
-        // if (action === VaultAction.WITHDRAW_REPAY) {
-        //     return returnTotalValue(
-        //         returnTotalDebt(singleVault.debt, accumulatedRate) as string,
-        //         rightInput,
-        //         true,
-        //         true
-        //     ).toString()
-        // }
-        // return returnTotalValue(returnTotalDebt(singleVault.debt, accumulatedRate) as string, rightInput).toString()
-    }, [singleVault, formState.borrow, formState.repay, action, accumulatedRate])
 
-    const available: Debt['available'] = useMemo(() => {
-        if (!collateralLiquidationData?.currentPrice.safetyPrice) return formatSummaryValue('0')!
-        if (!singleVault || action === VaultAction.CREATE)
-            return formatSummaryValue(
-                returnAvaiableDebt(
-                    collateralLiquidationData.currentPrice.safetyPrice,
-                    accumulatedRate,
-                    formState.deposit || '0'
-                ),
+        return {
+            total: { current: singleVault ? formatDebt(debtRad) : undefined, after: formatDebt(afterRad) },
+            payoff,
+            afterRad: afterRad.toString(),
+        }
+    }, [
+        singleVault,
+        formState.borrow,
+        formState.repay,
+        formState.repayAll,
+        formState.withdraw,
+        action,
+        accumulatedRate,
+        limits,
+    ])
+
+    const available = useMemo(
+        () =>
+            formatSummaryValue(
+                limits
+                    ? formatEther(
+                          getMaxBorrowWad(BigNumber.from(toFixedString(collateral.total.after.raw, 'WAD')), limits)
+                      )
+                    : getBorrowableHai(
+                          collateral.total.after.raw,
+                          singleVault?.debt || '0',
+                          accumulatedRate,
+                          currentPrice?.safetyPrice
+                      ),
                 { maxDecimals: 4, minSigFigs: 1 }
-            )!
-
-        return formatSummaryValue(
-            returnAvaiableDebt(
-                collateralLiquidationData.currentPrice.safetyPrice,
-                accumulatedRate,
-                formState.deposit || '0',
-                singleVault.collateral,
-                singleVault.debt
-            ),
-            { maxDecimals: 4, minSigFigs: 1 }
-        )!
-        // switch (action) {
-        //     case VaultAction.DEPOSIT_BORROW:
-        //     case VaultAction.WITHDRAW_BORROW:
-        //         return returnAvaiableDebt(
-        //             collateralLiquidationData.currentPrice.safetyPrice,
-        //             accumulatedRate,
-        //             deposit,
-        //             singleVault.collateral,
-        //             singleVault.debt
-        //         )
-        //     case VaultAction.DEPOSIT_REPAY:
-        //     case VaultAction.WITHDRAW_REPAY:
-        //     default:
-        //         return returnTotalDebt(singleVault.debt, accumulatedRate).toString()
-        // }
-        // if (action === VaultAction.DEPOSIT_BORROW) {
-        //     return returnAvaiableDebt(
-        //         collateralLiquidationData.currentPrice.safetyPrice,
-        //         accumulatedRate,
-        //         leftInput,
-        //         singleVault.collateral,
-        //         singleVault.debt
-        //     )
-        // }
-        // return returnTotalDebt(singleVault.debt, accumulatedRate).toString()
-    }, [collateralLiquidationData, accumulatedRate, singleVault, action, formState.deposit])
+            )!,
+        [collateral.total.after.raw, singleVault?.debt, accumulatedRate, currentPrice?.safetyPrice, limits]
+    )
 
     return {
         data: tokensData?.HAI,
-        total: total,
+        total,
+        payoff,
+        afterRad,
         available,
         balance: useBalance('HAI'),
         priceInUSD: liquidationData?.currentRedemptionPrice || '1',
