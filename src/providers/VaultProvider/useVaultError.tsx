@@ -156,10 +156,9 @@ export function useVaultError({ action, formState, collateral, debt, isSafe, lim
         }
     }
     const requiresSafeVault = withdrawing || (generated ? generated.gt(0) : increasingDebt)
-    const safeAfter =
-        limits && (generated || repaying)
-            ? issuedRad.lte(BigNumber.from(toFixedString(collateral.total.after.raw, 'WAD')).mul(limits.safetyPriceRay))
-            : isSafe
+    const safeAfter = limits
+        ? issuedRad.lte(BigNumber.from(toFixedString(collateral.total.after.raw, 'WAD')).mul(limits.safetyPriceRay))
+        : isSafe
     if (requiresSafeVault && !safeAfter) {
         return {
             error: VaultInfoError.COLLATERAL_RATIO,
