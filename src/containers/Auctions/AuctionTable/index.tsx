@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 import type { IAuction, SetState, SortableHeader, Sorting } from '~/types'
-import { tokenMap } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
-import { useGeb } from '~/hooks'
 
 import styled from 'styled-components'
 import { Flex, Grid } from '~/styles'
@@ -27,20 +25,6 @@ export function AuctionTable({ headers, rows, sorting, setSorting, isLoading, er
         auctionModel: { selectedAuction },
     } = useStoreState((state) => state)
     const { auctionModel: auctionActions, popupsModel: popupsActions } = useStoreActions((actions) => actions)
-
-    const geb = useGeb()
-
-    useEffect(() => {
-        if (!selectedAuction) return
-
-        const { sellToken } = selectedAuction
-        auctionActions.fetchCollateralData({
-            geb,
-            collateral: tokenMap[sellToken] || sellToken,
-            // auctionIds: rows.filter(({ sellToken: token }) => token === sellToken).map(({ auctionId }) => auctionId),
-            auctionIds: [selectedAuction.auctionId],
-        })
-    }, [selectedAuction, rows, geb, auctionActions])
 
     useEffect(() => {
         popupsActions.toggleModal({

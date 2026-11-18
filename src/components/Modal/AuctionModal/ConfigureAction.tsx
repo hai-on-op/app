@@ -1,13 +1,14 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { BigNumber, constants } from 'ethers'
-import { formatEther, formatUnits, parseEther } from 'ethers/lib/utils'
-import { utils as gebUtils } from '@hai-on-op/sdk'
+import { BigNumber } from 'ethers'
+import { formatEther, parseEther } from 'ethers/lib/utils'
+import { fetchCollateralAuctionData, utils as gebUtils } from '@hai-on-op/sdk'
+import { useQuery } from '@tanstack/react-query'
 
 import type { IAuction } from '~/types'
-import { Status, formatNumberWithStyle, sanitizeDecimals, toFixedString } from '~/utils'
+import { NETWORK_ID, Status, formatNumberWithStyle, toFixedString } from '~/utils'
 import { useStoreActions, useStoreState } from '~/store'
-import { useAuction, useBalances } from '~/hooks'
+import { useAuction, useBalances, usePublicGeb } from '~/hooks'
 
 import styled from 'styled-components'
 import { Flex, HaiButton, Text } from '~/styles'
@@ -17,6 +18,14 @@ import { TransactionSummary } from '~/components/TransactionSummary'
 
 function parseWadAmount(amount?: string) {
     return amount ? BigNumber.from(toFixedString(amount, 'WAD')) : BigNumber.from(0)
+}
+
+function parseBidInput(value: string) {
+    try {
+        return parseEther(value || '0')
+    } catch {
+        return null
+    }
 }
 
 const DEFAULT_BID_CHANGES = {
@@ -33,7 +42,7 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
     const { t } = useTranslation()
 
     const {
-        auctionModel: { amount, auctionsData, collateralAmount, collateralData, internalBalance, protInternalBalance },
+        auctionModel: { amount, auctionsData, collateralAmount, internalBalance, protInternalBalance },
         connectWalletModel: { coinAllowance: haiAllowance = '0', protAllowance: kiteAllowance = '0' },
     } = useStoreState((state) => state)
 
@@ -42,11 +51,9 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
     const kiteBalance = kiteBal.raw || '0'
     const { auctionModel: auctionActions } = useStoreActions((actions) => actions)
 
-    const { buyToken, sellToken, remainingToSell } = useAuction(auction)
+    const { buyToken, sellToken } = useAuction(auction)
 
     const [error, setError] = useState('')
-    // const [value, setValue] = useState('')
-    // const [collateralValue, setCollateralValue] = useState('')
 
     const [bidIncrease, bidDecrease] = useMemo(() => {
         return !auctionsData
@@ -57,54 +64,46 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
               ]
     }, [auctionsData])
 
-    const collateralPrice = useMemo(() => {
-        if (!collateralData || auction.englishAuctionType !== 'COLLATERAL') {
-            return {
-                raw: BigNumber.from(0),
-                formatted: '0',
-            }
-        }
-
-        const [data = undefined] = collateralData.filter((item) => item._auctionId.toString() === auction.auctionId)
-        const price =
-            !data?._adjustedBid.gt(0) || !data?._boughtCollateral.gt(0)
-                ? constants.WeiPerEther
-                : data._boughtCollateral.mul(constants.WeiPerEther).div(data._adjustedBid)
-        return {
-            raw: price,
-            formatted: formatUnits(price, 18),
-        }
-    }, [auction, collateralData])
-
-    const handleAmountChange = useCallback(
-        (val: string) => {
-            setError('')
-            // setValue(val)
-            auctionActions.setAmount(val)
-            const valBN = parseEther(val || '0')
-            const colValueBN = valBN.mul(collateralPrice.raw).div(constants.WeiPerEther)
-            const colValueBNDecimalsRemoved = gebUtils.decimalShift(gebUtils.decimalShift(colValueBN, -8), 8)
-
-            const formatted = formatEther(colValueBNDecimalsRemoved.toString())
-            // setCollateralValue(formatted)
-            auctionActions.setCollateralAmount(formatted)
+    const isCollateral = auction.englishAuctionType === 'COLLATERAL'
+    const isBid = action.includes('bid') || action.includes('buy')
+    const geb = usePublicGeb()
+    const { data: quote, isFetching: fetchingQuote } = useQuery({
+        queryKey: ['auctionQuote', NETWORK_ID, auction.sellToken, auction.auctionId],
+        enabled: isCollateral && isBid,
+        cacheTime: 0,
+        refetchOnWindowFocus: false,
+        queryFn: async () => {
+            const [result] = await fetchCollateralAuctionData(geb, auction.sellToken, [auction.auctionId])
+            return result?._adjustedBid.gt(0) && result._boughtCollateral.gt(0) ? result : null
         },
-        [collateralPrice.raw, auctionActions]
-    )
+    })
 
-    const handleCollateralAmountChange = useCallback(
-        (amount: string) => {
-            setError('')
-            // setCollateralValue(amount)
-            auctionActions.setCollateralAmount(amount)
+    const handleAmountChange = (value: string) => {
+        setError('')
+        auctionActions.setAmount(value)
+        if (!isCollateral) return
+        const bid = parseBidInput(value)
+        if (!value || !bid || !quote) {
+            auctionActions.setCollateralAmount('')
+            return
+        }
+        const bought = bid.mul(quote._boughtCollateral).div(quote._adjustedBid)
+        // Keep the existing precision for the minimum collateral passed to the proxy.
+        auctionActions.setCollateralAmount(formatEther(bought.div(100_000_000).mul(100_000_000)))
+    }
 
-            const value = (Number(amount) / Number(collateralPrice.formatted)).toString() || ''
-            const sanitizedValue = sanitizeDecimals(value, 18)
-            // setValue(sanitizedValue)
-            auctionActions.setAmount(sanitizedValue)
-        },
-        [collateralPrice.formatted, auctionActions]
-    )
+    const handleCollateralAmountChange = (value: string) => {
+        setError('')
+        auctionActions.setCollateralAmount(value)
+        const collateral = parseBidInput(value)
+        if (!value || !collateral || !quote) {
+            auctionActions.setAmount('')
+            return
+        }
+        // Round up to the first wei of HAI that covers the requested minimum collateral.
+        const bid = collateral.mul(quote._adjustedBid).add(quote._boughtCollateral.sub(1)).div(quote._boughtCollateral)
+        auctionActions.setAmount(formatEther(bid))
+    }
 
     const maxBid = useMemo(() => {
         const buyAmountBN = parseWadAmount(auction.buyAmount)
@@ -134,26 +133,33 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
     const maxAmount = useMemo(() => {
         if (auction.englishAuctionType !== 'COLLATERAL') return maxBid
 
-        const haiToBidPlusOne = BigNumber.from((auction as any).remainingToRaiseE18 || '0').add(1)
-        const haiToBid = formatUnits(haiToBidPlusOne.toString(), 18)
-
-        return Number(haiBalance) < Number(haiToBid) ? haiBalance : haiToBid.toString()
+        const haiToBidPlusOne = BigNumber.from(auction.remainingToRaiseE18 || '0').add(1)
+        const balance = parseWadAmount(haiBalance)
+        return formatEther(balance.lt(haiToBidPlusOne) ? balance : haiToBidPlusOne)
     }, [auction, maxBid, haiBalance])
 
     const maxCollateral = useMemo(() => {
-        const convertedAmountBN = parseEther(maxAmount).mul(collateralPrice.raw).div(constants.WeiPerEther)
-        const convertedAmount = formatEther(convertedAmountBN)
-        const max = Math.min(parseFloat(convertedAmount), parseFloat(remainingToSell || '0')).toString()
-        return {
-            raw: max,
-            formatted: formatNumberWithStyle(max, { maxDecimals: 4 }),
-        }
-    }, [maxAmount, collateralPrice.raw, remainingToSell])
+        const converted = quote
+            ? parseWadAmount(maxAmount).mul(quote._boughtCollateral).div(quote._adjustedBid)
+            : BigNumber.from(0)
+        const remaining = BigNumber.from(auction.remainingCollateral || '0')
+        const raw = formatEther(converted.lt(remaining) ? converted : remaining)
+        return { raw, formatted: formatNumberWithStyle(raw, { maxDecimals: 4 }) }
+    }, [maxAmount, quote, auction.remainingCollateral])
 
     const passesChecks = useCallback(() => {
         const maxBidAmountBN = parseWadAmount(maxBid)
         const maxAmountBN = parseWadAmount(maxAmount)
-        const valueBN = parseWadAmount(amount)
+        const valueBN = parseBidInput(amount)
+        const collateralBN = parseBidInput(collateralAmount)
+        if (!valueBN || (isCollateral && !collateralBN)) {
+            setError('Enter a decimal amount with up to 18 decimal places.')
+            return false
+        }
+        if (isCollateral && !quote) {
+            setError('A collateral quote is unavailable for this auction.')
+            return false
+        }
         const haiBalanceBN = parseWadAmount(haiBalance)
         const kiteBalanceBN = parseWadAmount(kiteBalance)
         const internalBalanceBN =
@@ -168,15 +174,7 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
         const totalKiteBalance = kiteBalanceBN.add(kiteInternalBalanceBN)
 
         const buyAmountBN = parseWadAmount(auction.buyAmount)
-        // console.log({
-        //     hai: haiBalanceBN.toString(),
-        //     kite: kiteBalanceBN.toString(),
-        //     value: valueBN.toString(),
-        //     maxBid: maxBidAmountBN.toString(),
-        //     buy: buyAmountBN.toString(),
-        // })
-
-        if (valueBN.lt(0)) {
+        if (valueBN.lt(0) || (isCollateral && collateralBN?.lt(0))) {
             setError('You cannot bid a negative number')
             return false
         }
@@ -229,9 +227,7 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
                     setError(`You cannot bid more than the max`)
                     return false
                 }
-                const collateralAmountBN = parseWadAmount(collateralAmount)
-                // Collateral Error when there is not enough collateral left to buy
-                if (collateralAmountBN.gt((auction as any).remainingCollateral)) {
+                if (collateralBN?.gt(auction.remainingCollateral || '0')) {
                     setError(`Insufficient ${auction.tokenSymbol} to buy.`)
                     return false
                 }
@@ -248,6 +244,8 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
         collateralAmount,
         bidIncrease,
         bidDecrease,
+        isCollateral,
+        quote,
         haiBalance,
         kiteBalance,
         internalBalance,
@@ -273,7 +271,7 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
     }, [haiAllowance, kiteAllowance, amount, auction])
 
     const handleSubmit = useCallback(() => {
-        if (action.includes('buy') || action.includes('bid')) {
+        if (isBid) {
             if (!passesChecks()) return
             const shouldSkipAllowanceCheck = hasAllowance()
             nextStep(shouldSkipAllowanceCheck)
@@ -283,7 +281,7 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
             auctionActions.setAmount(protInternalBalance)
         }
         nextStep(true)
-    }, [action, auctionActions, nextStep, passesChecks, hasAllowance, auction.englishAuctionType, protInternalBalance])
+    }, [isBid, auctionActions, nextStep, passesChecks, hasAllowance, auction.englishAuctionType, protInternalBalance])
 
     const claimValues = useMemo(() => {
         return Number(protInternalBalance) > Number(internalBalance)
@@ -350,24 +348,25 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
                 {!action.includes('settle') && !action.includes('claim') ? (
                     <>
                         <NumberInput
-                            disabled={auction.englishAuctionType !== 'COLLATERAL'}
+                            disabled={!isCollateral || !quote}
                             label={upperInput.label}
                             subLabel={upperInput.subLabel || ''}
                             placeholder="0.00"
                             value={upperInput.value}
                             onChange={handleCollateralAmountChange}
                             onMax={() => {
-                                if (collateralPrice.raw.isZero()) return
+                                if (!quote) return
                                 handleCollateralAmountChange(maxCollateral.raw)
                             }}
                         />
                         <NumberInput
+                            disabled={isCollateral && !quote}
                             label={lowerInput.label}
                             subLabel={lowerInput.subLabel}
                             placeholder="0.00"
                             value={lowerInput.value}
                             onChange={handleAmountChange}
-                            onMax={() => handleAmountChange(maxAmount)}
+                            onMax={isCollateral && !quote ? undefined : () => handleAmountChange(maxAmount)}
                         />
                     </>
                 ) : (
@@ -379,6 +378,9 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
                         value={action.includes('claim') ? claimValues.amount.toLocaleString() : auction.sellAmount}
                         onChange={() => undefined}
                     />
+                )}
+                {isCollateral && isBid && !quote && (
+                    <Text>{fetchingQuote ? 'Loading auction quote…' : 'Auction quote unavailable.'}</Text>
                 )}
                 {error && <Error>{error}</Error>}
                 <TransactionSummary
@@ -412,7 +414,7 @@ export function ConfigureAction({ auction, action, nextStep }: ConfigureActionPr
             </ModalBody>
             <ModalFooter>
                 <Flex $width="100%" $justify="flex-end" $align="center">
-                    <HaiButton $variant="yellowish" onClick={handleSubmit}>
+                    <HaiButton $variant="yellowish" disabled={isCollateral && isBid && !quote} onClick={handleSubmit}>
                         {t('review_transaction')}
                     </HaiButton>
                 </Flex>
