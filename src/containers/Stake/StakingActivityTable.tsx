@@ -4,15 +4,20 @@ import { Grid, Text } from '~/styles'
 import { Table } from '~/components/Table'
 import { ExternalLink } from 'react-feather'
 import { Link } from '~/components/Link'
-import { formatNumberWithStyle } from '~/utils'
+import { formatNumberWithStyle, getEtherscanLink, NETWORK_ID } from '~/utils'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import { Sorting } from '~/types'
+import type { Sorting } from '~/types'
 import type { StakingConfig } from '~/types/stakingConfig'
 
 dayjs.extend(relativeTime)
 
-const BLOCK_EXPLORER = 'https://optimistic.etherscan.io'
+const headers = [
+    { label: 'Time' },
+    { label: 'Action' },
+    { label: 'Amount' },
+    { label: 'Transaction', unsortable: true },
+]
 
 function shortenTxHash(hash: string): string {
     return `${hash.slice(0, 6)}...${hash.slice(-4)}`
@@ -26,24 +31,25 @@ type StakingActivityTableProps = {
         transactionHash: string
     }>
     loading?: boolean
+    error?: string
     config?: StakingConfig
 }
 
-export function StakingActivityTable({ positions, loading, config }: StakingActivityTableProps) {
+export function StakingActivityTable({ positions, loading, error, config }: StakingActivityTableProps) {
     const tokenLabel = config?.labels.token ?? '$KITE'
     const [sorting, setSorting] = useState<Sorting>({
-        key: 'timestamp',
+        key: 'Time',
         dir: 'desc',
     })
 
-    const headers = useMemo(
-        () => [{ label: 'Time' }, { label: 'Action' }, { label: 'Amount' }, { label: 'Transaction' }],
-        []
-    )
-
     const rows = useMemo(() => {
-        return positions
-            .sort((a, b) => b.timestamp - a.timestamp)
+        const direction = sorting.dir === 'asc' ? 1 : -1
+        return [...positions]
+            .sort((a, b) => {
+                if (sorting.key === 'Action') return direction * a.type.localeCompare(b.type)
+                if (sorting.key === 'Amount') return direction * (Number(a.amount) - Number(b.amount))
+                return direction * (a.timestamp - b.timestamp)
+            })
             .map((position) => ({
                 timestamp: dayjs(position.timestamp * 1000).fromNow(),
                 type: position.type
@@ -56,14 +62,17 @@ export function StakingActivityTable({ positions, loading, config }: StakingActi
                 }),
                 txHash: position.transactionHash,
             }))
-    }, [positions])
+    }, [positions, sorting])
 
     return (
         <Table
             headers={headers}
             headerContainer={TableHeader}
             loading={loading}
+            error={error}
+            errorContent={error}
             isEmpty={!positions.length}
+            emptyContent="No staking activity to display."
             sorting={sorting}
             setSorting={setSorting}
             rows={rows.map((row, i) => (
@@ -88,7 +97,7 @@ export function StakingActivityTable({ positions, loading, config }: StakingActi
                         },
                         {
                             content: (
-                                <Link href={`${BLOCK_EXPLORER}/tx/${row.txHash}`} target="_blank">
+                                <Link href={getEtherscanLink(NETWORK_ID, row.txHash, 'transaction')} target="_blank">
                                     <TxHashContainer>
                                         {shortenTxHash(row.txHash)}
                                         <ExternalLink size={12} />
