@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react'
 import { BigNumber } from 'ethers'
 
 import type { AvailableVaultPair, SortableHeader, Sorting } from '~/types'
-import { arrayToSorted, DEPRECATED_COLLATERALS, getRatePercentage } from '~/utils'
+import { arrayToSorted, getRatePercentage } from '~/utils'
+import { useAnalytics } from '~/providers/AnalyticsProvider'
 import { useStoreState } from '~/store'
 
 const sortableHeaders: SortableHeader[] = [
@@ -18,43 +19,16 @@ const sortableHeaders: SortableHeader[] = [
     },
 ]
 
-const HAS_REWARDS = [
-    'HAIVELO',
-    'HAIVELOV2',
-    'HAIAERO',
-    'ALETH',
-    'YV-VELO-ALETH-WETH',
-    'YV-VELO-MSETH-WETH',
-    'MOO-VELO-BOLD-LUSD',
-]
-
 export function useAvailableVaults() {
+    const { isOpenableCollateral } = useAnalytics()
     const {
         connectWalletModel: { tokensData, tokensFetchedData },
         vaultModel: vaultState,
     } = useStoreState((state) => state)
 
-    // const symbols = useMemo(
-    //     () =>
-    //         Object.values(tokensData || {})
-    //             .filter(({ isCollateral }) => isCollateral)
-    //             .map(({ symbol }) => symbol),
-    //     [tokensData]
-    // )
-
-    const collaterals = useMemo(
-        () =>
-            Object.values(tokensData || {})
-                .filter(({ isCollateral }) => isCollateral)
-                // Hide haiVELO v1 from available list (no new v1 vaults)
-                .filter(({ symbol }) => symbol !== 'HAIVELO')
-                .map((collateral) => collateral),
-        [tokensData]
-    )
-
     const availableVaults: AvailableVaultPair[] = useMemo(() => {
-        return collaterals
-            .filter(({ symbol }) => !DEPRECATED_COLLATERALS.includes(symbol))
+        return Object.values(tokensData || {})
+            .filter(({ isCollateral, symbol }) => isCollateral && isOpenableCollateral(symbol))
             .map((collateral) => {
                 const symbol = collateral.symbol
                 const { liquidationCRatio, totalAnnualizedStabilityFee } =
@@ -63,8 +37,6 @@ export function useAvailableVaults() {
                 return {
                     collateralName: symbol,
                     collateralLabel: collateral.label,
-                    // hasRewards: collateral.hasRewards,
-                    hasRewards: HAS_REWARDS.includes(symbol),
                     collateralizationFactor: liquidationCRatio || '',
                     stabilityFee: getRatePercentage(totalAnnualizedStabilityFee || '1', 4, true).toString(),
                     apy: totalAnnualizedStabilityFee || '',
@@ -72,7 +44,7 @@ export function useAvailableVaults() {
                     myVaults: vaultState.list.filter(({ collateralName }) => collateralName === symbol),
                 }
             })
-    }, [tokensFetchedData, vaultState.list, vaultState.liquidationData, collaterals])
+    }, [tokensData, tokensFetchedData, vaultState.list, vaultState.liquidationData, isOpenableCollateral])
 
     const [eligibleOnly, setEligibleOnly] = useState(false)
 

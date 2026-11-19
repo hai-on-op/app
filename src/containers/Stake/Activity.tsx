@@ -9,7 +9,7 @@ type StakeActivityProps = {
 }
 
 export function StakeActivity({ config }: StakeActivityProps) {
-    const { positions, loading } = useStakingActivity(config)
+    const { positions, loading, error } = useStakingActivity(config)
 
     if (loading) {
         return (
@@ -21,7 +21,7 @@ export function StakeActivity({ config }: StakeActivityProps) {
 
     return (
         <Container>
-            <StakingActivityTable positions={positions} loading={loading} config={config} />
+            <StakingActivityTable positions={positions} error={error} config={config} />
         </Container>
     )
 }

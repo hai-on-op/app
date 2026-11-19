@@ -121,7 +121,17 @@ export const COLLATERAL_BATCH_SIZE = 5_000_000 // blocks
 
 export const HARDCODED_KITE = 8
 
-export const DEPRECATED_COLLATERALS = ['MOO-VELO-V2-OP-VELO', 'SNX', 'WBTC', 'LUSD-A', 'LINK', 'APXETH']
+// Optimism collateral with a zero ceiling, used until the current parameters load.
+export const DEPRECATED_COLLATERALS = [
+    'MOO-VELO-V2-OP-VELO',
+    'SNX',
+    'WBTC',
+    'LUSD-A',
+    'LINK',
+    'APXETH',
+    'ALETH',
+    'YV-VELO-ALETH-WETH',
+]
 
 /**
  * DEV FEATURE FLAG: When enabled, minter pages (haiVELO, haiAERO) will show

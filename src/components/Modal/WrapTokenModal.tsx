@@ -66,7 +66,7 @@ export function WrapTokenModal(props: ModalProps) {
 
     const refreshBalance = () => {
         if (!account) return
-        connectWalletActions.fetchTokenData({ geb, user: account })
+        connectWalletActions.setForceUpdateTokens(true)
     }
 
     const [balance, balanceMinusCushion] = useMemo(() => {

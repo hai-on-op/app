@@ -103,7 +103,7 @@ export function useStakingActivity(config?: StakingConfig) {
             const { data } = await apolloClient.query<StakingUserQueryResult>({
                 query: STAKING_ACTIVITY_QUERIES[userEntity],
                 variables: { id },
-                fetchPolicy: 'cache-first',
+                fetchPolicy: 'network-only',
             })
 
             const rootField = STAKING_USER_ROOT_FIELD[userEntity]
@@ -124,6 +124,7 @@ export function useStakingActivity(config?: StakingConfig) {
 
     return {
         positions: query.data ?? [],
-        loading: query.isLoading,
+        loading: query.isInitialLoading,
+        error: query.isError ? 'Could not load staking activity.' : undefined,
     }
 }

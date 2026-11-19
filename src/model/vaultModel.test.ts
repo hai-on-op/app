@@ -1,5 +1,15 @@
 import { type EasyPeasyConfig, type Store, createStore } from 'easy-peasy'
+import type { JsonRpcSigner, TransactionResponse } from '@ethersproject/providers'
+import { vi } from 'vitest'
+import { handleDepositAndBorrow } from '~/services/blockchain'
+import { DEFAULT_VAULT_DATA, NETWORK_ID } from '~/utils'
 import { type VaultModel, vaultModel } from './vaultModel'
+import { transactionsModel } from './transactionsModel'
+import { popupsModel } from './popupsModel'
+
+vi.mock('~/services/blockchain', () => ({
+    handleDepositAndBorrow: vi.fn(),
+}))
 
 const liquidationDataMock = {
     currentRedemptionPrice: '3',
@@ -38,6 +48,7 @@ const listMock = [
         collateralRatio: '2',
         currentRedemptionPrice: '3',
         internalCollateralBalance: '0',
+        freeCollateral: '0',
         currentLiquidationPrice: '2',
         liquidationCRatio: '1.45',
         liquidationPenalty: '1.12',
@@ -53,6 +64,32 @@ describe('vault model', () => {
     let store: Store<VaultModel, EasyPeasyConfig<{}, any>>
     beforeEach(() => {
         store = createStore(vaultModel)
+    })
+    it('records the submitted leg in transaction history before the receipt is available', async () => {
+        const tx = {
+            hash: 'depositHash',
+            from: 'owner',
+            chainId: NETWORK_ID,
+            wait: vi.fn(),
+        } as unknown as TransactionResponse
+        vi.mocked(handleDepositAndBorrow).mockResolvedValue(tx)
+        const appStore = createStore({ vaultModel, transactionsModel, popupsModel })
+        const signer = {} as JsonRpcSigner
+        const vaultData = { ...DEFAULT_VAULT_DATA, deposit: '1', repay: '2', withdraw: '3', borrow: '4' }
+        const submitted = await appStore
+            .getActions()
+            .vaultModel.submitVaultLeg({ signer, vaultId: '17', vaultData, leg: 'deposit' })
+        expect(handleDepositAndBorrow).toHaveBeenCalledWith(
+            signer,
+            { ...vaultData, repay: '', repayAll: false, withdraw: '', borrow: '' },
+            '17'
+        )
+        expect(appStore.getState().transactionsModel.transactions[tx.hash]).toMatchObject({
+            hash: tx.hash,
+            summary: 'Deposit collateral · Vault #17',
+        })
+        expect(appStore.getState().popupsModel.waitingPayload.hash).toBe(tx.hash)
+        expect(submitted.wait).not.toHaveBeenCalled()
     })
     describe('setLiquidationData', () => {
         it('sets Liquidation Data', () => {
@@ -76,6 +113,16 @@ describe('vault model', () => {
     })
 
     describe('setVaultList', () => {
+        it('keeps retired collateral vaults accessible to their owner', () => {
+            const vaults = ['WBTC', 'APXETH'].map((collateralName, index) => ({
+                ...listMock[0],
+                id: String(index + 1),
+                collateralName,
+            }))
+            store.getActions().setList(vaults)
+            expect(store.getState().list).toEqual(vaults)
+        })
+
         it('sets Vault List', () => {
             store.getActions().setList(listMock)
             store.getActions().setLiquidationData(liquidationDataMock)

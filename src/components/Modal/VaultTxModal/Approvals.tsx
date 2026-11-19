@@ -25,7 +25,7 @@ export function Approvals({ onNext }: ApprovalsProps) {
     const isRepay = action === VaultAction.WITHDRAW_REPAY || action === VaultAction.DEPOSIT_REPAY
 
     const [collateralApproval, approveCollateral] = useTokenApproval(
-        isWithdraw ? formState.withdraw || '0' : formState.deposit || '0',
+        isWithdraw ? '0' : formState.deposit || '0',
         collateral.data?.address,
         proxyAddress,
         collateral.data?.decimals.toString(),
@@ -33,15 +33,16 @@ export function Approvals({ onNext }: ApprovalsProps) {
     )
 
     const [debtApproval, approveDebtUnlock] = useTokenApproval(
-        isRepay ? formState.repay || '0' : formState.borrow || '0',
+        isRepay ? formState.repay || '0' : '0',
         debt.data?.address,
         proxyAddress,
         debt.data?.decimals.toString() || '18',
-        true,
-        isRepay && formState.repay === debt.available.raw
+        true
     )
 
     const [buttonActive] = useMemo(() => {
+        const hasRepayment = formState.repayAll || Number(formState.repay || '0') > 0
+        const repayLabel = formState.repayAll ? 'Pay Back All' : 'Pay Back'
         let label = ''
         switch (action) {
             case VaultAction.CREATE: {
@@ -63,23 +64,23 @@ export function Approvals({ onNext }: ApprovalsProps) {
                 break
             }
             case VaultAction.DEPOSIT_REPAY: {
-                const { deposit = '0', repay = '0' } = formState
-                if (Number(deposit) <= 0 && Number(repay) <= 0) {
+                const { deposit = '0' } = formState
+                if (Number(deposit) <= 0 && !hasRepayment) {
                     return [false, 'Deposit']
                 }
-                if (Number(repay) <= 0) label = 'Deposit'
-                else if (Number(deposit) <= 0) label = 'Pay Back'
-                else label = 'Deposit & Pay Back'
+                if (!hasRepayment) label = 'Deposit'
+                else if (Number(deposit) <= 0) label = repayLabel
+                else label = `Deposit & ${repayLabel}`
                 break
             }
             case VaultAction.WITHDRAW_REPAY: {
-                const { withdraw = '0', repay = '0' } = formState
-                if (Number(withdraw) <= 0 && Number(repay) <= 0) {
+                const { withdraw = '0' } = formState
+                if (Number(withdraw) <= 0 && !hasRepayment) {
                     return [false, 'Withdraw']
                 }
-                if (Number(repay) <= 0) label = 'Withdraw'
-                else if (Number(withdraw) <= 0) label = 'Pay Back'
-                else label = 'Withdraw & Pay Back'
+                if (!hasRepayment) label = 'Withdraw'
+                else if (Number(withdraw) <= 0) label = repayLabel
+                else label = `Withdraw & ${repayLabel}`
                 break
             }
             case VaultAction.WITHDRAW_BORROW: {
@@ -95,7 +96,7 @@ export function Approvals({ onNext }: ApprovalsProps) {
             default:
                 return [false, 'Deposit']
         }
-        return [!error, label]
+        return [error === undefined, label]
     }, [action, formState, error])
 
     const { isApproved, button } = useMemo(() => {
@@ -113,7 +114,7 @@ export function Approvals({ onNext }: ApprovalsProps) {
                                     $variant="yellowish"
                                     $width="100%"
                                     $justify="center"
-                                    disabled={!buttonActive || collateralApproval === ApprovalState.PENDING}
+                                    disabled={!buttonActive || collateralApproval !== ApprovalState.NOT_APPROVED}
                                     onClick={approveCollateral}
                                 >
                                     {collateralApproval === ApprovalState.PENDING
@@ -141,7 +142,7 @@ export function Approvals({ onNext }: ApprovalsProps) {
                                     $variant="yellowish"
                                     $width="100%"
                                     $justify="center"
-                                    disabled={!buttonActive || debtApproval === ApprovalState.PENDING}
+                                    disabled={!buttonActive || debtApproval !== ApprovalState.NOT_APPROVED}
                                     onClick={approveDebtUnlock}
                                 >
                                     {debtApproval === ApprovalState.PENDING ? 'Pending Approval..' : `Approve HAI`}
@@ -168,7 +169,7 @@ export function Approvals({ onNext }: ApprovalsProps) {
                                     $variant="yellowish"
                                     $width="100%"
                                     $justify="center"
-                                    disabled={!buttonActive || collateralApproval === ApprovalState.PENDING}
+                                    disabled={!buttonActive || collateralApproval !== ApprovalState.NOT_APPROVED}
                                     onClick={approveCollateral}
                                 >
                                     {collateralApproval === ApprovalState.PENDING
@@ -190,7 +191,7 @@ export function Approvals({ onNext }: ApprovalsProps) {
                                             $variant="yellowish"
                                             $width="100%"
                                             $justify="center"
-                                            disabled={!buttonActive || debtApproval === ApprovalState.PENDING}
+                                            disabled={!buttonActive || debtApproval !== ApprovalState.NOT_APPROVED}
                                             onClick={approveDebtUnlock}
                                         >
                                             {debtApproval === ApprovalState.PENDING

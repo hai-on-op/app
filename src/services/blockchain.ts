@@ -4,9 +4,8 @@ import { BigNumber, ethers } from 'ethers'
 import { parseEther } from 'ethers/lib/utils'
 
 import type { IVaultData, IVault } from '~/types/vaults'
-import { getNetworkName } from '~/utils/constants'
+import { getNetworkName, NETWORK_ID } from '~/utils/constants'
 import { handlePreTxGasEstimate } from '~/hooks'
-import { TransactionResponse } from '@ethersproject/providers'
 
 const abi = ['function drop() public view returns ()']
 
@@ -110,6 +109,11 @@ export const handleClaimFreeCollateral = async (signer: JsonRpcSigner, vault: IV
     return txResponse
 }
 
+async function assertVaultNetwork(signer: JsonRpcSigner) {
+    if ((await signer.getChainId()) !== NETWORK_ID)
+        throw new Error('Switch to the configured vault network to continue.')
+}
+
 export const handleDepositAndBorrow = async (signer: JsonRpcSigner, vaultData: IVaultData, vaultId = '') => {
     if (!signer || !vaultData) {
         return false
@@ -118,8 +122,8 @@ export const handleDepositAndBorrow = async (signer: JsonRpcSigner, vaultData: I
     const collateralBN = parseEther(vaultData.deposit || '0')
     const debtBN = parseEther(vaultData.borrow || '0')
 
-    const chainId = await signer.getChainId()
-    const networkName = getNetworkName(chainId)
+    await assertVaultNetwork(signer)
+    const networkName = getNetworkName(NETWORK_ID)
     const geb = new Geb(networkName, signer)
 
     const proxy = await geb.getProxyAction(signer._address)
@@ -143,44 +147,9 @@ export const handleDepositAndBorrow = async (signer: JsonRpcSigner, vaultData: I
 
     const tx = await handlePreTxGasEstimate(signer, txData, vaultId ? null : '865000')
 
+    await assertVaultNetwork(signer)
     const txResponse = await signer.sendTransaction(tx)
     return txResponse
-}
-
-export const handleDepositAndRepay = async (signer: JsonRpcSigner, vaultData: IVaultData, vaultId = '') => {
-    if (!signer || !vaultData) {
-        return false
-    }
-    if (!vaultId) throw new Error('No vault Id')
-
-    const totalDebtBN = parseEther(vaultData.totalDebt || '0')
-    const collateralBN = parseEther(vaultData.deposit || '0')
-    const haiToRepay = parseEther(vaultData.repay || '0')
-    const shouldRepayAll =
-        (totalDebtBN.isZero() && !haiToRepay.isZero()) || totalDebtBN.sub(haiToRepay).lt(parseEther('1'))
-
-    const chainId = await signer.getChainId()
-    const networkName = getNetworkName(chainId)
-    const geb = new Geb(networkName, signer)
-
-    const proxy = await geb.getProxyAction(signer._address)
-    ensureHaiAeroInProxyTokenList(proxy)
-
-    let txResponse1: TransactionResponse | undefined = undefined
-    if (!collateralBN.isZero()) {
-        const txData = await proxy.lockTokenCollateral(vaultData.collateral, vaultId, collateralBN)
-        const tx1 = await handlePreTxGasEstimate(signer, txData, null)
-        txResponse1 = await signer.sendTransaction(tx1)
-    }
-
-    let txResponse2: TransactionResponse | undefined = undefined
-    if (!haiToRepay.isZero()) {
-        const txData = shouldRepayAll ? await proxy.repayAllDebt(vaultId) : await proxy.repayDebt(vaultId, haiToRepay)
-        const tx2 = await handlePreTxGasEstimate(signer, txData, null)
-        txResponse2 = await signer.sendTransaction(tx2)
-    }
-
-    return [txResponse1, txResponse2]
 }
 
 export const handleRepayAndWithdraw = async (signer: JsonRpcSigner, vaultData: IVaultData, vaultId: string) => {
@@ -189,19 +158,16 @@ export const handleRepayAndWithdraw = async (signer: JsonRpcSigner, vaultData: I
     }
     if (!vaultId) throw new Error('No vault Id')
 
-    const chainId = await signer.getChainId()
-    const networkName = getNetworkName(chainId)
+    await assertVaultNetwork(signer)
+    const networkName = getNetworkName(NETWORK_ID)
     const geb = new Geb(networkName, signer)
 
-    const totalDebtBN = parseEther(vaultData.totalDebt || '0')
-    // const totalCollateralBN = parseEther(vaultData.totalCollateral || '0')
     const collateralToFree = parseEther(vaultData.withdraw || '0')
     const haiToRepay = parseEther(vaultData.repay || '0')
     const proxy = await geb.getProxyAction(signer._address)
     ensureHaiAeroInProxyTokenList(proxy)
 
-    const shouldRepayAll =
-        (totalDebtBN.isZero() && !haiToRepay.isZero()) || totalDebtBN.sub(haiToRepay).lt(parseEther('1'))
+    const shouldRepayAll = vaultData.repayAll === true
 
     let txData: TransactionRequest = {}
 
@@ -230,38 +196,7 @@ export const handleRepayAndWithdraw = async (signer: JsonRpcSigner, vaultData: I
     const tx =
         vaultData.isGnosisSafe && !collateralToFree.isZero() ? txData : await handlePreTxGasEstimate(signer, txData)
 
+    await assertVaultNetwork(signer)
     const txResponse = await signer.sendTransaction(tx)
     return txResponse
-}
-
-export const handleWithdrawAndBorrow = async (signer: JsonRpcSigner, vaultData: IVaultData, vaultId: string) => {
-    if (!signer || !vaultData) {
-        return false
-    }
-    if (!vaultId) throw new Error('No vault Id')
-
-    const chainId = await signer.getChainId()
-    const networkName = getNetworkName(chainId)
-    const geb = new Geb(networkName, signer)
-
-    const collateralToFree = parseEther(vaultData.withdraw || '0')
-    const debtBN = parseEther(vaultData.borrow || '0')
-    const proxy = await geb.getProxyAction(signer._address)
-    ensureHaiAeroInProxyTokenList(proxy)
-
-    let txResponse1: TransactionResponse | undefined = undefined
-    if (!collateralToFree.isZero()) {
-        const txData = await proxy.freeTokenCollateral(vaultData.collateral, vaultId, collateralToFree)
-        const tx1 = await handlePreTxGasEstimate(signer, txData, null)
-        txResponse1 = await signer.sendTransaction(tx1)
-    }
-
-    let txResponse2: TransactionResponse | undefined = undefined
-    if (!debtBN.isZero()) {
-        const txData = await proxy.generateDebt(vaultId, debtBN)
-        const tx2 = await handlePreTxGasEstimate(signer, txData, null)
-        txResponse2 = await signer.sendTransaction(tx2)
-    }
-
-    return [txResponse1, txResponse2]
 }

@@ -41,6 +41,7 @@ export function VaultsByOwner() {
         refetch,
         headers,
         rows,
+        rowsUnmodified,
         sorting,
         setSorting,
         collateralFilter,
@@ -89,6 +90,7 @@ export function VaultsByOwner() {
                     <CenteredFlex $column={isUpToSmall} $gap={24}>
                         <CollateralDropdown
                             label="Collateral"
+                            symbols={rowsUnmodified.map(({ collateralToken }) => collateralToken)}
                             selectedAsset={collateralFilter}
                             onSelect={setCollateralFilter}
                         />

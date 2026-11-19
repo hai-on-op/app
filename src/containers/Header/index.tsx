@@ -59,6 +59,7 @@ export function Header({ tickerActive = false }: HeaderProps) {
     const {
         data: { redemptionPrice, tokenAnalyticsData },
         haiMarketPrice,
+        isOpenableCollateral,
     } = useAnalytics()
 
     const [dropdownActive, setDropdownActive] = useState(false)
@@ -89,11 +90,12 @@ export function Header({ tickerActive = false }: HeaderProps) {
             ['HAI (RP)', redemptionPrice.formatted, '\u2022'],
         ]
         tokenAnalyticsData.forEach(({ symbol, currentPrice }) => {
+            if (!isOpenableCollateral(symbol)) return
             const price = formatDataNumber(currentPrice.toString() || '0', 18, 2, true)
             arr.push([formatCollateralLabel(symbol), price, '\u2022'])
         })
         return arr.flat()
-    }, [tokenAnalyticsData, haiMarketPrice.formatted, redemptionPrice])
+    }, [tokenAnalyticsData, haiMarketPrice.formatted, redemptionPrice, isOpenableCollateral])
 
     const logoEl = useMemo(
         () =>

@@ -41,11 +41,21 @@ const collateralHeaders: SortableHeader[] = [
 export function useCollateralInfo() {
     const {
         data: { tokenAnalyticsData },
+        isOpenableCollateral,
     } = useAnalytics()
+
+    const collaterals = useMemo(
+        () =>
+            tokenAnalyticsData.filter(
+                ({ symbol, lockedAmount, debtAmount }) =>
+                    isOpenableCollateral(symbol) || Number(lockedAmount) > 0 || Number(debtAmount) > 0
+            ),
+        [tokenAnalyticsData, isOpenableCollateral]
+    )
 
     // TODO: move update times into SDK
     const { data } = useContractReads({
-        contracts: tokenAnalyticsData.flatMap(
+        contracts: collaterals.flatMap(
             ({ delayedOracle }) =>
                 [
                     {
@@ -60,13 +70,13 @@ export function useCollateralInfo() {
                     },
                 ] as const
         ),
-        enabled: tokenAnalyticsData !== undefined,
+        enabled: collaterals.length > 0,
     })
 
-    const rows = tokenAnalyticsData.map((row, i) => ({
+    const rows = collaterals.map((row, i) => ({
         ...row,
-        lastUpdateTime: data?.[i * 2].result?.toString(),
-        updateDelay: data?.[i * 2 + 1].result?.toString(),
+        lastUpdateTime: data?.[i * 2]?.result?.toString(),
+        updateDelay: data?.[i * 2 + 1]?.result?.toString(),
     }))
 
     const [sorting, setSorting] = useState<Sorting>({
@@ -142,6 +152,7 @@ const collateralStatHeaders: SortableHeader[] = [
 
 export type CollateralStatWithInfo = CollateralStat & {
     token: string
+    closedToNewVaults: boolean
     stabilityFee?: number
     annualEarnings?: number
     lastUpdateTime?: string
@@ -150,6 +161,7 @@ export type CollateralStatWithInfo = CollateralStat & {
 export function useCollateralStats() {
     const {
         data: { tokenAnalyticsData },
+        isOpenableCollateral,
         graphSummary: { collateralStats } = {},
     } = useAnalytics()
 
@@ -159,19 +171,27 @@ export function useCollateralStats() {
     })
 
     const rows: CollateralStatWithInfo[] = useMemo(() => {
-        return Object.entries(collateralStats || {}).map(([token, stat]) => {
-            const { stabilityFee: sfBN } = tokenAnalyticsData.find(({ symbol }) => symbol === token) || {}
-            const stabilityFee = sfBN ? (transformToAnnualRate(sfBN.toString(), 27, true) as number) : 0
+        return Object.entries(collateralStats || {})
+            .filter(
+                ([token, stat]) =>
+                    isOpenableCollateral(token) ||
+                    Number(stat.totalCollateral?.raw) > 0 ||
+                    Number(stat.debt?.debtAmount) > 0
+            )
+            .map(([token, stat]) => {
+                const { stabilityFee: sfBN } = tokenAnalyticsData.find(({ symbol }) => symbol === token) || {}
+                const stabilityFee = sfBN ? (transformToAnnualRate(sfBN.toString(), 27, true) as number) : 0
 
-            return {
-                token,
-                ...stat,
-                debtCeilingPercent: stat.debt?.ceilingPercent,
-                stabilityFee,
-                annualEarnings: parseFloat(stat.totalDebt?.raw || '0') * stabilityFee,
-            }
-        })
-    }, [collateralStats, tokenAnalyticsData])
+                return {
+                    token,
+                    closedToNewVaults: !isOpenableCollateral(token),
+                    ...stat,
+                    debtCeilingPercent: stat.debt?.ceilingPercent,
+                    stabilityFee,
+                    annualEarnings: parseFloat(stat.totalDebt?.raw || '0') * stabilityFee,
+                }
+            })
+    }, [collateralStats, tokenAnalyticsData, isOpenableCollateral])
 
     const sortedRows = useMemo(() => {
         switch (sorting.key) {

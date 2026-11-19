@@ -37,16 +37,13 @@ const getLiquidationDataRpc = async (
         perSafeDebtCeiling: parseWad(liquidationData.safeDebtCeiling),
     }
 
-    const parsedLiquidationData = liquidationData.tokensLiquidationData.map((tokenLiquidationData) =>
-        parseTokenLiquidationData(liquidationData.redemptionPrice, tokenLiquidationData)
-    )
-
-    const collateralLiquidationData = Object.keys(tokensData).reduce(
-        (accumulator, key, index) => ({
-            ...accumulator,
-            [key]: parsedLiquidationData[index],
-        }),
-        {}
+    // The SDK returns one result per collateral, in token-list order, excluding protocol tokens.
+    const collaterals = Object.entries(tokensData).filter(([, token]) => token.isCollateral)
+    const collateralLiquidationData = Object.fromEntries(
+        collaterals.map(([key], i) => [
+            key,
+            parseTokenLiquidationData(liquidationData.redemptionPrice, liquidationData.tokensLiquidationData[i]),
+        ])
     )
 
     return {

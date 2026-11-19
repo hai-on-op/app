@@ -2,10 +2,9 @@ import numeral from 'numeral'
 import { type TokenData, utils as gebUtils } from '@hai-on-op/sdk'
 import { BigNumber } from 'ethers'
 
-import type { CollateralLiquidationData, ILiquidationData, IVault, IVaultData } from '~/types'
+import type { CollateralLiquidationData, FormState, ILiquidationData, IVault, IVaultData } from '~/types'
 import { Status } from './constants'
-import { formatNumber, toFixedString } from './formatting'
-import { returnTotalValue } from './math'
+import { formatNumber, parseTokenAmount, toFixedString } from './formatting'
 import { QueryConfiscateSAFECollateralAndDebt, QueryModifySAFECollateralization, type QuerySafe } from './graphql'
 import { tokenAssets } from './tokens'
 
@@ -32,7 +31,23 @@ export enum VaultInfoError {
     HAI_DEBT_CEILING,
     INDIVIDUAL_DEBT_CEILING,
     MINIMUM_MINT,
+    COLLATERAL_DEBT_CEILING,
+    INVALID_AMOUNT,
 }
+export function getVaultAmountError(action: VaultAction, form: FormState, collateralDecimals = 18) {
+    if (action === VaultAction.INFO) return
+    const withdrawing = action === VaultAction.WITHDRAW_BORROW || action === VaultAction.WITHDRAW_REPAY
+    const repaying = action === VaultAction.DEPOSIT_REPAY || action === VaultAction.WITHDRAW_REPAY
+    const collateral = withdrawing ? form.withdraw : form.deposit
+    const hai = repaying ? form.repay : form.borrow
+    if (collateral && !parseTokenAmount(collateral, collateralDecimals)) {
+        return `Enter a non-negative collateral amount in decimal notation with up to ${collateralDecimals} decimal places.`
+    }
+    if (hai && !parseTokenAmount(hai)) {
+        return 'Enter a non-negative HAI amount in decimal notation with up to 18 decimal places.'
+    }
+}
+
 export const vaultInfoErrors: Record<number, string> = {
     [VaultInfoError.NO_WALLET]: `Connect a valid wallet to continue`,
     [VaultInfoError.NO_PROXY]: `Create a proxy contract to continue`,
@@ -41,7 +56,9 @@ export const vaultInfoErrors: Record<number, string> = {
     [VaultInfoError.WITHDRAW_EXCEEDS_COLLATERAL]: `Withdraw amount cannot exceed collateral balance`,
     [VaultInfoError.REPAY_EXCEEDS_OWED]: `Repay amount cannot exceed $HAI debt balance`,
     [VaultInfoError.ZERO_AMOUNT]: `Please enter a non-zero amount of collateral and/or $HAI`,
-    [VaultInfoError.GLOBAL_DEBT_CEILING]: `Cannot exceed global debt ceiling`,
+    [VaultInfoError.GLOBAL_DEBT_CEILING]: 'This borrow would exceed the protocol debt ceiling.',
+    [VaultInfoError.COLLATERAL_DEBT_CEILING]: 'This borrow would exceed the debt ceiling for this collateral.',
+    [VaultInfoError.INDIVIDUAL_DEBT_CEILING]: 'This borrow would exceed the debt ceiling for this vault.',
     [VaultInfoError.HAI_DEBT_CEILING]: `Cannot exceed HAI debt ceiling`,
     [VaultInfoError.MINIMUM_MINT]: `You must mint at least 1 $HAI to create a Vault`,
 }
@@ -88,9 +105,9 @@ export const formatUserVault = (
                 totalAnnualizedStabilityFee,
             } = collateralLiquidationData[token] || {}
 
-            const availableDebt = returnAvaiableDebt(currentPrice?.safetyPrice, '0', s.collateral, s.debt)
+            const availableDebt = getBorrowableHai(s.collateral, s.debt, accumulatedRate, currentPrice?.safetyPrice)
 
-            const totalDebt = returnTotalValue(returnTotalDebt(s.debt, accumulatedRate) as string, '0').toString()
+            const totalDebt = returnTotalDebt(s.debt, accumulatedRate).toString()
 
             const liquidationPrice = getLiquidationPrice(
                 s.collateral,
@@ -150,18 +167,20 @@ export const getCollateralRatio = (
     return formatNumber(value.value().toString(), 2, true)
 }
 
-export const getMinimumAllowableCollateral = (totalDebt: string, liquidationPrice: string) => {
-    if (Number(totalDebt) === 0) {
-        return '0'
-    }
-
-    const numerator = numeral(totalDebt)
-
-    const denominator = numeral(liquidationPrice).value()
-
-    const value = numerator.divide(denominator)
-
-    return value.value().toString()
+export function getWithdrawableCollateral(
+    locked: string,
+    issuedDebtRad: string,
+    safetyPrice: string,
+    decimals: number
+) {
+    const lockedWad = BigNumber.from(toFixedString(locked, 'WAD'))
+    const debtRad = BigNumber.from(issuedDebtRad)
+    const priceRay = BigNumber.from(toFixedString(safetyPrice, 'RAY'))
+    if (debtRad.gt(0) && priceRay.lte(0)) return '0'
+    const required = debtRad.gt(0) ? debtRad.add(priceRay.sub(1)).div(priceRay) : BigNumber.from(0)
+    if (required.gte(lockedWad)) return '0'
+    const quantum = BigNumber.from(10).pow(Math.max(0, 18 - decimals))
+    return gebUtils.wadToFixed(lockedWad.sub(required).div(quantum).mul(quantum)).toString()
 }
 
 export const getLiquidationPrice = (
@@ -225,28 +244,21 @@ export const getInterestOwed = (debt: string, accumulatedRate: string) => {
     return formatNumber(numeral(debt).multiply(restAcc).value().toString(), 4, true)
 }
 
-export const returnAvaiableDebt = (
-    safetyPrice: string,
-    accumulatedRate: string,
-    currentCollatral = '0',
-    prevCollatral = '0',
-    prevDebt = '0'
-) => {
-    if (!safetyPrice || accumulatedRate === '0') {
-        return '0'
-    }
+export function getBorrowableHai(
+    locked: string,
+    generatedDebt: string,
+    accumulatedRate?: string,
+    safetyPrice?: string
+) {
+    if (!accumulatedRate || !safetyPrice) return '0'
+    const rate = BigNumber.from(toFixedString(accumulatedRate, 'RAY'))
+    if (rate.isZero()) return '0'
 
-    const safetyPriceRay = BigNumber.from(BigNumber.from(toFixedString(safetyPrice, 'RAY')))
-    const accumulatedRateRay = BigNumber.from(BigNumber.from(toFixedString(accumulatedRate, 'RAY')))
-    const totalCollateralBN = returnTotalValue(currentCollatral, prevCollatral, false) as BigNumber
-
-    const totalDebtBN = totalCollateralBN.mul(safetyPriceRay).div(gebUtils.RAY)
-    const prevDebtBN = BigNumber.from(toFixedString(prevDebt, 'WAD'))
-    const totalPrevDebt = prevDebtBN.mul(accumulatedRateRay).div(gebUtils.RAY)
-    const availableDebt = totalDebtBN.sub(totalPrevDebt)
-    return formatNumber(
-        gebUtils.wadToFixed(availableDebt.lt(0) ? BigNumber.from('0') : availableDebt).toString()
-    ).toString()
+    const lockedWad = BigNumber.from(toFixedString(locked, 'WAD'))
+    const priceRay = BigNumber.from(toFixedString(safetyPrice, 'RAY'))
+    const maxNormalizedDebt = lockedWad.mul(priceRay).div(rate)
+    const available = maxNormalizedDebt.sub(BigNumber.from(toFixedString(generatedDebt, 'WAD')))
+    return available.gt(0) ? gebUtils.wadToFixed(available.mul(rate).div(gebUtils.RAY)).toString() : '0'
 }
 
 export const returnTotalDebt = (debt: string, accumulatedRate: string, beautify = true) => {

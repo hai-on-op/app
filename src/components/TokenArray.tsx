@@ -2,6 +2,7 @@ import React from 'react'
 import type { ReactChildren, TokenKey } from '~/types'
 import { TOKEN_LOGOS } from '~/utils'
 import { useStoreState } from '~/store'
+import { useAnalytics } from '~/providers/AnalyticsProvider'
 
 import styled, { css } from 'styled-components'
 import { CenteredFlex, Flex, Text } from '~/styles'
@@ -40,7 +41,6 @@ export function TokenArray({ tokens, size = 32, label, hideLabel = false }: Toke
         <>
             {tokens.map((token, i) => {
                 switch (token) {
-                    case 'All':
                     case 'MOO-VELO-V2-OP-VELO':
                         return (
                             <React.Fragment key={i}>
@@ -61,6 +61,7 @@ export function TokenArray({ tokens, size = 32, label, hideLabel = false }: Toke
                                 <img key={`${i}-OP`} src={TOKEN_LOGOS['OP']} alt={token} className={`token-${token}`} />
                             </React.Fragment>
                         )
+                    case 'All':
                     case 'Collateral':
                         return <CyclingTokenArray key={i} size={size} includeProtocolTokens={token === 'All'} />
                     default:
@@ -189,13 +190,16 @@ export function CyclingTokenArray({ size = 32, tokens, includeProtocolTokens = f
         connectWalletModel: { tokensData },
     } = useStoreState((state) => state)
 
+    const { isOpenableCollateral } = useAnalytics()
     const icons = tokens
         ? tokens.map((token) => ({
               icon: TOKEN_LOGOS[token],
               bg: token === 'KITE' ? '#eecabc' : 'greenish',
           }))
         : Object.values(tokensData || {})
-              .filter(({ isCollateral }) => includeProtocolTokens || isCollateral)
+              .filter(({ symbol, isCollateral }) =>
+                  isCollateral ? isOpenableCollateral(symbol) : includeProtocolTokens
+              )
               .map(({ symbol }) => ({
                   icon: TOKEN_LOGOS[symbol as TokenKey],
                   bg: symbol === 'KITE' ? '#eecabc' : 'greenish',

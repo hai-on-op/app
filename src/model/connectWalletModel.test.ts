@@ -1,10 +1,36 @@
 import { type EasyPeasyConfig, type Store, createStore } from 'easy-peasy'
 import { type ConnectWalletModel, connectWalletModel } from './connectWalletModel'
+import { fetchTokenData, type Geb, type TokenFetchData } from '@hai-on-op/sdk'
+import { vi } from 'vitest'
+vi.mock('@hai-on-op/sdk', async () => ({
+    ...(await vi.importActual<typeof import('@hai-on-op/sdk')>('@hai-on-op/sdk')),
+    fetchTokenData: vi.fn(),
+}))
 
 describe('connect wallet model', () => {
     let store: Store<ConnectWalletModel, EasyPeasyConfig<{}, any>>
     beforeEach(() => {
         store = createStore(connectWalletModel)
+    })
+
+    it('discards a previous wallet token lookup after switching owners', async () => {
+        const actions = store.getActions()
+        actions.setBalanceOwner('walletA')
+        let finish!: (value: Record<string, TokenFetchData>) => void
+        vi.mocked(fetchTokenData).mockImplementationOnce(
+            () =>
+                new Promise<Record<string, TokenFetchData>>((resolve) => {
+                    finish = resolve
+                })
+        )
+        const read = actions.fetchTokenData({ user: 'walletA', geb: { tokenList: {} } as Geb })
+        actions.updateEthBalance({ chainId: 8453, balance: '1.1' })
+        actions.setBalanceOwner('walletB')
+        finish({ HAI: {} as TokenFetchData })
+        await read
+        expect(store.getState().tokensFetchedData).toEqual({})
+        expect(store.getState().ethBalance).toEqual({})
+        expect(store.getState().forceUpdateTokens).toBe(true)
     })
 
     describe('setsBlockNumber', () => {

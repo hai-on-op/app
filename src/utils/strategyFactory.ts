@@ -23,6 +23,7 @@ interface VaultStrategyParams {
     tvl: number
     boostAPR: BoostAPRData
     userPosition: number
+    earnLink: string
 }
 
 interface SpecialStrategyParams {
@@ -76,6 +77,7 @@ export function createVaultStrategy(params: VaultStrategyParams): BaseStrategy {
         rewards: params.rewards,
         boostAPR: params.boostAPR,
         boostEligible: true,
+        earnLink: params.earnLink,
     }
 }
 

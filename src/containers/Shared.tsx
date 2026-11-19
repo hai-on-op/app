@@ -1,7 +1,7 @@
 import { Suspense, lazy, useEffect, useCallback, useRef, useState } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 import { utils } from 'ethers'
-import { useAccount, useNetwork } from 'wagmi'
+import { useAccount, useBalance as useNativeBalance, useNetwork } from 'wagmi'
 
 import type { ReactChildren } from '~/types'
 import {
@@ -21,29 +21,6 @@ import { RewardsProvider } from '~/providers/RewardsProvider'
 import { StakingProvider } from '~/providers/StakingProvider'
 import { EarnProvider } from '~/providers/EarnProvider'
 import { AprProvider } from '~/apr/AprProvider'
-
-/**
- * Ensure HAIAERO is present in a token list.
- * SDK v1.2.33+ includes HAIAERO natively; this fallback covers older builds
- * by cloning the HAIVELOV2 entry with HAIAERO-specific addresses.
- */
-function withHaiAero(tokenList: Record<string, any>): Record<string, any> {
-    if (tokenList.HAIAERO || !tokenList.HAIVELOV2) return tokenList
-    return {
-        ...tokenList,
-        HAIAERO: {
-            ...tokenList.HAIVELOV2,
-            symbol: 'HAIAERO',
-            name: 'haiAERO',
-            address: '0xbdF4A4Cc124d9A83a5774574fcBE45DC5d1f1152',
-            bytes32String: utils.formatBytes32String('HAIAERO'),
-            collateralJoin: '0xc83e160E117A420d7BccE800450dE07Ff51d13bA',
-            collateralAuctionHouse: '0xeA089d5902ac42A4b25aB7749CECA8FB4a1eAf12',
-            isCollateral: true,
-            hasRewards: true,
-        },
-    }
-}
 
 import styled from 'styled-components'
 import { CenteredFlex, Flex } from '~/styles'
@@ -83,6 +60,7 @@ export function Shared({ children }: Props) {
 
     const isAuctionRoute = location.pathname.startsWith('/auctions')
     const isEarnRoute = location.pathname.startsWith('/earn')
+    const preloadOwnerVaults = isEarnRoute || location.pathname === '/haiVELO' || location.pathname === '/haiAERO'
     const isStakeRoute = location.pathname.startsWith('/stake')
     const isVaultRoute = location.pathname.startsWith('/vaults')
     const isHaiVeloRoute =
@@ -92,7 +70,7 @@ export function Shared({ children }: Props) {
         location.pathname === '/haiAERO' ||
         (location.pathname === '/vaults/open' && ['HAIAERO'].includes(openCollateral))
 
-    const tokenList = publicGeb ? withHaiAero(publicGeb.tokenList) : undefined
+    const tokenList = publicGeb?.tokenList
     const coinTokenContract = useTokenContract(tokenList?.HAI?.address)
     const protTokenContract = useTokenContract(tokenList?.KITE?.address)
 
@@ -126,22 +104,46 @@ export function Shared({ children }: Props) {
         popupsActions.setIsWaitingModalOpen(false)
     }, [popupsActions])
 
+    const { data: nativeBalance, refetch: refreshNativeBalance } = useNativeBalance({
+        address: account,
+        chainId: chain?.id,
+        enabled: !!account && !!chain?.id,
+    })
     useEffect(() => {
-        if (!account || !geb || !connectWalletState?.forceUpdateTokens) return
-
-        connectWalletActions.fetchTokenData({ geb, user: account })
-    }, [account, geb, connectWalletState?.forceUpdateTokens, connectWalletActions])
+        connectWalletActions.setBalanceOwner(account)
+    }, [account, connectWalletActions])
 
     useEffect(() => {
-        if (!connectWalletState || !signer) return
-
-        signer.getBalance().then((balance) => {
-            connectWalletActions.updateEthBalance({
-                chainId: NETWORK_ID,
-                balance: Number(utils.formatEther(balance)),
+        if (
+            !account ||
+            account !== connectWalletState.balanceOwner ||
+            !publicGeb ||
+            !connectWalletState.forceUpdateTokens
+        )
+            return
+        const controller = new AbortController()
+        connectWalletActions
+            .fetchTokenData({ geb: publicGeb, user: account, signal: controller.signal })
+            .catch((error: unknown) => {
+                if (!controller.signal.aborted) console.warn('Unable to refresh Optimism token balances', error)
             })
-        })
-    }, [account, signer, connectWalletState, connectWalletActions])
+        return () => controller.abort()
+    }, [
+        account,
+        publicGeb,
+        connectWalletState.balanceOwner,
+        connectWalletState.forceUpdateTokens,
+        connectWalletActions,
+    ])
+
+    useEffect(() => {
+        if (account && chain?.id && connectWalletState.forceUpdateTokens) void refreshNativeBalance()
+    }, [account, chain?.id, connectWalletState.forceUpdateTokens, refreshNativeBalance])
+
+    useEffect(() => {
+        if (!account || !chain?.id || !nativeBalance) return
+        connectWalletActions.updateEthBalance({ chainId: chain.id, balance: nativeBalance.formatted })
+    }, [account, chain?.id, nativeBalance, connectWalletActions])
 
     useEffect(() => {
         if (!connectWalletState) return
@@ -207,7 +209,7 @@ export function Shared({ children }: Props) {
 
     useEffect(() => {
         if (!publicGeb?.tokenList) return
-        connectWalletActions.setTokensData(withHaiAero(publicGeb.tokenList))
+        connectWalletActions.setTokensData(publicGeb.tokenList)
     }, [publicGeb?.tokenList, connectWalletActions, chain?.id])
 
     useEffect(() => {
@@ -221,22 +223,24 @@ export function Shared({ children }: Props) {
 
         vaultActions.fetchLiquidationData({
             geb: publicGeb,
-            tokensData: withHaiAero(publicGeb.tokenList),
+            tokensData: publicGeb.tokenList,
         })
     }, [vaultActions, publicGeb, needsMarketData])
 
     useEffect(() => {
-        if (!isEarnRoute) return
-        if (!account || !signer || !geb) return
-        if (chain?.id !== NETWORK_ID) return
+        if (!preloadOwnerVaults || !account || !signer || !geb || chain?.id !== NETWORK_ID) return
+
+        const controller = new AbortController()
 
         vaultActions.fetchUserVaults({
             address: account,
             geb,
-            tokensData: withHaiAero(geb.tokenList),
+            tokensData: geb.tokenList,
             chainId: NETWORK_ID,
+            signal: controller.signal,
         })
-    }, [account, signer, geb, chain?.id, vaultActions, isEarnRoute])
+        return () => controller.abort()
+    }, [account, signer, geb, chain?.id, vaultActions, preloadOwnerVaults])
 
     useEffect(() => {
         const video = splashVideo.current
@@ -315,6 +319,13 @@ export function Shared({ children }: Props) {
         transactionsActions,
         connectWalletState.ctHash,
     ])
+
+    useEffect(() => {
+        if (previousAccount && previousAccount !== account) {
+            vaultActions.setList([])
+            vaultActions.setSingleVault(undefined)
+        }
+    }, [account, previousAccount, vaultActions])
 
     const accountChange = useCallback(() => {
         resetModals()

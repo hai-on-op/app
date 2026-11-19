@@ -1,10 +1,9 @@
 import numeral from 'numeral'
-import { FixedNumber } from 'ethers'
-import { formatEther, formatUnits } from 'ethers/lib/utils'
+import { BigNumber, constants } from 'ethers'
+import { formatEther, formatUnits, parseUnits } from 'ethers/lib/utils'
 
 import type { FormattedBalance, SummaryCurrency, SummaryItem } from '~/types'
 import { floatsTypes } from './constants'
-import { sanitizeDecimals } from './helper'
 
 type FormatAddressOptions = {
     startLength?: number
@@ -153,28 +152,22 @@ export const getRatePercentage = (value: string, digits = 4, returnRate = false)
     return formatNumber(String(ratePercentage * 100), digits)
 }
 
-export const toFixedString = (value: string, type: keyof typeof floatsTypes): string => {
+// Token amounts passed to an ERC20 or proxy must fit the token's native precision.
+export function parseTokenAmount(value: string, decimals = 18): BigNumber | undefined {
     try {
-        // cut decimals to avoid underflow error
-        const formattedValue = sanitizeDecimals(value, floatsTypes[type])
-
-        const n = Number(formattedValue)
-        const nOfDecimals = Number.isInteger(n) ? formattedValue.length : formattedValue.split('.')[1].length
-
-        if (type === 'WAD' || nOfDecimals === floatsTypes.WAD) {
-            return FixedNumber.fromString(formattedValue, 'fixed256x18').toHexString()
-        }
-        if (type === 'RAY' || (nOfDecimals > floatsTypes.WAD && nOfDecimals <= floatsTypes.RAY)) {
-            return FixedNumber.fromString(formattedValue, 'fixed256x27').toHexString()
-        }
-        if (type === 'RAD' || (nOfDecimals > floatsTypes.RAY && nOfDecimals <= floatsTypes.RAD)) {
-            return FixedNumber.fromString(formattedValue, 'fixed256x45').toHexString()
-        }
-        return FixedNumber.fromString(formattedValue, 'fixed256x18').toHexString()
-    } catch (error) {
-        console.error('toFixedString error:', error)
-        return '0'
+        const amount = parseUnits(value || '0', decimals)
+        return amount.lt(0) || amount.gt(constants.MaxUint256) ? undefined : amount
+    } catch {
+        return undefined
     }
+}
+
+export const toFixedString = (value: string, type: keyof typeof floatsTypes): string => {
+    const decimals = floatsTypes[type]
+    // Derived protocol values may have more digits than the requested fixed-point scale.
+    if (!/^-?(?:\d+(?:\.\d*)?|\.\d+)$/.test(value)) return '0'
+    const [whole, fraction = ''] = value.split('.')
+    return parseUnits(whole + '.' + fraction.slice(0, decimals), decimals).toHexString()
 }
 
 export const formatDate = (ms: number) => {

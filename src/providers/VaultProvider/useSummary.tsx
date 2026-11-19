@@ -6,7 +6,8 @@ import {
     formatSummaryCurrency,
     formatSummaryPercentage,
     formatSummaryValue,
-    getMinimumAllowableCollateral,
+    getWithdrawableCollateral,
+    toFixedString,
 } from '~/utils'
 
 export type Summary = {
@@ -31,15 +32,13 @@ export function useSummary({ vault, collateral, debt, simulatedCR, liquidationPr
     const availableCollateral = useMemo(() => {
         if (!collateral.total.current || !collateral.liquidationData) return formatSummaryValue('0')!
 
-        const minCollateral = getMinimumAllowableCollateral(
-            debt.total.current?.raw || debt.total.after.raw,
-            collateral.liquidationData.currentPrice.liquidationPrice
+        const maxWithdraw = getWithdrawableCollateral(
+            collateral.total.current.raw,
+            debt.afterRad ?? toFixedString(debt.total.after.raw, 'RAD'),
+            collateral.liquidationData.currentPrice.safetyPrice,
+            collateral.data?.decimals ?? 18
         )
-
-        const maxWithdraw = Number(collateral.total.current.raw) - Number(minCollateral)
-        return Number(collateral.total.current?.raw || 0) > maxWithdraw
-            ? formatSummaryValue(maxWithdraw.toString(), { maxDecimals: 4, minSigFigs: 1 })
-            : collateral.total.current
+        return formatSummaryValue(maxWithdraw, { maxDecimals: 4, minSigFigs: 1 })
     }, [collateral, debt])
 
     return {

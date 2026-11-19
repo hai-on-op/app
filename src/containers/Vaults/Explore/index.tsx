@@ -37,6 +37,7 @@ export function VaultExplorer() {
         refetch,
         headers,
         rows,
+        rowsUnmodified,
         sorting,
         setSorting,
         filterEmpty,
@@ -77,6 +78,7 @@ export function VaultExplorer() {
                         </CheckboxButton>
                         <CollateralDropdown
                             label="Collateral"
+                            symbols={rowsUnmodified.map(({ collateralToken }) => collateralToken)}
                             selectedAsset={collateralFilter}
                             onSelect={setCollateralFilter}
                         />

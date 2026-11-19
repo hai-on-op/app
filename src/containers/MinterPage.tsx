@@ -6,7 +6,7 @@
  * Tab navigation (Mint, Bridge) is handled inside ManageVault component.
  */
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import type { MinterProtocolId } from '~/types/minterProtocol'
 import type { IVault } from '~/types/vaults'
@@ -21,6 +21,10 @@ import { ManageVault } from '~/containers/Vaults/Manage'
 interface MinterPageProps {
     protocolId: MinterProtocolId
     useTestnet?: boolean
+}
+
+function vaultSize(vault: IVault) {
+    return Number(vault.collateral) || Number(vault.totalDebt) || Number(vault.freeCollateral) || 0
 }
 
 /**
@@ -38,50 +42,23 @@ export function MinterPage({ protocolId, useTestnet = false }: MinterPageProps) 
     } = useStoreState((state) => state)
     const [action, setAction] = useState<VaultAction>(VaultAction.CREATE)
 
+    const largestVault = useMemo(() => {
+        const matchingVaults = userVaults.filter((vault) => vault.collateralName === collateralId)
+        return matchingVaults.reduce<IVault | undefined>((largest, vault) => {
+            const size = vaultSize(vault)
+            if (TREAT_EMPTY_VAULT_AS_NEW && size === 0) return largest
+            return !largest || size > vaultSize(largest) ? vault : largest
+        }, undefined)
+    }, [userVaults, collateralId])
+
     useEffect(() => {
-        // Initialize create flow with the protocol's V2 collateral selected
-        vaultActions.setSingleVault(undefined)
+        vaultActions.setSingleVault(largestVault)
         vaultActions.setVaultData({
             ...DEFAULT_VAULT_DATA,
             collateral: collateralId,
         })
-        // Ensure action is set to CREATE
-        setAction(VaultAction.CREATE)
-    }, [vaultActions, collateralId])
-
-    useEffect(() => {
-        if (!userVaults || userVaults.length === 0) return
-
-        // Only switch to manage if the user has a vault for this protocol
-        const protocolVaults = userVaults.filter((v: IVault) => v.collateralName === collateralId)
-        if (protocolVaults.length === 0) return
-
-        const getSize = (v: IVault) => {
-            const col = parseFloat(v.collateral || '0')
-            const debt = parseFloat(v.totalDebt || '0')
-            return isFinite(col) && col > 0 ? col : debt
-        }
-
-        // DEV: When TREAT_EMPTY_VAULT_AS_NEW is on, vaults with no collateral
-        // and no debt are considered "empty" and the create-vault flow is shown
-        // instead of the manage flow.
-        const isVaultEmpty = (v: IVault) => getSize(v) === 0
-
-        if (TREAT_EMPTY_VAULT_AS_NEW && protocolVaults.every(isVaultEmpty)) return
-
-        const largest = protocolVaults.reduce(
-            (max: IVault, v: IVault) => (getSize(v) > getSize(max) ? v : max),
-            protocolVaults[0]
-        )
-
-        // Switch to manage mode with the largest vault selected
-        vaultActions.setSingleVault(largest)
-        vaultActions.setVaultData({
-            ...DEFAULT_VAULT_DATA,
-            collateral: collateralId,
-        })
-        setAction(VaultAction.DEPOSIT_BORROW)
-    }, [userVaults, vaultActions, collateralId])
+        setAction(largestVault ? VaultAction.DEPOSIT_BORROW : VaultAction.CREATE)
+    }, [vaultActions, collateralId, largestVault])
 
     return (
         <VaultProvider action={action} setAction={setAction}>

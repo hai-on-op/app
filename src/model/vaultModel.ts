@@ -1,15 +1,11 @@
+import type { TransactionResponse } from '@ethersproject/providers'
 import { type Action, type Thunk, action, thunk } from 'easy-peasy'
 
 import { type StoreModel } from './index'
-import {
-    handleClaimFreeCollateral,
-    handleDepositAndBorrow,
-    handleDepositAndRepay,
-    handleRepayAndWithdraw,
-    handleWithdrawAndBorrow,
-} from '~/services/blockchain'
+import { handleClaimFreeCollateral, handleDepositAndBorrow, handleRepayAndWithdraw } from '~/services/blockchain'
 import { fetchLiquidationData, fetchUserVaults } from '~/services/vaults'
 import type {
+    VaultLeg,
     IFetchLiquidationDataPayload,
     IFetchVaultsPayload,
     ILiquidationData,
@@ -68,8 +64,13 @@ export interface VaultModel {
     claimFreeCollateral: Thunk<VaultModel, IVaultPayload & any, StoreModel>
     depositAndBorrow: Thunk<VaultModel, IVaultPayload & { vaultId?: string }, any, StoreModel>
     repayAndWithdraw: Thunk<VaultModel, IVaultPayload & { vaultId: string }, any, StoreModel>
-    depositAndRepay: Thunk<VaultModel, IVaultPayload & { vaultId: string }, any, StoreModel>
-    withdrawAndBorrow: Thunk<VaultModel, IVaultPayload & { vaultId: string }, any, StoreModel>
+    submitVaultLeg: Thunk<
+        VaultModel,
+        IVaultPayload & { vaultId: string; leg: VaultLeg },
+        any,
+        StoreModel,
+        Promise<TransactionResponse>
+    >
     // collectETH: Thunk<
     //     VaultModel,
     //     { signer: JsonRpcSigner; vault: IVault },
@@ -96,14 +97,10 @@ const DEFAULT_VAULT_DATA: IVaultData = {
     collateral: '',
 }
 
-const DEPRECATED_COLLATERALS: Array<string> = ['WBTC', 'APXETH']
-
 export const vaultModel: VaultModel = {
     list: [],
     setList: action((state, payload) => {
-        state.list = payload.filter(
-            ({ collateralName }) => !DEPRECATED_COLLATERALS.includes(collateralName.toUpperCase())
-        )
+        state.list = payload
     }),
     fetchLiquidationData: thunk(async (actions, payload) => {
         const data = await fetchLiquidationData(payload)
@@ -119,7 +116,7 @@ export const vaultModel: VaultModel = {
         const fetched = await fetchUserVaults(payload)
         const chainId = payload.chainId
 
-        if (fetched) {
+        if (fetched && !payload.signal?.aborted) {
             actions.setList(fetched.userVaults)
             if (fetched.userVaults.length > 0) {
                 storeActions.connectWalletModel.setStep(2)
@@ -290,69 +287,51 @@ export const vaultModel: VaultModel = {
             storeActions.connectWalletModel.setForceUpdateTokens(true)
         }
     }),
-    depositAndRepay: thunk(async (actions, payload, { getStoreActions }) => {
+    submitVaultLeg: thunk(async (_actions, { signer, vaultId, vaultData, leg }, { getStoreActions }) => {
         const storeActions = getStoreActions()
-        const txResponses = await handleDepositAndRepay(payload.signer, payload.vaultData, payload.vaultId)
-        if (txResponses) {
-            await Promise.all(
-                txResponses.map(async (res) => {
-                    if (!res) return
-                    const { hash, chainId, from } = res
-                    storeActions.transactionsModel.addTransaction({
-                        chainId,
-                        hash,
-                        from,
-                        summary: 'Modifying Vault',
-                        addedTime: new Date().getTime(),
-                        originalTx: res,
-                    })
-                    storeActions.popupsModel.setIsWaitingModalOpen(true)
-                    storeActions.popupsModel.setWaitingPayload({
-                        title: 'Transaction Submitted',
-                        hash: hash,
-                        status: ActionState.SUCCESS,
-                    })
-
-                    await res.wait()
-                    return
-                })
-            )
-
-            actions.setVaultData(DEFAULT_VAULT_DATA)
-            storeActions.connectWalletModel.setForceUpdateTokens(true)
+        const names = {
+            deposit: 'Deposit collateral',
+            withdraw: 'Withdraw collateral',
+            repay: 'Repay HAI',
+            borrow: 'Borrow HAI',
         }
-    }),
-    withdrawAndBorrow: thunk(async (actions, payload, { getStoreActions }) => {
-        const storeActions = getStoreActions()
-        const txResponses = await handleWithdrawAndBorrow(payload.signer, payload.vaultData, payload.vaultId)
-        if (txResponses) {
-            await Promise.all(
-                txResponses.map(async (res) => {
-                    if (!res) return
-                    const { hash, chainId, from } = res
-                    storeActions.transactionsModel.addTransaction({
-                        chainId,
-                        hash,
-                        from,
-                        summary: 'Modifying Vault',
-                        addedTime: new Date().getTime(),
-                        originalTx: res,
-                    })
-                    storeActions.popupsModel.setIsWaitingModalOpen(true)
-                    storeActions.popupsModel.setWaitingPayload({
-                        title: 'Transaction Submitted',
-                        hash: hash,
-                        status: ActionState.SUCCESS,
-                    })
-
-                    await res.wait()
-                    return
-                })
-            )
-
-            actions.setVaultData(DEFAULT_VAULT_DATA)
-            storeActions.connectWalletModel.setForceUpdateTokens(true)
+        const summary = `${names[leg]} · Vault #${vaultId}`
+        storeActions.popupsModel.setIsWaitingModalOpen(true)
+        storeActions.popupsModel.setWaitingPayload({
+            title: summary,
+            text: 'Confirm this transaction in your wallet.',
+            status: ActionState.LOADING,
+        })
+        // The other inputs may still contain amounts from an inactive tab.
+        const amounts = {
+            ...vaultData,
+            deposit: '',
+            withdraw: '',
+            borrow: '',
+            repay: '',
+            repayAll: leg === 'repay' && !!vaultData.repayAll,
+            [leg]: vaultData[leg],
         }
+        const tx =
+            leg === 'deposit' || leg === 'borrow'
+                ? await handleDepositAndBorrow(signer, amounts, vaultId)
+                : await handleRepayAndWithdraw(signer, amounts, vaultId)
+        if (!tx) throw new Error('No vault transaction was submitted.')
+        storeActions.transactionsModel.addTransaction({
+            chainId: tx.chainId,
+            hash: tx.hash,
+            from: tx.from,
+            summary,
+            addedTime: Date.now(),
+            originalTx: tx,
+        })
+        storeActions.popupsModel.setWaitingPayload({
+            title: summary,
+            text: 'Waiting for confirmation.',
+            hash: tx.hash,
+            status: ActionState.LOADING,
+        })
+        return tx
     }),
     // collectETH: thunk(async (actions, payload, { getStoreActions }) => {
     //     const storeActions = getStoreActions()

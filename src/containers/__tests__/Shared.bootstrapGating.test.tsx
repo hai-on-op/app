@@ -16,6 +16,7 @@ const {
     useGebMock,
     useNetworkMock,
     usePublicGebMock,
+    nativeBalanceMock,
     useStoreActionsMock,
     useStoreStateMock,
     useTokenContractMock,
@@ -27,6 +28,7 @@ const {
     useGebMock: vi.fn(),
     useNetworkMock: vi.fn(),
     usePublicGebMock: vi.fn(),
+    nativeBalanceMock: vi.fn(),
     useStoreActionsMock: vi.fn(),
     useStoreStateMock: vi.fn(),
     useTokenContractMock: vi.fn(),
@@ -50,6 +52,7 @@ vi.mock('@hai-on-op/sdk', () => ({
 vi.mock('wagmi', () => ({
     useAccount: () => useAccountMock(),
     useNetwork: () => useNetworkMock(),
+    useBalance: (request: unknown) => nativeBalanceMock(request),
 }))
 
 vi.mock('~/store', () => ({
@@ -80,6 +83,10 @@ vi.mock('~/providers/RewardsProvider', () => ({
 
 vi.mock('~/providers/EarnProvider', () => ({
     EarnProvider: ({ children }: { children: ReactNode }) => <div data-testid="earn-provider">{children}</div>,
+}))
+
+vi.mock('~/apr/AprProvider', () => ({
+    AprProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
 }))
 
 vi.mock('~/services/TransactionUpdater', () => ({
@@ -136,6 +143,7 @@ const tokenList = {
 const baseState = {
     connectWalletModel: {
         forceUpdateTokens: false,
+        balanceOwner: '0x00000000000000000000000000000000000000bb',
         tokensFetchedData: {
             HAI: { balanceE18: utils.parseEther('1') },
             KITE: { balanceE18: utils.parseEther('2') },
@@ -155,6 +163,7 @@ const baseState = {
 const baseActions = {
     connectWalletModel: {
         fetchTokenData: vi.fn(),
+        setBalanceOwner: vi.fn(),
         updateEthBalance: vi.fn(),
         setProtAllowance: vi.fn(),
         setCoinAllowance: vi.fn(),
@@ -199,6 +208,8 @@ function renderShared(path: string) {
 describe('Shared bootstrap gating', () => {
     beforeEach(() => {
         vi.clearAllMocks()
+        nativeBalanceMock.mockReturnValue({ data: undefined, refetch: vi.fn() })
+        baseActions.connectWalletModel.fetchTokenData.mockResolvedValue(undefined)
 
         allowanceMock.mockResolvedValue(utils.parseEther('5'))
         getProxyActionMock.mockResolvedValue({
@@ -229,6 +240,33 @@ describe('Shared bootstrap gating', () => {
         )
     })
 
+    it('uses the Base native balance and the Optimism public deployment for protocol balances', async () => {
+        const owner = baseState.connectWalletModel.balanceOwner
+        const opDeployment = { tokenList }
+        const refreshNative = vi.fn()
+        nativeBalanceMock.mockReturnValue({ data: { formatted: '1.000000000000000001' }, refetch: refreshNative })
+        useNetworkMock.mockReturnValue({ chain: { id: 8453 } })
+        usePublicGebMock.mockReturnValue(opDeployment)
+        useStoreStateMock.mockImplementation((selector: (state: typeof baseState) => unknown) =>
+            selector({
+                ...baseState,
+                connectWalletModel: { ...baseState.connectWalletModel, forceUpdateTokens: true },
+            })
+        )
+        const view = renderShared('/analytics')
+        expect(nativeBalanceMock).toHaveBeenCalledWith({ address: owner, chainId: 8453, enabled: true })
+        expect(refreshNative).toHaveBeenCalled()
+        expect(baseActions.connectWalletModel.updateEthBalance).toHaveBeenCalledWith({
+            chainId: 8453,
+            balance: '1.000000000000000001',
+        })
+        const request = baseActions.connectWalletModel.fetchTokenData.mock.calls[0][0]
+        expect(request.geb).toBe(opDeployment)
+        expect(request.user).toBe(owner)
+        view.unmount()
+        expect(request.signal.aborted).toBe(true)
+    })
+
     it('skips market, allowance, and vault bootstrap work on analytics', async () => {
         renderShared('/analytics')
 
@@ -241,8 +279,8 @@ describe('Shared bootstrap gating', () => {
         expect(baseActions.connectWalletModel.setProtAllowance).not.toHaveBeenCalled()
     })
 
-    it('preloads earn market data and user vaults without proxy allowance fetches', async () => {
-        renderShared('/earn')
+    it.each(['/earn', '/haiVELO', '/haiAERO'])('loads owner vaults on a direct %s visit', async (path) => {
+        renderShared(path)
 
         await waitFor(() => expect(baseActions.vaultModel.fetchUserVaults).toHaveBeenCalledTimes(1))
 
@@ -252,8 +290,8 @@ describe('Shared bootstrap gating', () => {
         expect(baseActions.connectWalletModel.setProtAllowance).not.toHaveBeenCalled()
     })
 
-    it('fetches allowances on vault routes without doing the old global vault preload', async () => {
-        renderShared('/vaults')
+    it.each(['/vaults', '/vaults/open?collateral=HAIAERO'])('lets %s load its own vaults', async (path) => {
+        renderShared(path)
 
         await waitFor(() => expect(baseActions.connectWalletModel.setCoinAllowance).toHaveBeenCalledTimes(1))
 

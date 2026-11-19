@@ -5,9 +5,9 @@ import styled from 'styled-components'
 import { CenteredFlex, Text } from '~/styles'
 
 export function VaultActionError() {
-    const { action, formState, error, errorMessage } = useVault()
+    const { action, formState, error, errorMessage, debtLimitNotice } = useVault()
 
-    if (!error) return null
+    if (error === undefined) return debtLimitNotice ? <Text role="status">{debtLimitNotice}</Text> : null
 
     if (error === VaultInfoError.ZERO_AMOUNT) {
         switch (action) {

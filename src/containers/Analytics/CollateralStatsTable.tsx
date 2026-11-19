@@ -24,90 +24,108 @@ export function CollateralStatsTable({ headers, rows, sorting, setSorting }: Col
             sorting={sorting}
             setSorting={setSorting}
             rows={rows
-                .map(({ token, stabilityFee, annualEarnings, totalCollateral, totalDebt, ratio, debt }) => (
-                    <Table.Row
-                        key={token}
-                        container={TableRow}
-                        headers={headers}
-                        items={[
-                            {
-                                content: (
-                                    <Flex $align="center" $gap={8}>
-                                        <TokenArray tokens={[token as any]} hideLabel />
-                                        <Text $fontWeight={700}>{token}</Text>
-                                    </Flex>
-                                ),
-                                fullWidth: true,
-                            },
-                            {
-                                content: (
-                                    <Text>
-                                        {totalCollateral?.usdRaw
-                                            ? formatNumberWithStyle(totalCollateral.usdRaw, {
-                                                  style: 'currency',
-                                                  maxDecimals: 2,
-                                                  suffixed: true,
-                                              })
-                                            : '$--'}
-                                    </Text>
-                                ),
-                            },
-                            {
-                                content: (
-                                    <Text>
-                                        {totalDebt?.usdRaw
-                                            ? formatNumberWithStyle(totalDebt.usdRaw, {
-                                                  style: 'currency',
-                                                  maxDecimals: 2,
-                                                  suffixed: true,
-                                              })
-                                            : '$--'}
-                                    </Text>
-                                ),
-                            },
-                            {
-                                content: (
-                                    <DebtCeilingContainer>
-                                        <DebtCeilingText style={{ marginRight: '0.2em' }}>
-                                            {debt?.ceilingPercent?.toFixed(2)}%
-                                        </DebtCeilingText>
-                                        <DebtCeilingProgressContainer>
-                                            <ProgressBar progress={(debt?.ceilingPercent || 0) / 100} />
-                                        </DebtCeilingProgressContainer>
-                                    </DebtCeilingContainer>
-                                ),
-                            },
-                            {
-                                content: <Text>{ratio?.formatted || '--%'}</Text>,
-                            },
-                            {
-                                content: (
-                                    <Text>
-                                        {stabilityFee
-                                            ? formatNumberWithStyle(-stabilityFee, {
-                                                  maxDecimals: 1,
-                                                  style: 'percent',
-                                              })
-                                            : '--%'}
-                                    </Text>
-                                ),
-                            },
-                            {
-                                content: (
-                                    <Text>
-                                        {annualEarnings
-                                            ? formatNumberWithStyle(annualEarnings, {
-                                                  maxDecimals: 1,
-                                                  suffixed: true,
-                                                  style: 'currency',
-                                              })
-                                            : '$--'}
-                                    </Text>
-                                ),
-                            },
-                        ]}
-                    />
-                ))
+                .map(
+                    ({
+                        token,
+                        closedToNewVaults,
+                        stabilityFee,
+                        annualEarnings,
+                        totalCollateral,
+                        totalDebt,
+                        ratio,
+                        debt,
+                    }) => (
+                        <Table.Row
+                            key={token}
+                            container={TableRow}
+                            headers={headers}
+                            items={[
+                                {
+                                    content: (
+                                        <Flex $align="center" $gap={8}>
+                                            <TokenArray tokens={[token as any]} hideLabel />
+                                            <div>
+                                                <Text $fontWeight={700}>{token}</Text>
+                                                {closedToNewVaults && (
+                                                    <Text $fontSize="0.8em">Closed to new vaults</Text>
+                                                )}
+                                            </div>
+                                        </Flex>
+                                    ),
+                                    fullWidth: true,
+                                },
+                                {
+                                    content: (
+                                        <Text>
+                                            {totalCollateral?.usdRaw
+                                                ? formatNumberWithStyle(totalCollateral.usdRaw, {
+                                                      style: 'currency',
+                                                      maxDecimals: 2,
+                                                      suffixed: true,
+                                                  })
+                                                : '$--'}
+                                        </Text>
+                                    ),
+                                },
+                                {
+                                    content: (
+                                        <Text>
+                                            {totalDebt?.usdRaw
+                                                ? formatNumberWithStyle(totalDebt.usdRaw, {
+                                                      style: 'currency',
+                                                      maxDecimals: 2,
+                                                      suffixed: true,
+                                                  })
+                                                : '$--'}
+                                        </Text>
+                                    ),
+                                },
+                                {
+                                    content: (
+                                        <DebtCeilingContainer>
+                                            <DebtCeilingText style={{ marginRight: '0.2em' }}>
+                                                {debt?.ceilingPercent == null
+                                                    ? '—'
+                                                    : `${debt.ceilingPercent.toFixed(2)}%`}
+                                            </DebtCeilingText>
+                                            <DebtCeilingProgressContainer>
+                                                <ProgressBar progress={(debt?.ceilingPercent || 0) / 100} />
+                                            </DebtCeilingProgressContainer>
+                                        </DebtCeilingContainer>
+                                    ),
+                                },
+                                {
+                                    content: <Text>{ratio?.formatted || '--%'}</Text>,
+                                },
+                                {
+                                    content: (
+                                        <Text>
+                                            {stabilityFee
+                                                ? formatNumberWithStyle(-stabilityFee, {
+                                                      maxDecimals: 1,
+                                                      style: 'percent',
+                                                  })
+                                                : '--%'}
+                                        </Text>
+                                    ),
+                                },
+                                {
+                                    content: (
+                                        <Text>
+                                            {annualEarnings
+                                                ? formatNumberWithStyle(annualEarnings, {
+                                                      maxDecimals: 1,
+                                                      suffixed: true,
+                                                      style: 'currency',
+                                                  })
+                                                : '$--'}
+                                        </Text>
+                                    ),
+                                },
+                            ]}
+                        />
+                    )
+                )
                 .concat([<GlobalRow key="global" rows={rows} headers={headers} />])}
         />
     )
@@ -192,7 +210,8 @@ function GlobalRow({ rows, headers }: GlobalRowProps) {
         )
     }, [rows])
 
-    const calculateDebtCeilingPercent = (debtAmount: number, debtCeiling: number) => (debtAmount * 100) / debtCeiling
+    const ceilingPercent =
+        stats.totalDebtCeilingRaw > 0 ? (stats.totalDebtRaw * 100) / stats.totalDebtCeilingRaw : undefined
 
     return (
         <Table.Row
@@ -235,20 +254,10 @@ function GlobalRow({ rows, headers }: GlobalRowProps) {
                             {' '}
                             <DebtCeilingContainer>
                                 <DebtCeilingText style={{ marginRight: '0.2em' }}>
-                                    {calculateDebtCeilingPercent(stats.totalDebtRaw, stats.totalDebtCeilingRaw).toFixed(
-                                        2
-                                    )}
-                                    %
+                                    {ceilingPercent == null ? '—' : `${ceilingPercent.toFixed(2)}%`}
                                 </DebtCeilingText>
                                 <DebtCeilingProgressContainer>
-                                    <ProgressBar
-                                        progress={
-                                            (calculateDebtCeilingPercent(
-                                                stats.totalDebtRaw,
-                                                stats.totalDebtCeilingRaw
-                                            ) || 0) / 100
-                                        }
-                                    />
+                                    <ProgressBar progress={(ceilingPercent || 0) / 100} />
                                 </DebtCeilingProgressContainer>
                             </DebtCeilingContainer>
                         </Text>

@@ -1,26 +1,23 @@
-import { useStoreState } from '~/store'
-
 import styled, { css } from 'styled-components'
 import { Text } from '~/styles'
 import { BrandedDropdown, DropdownOption } from './BrandedDropdown'
 import { TokenArray } from './TokenArray'
-import { DEPRECATED_COLLATERALS } from '~/utils'
 
 type CollateralDropdownProps = {
     label: string
     selectedAsset?: string
     onSelect: (asset?: string) => void
+    symbols: string[]
     excludeAll?: boolean
 }
-export function CollateralDropdown({ label, selectedAsset, onSelect, excludeAll = false }: CollateralDropdownProps) {
-    const {
-        connectWalletModel: { tokensData },
-    } = useStoreState((state) => state)
-
-    const symbols = Object.values(tokensData || {})
-        .filter(({ isCollateral }) => isCollateral)
-        .filter(({ symbol }) => !DEPRECATED_COLLATERALS.includes(symbol))
-        .map(({ symbol }) => symbol)
+export function CollateralDropdown({
+    label,
+    selectedAsset,
+    onSelect,
+    symbols,
+    excludeAll = false,
+}: CollateralDropdownProps) {
+    const options = Array.from(new Set(symbols))
 
     return (
         <BrandedDropdown
@@ -32,7 +29,7 @@ export function CollateralDropdown({ label, selectedAsset, onSelect, excludeAll 
                 </Text>
             }
         >
-            {(excludeAll ? symbols : ['All', ...symbols]).map((token) => (
+            {(excludeAll ? options : ['All', ...options]).map((token) => (
                 <Option
                     key={token}
                     $pad={token !== 'All'}

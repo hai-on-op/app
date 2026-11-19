@@ -9,7 +9,6 @@ import {
     formatSummaryCurrency,
     formatSummaryPercentage,
     tokenAssets,
-    DEPRECATED_COLLATERALS,
 } from '~/utils'
 
 export type SystemData = {
@@ -33,7 +32,7 @@ export function useSystemData(): SystemData {
     const { data, loading, error } = useQuery<QuerySystemStateData>(SYSTEMSTATE_QUERY)
 
     const formattedData = useMemo(() => {
-        if (!data) return undefined
+        if (!data?.systemStates[0]) return undefined
 
         const {
             collateralTypes,
@@ -50,23 +49,19 @@ export function useSystemData(): SystemData {
             ],
         } = data
 
-        // Filtering out deprecated collaterals
-        const activeCollateralTypes = collateralTypes.filter(
-            ({ id }) => !DEPRECATED_COLLATERALS.includes(id.toUpperCase())
-        )
-
-        const { total, collateralStats } = activeCollateralTypes.reduce(
+        const { total, collateralStats } = collateralTypes.reduce(
             (stats, { id, totalCollateralLockedInSafes, debtAmount, debtCeiling, currentPrice }) => {
                 if (currentPrice) {
                     const totalCollateral = formatSummaryCurrency(totalCollateralLockedInSafes, currentPrice.value)
                     const totalDebt = formatSummaryCurrency(debtAmount, currentRedemptionPrice.value || '1')
                     const ratioRaw = parseFloat(totalCollateral?.usdRaw || '0') / parseFloat(totalDebt?.usdRaw || '0')
-                    const ratio = formatSummaryPercentage(isNaN(ratioRaw) ? '' : ratioRaw.toString())
+                    const ratio = formatSummaryPercentage(Number.isFinite(ratioRaw) ? ratioRaw.toString() : '')
                     const key = tokenAssets[id]
                         ? id
                         : Object.values(tokenAssets).find(({ name }) => id === name)?.symbol || id
 
-                    const debtCeilingPercent = (parseFloat(debtAmount || '0') * 100) / parseFloat(debtCeiling || '0')
+                    const ceiling = Number(debtCeiling)
+                    const debtCeilingPercent = ceiling > 0 ? (Number(debtAmount) * 100) / ceiling : undefined
 
                     const debt = {
                         debtAmount,

@@ -44,7 +44,7 @@ export function useAuctionsData() {
     const { address } = useAccount()
 
     const {
-        auctionModel: { auctionsData },
+        auctionModel: { auctionsData, collateralAuctions: collateralBySymbol },
         connectWalletModel: { proxyAddress },
     } = useStoreState((state) => state)
 
@@ -206,6 +206,7 @@ export function useAuctionsData() {
         setTypeFilter,
         statusFilter,
         setStatusFilter,
+        saleAssets: Object.keys(collateralBySymbol).filter((symbol) => collateralBySymbol[symbol].length > 0),
         saleAssetsFilter,
         setSaleAssetsFilter,
     }

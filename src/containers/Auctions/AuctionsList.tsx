@@ -49,6 +49,7 @@ export function AuctionsList({ isLoading, error }: AuctionsListProps) {
         setTypeFilter,
         statusFilter,
         setStatusFilter,
+        saleAssets,
         saleAssetsFilter,
         setSaleAssetsFilter,
     } = useAuctionsData()
@@ -129,6 +130,7 @@ export function AuctionsList({ isLoading, error }: AuctionsListProps) {
                     {(!typeFilter || typeFilter === 'COLLATERAL') && (
                         <CollateralDropdown
                             label="For Sale Asset"
+                            symbols={saleAssets}
                             selectedAsset={saleAssetsFilter}
                             onSelect={setSaleAssetsFilter}
                         />

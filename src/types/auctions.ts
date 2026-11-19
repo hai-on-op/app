@@ -38,6 +38,8 @@ export type IAuction = {
     sellToken: string
     winner: string
     tokenSymbol?: string
+    remainingToRaiseE18?: string
+    remainingCollateral?: string
     myBids?: number
     status?: Status
 }

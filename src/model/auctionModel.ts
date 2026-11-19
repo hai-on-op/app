@@ -1,13 +1,6 @@
 import { type Action, type Thunk, action, thunk } from 'easy-peasy'
 
-import {
-    type AuctionData,
-    type CollateralAuctionsData,
-    Geb,
-    type ICollateralAuction,
-    fetchAuctionData,
-    fetchCollateralAuctionData,
-} from '@hai-on-op/sdk'
+import { type AuctionData, Geb, type ICollateralAuction, fetchAuctionData } from '@hai-on-op/sdk'
 
 import type { IAuctionBid, IAuction, AuctionEventType, LoadingAuctionsData } from '~/types/auctions'
 import {
@@ -51,18 +44,6 @@ export interface AuctionModel {
     fetchAuctionsData: Thunk<AuctionModel, { geb: Geb; proxyAddress: string }, StoreModel>
     loadingAuctionsData: LoadingAuctionsData
     setLoadingAuctionsData: Action<AuctionModel, LoadingAuctionsData>
-
-    collateralData: CollateralAuctionsData[] | null
-    setCollateralData: Action<AuctionModel, CollateralAuctionsData[]>
-    fetchCollateralData: Thunk<
-        AuctionModel,
-        {
-            geb: Geb
-            collateral: string
-            auctionIds: string[]
-        },
-        CollateralAuctionsData[]
-    >
 
     // protInternalBalance = user's KITE balance in the protocol
     protInternalBalance: string
@@ -220,15 +201,6 @@ export const auctionModel: AuctionModel = {
     },
     setLoadingAuctionsData: action((state, payload) => {
         state.loadingAuctionsData = { ...state.loadingAuctionsData, ...payload }
-    }),
-
-    collateralData: null,
-    setCollateralData: action((state, payload) => {
-        state.collateralData = payload
-    }),
-    fetchCollateralData: thunk(async (state, { geb, collateral, auctionIds }) => {
-        const fetched = await fetchCollateralAuctionData(geb, collateral, auctionIds)
-        state.setCollateralData(fetched)
     }),
 
     protInternalBalance: '',
