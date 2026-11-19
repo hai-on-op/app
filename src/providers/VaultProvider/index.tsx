@@ -160,10 +160,7 @@ export function VaultProvider({ action, setAction, children }: Props) {
     const creating = action === VaultAction.CREATE
     const { limits, notice: limitQueryNotice } = useVaultDebtLimits(
         geb,
-        !!address &&
-            chain?.id === NETWORK_ID &&
-            (borrowing || repaying) &&
-            (creating || !!singleVault?.vaultHandler),
+        !!address && chain?.id === NETWORK_ID && (borrowing || repaying) && (creating || !!singleVault?.vaultHandler),
         creating ? tokensData[vaultData.collateral]?.bytes32String : singleVault?.collateralType,
         creating ? undefined : singleVault?.vaultHandler,
         repaying ? proxyAddress || undefined : undefined
