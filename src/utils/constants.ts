@@ -7,10 +7,13 @@ export const {
     VITE_WALLETCONNECT_ID,
     VITE_ALCHEMY_KEY,
     VITE_GRAPH_API_KEY,
-    VITE_MAINNET_PUBLIC_RPC,
     VITE_TESTNET_PUBLIC_RPC,
     VITE_FLAGSMITH_API_KEY,
 } = import.meta.env
+
+const useManagedRpc = globalThis.location?.origin === import.meta.env.VITE_RPC_APP_ORIGIN
+export const VITE_MAINNET_PUBLIC_RPC =
+    (useManagedRpc && import.meta.env.VITE_OP_APP_RPC) || import.meta.env.VITE_MAINNET_PUBLIC_RPC
 
 export enum ChainId {
     MAINNET = 10,

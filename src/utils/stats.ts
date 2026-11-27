@@ -11,7 +11,9 @@ const FLX_ALIGNMENTS_MSIG_ADDRESS = '0x638d5CcAF57446363e8Ca5BD09b220EE7A87e8C6'
 const formatStat = (stat: BigNumber) => parseInt(ethers.utils.formatUnits(stat))
 
 export const kiteTokenStats = async () => {
-    const provider = new ethers.providers.JsonRpcProvider(process.env.VITE_MAINNET_PUBLIC_RPC)
+    const provider = new ethers.providers.JsonRpcProvider(
+        process.env.HAI_OP_RPC_URL || process.env.VITE_MAINNET_PUBLIC_RPC
+    )
 
     const kiteERC20 = new ethers.Contract(KITE_ADDRESS, ERC20_ABI, provider)
     const vesting = new ethers.Contract(VESTING_ADDRESS, VESTING_ABI, provider)
@@ -41,7 +43,9 @@ export const kiteTokenStats = async () => {
 }
 
 export const haiTokenStats = async () => {
-    const provider = new ethers.providers.JsonRpcProvider(process.env.VITE_MAINNET_PUBLIC_RPC)
+    const provider = new ethers.providers.JsonRpcProvider(
+        process.env.HAI_OP_RPC_URL || process.env.VITE_MAINNET_PUBLIC_RPC
+    )
     const haiERC20 = new ethers.Contract(HAI_ADDRESS, ERC20_ABI, provider)
     const totalSupply = await haiERC20.totalSupply()
     return {

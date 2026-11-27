@@ -55,10 +55,10 @@ export function Table({
                                 unsortable
                                     ? undefined
                                     : () =>
-                                        setSorting((s) => ({
-                                            key: label,
-                                            dir: s.key === label && s.dir === 'desc' ? 'asc' : 'desc',
-                                        }))
+                                          setSorting((s) => ({
+                                              key: label,
+                                              dir: s.key === label && s.dir === 'desc' ? 'asc' : 'desc',
+                                          }))
                             }
                             tooltip={tooltip}
                             tooltipAnchor={tooltipAnchor}

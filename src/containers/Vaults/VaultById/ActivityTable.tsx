@@ -31,12 +31,12 @@ const ActionIconContainer = styled(CenteredFlex)<{ $topLeft?: boolean; $arrowBg?
     & > *:nth-child(2) {
         position: absolute;
         ${({ $topLeft = false }) =>
-        $topLeft
-            ? css`
+            $topLeft
+                ? css`
                       left: -4px;
                       top: -4px;
                   `
-            : css`
+                : css`
                       right: -4px;
                       bottom: -4px;
                   `}
@@ -234,9 +234,9 @@ export function ActivityTable({ vault }: ActivityTableProps) {
                                                     <Text $fontSize="0.8em">
                                                         {collateralPrice
                                                             ? formatNumberWithStyle(
-                                                                Math.abs(collateral) * collateralPrice,
-                                                                { style: 'currency' }
-                                                            )
+                                                                  Math.abs(collateral) * collateralPrice,
+                                                                  { style: 'currency' }
+                                                              )
                                                             : '$--'}
                                                     </Text>
                                                 </Flex>

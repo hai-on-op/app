@@ -21,15 +21,15 @@ export function useGetAuctions(type: AuctionEventType, tokenSymbol?: string) {
             case 'COLLATERAL':
                 return tokenSymbol
                     ? (auctionModel.collateralAuctions[tokenSymbol] || []).map((auction) =>
-                        convertCollateralAuction(auction, tokenSymbol)
-                    )
+                          convertCollateralAuction(auction, tokenSymbol)
+                      )
                     : Object.entries(auctionModel.collateralAuctions).reduce(
-                        (arr, [tokenSymbol, innerArr]) => [
-                            ...innerArr.map((auction) => convertCollateralAuction(auction, tokenSymbol)),
-                            ...arr,
-                        ],
+                          (arr, [tokenSymbol, innerArr]) => [
+                              ...innerArr.map((auction) => convertCollateralAuction(auction, tokenSymbol)),
+                              ...arr,
+                          ],
                           [] as IAuction[]
-                    )
+                      )
             default:
                 return []
         }

@@ -62,11 +62,11 @@ const RowItem = styled(Flex).attrs((props: FlexProps) => ({
         `}
         font-weight: 700;
         ${
-    $fullWidth &&
+            $fullWidth &&
             css`
                 grid-column: 1 / -1;
             `
-}
+        }
         & > *:first-child {
             display: flex;
         }
