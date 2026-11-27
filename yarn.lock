@@ -4321,7 +4321,15 @@
   dependencies:
     server-only "^0.0.1"
 
-"@vercel/build-utils@7.9.1", "@vercel/build-utils@^7.9.1":
+"@vercel/build-utils@14.21.1", "@vercel/build-utils@^7.9.1":
+  version "14.21.1"
+  resolved "https://registry.yarnpkg.com/@vercel/build-utils/-/build-utils-14.21.1.tgz#8bd17dec816e62b7e08d30b69d8eb90cd9e1bfe2"
+  integrity sha512-zY+tAoAfQkuGiALPwLV2K0ugDtNml3LxWM0Fimv4JScSsCb/+5dIgn2gSXt+fiJPenk0MRKZ8/LphLZyrqTfRQ==
+  dependencies:
+    cjs-module-lexer "1.2.3"
+    es-module-lexer "1.5.0"
+
+"@vercel/build-utils@7.9.1":
   version "7.9.1"
   resolved "https://registry.yarnpkg.com/@vercel/build-utils/-/build-utils-7.9.1.tgz#b55180aa0ac5e88a9754152f7b09b74098c590a4"
   integrity sha512-yqbP7d8oLAGkh5iy9/Vu1c0+s5jLFK56QHEZlkj1lY3t3OQ+7dsAi0oUP/gv8YxtUYwMDfeYSqZr/4cNhnSBsg==
@@ -6494,7 +6502,6 @@ domexception@^4.0.0:
 
 "ds-test@https://github.com/dapphub/ds-test.git#e282159d5170298eb2455a6c05280ab5a73a4ef0":
   version "1.0.0"
-  uid e282159d5170298eb2455a6c05280ab5a73a4ef0
   resolved "https://github.com/dapphub/ds-test.git#e282159d5170298eb2455a6c05280ab5a73a4ef0"
 
 duplexify@^4.1.2:
@@ -6716,6 +6723,11 @@ es-module-lexer@1.4.1:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/es-module-lexer/-/es-module-lexer-1.4.1.tgz#41ea21b43908fe6a287ffcbe4300f790555331f5"
   integrity sha512-cXLGjP0c4T3flZJKQSuziYoq7MlT+rnvfZjfp7h+I7K9BNX54kP9nyWvdbwjQ4u1iWbOL4u96fgeZLToQlZC7w==
+
+es-module-lexer@1.5.0:
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/es-module-lexer/-/es-module-lexer-1.5.0.tgz#4878fee3789ad99e065f975fdd3c645529ff0236"
+  integrity sha512-pqrTKmwEIgafsYZAGw9kszYzmagcE/n4dbgwGWLEXg7J4QFJVQRBld8j3Q3GNez79jzxZshq0bcT962QHOghjw==
 
 es-set-tostringtag@^2.0.2, es-set-tostringtag@^2.0.3:
   version "2.0.3"
