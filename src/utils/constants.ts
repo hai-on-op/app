@@ -7,7 +7,6 @@ export const {
     VITE_WALLETCONNECT_ID,
     VITE_ALCHEMY_KEY,
     VITE_GRAPH_API_KEY,
-    VITE_TESTNET_PUBLIC_RPC,
     VITE_FLAGSMITH_API_KEY,
     VITE_LP_SUBGRAPH_URL,
 } = import.meta.env
@@ -19,6 +18,16 @@ export const VITE_MAINNET_PUBLIC_RPC =
     (useManagedRpc && import.meta.env.VITE_OP_APP_RPC) || import.meta.env.VITE_MAINNET_PUBLIC_RPC
 export const VITE_PUBLIC_BASE_RPC =
     (useManagedRpc && import.meta.env.VITE_BASE_APP_RPC) || import.meta.env.VITE_PUBLIC_BASE_RPC
+
+// Some preview builds point both settings to the same Optimism-mainnet node.
+const sharesMainnetRpc =
+    !!import.meta.env.VITE_MAINNET_PUBLIC_RPC &&
+    import.meta.env.VITE_TESTNET_PUBLIC_RPC === import.meta.env.VITE_MAINNET_PUBLIC_RPC
+export const VITE_TESTNET_PUBLIC_RPC = sharesMainnetRpc
+    ? VITE_MAINNET_PUBLIC_RPC
+    : import.meta.env.VITE_TESTNET_PUBLIC_RPC
+export const usesOptimismRewardHistory =
+    VITE_NETWORK_ID === '10' || (sharesMainnetRpc && useManagedRpc && !!import.meta.env.VITE_OP_APP_RPC)
 
 export enum ChainId {
     MAINNET = 10,
