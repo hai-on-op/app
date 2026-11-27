@@ -193,7 +193,7 @@ export function computeAllAprs(inputs: AprInputs): Record<string, StrategyAprRes
         })
         .map((r) => {
             const price = inputs.tokenPricesByAddress[r.rpToken] || 0
-            const dailyEmission = Number(r.rpRate.toString()) * 86400 / 1e18
+            const dailyEmission = (Number(r.rpRate.toString()) * 86400) / 1e18
             return {
                 symbol: r.rpToken.slice(0, 6) + '...',
                 dailyEmission,

@@ -21,7 +21,7 @@
         "format:check": "yarn run prettier && yarn run lint"
     },
     "engines": {
-        "node": ">=20.19.4"
+        "node": "24.x"
     },
     "peerDependencies": {
         "@babel/runtime": "7.17.0",
@@ -42,6 +42,7 @@
         "@uniswap/sdk-core": "^7.7.2",
         "@uniswap/v3-sdk": "^3.25.2",
         "@vercel/analytics": "1.1.2",
+        "@vercel/functions": "3.12.0",
         "@vercel/node": "^3.0.24",
         "axios": "0.27.2",
         "dayjs": "1.9.4",
@@ -119,6 +120,7 @@
         ]
     },
     "resolutions": {
+        "vite-plugin-vercel/@vercel/build-utils": "14.21.1",
         "chalk": "4.1.2",
         "strip-ansi": "6.0.0",
         "color-convert": "2.0.1",

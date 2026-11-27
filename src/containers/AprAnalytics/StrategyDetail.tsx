@@ -31,7 +31,9 @@ function buildNarrative(strategy: StrategyAprResult) {
     for (const pt of strategy.positionTokens) {
         if (pt.totalAmount > 0) {
             lines.push({
-                text: `The pool holds ${formatNumber(pt.totalAmount)} ${pt.symbol} at ${formatUsd(pt.priceUsd)} each, worth`,
+                text: `The pool holds ${formatNumber(pt.totalAmount)} ${pt.symbol} at ${formatUsd(
+                    pt.priceUsd
+                )} each, worth`,
                 value: formatUsd(pt.totalValueUsd),
             })
         }
@@ -48,7 +50,9 @@ function buildNarrative(strategy: StrategyAprResult) {
     for (const rt of strategy.rewardTokens) {
         if (rt.dailyEmission > 0) {
             lines.push({
-                text: `${formatNumber(rt.dailyEmission)} ${rt.symbol} distributed daily at ${formatUsd(rt.priceUsd)} each, worth`,
+                text: `${formatNumber(rt.dailyEmission)} ${rt.symbol} distributed daily at ${formatUsd(
+                    rt.priceUsd
+                )} each, worth`,
                 value: `${formatUsd(rt.dailyValueUsd)}/day (${formatUsd(rt.annualValueUsd)}/year)`,
             })
         }
@@ -57,10 +61,9 @@ function buildNarrative(strategy: StrategyAprResult) {
     // -- Per-component APR explanation --
     // For vault/borrow strategies, APR denominator is raw TVL.
     // For deposit strategies (haiVELO/haiAERO), APR denominator is boost-weighted total.
-    const useBoostedDenom = strategy.type !== 'borrow' && boost?.totalBoostedValueParticipating && boost.totalBoostedValueParticipating > 0
-    const aprDenominator = useBoostedDenom
-        ? boost!.totalBoostedValueParticipating
-        : strategy.tvl
+    const useBoostedDenom =
+        strategy.type !== 'borrow' && boost?.totalBoostedValueParticipating && boost.totalBoostedValueParticipating > 0
+    const aprDenominator = useBoostedDenom ? boost!.totalBoostedValueParticipating : strategy.tvl
     for (const comp of strategy.components) {
         const denomLabel = useBoostedDenom
             ? `${formatUsd(aprDenominator)} of boost-weighted position value`
@@ -141,26 +144,38 @@ function buildNarrative(strategy: StrategyAprResult) {
 
     // -- Boost narrative --
     if (boost) {
-        if (useBoostedDenom && boost.totalBoostedValueParticipating > 0 && boost.totalBoostedValueParticipating !== strategy.tvl) {
+        if (
+            useBoostedDenom &&
+            boost.totalBoostedValueParticipating > 0 &&
+            boost.totalBoostedValueParticipating !== strategy.tvl
+        ) {
             lines.push({
-                text: `Raw TVL is ${formatUsd(strategy.tvl)}, but APR is calculated against the boost-weighted total of`,
+                text: `Raw TVL is ${formatUsd(
+                    strategy.tvl
+                )}, but APR is calculated against the boost-weighted total of`,
                 value: formatUsd(boost.totalBoostedValueParticipating),
             })
             lines.push({
-                text: `The base APR (${formatApr(boost.baseApr)}) is what a 1x boost user earns. Higher boosts multiply your personal APR`,
+                text: `The base APR (${formatApr(
+                    boost.baseApr
+                )}) is what a 1x boost user earns. Higher boosts multiply your personal APR`,
                 value: '',
                 color: '#f59e0b',
             })
         } else if (strategy.type === 'borrow' && boost.totalBoostedValueParticipating > 0) {
             lines.push({
-                text: `Base APR (${formatApr(boost.baseApr)}) is calculated against ${formatUsd(strategy.tvl)} raw TVL. Boost multiplies your effective APR`,
+                text: `Base APR (${formatApr(boost.baseApr)}) is calculated against ${formatUsd(
+                    strategy.tvl
+                )} raw TVL. Boost multiplies your effective APR`,
                 value: '',
                 color: '#f59e0b',
             })
         }
         if (boost.myBoost > 1) {
             lines.push({
-                text: `Your ${formatBoost(boost.myBoost)} boost (stKITE share ÷ position share + 1, max 2x) multiplies the base APR, giving you`,
+                text: `Your ${formatBoost(
+                    boost.myBoost
+                )} boost (stKITE share ÷ position share + 1, max 2x) multiplies the base APR, giving you`,
                 value: formatApr(boost.boostedApr),
                 color: getBoostColor(boost.myBoost),
             })
@@ -209,7 +224,11 @@ function buildNarrative(strategy: StrategyAprResult) {
             color: '#f59e0b',
         })
         lines.push({
-            text: `The base APR (${formatApr(incentiveApr)}) only applies to the HAI you deposit — but your total capital includes the collateral locked in the vault. At 200% CR, only 1/3 of your total capital ($1 HAI out of $3 total) earns that rate. The other $2 (collateral) earns ${uApr > 0 ? formatApr(uApr) : 'no yield'}. A ${formatApr(sFee)} annual stability fee is also deducted.`,
+            text: `The base APR (${formatApr(
+                incentiveApr
+            )}) only applies to the HAI you deposit — but your total capital includes the collateral locked in the vault. At 200% CR, only 1/3 of your total capital ($1 HAI out of $3 total) earns that rate. The other $2 (collateral) earns ${
+                uApr > 0 ? formatApr(uApr) : 'no yield'
+            }. A ${formatApr(sFee)} annual stability fee is also deducted.`,
             value: '',
         })
 
@@ -257,7 +276,9 @@ function buildNarrative(strategy: StrategyAprResult) {
         const userApr = strategy.netApr ?? boost?.boostedApr ?? strategy.baseApr
         const daily = (userApr * strategy.userPosition) / 365
         lines.push({
-            text: `With your ${formatUsd(strategy.userPosition)} position at ${formatApr(userApr)} effective APR, you earn approximately`,
+            text: `With your ${formatUsd(strategy.userPosition)} position at ${formatApr(
+                userApr
+            )} effective APR, you earn approximately`,
             value: `${formatUsd(daily)}/day (${formatUsd(daily * 365)}/year)`,
             color: '#22d3ee',
         })
@@ -283,10 +304,7 @@ export function StrategyDetail({ strategies, defaultExpandedId }: Props) {
                 const narrative = isExpanded ? buildNarrative(strategy) : []
 
                 return (
-                    <DetailCard
-                        key={strategy.id}
-                        $borderOpacity={0.2}
-                    >
+                    <DetailCard key={strategy.id} $borderOpacity={0.2}>
                         {/* ---- Summary row ---- */}
                         <SummaryRow onClick={() => setExpandedId(isExpanded ? null : strategy.id)}>
                             <Flex $gap={12} $align="center">
@@ -452,9 +470,7 @@ export function StrategyDetail({ strategies, defaultExpandedId }: Props) {
                                         <Text $fontSize="0.85rem" $fontWeight={700}>
                                             Base: {formatApr(strategy.baseApr)}
                                             {boost && boost.boostedApr !== strategy.baseApr && (
-                                                <span
-                                                    style={{ color: getBoostColor(boost.myBoost), marginLeft: 8 }}
-                                                >
+                                                <span style={{ color: getBoostColor(boost.myBoost), marginLeft: 8 }}>
                                                     Boosted: {formatApr(boost.boostedApr)}
                                                 </span>
                                             )}
@@ -489,124 +505,137 @@ export function StrategyDetail({ strategies, defaultExpandedId }: Props) {
                                 </StrategyBlock>
 
                                 {/* ---- Unboosted vs Boosted ---- */}
-                                {boost && (() => {
-                                    return (
-                                    <StrategyBlock>
-                                        <SubHeader>POSITIONS &amp; BOOST</SubHeader>
-                                        <Text $fontSize="0.8rem" style={{ opacity: 0.5 }}>
-                                            Base APR ({formatApr(boost.baseApr)}) is calculated against the boost-weighted
-                                            total ({formatUsd(boost.totalBoostedValueParticipating)}), representing what a 1x
-                                            user earns. Your {formatBoost(boost.myBoost)} boost multiplies this to {formatApr(boost.boostedApr)}.
-                                        </Text>
-                                        <MiniTable>
-                                            <thead>
-                                                <tr>
-                                                    <MiniTh></MiniTh>
-                                                    <MiniTh $align="right">Total Value</MiniTh>
-                                                    <MiniTh $align="right">Your Value</MiniTh>
-                                                    <MiniTh $align="right">Your Share</MiniTh>
-                                                    <MiniTh $align="right">APR</MiniTh>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <MiniTd>
-                                                        <span style={{ opacity: 0.5 }}>Raw positions</span>
-                                                    </MiniTd>
-                                                    <MiniTd $align="right">
-                                                        <span style={{ opacity: 0.5 }}>{formatUsd(strategy.tvl)}</span>
-                                                    </MiniTd>
-                                                    <MiniTd $align="right">
-                                                        <span style={{ opacity: 0.5 }}>
-                                                            {boost.myValueParticipating > 0
-                                                                ? formatUsd(boost.myValueParticipating)
-                                                                : '-'}
-                                                        </span>
-                                                    </MiniTd>
-                                                    <MiniTd $align="right">
-                                                        <span style={{ opacity: 0.5 }}>
-                                                            {strategy.tvl > 0 && boost.myValueParticipating > 0
-                                                                ? `${((boost.myValueParticipating / strategy.tvl) * 100).toFixed(4)}%`
-                                                                : '-'}
-                                                        </span>
-                                                    </MiniTd>
-                                                    <MiniTd $align="right">
-                                                        <span style={{ opacity: 0.3 }}>—</span>
-                                                    </MiniTd>
-                                                </tr>
-                                                <tr>
-                                                    <MiniTd>
-                                                        <strong>Boost-weighted (APR denominator)</strong>
-                                                    </MiniTd>
-                                                    <MiniTd $align="right">
-                                                        <strong>{formatUsd(boost.totalBoostedValueParticipating)}</strong>
-                                                    </MiniTd>
-                                                    <MiniTd $align="right">
-                                                        {boost.myBoostedValueParticipating > 0
-                                                            ? formatUsd(boost.myBoostedValueParticipating)
-                                                            : '-'}
-                                                    </MiniTd>
-                                                    <MiniTd $align="right">
-                                                        {boost.myBoostedShare > 0
-                                                            ? `${(boost.myBoostedShare * 100).toFixed(4)}%`
-                                                            : '-'}
-                                                    </MiniTd>
-                                                    <MiniTd $align="right">
-                                                        <strong>{formatApr(boost.baseApr)}</strong>
-                                                    </MiniTd>
-                                                </tr>
-                                                {boost.myBoost > 1 && (
-                                                    <tr>
-                                                        <MiniTd>
-                                                            <span
-                                                                style={{
-                                                                    color: getBoostColor(boost.myBoost),
-                                                                    fontWeight: 700,
-                                                                }}
-                                                            >
-                                                                Your effective ({formatBoost(boost.myBoost)})
-                                                            </span>
-                                                        </MiniTd>
-                                                        <MiniTd $align="right">—</MiniTd>
-                                                        <MiniTd $align="right">—</MiniTd>
-                                                        <MiniTd $align="right">—</MiniTd>
-                                                        <MiniTd $align="right">
-                                                            <span
-                                                                style={{
-                                                                    color: getBoostColor(boost.myBoost),
-                                                                    fontWeight: 700,
-                                                                }}
-                                                            >
-                                                                {formatApr(boost.boostedApr)}
-                                                            </span>
-                                                        </MiniTd>
-                                                    </tr>
-                                                )}
-                                            </tbody>
-                                        </MiniTable>
-                                        <Flex $width="100%" $column $gap={4} style={{ marginTop: 8 }}>
-                                            <Flex $width="100%" $justify="space-between">
-                                                <Text $fontSize="0.75rem" style={{ opacity: 0.5 }}>
-                                                    Boost: {formatBoost(boost.myBoost)} of 2.00x max
+                                {boost &&
+                                    (() => {
+                                        return (
+                                            <StrategyBlock>
+                                                <SubHeader>POSITIONS &amp; BOOST</SubHeader>
+                                                <Text $fontSize="0.8rem" style={{ opacity: 0.5 }}>
+                                                    Base APR ({formatApr(boost.baseApr)}) is calculated against the
+                                                    boost-weighted total (
+                                                    {formatUsd(boost.totalBoostedValueParticipating)}), representing
+                                                    what a 1x user earns. Your {formatBoost(boost.myBoost)} boost
+                                                    multiplies this to {formatApr(boost.boostedApr)}.
                                                 </Text>
-                                                <Text
-                                                    $fontSize="0.75rem"
-                                                    $fontWeight={700}
-                                                    style={{ color: getBoostColor(boost.myBoost) }}
-                                                >
-                                                    {boost.myBoost >= 2
-                                                        ? 'MAX BOOST'
-                                                        : `+${formatApr(boost.boostedApr - boost.baseApr)} from boost`}
-                                                </Text>
-                                            </Flex>
-                                            <BoostBar
-                                                $progress={(boost.myBoost - 1) * 100}
-                                                $color={getBoostColor(boost.myBoost)}
-                                            />
-                                        </Flex>
-                                    </StrategyBlock>
-                                    )
-                                })()}
+                                                <MiniTable>
+                                                    <thead>
+                                                        <tr>
+                                                            <MiniTh></MiniTh>
+                                                            <MiniTh $align="right">Total Value</MiniTh>
+                                                            <MiniTh $align="right">Your Value</MiniTh>
+                                                            <MiniTh $align="right">Your Share</MiniTh>
+                                                            <MiniTh $align="right">APR</MiniTh>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <MiniTd>
+                                                                <span style={{ opacity: 0.5 }}>Raw positions</span>
+                                                            </MiniTd>
+                                                            <MiniTd $align="right">
+                                                                <span style={{ opacity: 0.5 }}>
+                                                                    {formatUsd(strategy.tvl)}
+                                                                </span>
+                                                            </MiniTd>
+                                                            <MiniTd $align="right">
+                                                                <span style={{ opacity: 0.5 }}>
+                                                                    {boost.myValueParticipating > 0
+                                                                        ? formatUsd(boost.myValueParticipating)
+                                                                        : '-'}
+                                                                </span>
+                                                            </MiniTd>
+                                                            <MiniTd $align="right">
+                                                                <span style={{ opacity: 0.5 }}>
+                                                                    {strategy.tvl > 0 && boost.myValueParticipating > 0
+                                                                        ? `${(
+                                                                              (boost.myValueParticipating /
+                                                                                  strategy.tvl) *
+                                                                              100
+                                                                          ).toFixed(4)}%`
+                                                                        : '-'}
+                                                                </span>
+                                                            </MiniTd>
+                                                            <MiniTd $align="right">
+                                                                <span style={{ opacity: 0.3 }}>—</span>
+                                                            </MiniTd>
+                                                        </tr>
+                                                        <tr>
+                                                            <MiniTd>
+                                                                <strong>Boost-weighted (APR denominator)</strong>
+                                                            </MiniTd>
+                                                            <MiniTd $align="right">
+                                                                <strong>
+                                                                    {formatUsd(boost.totalBoostedValueParticipating)}
+                                                                </strong>
+                                                            </MiniTd>
+                                                            <MiniTd $align="right">
+                                                                {boost.myBoostedValueParticipating > 0
+                                                                    ? formatUsd(boost.myBoostedValueParticipating)
+                                                                    : '-'}
+                                                            </MiniTd>
+                                                            <MiniTd $align="right">
+                                                                {boost.myBoostedShare > 0
+                                                                    ? `${(boost.myBoostedShare * 100).toFixed(4)}%`
+                                                                    : '-'}
+                                                            </MiniTd>
+                                                            <MiniTd $align="right">
+                                                                <strong>{formatApr(boost.baseApr)}</strong>
+                                                            </MiniTd>
+                                                        </tr>
+                                                        {boost.myBoost > 1 && (
+                                                            <tr>
+                                                                <MiniTd>
+                                                                    <span
+                                                                        style={{
+                                                                            color: getBoostColor(boost.myBoost),
+                                                                            fontWeight: 700,
+                                                                        }}
+                                                                    >
+                                                                        Your effective ({formatBoost(boost.myBoost)})
+                                                                    </span>
+                                                                </MiniTd>
+                                                                <MiniTd $align="right">—</MiniTd>
+                                                                <MiniTd $align="right">—</MiniTd>
+                                                                <MiniTd $align="right">—</MiniTd>
+                                                                <MiniTd $align="right">
+                                                                    <span
+                                                                        style={{
+                                                                            color: getBoostColor(boost.myBoost),
+                                                                            fontWeight: 700,
+                                                                        }}
+                                                                    >
+                                                                        {formatApr(boost.boostedApr)}
+                                                                    </span>
+                                                                </MiniTd>
+                                                            </tr>
+                                                        )}
+                                                    </tbody>
+                                                </MiniTable>
+                                                <Flex $width="100%" $column $gap={4} style={{ marginTop: 8 }}>
+                                                    <Flex $width="100%" $justify="space-between">
+                                                        <Text $fontSize="0.75rem" style={{ opacity: 0.5 }}>
+                                                            Boost: {formatBoost(boost.myBoost)} of 2.00x max
+                                                        </Text>
+                                                        <Text
+                                                            $fontSize="0.75rem"
+                                                            $fontWeight={700}
+                                                            style={{ color: getBoostColor(boost.myBoost) }}
+                                                        >
+                                                            {boost.myBoost >= 2
+                                                                ? 'MAX BOOST'
+                                                                : `+${formatApr(
+                                                                      boost.boostedApr - boost.baseApr
+                                                                  )} from boost`}
+                                                        </Text>
+                                                    </Flex>
+                                                    <BoostBar
+                                                        $progress={(boost.myBoost - 1) * 100}
+                                                        $color={getBoostColor(boost.myBoost)}
+                                                    />
+                                                </Flex>
+                                            </StrategyBlock>
+                                        )
+                                    })()}
 
                                 {/* ---- Footer ---- */}
                                 <CardFooter>

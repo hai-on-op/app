@@ -71,7 +71,8 @@ export function calculateHaiVeloDepositApr(input: HaiVeloDepositInput): HaiVeloD
     const myQty = userAddr ? Number(mapping[userAddr] || 0) : 0
     const myValueParticipating = myQty * (haiVeloPrice || 0)
     const myBoostedValueParticipating = myValueParticipating * myBoost
-    const myBoostedShare = totalBoostedValueParticipating > 0 ? myBoostedValueParticipating / totalBoostedValueParticipating : 0
+    const myBoostedShare =
+        totalBoostedValueParticipating > 0 ? myBoostedValueParticipating / totalBoostedValueParticipating : 0
 
     // Base APR is against boosted TVL (what a 1x user actually earns)
     const baseApr = totalBoostedValueParticipating > 0 ? (dailyRewardValue * 365) / totalBoostedValueParticipating : 0

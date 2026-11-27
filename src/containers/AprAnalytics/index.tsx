@@ -77,12 +77,7 @@ export function AprAnalytics() {
                 </Flex>
             </TopContainer>
 
-            <NavContainer
-                navItems={TAB_ITEMS}
-                selected={activeTab}
-                onSelect={handleTabChange}
-                stackHeader
-            >
+            <NavContainer navItems={TAB_ITEMS} selected={activeTab} onSelect={handleTabChange} stackHeader>
                 {activeTab === 0 ? (
                     <Flex $width="100%" $column $gap={24}>
                         <ProtocolOverview strategies={strategyList} />

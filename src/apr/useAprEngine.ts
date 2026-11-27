@@ -107,16 +107,30 @@ export function useAprEngine(): AprContextValue {
 
     // LP staking data - HAI-BOLD Curve
     const haiBoldLpService = useMemo(
-        () => buildStakingService(haiBoldCurveLpConfig.addresses.manager as `0x${string}`, undefined, haiBoldCurveLpConfig.decimals),
+        () =>
+            buildStakingService(
+                haiBoldCurveLpConfig.addresses.manager as `0x${string}`,
+                undefined,
+                haiBoldCurveLpConfig.decimals
+            ),
         []
     )
-    const { data: haiBoldLpAccount } = useStakeAccount(address as `0x${string}`, haiBoldCurveLpConfig.namespace, haiBoldLpService)
+    const { data: haiBoldLpAccount } = useStakeAccount(
+        address as `0x${string}`,
+        haiBoldCurveLpConfig.namespace,
+        haiBoldLpService
+    )
     const { data: haiBoldLpStats } = useStakeStats(haiBoldCurveLpConfig.namespace, haiBoldLpService)
     const curveData = useCurvePoolData(haiBoldCurveLpConfig.tvl?.poolAddress)
 
     // LP staking data - haiVELO/VELO
     const haiVeloVeloLpService = useMemo(
-        () => buildStakingService(haiVeloVeloLpConfig.addresses.manager as `0x${string}`, undefined, haiVeloVeloLpConfig.decimals),
+        () =>
+            buildStakingService(
+                haiVeloVeloLpConfig.addresses.manager as `0x${string}`,
+                undefined,
+                haiVeloVeloLpConfig.decimals
+            ),
         []
     )
     const { data: haiVeloVeloLpAccount } = useStakeAccount(
@@ -132,10 +146,7 @@ export function useAprEngine(): AprContextValue {
     const haiVeloVeloLpAprData = useLpStakingApr(haiVeloVeloLpConfig)
 
     // Underlying collateral APR for all vault collateral types (Lido, Beefy, Yearn, etc.)
-    const vaultCollateralTypes = useMemo(
-        () => Object.keys(REWARDS.vaults),
-        []
-    )
+    const vaultCollateralTypes = useMemo(() => Object.keys(REWARDS.vaults), [])
     const { aprs: underlyingAprMap } = useMultipleUnderlyingAPR({
         collateralTypes: vaultCollateralTypes,
     })
@@ -150,7 +161,8 @@ export function useAprEngine(): AprContextValue {
                 if (fee) {
                     // getRatePercentage(fee, 4, true) returns decimal (e.g., 0.02 for 2%)
                     const feeDecimal = getRatePercentage(fee, 4, true)
-                    sFees[cType] = typeof feeDecimal === 'number' ? Math.abs(feeDecimal) : Math.abs(parseFloat(feeDecimal))
+                    sFees[cType] =
+                        typeof feeDecimal === 'number' ? Math.abs(feeDecimal) : Math.abs(parseFloat(feeDecimal))
                 }
             }
         }
@@ -158,8 +170,7 @@ export function useAprEngine(): AprContextValue {
     }, [liquidationData, vaultCollateralTypes])
 
     // ==================== LOADING STATE ====================
-    const coreDataLoaded =
-        !pricesLoading && !systemLoading && !collateralLoading && !veloLoading && !minterLoading
+    const coreDataLoaded = !pricesLoading && !systemLoading && !collateralLoading && !veloLoading && !minterLoading
 
     const stakingDataLoaded = Object.keys(usersStakingData).length > 0 && Number(totalStaked) > 0
 
@@ -306,8 +317,7 @@ export function useAprEngine(): AprContextValue {
             getBaseApr: (id: string) => strategies[id]?.baseApr ?? 0,
             getEffectiveApr: (id: string) => strategies[id]?.effectiveApr ?? 0,
             getBoost: (id: string) => strategies[id]?.boost ?? null,
-            getAllByType: (type: StrategyType) =>
-                Object.values(strategies).filter((s) => s.type === type),
+            getAllByType: (type: StrategyType) => Object.values(strategies).filter((s) => s.type === type),
         }),
         [strategies, loading]
     )
