@@ -50,6 +50,11 @@ export default defineConfig(() => {
                     addRoute: true,
                 },
                 {
+                    source: './src/api/rewards/latest-transfers.ts',
+                    destination: '/api/rewards/latest-transfers',
+                    addRoute: true,
+                },
+                {
                     source: './src/api/rewards/report.ts',
                     destination: `/api/rewards/report`,
                     addRoute: true,

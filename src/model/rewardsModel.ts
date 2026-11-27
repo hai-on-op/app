@@ -1,6 +1,7 @@
 import { BigNumber, Contract } from 'ethers'
 import { JsonRpcSigner, Provider } from '@ethersproject/providers'
 import axios from 'axios'
+import { getRewardStream } from '~/services/rewards/transferStreams'
 import { REWARDS as STATIC_REWARDS } from '~/utils/rewards'
 import StakingManagerABI from '~/abis/StakingManager.json'
 import RewardPoolABI from '~/abis/RewardPool.json'
@@ -88,6 +89,11 @@ export class RewardsModel {
         rpcUrl: string
     }): Promise<number> {
         try {
+            const stream = getRewardStream(haiTokenAddress, haiVeloDepositer, rewardDistributor)
+            if (stream && import.meta.env.VITE_NETWORK_ID === '10') {
+                const { data } = await axios.get('/api/rewards/latest-transfers')
+                return Number(data[stream])
+            }
             const response = await axios.post(rpcUrl, {
                 jsonrpc: '2.0',
                 id: 1,
