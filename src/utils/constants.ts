@@ -15,7 +15,6 @@ const useManagedRpc = globalThis.location?.origin === import.meta.env.VITE_RPC_A
 export const VITE_MAINNET_PUBLIC_RPC =
     (useManagedRpc && import.meta.env.VITE_OP_APP_RPC) || import.meta.env.VITE_MAINNET_PUBLIC_RPC
 
-
 export enum ChainId {
     MAINNET = 10,
     OPTIMISM_GOERLI = 420,

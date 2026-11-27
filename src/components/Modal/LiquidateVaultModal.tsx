@@ -107,9 +107,9 @@ export function LiquidateVaultModal({ id, collateralRatio, status, onSuccess, ..
                                         collateralRatio === Infinity.toString()
                                             ? '--'
                                             : formatNumberWithStyle(collateralRatio, {
-                                                style: 'percent',
-                                                scalingFactor: 0.01,
-                                            }),
+                                                  style: 'percent',
+                                                  scalingFactor: 0.01,
+                                              }),
                                 },
                             },
                             {

@@ -327,11 +327,11 @@ export const formatQuerySafeToVault = (
         !safe.debt || safe.debt === '0'
             ? Infinity.toString()
             : getCollateralRatio(
-                safe.collateral,
-                totalDebt,
-                safe.collateralType.currentPrice.liquidationPrice,
-                safe.collateralType.liquidationCRatio
-            )
+                  safe.collateral,
+                  totalDebt,
+                  safe.collateralType.currentPrice.liquidationPrice,
+                  safe.collateralType.liquidationCRatio
+              )
     const status =
         riskStateToStatus[ratioChecker(parseFloat(collateralRatio), parseFloat(safe.collateralType.safetyCRatio))]
     const liquidationPrice = getLiquidationPrice(

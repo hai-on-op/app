@@ -83,10 +83,10 @@ export function BidTable({ auction }: BidTableProps) {
                             bid.isRestart
                                 ? 'Restart'
                                 : i === rows.length - 1
-                                    ? 'Start'
-                                    : hasSettled && i === 0
-                                        ? 'Settle'
-                                        : buyOrBid
+                                ? 'Start'
+                                : hasSettled && i === 0
+                                ? 'Settle'
+                                : buyOrBid
                         }
                         withSell={withSell}
                     />
@@ -178,16 +178,16 @@ function BidTableRow({ bid, eventType, bidToken, sellToken, withSell }: BidTable
                 },
                 ...(withSell
                     ? [
-                        {
-                            content: (
-                                <Text>
-                                    {isStartOrRestart
-                                        ? '--'
-                                        : `${formatNumberWithStyle(bid.sellAmount, { maxDecimals: 4 })} ${sellToken}`}
-                                </Text>
-                            ),
-                        },
-                    ]
+                          {
+                              content: (
+                                  <Text>
+                                      {isStartOrRestart
+                                          ? '--'
+                                          : `${formatNumberWithStyle(bid.sellAmount, { maxDecimals: 4 })} ${sellToken}`}
+                                  </Text>
+                              ),
+                          },
+                      ]
                     : []),
                 {
                     content: (
