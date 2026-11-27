@@ -7,14 +7,18 @@ export const {
     VITE_WALLETCONNECT_ID,
     VITE_ALCHEMY_KEY,
     VITE_GRAPH_API_KEY,
-    VITE_PUBLIC_BASE_RPC,
     VITE_TESTNET_PUBLIC_RPC,
     VITE_FLAGSMITH_API_KEY,
     VITE_LP_SUBGRAPH_URL,
 } = import.meta.env
 
-// Older deployments can retain their provider while this release switches browser reads atomically.
-export const VITE_MAINNET_PUBLIC_RPC = import.meta.env.VITE_OP_APP_RPC || import.meta.env.VITE_MAINNET_PUBLIC_RPC
+// Named preview sites may use origin-restricted nodes while random Vercel preview URLs keep their defaults.
+const managedOrigins = import.meta.env.VITE_RPC_APP_ORIGINS?.split(',') as string[] | undefined
+const useManagedRpc = !managedOrigins || managedOrigins.includes(globalThis.location?.origin)
+export const VITE_MAINNET_PUBLIC_RPC =
+    (useManagedRpc && import.meta.env.VITE_OP_APP_RPC) || import.meta.env.VITE_MAINNET_PUBLIC_RPC
+export const VITE_PUBLIC_BASE_RPC =
+    (useManagedRpc && import.meta.env.VITE_BASE_APP_RPC) || import.meta.env.VITE_PUBLIC_BASE_RPC
 
 export enum ChainId {
     MAINNET = 10,
