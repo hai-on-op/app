@@ -8,11 +8,13 @@ export const {
     VITE_ALCHEMY_KEY,
     VITE_GRAPH_API_KEY,
     VITE_PUBLIC_BASE_RPC,
-    VITE_MAINNET_PUBLIC_RPC,
     VITE_TESTNET_PUBLIC_RPC,
     VITE_FLAGSMITH_API_KEY,
     VITE_LP_SUBGRAPH_URL,
 } = import.meta.env
+
+// Older deployments can retain their provider while this release switches browser reads atomically.
+export const VITE_MAINNET_PUBLIC_RPC = import.meta.env.VITE_OP_APP_RPC || import.meta.env.VITE_MAINNET_PUBLIC_RPC
 
 export enum ChainId {
     MAINNET = 10,
