@@ -1,31 +1,33 @@
-import { render, waitFor } from '@testing-library/react'
+import { act, render, waitFor } from '@testing-library/react'
 import { utils } from 'ethers'
 import type { ReactNode } from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { ThemeProvider } from 'styled-components'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { darkTheme } from '~/styles/themes'
 import { NETWORK_ID } from '~/utils'
 
 const {
     allowanceMock,
-    getProxyActionMock,
+    getProxyAddressMock,
     useAccountMock,
     useEthersSignerMock,
     useGebMock,
     useNetworkMock,
+    usePreviousMock,
     usePublicGebMock,
     useStoreActionsMock,
     useStoreStateMock,
     useTokenContractMock,
 } = vi.hoisted(() => ({
     allowanceMock: vi.fn(),
-    getProxyActionMock: vi.fn(),
+    getProxyAddressMock: vi.fn(),
     useAccountMock: vi.fn(),
     useEthersSignerMock: vi.fn(),
     useGebMock: vi.fn(),
     useNetworkMock: vi.fn(),
+    usePreviousMock: vi.fn(),
     usePublicGebMock: vi.fn(),
     useStoreActionsMock: vi.fn(),
     useStoreStateMock: vi.fn(),
@@ -62,12 +64,16 @@ vi.mock('~/hooks', () => ({
     useEthersSigner: () => useEthersSignerMock(),
     useGeb: () => useGebMock(),
     useDocumentVisibility: () => true,
-    usePrevious: () => undefined,
+    usePrevious: () => usePreviousMock(),
     usePublicGeb: () => usePublicGebMock(),
 }))
 
 vi.mock('~/providers/StakingProvider', () => ({
     StakingProvider: ({ children }: { children: ReactNode }) => <div data-testid="staking-provider">{children}</div>,
+}))
+
+vi.mock('~/apr/AprProvider', () => ({
+    AprProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
 }))
 
 vi.mock('~/providers/ClaimsProvider', () => ({
@@ -184,8 +190,8 @@ const baseActions = {
     },
 }
 
-function renderShared(path: string) {
-    return render(
+function sharedTree(path: string) {
+    return (
         <ThemeProvider theme={darkTheme}>
             <MemoryRouter initialEntries={[path]}>
                 <Shared>
@@ -196,14 +202,19 @@ function renderShared(path: string) {
     )
 }
 
+function renderShared(path: string) {
+    return render(sharedTree(path))
+}
+
 describe('Shared bootstrap gating', () => {
+    afterEach(() => vi.restoreAllMocks())
+
     beforeEach(() => {
         vi.clearAllMocks()
+        usePreviousMock.mockReturnValue(undefined)
 
         allowanceMock.mockResolvedValue(utils.parseEther('5'))
-        getProxyActionMock.mockResolvedValue({
-            proxyAddress: '0x00000000000000000000000000000000000000aa',
-        })
+        getProxyAddressMock.mockResolvedValue('0x00000000000000000000000000000000000000aa')
         useAccountMock.mockReturnValue({
             address: '0x00000000000000000000000000000000000000bb',
         })
@@ -214,11 +225,12 @@ describe('Shared bootstrap gating', () => {
             getBalance: vi.fn().mockResolvedValue(utils.parseEther('3')),
         })
         useGebMock.mockReturnValue({
-            getProxyAction: getProxyActionMock,
+            getProxyAction: getProxyAddressMock,
             tokenList,
         })
         usePublicGebMock.mockReturnValue({
             tokenList,
+            contracts: { proxyFactory: { proxies: getProxyAddressMock } },
         })
         useTokenContractMock.mockReturnValue({
             allowance: allowanceMock,
@@ -261,5 +273,118 @@ describe('Shared bootstrap gating', () => {
         expect(baseActions.connectWalletModel.fetchFiatPrice).toHaveBeenCalledTimes(1)
         expect(baseActions.vaultModel.fetchLiquidationData).toHaveBeenCalledTimes(1)
         expect(baseActions.vaultModel.fetchUserVaults).not.toHaveBeenCalled()
+    })
+
+    it('does not reopen initialization when equivalent wallet references refresh', async () => {
+        const view = renderShared('/haiAERO')
+        await waitFor(() => expect(baseActions.popupsModel.setIsInitializing).toHaveBeenCalledWith(false))
+
+        usePreviousMock.mockReturnValue(useAccountMock().address)
+        useEthersSignerMock.mockReturnValue({
+            getBalance: vi.fn().mockResolvedValue(utils.parseEther('3')),
+        })
+        useGebMock.mockReturnValue({ getProxyAction: getProxyAddressMock, tokenList })
+        await act(async () => view.rerender(sharedTree('/haiAERO')))
+
+        expect(getProxyAddressMock).toHaveBeenCalledTimes(1)
+        expect(baseActions.popupsModel.setIsInitializing.mock.calls.filter(([value]) => value)).toHaveLength(1)
+        expect(baseActions.transactionsModel.setTransactions).toHaveBeenCalledTimes(1)
+    })
+
+    it('does not refetch native balance for unrelated wallet state changes', async () => {
+        const getBalance = useEthersSignerMock().getBalance
+        const view = renderShared('/haiAERO')
+        await waitFor(() => expect(baseActions.connectWalletModel.updateEthBalance).toHaveBeenCalledTimes(1))
+        const nextState = {
+            ...baseState,
+            connectWalletModel: { ...baseState.connectWalletModel, forceUpdateTokens: false, step: 2 },
+        }
+        useStoreStateMock.mockImplementation((selector) => selector(nextState))
+        await act(async () => view.rerender(sharedTree('/haiAERO')))
+
+        expect(getBalance).toHaveBeenCalledTimes(1)
+    })
+
+    it('records Base native balance under Base rather than Optimism', async () => {
+        useNetworkMock.mockReturnValue({ chain: { id: 8453 } })
+        renderShared('/haiAERO')
+        await waitFor(() =>
+            expect(baseActions.connectWalletModel.updateEthBalance).toHaveBeenCalledWith({ chainId: 8453, balance: 3 })
+        )
+    })
+
+    it('initializes a real network change using the Optimism public provider', async () => {
+        useNetworkMock.mockReturnValue({ chain: { id: 8453 } })
+        // The signer-backed SDK may still refer to Base when the network changes.
+        const staleSignerLookup = vi.fn().mockRejectedValue(new Error('wrong network'))
+        useGebMock.mockReturnValue({ getProxyAction: staleSignerLookup, tokenList })
+        const view = renderShared('/haiAERO')
+        await waitFor(() => expect(baseActions.popupsModel.setIsInitializing).toHaveBeenCalledWith(false))
+        expect(getProxyAddressMock).not.toHaveBeenCalled()
+
+        useNetworkMock.mockReturnValue({ chain: { id: NETWORK_ID } })
+        await act(async () => view.rerender(sharedTree('/haiAERO')))
+
+        expect(getProxyAddressMock).toHaveBeenCalledTimes(1)
+        expect(staleSignerLookup).not.toHaveBeenCalled()
+        expect(baseActions.popupsModel.setIsInitializing.mock.calls.filter(([value]) => value)).toHaveLength(2)
+        expect(baseActions.connectWalletModel.setStep).toHaveBeenLastCalledWith(2)
+    })
+
+    it('does not apply a pending proxy result after wallet disconnect', async () => {
+        let resolveProxy!: (address: string) => void
+        getProxyAddressMock.mockReturnValue(new Promise<string>((resolve) => (resolveProxy = resolve)))
+        const view = renderShared('/haiAERO')
+        await waitFor(() => expect(getProxyAddressMock).toHaveBeenCalledTimes(1))
+
+        useAccountMock.mockReturnValue({ address: undefined })
+        useEthersSignerMock.mockReturnValue(undefined)
+        await act(async () => view.rerender(sharedTree('/haiAERO')))
+        const waitingCalls = baseActions.popupsModel.setWaitingPayload.mock.calls.length
+        await act(async () => resolveProxy('0x00000000000000000000000000000000000000aa'))
+
+        expect(baseActions.connectWalletModel.setStep).toHaveBeenLastCalledWith(0)
+        expect(baseActions.connectWalletModel.setProxyAddress).not.toHaveBeenCalledWith(
+            '0x00000000000000000000000000000000000000aa'
+        )
+        expect(baseActions.popupsModel.setWaitingPayload).toHaveBeenCalledTimes(waitingCalls)
+        expect(baseActions.popupsModel.setIsInitializing).toHaveBeenLastCalledWith(false)
+    })
+
+    it('initializes a different wallet account exactly once', async () => {
+        vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue(undefined)
+        const previousAccount = useAccountMock().address
+        const view = renderShared('/haiAERO')
+        await waitFor(() => expect(baseActions.popupsModel.setIsInitializing).toHaveBeenCalledWith(false))
+        const nextAccount = '0x00000000000000000000000000000000000000cc'
+        usePreviousMock.mockReturnValue(previousAccount)
+        useAccountMock.mockReturnValue({ address: nextAccount })
+        await act(async () => view.rerender(sharedTree('/haiAERO')))
+        usePreviousMock.mockReturnValue(nextAccount)
+        await act(async () => view.rerender(sharedTree('/haiAERO')))
+
+        expect(getProxyAddressMock).toHaveBeenLastCalledWith(nextAccount)
+        expect(getProxyAddressMock).toHaveBeenCalledTimes(2)
+        expect(baseActions.popupsModel.setIsInitializing.mock.calls.filter(([value]) => value)).toHaveLength(2)
+    })
+
+    it('rechecks when a pending proxy creation clears', async () => {
+        let walletState = { ...baseState, connectWalletModel: { ...baseState.connectWalletModel, ctHash: '0xpending' } }
+        useStoreStateMock.mockImplementation((selector) => selector(walletState))
+        const view = renderShared('/haiAERO')
+        await waitFor(() => expect(baseActions.popupsModel.setIsInitializing).toHaveBeenCalledWith(false))
+        expect(baseActions.connectWalletModel.setStep).not.toHaveBeenCalledWith(2)
+
+        walletState = { ...baseState, connectWalletModel: { ...baseState.connectWalletModel, ctHash: '' } }
+        await act(async () => view.rerender(sharedTree('/haiAERO')))
+        expect(getProxyAddressMock).toHaveBeenCalledTimes(2)
+        expect(baseActions.connectWalletModel.setStep).toHaveBeenLastCalledWith(2)
+    })
+
+    it('keeps a wallet without a proxy on the create-proxy step', async () => {
+        getProxyAddressMock.mockResolvedValue('0x0000000000000000000000000000000000000000')
+        renderShared('/haiAERO')
+        await waitFor(() => expect(baseActions.popupsModel.setIsInitializing).toHaveBeenCalledWith(false))
+        expect(baseActions.connectWalletModel.setStep).toHaveBeenLastCalledWith(1)
     })
 })
