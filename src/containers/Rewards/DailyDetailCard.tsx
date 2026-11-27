@@ -94,11 +94,7 @@ export function DailyDetailCard({ dayReport, userData, expanded, onToggle }: Pro
                                 Object.entries(tokenMap).map(([token, earned]) => {
                                     if (earned === 0) return null
                                     const pos = userData.strategyPositions?.[strategy]?.[token]
-                                    const poolTotal = getStrategyPoolTotal(
-                                        dayReport.strategyTotals,
-                                        strategy,
-                                        token
-                                    )
+                                    const poolTotal = getStrategyPoolTotal(dayReport.strategyTotals, strategy, token)
                                     const share = calcUserShare(earned, poolTotal)
 
                                     const posLabel = getPositionLabel(strategy)
@@ -108,8 +104,8 @@ export function DailyDetailCard({ dayReport, userData, expanded, onToggle }: Pro
                                         <NarrativeLine key={`${strategy}-${token}`}>
                                             <span>
                                                 In {getStrategyLabel(strategy)}
-                                                {pos && pos.avgPosition > 0
-                                                    ? <>
+                                                {pos && pos.avgPosition > 0 ? (
+                                                    <>
                                                         {`, your avg ${posLabel}${delayedText} of `}
                                                         {formatRewardAmount(pos.avgPosition)}
                                                         {` (${formatShare(share)} of pool`}
@@ -117,8 +113,9 @@ export function DailyDetailCard({ dayReport, userData, expanded, onToggle }: Pro
                                                             `, ${formatBoost(pos.endOfDayBoost)} boost`}
                                                         {') earned you'}
                                                     </>
-                                                    : ', you earned'
-                                                }
+                                                ) : (
+                                                    ', you earned'
+                                                )}
                                             </span>
                                             <NarrativeValue>
                                                 {formatRewardAmount(earned)} {token}
@@ -133,11 +130,7 @@ export function DailyDetailCard({ dayReport, userData, expanded, onToggle }: Pro
                                 Object.entries(tokenMap).map(([token, earned]) => {
                                     const pos = userData.strategyPositions?.[strategy]?.[token]
                                     if (!pos || pos.endOfDayBoost >= 2.0 || earned === 0) return null
-                                    const poolTotal = getStrategyPoolTotal(
-                                        dayReport.strategyTotals,
-                                        strategy,
-                                        token
-                                    )
+                                    const poolTotal = getStrategyPoolTotal(dayReport.strategyTotals, strategy, token)
                                     const result = calcMaxBoostPotential(pos, poolTotal, earned)
                                     if (!result || result.extraEarned < 0.0001) return null
                                     return (
@@ -192,11 +185,7 @@ export function DailyDetailCard({ dayReport, userData, expanded, onToggle }: Pro
                             Object.entries(tokenMap).map(([token, earned]) => {
                                 if (earned === 0) return null
                                 const pos = userData.strategyPositions?.[strategy]?.[token]
-                                const poolTotal = getStrategyPoolTotal(
-                                    dayReport.strategyTotals,
-                                    strategy,
-                                    token
-                                )
+                                const poolTotal = getStrategyPoolTotal(dayReport.strategyTotals, strategy, token)
                                 const share = calcUserShare(earned, poolTotal)
                                 const maxBoost =
                                     pos && pos.endOfDayBoost < 2.0
@@ -205,13 +194,7 @@ export function DailyDetailCard({ dayReport, userData, expanded, onToggle }: Pro
 
                                 return (
                                     <StrategyBlock key={`${strategy}-${token}`}>
-                                        <Flex
-                                            $width="100%"
-                                            $justify="space-between"
-                                            $align="center"
-                                            $flexWrap
-                                            $gap={8}
-                                        >
+                                        <Flex $width="100%" $justify="space-between" $align="center" $flexWrap $gap={8}>
                                             <Text $fontWeight={700} $fontSize="0.95rem">
                                                 {getStrategyLabel(strategy)} — {token}
                                             </Text>
@@ -228,64 +211,68 @@ export function DailyDetailCard({ dayReport, userData, expanded, onToggle }: Pro
                                             </Flex>
                                         </Flex>
 
-                                        {pos && earned > 0 && pos.avgPosition > 0 && (() => {
-                                            const posLabel = getPositionLabel(strategy)
-                                            const totalLabel = `Total ${posLabel}`
-                                            const yourLabel = `Your avg ${posLabel}`
-                                            // Unboosted: raw position values
-                                            const unboostedTotal = pos.avgTotalPosition
-                                            const unboostedUser = pos.avgPosition
-                                            const unboostedShare = unboostedTotal > 0 ? unboostedUser / unboostedTotal : 0
-                                            // Boosted: position * boost
-                                            const boost = pos.endOfDayBoost || 1
-                                            const boostedUser = pos.avgPosition * boost
-                                            // Total boosted = scale total by (avgTotalWeight / avgTotalUnboostedWeight)
-                                            const boostRatio = pos.avgTotalUnboostedWeight > 0
-                                                ? pos.avgTotalWeight / pos.avgTotalUnboostedWeight
-                                                : 1
-                                            const boostedTotal = pos.avgTotalPosition * boostRatio
-                                            const boostedShare = pos.avgTotalWeight > 0
-                                                ? pos.avgWeight / pos.avgTotalWeight
-                                                : 0
-                                            return (
-                                                <MiniTable>
-                                                    <thead>
-                                                        <tr>
-                                                            <MiniTh></MiniTh>
-                                                            <MiniTh $align="right">{totalLabel}</MiniTh>
-                                                            <MiniTh $align="right">{yourLabel}</MiniTh>
-                                                            <MiniTh $align="right">Your Share</MiniTh>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr>
-                                                            <MiniTd>Unboosted</MiniTd>
-                                                            <MiniTd $align="right">
-                                                                {formatRewardAmount(unboostedTotal)}
-                                                            </MiniTd>
-                                                            <MiniTd $align="right">
-                                                                {formatRewardAmount(unboostedUser)}
-                                                            </MiniTd>
-                                                            <MiniTd $align="right">
-                                                                {formatShare(unboostedShare)}
-                                                            </MiniTd>
-                                                        </tr>
-                                                        <tr>
-                                                            <MiniTd>Boosted</MiniTd>
-                                                            <MiniTd $align="right">
-                                                                {formatRewardAmount(boostedTotal)}
-                                                            </MiniTd>
-                                                            <MiniTd $align="right">
-                                                                {formatRewardAmount(boostedUser)}
-                                                            </MiniTd>
-                                                            <MiniTd $align="right">
-                                                                {formatShare(boostedShare)}
-                                                            </MiniTd>
-                                                        </tr>
-                                                    </tbody>
-                                                </MiniTable>
-                                            )
-                                        })()}
+                                        {pos &&
+                                            earned > 0 &&
+                                            pos.avgPosition > 0 &&
+                                            (() => {
+                                                const posLabel = getPositionLabel(strategy)
+                                                const totalLabel = `Total ${posLabel}`
+                                                const yourLabel = `Your avg ${posLabel}`
+                                                // Unboosted: raw position values
+                                                const unboostedTotal = pos.avgTotalPosition
+                                                const unboostedUser = pos.avgPosition
+                                                const unboostedShare =
+                                                    unboostedTotal > 0 ? unboostedUser / unboostedTotal : 0
+                                                // Boosted: position * boost
+                                                const boost = pos.endOfDayBoost || 1
+                                                const boostedUser = pos.avgPosition * boost
+                                                // Total boosted = scale total by (avgTotalWeight / avgTotalUnboostedWeight)
+                                                const boostRatio =
+                                                    pos.avgTotalUnboostedWeight > 0
+                                                        ? pos.avgTotalWeight / pos.avgTotalUnboostedWeight
+                                                        : 1
+                                                const boostedTotal = pos.avgTotalPosition * boostRatio
+                                                const boostedShare =
+                                                    pos.avgTotalWeight > 0 ? pos.avgWeight / pos.avgTotalWeight : 0
+                                                return (
+                                                    <MiniTable>
+                                                        <thead>
+                                                            <tr>
+                                                                <MiniTh></MiniTh>
+                                                                <MiniTh $align="right">{totalLabel}</MiniTh>
+                                                                <MiniTh $align="right">{yourLabel}</MiniTh>
+                                                                <MiniTh $align="right">Your Share</MiniTh>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <MiniTd>Unboosted</MiniTd>
+                                                                <MiniTd $align="right">
+                                                                    {formatRewardAmount(unboostedTotal)}
+                                                                </MiniTd>
+                                                                <MiniTd $align="right">
+                                                                    {formatRewardAmount(unboostedUser)}
+                                                                </MiniTd>
+                                                                <MiniTd $align="right">
+                                                                    {formatShare(unboostedShare)}
+                                                                </MiniTd>
+                                                            </tr>
+                                                            <tr>
+                                                                <MiniTd>Boosted</MiniTd>
+                                                                <MiniTd $align="right">
+                                                                    {formatRewardAmount(boostedTotal)}
+                                                                </MiniTd>
+                                                                <MiniTd $align="right">
+                                                                    {formatRewardAmount(boostedUser)}
+                                                                </MiniTd>
+                                                                <MiniTd $align="right">
+                                                                    {formatShare(boostedShare)}
+                                                                </MiniTd>
+                                                            </tr>
+                                                        </tbody>
+                                                    </MiniTable>
+                                                )
+                                            })()}
 
                                         {pos && pos.isDelayed && (
                                             <Text $fontSize="0.75rem" $color="#f59e0b">
@@ -295,8 +282,8 @@ export function DailyDetailCard({ dayReport, userData, expanded, onToggle }: Pro
 
                                         {maxBoost && maxBoost.extraEarned >= 0.0001 && (
                                             <Text $fontSize="0.85rem" $color="#10b981">
-                                                At max boost (2.0x): +
-                                                {formatRewardAmount(maxBoost.extraEarned)} {token} (+
+                                                At max boost (2.0x): +{formatRewardAmount(maxBoost.extraEarned)} {token}{' '}
+                                                (+
                                                 {(maxBoost.pctIncrease * 100).toFixed(1)}% more) ={' '}
                                                 {formatRewardAmount(maxBoost.maxEarned)} total
                                             </Text>

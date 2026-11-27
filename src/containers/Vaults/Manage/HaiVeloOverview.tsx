@@ -219,10 +219,15 @@ export function HaiVeloOverview() {
                                     {formatNumberWithStyle(underlyingAPR, { style: 'percent', maxDecimals: 1 })}
                                 </Text>
                                 <Text $fontWeight={700} style={{ color: '#00ac11' }}>
-                                    {formatNumberWithStyle(underlyingAPR * hvBoost, { style: 'percent', maxDecimals: 1 })}
+                                    {formatNumberWithStyle(underlyingAPR * hvBoost, {
+                                        style: 'percent',
+                                        maxDecimals: 1,
+                                    })}
                                 </Text>
                             </Flex>
-                        ) : formatNumberWithStyle(underlyingAPR, { style: 'percent', maxDecimals: 2 })
+                        ) : (
+                            formatNumberWithStyle(underlyingAPR, { style: 'percent', maxDecimals: 2 })
+                        )
                     }
                     label="Deposit APR"
                     tooltip="Your boosted APR on haiVELO rewards"

@@ -25,7 +25,12 @@ export function useCurvePoolData(poolAddress?: string) {
         staleTime: 5 * 60_000,
         queryFn: () => {
             if (!poolAddress || !provider) return null
-            return fetchCurvePoolApr(poolAddress as `0x${string}`, provider, tvlQuery.data?.lpPriceUsd, tvlQuery.data?.tvlUsd)
+            return fetchCurvePoolApr(
+                poolAddress as `0x${string}`,
+                provider,
+                tvlQuery.data?.lpPriceUsd,
+                tvlQuery.data?.tvlUsd
+            )
         },
     })
 

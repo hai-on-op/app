@@ -113,9 +113,7 @@ export function DailyDetailList({ userDailyData, selectedDate, onClearSelectedDa
                             </option>
                         ))}
                     </DateSelect>
-                    <SortToggle onClick={handleSortToggle}>
-                        {newestFirst ? 'Newest First' : 'Oldest First'}
-                    </SortToggle>
+                    <SortToggle onClick={handleSortToggle}>{newestFirst ? 'Newest First' : 'Oldest First'}</SortToggle>
                 </Flex>
             </ControlsRow>
 

@@ -255,25 +255,28 @@ export function Overview({ vault }: OverviewProps) {
                         const baseUnderlyingAPR = isHaiVelo ? underlyingAPRValue : underlyingAPRValue
                         const baseDebtNet = baseIncentivesAPR + stabilityFeeCost
                         const totalPos = collateralUsdValue + debtUsdValue
-                        baseNetAPR = totalPos > 0
-                            ? (collateralUsdValue * baseUnderlyingAPR + debtUsdValue * baseDebtNet) / totalPos
-                            : 0
+                        baseNetAPR =
+                            totalPos > 0
+                                ? (collateralUsdValue * baseUnderlyingAPR + debtUsdValue * baseDebtNet) / totalPos
+                                : 0
                     }
 
-                    const netAprDisplay = shouldShowNetAPR
-                        ? isBoosted
-                            ? (
-                                <Flex $gap={8} $align="center">
-                                    <Text $fontWeight={700} style={{ textDecoration: 'line-through', opacity: 0.5 }}>
-                                        {formatNumberWithStyle(baseNetAPR, { style: 'percent', maxDecimals: 1 })}
-                                    </Text>
-                                    <Text $fontWeight={700} style={{ color: '#00ac11' }}>
-                                        {formatNumberWithStyle(netAPR, { style: 'percent', maxDecimals: 1 })}
-                                    </Text>
-                                </Flex>
-                            )
-                            : formatNumberWithStyle(netAPR, { style: 'percent', maxDecimals: 2 })
-                        : formatNumberWithStyle(stabilityFeeCost, { style: 'percent', maxDecimals: 2 })
+                    const netAprDisplay = shouldShowNetAPR ? (
+                        isBoosted ? (
+                            <Flex $gap={8} $align="center">
+                                <Text $fontWeight={700} style={{ textDecoration: 'line-through', opacity: 0.5 }}>
+                                    {formatNumberWithStyle(baseNetAPR, { style: 'percent', maxDecimals: 1 })}
+                                </Text>
+                                <Text $fontWeight={700} style={{ color: '#00ac11' }}>
+                                    {formatNumberWithStyle(netAPR, { style: 'percent', maxDecimals: 1 })}
+                                </Text>
+                            </Flex>
+                        ) : (
+                            formatNumberWithStyle(netAPR, { style: 'percent', maxDecimals: 2 })
+                        )
+                    ) : (
+                        formatNumberWithStyle(stabilityFeeCost, { style: 'percent', maxDecimals: 2 })
+                    )
 
                     return (
                         <OverviewStat
