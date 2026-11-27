@@ -1,6 +1,7 @@
 import { BigNumber, Contract } from 'ethers'
 import { JsonRpcSigner, Provider } from '@ethersproject/providers'
 import axios from 'axios'
+import { usesOptimismRewardHistory } from '~/utils/constants'
 import { getRewardStream } from '~/services/rewards/transferStreams'
 import { REWARDS as STATIC_REWARDS } from '~/utils/rewards'
 import StakingManagerABI from '~/abis/StakingManager.json'
@@ -90,7 +91,7 @@ export class RewardsModel {
     }): Promise<number> {
         try {
             const stream = getRewardStream(haiTokenAddress, haiVeloDepositer, rewardDistributor)
-            if (stream && import.meta.env.VITE_NETWORK_ID === '10') {
+            if (stream && usesOptimismRewardHistory) {
                 const { data } = await axios.get('/api/rewards/latest-transfers')
                 return Number(data[stream])
             }
